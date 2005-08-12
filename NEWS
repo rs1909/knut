@@ -1,0 +1,43 @@
+In 0.9.14
+ - The torus continuation is working again, but it is still experimental.
+ - there is a demo in demo/milloneup/ which uses the torus continuation:
+   make test; make test-tr
+ - loading of system definition sys-<>.so is improved. It can load the
+   shared object from the current directory, so no environment variable
+   needs to be set up. Also 'pcompile' is now set up using the configure
+   script, which includes the absolute installation path into the script to
+   look for header files. It also affects (simplifies) the installation 
+   process, see the manual.
+ 
+
+In 0.9.12
+ - the non functioning fold computation routine with symmetries is removed
+ - some minor bug fixes: derivatives with respect to parameters 
+   should be correct in ncolloc.cpp
+ - correction of the tangent vector after each iteretion in Point::Continue()
+ - worked out exmamples are in the demo directory:
+     glass          - make test
+     traffic        - make test1 test2 test3 test4 test5
+     turn           - make test
+     laser          - make test
+     milloneup      - make test
+   the other exmaples are not testable yet
+    
+In 0.9.10
+ - some initial work on fold in autonomous equations with symmetry.
+   The 2 dim kernel space of the characteristic matrix can be deduced 
+   directly form the solution x(t) and x'(t) respectively. The derivatives
+   should be recomputed, because it seems to be buggy.
+
+In 0.9.9
+ - new parameters in the constants file, STAB and NMAT
+   for details see the manual.
+ - continuation with delays larger than the period. src/ncolloc.cpp 
+   was modified heavily
+ - new stability computation algorithm
+   
+In 0.9.6
+ - support for equations with rotational symmetry. This is a second phase 
+   condition
+
+0.9.2: Initial Release   

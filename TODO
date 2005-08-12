@@ -1,0 +1,15 @@
+- HyperMatrix::Check( HyperVector& X, HyperVector& F )
+     the references maybe buggy with some compilers ( gcc 2.95.4 )
+
+- create new characteristic matrix for fold bifurcation in the case of
+eqautions with symmetry.
+
+- give a method to supply which components of the solution are symmetric. 
+Currently it is hardcoded like in DDE-BIFTOOL. 
+
+0. use overloaded operators to do matrix operations in a nicer manner. 
+   (not urgent)
+1. using blas for matrix multiplications (not urgent)
+2. the same for sparse matrix multiplication (not urgent)
+3. clarify the output format, what to write? DONE
+4. write documentation DONE

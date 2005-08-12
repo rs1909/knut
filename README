@@ -1,0 +1,22 @@
+For istallation instructions read the manual (manual.pdf),
+which can be found in the doc/ subdirectory.
+
+BUGS:
+No bugs were reported, yet.
+
+The program was tested on:
+
+Linux x86, gcc 3.4.2, 3.4.3, 3.4.4 (Fedora Core 3 and Debian 3.0)
+Linux x86, gcc 4.0.0, 4.0.1 (Fedora Core 4)
+SuSE 9.3
+
+gcc 2.95 cannot compile the software. However gcc 3.x.y should work,
+especially starting from v3.3.x.
+
+Sun Solaris 5.9 sun4u does not work because "long int lrint( double )" is missing from
+its math library. If you know any function which rounds a double to its
+closest integer and which does not depend on the actual rounding direction,
+please report to me.
+I haven't tried Solaris 10, which is promised to be compatible with Linux.
+Also I could not make it work under MinGW on MS Windows, because the POSIX
+dlfcn.h is missing (for loading plugins.)

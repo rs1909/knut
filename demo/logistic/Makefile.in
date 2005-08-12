@@ -1,0 +1,20 @@
+CXXFLAGS = @NOWARN_CXXFLAGS@
+CXX=@CXX@
+
+NAME = sys-logistic
+
+DSFILES = Makefile.in $(NAME).cpp 
+
+$(NAME).so: ../../src/pddesys.h
+	$(CXX) $(CXXFLAGS) -fPIC --shared -I../../src -o $(NAME).so $(NAME).cpp
+
+distdir:
+	cp -pR $(DSFILES) $(distdir)
+
+clean:
+	if { test -f *.so; } then rm *.so; fi
+
+install: $(NAME).so
+	
+all: $(NAME).so
+	

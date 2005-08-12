@@ -1,0 +1,17 @@
+DSDIRS = lib
+DSFILES = include
+
+distdir:
+	list='$(DSDIRS)'; for subdir in $$list; do \
+	mkdir $(distdir)/$$subdir; \
+	done;
+	cp -pR $(DSFILES) $(distdir)
+
+all:
+	
+
+clean:
+	
+install:
+	
+
