@@ -43,6 +43,20 @@ Continuation techniques provide a tool to discover the parameter dependence of i
 This manual describes the software \pdde, which is capable of continuing periodic orbits and their
 bifurcations in delay-differential equations.
 
+\subsection{Capabilities}
+\label{capabilities}
+
+The software can handle delay-differential equation in the general form 
+\begin{equation}
+	\dot{x}(t) = f (t, x(t-\tau_0), x(t - \tau_1), \dots , x(t - \tau_r), \lambda ), \label{gensys}
+\end{equation}
+where $f(t, \dots ) = f(t + T, \dots)$ is $T$-periodic, $x \in \mathbb{R}^n$ is the dependent variable defined on $I \subset \mathbb{R}$, $\lambda \in \mathbb{R}^p$ is the parameter vector and $0 \le \tau_i$ are positive delays, which can depend on the parameters $\tau_i : \mathbb{R}^p \to [0,\infty)$.
+In general $f$ need not depend on $t$, which is called the autonomous case and is handled separately by imposing a so-called phase condition.
+The software can continue periodic solutions of (\ref{gensys}), if there is an initial periodic solution available $x_0(t)$ at some parameter value $\lambda_0$. This starting periodic solution has to be specified either in the system definition (C++ source file) or it can be loaded from an input file. The periodic solutions can bifurcate in several ways. If one of the three common one-codimension bifurcations (fold, period doubling, Neimark-Sacker) are found along the branch of periodic solutions, they can be used as starting points for continuing them along two parameters.
+
+\paragraph{Remark.} Fixed points of autonomous systems can be also handled, as periodic solutions of periodic systems by keeping the period constant. Although it is very inefficient, this capability might be useful, when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can be continued by switching to the periodic solution branch using the solution \funp{TYPE=16}. The failure or success of the switch depends on the choice of the period length for the fixed point and the starting solution amplitude \funp{DSSTART}.
+As a rule of thumb, the period should be chosen as small as possible to reliably detect the period of the arising periodic orbit. If the period is chosen to be large, the detected period will be some integer multiple of the actual period.
+
 \subsection{Installation}
 
 The software comes in a compressed archive form \filef{pdde-cont-{\version}.tar.gz}, so it has to be unzipped first into an empty directory using the following command.
@@ -66,6 +80,8 @@ In order to make the software functioning, the \filef{PATH} environment variable
 export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
 line into the \filef{.bash\_profile} configuration file in your \filef{HOME} directory. For activating the changes log out and then log in again.
+
+\paragraph{Remark.} The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the software, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature exists only on few computing platforms, and in most cases they are incompatible. Our implementation chose Linux's way of loading shared objects as system definition, which is known to work on Sun's Solaris too. Other platforms such as SGI Irix, MS Windows or Darwin are not supported yet.
 
 \section{Command line arguments}
 
@@ -109,33 +125,35 @@ definition file.
 \item[\funp{TYPE}] ~\\
 Specifies the type of the solution to be continued. (The numbers in the parentheses after the description denote the required number of additional free parameters.) For time-periodic systems:
 \begin{description}
-\item[\funp{0} -] Continuation of periodic solutions (0)
+\item[\funp{0} -] Continuation of periodic solutions (0).
 %
-\item[\funp{1} -] Continuation of fold bifurcations in two parameters (1)
+\item[\funp{1} -] Continuation of fold bifurcations in two parameters (1). The input is a periodic solution at a fold bifurcation point. The software first generates a starting point, that is, it tries to converge to the fold point using a secant method. After the fold point is found with a good accuracy (see \funp{EPSS}), the tangent of the fold curve is computed so that the continuation can start. All the bifurcations are started in this way.
 %
-\item[\funp{2} -] Continuation of period-doubling bifurcations (1)
+\item[\funp{2} -] Continuation of period-doubling bifurcations (1).
 %
-\item[\funp{3} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (1)
+\item[\funp{3} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (1).
 %
 \item[\funp{4} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits. (0)
+(-1 multiplier) and then follows the arising orbits (0). The switching is done by computing the critical eigenfunction $\varphi^{cr}$. The new solution becomes $x_0(t) = x^{cr}(2\,t)$ and similarly, the tangent of the solution $x'(t) = \varphi^{cr}(2\,t)$. Finally, the tangent is re-normed to norm 1, and the continuation can start.
 %
-\item[\funp{5} -] Switches to the other solution at a branching point and follows the orbits (0)
+\item[\funp{5} -] Switches to the other solution at a branching point and follows the orbits (0). Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start.
 \end{description}
-Similarly in the case of autonomous systems:
+In the case of autonomous systems, the bifurcation continuations and branch switching are started in the same way, the only difference is the inclusion of the phase-condition and a different defining system for fold bifurcations.
 \begin{description}
-\item[\funp{10} -] Continuation of periodic solutions (1)
+\item[\funp{10} -] Continuation of periodic solutions in autonomous systems (1). The additional parameter is usually the period length \funp{P0}.
 %
-\item[\funp{11} -] Continuation of fold bifurcations in two parameters (2)
+\item[\funp{11} -] Continuation of fold bifurcations in two parameters (2).
 %
-\item[\funp{12} -] Continuation of period-doubling bifurcations (2)
+\item[\funp{12} -] Continuation of period-doubling bifurcations (2).
 %
-\item[\funp{13} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (2)
+\item[\funp{13} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (2).
 %
 \item[\funp{14} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits. (1)
+(-1 multiplier) and then follows the arising orbits (1).
 %
-\item[\funp{15} -] Switches to the other solution at a branching point and follows the orbits (1)
+\item[\funp{15} -] Switches to the other solution at a branching point and follows the orbits (1).
+%
+\item[\funp{16} -] Switches to a periodic solution arising in a Hopf bifurcation point. The input is a constant solution, which represents a fixed point (1). For detailed description see the Remark in Sect.\ \ref{capabilities}.
 \end{description}
 The software can also continue invariant tori arising at Neimark-Sacker bifurcation points. To continue these quasi-periodic orbits use the following parameters when restarting from Neimark-Sacker points.
 \begin{description}
@@ -151,7 +169,7 @@ the rotation number of a quasiperiodic orbit.
 % (Recognition of internal parameters is not yet implemented, however the can be specified using ordinary parameters. E.g., if \funp{NPAR} is the number of ordinary parameters then an interal parameter is equivalent to P(\funp{NPAR} + internal parameter number)). 
 These  internal parameters are
 \begin{description}
-\item[\funp{I0} -] The argument of the characteristic multiplier in the case of Neimark Sacker bifurcation continuation. 
+\item[\funp{I0} -] The argument of the characteristic multiplier in the case of Neimark-Sacker bifurcation continuation. 
 \item[\funp{I1} -] The smallest eigenvalue of the characteristic matrix. This is used only when the software constructs a starting point in case of bifurcation continuation or when switches solution branches. (Do not use this!)
 \item[\funp{I2} -] It refers to the rotation number of a two-torus. Usually this is kept constant in order to avoid phase-locking.
 \end{description}
@@ -201,7 +219,7 @@ Maximum number of Newton iteration steps.
 Convergence tolerance to a periodic solution during continuation. For periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of bifurcations it can be a bit larger about $10^{-4}$ to achieve reasonable stepsizes (\funp{DS}).
 %
 \item[\funp{EPSR}] ~\\
-Tolerance in the refinement of solutions. (Solution refinement is used only before continuation starts.) It shold be less than or equal to \funp{EPSC}.
+Tolerance in the refinement of solutions. (Solution refinement is used only before continuation starts.) It should be less than or equal to \funp{EPSC}.
 %
 \item[\funp{EPSS}] ~\\
 Tolerance of \funp{P0} in converging to a bifurcation point. (Used at branch switching.)

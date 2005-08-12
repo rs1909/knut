@@ -431,11 +431,16 @@ uninstall-info: uninstall-info-recursive
 	uninstall uninstall-am uninstall-info-am
 
 
-doc: macros.tex ddedoc.cls manual-bibl.bib manual.tex
+doc: manual.dvi
+
+manual.dvi: macros.tex ddedoc.cls manual-bibl.bib manual.tex
 	latex manual
 	bibtex manual
 	latex manual
 	latex manual
+
+pdf-doc: manual.dvi
+	dvipdfm manual.dvi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
