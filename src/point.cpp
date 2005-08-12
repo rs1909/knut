@@ -871,8 +871,8 @@ int Point::Start(  )
 //		Stability();
 		Tangent();
 		
-		std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<"   PAR("<<p1<<")";
-		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t   PAR("<<varMap(j)<<")";
+		std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( NPAR, p1 )<<parNum( NPAR, p1 )<<"\t";
+		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<parType( NPAR, varMap(j) )<<parNum( NPAR, varMap(j) )<<"\t";
 		std::cout<<"\n";
 		
 		int cit=0,it=0;

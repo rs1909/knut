@@ -70,6 +70,18 @@ enum Par { ParAngle=0, ParNorm, ParRot, ParEnd };
 
 enum BranchSW { NOSwitch=0, LPSwitch, PDSwitch, HOPFSwitch, TORSwitch };
 
+inline char parType( int npar, int p )
+{
+	if( p < npar ) return 'P';
+	else return 'I';
+}
+
+inline int parNum( int npar, int p )
+{
+	if( p < npar ) return p;
+	else return p - npar;
+}
+
 inline const char* EqnToStr( Eqn eqn )
 {
 	switch( eqn )

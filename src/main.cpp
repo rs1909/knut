@@ -405,6 +405,7 @@ int main( int argc, const char** argv )
 	Array1D<Var> var_start;
 	
 	int trivial = initEqnVar( sys, params, eqn, var, eqn_refine, var_refine, eqn_start, var_start );
+	const int npar = sys.npar();
 	
 // 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
 // 	std::cout<<'\n';
@@ -455,10 +456,10 @@ int main( int argc, const char** argv )
 		{
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
-			for( int j=0; j<sys.npar()+ParEnd; j++ ) par(j) = pt.getPar()(j);
+			for( int j=0; j<npar+ParEnd; j++ ) par(j) = pt.getPar()(j);
 			//
-			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<"   PAR("<<params->P0<<")";
-			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t   PAR("<<(params->PARX)[j]<<")";
+			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->P0 )<<parNum( npar, params->P0 )<<"\t";
+			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 			std::cout<<"\n";
 			//
 			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->P0);
@@ -504,8 +505,8 @@ int main( int argc, const char** argv )
 			{
 				if( i % 24 == 0 )
 				{
-					std::cout<<"LABEL\t"<<"   NORM\t\t"<<"   PAR("<<params->P0<<")";
-					for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t   PAR("<<(params->PARX)[j]<<")";
+					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->P0Type<<params->P0<<"\t";
+					for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 					std::cout<<"\tUSTAB\tIT\n";
 				}
 				itpos = (itpos+1) % ithist;
@@ -515,7 +516,7 @@ int main( int argc, const char** argv )
 				if( params->STAB != 0) pt.Stability();
 				ustabprev = ustab;
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
-				for( int j=0; j<sys.npar(); j++ ) par(j) = pt.getPar()(j);
+				for( int j=0; j<npar; j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
 
 				// console output
@@ -551,7 +552,7 @@ int main( int argc, const char** argv )
 				pt.Write( out );
 
 				// branch output
-				for( int j=0; j<sys.npar(); j++ ) ff<<par(j)<<"\t";
+				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
 				ff.flush();
 				int itc = it( itpos );
@@ -583,7 +584,7 @@ int main( int argc, const char** argv )
 			pt.SwitchTRTan( TRe, TIm, alpha, meshint, meshdeg );
 
 			// getting the parameters
-			for( int j=0; j<sys.npar(); j++ ) par(j) = pt.getPar()(j);
+			for( int j=0; j<npar; j++ ) par(j) = pt.getPar()(j);
 
 			// destroy point, construct PointTR
 			delete pt_ptr;
@@ -604,10 +605,10 @@ int main( int argc, const char** argv )
 				pttr.Continue( ds, false );
 				
 				// write out the results
-				for( int j=0; j<sys.npar(); j++ ) std::cout<<par(j)<<"\t";
+				for( int j=0; j<npar; j++ ) std::cout<<par(j)<<"\t";
 				std::cout<<std::endl;
-				for( int j=0; j<sys.npar(); j++ ) par(j) = pttr.getPar()(j);
-				for( int j=0; j<sys.npar(); j++ ) ff<<par(j)<<"\t";
+				for( int j=0; j<npar; j++ ) par(j) = pttr.getPar()(j);
+				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
 				ff<<pttr.Norm()<<"\n";
 				ff.flush();
 				pttr.SaveSol( "sol.dat", "sol.idx" );
