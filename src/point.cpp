@@ -867,31 +867,25 @@ int Point::Start(  )
 // 		qqR->Print();
 		
 		p1 = NPAR+ParNorm;
-//		Refine();
-//		Stability();
 		Tangent();
 		
 		std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( NPAR, p1 )<<parNum( NPAR, p1 )<<"\t";
 		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<parType( NPAR, varMap(j) )<<parNum( NPAR, varMap(j) )<<"\t";
-		std::cout<<"\n";
+		std::cout<<"\tIT\n";
 		
 		int cit=0,it=0;
 		do
 		{
-// 			std::cout<<" Start Cont: "<<it<<".\n";
 			cit = Continue( -par(p1)/p1Dot/1.5 );
 			std::cout<<" s"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
 			for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
-			std::cout<<"\t"<<colloc.Integrate( sol, sol )<<"\t"<<colloc.Integrate( solNu, solNu )<<"\t"<<cit<<"\n";
-//			Stability();
+			std::cout<<"\t"<<cit<<"\n";
 		}while( (fabs( par(p1) ) > StartEps)&&(++it < Iter) );
 		par( p1 ) = 0.0;
 		qqR->Clear();
-// 		Stability();
 	}else
 	{
 		Refine();
-// 		Stability();
 	}
 	
 	return 0;
