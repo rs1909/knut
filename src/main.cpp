@@ -234,14 +234,14 @@ int initEqnVar( System& sys, cfile* params,
 	{
 		if( !phaseRot )
 		{
-			std::cout<<"Phase\n";
+// 			std::cout<<"Phase\n";
 			eqn_refine.Init(3);
 			var_refine.Init(3);
 			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase;
 			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-1);
 		}else
 		{
-			std::cout<<"Phase and PhaseRot\n";
+// 			std::cout<<"Phase and PhaseRot\n";
 			eqn_refine.Init(4);
 			var_refine.Init(4);
 			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase; eqn_refine(3) = EqnPhaseRot;
@@ -256,7 +256,7 @@ int initEqnVar( System& sys, cfile* params,
 	}
 	if( params->SWITCH == HOPFSwitch ) PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX );
 	
-	// Here, we wet up the branch switching.
+	// Here, we set up the branch switching.
 	// We suppose that if there is a switch we use one parameter continuation afterwards
 	// without using characteristic matrices. This means that the we can switch on the characteristic matrix,
 	// include the equation for the eigenvector norm before the other equations and

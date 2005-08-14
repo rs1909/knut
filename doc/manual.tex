@@ -100,7 +100,7 @@ line into the \filef{.bash\_profile} configuration file in your \filef{HOME} dir
 
 \paragraph{Remark.} The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the software, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature exists only on few computing platforms, and in most cases they are incompatible. Our implementation chose Linux's way of loading shared objects as system definition, which is known to work on Sun's Solaris too. Other platforms such as SGI Irix, MS Windows or Darwin are not supported yet.
 
-\section{Running the software}
+\section{Command line arguments}
 
 The software is controlled by the so-called constants file. This file contains
 instructions about all the operations done by the software and also specifies the parameters of the numerical methods.
@@ -109,16 +109,6 @@ This file can be selected by the \funp{-b} option if this data is not intended t
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
 \end{lstlisting} \end{quote} } \noindent
-
-When the software starts it either loads a solution profile from the input file (see Sect.\ \ref{constfile}) or uses the 
-\fun{Sys::stpar} and \fun{Sys::stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializaton before the continuation starts:
-\begin{enumerate}
-\item The software starts a Newton iteration to converge to a more precise solution.
-\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighbourhood of the specified solution, this step will fail. Note that if the first and second derivatives of the right hand side are computed numerically (\fun{Sys::nder} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
-\item It finds the tangent of the solution branch at its first point. In general, it computes the tangent as a kernel vector of the linearized defining system. In the case of branch switching, the critical eigenfunctions are used to construct the tangent vector.
-\end{enumerate}
-If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
-After all this initialization, the program starts the continuation and writes the data into the output and branch files.
 
 \section{The constants file}
 \label{constfile}
@@ -450,6 +440,53 @@ The required functions are
   This function returns the value of the known periodic solution at time \fun{t}.
 \end{itemize}
 
+\section{Running the software}
+
+After invoking the software \filef{pdde}, it either loads a solution profile from the input file (see Sect.\ \ref{constfile}) or uses the 
+\fun{Sys::stpar} and \fun{Sys::stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
+\begin{enumerate}
+\item The software starts a Newton iteration to converge to a more precise solution.
+\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighbourhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{Sys::nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
+\item It finds the tangent of the solution branch at its first point. In general, it computes the tangent as a kernel vector of the linearized defining system. In the case of branch switching, the critical eigenfunctions are used to construct the tangent vector.
+\end{enumerate}
+If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
+After all this initializations, the program starts the continuation and writes the data into the output and branch files.
+
+\subsection{The console output}
+
+First, the software writes the content of the constants file (see Sect.\ \ref{constfile}) to the standard output (console). Then starts the Newton iteration:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+IT      ERR             SOLnorm         DIFFnorm
+ 0      5.772096e-02    9.234583e-01    1.110239e-01
+ 1      6.083138e-02    9.279196e-01    1.172780e-01
+ 2      1.271950e-02    9.283746e-01    2.452796e-02
+ 3      7.432386e-04    9.283646e-01    1.433235e-03
+ 4      1.490474e-06    9.283646e-01    2.874176e-06
+\end{lstlisting} \end{quote} } \noindent
+Here, each iteration step (\funp{IT}) is displayed: \funp{SOLnorm} is the $L^2$ norm of the solution and \funp{DIFFnorm} is the $L^2$ norm of the difference between the new and the previous approximate solution. \funp{ERR} refers to the stopping criterion, that is
+\[
+	\funp{ERR} = \frac{\funp{DIFFnorm}}{1+\funp{SOLnorm}} < \funp{EPSR}.
+\]
+If the prescribed accuray is not reached, but \funp{IT} reaches \funp{NITER}, the program stops with error.
+
+In the next step, if appropriate, the program tries to find the bifurcation point. This is done by using a secant method, so it needs several steps to converge:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+LABEL      NORM         I1              P0              P2              IT
+ s1     9.141494e-01    -5.444928e-02   5.506283e+00    1.555261e+00    2
+  |          |               |               |               |          |
+ s10    9.141645e-01    -2.792157e-06   5.506216e+00    1.555451e+00    2
+ s11    9.141645e-01    -9.487486e-07   5.506216e+00    1.555451e+00    2
+\end{lstlisting} \end{quote} } \noindent
+The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other colums contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITER}. The \funp{IT} column denotes the number of Newton iteration steps, within each continuation step.
+
+The main continuation proceeds similarly:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+LABEL      NORM         P2              P0              USTAB   IT
+  1     9.142448e-01    1.556134e+00    1.101504e+01      0     2
+  2     9.143658e-01    1.557164e+00    1.101898e+01      0     1
+  3     9.144963e-01    1.558277e+00    1.102330e+01      0     1
+\end{lstlisting} \end{quote} } \noindent
+The first column, \funp{LABEL} will be the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characterustic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
 
 \section{Example: Mackey-Glass equation}
 

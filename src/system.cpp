@@ -114,7 +114,7 @@ System::System( char* shobj )
 	}
 	
 	nderi = (*v_nderi)( );
-	std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
+// 	std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
 	f.Init( ndim() ), f_eps.Init( ndim() );
 	f2.Init( ndim() ), f_eps2.Init( ndim() );
 	xx_eps.Init( ndim(), 2 * ntau() + 1 );
