@@ -1,4 +1,4 @@
-\documentclass[10pt]{ddedoc}
+\documentclass[10pt,a4paper]{ddedoc}
 
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
@@ -6,30 +6,26 @@
 \usepackage{listings}
 
 \pagestyle{plain}
-\topmargin=-5pt
-\textwidth=6.85in
-\textheight=9in
-\evensidemargin=-15pt
-\oddsidemargin=-15pt
-%
+
+\textwidth=6.25in
+\textheight=9.5in
+\hoffset=-0.6in
+\voffset=-0.8in
+
 \input{macros}
-%
-\newcommand{\version}{0.9.14}
+
 \def\pdde{{\sc P\kern-.15emD\kern-.15emD\kern-.15emE-cont}}
 
 \begin{document}
-\lstset{language=C++,tabsize=3,columns=flexible,breaklines=true}
+\lstset{language=C++,tabsize=3,columns=flexible,breaklines=true,escapechar=\%}
+\makeatother
 %
-\title{
-\LARGE \pdde :\\ 
-\Large A continuation and bifurcation software \\
-\Large for delay-differential equations \\
-\author{
-\large R\'obert Szalai\thanks{On leave from Budapest University of Technology and Economics, Budapest H-1521, Hungary}\\
-\large Massachusetts Institute of Technology\\
-\large Cambridge, Massachusetts USA
-}}
-\date{\today}
+\title{\pdde}
+\subtitle{A continuation and bifurcation software for delay-differential equations}
+\author{R\'obert Szalai}
+\newcommand{\pddever}{0.9.14}
+\version{\pddever}
+\date{15 August, 2005}
 \maketitle
 
 \subsubsection*{Revision history}
@@ -40,8 +36,8 @@
     \hline Date & Version & Institution \\
     \hline Sept.\ 2002 -- Jan.\ 2004 & & Budapest University of Technology and Economics \\
     \hline Febr.\ 2004 -- July 2004 & & University of Bristol \\
-    \hline Sept.\ 2004 -- July 2005 & 0.9.2 -- 0.9.8 & Massachusetts Institute of Technology \\
-    \hline Sept.\ 2005 -- & 0.9.15 -- & Budapest University of Technology and Economics \\
+    \hline Sept.\ 2004 -- June 2005 & 0.9.2 -- 0.9.8 & Massachusetts Institute of Technology \\
+    \hline July 2005 -- Sept. 2005 & 0.9.9 -- 0.9.14 & ---- \\
     \hline
   \end{tabular}
 \end{center}
@@ -76,15 +72,15 @@ As a rule of thumb, the period should be chosen as small as possible to reliably
 
 \subsection{Installation}
 
-The software comes in a compressed archive form \filef{pdde-cont-{\version}.tar.gz}, so it has to be unzipped first into an empty directory using the following command.
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ tar xvzf pdde-cont-0.9.14.tar.gz
+The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.gz}, so it has to be unzipped first into an empty directory using the following command.
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
+$ tar xvzf pdde-cont-%\@version%.tar.gz
 \end{lstlisting} \end{quote} } \noindent
 The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a}, \filef{libcblas.a} and \filef{libf77blas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for several processors so in most cases no compilation step is necessary.
 
 The second step is to configure the package using the \filef{configure} script.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ cd pdde-cont-0.9.14
+$ cd pdde-cont-%\@version%
 $ ./configure --prefix=$HOME/pdde-cont/
 \end{lstlisting} \end{quote} } \noindent
 This generates the platform dependent \filef{Makefile}s and configures the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
@@ -446,7 +442,7 @@ After invoking the software \filef{pdde}, it either loads a solution profile fro
 \fun{Sys::stpar} and \fun{Sys::stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
 \begin{enumerate}
 \item The software starts a Newton iteration to converge to a more precise solution.
-\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighbourhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{Sys::nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
+\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighborhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{Sys::nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
 \item It finds the tangent of the solution branch at its first point. In general, it computes the tangent as a kernel vector of the linearized defining system. In the case of branch switching, the critical eigenfunctions are used to construct the tangent vector.
 \end{enumerate}
 If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
@@ -467,7 +463,7 @@ Here, each iteration step (\funp{IT}) is displayed: \funp{SOLnorm} is the $L^2$ 
 \[
 	\funp{ERR} = \frac{\funp{DIFFnorm}}{1+\funp{SOLnorm}} < \funp{EPSR}.
 \]
-If the prescribed accuray is not reached, but \funp{IT} reaches \funp{NITER}, the program stops with error.
+If the prescribed accuracy is not reached, but \funp{IT} reaches \funp{NITER}, the program stops with error.
 
 In the next step, if appropriate, the program tries to find the bifurcation point. This is done by using a secant method, so it needs several steps to converge:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -477,7 +473,7 @@ LABEL      NORM         I1              P0              P2              IT
  s10    9.141645e-01    -2.792157e-06   5.506216e+00    1.555451e+00    2
  s11    9.141645e-01    -9.487486e-07   5.506216e+00    1.555451e+00    2
 \end{lstlisting} \end{quote} } \noindent
-The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other colums contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITER}. The \funp{IT} column denotes the number of Newton iteration steps, within each continuation step.
+The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other columns contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITER}. The \funp{IT} column denotes the number of Newton iteration steps, within each continuation step.
 
 The main continuation proceeds similarly:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -486,7 +482,7 @@ LABEL      NORM         P2              P0              USTAB   IT
   2     9.143658e-01    1.557164e+00    1.101898e+01      0     1
   3     9.144963e-01    1.558277e+00    1.102330e+01      0     1
 \end{lstlisting} \end{quote} } \noindent
-The first column, \funp{LABEL} will be the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characterustic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
+The first column, \funp{LABEL} will be the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characteristic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
 
 \section{Example: Mackey-Glass equation}
 

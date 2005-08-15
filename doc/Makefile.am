@@ -1,4 +1,4 @@
-SUBDIRS = fig
+SUBDIRS = fig html
 EXTRA_DIST = macros.tex ddedoc.cls manual-bibl.bib manual.tex
 
 doc: manual.dvi

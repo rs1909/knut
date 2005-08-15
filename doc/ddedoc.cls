@@ -50,6 +50,8 @@
 \ProvidesClass{ddedoc}
               [2001/04/21 v1.4e
  Standard LaTeX document class]
+\newcommand{\subtitle}[1]{\def\@subtitle{#1}}
+\newcommand{\version}[1]{\def\@version{#1}}
 \newcommand\@ptsize{}
 \newif\if@restonecol
 \newif\if@titlepage
@@ -169,41 +171,35 @@
     }
 
   \newcommand\maketitle{
-  \begin{titlepage}%
-  \let\footnotesize\small
-  \let \footnote \thanks
-  \null\vfil
-  \vskip 60\p@
-  \begin{center}
-  \fbox{
-  \begin{minipage}{0.8\linewidth}
-  \vskip 2em
-  \begin{center}%
-     {\LARGE \bf \@title \par}
-    \vskip 3em%
-    {\large \sf
-     \lineskip .75em%
-      \begin{tabular}[t]{c}%
-        \@author
-      \end{tabular}\par}%
-      \vskip 1.5em%
-    {\large \sl \@date \par}%       % Set date in \large size.
-  \end{center}\par
-  \vskip 3em
-  \end{minipage}
-  }
-  \end{center}
-  \vfil\null
-  \vfill
-  %\begin{figure}[]
-  \begin{center}
-  \includegraphics[scale=0.3]{fig/mit-logo} \hskip 2em
-  \includegraphics[scale=0.18]{fig/bris-logo} \hskip 2em
-  \includegraphics[scale=0.2]{fig/bme-logo.eps}\\
-  \end{center}
-%  \end{figure}
-  \@thanks
-  \end{titlepage}%
+	\begin{titlepage}%
+	\let\footnotesize\small
+	\let \footnote \thanks
+	\null\vfil
+	\vskip 20\p@
+	{ \noindent \ignorespaces \huge \bf \@author \par}
+	\vskip 60\p@
+	{\noindent \ignorespaces \Huge \bf \@title \par} \vskip 0.5em 
+	{\hrule height 2pt}
+	\vskip 0.5em
+	\noindent \ignorespaces
+	\begin{minipage}{0.7\linewidth}
+		{ \Large \bf \@subtitle }
+	\end{minipage}
+	\vskip 30\p@
+	{ \noindent \ignorespaces \large For version \@version{} \par}
+	{ \noindent \ignorespaces \large Last updated: \@date }
+	\vfil\null
+	\vfill
+	{\hrule height 2pt }
+	\vskip .5em
+		\noindent \ignorespaces
+		\begin{minipage}{\linewidth} \sf
+		\Large Budapest University of Technology and Economics \\
+		\large Department of Applied Mechanics \\
+		\normalsize 5 M\H{u}egyetem rkp., H-1111, Hungary 
+		\end{minipage}
+	\@thanks
+	\end{titlepage}%
   \setcounter{footnote}{0}%
   \global\let\thanks\relax
   \global\let\maketitle\relax

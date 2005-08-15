@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>PDDE-CONT</title>
+    <style>h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { background: "#ffffff"; color: black; }</style>
+</head>
+<body>
+<table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
+	<tr>
+		<th bgcolor="#a2c511"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
+	</tr>
+</table>
+
+<h2> Download </h2>
+<ul>
+<p>
+<a href="pdde-cont-@VERSION@.tar.gz"> Download the current version </a>
+</p>
+</ul>
+
+<h2> Documentation </h2> 
+<ul>
+<p>
+<a href="manual.pdf"> User's Manual </a>
+</p>
+</ul>
+
+<h2>
+License
+</h2>
+<ul>
+<p>
+	The software is available free of charge. Copying of the software is governed by the GNU General Public License <a href="http://www.gnu.org/gpl">(GPL)</a>.
+	In addition to the GPL, the author of any scientific or non-scientific publication who used the software is obliged to refer to the User's Manual in the publication where the software or its modified version was used. <a href=#man>[1]</a>.
+</p>
+</ul>
+
+<h2> Related publications </h2> 
+<ul>
+<p>
+<a name=man></a>[1] R. Szalai, <i> PDDE-CONT: A continuation and bifurcation software for 
+delay-differential equations </i> (2005)
+</p>
+<p>
+<a href=http://www.enm.bris.ac.uk/anm/preprints/2004r23.html>[2]</a> R. Szalai, G. Stepan and S.J. Hogan, <i> Continuation of bifurcations in periodic delay differential equations using characteristic matrices</i>, preprint (2005)
+</p>
+</ul>
+
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="50%">Copyright &copy; 2005 <a href="http://www.mm.bme.hu/~szalai">Robert Szalai</a></td>
+<td width="50%" align="right"><div align="right">PDDE-CONT @VERSION@</div></td>
+</tr></table></div></address>
+</body></html>
