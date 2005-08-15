@@ -32,6 +32,8 @@ AC_CONFIG_FILES([Makefile
 	ATLAS/Makefile
 	doc/Makefile
 	doc/fig/Makefile
+	doc/html/Makefile
+	doc/html/index.html
 	demo/Makefile 
 	demo/glass/Makefile 
 	demo/logistic/Makefile 
