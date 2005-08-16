@@ -172,33 +172,39 @@
 
   \newcommand\maketitle{
 	\begin{titlepage}%
-	\let\footnotesize\small
-	\let \footnote \thanks
-	\null\vfil
-	\vskip 20\p@
-	{ \noindent \ignorespaces \huge \bf \@author \par}
-	\vskip 60\p@
-	{\noindent \ignorespaces \Huge \bf \@title \par} \vskip 0.5em 
-	{\hrule height 2pt}
-	\vskip 0.5em
+	\setlength{\unitlength}{1in}
 	\noindent \ignorespaces
-	\begin{minipage}{0.7\linewidth}
-		{ \Large \bf \@subtitle }
-	\end{minipage}
-	\vskip 30\p@
-	{ \noindent \ignorespaces \large For version \@version{} \par}
-	{ \noindent \ignorespaces \large Last updated: \@date }
-	\vfil\null
-	\vfill
-	{\hrule height 2pt }
-	\vskip .5em
+	\begin{picture}(6.25,9.5)(0,0)
+	\put(0,0){\begin{minipage}[b][9.5in]{\linewidth}
+		\let\footnotesize\small
+		\let \footnote \thanks
+		\null\vfil
+		\vskip 20\p@
+		{ \noindent \ignorespaces \Large \bf \@author \par}
+		\vskip 60\p@
+		{\noindent \ignorespaces \Huge \bf \@title \par} \vskip 0.5em 
+		{\hrule height 2pt}
+		\vskip 0.5em
 		\noindent \ignorespaces
-		\begin{minipage}{\linewidth} \sf
-		\Large Budapest University of Technology and Economics \\
-		\large Department of Applied Mechanics \\
-		\normalsize 5 M\H{u}egyetem rkp., H-1111, Hungary 
+		\begin{minipage}{0.7\linewidth}
+			{ \Large \bf \@subtitle }
 		\end{minipage}
-	\@thanks
+		\vskip 30\p@
+		{ \noindent \ignorespaces \large For version \@version{} \par}
+		{ \noindent \ignorespaces \large Last updated: \@date }
+		\vfil\null
+		\vfill
+		{\hrule height 2pt }
+		\vskip .5em
+			\noindent \ignorespaces
+			\begin{minipage}{\linewidth} \sf
+			\Large Budapest University of Technology and Economics \\
+			\large Department of Applied Mechanics \\
+			\normalsize 5 M\H{u}egyetem rkp., H-1111, Hungary 
+			\end{minipage}
+		\@thanks
+	\end{minipage} }
+	\end{picture}
 	\end{titlepage}%
   \setcounter{footnote}{0}%
   \global\let\thanks\relax
