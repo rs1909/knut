@@ -1221,7 +1221,7 @@ int Point::Continue( double ds )
 		
 		Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, qq, qqNu, varMapCont, ds, true );
 				
-		jac->SolveDIRECT( *xx, *rhs );
+		jac->Solve( *xx, *rhs );
 		
 		ContUpdate( *xx );
 		
@@ -1247,7 +1247,7 @@ int Point::Continue( double ds )
 		// updating the tangent
 		jac->AX( *rhs, *xxDot );
 		rhs->getV3()(dim3) = 0.0;
-		jac->SolveDIRECT( *xx, *rhs );
+		jac->Solve( *xx, *rhs );
 		xxDot->getV1() -= xx->getV1();
 		xxDot->getV2() -= xx->getV2();
 		xxDot->getV3() -= xx->getV3();
