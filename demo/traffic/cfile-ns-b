@@ -1,5 +1,5 @@
 sys-traffic.so		SYSNAME
-67			LABEL
+68			LABEL
 3 P1 1 P3		TYPE, P0, NPARX, PARX ....
 40 5 5 1 1		NINT, NDEG, NMUL, STAB, NMAT
 12 12 4 4		NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)

@@ -11,6 +11,7 @@
 */
 	 
 #include "f2c.h"
+#include "cblaswrap.h"
 
 int dneupd_(logical *rvec,char *howmny,logical *select,doublereal *dr,doublereal *di,doublereal *z__,integer *ldz,doublereal *sigmar,doublereal *sigmai,doublereal *workev,char *bmat,integer *n,char *which,integer *nev,doublereal *tol,doublereal *resid,integer *ncv,doublereal *v,integer *ldv,integer *iparam,integer *ipntr,doublereal *workd,doublereal *workl,integer *lworkl,integer *info,ftnlen howmny_len,ftnlen bmat_len,ftnlen which_len);
 
@@ -25,7 +26,7 @@ int dgeevx_(char *balanc,char *jobvl,char *jobvr,char *sense,integer *n,doublere
 int dgeev_(char *jobvl,char *jobvr,integer *n,doublereal *a,integer *lda,doublereal *wr,doublereal *wi,doublereal *vl,integer *ldvl,doublereal *vr,integer *ldvr,doublereal *work,integer *lwork,integer *info,ftnlen jobvl_len,ftnlen jobvr_len);
 
 // from dlamch.c
-doublereal dlamch_(char *cmach,ftnlen cmach_len);
+doublereal 	dlamch_(char *cmach,ftnlen cmach_len);
 
 // static
 static int dstatn_(void);
@@ -101,6 +102,7 @@ static doublereal dlanhs_(char *norm,integer *n,doublereal *a,integer *lda,doubl
 static int dlaswp_(integer *n,doublereal *a,integer *lda,integer *k1,integer *k2,integer *ipiv,integer *incx);
 
 static int dgetf2_(integer *m,integer *n,doublereal *a,integer *lda,integer *ipiv,integer *info);
+
 static doublereal dlantr_(char *norm,char *uplo,char *diag,integer *m,integer *n,doublereal *a,integer *lda,doublereal *work,ftnlen norm_len,ftnlen uplo_len,ftnlen diag_len);
 
 static int dlaqge_(integer *m,integer *n,doublereal *a,integer *lda,doublereal *r__,doublereal *c__,doublereal *rowcnd,doublereal *colcnd,doublereal *amax,char *equed,ftnlen equed_len);
@@ -130,6 +132,7 @@ static int dtrevc_(char *side,char *howmny,logical *select,integer *n,doublereal
 static int dhseqr_(char *job,char *compz,integer *n,integer *ilo,integer *ihi,doublereal *h__,integer *ldh,doublereal *wr,doublereal *wi,doublereal *z__,integer *ldz,doublereal *work,integer *lwork,integer *info,ftnlen job_len,ftnlen compz_len);
 
 static int dorghr_(integer *n,integer *ilo,integer *ihi,doublereal *a,integer *lda,doublereal *tau,doublereal *work,integer *lwork,integer *info);
+
 static integer ilaenv_(integer *ispec,char *name__,char *opts,integer *n1,integer *n2,integer *n3,integer *n4,ftnlen name_len,ftnlen opts_len);
 
 static int dlartg_(doublereal *f,doublereal *g,doublereal *cs,doublereal *sn,doublereal *r__);
@@ -151,6 +154,7 @@ static int dgeequ_(integer *m,integer *n,doublereal *a,integer *lda,doublereal *
 static int dlatrs_(char *uplo,char *trans,char *diag,char *normin,integer *n,doublereal *a,integer *lda,doublereal *x,doublereal *scale,doublereal *cnorm,integer *info,ftnlen uplo_len,ftnlen trans_len,ftnlen diag_len,ftnlen normin_len);
 
 static int dlacon_(integer *n,doublereal *v,doublereal *x,integer *isgn,doublereal *est,integer *kase);
+
 static int drscl_(integer *n,doublereal *sa,doublereal *sx,integer *incx);
 
 static int dgecon_(char *norm,integer *n,doublereal *a,integer *lda,doublereal *anorm,doublereal *rcond,doublereal *work,integer *iwork,integer *info,ftnlen norm_len);
@@ -158,33 +162,10 @@ static int dgecon_(char *norm,integer *n,doublereal *a,integer *lda,doublereal *
 static int dgebal_(char *job,integer *n,doublereal *a,integer *lda,integer *ilo,integer *ihi,doublereal *scale,integer *info,ftnlen job_len);
 
 static int xerbla_(char *srname,integer *info,ftnlen srname_len);
-static logical lsame_(char *ca,char *cb,ftnlen ca_len,ftnlen cb_len);
 
 static int dgebak_(char *job,char *side,integer *n,integer *ilo,integer *ihi,doublereal *scale,integer *m,doublereal *v,integer *ldv,integer *info,ftnlen job_len,ftnlen side_len);
 
-
-// blas routines
-
-int dscal_(integer *, doublereal *, doublereal *, integer *);
-logical lsame_(char *, char *, ftnlen, ftnlen);
-int dswap_(integer *, doublereal *, integer *, doublereal *, integer *);
-integer idamax_(integer *, doublereal *, integer *);
-doublereal dnrm2_(integer *, doublereal *, integer *);
-int drot_(integer *, doublereal *, integer *, doublereal *, integer *, doublereal *, doublereal *);
-int dgemm_(char *, char *, integer *, integer *, integer *, doublereal *, doublereal *, integer *, doublereal *, integer *, doublereal *, doublereal *, integer *, ftnlen, ftnlen);
-int dcopy_(integer *, doublereal *, integer *, doublereal *, integer *);
-int daxpy_(integer *, doublereal *, doublereal *, integer *, doublereal *, integer *);
-int dtrsm_(char *, char *, char *, char *, integer *, integer *, doublereal *, doublereal *, integer *, doublereal *, integer *, ftnlen, ftnlen, ftnlen, ftnlen);
-int dgemv_(char *, integer *, integer *, doublereal *, doublereal *, integer *, doublereal *, integer *, doublereal *, doublereal *, integer *, ftnlen);
-doublereal dasum_(integer *, doublereal *, integer *);
-int dtrmv_(char *, char *, char *, integer *, doublereal *, integer *, doublereal *, integer *, ftnlen, ftnlen, ftnlen); 
-doublereal ddot_(integer *, doublereal *, integer *, doublereal *, integer *);
-int daxpy_(integer *, doublereal *, doublereal *, integer *, doublereal *, integer *);
-int dger_(integer *, integer *, doublereal *, doublereal *, integer *, doublereal *, integer *, doublereal *, integer *);
-int dtrsv_(char *, char *, char *, integer *, doublereal *, integer *, doublereal *, integer *, ftnlen, ftnlen, ftnlen);
-int dtrmm_(char *, char *, char *, char *, integer *, integer *, doublereal *, doublereal *, integer *, doublereal *, integer *, ftnlen, ftnlen, ftnlen, ftnlen);
 doublereal etime_(real *);
-
 
 /* Common Block Declarations */
 
@@ -19534,109 +19515,71 @@ L1100:
 
 } /* ilaenv_ */
 
-static logical lsame_(char *ca, char *cb, ftnlen ca_len, ftnlen cb_len)
-{
-    /* System generated locals */
-    logical ret_val;
-
-    /* Local variables */
-    static integer inta, intb, zcode;
-
-
-/*  -- LAPACK auxiliary routine (version 3.0) -- */
-/*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd., */
-/*     Courant Institute, Argonne National Lab, and Rice University */
-/*     September 30, 1994 */
-
-/*     .. Scalar Arguments .. */
-/*     .. */
-
-/*  Purpose */
-/*  ======= */
-
-/*  LSAME returns .TRUE. if CA is the same letter as CB regardless of */
-/*  case. */
-
-/*  Arguments */
-/*  ========= */
-
-/*  CA      (input) CHARACTER*1 */
-/*  CB      (input) CHARACTER*1 */
-/*          CA and CB specify the single characters to be compared. */
-
-/* ===================================================================== */
-
-/*     .. Intrinsic Functions .. */
-/*     .. */
-/*     .. Local Scalars .. */
-/*     .. */
-/*     .. Executable Statements .. */
-
-/*     Test if the characters are equal */
-
-    ret_val = *(unsigned char *)ca == *(unsigned char *)cb;
-    if (ret_val) {
-	return ret_val;
-    }
-
-/*     Now test for equivalence if both characters are alphabetic. */
-
-    zcode = 'Z';
-
-/*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime */
-/*     machines, on which ICHAR returns a value with bit 8 set. */
-/*     ICHAR('A') on Prime machines returns 193 which is the same as */
-/*     ICHAR('A') on an EBCDIC machine. */
-
-    inta = *(unsigned char *)ca;
-    intb = *(unsigned char *)cb;
-
-    if (zcode == 90 || zcode == 122) {
-
-/*        ASCII is assumed - ZCODE is the ASCII code of either lower or */
-/*        upper case 'Z'. */
-
-	if (inta >= 97 && inta <= 122) {
-	    inta += -32;
-	}
-	if (intb >= 97 && intb <= 122) {
-	    intb += -32;
-	}
-
-    } else if (zcode == 233 || zcode == 169) {
-
-/*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or */
-/*        upper case 'Z'. */
-
-	if (inta >= 129 && inta <= 137 || inta >= 145 && inta <= 153 || inta 
-		>= 162 && inta <= 169) {
-	    inta += 64;
-	}
-	if (intb >= 129 && intb <= 137 || intb >= 145 && intb <= 153 || intb 
-		>= 162 && intb <= 169) {
-	    intb += 64;
-	}
-
-    } else if (zcode == 218 || zcode == 250) {
-
-/*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code */
-/*        plus 128 of either lower or upper case 'Z'. */
-
-	if (inta >= 225 && inta <= 250) {
-	    inta += -32;
-	}
-	if (intb >= 225 && intb <= 250) {
-	    intb += -32;
-	}
-    }
-    ret_val = inta == intb;
-
-/*     RETURN */
-
-/*     End of LSAME */
-
-    return ret_val;
-} /* lsame_ */
+// logical lsame_(char *ca, char *cb, ftnlen ca_len, ftnlen cb_len)
+// {
+// 	logical ret_val;
+// 
+// 	static integer inta, intb, zcode;
+// 
+// 
+// 	ret_val = *(unsigned char *)ca == *(unsigned char *)cb;
+// 	if (ret_val)
+// 	{
+// 		return ret_val;
+// 	}
+// 
+// 	/*     Now test for equivalence if both characters are alphabetic. */
+// 
+// 	zcode = 'Z';
+// 
+// 	/*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime */
+// 	/*     machines, on which ICHAR returns a value with bit 8 set. */
+// 	/*     ICHAR('A') on Prime machines returns 193 which is the same as */
+// 	/*     ICHAR('A') on an EBCDIC machine. */
+// 
+// 	inta = *(unsigned char *)ca;
+// 	intb = *(unsigned char *)cb;
+// 
+// 	if (zcode == 90 || zcode == 122)
+// 	{
+// 		/*        ASCII is assumed - ZCODE is the ASCII code of either lower or */
+// 		/*        upper case 'Z'. */
+// 		if (inta >= 97 && inta <= 122) 
+// 		{
+// 			inta += -32;
+// 		}
+// 		if (intb >= 97 && intb <= 122) 
+// 		{
+// 			intb += -32;
+// 		}
+// 	} else if (zcode == 233 || zcode == 169) 
+// 	{
+// 		/*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or */
+// 		/*        upper case 'Z'. */
+// 		if (inta >= 129 && inta <= 137 || inta >= 145 && inta <= 153 || inta >= 162 && inta <= 169)
+// 		{
+// 			inta += 64;
+// 		}
+// 		if (intb >= 129 && intb <= 137 || intb >= 145 && intb <= 153 || intb >= 162 && intb <= 169) 
+// 		{
+// 			intb += 64;
+// 		}
+// 	} else if (zcode == 218 || zcode == 250) 
+// 	{
+// 		/*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code */
+// 		/*        plus 128 of either lower or upper case 'Z'. */
+// 		if (inta >= 225 && inta <= 250) 
+// 		{
+// 			inta += -32;
+// 		}
+// 		if (intb >= 225 && intb <= 250)
+// 		{
+// 			intb += -32;
+// 		}
+// 	}
+// 	ret_val = inta == intb;
+// 	return ret_val;
+// } /* lsame_ */
 
 static int xerbla_(char *srname, integer *info, ftnlen srname_len)
 {

@@ -1,15 +1,12 @@
 #include "f2c.h"
+#include "cblaswrap.h"
 
 doublereal dlamch_(char *cmach,ftnlen cmach_len);
 
 static int dlamc5_(integer *beta,integer *p,integer *emin,logical *ieee,integer *emax,doublereal *rmax);
-
 static int dlamc4_(integer *emin,doublereal *start,integer *base);
-
 static doublereal dlamc3_(doublereal *a,doublereal *b);
-
 static int dlamc1_(integer *beta,integer *t,logical *rnd,logical *ieee1);
-
 static int dlamc2_(integer *beta,integer *t,logical *rnd,doublereal *eps,integer *emin,doublereal *rmin,integer *emax,doublereal *rmax);
 
 /* Table of constant values */
