@@ -1,4 +1,4 @@
-/* f2c.h  --  Standard Fortran to C header file */
+/* f2c.h -- Standard Fortran to C header file */
 
 /**  barf  [ba:rf]  2.  "He suggested using FORTRAN, and everybody barfed."
 
@@ -13,14 +13,20 @@ typedef char *address;
 typedef short int shortint;
 typedef float real;
 typedef double doublereal;
-typedef struct { real r, i; } complex;
-typedef struct { doublereal r, i; } doublecomplex;
+typedef struct
+{
+	real r, i;
+} complex;
+typedef struct
+{
+	doublereal r, i;
+} doublecomplex;
 typedef long int logical;
 typedef short int shortlogical;
 typedef char logical1;
 typedef char integer1;
 #ifdef INTEGER_STAR_8	/* Adjust for integer*8. */
-typedef long long longint;		/* system-dependent */
+typedef long long longint;		  /* system-dependent */
 typedef unsigned long long ulongint;	/* system-dependent */
 #define qbit_clear(a,b)	((a) & ~((ulongint)1 << (b)))
 #define qbit_set(a,b)	((a) |  ((ulongint)1 << (b)))
@@ -47,18 +53,20 @@ typedef long int ftnlen;
 typedef long int ftnint;
 #endif
 
-/*external read, write*/
+/* external read, write */
 typedef struct
-{	flag cierr;
+{
+	flag cierr;
 	ftnint ciunit;
 	flag ciend;
 	char *cifmt;
 	ftnint cirec;
 } cilist;
 
-/*internal read, write*/
+/* internal read, write */
 typedef struct
-{	flag icierr;
+{
+	flag icierr;
 	char *iciunit;
 	flag iciend;
 	char *icifmt;
@@ -66,9 +74,10 @@ typedef struct
 	ftnint icirnum;
 } icilist;
 
-/*open*/
+/* open */
 typedef struct
-{	flag oerr;
+{
+	flag oerr;
 	ftnint ounit;
 	char *ofnm;
 	ftnlen ofnmlen;
@@ -79,52 +88,56 @@ typedef struct
 	char *oblnk;
 } olist;
 
-/*close*/
+/* close */
 typedef struct
-{	flag cerr;
+{
+	flag cerr;
 	ftnint cunit;
 	char *csta;
 } cllist;
 
-/*rewind, backspace, endfile*/
+/* rewind, backspace, endfile */
 typedef struct
-{	flag aerr;
+{
+	flag aerr;
 	ftnint aunit;
 } alist;
 
 /* inquire */
 typedef struct
-{	flag inerr;
+{
+	flag inerr;
 	ftnint inunit;
 	char *infile;
 	ftnlen infilen;
-	ftnint	*inex;	/*parameters in standard's order*/
-	ftnint	*inopen;
-	ftnint	*innum;
-	ftnint	*innamed;
-	char	*inname;
-	ftnlen	innamlen;
-	char	*inacc;
-	ftnlen	inacclen;
-	char	*inseq;
-	ftnlen	inseqlen;
-	char 	*indir;
-	ftnlen	indirlen;
-	char	*infmt;
-	ftnlen	infmtlen;
-	char	*inform;
-	ftnint	informlen;
-	char	*inunf;
-	ftnlen	inunflen;
-	ftnint	*inrecl;
-	ftnint	*innrec;
-	char	*inblank;
-	ftnlen	inblanklen;
+	ftnint *inex;					  /* parameters in standard's order */
+	ftnint *inopen;
+	ftnint *innum;
+	ftnint *innamed;
+	char *inname;
+	ftnlen innamlen;
+	char *inacc;
+	ftnlen inacclen;
+	char *inseq;
+	ftnlen inseqlen;
+	char *indir;
+	ftnlen indirlen;
+	char *infmt;
+	ftnlen infmtlen;
+	char *inform;
+	ftnint informlen;
+	char *inunf;
+	ftnlen inunflen;
+	ftnint *inrecl;
+	ftnint *innrec;
+	char *inblank;
+	ftnlen inblanklen;
 } inlist;
 
 #define VOID void
 
-union Multitype {	/* for multiple entry points */
+union Multitype
+{										  /* for multiple entry points */
 	integer1 g;
 	shortint h;
 	integer i;
@@ -133,25 +146,27 @@ union Multitype {	/* for multiple entry points */
 	doublereal d;
 	complex c;
 	doublecomplex z;
-	};
+};
 
 typedef union Multitype Multitype;
 
-/*typedef long int Long;*/	/* No longer used; formerly in Namelist */
+																											/* typedef long int Long; *//* No longer used; formerly in Namelist */
 
-struct Vardesc {	/* for Namelist */
+struct Vardesc
+{										  /* for Namelist */
 	char *name;
 	char *addr;
 	ftnlen *dims;
-	int  type;
-	};
+	int type;
+};
 typedef struct Vardesc Vardesc;
 
-struct Namelist {
+struct Namelist
+{
 	char *name;
 	Vardesc **vars;
 	int nvars;
-	};
+};
 typedef struct Namelist Namelist;
 
 #ifndef __cplusplus
@@ -170,35 +185,35 @@ typedef struct Namelist Namelist;
 
 #define F2C_proc_par_types 1
 #ifdef __cplusplus
-typedef int /* Unknown procedure type */ (*U_fp)(...);
-typedef shortint (*J_fp)(...);
-typedef integer (*I_fp)(...);
-typedef real (*R_fp)(...);
-typedef doublereal (*D_fp)(...), (*E_fp)(...);
-typedef /* Complex */ VOID (*C_fp)(...);
-typedef /* Double Complex */ VOID (*Z_fp)(...);
-typedef logical (*L_fp)(...);
-typedef shortlogical (*K_fp)(...);
-typedef /* Character */ VOID (*H_fp)(...);
-typedef /* Subroutine */ int (*S_fp)(...);
+typedef int /* Unknown procedure type */ (*U_fp) (...);
+typedef shortint (*J_fp) (...);
+typedef integer (*I_fp) (...);
+typedef real (*R_fp) (...);
+typedef doublereal (*D_fp) (...), (*E_fp) (...);
+typedef /* Complex */ VOID (*C_fp) (...);
+typedef /* Double Complex */ VOID (*Z_fp) (...);
+typedef logical (*L_fp) (...);
+typedef shortlogical (*K_fp) (...);
+typedef /* Character */ VOID (*H_fp) (...);
+typedef /* Subroutine */ int (*S_fp) (...);
 #else
-typedef int /* Unknown procedure type */ (*U_fp)();
-typedef shortint (*J_fp)();
-typedef integer (*I_fp)();
-typedef real (*R_fp)();
-typedef doublereal (*D_fp)(), (*E_fp)();
-typedef /* Complex */ VOID (*C_fp)();
-typedef /* Double Complex */ VOID (*Z_fp)();
-typedef logical (*L_fp)();
-typedef shortlogical (*K_fp)();
-typedef /* Character */ VOID (*H_fp)();
-typedef /* Subroutine */ int (*S_fp)();
+typedef int /* Unknown procedure type */ (*U_fp) ();
+typedef shortint (*J_fp) ();
+typedef integer (*I_fp) ();
+typedef real (*R_fp) ();
+typedef doublereal (*D_fp) (), (*E_fp) ();
+typedef /* Complex */ VOID (*C_fp) ();
+typedef /* Double Complex */ VOID (*Z_fp) ();
+typedef logical (*L_fp) ();
+typedef shortlogical (*K_fp) ();
+typedef /* Character */ VOID (*H_fp) ();
+typedef /* Subroutine */ int (*S_fp) ();
 #endif
 /* E_fp is for real functions when -R is not specified */
-typedef VOID C_f;	/* complex function */
-typedef VOID H_f;	/* character function */
-typedef VOID Z_f;	/* double complex function */
-typedef doublereal E_f;	/* real function with -R not specified */
+typedef VOID C_f;					  /* complex function */
+typedef VOID H_f;					  /* character function */
+typedef VOID Z_f;					  /* double complex function */
+typedef doublereal E_f;			  /* real function with -R not specified */
 
 /* undef any lower-case symbols that your C compiler predefines, e.g.: */
 

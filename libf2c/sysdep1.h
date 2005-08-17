@@ -51,8 +51,8 @@
 #define FTRUNCATE ftruncate64
 #define STAT stat64
 #define STAT_ST stat64
-#endif /*USE_LARGEFILE*/
-#endif /*NO_LONG_LONG*/
+#endif /* USE_LARGEFILE */
+#endif /* NO_LONG_LONG */
 
 #ifndef NON_UNIX_STDIO
 #ifndef USE_LARGEFILE
@@ -63,4 +63,4 @@
 #endif
 #endif
 
-#endif /*SYSDEP_H_INCLUDED*/
+#endif /* SYSDEP_H_INCLUDED */
