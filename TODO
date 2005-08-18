@@ -11,5 +11,3 @@ Currently it is hardcoded like in DDE-BIFTOOL.
    (not urgent)
 1. using blas for matrix multiplications (not urgent)
 2. the same for sparse matrix multiplication (not urgent)
-3. clarify the output format, what to write? DONE
-4. write documentation DONE

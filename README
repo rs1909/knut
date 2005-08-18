@@ -1,6 +1,12 @@
 For istallation instructions read the manual (manual.pdf),
 which can be found in the doc/ subdirectory.
 
+Future versions:
+Some constants will be added to the `constants file', so that the current files
+will not be compatible with the future versions. After the release of
+version 1.0 the file structures will not change. Till then be cautious and
+check the manual frequently.
+
 BUGS:
 No bugs were reported, yet.
 

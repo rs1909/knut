@@ -28,7 +28,8 @@ body { background: "#ffffff"; color: black; }</style>
 <h2> Documentation </h2> 
 <ul>
 <p>
-<a href="manual.pdf"> User's Manual </a>
+See the <a href="manual.pdf"> User's Manual </a> with plain cover or with a 
+<a href="manual-fancy.pdf"> fancy cover </a>.
 </p>
 </ul>
 
@@ -38,7 +39,7 @@ License
 <ul>
 <p>
 	The software is available free of charge. Copying of the software is governed by the GNU General Public License <a href="http://www.gnu.org/gpl">(GPL)</a>.
-	In addition to the GPL, the author of any scientific or non-scientific publication who used the software is obliged to refer to the User's Manual in the publication where the software or its modified version was used. <a href=#man>[1]</a>.
+	In addition to the GPL, the author of any scientific or non-scientific publication who used the software is obliged to refer to the User's Manual in the publication where the software or its modified version was used <a href=#man>[1]</a>.
 </p>
 </ul>
 
