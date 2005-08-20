@@ -24,6 +24,9 @@ typedef double doublereal;
 
 #ifndef PDDESYS_H
 #include "plot.h"
+extern "C" {
+#include "cspblas.h"
+}
 #endif
 
 using namespace std;
@@ -507,23 +510,35 @@ class Matrix : public Array2D<double>
 
 #ifndef PDDESYS_H
 
-	void AX( double* X, const double* B, double alpha, bool trans ) const;
-  
+	void AX( double* out, const double* in, double alpha, bool trans ) const
+	{
+		cblas_mmx( trans ? Trans : NoTrans, r, c,  m, r, out, in, alpha );
+	}
+	
 	void AX( Vector& X, const Vector& B, double alpha, bool trans ) const 
 	{ 
 		BaseMatrix::AX( X, B, alpha, trans ); 
 	}
 	
-	void AX( Matrix& X, const Matrix& B, double alpha, bool trans ) const;
+	void AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
+	{
+		cblas_mmxm( trans ? Trans : NoTrans, r, c, m, r, out.m, out.r, in.m, in.r, alpha, in.c );
+	}
 	
-	void AXpY( double* out, const double* X, const double* Y, double alpha, double beta, bool trans ) const;
+	void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
+	{
+		cblas_mmxpy( trans ? Trans : NoTrans, r, c, m, r, out, in, alpha, Y, beta );
+	}
 	
 	void AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const 
 	{
-		BaseMatrix::AXpY( out, X, Y, alpha, beta, trans ); 
+		BaseMatrix::AXpY( out, X, Y, alpha, beta, trans );
 	}
 	
-	void AXpY( Matrix& out, const Matrix& X, const Matrix& Y, double alpha, double beta, bool trans ) const;
+	void AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const
+	{
+		cblas_mmxmpym( trans ? Trans : NoTrans, r, c, m, r, out.m, out.r, in.m, in.r, alpha, Y.m, Y.r, beta, Y.c );
+	}
 
 	void Eigval( Vector& re, Vector& im );
 	void Eigval( Vector& re, Vector& im, Matrix& lev, Matrix& rev );

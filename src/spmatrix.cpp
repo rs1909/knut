@@ -38,11 +38,12 @@ extern "C" {
 //                                                                           //
 // **************************************************************************//
 
-void SpMatrix::Init( char F, int n_, int nz )
+void SpMatrix::Init( char F, int n_, int m_, int nz )
 {
 	if( (F != 'R')&&(F != 'C') ) cout<<"SpMatrix::CONSTRUCTOR: invalid format specification.\n";
 	format = F;
 	n = 0;
+	m = m_;
 	size = nz;
 	Ap = new int[n_+1];
 	Ai = new int[nz];
@@ -55,6 +56,7 @@ void SpMatrix::Init( const SpMatrix& M )
 {
 	format = M.format;
 	n = M.n;
+	m = M.m;
 	size = M.size;
 	
 	Ap = new int[M.n+1];
@@ -99,311 +101,25 @@ void SpMatrix::Clear(char F)
 	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
 }
 
-// // multiplictation for row ordered OR transposed multiplication for column ordered
-// void inline spmulR( double* out, const double* in, const int* Ap, const int* Ai, const int* Ax )
-// {
-// 	for( int j = 0; j < this->n; j++ )
-// 	{
-// 		out[j] = 0.0;
-// 		for( int k = Ap[j]; k < Ap[j+1]; k++ )
-// 		{
-// #ifdef DEBUG
-// 			if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-// #endif
-// 			out[j] += Ax[k]*in[Ai[k]];
-// 		}
-// 	}
-// }
-// 
-// // multiplictation for column ordered OR transposed multiplication for row ordered
-// void inline spmulC( double* out, const double* in, const int* Ap, const int* Ai, const int* Ax )
-// {
-// 	for( int i = 0; i < this->n; i++ ) out[i] = 0.0;
-// 	for( int j = 0; j < this->n; j++ )
-// 	{
-// 		for( int k = Ap[j]; k < Ap[j+1]; k++ )
-// 		{
-// #ifdef DEBUG
-// 			if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-// #endif
-// 			out[Ai[k]] += Ax[k]*in[j];
-// 		}
-// 	}
-// }
-
-// redefinition of purely virtual functions
-
-void SpMatrix::AX( double* out, const double* in, double alpha, bool trans ) const
-{
-	// ez itt rossz, mert nincs megadva a vektorok merete, vagy a matrix masik dimenzioja
-	if( alpha == 1.0 )
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int i = 0; i < this->n; i++ ) out[i] = 0.0;
-			for( int j = 0; j < this->n; j++ )
-			{
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-#endif
-					out[Ai[k]] += Ax[k]*in[j];
-				}
-			}
-		}else
-		{
-			// std::cout<<"SpAXt";
-			for( int j = 0; j < this->n; j++ )
-			{
-				out[j] = 0.0;
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-#endif
-					out[j] += Ax[k]*in[Ai[k]];
-				}
-			}
-		}
-	}else
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int i = 0; i < this->n; i++ ) out[i] = 0.0;
-			for( int j = 0; j < this->n; j++ )
-			{
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-#endif
-					out[Ai[k]] += alpha*Ax[k]*in[j];
-				}
-			}
-		}else
-		{
-			for( int j = 0; j < this->n; j++ )
-			{
-				out[j] = 0.0;
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AX bd\n"; throw(1); }
-#endif
-					out[j] += alpha*Ax[k]*in[Ai[k]];
-				}
-			}
-		}
-	}
-}
-
-void SpMatrix::AXpY( double* out, const double* in, const double* C, double alpha, double beta, bool trans ) const
-{
-	if( alpha == 1.0 ){
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int i = 0; i < this->n; i++ ) out[i] = beta*C[i];
-			for( int j = 0; j < this->n; j++ )
-			{
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AXpY bd\n"; throw(1); }
-#endif
-					out[Ai[k]] += Ax[k]*in[j];
-				}
-			}
-		}else
-		{
-			for( int j = 0; j < this->n; j++ )
-			{
-				out[j] = beta*C[j];
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AXpY bd\n"; throw(1); }
-#endif
-					out[j] += Ax[k]*in[Ai[k]];
-				}
-			}
-		}
-	}else
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int i = 0; i < this->n; i++ ) out[i] = beta*C[i];
-			for( int j = 0; j < this->n; j++ )
-			{
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AXpY bd\n"; throw(1); }
-#endif
-					out[Ai[k]] += alpha*Ax[k]*in[j];
-				}
-			}
-		}else
-		{
-			for( int j = 0; j < this->n; j++ )
-			{
-				out[j] = beta*C[j];
-				for( int k = Ap[j]; k < Ap[j+1]; k++ )
-				{
-#ifdef DEBUG
-					if( (Ai[k] < 0)||(Ai[k] >= this->n) ){ std::cout<<"Sp::AXpY bd\n"; throw(1); }
-#endif
-					out[j] += alpha*Ax[k]*in[Ai[k]];
-				}
-			}
-		}
-	}
-}
-
-void SpMatrix::AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
-{
-	if( alpha == 1.0 )
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int i = 0; i < out.Row(); i++ ) out(i,c) = 0.0;
-				for( int j = 0; j < this->n; j++ )
-				{
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(Ai[k],c) += Ax[k]*in(j,c);
-					}
-				}
-			}
-		}else
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int j = 0; j < this->n; j++ )
-				{
-					out(j,c) = 0.0;
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(j,c) += Ax[k]*in(Ai[k],c);
-					}
-				}
-			}
-		}
-	}else
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int i = 0; i < out.Row(); i++ ) out(i,c) = 0.0;
-				for( int j = 0; j < this->n; j++ )
-				{
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(Ai[k],c) += alpha*Ax[k]*in(j,c);
-					}
-				}
-			}
-		}else
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int j = 0; j < this->n; j++ )
-				{
-					out(j,c) = 0.0;
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(j,c) += alpha*Ax[k]*in(Ai[k],c);
-					}
-				}
-			}
-		}
-	}
-}
-
-void SpMatrix::AXpY( Matrix& out, const Matrix& in, const Matrix& C, double alpha, double beta, bool trans ) const
-{
-	if( alpha == 1.0 )
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int i = 0; i < in.Row(); i++ ) out(i,c) = beta*C(i,c);
-				for( int j = 0; j < in.Row(); j++ )
-				{
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(Ai[k],c) += Ax[k]*in(j,c);
-					}
-				}
-			}
-		}else
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int j = 0; j < this->n; j++ )
-				{
-					out(j,c) = beta*C(j,c);
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(j,c) += Ax[k]*in(Ai[k],c);
-					}
-				}
-			}
-		}
-	}else
-	{
-		if( ((format == 'C')&&(trans == false))||((format == 'R')&&(trans == true)) )
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int i = 0; i < in.Row(); i++ ) out(i,c) = beta*C(i,c);
-				for( int j = 0; j < in.Row(); j++ )
-				{
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(Ai[k],c) += alpha*Ax[k]*in(j,c);
-					}
-				}
-			}
-		}else
-		{
-			for( int c = 0; c < in.Col(); c++ )
-			{
-				for( int j = 0; j < this->n; j++ )
-				{
-					out(j,c) = beta*C(j,c);
-					for( int k = Ap[j]; k < Ap[j+1]; k++ )
-					{
-						out(j,c) += alpha*Ax[k]*in(Ai[k],c);
-					}
-				}
-			}
-		}
-	}
-}
-// end of the purely virtual functions
-
 void SpMatrix::Swap()
 {
 	int *Rp = new int[n+1];
 	int *Ri = new int[size];
 	double *Rx = new double[size];
 	
-	umfpack_di_transpose( n, n, Ap, Ai, Ax, 0, 0, Rp, Ri, Rx );
+	umfpack_di_transpose( n, m, Ap, Ai, Ax, 0, 0, Rp, Ri, Rx );
 	
-	delete []Ap; 
-	delete []Ai; 
+	delete []Ap;
+	delete []Ai;
 	delete []Ax;
 	
-	Ap = Rp; 
-	Ai = Ri; 
+	Ap = Rp;
+	Ai = Ri;
 	Ax = Rx;
 	
 	if( format == 'C' ) format = 'R'; else format = 'C';
+	int nt = n;
+	n = m; m = nt;
 }
 
 void SpMatrix::StrPlot( GnuPlot& pl )
@@ -440,7 +156,22 @@ void SpMatrix::Print()
 //                                                                           //
 // **************************************************************************//
 
-SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nz ), BaseFact()
+SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz ), BaseFact()
+{
+	fact = false;
+
+	Numeric = 0;
+
+	Wi = new int[5*nn_+1];
+	W  = new double[10*nn_+1];
+  
+	umfpack_di_defaults(Control);
+	Control[UMFPACK_IRSTEP] = 0;
+	Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC;
+// 	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
+}
+
+SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nn_, nz ), BaseFact()
 {
 	fact = false;
 
@@ -601,7 +332,6 @@ void SpFact::Solve( Matrix& x, const Matrix &b, bool trans )
 		status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x.m+i*x.r, b.m+i*b.r, Numeric, Control, 0, Wi, W);
 	}
 }
-
 
 void StabMatrix::Eigval( Vector& wr, Vector& wi )
 {

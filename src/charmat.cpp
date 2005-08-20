@@ -127,7 +127,7 @@ void CharMat::Switch( Vector& tan, NColloc& /*col*/ )
 CharMatCPLX::CharMatCPLX( NColloc& col ) : 
 	phi( 2*NDIM*(NDEG*NINT+1) ),
 	AmzB( 'R', 2*NDIM*(NDEG*NINT+1), 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
-	AmzB_x( 'R', 2*NDIM*(NDEG*NINT+1), 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
+	AmzB_x( 'R', 2*NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1), 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
 	AmzB_p( 2*NDIM*(NDEG*NINT+1) ),
 	AmzB_z( 2*NDIM*(NDEG*NINT+1) ),
 	phiData( 2*NDEG*NINT, NDIM, NTAU+1 )

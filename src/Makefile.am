@@ -1,5 +1,6 @@
 bin_PROGRAMS = ../bin/pdde
-___bin_pdde_SOURCES =	main.cpp charmat.cpp plot.cpp hypermatrix.cpp ncolloc.cpp torcolloc.cpp point.cpp torpoint.cpp spmatrix.cpp matrix.cpp \
+___bin_pdde_SOURCES =	main.cpp charmat.cpp plot.cpp ncolloc.cpp torcolloc.cpp point.cpp torpoint.cpp \
+			matrix.cpp cspblas.c cspblas.h spmatrix.cpp hypermatrix.cpp \
 			charmat.h hypermatrix.h matrix.h ncolloc.h torcolloc.h pddesys.h plot.h point.h torpoint.h spmatrix.h \
 			system.cpp system.h pointtype.h
 incdir = $(includedir)

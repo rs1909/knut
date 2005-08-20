@@ -1,5 +1,5 @@
 sys-milloneup.so	SYSNAME
-46			LABEL
+47			LABEL
 3 P2 1 P0		TYPE, P0, NPARX, PARX ....
 100 4 5	1 1		NINT, NDEG, NMUL, STAB, NMAT
 12 12 4 4		NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)

@@ -757,19 +757,20 @@ int Point::Start(  )
 							}
 						}
 					}
-					double nrm = sqrt(mRe(imin)*mRe(imin) + mIm(imin)*mIm(imin));
+					double zRe = mRe(imin), zIm = fabs(mIm(imin));
+					double nrm = sqrt( zRe*zRe + zIm*zIm );
 					
-					std::cout<<"mRe(imin) "<<mRe(imin)<<" mIm(imin) "<<mIm(imin)<<" nrm: "<<nrm<<"\n";
+					std::cout<<"mRe(imin) "<<zRe<<" mIm(imin) "<<zIm<<" nrm: "<<nrm<<"\n";
 					
-					charMat->Init( colloc, par, solData, mRe(imin)/nrm, mIm(imin)/nrm );
+					charMat->Init( colloc, par, solData, zRe/nrm, zIm/nrm );
 					charMat->Delta( jac->getA22(), colloc );
-					if( mRe(imin) > 0 )
+					if( zRe > 0 )
 					{
-						par(NPAR+ParAngle) = atan( fabs(mIm(imin)/mRe(imin)) );
+						par(NPAR+ParAngle) = atan( zIm/zRe );
 					}
 					else
 					{
-						par(NPAR+ParAngle) = atan( fabs(mRe(imin)/mIm(imin)) ) + M_PI/2.0;
+						par(NPAR+ParAngle) = atan( zRe/zIm ) + M_PI/2.0;
 					}
 // 					std::cout<<"COS "<<cos(par(NPAR+ParAngle))<<" SIN "<<sin(par(NPAR+ParAngle))<<"\n";
 				}

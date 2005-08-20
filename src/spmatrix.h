@@ -16,6 +16,7 @@
 
 extern "C" {
 
+#include "cspblas.h"
 #include "umfpack.h"
 
 }
@@ -33,6 +34,7 @@ class SpMatrix : virtual public BaseMatrix
 	
 		char format;
 		int n;
+		int m;
 		int size;
 		int *Ap;
 		int *Ai;
@@ -40,33 +42,49 @@ class SpMatrix : virtual public BaseMatrix
 
 	public:
 		
-		SpMatrix( ) : format('R'), n(0), size(0), Ap(0), Ai(0), Ax(0) { }
-		SpMatrix( char F, int n_, int nz ) { Init( F, n_, nz ); }
+		SpMatrix( ) : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0) { }
+		SpMatrix( char F, int n_, int m_, int nz ) { Init( F, n_, m_, nz ); }
+		SpMatrix( char F, int n_, int nz ) { Init( F, n_, n_, nz ); }
 		SpMatrix( const SpMatrix& M ) : BaseMatrix() { Init( M ); }
 		virtual ~SpMatrix();
 		
-		void Init( char F, int n_, int nz );
+		void Init( char F, int n_, int m_, int nz );
 		void Init( const SpMatrix& M );
 
+		void AX( double* out, const double* in, double alpha, bool trans ) const
+		{
+			cspblas_mmx( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out, in, alpha );
+		}
 		
-		void AX( double* X, const double* B, double alpha, bool trans ) const;
-		void AX( Vector& X, const Vector& B, double alpha, bool trans ) const 
-		{ 
-			BaseMatrix::AX( X, B, alpha, trans ); 
+		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
+		{
+			cspblas_mmxpy( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out, in, alpha, Y, beta );
+		}
+		
+		void AX( Vector& X, const Vector& B, double alpha, bool trans ) const
+		{
+			BaseMatrix::AX( X, B, alpha, trans );
 		}
 	
-		void AX( Matrix& X, const Matrix& B, double alpha, bool trans ) const;
-		void AXpY( double* out, const double* X, const double* Y, double alpha, double beta, bool trans ) const;
+		void AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
+		{
+			cspblas_mmxm( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out.m, out.r, in.m, in.r, alpha, in.c );
+		}
+		
+		void AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const
+		{
+			cspblas_mmxmpym( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out.m, out.r, in.m, in.r, alpha, Y.m, Y.r, beta, in.c );
+		}
+		
 		void AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const 
-		{ 
-			BaseMatrix::AXpY( out, X, Y, alpha, beta, trans ); 
+		{
+			BaseMatrix::AXpY( out, X, Y, alpha, beta, trans );
 		}
 	
-		void AXpY( Matrix& out, const Matrix& X, const Matrix& Y, double alpha, double beta, bool trans ) const;
-    
-		int Size() const { return n; }
-		int Row() const { return n; }
-		int Col() const { return n; }
+		
+		// int Size() const { if( format=='Creturn n; }
+		int Row() const { if( format == 'R' ) return n; else return m; }
+		int Col() const { if( format == 'R' ) return m; else return n; }
 		
 		virtual void Clear();
 		virtual void Clear(char F);
@@ -136,31 +154,7 @@ class SpMatrix : virtual public BaseMatrix
 		void StrPlot( GnuPlot& pl );
 		void PrintAp(){ for(int i=0; i<n+1; i++) cout<<Ap[i]<<'\t'; cout<<'\n'; }
 		void Print();
-  
-		// friend void GenEigval( SpFact& A, SpMatrix& B, Vector& wr, Vector& wi );
-
-//		friend class SpFact;
 };
-
-// for 1 par continuation
-// void BEMSolve(    BaseFact&   A,   Vector&   B, 
-//                   Vector&     C,   double&   D,
-//                   Vector&     F,   double&   G,
-//                   Vector&     X,   double&   Y );
-// void BEMWSolve(   BaseFact&   A,   Matrix&   B, 
-//                   Matrix&     C,   Matrix&   D,
-//                   Vector&     F,   Vector&   G,
-//                   Vector&     X,   Vector&   Y );
-// void GMBESolve(   BaseFact&   A11,                Vector& A13,
-//                   BaseMatrix& A21, BaseFact& A22, Vector& A23,
-//                   Vector&     A31, Vector&   A32, double& A33,
-//                   Vector&     F1,  Vector&   F2,  double& F3,
-//                   Vector&     X1,  Vector&   X2,  double& X3 );
-// void GMBEWSolve(  BaseFact&   A11,                Matrix& A13,
-//                   BaseMatrix& A21, BaseFact& A22, Matrix& A23,
-//                   Matrix&     A31, Matrix&   A32, Matrix& A33,
-//                   Vector&     F1,  Vector&   F2,  Vector& F3,
-//                   Vector&     X1,  Vector&   X2,  Vector& X3 );
 
 // **************************************************************************//
 //                                                                           //
@@ -182,6 +176,7 @@ class SpFact : public SpMatrix, public BaseFact
 		
 	public:
 	
+		SpFact( char F, int n_, int m_, int nz );
 		SpFact( char F, int n_, int nz );
 		SpFact( SpMatrix& M );
 		SpFact( SpFact& ) : BaseMatrix(), SpMatrix( 'F', 1, 1 ), BaseFact()
@@ -194,25 +189,25 @@ class SpFact : public SpMatrix, public BaseFact
 		int  Row() const { return SpMatrix::Row(); }
 		int  Col() const { return SpMatrix::Col(); }
 		void AX( double* X, const double* B, double alpha, bool trans ) const 
-		{ 
-			SpMatrix::AX( X, B, alpha, trans ); 
+		{
+			SpMatrix::AX( X, B, alpha, trans );
 		}
 	
 		void AX( Matrix& X, const Matrix& B, double alpha, bool trans ) const 
 		{ 
-			SpMatrix::AX( X, B, alpha, trans ); 
+			SpMatrix::AX( X, B, alpha, trans );
 		}
 	
 		void AXpY( double* out, const double* X, double* Y, double alpha, double beta, bool trans ) const 
 		{ 
-			SpMatrix::AXpY( out, X, Y, alpha, beta, trans ); 
+			SpMatrix::AXpY( out, X, Y, alpha, beta, trans );
 		}
 	
 		void AXpY( Matrix& out, const Matrix& X, Matrix& Y, double alpha, double beta, bool trans ) const 
 		{ 
-			SpMatrix::AXpY( out, X, Y, alpha, beta, trans ); 
+			SpMatrix::AXpY( out, X, Y, alpha, beta, trans );
 		}
-  
+		
 		void SetIter( int N ){ Control[UMFPACK_IRSTEP] = N; }
 		void Clear( );
 		void Clear( char F );
@@ -238,7 +233,7 @@ class StabMatrix
 	
 		StabMatrix( int nmat_, int n_, int nz ) : A0( 'R', n_,  nz ), AI(nmat_)
 		{
-			for( int i=0; i<AI.Size(); i++ ) AI(i).Init( 'R', n_, nz );
+			for( int i=0; i<AI.Size(); i++ ) AI(i).Init( 'R', n_, n_, nz );
 			RESID = new double[ nmat_ * n_ + 1 ];
 			isINIT = false;
 		}
