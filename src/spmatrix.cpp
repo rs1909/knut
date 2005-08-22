@@ -38,41 +38,6 @@ extern "C" {
 //                                                                           //
 // **************************************************************************//
 
-void SpMatrix::Init( char F, int n_, int m_, int nz )
-{
-	if( (F != 'R')&&(F != 'C') ) cout<<"SpMatrix::CONSTRUCTOR: invalid format specification.\n";
-	format = F;
-	n = 0;
-	m = m_;
-	size = nz;
-	Ap = new int[n_+1];
-	Ai = new int[nz];
-	Ax = new double[nz];
-	for( int i = 0; i < nz; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
-	for( int i = 0; i < n_+1; i++ ){ Ap[i] = 0; }
-}
-
-void SpMatrix::Init( const SpMatrix& M )
-{
-	format = M.format;
-	n = M.n;
-	m = M.m;
-	size = M.size;
-	
-	Ap = new int[M.n+1];
-	Ai = new int[size];
-	Ax = new double[size];
-	for( int i = 0; i < size; i++ ){ Ai[i] = M.Ai[i]; Ax[i] = M.Ax[i]; }
-	for( int i = 0; i < n+1; i++ ){ Ap[i] = M.Ap[i]; }
-}
-
-SpMatrix::~SpMatrix()
-{
-	delete []Ap;
-	delete []Ai;
-	delete []Ax;
-}
-
 void SpMatrix::Check()
 {
 	for( int j = 0; j < n; j++ )
@@ -82,23 +47,6 @@ void SpMatrix::Check()
 			if( Ai[k-1] >= Ai[k] ) cout<<"SpMatrix::Check(): "<<j<<","<<Ai[k-1]<<"\n";
 		}
 	}
-}
-
-void SpMatrix::Clear()
-{
-	
-	for( int i = 0; i < n+1; i++ ){ Ap[i] = 0; }
-	n = 0;
-	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
-}
-
-void SpMatrix::Clear(char F)
-{
-	
-	for( int i = 0; i < n+1; i++ ){ Ap[i] = 0; }
-	n = 0;
-	format = F;
-	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
 }
 
 void SpMatrix::Swap()
@@ -156,7 +104,7 @@ void SpMatrix::Print()
 //                                                                           //
 // **************************************************************************//
 
-SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz ), BaseFact()
+SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz )
 {
 	fact = false;
 
@@ -171,7 +119,7 @@ SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz )
 // 	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
 }
 
-SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nn_, nz ), BaseFact()
+SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nn_, nz )
 {
 	fact = false;
 
@@ -186,15 +134,15 @@ SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nn_, nz ), BaseFac
 // 	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
 }
 
-SpFact::SpFact( SpMatrix& M ) : SpMatrix( M ), BaseFact()
+SpFact::SpFact( SpMatrix& M ) : SpMatrix( M )
 {
 	fact = false;
-  
+	
 	Numeric = 0;
 
 	Wi = new int[5*n+1];
 	W  = new double[10*n+1];
-  
+	
 	umfpack_di_defaults(Control);
 	Control[UMFPACK_IRSTEP] = 0;
 	Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC;
@@ -211,7 +159,7 @@ SpFact::~SpFact()
 }
 
 void SpFact::Clear( )
-{ 
+{
 	SpMatrix::Clear( ); 
 	if( Numeric != 0 )
 	{
@@ -223,7 +171,7 @@ void SpFact::Clear( )
 }
 
 void SpFact::Clear( char F )
-{ 
+{
 	SpMatrix::Clear( F ); 
 	if( Numeric != 0 )
 	{
@@ -269,7 +217,7 @@ void SpFact::Solve( double* x, double* b, bool trans )
 	int status,sys;
 	
 	if( format == 'C' )
-	{ 
+	{
 		if( trans ) sys = UMFPACK_At; else sys = UMFPACK_A; 
 	}else
 	{
@@ -326,7 +274,7 @@ void SpFact::Solve( Matrix& x, const Matrix &b, bool trans )
 			return;
 		}
 	}
-  
+	
 	for( int i = 0; i < b.c; i++ )
 	{
 		status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x.m+i*x.r, b.m+i*b.r, Numeric, Control, 0, Wi, W);

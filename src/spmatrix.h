@@ -27,7 +27,7 @@ extern "C" {
 //                                                                           //
 // **************************************************************************//
 
-class SpMatrix : virtual public BaseMatrix
+class SpMatrix
 {
 	
 	protected:
@@ -45,46 +45,48 @@ class SpMatrix : virtual public BaseMatrix
 		SpMatrix( ) : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0) { }
 		SpMatrix( char F, int n_, int m_, int nz ) { Init( F, n_, m_, nz ); }
 		SpMatrix( char F, int n_, int nz ) { Init( F, n_, n_, nz ); }
-		SpMatrix( const SpMatrix& M ) : BaseMatrix() { Init( M ); }
+		SpMatrix( const SpMatrix& M ) /*: BaseMatrix()*/ { Init( M ); }
 		virtual ~SpMatrix();
 		
 		void Init( char F, int n_, int m_, int nz );
 		void Init( const SpMatrix& M );
 
-		void AX( double* out, const double* in, double alpha, bool trans ) const
+		virtual void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
 		{
-			cspblas_mmx( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out, in, alpha );
+			cspblas_mmx( format, trans, n, m, Ap, Ai,Ax, out, in, alpha );
+		}
+		virtual void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
+		{
+			cspblas_mmxpy( format, trans, n, m, Ap, Ai, Ax, out, in, alpha, Y, beta );
+		}
+		virtual void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
+		{
+			cspblas_mmxm( format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, nrhs );
+		}
+		virtual void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha,
+		                      const double* Y, int ldY, double beta, int nrhs ) const
+		{
+			cspblas_mmxmpym( format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 		}
 		
-		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
-		{
-			cspblas_mmxpy( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out, in, alpha, Y, beta );
-		}
+		__op_mul_vec<SpMatrix,Vector> operator*( Vector& v ) { return __op_mul_vec<SpMatrix,Vector>( *this, v ); }
+		__op_mul_vec<SpMatrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<SpMatrix,Matrix>( *this, v ); }
+		__vec_trans<SpMatrix>         operator!( ) { return __vec_trans<SpMatrix>( *this ); }
 		
-		void AX( Vector& X, const Vector& B, double alpha, bool trans ) const
-		{
-			BaseMatrix::AX( X, B, alpha, trans );
-		}
-	
-		void AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
-		{
-			cspblas_mmxm( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out.m, out.r, in.m, in.r, alpha, in.c );
-		}
+		void AX( double* out, const double* in, double alpha, bool trans ) const;
+		void AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const;
+		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
+		void AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const;
 		
-		void AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const
-		{
-			cspblas_mmxmpym( format, trans ? Trans : NoTrans, n, m, Ap, Ai, Ax, out.m, out.r, in.m, in.r, alpha, Y.m, Y.r, beta, in.c );
-		}
+		// with Vectors
+		void AX( Vector& X, const Vector& B, double alpha, bool trans ) const;
+		void AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const;
 		
-		void AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const 
-		{
-			BaseMatrix::AXpY( out, X, Y, alpha, beta, trans );
-		}
-	
-		
-		// int Size() const { if( format=='Creturn n; }
-		int Row() const { if( format == 'R' ) return n; else return m; }
-		int Col() const { if( format == 'R' ) return m; else return n; }
+		// other variants
+		void AX( Vector& X, const Vector& B ) const { this->AX( X, B, 1.0, false ); }
+
+		int Row() const;
+		int Col() const;
 		
 		virtual void Clear();
 		virtual void Clear(char F);
@@ -95,56 +97,13 @@ class SpMatrix : virtual public BaseMatrix
 		void AddC( int n_, int *idx, double *vec );
 		void AddR( int n_, int *idx, double *vec );
 		
-		int NewL( int size_ )
-		{
-			n++; Ap[n] = Ap[n-1] + size_;
-			return n-1;
-		}
+		int NewL( int size_ );
 		
-		int& WrLi( int l, int e )
-		{
-#ifdef DEBUG
-			if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
-			{
-#endif
- 				return Ai[Ap[l]+e];
-#ifdef DEBUG
-			}else
-			{
-				cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ai[Ap[l]+e];
-			}
-#endif
-		}
+		int& WrLi( int l, int e );
 		
-		double& WrLx( int l, int e )
-		{
-#ifdef DEBUG
-			if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
-			{
-#endif
-				return Ax[Ap[l]+e];
-#ifdef DEBUG
-			}else
-			{
-				cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ax[Ap[l]+e];
-			}
-#endif
-		}
+		double& WrLx( int l, int e );
 		
-		int GetL( int n_ )
-		{
-#ifdef DEBUG
-			if( n_ < n )
-			{
-#endif
-				return Ap[n_+1] - Ap[n_];
-#ifdef DEBUG
-			}else
-			{
-				cout<<"SpMatrix::GetL: Error\n"; return -1;
-			}
-#endif
-		}
+		int GetL( int n_ );
 		
 		int GetNZ(){ return Ap[n]; }
 		int GetN(){ return n; }
@@ -162,7 +121,7 @@ class SpMatrix : virtual public BaseMatrix
 //                                                                           //
 // **************************************************************************//
 
-class SpFact : public SpMatrix, public BaseFact
+class SpFact : public SpMatrix
 {
 	private:
 	
@@ -179,34 +138,13 @@ class SpFact : public SpMatrix, public BaseFact
 		SpFact( char F, int n_, int m_, int nz );
 		SpFact( char F, int n_, int nz );
 		SpFact( SpMatrix& M );
-		SpFact( SpFact& ) : BaseMatrix(), SpMatrix( 'F', 1, 1 ), BaseFact()
+		SpFact( SpFact& ) : SpMatrix( 'F', 1, 1 )
 		{
 			cout<<"SpFact::SpFact(SpFact&): not implemented\n";
 		}
 		~SpFact();
 
-		void New() { fact = false; }  
-		int  Row() const { return SpMatrix::Row(); }
-		int  Col() const { return SpMatrix::Col(); }
-		void AX( double* X, const double* B, double alpha, bool trans ) const 
-		{
-			SpMatrix::AX( X, B, alpha, trans );
-		}
-	
-		void AX( Matrix& X, const Matrix& B, double alpha, bool trans ) const 
-		{ 
-			SpMatrix::AX( X, B, alpha, trans );
-		}
-	
-		void AXpY( double* out, const double* X, double* Y, double alpha, double beta, bool trans ) const 
-		{ 
-			SpMatrix::AXpY( out, X, Y, alpha, beta, trans );
-		}
-	
-		void AXpY( Matrix& out, const Matrix& X, Matrix& Y, double alpha, double beta, bool trans ) const 
-		{ 
-			SpMatrix::AXpY( out, X, Y, alpha, beta, trans );
-		}
+		void New() { fact = false; }
 		
 		void SetIter( int N ){ Control[UMFPACK_IRSTEP] = N; }
 		void Clear( );
@@ -217,8 +155,7 @@ class SpFact : public SpMatrix, public BaseFact
 		void Solve( double* x, double* b, bool trans = false );
 		void Solve( Vector& x, const Vector& b, bool trans = false );
 		void Solve( Matrix& x, const Matrix& b, bool trans = false );
-
-		// friend void GenEigval( SpFact& A, SpMatrix& B, Vector& wr, Vector& wi );
+		
 	private:
 		void Fact();
 };
@@ -255,6 +192,303 @@ class StabMatrix
 		bool    isINIT;
 };
 
-// void GenEigval( SpFact& A, SpMatrix& B, Vector& wr, Vector& wi );
+// Implementation of SpMatrix
+
+inline void SpMatrix::Init( char F, int n_, int m_, int nz )
+{
+	if( (F != 'R')&&(F != 'C') ) cout<<"SpMatrix::CONSTRUCTOR: invalid format specification.\n";
+	format = F;
+	n = 0;
+	m = m_;
+	size = nz;
+	Ap = new int[n_+1];
+	Ai = new int[nz];
+	Ax = new double[nz];
+	for( int i = 0; i < nz; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
+	for( int i = 0; i < n_+1; i++ ){ Ap[i] = 0; }
+}
+
+inline void SpMatrix::Init( const SpMatrix& M )
+{
+	format = M.format;
+	n = M.n;
+	m = M.m;
+	size = M.size;
+	
+	Ap = new int[M.n+1];
+	Ai = new int[size];
+	Ax = new double[size];
+	for( int i = 0; i < size; i++ ){ Ai[i] = M.Ai[i]; Ax[i] = M.Ax[i]; }
+	for( int i = 0; i < n+1; i++ ){ Ap[i] = M.Ap[i]; }
+}
+
+inline SpMatrix::~SpMatrix()
+{
+	delete []Ap;
+	delete []Ai;
+	delete []Ax;
+}
+
+inline void SpMatrix::Clear()
+{
+	
+	for( int i = 0; i < n+1; i++ ){ Ap[i] = 0; }
+	n = 0;
+	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
+}
+
+inline void SpMatrix::Clear(char F)
+{
+	
+	for( int i = 0; i < n+1; i++ ){ Ap[i] = 0; }
+	n = 0;
+	format = F;
+	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
+}
+
+inline int SpMatrix::Row() const { if( format == 'R' ) return n; else return m; }
+inline int SpMatrix::Col() const { if( format == 'R' ) return m; else return n; }
+
+inline int SpMatrix::NewL( int size_ )
+{
+	n++; Ap[n] = Ap[n-1] + size_;
+	return n-1;
+}
+
+inline int& SpMatrix::WrLi( int l, int e )
+{
+#ifdef DEBUG
+	if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
+	{
+#endif
+		return Ai[Ap[l]+e];
+#ifdef DEBUG
+	}else
+	{
+		cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ai[Ap[l]+e];
+	}
+#endif
+}
+
+inline double& SpMatrix::WrLx( int l, int e )
+{
+#ifdef DEBUG
+	if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
+	{
+#endif
+		return Ax[Ap[l]+e];
+#ifdef DEBUG
+	}else
+	{
+		cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ax[Ap[l]+e];
+	}
+#endif
+}
+
+inline int SpMatrix::GetL( int n_ )
+{
+#ifdef DEBUG
+	if( n_ < n )
+	{
+#endif
+		return Ap[n_+1] - Ap[n_];
+#ifdef DEBUG
+	}else
+	{
+		cout<<"SpMatrix::GetL: Error\n"; return -1;
+	}
+#endif
+}
+
+inline void SpMatrix::AX( double* out, const double* in, double alpha, bool trans ) const
+{
+	mmx( trans ? Trans : NoTrans, out, in, alpha );
+}
+
+inline void SpMatrix::AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
+{
+	mmxm( trans ? Trans : NoTrans, out.m, out.r, in.m, in.r, alpha, in.c );
+}
+
+inline void SpMatrix::AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
+{
+	mmxpy( trans ? Trans : NoTrans, out, in, alpha, Y, beta );
+}
+
+inline void SpMatrix::AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const
+{
+	mmxmpym( trans ? Trans : NoTrans, out.m, out.r, in.m, in.r, alpha, Y.m, Y.r, beta, Y.c );
+}
+
+// with Vectors
+inline void SpMatrix::AX( Vector& X, const Vector& B, double alpha, bool trans ) const
+{
+	if( !trans )
+	{
+		if( (X.Size() != Row())||(B.Size() != Col()) )
+		{
+			cout<<"BaseMatrix::AX_V:bad dimensions\n";
+			throw(12); return;
+		}
+	}else
+	{
+		if( (X.Size() != Col())||(B.Size() != Row()) ) 
+		{
+			cout<<"BaseMatrix::AX_V:bad dimensions\n"; 
+			throw(12); return;
+		}
+	}
+	this->AX( X.v, B.v, alpha, trans ); 
+}
+
+inline void SpMatrix::AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const
+{
+
+	if( !trans )
+	{
+		if( (out.Size() != Row())||(X.Size() != Col())||(Y.Size() != Row()) ) 
+		{
+			cout<<"BaseMatrix::AXpY_V:bad dimensions\n"; return; 
+		}
+	}else
+	{
+		if( (out.Size() != Col())||(X.Size() != Row())||(Y.Size() != Col()) ) 
+		{
+			cout<<"BaseMatrix::AXpY_V:bad dimensions\n"; return; 
+		}
+	}
+	this->AXpY( out.v, X.v, Y.v, alpha, beta, trans );
+}
+
+// End of implementation of SpMatrix
+
+
+// Implementation of Vector
+
+inline Vector& Vector::operator=( const __op_mul_vec<SpMatrix,Vector> op )
+{
+	op.op.mmx( NoTrans, this->v, op.vecA.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __op_trans_mul_vec<SpMatrix,Vector> op )
+{
+	op.op.mmx( Trans, this->v, op.vecA.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_mul_vec<SpMatrix,Vector> op )
+{
+	op.op.mmx( NoTrans, this->v, op.vecA.v, op.alpha );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_trans_mul_vec<SpMatrix,Vector> op )
+{
+	op.op.mmx( Trans, this->v, op.vecA.v, op.alpha );
+	return *this;
+}
+inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, op.beta );
+	return *this;
+}
+inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
+	return *this;
+}
+inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
+{
+	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
+	return *this;
+}
+
+// End of implementation of Vector
+
+// Implementation of Matrix
+
+inline Matrix& Matrix::operator=( const __op_mul_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __op_trans_mul_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_mul_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
+	return *this;
+}
+inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
+{
+	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
+	return *this;
+}
 
 #endif

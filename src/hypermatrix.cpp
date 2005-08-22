@@ -9,16 +9,17 @@
 
 #include "matrix.h"
 #include "spmatrix.h"
-#include "hypermatrix.h"
+#include "tst-hyp.h"
 
 #include "plot.h"
 #include <cmath>
 
+#define FACT_A11 SpFact
 // constructing Sparse-Dense type hypermatrix
-HyperMatrix::HyperMatrix( int i, int j, int k, int nz )
+HyperMatrix :: HyperMatrix( int i, int j, int k, int nz )
 {
 	// constructing the data members
-	if( i != 0 ) A11 = new SpFact( 'R', i, nz ); else A11 = 0;
+	if( i != 0 ) A11 = new FACT_A11( 'R', i, nz ); else A11 = 0;
 	if( j != 0 ) A22 = new MatFact( j, j ); else A22 = 0;
 	if( k != 0 ) A33 = new Matrix( k, k ); else A33 = 0;
 	
@@ -94,8 +95,8 @@ HyperMatrix::HyperMatrix( int i, int j, int k, int nz )
 		delta2Star = 0;
 	}
 }
-		
-HyperMatrix::~HyperMatrix()
+
+HyperMatrix :: ~HyperMatrix()
 {
 	// deleting the data members
 	delete A11;
@@ -127,7 +128,8 @@ HyperMatrix::~HyperMatrix()
 }
 
 // BEM
-inline void __BEM( BaseFact& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
+template< class FACT >
+inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
 {
 
 	Vector v( _b.Size() );
@@ -158,9 +160,10 @@ inline void __BEM( BaseFact& _A, Vector& _b, Vector& _bStar, double& _d, Vector&
 
 }
 
+template< class FACT >
 inline void __BEMWS
 	(	
-		BaseFact&    A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
+		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
 		int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans 
 	)
@@ -204,10 +207,11 @@ inline void __BEMWS
 	}
 }
 
+template< class FACT >
 inline void __BEMWF
 	(	
 		int bord,
-		BaseFact&    A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
+		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
 		JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector& deltaStar
 	)
@@ -225,7 +229,7 @@ inline void __BEMWF
 		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = B(idx)( r );
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( r, idx );
 
-		__BEMWS( A, B, BStar, D, X, Y, F, G, k-1, V, VStar, delta, deltaStar, false );
+		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, V, VStar, delta, deltaStar, false );
 
 		// VV
 		for( int r=0; r < len; r++ ) V(k)( r ) = X(k-1)( r );
@@ -238,7 +242,7 @@ inline void __BEMWF
 		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = BStar(idx)( r );
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( idx, r );
 
-		__BEMWS( A, B, BStar, D, X, Y, F, G, k-1, VStar, V, deltaStar, delta, true );
+		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, VStar, V, deltaStar, delta, true );
 
 		// VV
 		for( int r=0; r < len; r++ ) VStar(k)( r ) = X(k-1)( r );
@@ -250,32 +254,34 @@ inline void __BEMWF
 }
 
 // BEMW
+template< class FACT >
 void inline __BEMW
 	( 
 		int bord,
-		BaseFact&    A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
+		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
 		JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector&       deltaStar,
 		Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g 
 	)
 {
-	__BEMWF( bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar );
+	__BEMWF<FACT>( bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar );
 
 	for( int i = 0; i < A.Row(); i++ ) F(bord)( i )           = f( i );
 	for( int i = 0; i < bord; i++ )    F(bord)( A.Row() + i ) = g( i );
 
-	__BEMWS( A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, false );
+	__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, false );
   
 	for( int i = 0; i < A.Row(); i++ ) x(i) = X(bord)( i );
 	for( int i = 0; i < bord; i++ )    y(i) = X(bord)( A.Row() + i );
 }
 
-inline void HyperMatrix::GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 )
+template< class FACT >
+inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 )
 {
-	BaseFact&   _A11 = *A11;
+	FACT&       _A11 = *A11;
 	Vector&     _A13 = (*A13)(0);
-	BaseMatrix& _A21 = *A21;
-	BaseFact&   _A22 = *A22;
+	Matrix&     _A21 = *A21;
+	MatFact&    _A22 = *A22;
 	Vector&     _A23 = (*A23)(0);
 	Vector&     _A31 = (*A31)(0);
 	Vector&     _A32 = (*A32)(0);
@@ -291,7 +297,7 @@ inline void HyperMatrix::GMBE( Vector& X1, Vector& X2, double& X3, const Vector&
 	dd = _A33 - xi*_A23;
 	gg = F3 - xi*F2;
 
-	__BEM( _A11, _A13, cc, dd, X1, X3, F1, gg );
+	__BEM<FACT>( _A11, _A13, cc, dd, X1, X3, F1, gg );
 
 	Vector fr( _A23.Size() );
 	double gr;
@@ -307,15 +313,16 @@ inline void HyperMatrix::GMBE( Vector& X1, Vector& X2, double& X3, const Vector&
 	fr += F2;
 	gr = F3 - _A31*X1 - _A33*X3;
 
-	__BEM( _A22, beta_xi, _A32, m_beta, X2, yy, fr, gr );
+	__BEM<MatFact>( _A22, beta_xi, _A32, m_beta, X2, yy, fr, gr );
 }
 
-inline void HyperMatrix::GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 )
+template< class FACT >
+inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 )
 {
-	BaseFact&    _A11 = *A11;
+	FACT&        _A11 = *A11;
 	JagVector2D& _A13 = *A13;
-	BaseMatrix&  _A21 = *A21;
-	BaseFact&    _A22 = *A22;
+	Matrix&      _A21 = *A21;
+	MatFact&     _A22 = *A22;
 	JagVector2D& _A23 = *A23;
 	JagVector2D& _A31 = *A31;
 	JagVector2D& _A32 = *A32;
@@ -337,7 +344,7 @@ inline void HyperMatrix::GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, co
 		gg(i) = F3( i ) - xi(i)*F2;                           // gg = F3 - xi*F2;
 	}
 	
-	__BEMW( bord, _A11, _A13, cc, dd, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, gg );
+	__BEMW<FACT>( bord, _A11, _A13, cc, dd, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, gg );
 	
 	Vector fr( F2.Size() );
 	Vector gr( bord );
@@ -369,40 +376,39 @@ inline void HyperMatrix::GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, co
 		for( int j=0; j < bord; j++ ) gr(i) -= _A33(i,j)*X3(j);
 	}
 
-	__BEMW( bord, _A22, beta_xi, _A32, m_beta, *XX2, *YY2, *FF2, *GG2, *VV2, *VV2Star, *delta2, *delta2Star, X2, yy, fr, gr );
+	__BEMW<MatFact>( bord, _A22, beta_xi, _A32, m_beta, *XX2, *YY2, *FF2, *GG2, *VV2, *VV2Star, *delta2, *delta2Star, X2, yy, fr, gr );
 
 }
 
 // Wrapper functions
-
 void HyperMatrix::Solve( Vector& x, double& z, const Vector& f, const double& h ) // BEM
 {
-	__BEM( *A11, (*A13)(0), (*A31)(0), (*A33)(0,0), x, z, f, h );
+	__BEM<FACT_A11>( *A11, (*A13)(0), (*A31)(0), (*A33)(0,0), x, z, f, h );
 }
 
 void HyperMatrix::Solve( int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3 ) // BEMW
 {
-	__BEMW( bord, *A11, *A13, *A31, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3 );
+	__BEMW<FACT_A11>( bord, *A11, *A13, *A31, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3 );
 }
 
 void HyperMatrix::Solve( Vector& x, Vector& y, double& z, const Vector& f, const Vector& g, const double& h ) // GMBE
 {
-	GMBE( x, y, z, f, g, h );
+	GMBE<FACT_A11>( x, y, z, f, g, h );
 }
 
 void HyperMatrix::Solve( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 ) //GMBEW
 {
-	GMBEW( bord, X1, X2, X3, F1, F2, F3 );
+	GMBEW<FACT_A11>( bord, X1, X2, X3, F1, F2, F3 );
 }
 
 void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 {
 	// this may be buggy with some compilers
 	
-	BaseFact&    _A11 = *A11;
+	FACT_A11&    _A11 = *A11;
 	JagVector2D& _A13 = *A13;
-	BaseMatrix&  _A21 = *A21;
-	BaseFact&    _A22 = *A22;
+	Matrix&      _A21 = *A21;
+	MatFact&     _A22 = *A22;
 	JagVector2D& _A23 = *A23;
 	JagVector2D& _A31 = *A31;
 	JagVector2D& _A32 = *A32;
@@ -669,10 +675,10 @@ void HyperMatrix::SolveDIRECT( HyperVector& X, HyperVector& F )
 // tan == true  -> normal multiplication
 void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool tan )
 {
-	BaseFact&    _A11 = *A11;
+	FACT_A11&    _A11 = *A11;
 	JagVector2D& _A13 = *A13;
-	BaseMatrix&  _A21 = *A21;
-	BaseFact&    _A22 = *A22;
+	Matrix&      _A21 = *A21;
+	MatFact&     _A22 = *A22;
 	JagVector2D& _A23 = *A23;
 	JagVector2D& _A31 = *A31;
 	JagVector2D& _A32 = *A32;

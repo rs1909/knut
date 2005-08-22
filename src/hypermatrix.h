@@ -31,6 +31,7 @@ class HyperVector
 		Vector V3;
 };
 
+#define FACT SpFact
 class HyperMatrix
 {
 	public:
@@ -39,8 +40,7 @@ class HyperMatrix
 		HyperMatrix( int i, int j, int k, int nz );
 		~HyperMatrix();
 		
-		SpFact&      getA11() { return *A11; }
-		// MatFact&     getA11D() { return static_cast<MatFact&>(*A11); }
+		FACT&        getA11() { return *A11; }
 		JagVector2D& getA13() { return *A13; }
 		Vector&      getA13( int i ) { return (*A13)(i); }
 		Matrix&      getA21() { return *A21; }
@@ -54,8 +54,8 @@ class HyperMatrix
 		Matrix&      getA33() { return *A33; }
 		double&      getA33( int i, int j ) { return (*A33)(i,j); }
 		
-		inline void GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 );
-		inline void GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 );
+		template< class T > inline void GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 );
+		template< class T > inline void GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 );
 
 		void AX( HyperVector& X, HyperVector& F, bool tan=true );
 		
@@ -81,7 +81,7 @@ class HyperMatrix
 	
 		// matrix blocks
 		
-		SpFact*			A11;
+		FACT*				A11;
 		JagVector2D*	A13;
 		Matrix*			A21;
 		MatFact*			A22;
@@ -115,4 +115,7 @@ class HyperMatrix
 
 	
 };
+
+#undef FACT
+
 #endif
