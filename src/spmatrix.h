@@ -50,7 +50,7 @@ class SpMatrix
 		
 		void Init( char F, int n_, int m_, int nz );
 		void Init( const SpMatrix& M );
-
+		
 		virtual void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
 		{
 			cspblas_mmx( format, trans, n, m, Ap, Ai,Ax, out, in, alpha );
@@ -74,17 +74,8 @@ class SpMatrix
 		__vec_trans<SpMatrix>         operator!( ) { return __vec_trans<SpMatrix>( *this ); }
 		
 		void AX( double* out, const double* in, double alpha, bool trans ) const;
-		void AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const;
 		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
-		void AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const;
 		
-		// with Vectors
-		void AX( Vector& X, const Vector& B, double alpha, bool trans ) const;
-		void AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const;
-		
-		// other variants
-		void AX( Vector& X, const Vector& B ) const { this->AX( X, B, 1.0, false ); }
-
 		int Row() const;
 		int Col() const;
 		
@@ -305,59 +296,9 @@ inline void SpMatrix::AX( double* out, const double* in, double alpha, bool tran
 	mmx( trans ? Trans : NoTrans, out, in, alpha );
 }
 
-inline void SpMatrix::AX( Matrix& out, const Matrix& in, double alpha, bool trans ) const
-{
-	mmxm( trans ? Trans : NoTrans, out.m, out.r, in.m, in.r, alpha, in.c );
-}
-
 inline void SpMatrix::AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
 {
 	mmxpy( trans ? Trans : NoTrans, out, in, alpha, Y, beta );
-}
-
-inline void SpMatrix::AXpY( Matrix& out, const Matrix& in, const Matrix& Y, double alpha, double beta, bool trans ) const
-{
-	mmxmpym( trans ? Trans : NoTrans, out.m, out.r, in.m, in.r, alpha, Y.m, Y.r, beta, Y.c );
-}
-
-// with Vectors
-inline void SpMatrix::AX( Vector& X, const Vector& B, double alpha, bool trans ) const
-{
-	if( !trans )
-	{
-		if( (X.Size() != Row())||(B.Size() != Col()) )
-		{
-			cout<<"BaseMatrix::AX_V:bad dimensions\n";
-			throw(12); return;
-		}
-	}else
-	{
-		if( (X.Size() != Col())||(B.Size() != Row()) ) 
-		{
-			cout<<"BaseMatrix::AX_V:bad dimensions\n"; 
-			throw(12); return;
-		}
-	}
-	this->AX( X.v, B.v, alpha, trans ); 
-}
-
-inline void SpMatrix::AXpY( Vector& out, const Vector& X, const Vector& Y, double alpha, double beta, bool trans ) const
-{
-
-	if( !trans )
-	{
-		if( (out.Size() != Row())||(X.Size() != Col())||(Y.Size() != Row()) ) 
-		{
-			cout<<"BaseMatrix::AXpY_V:bad dimensions\n"; return; 
-		}
-	}else
-	{
-		if( (out.Size() != Col())||(X.Size() != Row())||(Y.Size() != Col()) ) 
-		{
-			cout<<"BaseMatrix::AXpY_V:bad dimensions\n"; return; 
-		}
-	}
-	this->AXpY( out.v, X.v, Y.v, alpha, beta, trans );
 }
 
 // End of implementation of SpMatrix

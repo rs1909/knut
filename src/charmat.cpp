@@ -91,7 +91,8 @@ void CharMat::Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, const J
 	//AmzB_u.AvRT( delta_x, temp_x );
 	// AmzB_x.Swap();
 	// delta needs to be NDIM*NDIM
-	AmzB_x.AX( delta_x, temp_x, 1.0, true );
+	delta_x = !AmzB_x * temp_x; // with the overloading
+// 	AmzB_x.AX( delta_x, temp_x, 1.0, true );
 	//delta_x.Print();
 }
 
@@ -195,9 +196,8 @@ void CharMatCPLX::Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, con
 		LmzM( 2*(i + NDIM*NDEG*NINT)+1, 2*i+1 ) = 1.0*zRe;
 	}
 	AmzB.Solve( temp_x, LmzM, true );
-	//AmzB_u.AvRT( delta_x, temp_x );
-	// AmzB_x.Swap();
-	AmzB_x.AX( delta_x, temp_x, 1.0, true );
+	delta_x = !AmzB_x * temp_x;
+// 	AmzB_x.AX( delta_x, temp_x, 1.0, true );
 	//delta_x.Print();
 }
 
@@ -354,7 +354,8 @@ void CharMatLPAUT::init( NColloc& col, const Vector& par, const JagMatrix3D& sol
 // 	Psi1 -= Phi1;
 // 	std::cout<<"phidiff "<<sqrt(col.Integrate(Psi1,Psi1))<<" ";
 	// Psi1
-	mB.AX( temp, Phi1, 1.0, false );
+	temp = mB * Phi1;
+// 	mB.AX( temp, Phi1, 1.0, false );
 	AmzB.Solve( Psi1, temp, false );
 	
 	if( qq )
@@ -442,24 +443,29 @@ inline void CharMatLPAUT::mktmp_x( NColloc& col, const Vector& par, const JagMat
 	// Note:  DxPhi1 = - AmzBinv * DxAmzB * { Phi1, . }
 	
 	// 4. - M Dx Phi1 = - M * ( - AmzBinv * DxAmzB * { Phi1, . } )             ==>> tempDx
-	DxAmzBPhi1.AX( tempDx, MAmzBinv, 1.0, true );
+	tempDx = !DxAmzBPhi1 * MAmzBinv;
+// 	DxAmzBPhi1.AX( tempDx, MAmzBinv, 1.0, true );
 	
 	// o.k.!
 	// 1. \mu * alpha * MAmzBinv * mB * Dx Phi1 = 
 	// =  \mu * alpha * MAmzBinv * mB * ( - AmzBinv * DxAmzB * { Phi1, . } )   ==>>   tempBx
-	mB.AX( tempBx, MAmzBinv, -alpha*ZZ, true );
+	tempBx = -alpha*ZZ * !mB * MAmzBinv;
+// 	mB.AX( tempBx, MAmzBinv, -alpha*ZZ, true );
 	AmzB.Solve( tempAx, tempBx, true );
-	DxAmzBPhi1.AX( tempBx, tempAx, 1.0, true );
+	tempBx = !DxAmzBPhi1 * tempAx;
+// 	DxAmzBPhi1.AX( tempBx, tempAx, 1.0, true );
 	
 	// o.k.!
 	// 2. MAmzBinv * DxAmzB * Sigma              ==>>   tempAx
 	col.CharJac_x_x( DxAmzBSigma, par, solData, SigmaData, ZZ );
-	DxAmzBSigma.AX( tempAx, MAmzBinv, 1.0, true );
+	tempAx = !DxAmzBSigma * MAmzBinv;
+// 	DxAmzBSigma.AX( tempAx, MAmzBinv, 1.0, true );
 	
 	// o.k.!
 	// 3. \mu * alpha * MAmzBinv * DxmB * Phi1   ==>>   tempCx
 	col.CharJac_mB_x( DxmBPhi1, par, solData, Phi1Data, ZZ );
-	DxmBPhi1.AX( tempCx, MAmzBinv, ZZ*alpha, true );
+	tempCx = ZZ*alpha * !DxmBPhi1 * MAmzBinv;
+// 	DxmBPhi1.AX( tempCx, MAmzBinv, ZZ*alpha, true );
 }
 
 void CharMatLPAUT::Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, const JagMatrix3D& solData )
@@ -472,7 +478,7 @@ void CharMatLPAUT::Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, co
 		for( int j=0; j<NDIM; j++ )
 		{
 			delta_x(i,j) = tempAx(i,j) + tempBx(i,j) + tempCx(i,j) + tempDx(i,j);
-// 			delta_x(i,NDIM) -= tempDx(i,j) * Q3(j);
+			delta_x(i,NDIM) -= tempDx(i,j) * Q3(j);
 		}
 	}
 }
@@ -517,22 +523,27 @@ inline void CharMatLPAUT::mktmp_p( NColloc& col, const Vector& par, const JagMat
 	// 1. \mu * alpha * MAmzBinv * mB * DpPhi1   ==>>   stmpAp
 	// =  \mu * alpha * MAmzBinv * mB * ( - AmzBinv * DpAmzB * Phi1 )
 	AmzB.Solve( tempAp, DpAmzBPhi1 );
-	mB.AX( tempBp, tempAp, -alpha*ZZ, false );
-	MAmzBinv.AX( stmpAp, tempBp, 1.0, true );
+	tempBp = -alpha*ZZ * mB * tempAp;
+	stmpAp = !MAmzBinv * tempBp;
+// 	mB.AX( tempBp, tempAp, -alpha*ZZ, false );
+// 	MAmzBinv.AX( stmpAp, tempBp, 1.0, true );
 	
 	// o.k.!
 	// 2. MAmzBinv * DpAmzB * Sigma              ==>>   stmpBp
 	col.CharJac_x_p( DpAmzBSigma, par, solData, SigmaData, ZZ, p );
-	MAmzBinv.AX( stmpBp, DpAmzBSigma, 1.0, true );
+	stmpBp = !MAmzBinv * DpAmzBSigma;
+// 	MAmzBinv.AX( stmpBp, DpAmzBSigma, 1.0, true );
 	
 	// o.k.!
 	// 3. \mu * alpha * MAmzBinv * DpmB * Phi1   ==>>   stmpCp
 	col.CharJac_mB_p( DpmBPhi1, par, solData, Phi1Data, ZZ, p );
-	MAmzBinv.AX( stmpCp, DpmBPhi1, ZZ*alpha, true );
+	stmpCp = ZZ*alpha * !MAmzBinv * DpmBPhi1;
+// 	MAmzBinv.AX( stmpCp, DpmBPhi1, ZZ*alpha, true );
 	
 	// 4. -M * DpPhi1                            ==>>   stpmDp
 	// =  -M * ( - AmzBinv * DpAmzB * Phi1 )
-	MAmzBinv.AX( stmpBp, DpAmzBPhi1, 1.0, true );
+	stmpDp = !MAmzBinv * DpAmzBPhi1;
+// 	MAmzBinv.AX( stmpDp, DpAmzBPhi1, 1.0, true );
 }
 
 void CharMatLPAUT::Delta_p( Vector& delta_p, NColloc& col, const Vector& par, const JagMatrix3D& solData, int p )
@@ -543,7 +554,7 @@ void CharMatLPAUT::Delta_p( Vector& delta_p, NColloc& col, const Vector& par, co
 	for( int i=0; i<NDIM; i++ )
 	{
 		delta_p(i) = stmpAp(i) + stmpBp(i) + stmpCp(i) + stmpDp(i);
-// 		delta_p(NDIM) -= stmpDp(i) * Q3(i);
+		delta_p(NDIM) -= stmpDp(i) * Q3(i);
 	}
 }
 

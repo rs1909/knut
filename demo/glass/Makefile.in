@@ -21,3 +21,5 @@ all: $(NAME).so
 test: $(NAME).so
 	pdde -c cfile-start -o in-start -b br-start
 	pdde -c cfile-pdsw -i in-start -o in-pdsw -b br-pdsw
+test-pd:
+	pdde -c cfile-pd -i in-start -o in-pd -b br-pd

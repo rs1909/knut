@@ -139,7 +139,7 @@ inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, 
 	Vector f1( _b.Size() );
 	double g1;
 	double y1, y2;
-
+	
 	// Doolittle
 	_A.Solve( vStar, _bStar, true );                              // Step 1.
 	deltaStar = _d - vStar*_b;                                    // Step 2.
@@ -151,7 +151,7 @@ inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, 
 	// residuals
 	for( int i=0; i<_b.Size(); i++ ) f1(i) = f(i) - _b(i)*y1;     // Step 6.
 	g1 = g - _d*y1;                                               // Step 7.
-
+	
 	// residual corrections
 	_A.Solve( w, f1 );                                            // Step 8.
 	y2 = (g1 - _bStar*w)/delta;                                   // Step 9.
@@ -162,10 +162,10 @@ inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, 
 
 template< class FACT >
 inline void __BEMWS
-	(	
+	(
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
-		int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans 
+		int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans
 	)
 {
 
@@ -180,7 +180,7 @@ inline void __BEMWS
 		Y(k) = F(k)( len );
 		for( int r=0; r < len; r++ ) Y(k) -= VStar(k)( r )*F(k)( r );
 		Y(k) /= deltaStar(k);
-    
+		
 		// residuals
 		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = F(k)( r )         - B(idx)( r )*Y(k);
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = F(k)( aalen + r ) - D( r, idx )*Y(k);
@@ -188,20 +188,20 @@ inline void __BEMWS
 	}
 	
 	A.Solve( X(0), F(0), trans );
-	double ypp;   
-  
+	double ypp;
+	
 	for( int k = 1; k <= j; k++ )
 	{
 		const int len   = A.Col() + k-1;
 		const int aalen = A.Col();
 		const int ddlen = k-1;
 		const int idx   = k-1;
-    
+		
 		ypp = G(k);
 		for( int r=0; r < aalen; r++ ) ypp -= BStar(idx)( r )*X(k-1)( r );
 		for( int r=0; r < ddlen; r++ ) ypp -= D( idx, r )*X(k-1)( aalen + r );
 		ypp /= delta(k);
-    
+		
 		for( int r=0; r < len; r++ ) X(k)( r ) = X(k-1)( r ) - V(k)( r )*ypp;
 		X(k)( len ) = Y(k) + ypp;
 	}
@@ -209,7 +209,7 @@ inline void __BEMWS
 
 template< class FACT >
 inline void __BEMWF
-	(	
+	(
 		int bord,
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
@@ -217,7 +217,6 @@ inline void __BEMWF
 	)
 
 {
-  
 	for( int k = 1; k < bord+1; k++ )
 	{
 		const int len   = A.Col() + k-1;
@@ -228,22 +227,22 @@ inline void __BEMWF
 		// with the ordinary solver
 		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = B(idx)( r );
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( r, idx );
-
+		
 		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, V, VStar, delta, deltaStar, false );
-
+		
 		// VV
 		for( int r=0; r < len; r++ ) V(k)( r ) = X(k-1)( r );
 		// delta
 		delta(k) = D(idx,idx);
 		for( int r=0; r < aalen; r++ ) delta(k) -= BStar(idx)( r )*V(k)( r );
 		for( int r=0; r < ddlen; r++ ) delta(k) -= D( idx, r )*V(k)( aalen + r );
-    
-	 	// with the adjoint solver
+		
+		// with the adjoint solver
 		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = BStar(idx)( r );
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( idx, r );
-
+		
 		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, VStar, V, deltaStar, delta, true );
-
+		
 		// VV
 		for( int r=0; r < len; r++ ) VStar(k)( r ) = X(k-1)( r );
 		// delta
@@ -256,21 +255,21 @@ inline void __BEMWF
 // BEMW
 template< class FACT >
 void inline __BEMW
-	( 
+	(
 		int bord,
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
 		JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector&       deltaStar,
-		Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g 
+		Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
 	)
 {
 	__BEMWF<FACT>( bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar );
-
+	
 	for( int i = 0; i < A.Row(); i++ ) F(bord)( i )           = f( i );
 	for( int i = 0; i < bord; i++ )    F(bord)( A.Row() + i ) = g( i );
-
+	
 	__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, false );
-  
+	
 	for( int i = 0; i < A.Row(); i++ ) x(i) = X(bord)( i );
 	for( int i = 0; i < bord; i++ )    y(i) = X(bord)( A.Row() + i );
 }
@@ -286,33 +285,35 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	Vector&     _A31 = (*A31)(0);
 	Vector&     _A32 = (*A32)(0);
 	double&     _A33 = (*A33)(0);
-
+	
 	Vector xi( _A32.Size() );
 	Vector cc( _A31.Size() );
 	double dd;
 	double gg;
-
+	
 	_A22.Solve( xi, _A32, true );
-	_A21.AXpY( cc, xi, _A31, -1.0, 1.0, false ); // cc = A31 - xi*A21
+	cc = (-1.0)*_A21*xi + _A31;
+// 	_A21.AXpY( cc, xi, _A31, -1.0, 1.0, false ); // cc = A31 - xi*A21
 	dd = _A33 - xi*_A23;
 	gg = F3 - xi*F2;
-
+	
 	__BEM<FACT>( _A11, _A13, cc, dd, X1, X3, F1, gg );
-
+	
 	Vector fr( _A23.Size() );
 	double gr;
 	double yy;
 	double beta = 1.0;
 	double m_beta;
 	Vector beta_xi( xi );
-
+	
 	beta_xi *= beta;
 	m_beta = -beta;
-
-	_A21.AXpY( fr, X1, _A23, -1.0, -X3, true ); // fr = F2 - A21*X1 - A23*X3
+	
+	fr = -1.0*!_A21*X1 + (-1.0*X3)*_A23;
+// 	_A21.AXpY( fr, X1, _A23, -1.0, -X3, true ); // fr = F2 - A21*X1 - A23*X3
 	fr += F2;
 	gr = F3 - _A31*X1 - _A33*X3;
-
+	
 	__BEM<MatFact>( _A22, beta_xi, _A32, m_beta, X2, yy, fr, gr );
 }
 
@@ -332,11 +333,12 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	JagVector2D cc( bord, _A31(0).Size() );
 	Matrix dd( bord, bord );
 	Vector gg( bord );
-
+	
 	for( int i=0; i < bord; i++ )
 	{
 		_A22.Solve( xi(i), _A32(i), true );
-		_A21.AXpY( cc(i), xi(i), _A31(i), -1.0, 1.0, false ); // cc = A31 - xi*A21
+		cc(i) = -1.0*_A21*xi(i) + _A31(i);
+// 		_A21.AXpY( cc(i), xi(i), _A31(i), -1.0, 1.0, false ); // cc = A31 - xi*A21
 		for( int j=0; j < bord; j++ )
 		{
 			dd( i, j ) = _A33( i, j ) - xi(i)*_A23(j);         // dd = A33 - xi*A23;
@@ -353,16 +355,17 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	Matrix m_beta( bord, bord );
 	JagVector2D beta_xi( bord, _A32(0).Size() );
 	Vector temp_gr( bord );
-  
+	
 	for( int i=0; i < bord; i++ )
 	{
 		beta_xi(i)  = xi(i);
 		beta_xi(i) *= beta;
 	}
 	for( int i=0; i < bord; i++ ) m_beta(i,i) = -beta;
-  
+	
 	// fr = F2 - A21*x1 - A23*X3
-	_A21.AX( fr, X1, -1.0, true );
+	fr = -1.0*!_A21*X1;
+// 	_A21.AX( fr, X1, -1.0, true );
 	for( int i=0; i < fr.Size(); i++ )
 	{
 		fr(i) += F2(i);
@@ -371,7 +374,7 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	
 	// gr = F3 - A31*X1 - A33*X3;
 	for( int i=0; i < bord; i++ )
-	{ 
+	{
 		gr(i) = F3(i) - _A31(i)*X1;
 		for( int j=0; j < bord; j++ ) gr(i) -= _A33(i,j)*X3(j);
 	}
@@ -396,7 +399,7 @@ void HyperMatrix::Solve( Vector& x, Vector& y, double& z, const Vector& f, const
 	GMBE<FACT_A11>( x, y, z, f, g, h );
 }
 
-void HyperMatrix::Solve( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 ) //GMBEW
+void HyperMatrix::Solve( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 ) // GMBEW
 {
 	GMBEW<FACT_A11>( bord, X1, X2, X3, F1, F2, F3 );
 }
@@ -429,7 +432,8 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 	
 	if( A11 )
 	{
-		_A11.AX( R1, X1 );
+		R1 = _A11 * X1;
+// 		_A11.AX( R1, X1 );
 		if( A33 )
 		{
 			for( int i=0; i<X1.Size(); i++ )
@@ -446,8 +450,8 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 	
 	if( A22 )
 	{
-		if( A11 ) _A21.AX( R2, X1, 1.0, true );
-		_A22.AX( R2_t, X2 );
+		if( A11 ) R2 = !_A21 * X1; // _A21.AX( R2, X1, 1.0, true );
+		R2_t = _A22 * X2; // _A22.AX( R2_t, X2 );
 		R2 += R2_t;
 		if( A33 )
 		{
@@ -471,7 +475,7 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 	}
 	if( A33 )
 	{
-		_A33.AX( R3_t, X3, 1.0, false );
+		R3_t = _A33 * X3; //_A33.AX( R3_t, X3, 1.0, false );
 		R3 += R3_t;
 		cout<<"F3: "<<sqrt(F3*F3)<<"R3: "<<sqrt(R3*R3)<<"\n";
 	}
@@ -525,12 +529,10 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F )
 	{
 		std::cout<<"HyperMatrix::Solve Error\n";
 		throw(-1);
-		//error
 	}
 	
 //	Check( X, F );
 }
-
 
 void HyperMatrix::Solve( HyperVector& X, HyperVector& F, int bord )
 {
@@ -579,7 +581,6 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F, int bord )
 	{
 		std::cout<<"HyperMatrix::Solve Error\n";
 		throw(-1);
-		//error
 	}
 	
 //	Check( X, F );
@@ -653,14 +654,7 @@ void HyperMatrix::SolveDIRECT( HyperVector& X, HyperVector& F )
 		FF( dim1 + dim2 + i ) = F.getV3()(i);
 	}
 	
-// 	GnuPlot pl;
-// 	AA.StrPlot( pl );
-// 	pl.Save( "strplot" );
-// 	char ch;
-// 	std::cin>>ch;
-	
 	AA.Solve( XX, FF );
-//	std::cout<<"DIRECTSOLV "<<X.getV1().Size()<<" "<<dim1<<"\n";
 	
 	for( int i=0; i<dim1; i++ )  X.getV1()(i) = XX( i );
 	for( int i=0; i<dim2; i++ )  X.getV2()(i) = XX( dim1 + i );
@@ -673,7 +667,7 @@ void HyperMatrix::SolveDIRECT( HyperVector& X, HyperVector& F )
 // currently tan is not implemented: it is assumed to be false
 // tan == false -> the last line not multiplied
 // tan == true  -> normal multiplication
-void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool tan )
+void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool /*tan*/ )
 {
 	FACT_A11&    _A11 = *A11;
 	JagVector2D& _A13 = *A13;
@@ -697,7 +691,7 @@ void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool tan )
 	// first line: no A12!
 	if( A11 )
 	{
-		_A11.AX( out1, in1 );
+		out1 = _A11 * in1; //_A11.AX( out1, in1 );
 		if( A33 )
 		{
 			for( int i=0; i<in1.Size(); i++ )
@@ -712,8 +706,9 @@ void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool tan )
 	// second line
 	if( A22 )
 	{
-		if( A11 ) _A21.AX( out2, in1, 1.0, true ); else out2.Clear();
-		_A22.AX( R2_t, in2 );
+		if( A11 ) out2 = !_A21 * in1; // _A21.AX( out2, in1, 1.0, true ); 
+		else out2.Clear();
+		R2_t = _A22 * in2; // _A22.AX( R2_t, in2 );
 		out2 += R2_t;
 		if( A33 )
 		{
@@ -735,7 +730,7 @@ void HyperMatrix::AX( HyperVector& out, HyperVector& in, bool tan )
 	}
 	if( A33 )
 	{
-		_A33.AX( R3_t, in3, 1.0, false );
+		R3_t = _A33 * in3; // _A33.AX( R3_t, in3, 1.0, false );
 		out3 += R3_t;
 	}
 }

@@ -829,13 +829,15 @@ int Point::Start(  )
 			case EqnLPAUTNullSpace:
 			case EqnLPNullSpace:
 			case EqnPDNullSpace:
-				jac->getA22().AX( *qqR, *qq0, 1.0, false );
+				*qqR = jac->getA22() * (*qq0);
+// 				jac->getA22().AX( *qqR, *qq0, 1.0, false );
 				par(NPAR + ParNorm) = -((*qq0)*(*qqR));
 // 				std::cout<<" par(NPAR + ParNorm) "<<par(NPAR + ParNorm)<<"\n";
 				*qqR = *qq0;
 				break;
 			case EqnCPLXNullSpace:
-				jac->getA22().AX( *qqR, *qq0, 1.0, false );
+				*qqR = jac->getA22() * (*qq0);
+// 				jac->getA22().AX( *qqR, *qq0, 1.0, false );
 // 				std::cout<<"\n qqR_e: "; qqR->Print();
 // 				std::cout<<" qq: "; qq->Print();
 				a = (*qq0)*(*qqR);
