@@ -770,7 +770,7 @@ int Point::Start(  )
 					}
 					else
 					{
-						par(NPAR+ParAngle) = atan( zRe/zIm ) + M_PI/2.0;
+						par(NPAR+ParAngle) = atan( fabs(zRe/zIm) ) + M_PI/2.0;
 					}
 // 					std::cout<<"COS "<<cos(par(NPAR+ParAngle))<<" SIN "<<sin(par(NPAR+ParAngle))<<"\n";
 				}
