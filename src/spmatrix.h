@@ -69,9 +69,14 @@ class SpMatrix
 			cspblas_mmxmpym( format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 		}
 		
-		__op_mul_vec<SpMatrix,Vector> operator*( Vector& v ) { return __op_mul_vec<SpMatrix,Vector>( *this, v ); }
-		__op_mul_vec<SpMatrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<SpMatrix,Matrix>( *this, v ); }
-		__vec_trans<SpMatrix>         operator!( ) { return __vec_trans<SpMatrix>( *this ); }
+		__op_mul_vec<SpMatrix,Vector> operator*( Vector& v ) { return __op_mul_vec<SpMatrix,Vector>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
+		__op_mul_vec<SpMatrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<SpMatrix,Matrix>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
+		__op_mul_vec_rng<SpMatrix,Vector> operator*( __vec_rng<Vector> v )
+			{ return __op_mul_vec_rng<SpMatrix,Vector>( __scal_vec_trans_rng<SpMatrix>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
+		__op_mul_vec_rng<SpMatrix,Matrix> operator*( __vec_rng<Matrix> v )
+			{ return __op_mul_vec_rng<SpMatrix,Matrix>( __scal_vec_trans_rng<SpMatrix>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
+		__scal_vec_trans<SpMatrix>    operator!( ) { return __scal_vec_trans<SpMatrix>( *this, 1.0, Trans ); }
+		__vec_rng<SpMatrix>           operator[ ] ( rng r ) { return __vec_rng<SpMatrix>( *this, r ); }
 		
 		void AX( double* out, const double* in, double alpha, bool trans ) const;
 		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
@@ -306,129 +311,31 @@ inline void SpMatrix::AXpY( double* out, const double* in, const double* Y, doub
 
 // Implementation of Vector
 
-inline Vector& Vector::operator=( const __op_mul_vec<SpMatrix,Vector> op )
+inline Vector& Vector::operator=( const __op_mul_vec<SpMatrix,Vector> R )
 {
-	op.op.mmx( NoTrans, this->v, op.vecA.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_trans_mul_vec<SpMatrix,Vector> op )
-{
-	op.op.mmx( Trans, this->v, op.vecA.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_mul_vec<SpMatrix,Vector> op )
-{
-	op.op.mmx( NoTrans, this->v, op.vecA.v, op.alpha );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec<SpMatrix,Vector> op )
-{
-	op.op.mmx( Trans, this->v, op.vecA.v, op.alpha );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, op.beta );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
+	R.op.vec.mmx( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha );
+// 	std::cout<<"__op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
 
-// End of implementation of Vector
+inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> R )
+{
+	R.op.vec.mmxpy( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha, R.vecB.vec.v, R.vecB.alpha );
+// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Vector>\n";
+	return *this;
+}
 
-// Implementation of Matrix
+inline Matrix& Matrix::operator=( const __op_mul_vec<SpMatrix,Matrix> R )
+{
+	R.op.vec.mmxm( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c );
+// 	std::cout<<"__op_mul_vec<Matrix,Matrix>\n";
+	return *this;
+}
 
-inline Matrix& Matrix::operator=( const __op_mul_vec<SpMatrix,Matrix> op )
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> R )
 {
-	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
+	R.op.vec.mmxmpym( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecB.vec.c );
+// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
 	return *this;
 }
 

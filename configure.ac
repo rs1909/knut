@@ -18,7 +18,7 @@ AC_ARG_WITH(no-optimization-flags,
 
 AC_SUBST(NOOPT_CFLAGS)
 
-AC_DEFINE([DEBUG])
+# AC_DEFINE([DEBUG])
 
 AC_PROG_INSTALL
 

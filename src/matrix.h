@@ -76,7 +76,7 @@ public:
 
   ~Array1D()
 	{
-		delete[] v; 
+		delete[] v;
 	}
 	
 	void Init( int i )
@@ -84,7 +84,7 @@ public:
 		delete v;
 		n = i; 
 		v = new T[i];
-		Clear(); 
+		Clear();
 	}
 
 	void Clear()
@@ -145,11 +145,11 @@ class Array2D{
  public:
 	Array2D( ) { r = 0; c = 0; m = 0; }
 
-	Array2D( int _r, int _c ) 
+	Array2D( int _r, int _c )
 		: r(_r), c(_c) 
 	{
 		m = new T[r*c+1]; 
-		Clear(); 
+		Clear();
 	}
 
 	Array2D( const Array2D<T>& M ) 
@@ -166,13 +166,13 @@ class Array2D{
 		delete m;
 		r = _r; 
 		c = _c;
-		m = new T[r*c+1]; 
+		m = new T[r*c+1];
 		Clear(); 
 	}
 
 	void Clear()
 	{
-		for( int i = 0; i < r*c; i++ ) m[i] = T(0); 
+		for( int i = 0; i < r*c; i++ ) m[i] = T(0);
 	}
 
 
@@ -183,7 +183,7 @@ class Array2D{
 			for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 		} else 
 		{
-			cout<<"Array2D<T>::operator= : incompatible sizes\n"; 
+			cout<<"Array2D<T>::operator= : incompatible sizes\n";
 		}
 		return *this;
 	} 
@@ -197,10 +197,10 @@ class Array2D{
 		if((i<0)||(j<0)){ cout<<"lbound& "<<i<<", "<<j<<"\n"; throw(1); }
 
 #endif
-		return m[i + r*j]; 
+		return m[i + r*j];
 	}
 
-	T operator()( const int i, const int j ) const 
+	T operator()( const int i, const int j ) const
 	{
 
 #ifdef DEBUG 
@@ -210,7 +210,7 @@ class Array2D{
 
 #endif
 
-		return m[i + r*j]; 
+		return m[i + r*j];
 	}
 
 	T& operator()( int i )
@@ -252,34 +252,34 @@ class Array3D{
  public:
 	Array3D( ) { d1 = d2 = d3 = 0; m = 0; }
 
-	Array3D( int _d1, int _d2, int _d3 ) 
+	Array3D( int _d1, int _d2, int _d3 )
 		: d1(_d1), d2(_d2), d3(_d3) 
 	{
-		m = new T[d1*d2*d3+1]; 
-		Clear(); 
+		m = new T[d1*d2*d3+1];
+		Clear();
 	}
 
-	Array3D( const Array3D<T>& M ) 
+	Array3D( const Array3D<T>& M )
 		: d1(M.d1), d2(M.d2), d3(M.d3)
 	{
 		m = new T[d1*d2*d3+1];
-		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i]; 
+		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
 	}
 
 	virtual ~Array3D(){ delete []m; }
 
-	void Init( int _d1, int _d2, int _d3 ) 
-	{ 
+	void Init( int _d1, int _d2, int _d3 )
+	{
 		delete m;
 		d1 = _d1;
 		d2 = _d2;
 		d3 = _d3;
-		m = new T[d1*d2*d3+1]; 
+		m = new T[d1*d2*d3+1];
 		Clear(); 
 	}
 	void Clear()
 	{
-		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = 0; 
+		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = 0;
 	}
 
 	Array3D<T>& operator= ( const Array3D<T>& M )
@@ -289,7 +289,7 @@ class Array3D{
 			for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
 		} else 
 		{
-			cout<<"Array3D<T>::operator= : incompatible sizes\n"; 
+			cout<<"Array3D<T>::operator= : incompatible sizes\n";
 		}
 		return *this;
 	}
@@ -299,19 +299,19 @@ class Array3D{
 
 #ifdef DEBUG 
 
-		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n"; 
+		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
 		if((i<0)||(j<0)||(k<0)) cout<<"lbound&\n";
 
 #endif
 		return m[i + d1*(j + d2*k)];
 	}
 
-	T operator()( const int i, const int j, const int k ) const 
+	T operator()( const int i, const int j, const int k ) const
 	{
 
 #ifdef DEBUG 
 
-		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n"; 
+		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
 		if((i<0)||(j<0)||(k<0)) cout<<"lbound&\n";
 
 #endif
@@ -320,244 +320,257 @@ class Array3D{
 	
 };
 
-// pre declaration
+#ifndef PDDESYS_H
 
 class SpMatrix;
 class Matrix;
 class Vector;
 
-template< class MT > class __vec_trans;
-template< class MT > class __scal_vec;
-template< class MT > class __scal_vec_trans;
+template< class MT >           class __scal_vec_trans;
 template< class MT, class VT > class __op_mul_vec;
-template< class MT, class VT > class __op_trans_mul_vec;
-template< class MT, class VT > class __scal_op_mul_vec;
-template< class MT, class VT > class __scal_op_trans_mul_vec;
 template< class MT, class VT > class __op_mul_vec_plus_vec;
-template< class MT, class VT > class __op_trans_mul_vec_plus_vec;
-template< class MT, class VT > class __scal_op_mul_vec_plus_vec;
-template< class MT, class VT > class __scal_op_trans_mul_vec_plus_vec;
-template< class MT, class VT > class __op_mul_vec_plus_scal_vec;
-template< class MT, class VT > class __op_trans_mul_vec_plus_scal_vec;
-template< class MT, class VT > class __scal_op_mul_vec_plus_scal_vec;
-template< class MT, class VT > class __scal_op_trans_mul_vec_plus_scal_vec;
 
-// First level
+template< class MT >           class __scal_vec_trans_rng;
+template< class MT, class VT > class __op_mul_vec_rng;
+template< class MT, class VT > class __op_mul_vec_plus_vec_rng;
 
-template< class VT > class __vec_trans
+class rng
 {
  public:
-	__vec_trans( VT& m ) : vec( m ) { }
+	rng( ) : i1(0), i2(0), j1(0), j2(0) { }
+	rng( int i1_, int i2_ ) : i1(i1_), i2(i2_), j1(0), j2(0) { }
+	rng( int i1_, int i2_, int j1_, int j2_ ) : i1(i1_), i2(i2_), j1(j1_), j2(j2_) { }
 	
-	__scal_vec_trans<VT>          operator*( double d );
-	__op_trans_mul_vec<VT,Vector> operator*( Vector& v );
-	__op_trans_mul_vec<VT,Matrix> operator*( Matrix& v );
-	
-	VT& vec;
+	const int i1, i2, j1, j2;
 };
 
-template< class VT > class __scal_vec
+/// with range
+template< class VT > class __vec_rng : public rng
 {
  public:
-	__scal_vec( double a, VT& v ) : alpha( a ), vec( v ) { }
+	__vec_rng( const VT& v ) : vec( v ) { }
+	__vec_rng( const VT& v, rng r ) : rng( r ), vec( v ) { }
 	
-	__scal_op_mul_vec<VT,Vector> operator*( Vector& v );
-	__scal_op_mul_vec<VT,Matrix> operator*( Matrix& v );
-
-	double alpha;
-	VT& vec;
+	__op_mul_vec_rng<VT,Vector> operator*( const Vector& );
+	__op_mul_vec_rng<VT,Matrix> operator*( const Matrix& );
+	__op_mul_vec_rng<VT,Vector> operator*( __vec_rng<Vector> );
+	__op_mul_vec_rng<VT,Matrix> operator*( __vec_rng<Matrix> );
+	__scal_vec_trans_rng<VT>    operator!( );
+	
+	const VT& vec;
 };
 
+/// with range
+template< class VT > class __scal_vec_trans_rng : public __vec_rng< VT >
+{
+ public:
+	__scal_vec_trans_rng( __vec_rng<VT> m )                                 : __vec_rng<VT>( m ), alpha( 1.0 ), tr( NoTrans ) { }
+	__scal_vec_trans_rng( __vec_rng<VT> m, double a )                       : __vec_rng<VT>( m ), alpha( a ),   tr( NoTrans ) { }
+	__scal_vec_trans_rng( __vec_rng<VT> m, double a, enum cspblas_Trans t ) : __vec_rng<VT>( m ), alpha( a ),   tr( t ) { }
+	__scal_vec_trans_rng( const VT& m )                                           : __vec_rng<VT>( m ), alpha( 1.0 ), tr( NoTrans ) { }
+	__scal_vec_trans_rng( const VT& m, double a )                                 : __vec_rng<VT>( m ), alpha( a ),   tr( NoTrans ) { }
+	__scal_vec_trans_rng( const VT& m, double a, enum cspblas_Trans t )           : __vec_rng<VT>( m ), alpha( a ),   tr( t ) { }
+	__scal_vec_trans_rng( __scal_vec_trans<VT> v );
+	
+	__scal_vec_trans_rng< VT >     operator!( ) { return __scal_vec_trans_rng<VT>( alpha, *this, Trans ); }
+	__scal_vec_trans_rng< VT >     operator-( ) { return __scal_vec_trans_rng<VT>( -alpha, *this, tr ); }
+	__op_mul_vec_rng< VT, Vector > operator*( __vec_rng<Vector> v );
+	__op_mul_vec_rng< VT, Matrix > operator*( __vec_rng<Matrix> v );
+	__op_mul_vec_rng< VT, Vector > operator*( const Vector& v );
+	__op_mul_vec_rng< VT, Matrix > operator*( const Matrix& v );
+	
+	const double alpha;
+	const enum cspblas_Trans tr;
+};
+
+/// with range
+template< class MT, class VT > class __op_mul_vec_rng
+{
+ public:
+	__op_mul_vec_rng( __scal_vec_trans_rng<MT> m, __scal_vec_trans_rng<VT> v ) : op( m ), vecA( v ) { }
+	
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans_rng<VT> v );
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( const VT& v );
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans<VT> v );
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans_rng<VT> v );
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( const VT& v );
+	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans<VT> v );
+	
+	const __scal_vec_trans_rng<MT> op;
+	const __scal_vec_trans_rng<VT> vecA;
+};
+
+/// with range: this is the output
+template< class MT, class VT > class __op_mul_vec_plus_vec_rng : public __op_mul_vec_rng<MT,VT>
+{
+ public:
+	__op_mul_vec_plus_vec_rng( __op_mul_vec_rng<MT,VT> m, __scal_vec_trans_rng<VT> v ) : __op_mul_vec_rng<MT,VT>( m ), vecB( v ) { }
+	
+	const __scal_vec_trans_rng<VT> vecB;
+};
+
+/// WITHOUT RANGES
 template< class VT > class __scal_vec_trans
 {
  public:
-	__scal_vec_trans( double a, __vec_trans<VT> m ) : alpha( a ), vec( m.vec ) { }
+	__scal_vec_trans( const VT& m ) : vec(m), alpha( 1.0 ), tr( NoTrans ) { }
+	__scal_vec_trans( const VT& m, double a ) : vec( m ), alpha( a ), tr( NoTrans ) { }
+	__scal_vec_trans( const VT& m, double a, enum cspblas_Trans t ) : vec( m ), alpha( a ), tr(t) { }
 	
-	__scal_op_trans_mul_vec<VT,Vector> operator*( Vector& v );
-	__scal_op_trans_mul_vec<VT,Matrix> operator*( Matrix& v );
+	__scal_vec_trans< VT >                        operator!( ) { return __scal_vec_trans<VT>( alpha, vec, Trans ); }
+	__scal_vec_trans< VT >                        operator-( ) { return __scal_vec_trans<VT>( -alpha, vec, tr ); }
+	__op_mul_vec< VT, Vector >                    operator*( const Vector& v );
+	__op_mul_vec< VT, Matrix >                    operator*( const Matrix& v );
+	__op_mul_vec_rng< VT, Vector >                operator*( __vec_rng<Vector> v );
+	__op_mul_vec_rng< VT, Matrix >                operator*( __vec_rng<Matrix> v );
 	
+	const VT& vec;
 	double alpha;
-	VT& vec;
+	const enum cspblas_Trans tr;
 };
-
-// Second level
-// Multiplied by VT or __scal_vec
 
 template< class MT, class VT > class __op_mul_vec
 {
  public:
-	__op_mul_vec( MT& m, VT& v ) : op( m ), vecA( v ) { }
+	__op_mul_vec( __scal_vec_trans<MT> m, __scal_vec_trans<VT> v ) : op( m ), vecA( v ) { }
 	
-	__op_mul_vec_plus_vec<MT,VT>      operator+( VT& v );
-	__op_mul_vec_plus_scal_vec<MT,VT> operator+( __scal_vec<VT> v );
-	
-	MT& op;
-	VT& vecA;
+	__op_mul_vec_plus_vec<MT,VT>      operator+( __scal_vec_trans<VT> v );
+	__op_mul_vec_plus_vec<MT,VT>      operator-( __scal_vec_trans<VT> v );
+	__op_mul_vec_plus_vec_rng<MT,VT>  operator+( __scal_vec_trans_rng<VT> v );
+	__op_mul_vec_plus_vec_rng<MT,VT>  operator-( __scal_vec_trans_rng<VT> v );
+	__op_mul_vec_plus_vec<MT,VT>      operator+( const VT& v );
+	__op_mul_vec_plus_vec<MT,VT>      operator-( const VT& v );
+
+	const __scal_vec_trans<MT> op;
+	const __scal_vec_trans<VT> vecA;
 };
-
-template< class MT, class VT > class __op_trans_mul_vec
-{
- public:
-	__op_trans_mul_vec( __vec_trans<MT> m, VT& v ) : op( m.vec ), vecA( v ) { }
-	
-	__op_trans_mul_vec_plus_vec<MT,VT>      operator+( VT& v );
-	__op_trans_mul_vec_plus_scal_vec<MT,VT> operator+( __scal_vec<VT> v );
-	
-	MT& op;
-	VT& vecA;
-};
-
-template< class MT, class VT > class __scal_op_mul_vec
-{
- public:
-	__scal_op_mul_vec( __scal_vec<MT> m, VT& v ) : alpha( m.alpha ), op( m.vec ), vecA( v ) { }
-
-	__scal_op_mul_vec_plus_vec<MT,VT>      operator+( VT& v );
-	__scal_op_mul_vec_plus_scal_vec<MT,VT> operator+( __scal_vec<VT> v );
-
-	double alpha;
-	MT& op;
-	VT& vecA;
-};
-
-template< class MT, class VT > class __scal_op_trans_mul_vec
-{
- public:
-	__scal_op_trans_mul_vec( __scal_vec_trans<MT> m, VT& v ) : alpha( m.alpha ), op( m.vec ), vecA( v ) { }
-	
-	__scal_op_trans_mul_vec_plus_vec<MT,VT>      operator+( VT& v );
-	__scal_op_trans_mul_vec_plus_scal_vec<MT,VT> operator+( __scal_vec<VT> v );
-	
-	double alpha;
-	MT& op;
-	VT& vecA;
-};
-
-// Third level
-// No operation. These are the arguments of the respective operator=
 
 template< class MT, class VT > class __op_mul_vec_plus_vec : public __op_mul_vec<MT,VT>
 {
  public:
-	__op_mul_vec_plus_vec( __op_mul_vec<MT,VT> m, VT& v ) : __op_mul_vec<MT,VT>( m ), vecB( v ) { }
-
-	VT& vecB;
-};
-
-template< class MT, class VT > class __op_trans_mul_vec_plus_vec : public __op_trans_mul_vec<MT,VT>
-{
- public:
-	__op_trans_mul_vec_plus_vec( __op_trans_mul_vec<MT,VT> m, VT& v ) : __op_trans_mul_vec<MT,VT>( m ), vecB( v ) { }
+	__op_mul_vec_plus_vec( __op_mul_vec<MT,VT> m, __scal_vec_trans<VT> v ) : __op_mul_vec<MT,VT>( m ), vecB( v ) { }
 	
-	VT& vecB;
+	const __scal_vec_trans<VT> vecB;
 };
 
-template< class MT, class VT > class __scal_op_mul_vec_plus_vec : public __scal_op_mul_vec<MT,VT>
-{
- public:
-	__scal_op_mul_vec_plus_vec( __scal_op_mul_vec<MT,VT> m, VT& v ) : __scal_op_mul_vec<MT,VT>( m ), vecB( v ) { }
-	
-	VT& vecB;
-};
 
-template< class MT, class VT > class __scal_op_trans_mul_vec_plus_vec : public __scal_op_trans_mul_vec<MT,VT>
-{
- public:
-	__scal_op_trans_mul_vec_plus_vec( __scal_op_trans_mul_vec<MT,VT> m, VT& v ) : __scal_op_trans_mul_vec<MT,VT>( m ), vecB( v ) { }
-	
-	VT& vecB;
-};
+/// Member functions and Operators for __vec_rng
+template< class VT > inline __op_mul_vec_rng<VT,Vector> __vec_rng<VT>::operator*( const Vector& v )
+	{ return __op_mul_vec_rng< VT, Vector >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
 
-template< class MT, class VT > class __op_mul_vec_plus_scal_vec : public __op_mul_vec<MT,VT>
-{
- public:
-	__op_mul_vec_plus_scal_vec( __op_mul_vec<MT,VT> m, __scal_vec<VT>& v ) : __op_mul_vec<MT,VT>( m ), beta( v.alpha ), vecB( v.vec ) { }
-	
-	double beta;
-	VT& vecB;
-};
+template< class VT > inline __op_mul_vec_rng<VT,Matrix> __vec_rng<VT>::operator*( const Matrix& v )
+	{ return __op_mul_vec_rng< VT, Matrix >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
 
-template< class MT, class VT > class __op_trans_mul_vec_plus_scal_vec : public __op_trans_mul_vec<MT,VT>
-{
- public:
-	__op_trans_mul_vec_plus_scal_vec( __op_trans_mul_vec<MT,VT> m, __scal_vec<VT>& v ) : __op_trans_mul_vec<MT,VT>( m ), beta( v.alpha ), vecB( v.vec ) { }
-	
-	double beta;
-	VT& vecB;
-};
+template< class VT > inline __op_mul_vec_rng<VT,Vector> __vec_rng<VT>::operator*( __vec_rng<Vector> v )
+	{ return __op_mul_vec_rng< VT, Vector >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
 
-template< class MT, class VT > class __scal_op_mul_vec_plus_scal_vec : public __scal_op_mul_vec<MT,VT>
-{
- public:
-	__scal_op_mul_vec_plus_scal_vec( __scal_op_mul_vec<MT,VT> m, __scal_vec<VT>& v ) : __scal_op_mul_vec<MT,VT>( m ), beta( v.alpha ), vecB( v.vec ) { }
-	
-	double beta;
-	VT& vecB;
-};
+template< class VT > inline __op_mul_vec_rng<VT,Matrix> __vec_rng<VT>::operator*( __vec_rng<Matrix> v )
+	{ return __op_mul_vec_rng< VT, Matrix >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
 
-template< class MT, class VT > class __scal_op_trans_mul_vec_plus_scal_vec : public __scal_op_trans_mul_vec<MT,VT>
-{
- public:
-	__scal_op_trans_mul_vec_plus_scal_vec( __scal_op_trans_mul_vec<MT,VT> m, __scal_vec<VT>& v ) : __scal_op_trans_mul_vec<MT,VT>( m ), beta( v.alpha ), vecB( v.vec ) { }
-	
-	double beta;
-	VT& vecB;
-};
+template< class VT > inline __scal_vec_trans_rng<VT>    __vec_rng<VT>::operator!( )
+	{ return __scal_vec_trans_rng<VT>( *this, 1.0, Trans ); }
 
-// the global operators
-inline __scal_vec<Vector>         operator*( double a, Vector& v ) { return __scal_vec<Vector>( a, v ); }
-inline __scal_vec<Matrix>         operator*( double a, Matrix& v ) { return __scal_vec<Matrix>( a, v ); }
-inline __scal_vec<SpMatrix>       operator*( double a, SpMatrix& v ) { return __scal_vec<SpMatrix>( a, v ); }
-inline __scal_vec_trans<Vector>   operator*( double a, __vec_trans<Vector> v ) { return __scal_vec_trans<Vector>( a, v ); }
-inline __scal_vec_trans<Matrix>   operator*( double a, __vec_trans<Matrix> v ) { return __scal_vec_trans<Matrix>( a, v ); }
-inline __scal_vec_trans<SpMatrix> operator*( double a, __vec_trans<SpMatrix> v ) { return __scal_vec_trans<SpMatrix>( a, v ); }
 
-template< class VT > inline __scal_vec_trans<VT> __vec_trans<VT>::operator*( double d )
-{ return __scal_vec_trans<VT>( d, *this ); }
+/// Member functions and Operators for __scal_vec_trans_rng
+template< class VT > inline __scal_vec_trans_rng<VT>::__scal_vec_trans_rng( __scal_vec_trans<VT> v )
+	: __vec_rng<VT>( v.vec ), alpha( v.alpha ), tr( v.tr ) { }
 
-template< class VT > inline __op_trans_mul_vec<VT,Vector> __vec_trans<VT>::operator*( Vector& v ) 
-{ return __op_trans_mul_vec<VT,Vector>( *this, v ); }
+template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans_rng<VT>::operator*( __vec_rng<Vector> v )
+	{ return __op_mul_vec_rng< VT, Vector >( *this, __scal_vec_trans_rng<Vector>( v ) ); }
 
-template< class VT > inline __op_trans_mul_vec<VT,Matrix> __vec_trans<VT>::operator*( Matrix& v ) 
-{ return __op_trans_mul_vec<VT,Matrix>( *this, v ); }
+template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans_rng<VT>::operator*( __vec_rng<Matrix> v )
+	{ return __op_mul_vec_rng< VT, Matrix >( *this, __scal_vec_trans_rng<Matrix>( v ) ); }
 
-template< class VT > inline __scal_op_mul_vec<VT,Vector> __scal_vec<VT>::operator*( Vector& v ) 
-{ return __scal_op_mul_vec<VT,Vector>( *this, v ); }
+template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans_rng<VT>::operator*( const Vector& v )
+	{ return __op_mul_vec_rng< VT, Vector >( *this, __scal_vec_trans_rng<Vector>( v ) ); }
 
-template< class VT > inline __scal_op_mul_vec<VT,Matrix> __scal_vec<VT>::operator*( Matrix& v ) 
-{ return __scal_op_mul_vec<VT,Matrix>( *this, v ); }
+template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans_rng<VT>::operator*( const Matrix& v )
+	{ return __op_mul_vec_rng< VT, Matrix >( *this, __scal_vec_trans_rng<Matrix>( v ) ); }
 
-template< class VT > inline __scal_op_trans_mul_vec<VT,Vector> __scal_vec_trans<VT>::operator*( Vector& v ) 
-{ return __scal_op_trans_mul_vec<VT,Vector>( *this, v ); }
 
-template< class VT > inline __scal_op_trans_mul_vec<VT,Matrix> __scal_vec_trans<VT>::operator*( Matrix& v ) 
-{ return __scal_op_trans_mul_vec<VT,Matrix>( *this, v ); }
+/// Member functions and Operators for __op_mul_vec_rng
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator+( __scal_vec_trans_rng<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, v ); }
 
-template< class MT, class VT > inline __op_mul_vec_plus_vec<MT,VT> __op_mul_vec<MT,VT>::operator+( VT& v )
-{ return __op_mul_vec_plus_vec<MT,VT>( *this, v ); }
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator+( const VT& v )
+		{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, __scal_vec_trans_rng<VT>( __vec_rng<VT>( v ) ) ); }
 
-template< class MT, class VT > inline __op_mul_vec_plus_scal_vec<MT,VT> __op_mul_vec<MT,VT>::operator+( __scal_vec<VT> v ) 
-{ return __op_mul_vec_plus_scal_vec<MT,VT>( *this, v ); }
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator+( __scal_vec_trans<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, __scal_vec_trans_rng<VT>( v ) ); }
 
-template< class MT, class VT > inline __op_trans_mul_vec_plus_vec<MT,VT> __op_trans_mul_vec<MT,VT>::operator+( VT& v ) 
-{ return __op_trans_mul_vec_plus_vec<MT,VT>( *this, v ); }
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator-( __scal_vec_trans_rng<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, __scal_vec_trans_rng<VT>( v, -v.alpha ) ); }
 
-template< class MT, class VT > inline __op_trans_mul_vec_plus_scal_vec<MT,VT> __op_trans_mul_vec<MT,VT>::operator+( __scal_vec<VT> v ) 
-{ return __op_trans_mul_vec_plus_scal_vec<MT,VT>( *this, v ); }
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator-( const VT& v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, __scal_vec_trans_rng<VT>( __vec_rng<VT>( v ), -1.0 ) ); }
 
-template< class MT, class VT > inline __scal_op_mul_vec_plus_vec<MT,VT> __scal_op_mul_vec<MT,VT>::operator+( VT& v )
-{ return __scal_op_mul_vec_plus_vec<MT,VT>( *this, v ); }
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>   __op_mul_vec_rng<MT,VT>::operator-( __scal_vec_trans<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( *this, __scal_vec_trans_rng<VT>( v.vec, -v.alpha, v.tr ) ); }
 
-template< class MT, class VT > inline __scal_op_mul_vec_plus_scal_vec<MT,VT> __scal_op_mul_vec<MT,VT>::operator+( __scal_vec<VT> v )
-{ return __scal_op_mul_vec_plus_scal_vec<MT,VT>( *this, v ); }
 
-template< class MT, class VT > inline __scal_op_trans_mul_vec_plus_vec<MT,VT> __scal_op_trans_mul_vec<MT,VT>::operator+( VT& v ) 
-{ return __scal_op_trans_mul_vec_plus_vec<MT,VT>( *this, v ); }
+/// Member functions and Operators for __scal_vec_trans
+template< class VT > inline __op_mul_vec< VT, Vector >     __scal_vec_trans<VT>::operator*( const Vector& v )
+	{ return __op_mul_vec< VT, Vector >( *this, __scal_vec_trans<Vector>( v ) ); }
 
-template< class MT, class VT > inline __scal_op_trans_mul_vec_plus_scal_vec<MT,VT> __scal_op_trans_mul_vec<MT,VT>::operator+( __scal_vec<VT> v ) 
-{ return __scal_op_trans_mul_vec_plus_scal_vec<MT,VT>( *this, v ); }
+template< class VT > inline __op_mul_vec< VT, Matrix >     __scal_vec_trans<VT>::operator*( const Matrix& v )
+	{ return __op_mul_vec< VT, Matrix >( *this, __scal_vec_trans<Matrix>( v ) ); }
 
-class Vector : public Array1D<double> 
+template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans<VT>::operator*( __vec_rng<Vector> v )
+	{ return __op_mul_vec_rng< VT, Vector >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
+
+template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans<VT>::operator*( __vec_rng<Matrix> v )
+	{ return __op_mul_vec_rng< VT, Matrix >( __scal_vec_trans_rng<VT>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
+
+
+/// Member functions and Operators for __op_mul_vec
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>  __op_mul_vec<MT,VT>::operator+( __scal_vec_trans_rng<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( __op_mul_vec_rng<MT,VT>( this->op, this->vecA ), v ); }
+
+template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT,VT>  __op_mul_vec<MT,VT>::operator-( __scal_vec_trans_rng<VT> v )
+	{ return __op_mul_vec_plus_vec_rng<MT,VT>( __op_mul_vec_rng<MT,VT>( this->op, this->vecA ), __scal_vec_trans_rng<VT>( v.vec, -v.alpha, v.tr ) ); }
+
+template< class MT, class VT > inline __op_mul_vec_plus_vec<MT,VT>      __op_mul_vec<MT,VT>::operator+( __scal_vec_trans<VT> v )
+	{ return __op_mul_vec_plus_vec<MT,VT>( *this, v ); }
+
+template< class MT, class VT > inline __op_mul_vec_plus_vec<MT,VT>      __op_mul_vec<MT,VT>::operator-( __scal_vec_trans<VT> v )
+	{ return __op_mul_vec_plus_vec<MT,VT>( *this, __scal_vec_trans<VT>( v.vec, -v.alpha, v.tr ) ); }
+
+template< class MT, class VT > inline __op_mul_vec_plus_vec<MT,VT>      __op_mul_vec<MT,VT>::operator+( const VT& v )
+	{ return __op_mul_vec_plus_vec<MT,VT>( *this, __scal_vec_trans<VT>( v ) ); }
+
+template< class MT, class VT > inline __op_mul_vec_plus_vec<MT,VT>      __op_mul_vec<MT,VT>::operator-( const VT& v )
+	{ return __op_mul_vec_plus_vec<MT,VT>( *this, __scal_vec_trans<VT>( v, -1.0 ) ); }
+
+
+/// The global operators
+inline __scal_vec_trans < Vector >                      operator*( double a, const Vector& v )
+	{ return __scal_vec_trans<Vector>( v, a ); }
+
+inline __scal_vec_trans < Matrix >                      operator*( double a, const Matrix& v )
+	{ return __scal_vec_trans<Matrix>( v, a ); }
+
+inline __scal_vec_trans < SpMatrix >                    operator*( double a, const SpMatrix& v )
+	{ return __scal_vec_trans<SpMatrix>( v, a ); }
+
+template< class VT > inline __scal_vec_trans < VT  >    operator*( double a, __scal_vec_trans< VT > v )
+	{ return __scal_vec_trans<VT>( v.vec, a * v.alpha, v.tr ); }
+
+template< class VT > inline __scal_vec_trans_rng < VT > operator*( double a, __vec_rng< VT > v )
+	{ return __scal_vec_trans_rng<VT>( v, a ); }
+
+template< class VT > inline __scal_vec_trans_rng < VT > operator*( double a, __scal_vec_trans_rng< VT > v )
+	{ return __scal_vec_trans_rng<VT>( v, a * v.alpha ); }
+
+inline __scal_vec_trans < Vector >                      operator-( const Vector& v )
+	{ return __scal_vec_trans<Vector>( v, -1.0 ); }
+inline __scal_vec_trans < Matrix >                      operator-( const Matrix& v )
+	{ return __scal_vec_trans<Matrix>( v, -1.0 ); }
+inline __scal_vec_trans < SpMatrix >                    operator-( const SpMatrix& v )
+	{ return __scal_vec_trans<SpMatrix>( v, -1.0 ); }
+
+#endif // PDDESYS_H
+
+class Vector : public Array1D<double>
 {
 
 public:
@@ -611,37 +624,26 @@ public:
 		for(int j=0; j<n; j++) std::cout<<v[j]<<'\t'; std::cout<<'\n'; 
 	}
 
+#ifndef PDDESYS_H
+
 	// Matrix operations
-	
-	Vector& operator=( const __scal_vec<Vector> );
+	Vector& operator=( const __scal_vec_trans<Vector> );
 	Vector& operator=( const __op_mul_vec<Matrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec<Matrix,Vector> );
 	Vector& operator=( const __op_mul_vec_plus_vec<Matrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec_plus_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec_plus_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec_plus_vec<Matrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_scal_vec<Matrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec_plus_scal_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec_plus_scal_vec<Matrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec_plus_scal_vec<Matrix,Vector> );
-
-	// Sparse matrix operations
-	
 	Vector& operator=( const __op_mul_vec<SpMatrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec<SpMatrix,Vector> );
 	Vector& operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Vector> );
-	Vector& operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Vector> );
-	Vector& operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Vector> );
+	// with ranges
+	Vector& operator=( const __scal_vec_trans_rng<Vector> );
+	Vector& operator=( const __op_mul_vec_rng<Matrix,Vector> );
+	Vector& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> );
+	Vector& operator=( const __op_mul_vec_rng<SpMatrix,Vector> );
+	Vector& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Vector> );
 
+	__scal_vec_trans<Vector> operator-( ) { return __scal_vec_trans<Vector>( *this, -1.0 ); }
+	__vec_rng<Vector> operator[ ] ( rng r ) { return __vec_rng<Vector>( *this, r ); }
+	
+#endif // PDDESYS_H
+	
 	friend class SpMatrix;
 	friend class SpFact;
 	friend class Matrix;
@@ -707,14 +709,25 @@ class Matrix : public Array2D<double>
 		cblas_mmxmpym( trans, r, c, m, r, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 	}
 	
+	Matrix& operator=( const __scal_vec_trans<Matrix> );
+	Matrix& operator=( const __op_mul_vec<Matrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec<SpMatrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> );
+		// with ranges
+	Matrix& operator=( const __scal_vec_trans_rng<Matrix> );
+	Matrix& operator=( const __op_mul_vec_rng<Matrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec_rng<SpMatrix,Matrix> );
+	Matrix& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Matrix> );
+	
 	void AX( double* out, const double* in, double alpha, bool trans ) const;
 	void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
 	
 	void Eigval( Vector& re, Vector& im );
 	void Eigval( Vector& re, Vector& im, Matrix& lev, Matrix& rev );
 	void StrPlot( GnuPlot& pl );
-#endif
-
+	
 	/* operators */
 	Matrix& operator*=( double mul )
 	{
@@ -722,40 +735,16 @@ class Matrix : public Array2D<double>
 		return *this;
 	}
 	
-	__op_mul_vec<Matrix,Vector> operator*( Vector& v ) { return __op_mul_vec<Matrix,Vector>( *this, v ); }
-	__op_mul_vec<Matrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<Matrix,Matrix>( *this, v ); }
-	__vec_trans<Matrix>         operator!( ) { return __vec_trans<Matrix>( *this ); }
+	__op_mul_vec<Matrix,Vector> operator*( Vector& v ) { return __op_mul_vec<Matrix,Vector>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
+	__op_mul_vec<Matrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<Matrix,Matrix>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
+	__op_mul_vec_rng<Matrix,Vector> operator*( __vec_rng<Vector> v )
+		{ return __op_mul_vec_rng<Matrix,Vector>( __scal_vec_trans_rng<Matrix>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
+	__op_mul_vec_rng<Matrix,Matrix> operator*( __vec_rng<Matrix> v )
+		{ return __op_mul_vec_rng<Matrix,Matrix>( __scal_vec_trans_rng<Matrix>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
+	__scal_vec_trans<Matrix>    operator!( ) { return __scal_vec_trans<Matrix>( *this, 1.0, Trans ); }
+	__vec_rng<Matrix>           operator[ ] ( rng r ) { return __vec_rng<Matrix>( *this, r ); }
 	
-	// Sparse matrix operations
-	
-	Matrix& operator=( const __scal_vec<Matrix> );
-	Matrix& operator=( const __op_mul_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec_plus_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec_plus_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec_plus_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_scal_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec_plus_scal_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec_plus_scal_vec<Matrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec_plus_scal_vec<Matrix,Matrix> );
-	
-	// Sparse matrix operations
-	
-	Matrix& operator=( const __op_mul_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec_plus_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec_plus_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec_plus_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_scal_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_mul_vec_plus_scal_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __scal_op_trans_mul_vec_plus_scal_vec<SpMatrix,Matrix> );
+#endif // PDDESYS_H
 	
 	void Print()
 	{
@@ -766,7 +755,7 @@ class Matrix : public Array2D<double>
 			{
 				std::cout<<(*this)(i,j)<<'\t';
 				sum += (*this)(i,j);
-			} 
+			}
 			std::cout<<'\n';
 		}
 		cout<<"SUM: "<<sum<<'\n';
@@ -851,69 +840,42 @@ inline void Matrix::AXpY( double* out, const double* in, const double* Y, double
 
 // End of implementation of Matrix
 
-
 // Implementation of Vector
 
-inline Vector& Vector::operator=( const __scal_vec<Vector> ) { std::cout<<"__scal_vec\n"; return *this; }
+inline Vector& Vector::operator=( const __scal_vec_trans<Vector> )
+{
+	std::cout<<"__scal_vec\n"; return *this;
+}
 
-inline Vector& Vector::operator=( const __op_mul_vec<Matrix,Vector> op )
+inline Vector& Vector::operator=( const __op_mul_vec<Matrix,Vector> R )
 {
-	op.op.mmx( NoTrans, this->v, op.vecA.v, 1.0 );
+	R.op.vec.mmx( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha );
+// 	std::cout<<"__op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
-inline Vector& Vector::operator=( const __op_trans_mul_vec<Matrix,Vector> op )
+
+inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<Matrix,Vector> R )
 {
-	op.op.mmx( Trans, this->v, op.vecA.v, 1.0 );
+	R.op.vec.mmxpy( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha, R.vecB.vec.v, R.vecB.alpha );
+// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Vector>\n";
 	return *this;
 }
-inline Vector& Vector::operator=( const __scal_op_mul_vec<Matrix,Vector> op )
+
+inline Vector& Vector::operator=( const __scal_vec_trans_rng<Vector> )
 {
-	op.op.mmx( NoTrans, this->v, op.vecA.v, op.alpha );
+	std::cout<<"__scal_vec_rng\n"; return *this;
 	return *this;
 }
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec<Matrix,Vector> op )
+
+inline Vector& Vector::operator=( const __op_mul_vec_rng<Matrix,Vector> R )
 {
-	op.op.mmx( Trans, this->v, op.vecA.v, op.alpha );
+	std::cout<<"__op_mul_vec_rngMatrix,Vector>\n";
 	return *this;
 }
-inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<Matrix,Vector> op )
+
+inline Vector& Vector::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> R )
 {
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_mul_vec_plus_scal_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, 1.0, op.vecB.v, op.beta );
-	return *this;
-}
-inline Vector& Vector::operator=( const __op_trans_mul_vec_plus_scal_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, 1.0, op.vecB.v, 1.0 );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_mul_vec_plus_scal_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( NoTrans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
-	return *this;
-}
-inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<Matrix,Vector> op )
-{
-	op.op.mmxpy( Trans, this->v, op.vecA.v, op.alpha, op.vecB.v, op.beta );
+	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Vector>\n";
 	return *this;
 }
 
@@ -921,66 +883,41 @@ inline Vector& Vector::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<Ma
 
 // Implementation of Matrix
 
-inline Matrix& Matrix::operator=( const __scal_vec<Matrix> ) { std::cout<<"__scal_vec\n"; return *this; }
+inline Matrix& Matrix::operator=( const __scal_vec_trans<Matrix> ) 
+{
+	std::cout<<"__scal_vec\n"; return *this;
+	return *this;
+}
 
-inline Matrix& Matrix::operator=( const __op_mul_vec<Matrix,Matrix> op )
+inline Matrix& Matrix::operator=( const __op_mul_vec<Matrix,Matrix> R )
 {
-	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
+	R.op.vec.mmxm( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c );
+// 	std::cout<<"__op_mul_vec<Matrix,Matrix>\n";
 	return *this;
 }
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec<Matrix,Matrix> op )
+
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> R )
 {
-	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecA.c );
+	R.op.vec.mmxmpym( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecA.vec.c );
+// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
 	return *this;
 }
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec<Matrix,Matrix> op )
+
+inline Matrix& Matrix::operator=( const __scal_vec_trans_rng<Matrix> )
 {
-	op.op.mmxm( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
+	std::cout<<"__scal_vec_rng\n"; return *this;
 	return *this;
 }
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec<Matrix,Matrix> op )
+
+inline Matrix& Matrix::operator=( const __op_mul_vec_rng<Matrix,Matrix> R )
 {
-	op.op.mmxm( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecA.c );
+	std::cout<<"__op_mul_vec_rngMatrix,Matrix>\n";
 	return *this;
 }
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> op )
+
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> R )
 {
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_scal_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __op_trans_mul_vec_plus_scal_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, 1.0, op.vecB.m, op.vecB.r, 1.0, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_mul_vec_plus_scal_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( NoTrans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
-	return *this;
-}
-inline Matrix& Matrix::operator=( const __scal_op_trans_mul_vec_plus_scal_vec<Matrix,Matrix> op )
-{
-	op.op.mmxmpym( Trans, this->m, this->r, op.vecA.m, op.vecA.r, op.alpha, op.vecB.m, op.vecB.r, op.beta, op.vecA.c );
+	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Matrix>\n";
 	return *this;
 }
 

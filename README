@@ -8,22 +8,16 @@ version 1.0 the file structures will not change. Till then be cautious and
 check the manual frequently.
 
 BUGS:
-No bugs were reported, yet.
+  HyperMatrix::Check( HyperVector& X, HyperVector& F )
+  the references maybe buggy with some compilers ( gcc 2.95.4 )
+  Note that this function is not used, so it may cause trouble only during
+  compilation phase.
 
 The program was tested on:
 
 Linux x86, gcc 3.4.2, 3.4.3, 3.4.4 (Fedora Core 3 and Debian 3.0)
 Linux x86, gcc 4.0.0, 4.0.1 (Fedora Core 4)
 SuSE 9.3
-
-Although gcc 4.0 can compile the software, it is not recommended to use it.
-At the time of writing gcc 3.4.4 gave the best result.
-
-With gcc 4.0 the cblas_idamax routine is buggy, but not the fortran routine,
-which wraps the same ATLAS routine, so the problem is in the compiler.
-
-gcc 2.95 cannot compile the software. However gcc 3.x.y should work,
-especially starting from v3.3.x.
 
 Sun Solaris 5.9 sun4u does not work because "long int lrint( double )" is missing from
 its math library. If you know any function which rounds a double to its
