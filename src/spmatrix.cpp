@@ -252,12 +252,6 @@ void SpFact::Solve( Vector& x, const Vector& b, bool trans )
 	status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x.Pointer(), b.v, Numeric, Control, 0, Wi, W );
 }
 
-void SpFact::Scale( Vector& x, const Vector& b )
-{
-	if( !fact ) Fact();
-	umfpack_di_scale( x.Pointer(), b.v, Numeric );
-}
-
 void SpFact::Solve( Matrix& x, const Matrix &b, bool trans )
 {
 	if( !fact ) Fact();
@@ -290,11 +284,11 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 	}
 	integer IDO      = 0;
 	char    BMAT     = 'I';
-	integer N        = AI.Size() * A0.Size();
+	integer N        = AI.Size() * A0.Col();
 	char    WHICH[]  = {'L','M'};
 	integer NEV      = wr.Size()-1;
 	double  TOL      = 0.0;
-//	 RESID was defined in the class
+//	 RESID is defined in the class
 	integer NCV      = 2*NEV + 1;
 	double* V        = new double[(N+1)*(NCV+1)];
 	integer LDV      = N;
@@ -309,13 +303,13 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 	                    0,     // NUMOP
 	                    0,     // NUMOPB
 	                    0,     // NUMREO
-							  0, };  // padding
+	                    0 };   // padding
 	integer IPNTR[14];
 	double* WORKD     = new double[4*N+1]; //3*N
 	integer LWORKL    = 3*NCV*NCV + 6*NCV;
 	double* WORKL     = new double[LWORKL+1];
-	integer INFO; // RESID is computed by the routine,
-                         // but it would be better to use from a prev. run
+	integer INFO;
+	// whether we need to create a new RESID or we can use it from a previous run
 	if( isINIT ) INFO = 1;
 	else INFO = 0;
 
@@ -334,18 +328,18 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 			// these are the unit operators above the diagonal
 			for( int i=0; i < AI.Size()-1; i++ )
 			{
-				for( int j=0; j<A0.Size(); j++ ) out[j + i*A0.Size()] = in[j + (i+1)*A0.Size()];
+				for( int j=0; j<A0.Col(); j++ ) out[j + i*A0.Col()] = in[j + (i+1)*A0.Col()];
 			}
 			// the last row: multiplication and solution
-			for( int j = 0; j < A0.Size(); j++ ) out[j+(AI.Size()-1)*A0.Size()] = 0.0;
+			for( int j = 0; j < A0.Col(); j++ ) out[j+(AI.Size()-1)*A0.Col()] = 0.0;
 			for( int i = 0; i < AI.Size(); i++ )
 			{
 				if( AI(AI.Size()-1-i).GetNZ() != 0 )
 				{
-					AI(AI.Size()-1-i).AX( tvec+i*A0.Size(), in+i*A0.Size(), 1.0, false );
-					A0.Solve( tvec2+i*A0.Size(), tvec+i*A0.Size() );
+					AI(AI.Size()-1-i).AX( tvec+i*A0.Col(), in+i*A0.Col(), 1.0, false );
+					A0.Solve( tvec2+i*A0.Col(), tvec+i*A0.Col() );
 					// summing up the last row
-					for( int j=0; j<A0.Size(); j++ ) out[j+(AI.Size()-1)*A0.Size()] += tvec2[j+i*A0.Size()];
+					for( int j=0; j<A0.Col(); j++ ) out[j+(AI.Size()-1)*A0.Col()] += tvec2[j+i*A0.Col()];
 				}
 			}
 		}

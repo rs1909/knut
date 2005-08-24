@@ -10,7 +10,13 @@
 #ifndef CSPBLAS_H
 #define CSPBLAS_H
 
-enum cspblas_Trans{ NoTrans = 0, Trans = 1 }; 
+enum cspblas_Trans{ NoTrans = 0, Trans = 1 };
+
+// VECTOR - VECTOR DOT PRODUCT
+
+double cblas_dndot( const int n, double* in1, const double* in2, const double alpha );
+
+void cblas_dnvcopy( const int n, double* out, const double* in, const double alpha );
 
 // SPARSE MATRIX ROUTINES
 

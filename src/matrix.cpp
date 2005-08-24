@@ -62,23 +62,6 @@ void Matrix::StrPlot( GnuPlot& pl )
 	pl.Show();
 }
 
-void Matrix::Copy( int i, int j, Matrix& mat )
-{
-	int k,l;
-	if( (mat.r+i > this->r)||(mat.c+j > this->c) )
-	{
-		cout << "Matrix::copy: wrong dimensions" << '\n';
-		throw(-1);
-	}
-	for( k = 0; k < mat.r; k++)
-	{
-		for( l = 0; l < mat.c; l++)
-		{
-			(*this)(i+k,j+l) = mat(k,l);
-		}
-	}
-}
-
 void Matrix::Eigval( Vector& wr, Vector& wi )
 {
 	if( (this->r != this->c)||(this->r != wr.Size())||(this->r != wi.Size()) )
@@ -260,13 +243,13 @@ void MatFact::Solve( Matrix& x, const Matrix& b, bool trans )
 			break;
 		default:
 			if( !fact ) Fact();
-
+			
 			char FACT='F', equed='N', TRANS;
 			if( trans ) TRANS = 'T'; else TRANS = 'N';
 			double *fberr = new double[2*b.Col()+1]; 
 			integer n=this->r;
 			integer nrhs=b.Col();
-  
+			
 			dgesvx_( &FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
 			         ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n, 
 			         &rcond, fberr, fberr+b.Col(), work, iwork, &info, 1, 1, 1);

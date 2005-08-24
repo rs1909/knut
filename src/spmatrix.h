@@ -39,75 +39,85 @@ class SpMatrix
 		int *Ap;
 		int *Ai;
 		double *Ax;
-
+	
 	public:
 		
 		SpMatrix( ) : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0) { }
 		SpMatrix( char F, int n_, int m_, int nz ) { Init( F, n_, m_, nz ); }
 		SpMatrix( char F, int n_, int nz ) { Init( F, n_, n_, nz ); }
-		SpMatrix( const SpMatrix& M ) /*: BaseMatrix()*/ { Init( M ); }
+		SpMatrix( const SpMatrix& M ) { Init( M ); }
 		virtual ~SpMatrix();
 		
 		void Init( char F, int n_, int m_, int nz );
 		void Init( const SpMatrix& M );
 		
-		virtual void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
+		void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
 		{
 			cspblas_mmx( format, trans, n, m, Ap, Ai,Ax, out, in, alpha );
 		}
-		virtual void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
+		void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
 		{
 			cspblas_mmxpy( format, trans, n, m, Ap, Ai, Ax, out, in, alpha, Y, beta );
 		}
-		virtual void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
+		void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
 		{
 			cspblas_mmxm( format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, nrhs );
 		}
-		virtual void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha,
+		void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha,
 		                      const double* Y, int ldY, double beta, int nrhs ) const
 		{
 			cspblas_mmxmpym( format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 		}
 		
-		__op_mul_vec<SpMatrix,Vector> operator*( Vector& v ) { return __op_mul_vec<SpMatrix,Vector>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
-		__op_mul_vec<SpMatrix,Matrix> operator*( Matrix& v ) { return __op_mul_vec<SpMatrix,Matrix>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
-		__op_mul_vec_rng<SpMatrix,Vector> operator*( __vec_rng<Vector> v )
-			{ return __op_mul_vec_rng<SpMatrix,Vector>( __scal_vec_trans_rng<SpMatrix>( *this ), __scal_vec_trans_rng<Vector>( v ) ); }
-		__op_mul_vec_rng<SpMatrix,Matrix> operator*( __vec_rng<Matrix> v )
-			{ return __op_mul_vec_rng<SpMatrix,Matrix>( __scal_vec_trans_rng<SpMatrix>( *this ), __scal_vec_trans_rng<Matrix>( v ) ); }
-		__scal_vec_trans<SpMatrix>    operator!( ) { return __scal_vec_trans<SpMatrix>( *this, 1.0, Trans ); }
-		__vec_rng<SpMatrix>           operator[ ] ( rng r ) { return __vec_rng<SpMatrix>( *this, r ); }
+		__op_mul_vec<SpMatrix,Vector>     operator*( Vector& v )
+				{ return __op_mul_vec<SpMatrix,Vector>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
+		__op_mul_vec<SpMatrix,Matrix>     operator*( Matrix& v )
+				{ return __op_mul_vec<SpMatrix,Matrix>( __scal_vec_trans<SpMatrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
+		__op_mul_vec_rng<SpMatrix,Vector> operator*( __scal_vec_trans_rng<Vector> v )
+				{ return __op_mul_vec_rng<SpMatrix,Vector>( __scal_vec_trans_rng<SpMatrix>( *this ), v ); }
+		__op_mul_vec_rng<SpMatrix,Matrix> operator*( __scal_vec_trans_rng<Matrix> v )
+				{ return __op_mul_vec_rng<SpMatrix,Matrix>( __scal_vec_trans_rng<SpMatrix>( *this ), v ); }
+		__scal_vec_trans<SpMatrix>        operator!( )
+				{ return __scal_vec_trans<SpMatrix>( *this, 1.0, Trans ); }
+		__scal_vec_trans_rng<SpMatrix>    operator[ ] ( rng r )
+				{ return __scal_vec_trans_rng<SpMatrix>( *this, r ); }
 		
 		void AX( double* out, const double* in, double alpha, bool trans ) const;
 		void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
 		
-		int Row() const;
-		int Col() const;
+		int Row() const { if( format == 'R' ) return n; else return m; }
+		int Col() const { if( format == 'R' ) return m; else return n; }
 		
+		/// clear the matrix
+		/// these have to be virtual, because these might be called as SpFact
 		virtual void Clear();
 		virtual void Clear(char F);
-		
+		/// checks the structure of the matrix
 		void Check();
 		
 		// Fill in routines
-		void AddC( int n_, int *idx, double *vec );
-		void AddR( int n_, int *idx, double *vec );
-		
+		/// Creates a new line in the matrix
 		int NewL( int size_ );
-		
+		/// Writes or returns the row or column index 
+		/// into line `l' and the `e'-th element
 		int& WrLi( int l, int e );
-		
+		/// Writes into line `l' and the `e'-th element
 		double& WrLx( int l, int e );
-		
+		/// returns the length of the n_ -th line in the matrix
 		int GetL( int n_ );
-		
+		/// returns the nonzero elements in the matrix
 		int GetNZ(){ return Ap[n]; }
+		/// returns the number of lines, e.g. columns or rows in the matrix depending on format
 		int GetN(){ return n; }
 		// Computation routines
+		/// transposes the matrix into the other format
 		void Swap();
-		// void Eigval( Vector& re, Vector& im ); // not used anymore
+		// these are used for debugging only
+		/// plots the structure of the matrix
 		void StrPlot( GnuPlot& pl );
+		/// prints out Ap
 		void PrintAp(){ for(int i=0; i<n+1; i++) cout<<Ap[i]<<'\t'; cout<<'\n'; }
+		/// prints the whole matrix onto the screen
 		void Print();
 };
 
@@ -145,8 +155,6 @@ class SpFact : public SpMatrix
 		void SetIter( int N ){ Control[UMFPACK_IRSTEP] = N; }
 		void Clear( );
 		void Clear( char F );
-		int  Size() const { return n; }
-		void Scale( Vector& x, const Vector& b );
 		
 		void Solve( double* x, double* b, bool trans = false );
 		void Solve( Vector& x, const Vector& b, bool trans = false );
@@ -241,9 +249,6 @@ inline void SpMatrix::Clear(char F)
 	format = F;
 	for( int i = 0; i < size; i++ ){ Ai[i] = 0; Ax[i] = 0.0; }
 }
-
-inline int SpMatrix::Row() const { if( format == 'R' ) return n; else return m; }
-inline int SpMatrix::Col() const { if( format == 'R' ) return m; else return n; }
 
 inline int SpMatrix::NewL( int size_ )
 {

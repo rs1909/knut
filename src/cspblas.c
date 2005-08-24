@@ -10,6 +10,55 @@
 #include "cspblas.h"
 
 static
+inline double DnDot( const int n, double* in1, const double* in2, const double alpha )
+{
+	int j;
+	register double out, r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
+	
+	out = 0.0;
+	for( j = 0; j+7 < n; j+=8 )
+	{
+		r0 = in1[j] * in2[j];
+		r1 = in1[j+1] * in2[j+1];
+		r2 = in1[j+2] * in2[j+2];
+		r3 = in1[j+3] * in2[j+3];
+		r4 = in1[j+4] * in2[j+4];
+		r5 = in1[j+5] * in2[j+5];
+		r6 = in1[j+6] * in2[j+6];
+		r7 = in1[j+7] * in2[j+7];
+		t0 = r0 + r1 + r2 + r3;
+		t1 = r4 + r5 + r6 + r7;
+		out += alpha * ( t0 + t1 );
+	}
+	for( ; j < n; j+=1 )
+	{
+		out += alpha * in1[j] * in2[j];
+	}
+	return out;
+}
+
+static
+inline void DnVCopy( const int n, double* out, const double* in, const double alpha )
+{
+	int j;
+	for( j = 0; j+7 < n; j+=8 )
+	{
+		out[j]   = alpha * in[j];
+		out[j+1] = alpha * in[j+1];
+		out[j+2] = alpha * in[j+2];
+		out[j+3] = alpha * in[j+3];
+		out[j+4] = alpha * in[j+4];
+		out[j+5] = alpha * in[j+5];
+		out[j+6] = alpha * in[j+6];
+		out[j+7] = alpha * in[j+7];
+	}
+	for( ; j < n; j+=1 )
+	{
+		out[j] = alpha * in[j];
+	}
+}
+
+static
 inline void SpMulR( const int n, const int m, const int* Ap, const int* Ai, const double* Ax,
                     double* out, const double* in, const double alpha, const int incIN )
 {
@@ -157,6 +206,20 @@ inline void SpMulCpY( const int n, const int m, const int* Ap, const int* Ai, co
 			out[Ai[k]] += Ax[k] * t0;
 		}
 	}
+}
+
+double cblas_dndot( const int n, double* in1, const double* in2, const double alpha )
+{
+	if( alpha == 1.0 ) return DnDot( n, in1, in2, 1.0 );
+	else if( alpha == -1.0 ) return DnDot( n, in1, in2, -1.0 );
+	else return DnDot( n, in1, in2, alpha );
+}
+
+void cblas_dnvcopy( const int n, double* out, const double* in, const double alpha )
+{
+	if( alpha == 1.0 ) DnVCopy( n, out, in, 1.0 );
+	else if( alpha == -1.0 ) DnVCopy( n, out, in, -1.0 );
+	else DnVCopy( n, out, in, alpha );
 }
 
 void cspblas_mmx( char format, enum cspblas_Trans trans, const int n, const int m, const int* Ap, const int* Ai, const double* Ax, 
