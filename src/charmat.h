@@ -13,6 +13,7 @@
 #include "matrix.h"
 #include "spmatrix.h"
 #include "ncolloc.h"
+#include "error.h"
 
 class baseCharMat
 {
@@ -71,8 +72,8 @@ class CharMatCPLX : public baseCharMat
 		CharMatCPLX( NColloc& col );
 		virtual ~CharMatCPLX() { }
 		
-		void Init( NColloc& , const Vector& , const JagMatrix3D& , double ) { throw(-1); }
-		void Init( NColloc& , const Vector& , const JagMatrix3D& , double , Vector&  ) { throw(-1); }
+		void Init( NColloc& , const Vector& , const JagMatrix3D& , double ) { PDError(-1); }
+		void Init( NColloc& , const Vector& , const JagMatrix3D& , double , Vector&  ) { PDError(-1); }
 		
 		void Init( NColloc& , const Vector&, const JagMatrix3D&, double zzRe, double zzIm );
 		void Init( NColloc& , const Vector&, const JagMatrix3D&, double zzRe, double zzIm, Vector& q );
@@ -83,7 +84,7 @@ class CharMatCPLX : public baseCharMat
 		
 		void Delta_z( Vector& delta_z, NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		
-		void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { throw(-1); }
+		void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
 		
 		void Switch( Vector& Re, Vector& Im, double& alpha, NColloc& col );
 	private:

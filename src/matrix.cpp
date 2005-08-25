@@ -147,7 +147,7 @@ void MatFact::Fact()
 	if( (this->r != this->c) )
 	{
 		cout << "MatFact::Fact wrong dimensions" << '\n';
-		throw(-1);
+		PDError(-1);
 	}
 
 	char FACT='N',trans='N',equed='N';
@@ -165,8 +165,8 @@ void MatFact::Fact()
 
 void MatFact::Solve( Vector& x, const Vector& b, bool trans )
 {
-	if( this->r != this->c ) { cout<<"MatFact::Solve not a square matrix\n"; throw(1); return; }
-	if( (b.Size() != this->c)||(b.Size() != x.Size()) ) { cout<<"MatFact::Solve Vector sizes differ\n"; throw(1); return; }
+	if( this->r != this->c ) { cout<<"MatFact::Solve not a square matrix\n"; PDError(1); return; }
+	if( (b.Size() != this->c)||(b.Size() != x.Size()) ) { cout<<"MatFact::Solve Vector sizes differ\n"; PDError(1); return; }
 	
 	
 	const Matrix& AA = *this;
@@ -209,9 +209,9 @@ void MatFact::Solve( Vector& x, const Vector& b, bool trans )
 
 void MatFact::Solve( Matrix& x, const Matrix& b, bool trans )
 {
-	if( this->r != this->c ) { cout<<"MatFact::Solve not a square matrix\n"; throw(1); return; }
-	if( b.Col() != x.Col() ) { cout<<"MatFact::Solve Matrix columns differ\n"; throw(1); return; }
-	if( (b.Row() != this->c)||(b.Row() != x.Row()) ) { cout<<"MatFact::Solve Matrix rows differ\n"; throw(1); return; }
+	if( this->r != this->c ) { cout<<"MatFact::Solve not a square matrix\n"; PDError(1); return; }
+	if( b.Col() != x.Col() ) { cout<<"MatFact::Solve Matrix columns differ\n"; PDError(1); return; }
+	if( (b.Row() != this->c)||(b.Row() != x.Row()) ) { cout<<"MatFact::Solve Matrix rows differ\n"; PDError(1); return; }
   
 	const Matrix& AA = *this;
 	double det;

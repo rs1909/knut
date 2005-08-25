@@ -502,7 +502,7 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F )
 			{
 				// error
 				std::cout<<"HyperMatrix::Solve Error\n";
-				throw(-1);
+				PDError(-1);
 			}
 		}
 		else
@@ -528,7 +528,7 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F )
 	else
 	{
 		std::cout<<"HyperMatrix::Solve Error\n";
-		throw(-1);
+		PDError(-1);
 	}
 	
 //	Check( X, F );
@@ -554,7 +554,7 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F, int bord )
 			{
 				// error
 				std::cout<<"HyperMatrix::Solve Error\n";
-				throw(-1);
+				PDError(-1);
 			}
 		}
 		else
@@ -580,7 +580,7 @@ void HyperMatrix::Solve( HyperVector& X, HyperVector& F, int bord )
 	else
 	{
 		std::cout<<"HyperMatrix::Solve Error\n";
-		throw(-1);
+		PDError(-1);
 	}
 	
 //	Check( X, F );

@@ -7,6 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "error.h"
 #include "ncolloc.h"
 #include "system.h"
 
@@ -56,7 +57,7 @@ static void poly_gau( Vector& roots )
 			break;
 		default:
 			cout << "Something wrong! \n";
-			throw(-1);
+			PDError(-1);
 			return;
 			break;
 	}
@@ -123,7 +124,7 @@ static void poly_lgr( Vector& t, Vector &out, double c )
 	if( t.Size() != out.Size() )
 	{
 		cout << "poly_lgr: wrong dimensions" << '\n';
-		throw(-1);
+		PDError(-1);
 	}
 	for( int i = 0; i < t.Size(); i++)
 	{
@@ -146,7 +147,7 @@ static void poly_dlg( Vector& t, Vector& out, double c)
 	if( t.Size() != out.Size() )
 	{
 		cout << "poly_dlg: wrong dimensions" << '\n';
-		throw(-1);
+		PDError(-1);
 	}
 
 	for(j = 0; j < t.Size(); j++ )
@@ -325,8 +326,8 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 			for( int k = 0; k < NTAU; k++ )
 			{
 				ttau(k) /= par(0);
-				if( ttau(k) > NMAT ){ std::cout<<"\n NColloc::Init: DELAY > NMAT*PERIOD  "<<k<<"\n\n"; throw(12); }
-				if( ttau(k) < 0.0 ){ std::cout<<"\n NColloc::Init: Negative DELAY "<<k<<"\n\n"; throw(12); }
+				if( ttau(k) > NMAT ){ std::cout<<"\n NColloc::Init: DELAY > NMAT*PERIOD  "<<k<<"\n\n"; PDError(12); }
+				if( ttau(k) < 0.0 ){ std::cout<<"\n NColloc::Init: Negative DELAY "<<k<<"\n\n"; PDError(12); }
 				t[1+k] = (t[0] - ttau(k)) - floor(t[0] - ttau(k));  // nem szetvalasztott
 
 				// binary search for in which interval is t-tau(k)
@@ -465,7 +466,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 
 void NColloc::getMesh( Vector& msh )
 {
-	if( msh.Size() != NDEG*NINT+1 ) { std::cout<<"Error in NColloc::getMesh : Bad dimensions\n"; throw(-1); }
+	if( msh.Size() != NDEG*NINT+1 ) { std::cout<<"Error in NColloc::getMesh : Bad dimensions\n"; PDError(-1); }
 	for( int i = 0; i < NINT; i++ )
 		for( int j = 0; j < NDEG; j++ )
 			msh( j + i*NDEG ) = mesh(i) + meshINT(j)*(mesh(i+1)-mesh(i));
@@ -474,7 +475,7 @@ void NColloc::getMesh( Vector& msh )
 
 void NColloc::setMesh( const Vector& msh )
 {
-	if( msh.Size() != NDEG*NINT+1 ) { std::cout<<"Error in NColloc::setMesh : Bad dimensions\n"; throw(-1); }
+	if( msh.Size() != NDEG*NINT+1 ) { std::cout<<"Error in NColloc::setMesh : Bad dimensions\n"; PDError(-1); }
 	for( int i = 0; i < NINT; i++ ) mesh(i) = msh( i*NDEG );
 	mesh( NINT ) = 1.0;
 }
@@ -2082,7 +2083,7 @@ static inline int meshlookup( const Vector& mesh, double t )
 
 void NColloc::Import( Vector& out, const Vector& in, const Vector& msh_, int deg_ )
 {
-	if( (msh_.Size()-1) % deg_ != 0 ) { std::cout<<"NColloc::Import: bad mesh"; throw(-1); }
+	if( (msh_.Size()-1) % deg_ != 0 ) { std::cout<<"NColloc::Import: bad mesh"; PDError(-1); }
 	int int_ = (msh_.Size()-1)/deg_;
 	Vector msh( int_+1 );
 	Vector in_mesh(deg_+1);
@@ -2102,7 +2103,7 @@ void NColloc::Import( Vector& out, const Vector& in, const Vector& msh_, int deg
 			int k = meshlookup( msh, t );
 			// std::cout<<"int "<<i<<" "<<k<<"\n";
 			double c = (t-msh(k))/(msh(k+1)-msh(k));
-			if( c < 0.0 || c > 1.0 ) { std::cout<<"NColloc::Import: FATAL ERROR"; throw(-1); }
+			if( c < 0.0 || c > 1.0 ) { std::cout<<"NColloc::Import: FATAL ERROR"; PDError(-1); }
 			
 			poly_lgr( in_mesh, in_lgr, c );
 			// in_lgr.Print();

@@ -24,6 +24,7 @@ typedef double doublereal;
 
 #ifndef PDDESYS_H
 #include "plot.h"
+#include "error.h"
 extern "C" {
 #include "cspblas.h"
 }
@@ -94,7 +95,7 @@ public:
 		if( n != V.n )
 		{
 			std::cout<<"Array1D::operator=(): incompatible sizes\n";
-			throw(-1);
+			PDError(-1);
 		}
 	 #endif
 		for( int i=0; i<V.n; i++ ) v[i]=V.v[i];
@@ -104,7 +105,7 @@ public:
 	T& operator()( int i )
 	{
 	 #ifdef DEBUG
-		if( i>=n ){ std::cout<<"Array1D::bound11& "<<n<<", "<<i<<"\n"; throw(12); }
+		if( i>=n ){ std::cout<<"Array1D::bound11& "<<n<<", "<<i<<"\n"; PDError(12); }
 	 #endif
 		return v[i];
 	}
@@ -112,7 +113,7 @@ public:
 	T operator()( int i ) const
 	{
 	 #ifdef DEBUG
-		if( i>=n ){ std::cout<<"vec_bound11_\n"; throw(12); }
+		if( i>=n ){ std::cout<<"vec_bound11_\n"; PDError(12); }
 	 #endif
 		return v[i]; 
 	}
@@ -167,8 +168,8 @@ class Array2D{
 	T& operator()( const int i, const int j )
 	{
 	 #ifdef DEBUG
-		if((i>=r)||(j>=c)){ cout<<"bound& "<<r<<", "<<c<<",-"<<i<<", "<<j<<"\n"; throw(1); }
-		if((i<0)||(j<0)){ cout<<"lbound& "<<i<<", "<<j<<"\n"; throw(1); }
+		if((i>=r)||(j>=c)){ cout<<"bound& "<<r<<", "<<c<<",-"<<i<<", "<<j<<"\n"; PDError(1); }
+		if((i<0)||(j<0)){ cout<<"lbound& "<<i<<", "<<j<<"\n"; PDError(1); }
 	 #endif
 		return m[i + r*j];
 	}
@@ -176,8 +177,8 @@ class Array2D{
 	T operator()( const int i, const int j ) const
 	{
 	 #ifdef DEBUG
-		if((i>=r)||(j>=c)){ cout<<"bound_\n"; throw(1); }
-		if((i<0)||(j<0)){ cout<<"lbound_\n"; throw(1); }
+		if((i>=r)||(j>=c)){ cout<<"bound_\n"; PDError(1); }
+		if((i<0)||(j<0)){ cout<<"lbound_\n"; PDError(1); }
 	 #endif
 		return m[i + r*j];
 	}
@@ -185,8 +186,8 @@ class Array2D{
 	T& operator()( int i )
 	{
 	 #ifdef DEBUG
-		if( i>=r*c ){ cout<<"bound11&\n"; throw(1); }
-		if((r!=1)&&(c!=1)){ cout<<"H&\n"; throw(1); }
+		if( i>=r*c ){ cout<<"bound11&\n"; PDError(1); }
+		if((r!=1)&&(c!=1)){ cout<<"H&\n"; PDError(1); }
 	 #endif
 		return m[i];
 	}
@@ -194,8 +195,8 @@ class Array2D{
 	T operator()( int i ) const
 	{
 	 #ifdef DEBUG
-		if( i>=r*c ){ cout<<"bound11_\n"; throw(1); }
-		if((r!=1)&&(c!=1)){ cout<<"H&\n"; throw(1); }
+		if( i>=r*c ){ cout<<"bound11_\n"; PDError(1); }
+		if((r!=1)&&(c!=1)){ cout<<"H&\n"; PDError(1); }
 	 #endif
 		return m[i];
 	}

@@ -12,6 +12,7 @@
 
 #include "matrix.h"
 #include "plot.h"
+#include "error.h"
 #include <vector>
 
 extern "C" {
@@ -266,7 +267,7 @@ inline int& SpMatrix::WrLi( int l, int e )
 #ifdef DEBUG
 	}else
 	{
-		cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ai[Ap[l]+e];
+		cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ai[Ap[l]+e];
 	}
 #endif
 }
@@ -281,7 +282,7 @@ inline double& SpMatrix::WrLx( int l, int e )
 #ifdef DEBUG
 	}else
 	{
-		cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; throw(1); return Ax[Ap[l]+e];
+		cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ax[Ap[l]+e];
 	}
 #endif
 }

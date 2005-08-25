@@ -11,6 +11,7 @@
 
 #include "system.h"
 #include "torpoint.h"
+#include "error.h"
 
 PointTR::PointTR( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_ ) :
 	var(var_), eqn(eqn_),
@@ -42,7 +43,7 @@ PointTR::~PointTR()
 
 void PointTR::Construct()
 {
-	if( eqn(0) != EqnTORSol ){ std::cout<<"Bad variables\n"; throw(-1); }
+	if( eqn(0) != EqnTORSol ){ std::cout<<"Bad variables\n"; PDError(-1); }
 
 	RefEps = ERRTOL;
 	ContEps = ERRTOLCONT;
@@ -94,8 +95,8 @@ void PointTR::JacobianFixed( Vector& /*sol*/, Vector& presol, Vector& /*par*/, V
 	int ph0 = -1, ph1 = -1;
 	for( int i = 1; i < eqn.Size(); i++ )
 	{
-		if( eqn(i) == EqnTORPhase0 ){ if( ph0==(-1) ) { ph0 = i-1; } else { throw(-1); } }
-		if( eqn(i) == EqnTORPhase1 ){ if( ph1==(-1) ) { ph1 = i-1; } else { throw(-1); } }
+		if( eqn(i) == EqnTORPhase0 ){ if( ph0==(-1) ) { ph0 = i-1; } else { PDError(-1); } }
+		if( eqn(i) == EqnTORPhase1 ){ if( ph1==(-1) ) { ph1 = i-1; } else { PDError(-1); } }
 	}
 	if( ph0!=(-1) && ph1!=(-1) )
 	{
@@ -106,7 +107,7 @@ void PointTR::JacobianFixed( Vector& /*sol*/, Vector& presol, Vector& /*par*/, V
 	else
 	{
 		if( ph1 != (-1) ){ colloc.PhaseONE( jac->getA31(ph1), presol ); rhs->getV3()(ph1) = 0.0; }
-		if( ph0 != (-1) ) throw(-1);
+		if( ph0 != (-1) ) PDError(-1);
 	}
 	
 	// second the tangent

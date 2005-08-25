@@ -7,6 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "error.h"
 #include "matrix.h"
 #include "spmatrix.h"
 #include "ncolloc.h"
@@ -118,7 +119,7 @@ void CharMat::Switch( Vector& tan, NColloc& /*col*/ )
 	if( tan.Size() != phi.Size() )
 	{
 		std::cout<<"Charmat::Switch: Bad sizes\n";
-		throw(-12);
+		PDError(-12);
 	}
 	tan = phi;
 }
@@ -240,8 +241,9 @@ void CharMatCPLX::Switch( Vector& Re, Vector& Im, double& alpha, NColloc& /*col*
 	if( (2*Re.Size() != phi.Size())||(2*Im.Size() != phi.Size()) )
 	{
 		std::cout<<"CharmatCPLX::Switch: Bad sizes\n";
-		throw(-12);
+		PDError(-12);
 	}
+	std::cout<<"zRe="<<zRe<<", zIm="<<zIm<<"\n";
 	for( int i=0; i<Re.Size(); i++ )
 	{
 		Re(i) = phi( 2*i );
@@ -256,7 +258,7 @@ void CharMatCPLX::Switch( Vector& Re, Vector& Im, double& alpha, NColloc& /*col*
 		alpha = atan( fabs(zRe/zIm) ) + M_PI/2.0;
 	}
 	std::cout<<"alpha "<<alpha<<"\n";
-// 	throw(-1);
+// 	PDError(-1);
 }
 
 CharMatLPAUT::CharMatLPAUT( NColloc& col ) :

@@ -32,9 +32,11 @@ class PointTR
 		Vector& getSol() { return xx->getV1(); }
 		Vector& getTan() { return xxDot->getV1(); }
 		void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
-		void    setOmega( double om0, double om1 ) 
+		void    setRho( double rho ) 
 		{
-			par( colloc.Sys().npar() + ParRot ) = om1/om0/2.0;
+			par( colloc.Sys().npar() + ParRot ) = rho;
+			std::cout<<"RHO: "<<rho<<"\n";
+			std::cout<<"par(0): "<<par(0)<<"\n";
 		}
 		Vector& getPar() { return par; }
 		
@@ -46,7 +48,7 @@ class PointTR
 		int     idxmap( int j1, int j2, int i1, int i2 ) { return colloc.idxmap( j1, j2, i1, i2 ); }
 
 		void    ImportSol( Vector& Sol ) { colloc.ImportSol( xx->getV1(), Sol ); }
-		void    ImportTan( Vector& Re, Vector& Im, double alpha ) 
+		void    ImportTan( Vector& Re, Vector& Im, double alpha )
 		{
 			colloc.ImportTan( xxDot->getV1(), Re, Im, alpha ); 
 			xxDot->getV3().Clear(); 

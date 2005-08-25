@@ -184,7 +184,7 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
 
 void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 {
-  if( (t < 0)||(t > 1) ){ cout << "rhs: t is not element of the interval\n"; throw(1); }
+  if( (t < 0)||(t > 1) ){ cout << "rhs: t is not element of the interval\n"; }
   double g;
   if( t < TAU2 ) g = 1.0;
   else g = 0.0;
@@ -198,7 +198,7 @@ void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
-  if( (t < 0)||(t > 1) ){ cout << "deri: t is not element of the interval\n"; throw(1); }
+  if( (t < 0)||(t > 1) ){ cout << "deri: t is not element of the interval\n"; }
   double g;
   if( t < TAU2 ) g = 1.0;
   else g = 0.0;

@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{0.9.15}
+\newcommand{\pddever}{0.9.17}
 \version{\pddever}
-\date{15 August, 2005}
+\date{25 August, 2005}
 \maketitle
 
 \begin{center}
@@ -272,8 +272,8 @@ If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants fi
 \item[\funp{E10} -] Characteristic matrix for Neimark-Sacker bifurcation.
 \item[\funp{E11} -] Characteristic matrix for fold bifurcation in autonomous systems.
 \item[\funp{E16} -] Equation for keeping the norm of the eigenvector constant. It it necessary in fold and period doubling cases.
-\item[\funp{E17} -] Equation for keeping the real part of the norm of the eigenvector constant in case of \funp{E11}.
-\item[\funp{E18} -] Equation for keeping the imaginary part of the norm of the eigenvector constant in case of \funp{E11}. Note the both \funp{E17} and \funp{E18} are necessary to continue Neimark-Sacker bifurcations.
+\item[\funp{E17} -] Equation for keeping the real part of the norm of the eigenvector constant in case of \funp{E10}.
+\item[\funp{E18} -] Equation for keeping the imaginary part of the norm of the eigenvector constant in case of \funp{E10}. Note that both \funp{E17} and \funp{E18} are necessary to continue Neimark-Sacker bifurcations.
 \item[\funp{E24} -] Phase condition for autonomous systems.
 \item[\funp{E25} -] Phase condition for systems with additional symmetry. (For details, see \cite{haegeman}.)
 \item[\funp{E32} -] Quasiperiodic solution on a torus.
@@ -283,14 +283,14 @@ If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants fi
 \item[\funp{NVAR}] ~\\
 	Number of free variables. This must equal to the number of equations. Similarly, the first variable is always the periodic solution, the second is either not specified or the kernel vector of the characteristic matrix.
 \item[\funp{VAR}] ~\\
-	A sequence of numbers, specifying the free variables. A variable can be of three types. The starting letters are \funp{S}, \funp{P} or \funp{I}, referring to a system variable, parameter or internal variable, respectively. (For parameters and internal variables see the description of \funp{CP}.) The system variables are defined as follows.
+	A sequence of numbers, specifying the free variables. A variable can be one of the three types. The starting letters are \funp{S}, \funp{P} or \funp{I}, referring to a system variable, parameter or internal variable, respectively. (For parameters and internal variables see the description of \funp{CP}.) The system variables are defined as follows.
 \begin{description}
 \item[\funp{S0} -] No variable. Similar to \funp{E0}, this is a placeholder if no kernel vector is computed.
 \item[\funp{S1} -] Periodic solution.
 \item[\funp{S8} -] The kernel of the characteristic matrix.
 \item[\funp{S16} -] The smallest eigenvalue of the characteristic matrix.
-It is used only when constructing a starting point for bifurcation continuation.
-\item[\funp{S17} -] The argument of the characteristic multiplier, when a Neimark-Sacker bifurcation is continued.
+It is used only when constructing a starting point for bifurcation continuation. (Same as \funp{I0}.)
+\item[\funp{S17} -] The argument of the characteristic multiplier, when a Neimark-Sacker bifurcation is continued. (Same as \funp{I1}.)
 \item[\funp{S32} -] Quasi-periodic solution.
 \end{description}
 \end{description}
@@ -301,7 +301,7 @@ It is used only when constructing a starting point for bifurcation continuation.
 The output file contains all the computed information of a periodic solution 
 branch. Also, this file can be used to restart the continuation from a point 
 on a branch. The above defined restart \funp{LABEL} refers 
-to the number of a line of this file. The structure of a line is described 
+to the number of a line in this file. The structure of a line is described 
 in Table \ref{iostruct}.
 \begin{table}
 \begin{tabular}{|c|c|l|}
@@ -376,7 +376,7 @@ The system definition should include the header file \filef{pddesys.h} (\fun{#in
   the system. \fun{par(0)} is always the period ($T$) of the actual orbit,
   while others can be chosen.
   \item[-] \fun{xx} (\fun{Matrix}) contains the solution values at $t -
-  \tau_i$, that is, \fun{xx( j, i )}$= [ x ( t - \tau_i ) ]_(j+1)$, where $\tau_0$ is generally zero.
+  \tau_i$, that is, \fun{xx( j, i )}$= [ x ( t - \tau_i ) ]_{(j+1)}$, where $\tau_0$ is generally zero.
 \end{itemize}
 The required functions are
 \begin{itemize}
@@ -392,7 +392,7 @@ The required functions are
   This function returns the number of delays including the non-delayed term, i.e., $x ( t )$ as well.
   
   \item[-] \fun{ int Sys::nderi(); } \\ 
-  This function returns the order of supplied derivatives. In case of $0$ the \fun{Sys::deri(...)} can be empty, although should be defined. For $1$ only the first order derivatives with respect to the state variables and the parameters need to be supplied. If the returned value is $2$ all the derivatives are supplied by the user. The internal computation technique of the derivatives is the same as in DDE-BIFTOOL, which is the finite difference method. The derivatives are computed recursively, so the second order derivatives are calculated using the first order derivatives.
+  This function returns the order of supplied derivatives. In case of $0$ the \fun{Sys::deri(...)} can be empty, although should be defined. For $1$ only the first order derivatives with respect to the state variables and the parameters need to be supplied. If the returned value is $2$ all the required derivatives are supplied by the user. The internal computation technique of the derivatives is the same as in DDE-BIFTOOL, which is the finite difference method. The derivatives are computed recursively, so the second order derivatives are calculated using the first order derivatives.
   
   \item[-] \fun{ void Sys::tau( Vector\& out, double t, const Vector\& par ); } \\
   \fun{out} is the output variable and contains the vector of delays
@@ -402,7 +402,7 @@ The required functions are
   
   \item[-] \fun{void Sys::dtau( Vector\& out, double t, const Vector\& par, int p );} \\
   \fun{out} contains the derivatives of delays with respect to the parameter
-  \fun{p}. If \fun{p==0} in the above example the result is
+  \fun{p}. If \fun{p==0} in the above example, the result is
   \fun{out(0)=0.0} and \fun{out(1)=1.0}.
   
   \item[-] \fun{void Sys::rhs( Vector\& out, double t, const Matrix\& xx, const Vector\& par );} \\ 
@@ -734,7 +734,7 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 
 \section{Algorithms used in the software}
 
-The algorithms of this software is described in Szalai et al.\ \cite{szalai-cont}, with the exception of torus continuation. For continuation, the pseudo arclength method is used (see \cite{handbook, tutorial1, tutorial2}). Periodic orbits are discretized by orthogonal collocation, which was also used in several other software packages. The stability and convergence of this method was proved by Engelborghs and Doedel \cite{engstab} (see also \cite{engcol}). Bifurcations are continued using the newly introduced characteristic matrices for periodic solutions.
+The algorithms of this software is described in Szalai et al.\ \cite{szalai-cont}, with the exception of torus continuation. For continuation, the pseudo-arclength method is used (see \cite{handbook, tutorial1, tutorial2}). Periodic orbits are discretized by orthogonal collocation, which was also used in several other software packages. The stability and convergence of this method was proved by Engelborghs and Doedel \cite{engstab} (see also \cite{engcol}). Bifurcations are continued using the newly introduced characteristic matrices for periodic solutions \cite{szalai-cont}.
 
 \subsection*{Acknowledgments}
 

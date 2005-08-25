@@ -30,7 +30,7 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
 			out(1) = 0.0;
 			break;
 		default:
-			cout << "dtau: not implemented\n"; throw(12);
+			cout << "dtau: not implemented\n";
 			break;
 	}
 }
@@ -43,7 +43,7 @@ void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
-  if( (t < 0)||(t > 1) ){ cout << "deri: t is not element of the interval\n"; throw(1); }
+  if( (t < 0)||(t > 1) ){ cout << "deri: t is not element of the interval\n"; }
   
   // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
   if( (nx == 1) && (np == 0) ){

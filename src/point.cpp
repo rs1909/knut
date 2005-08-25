@@ -7,6 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "error.h"
 #include "point.h"
 #include "ncolloc.h"
 #include "system.h"
@@ -117,28 +118,28 @@ void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, c
 		case Sol:
 		case SolPDSW:
 		case SolLPSW:
-			if( nparx != 0 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 0 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 2 );
 			varr.Init( 2 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnNone;
 			varr(0) = VarSol; varr(1) = VarNone;
 			break;
 		case BifLP:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 3 );
 			varr.Init( 3 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnLPNullSpace; eqnr(2) = EqnNorm;
 			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]);
 			break;
 		case BifPD:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 3 );
 			varr.Init( 3 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnPDNullSpace; eqnr(2) = EqnNorm;
 			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]);
 			break;
 		case BifNS:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 4 );
 			varr.Init( 4 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnCPLXNormRe; eqnr(3) = EqnCPLXNormIm;
@@ -147,21 +148,21 @@ void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, c
 		case SolAUT:
 		case SolAUTPDSW:
 		case SolAUTHOPFSW:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 3 );
 			varr.Init( 3 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnNone; eqnr(2) = EqnPhase;
 			varr(0) = VarSol; varr(1) = VarNone; varr(2) = (Var)(VarPAR0 + parx[0]);
 			break;
 		case BifAUTLP:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 4 );
 			varr.Init( 4 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnLPAUTNullSpace; eqnr(2) = EqnPhase;                 eqnr(3) = EqnNorm;
 			varr(0) = VarSol; varr(1) = VarNullSpace;      varr(2) = (Var)(VarPAR0 + parx[0]); varr(3) = (Var)(VarPAR0 + parx[1]);
 			break;
 		case BifAUTPD:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 4 );
 			varr.Init( 4 );
 // 			eqnr(0) = EqnSol; eqnr(1) = EqnPDNullSpace; eqnr(2) = EqnPhase;                 eqnr(3) = EqnNorm;
@@ -170,28 +171,28 @@ void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, c
 			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]); varr(3) = (Var)(VarPAR0 + parx[1]);
 			break;
 		case BifAUTNS:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 5 );
 			varr.Init( 5 );
 			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnPhase; eqnr(3) = EqnCPLXNormRe;            eqnr(4) = EqnCPLXNormIm;
 			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = VarAngle; varr(3) = (Var)(VarPAR0 + parx[0]); varr(4) = (Var)(VarPAR0 + parx[1]);
 			break;
 		case SolTor:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 2 );
 			varr.Init( 2 );
 			eqnr(0) = EqnTORSol; eqnr(1) = EqnTORPhase1;
 			varr(0) = VarTORSol; varr(1) = (Var)(VarPAR0 + parx[0]);
 			break;
 		case SolAUTTor:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; throw(1); }
+			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 3 );
 			varr.Init( 3 );
 			eqnr(0) = EqnTORSol; eqnr(1) = EqnTORPhase0;             eqnr(2) = EqnTORPhase1;
 			varr(0) = VarTORSol; varr(1) = (Var)(VarPAR0 + parx[0]); varr(2) = (Var)(VarPAR0 + parx[1]);
 			break;
 		default:
-			std::cout<<"No such pointtype\n"; throw(-1);
+			std::cout<<"No such pointtype\n"; PDError(-1);
 			break;
 	}
 }
@@ -206,7 +207,7 @@ void Point::Construct( )
 	if( (eqn.Size() < 2)||(var.Size() < 2)||(eqn.Size() != var.Size()) )
 	{
 		std::cout<<" bad sizes ";
-		throw(-1);
+		PDError(-1);
 	}
 	else
 	{
@@ -216,7 +217,7 @@ void Point::Construct( )
 	if( (eqn(0) != EqnSol)||(var(0) != VarSol) )
 	{
 		std::cout<<" bad EqnSol ";
-		throw(-1);
+		PDError(-1);
 	}
 	else
 	{
@@ -231,7 +232,7 @@ void Point::Construct( )
 	    ((eqn(1) != EqnLPAUTROTNullSpace)||(var(1) != VarNullSpace)) )
 	{
 		std::cout<<" bad EqnNullSpace ";
-		throw(-1);
+		PDError(-1);
 	}
 	else
 	{
@@ -284,7 +285,7 @@ void Point::Construct( )
 				
 			default:
 				std::cout<<" bad EqnNullSpace ";
-				throw(-1);
+				PDError(-1);
 				break;
 		}
 	}
@@ -307,7 +308,7 @@ void Point::Construct( )
 					break;
 				default:
 					std::cout<<" bad PARAMETERS1 "<<i<<", "<<var(i)<<"\n";
-					throw(-1);
+					PDError(-1);
 					break;
 			}
 		}
@@ -393,7 +394,7 @@ void Point::Jacobian(
 						break;
 					default:
 						std::cout<<" bad PARAMETERS2 "<<varMap(i)<<"\n";
-						throw(-1);
+						PDError(-1);
 						break;
 				}
 			}
@@ -442,7 +443,7 @@ void Point::Jacobian(
 						case ParAngle: // not supported
 						default:
 							std::cout<<" bad PARAMETERS3 "<<varMap(i)<<"\n";
-							throw(-1);
+							PDError(-1);
 							break;
 					}
 				}
@@ -483,7 +484,7 @@ void Point::Jacobian(
 							break;
 						default:
 							std::cout<<" bad PARAMETERS4 "<<varMap(i)<<"\n";
-							throw(-1);
+							PDError(-1);
 							break;
 					}
 				}
@@ -502,7 +503,7 @@ void Point::Jacobian(
 			break;
 		default:
 			std::cout<<" EqnNullSpace: not supported ";
-			throw(-1);
+			PDError(-1);
 			break;
 	}
 
@@ -535,7 +536,7 @@ void Point::Jacobian(
 							case ParAngle: // not supported in Real cases
 							default:
 								std::cout<<" bad PARAMETERS5 "<<varMap(i)<<"\n";
-								throw(-1);
+								PDError(-1);
 								break;
 						}
 					}
@@ -569,7 +570,7 @@ void Point::Jacobian(
 								break;
 							default:
 								std::cout<<" bad PARAMETERS6 "<<var(i)<<"\n";
-								throw(-1);
+								PDError(-1);
 								break;
 						}
 					}
@@ -601,7 +602,7 @@ void Point::Jacobian(
 								break;
 							default:
 								std::cout<<" bad PARAMETERS7 "<<varMap(i)<<"\n";
-								throw(-1);
+								PDError(-1);
 								break;
 						}
 					}
@@ -631,7 +632,7 @@ void Point::Jacobian(
 								break;
 							default:
 								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
-								throw(-1);
+								PDError(-1);
 								break;
 						}
 					}
@@ -660,7 +661,7 @@ void Point::Jacobian(
 								break;
 							default:
 								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
-								throw(-1);
+								PDError(-1);
 								break;
 						}
 					}
@@ -670,7 +671,7 @@ void Point::Jacobian(
 				break;
 			default:
 				std::cout<<" EqnOther: not supported ";
-				throw(-1);
+				PDError(-1);
 				break;
 		}
 	}
@@ -777,7 +778,7 @@ int Point::Start(  )
 				break;
 			default:
 				std::cout<<" EqnNullSpace: not supported ";
-				throw(-1);
+				PDError(-1);
 				break;
 		}
 //!!!!!!!!!!!!!!!!
@@ -812,7 +813,7 @@ int Point::Start(  )
 		}else
 		{
 			std::cout<<" Point::Start: haven't found a nullvector ";
-			throw(-1);
+			PDError(-1);
 		}
 		*qq /= sqrt( (*qq)*(*qq) );
 		*qq0 = *qq;
@@ -858,7 +859,7 @@ int Point::Start(  )
 				break;
 			default: 
 				std::cout<<" EqnNullSpace: not supported ";
-				throw(-1);
+				PDError(-1);
 				break;
 		}
 //!!!!!!!!!!!!!!!!
@@ -924,7 +925,7 @@ int Point::Refine( )
 // 		Xnorm = sqrt( colloc.Integrate( rhs->getV1(), rhs->getV1() ) );//SolNorm( sol, qq, par );
 // 		std::cout<<"residual "<<Xnorm<<"\n--\n";
 // 		rhs->getV1().Print();
-// 		throw(-1);
+// 		PDError(-1);
 // 		for( int k=0;k<parNu.Size();k++) std::cout<<" par("<<k<<"): "<<par(k);
 // 		std::cout<<"\n--\n";
 // 		sol = rhs->getV1();
@@ -995,7 +996,7 @@ void Point::SwitchLP( )
 	}else
 	{
 		std::cout<<" Point::SwitchLP: haven't found a nullvector ";
-		throw(-1);
+		PDError(-1);
 	}
 	qq_ /= sqrt( qq_*qq_ );
 	
@@ -1050,7 +1051,7 @@ void Point::SwitchPD( )
 	}else
 	{
 		std::cout<<" Point::SwitchPD: haven't found a nullvector ";
-		throw(-1);
+		PDError(-1);
 	}
 	qq_ /= sqrt( qq_*qq_ );
 	
@@ -1325,7 +1326,7 @@ int Point::Continue( double ds )
 // 		if( qq ) *qq = *qqNu;
 		
 		std::cout<<"\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
- 		// throw(12);
+ 		// PDError(12);
 	}
 	
 	return it;
@@ -1490,20 +1491,20 @@ void Point::Read( ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<nmul_<<"\n"; throw(-1); }
+	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<nmul_<<"\n"; PDError(-1); }
 	for( int i=0; i<NPAR; i++ ) file>>par(i);
 	
 	file>>nmul_;
-	if( mRe.Size() < nmul_ ) { std::cout<<"Not compatible file (NMUL) "<<nmul_<<"\n"; throw(-1); }
+	if( mRe.Size() < nmul_ ) { std::cout<<"Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
 	for( int i=0; i<nmul_; i++ ) { file>>mRe(i); file>>mIm(i); }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	if( NDIM != ndim_ ) { std::cout<<"Not compatible file (NDIM) "<<ndim_<<"\n"; throw(-1); }
-// 	if( NINT != nint_ ) { std::cout<<"Not compatible file (NINT) "<<nint_<<"\n"; throw(-1); }
-// 	if( NDEG != ndeg_ ) { std::cout<<"Not compatible file (NDEG) "<<ndeg_<<"\n"; throw(-1); }
+	if( NDIM != ndim_ ) { std::cout<<"Not compatible file (NDIM) "<<ndim_<<"\n"; PDError(-1); }
+// 	if( NINT != nint_ ) { std::cout<<"Not compatible file (NINT) "<<nint_<<"\n"; PDError(-1); }
+// 	if( NDEG != ndeg_ ) { std::cout<<"Not compatible file (NDEG) "<<ndeg_<<"\n"; PDError(-1); }
 	
 	Vector msh( ndeg_*nint_ + 1 );
 	for( int i=0; i<ndeg_*nint_+1; i++ ) file>>msh(i);
@@ -1551,18 +1552,18 @@ void Point::ReadNull( ifstream& file )
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<nmul_<<"\n"; throw(-1); }
+	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<nmul_<<"\n"; PDError(-1); }
 	for( int i=0; i<NPAR; i++ ) file>>tmp;
 	
 	file>>nmul_;
-	if( mRe.Size() < nmul_ ) { std::cout<<"RN:Not compatible file (NMUL) "<<nmul_<<"\n"; throw(-1); }
+	if( mRe.Size() < nmul_ ) { std::cout<<"RN:Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
 	for( int i=0; i<nmul_; i++ ) { file>>tmp; file>>tmp; }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	if( NDIM != ndim_ ) { std::cout<<"RN:Not compatible file (NDIM) "<<ndim_<<"\n"; throw(-1); }
+	if( NDIM != ndim_ ) { std::cout<<"RN:Not compatible file (NDIM) "<<ndim_<<"\n"; PDError(-1); }
 	
 	for( int i=0; i<ndeg_*nint_+1; i++ ) file>>tmp;
 	for( int i=0; i<NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
@@ -1577,7 +1578,7 @@ void Point::SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& ms
 {
 	Vector TRe(sol.Size()), TIm(sol.Size());
 	CharMatCPLX* chm;
-	chm = dynamic_cast< CharMatCPLX* >(charMat);
+	chm = static_cast< CharMatCPLX* >(charMat);
 	if( chm )
 	{
 		chm->Switch( TRe, TIm, alpha, colloc );
@@ -1586,6 +1587,6 @@ void Point::SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& ms
 	}else
 	{
 		std::cout<<"Not the complex characteristic matrix\n";
-		throw(-1);
+		PDError(-1);
 	}
 }

@@ -115,7 +115,7 @@ struct comp : public std::binary_function<int, int, bool>
 // inline int idxmap( int j1, int j2, int i1, int i2 )
 // {
 // 	if( (i2 >= NINT2)||(i1 >= NINT1) ) std::cout<<"IDER ";
-// 	if( (j2 > NDEG2)||(j1 > NDEG1) ){ std::cout<<"IDR "; throw(-1); }
+// 	if( (j2 > NDEG2)||(j1 > NDEG1) ){ std::cout<<"IDR "; PDError(-1); }
 // 	
 // 	return j1 + i1*NDEG1 + (NDEG1*NINT1+1)*(j2 + i2*NDEG1);
 // }

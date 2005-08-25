@@ -163,7 +163,7 @@ void SpFact::Clear( )
 	SpMatrix::Clear( ); 
 	if( Numeric != 0 )
 	{
-		if( !fact ){ std::cout<<"GEBASZ\n"; throw(1); }
+		if( !fact ){ std::cout<<"GEBASZ\n"; PDError(1); }
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -175,7 +175,7 @@ void SpFact::Clear( char F )
 	SpMatrix::Clear( F ); 
 	if( Numeric != 0 )
 	{
-		if( !fact ){ std::cout<<"GEBASZ\n"; throw(1); }
+		if( !fact ){ std::cout<<"GEBASZ\n"; PDError(1); }
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -199,12 +199,12 @@ void SpFact::Fact()
 		if( status != 0 )
 		{
 			cout<<"SpFact::SpFact(Spmatrix& ): Symbolic "<<status<<"\n";
-			throw(-1);
+			PDError(-1);
 		}
 		status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
 		if( status != 0 ) {
 			cout<<"SpFact::SpFact(Spmatrix& ): Numeric "<<status<<"\n";
-			throw(-1);
+			PDError(-1);
 		}
 		umfpack_di_free_symbolic(&Symbolic); Symbolic = 0;
 		fact = true;
@@ -345,7 +345,7 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 		}
 	}
 	while( ( IDO == 1 )||( IDO == -1 ) );
-	if( IDO != 99 ){ std::cout<<"IDO = "<<IDO<<" is not expected\n"; throw(1); }
+	if( IDO != 99 ){ std::cout<<"IDO = "<<IDO<<" is not expected\n"; PDError(1); }
 	delete[] tvec2;
 	delete[] tvec;
 	

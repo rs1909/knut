@@ -7,6 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "error.h"
 #include "system.h"
 #include "point.h"
 #include "torpoint.h"
@@ -82,7 +83,7 @@ void getParams( cfile* pms, const char* filename )
 		while( file.get() != '\n' );
 		
 		file >> pms->TYPE >> pt >> pms->P0; pms->P0Type = pt;
-		if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: P0: Bad parameter type."; throw(-1); }
+		if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: P0: Bad parameter type."; PDError(-1); }
 		pms->EXTSYS = (pms->TYPE == -1);
 		if( pms->EXTSYS )
 		{
@@ -93,14 +94,14 @@ void getParams( cfile* pms, const char* filename )
 			for( int i = 0; i < pms->NEQN; i++ )
 			{
 				file >> pt >> (pms->EQN)[i]; 
-				if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; throw(-1); }
+				if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; PDError(-1); }
 			}
 			file >> pms->NVAR;
-			if( pms->NEQN != pms->NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; throw(-1); }
+			if( pms->NEQN != pms->NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; PDError(-1); }
 			for( int i = 0; i < pms->NVAR; i++ )
 			{
 				file >> pt >> (pms->VAR)[i]; (pms->VARType)[i] = pt;
-				if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; throw(-1); }
+				if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; PDError(-1); }
 			}
 			while( file.get() != '\n' );
 		}else
@@ -109,7 +110,7 @@ void getParams( cfile* pms, const char* filename )
 			for( int i = 0; i < pms->NPARX; i++ )
 			{
 				file >> pt >> (pms->PARX)[i]; (pms->PARXType)[i] = pt;
-				if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; throw(-1); }
+				if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; PDError(-1); }
 			}
 			while( file.get() != '\n' );
 		}
@@ -132,7 +133,7 @@ void getParams( cfile* pms, const char* filename )
 	catch (ifstream::failure e)
 	{
 		std::cout << "Exception: opening/reading the constants file.";
-		throw(-1);
+		PDError(-1);
 	}
 }
 
@@ -346,13 +347,13 @@ int main( int argc, const char** argv )
 					break;
 				default:
 					std::cout<<"Unexected CL argument.\n"; 
-					throw(-1);
+					PDError(-1);
 					break;
 			}
 		}else
 		{
 			std::cout<<"Unexected CL argument.\n"; 
-			throw(-1);
+			PDError(-1);
 		}
 	}
 	
@@ -563,7 +564,7 @@ int main( int argc, const char** argv )
 				if( decr&&(fabs(ds)*1.414 > params->DSMIN)&&(fabs(ds)*1.414 < params->DSMAX) ) ds *= 1.414;
 				if( (itc >= params->NITER)&&(fabs(ds)/2.0 < params->DSMIN) )
 				{
-					throw(1);
+					PDError(1);
 				}
 			}
 		}else
@@ -596,7 +597,8 @@ int main( int argc, const char** argv )
 			pttr.ImportTan( TRe, TIm, alpha );
 			pttr.Start( params->DSSTART );
 			pttr.setPar( par );
-			pttr.setOmega( 1.0/par(0), (alpha/(2.0*M_PI)) );
+			
+			pttr.setRho( alpha/(2.0*M_PI) );
 			pttr.setCont( params->P0 );
 
 			double ds = params->DS;
