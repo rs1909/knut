@@ -1,4 +1,4 @@
-AC_INIT([PDDE-CONT], [0.9.17-rc1])
+AC_INIT([PDDE-CONT], [0.9.17-rc2])
 AC_DEFINE(DEFS,"")
 AM_INIT_AUTOMAKE
 
@@ -10,7 +10,7 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
 TMP_CXXFLAGS=$CXXFLAGS
-CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
+CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden -fvisibility=hidden"
 AC_COMPILE_IFELSE([int main() { return 0; }],[echo "yes"],
 [ CXXFLAGS=$TMP_CXXFLAGS
 echo "no"])

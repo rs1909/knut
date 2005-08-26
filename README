@@ -9,9 +9,30 @@ check the manual frequently.
 
 BUGS:
   HyperMatrix::Check( HyperVector& X, HyperVector& F )
-  the references maybe buggy with some compilers ( gcc 2.95.4 )
+  the references maybe buggy with some compilers.
+  ( I've found this with gcc 2.95.4, which is obsolote. )
   Note that this function is not used, so it may cause trouble only during
-  compilation phase.
+  the compilation phase.
+
+  There are some unsused variables as function arguments, which will be
+  removed in a future release and now they are producing warning messages.
+  This does not affect anything, just the beauty of the compile process.
+
+  gcc 4.0.1 produces the following warning message, which is a minor
+  gcc bug and NOT a PDDE-CONT bug, and it does not affect anything:
+
+  /home/szalai/local/gcc-4.0.1/bin/../lib/gcc/i686-pc-linux-gnu/4.0.1/../../../../include/c++/4.0.1/bits/stl_uninitialized.h:
+  In member function ‘void
+  std::vector<_Tp,_Alloc>::_M_insert_aux(__gnu_cxx::__normal_iterator<typename_Alloc::pointer,
+  std::vector<_Tp, _Alloc> >, const _Tp&) [with _Tp = std::string, _Alloc =
+  std::allocator<std::string>]’:/home/szalai/local/gcc-4.0.1/bin/../lib/gcc/i686-pc-linux-gnu/4.0.1/../../../../include/c++/4.0.1/bits/stl_uninitialized.h:112:
+  warning: control may reach end of non-void function ‘_ForwardIterator
+  std::__uninitialized_copy_aux(_InputIterator, _InputIterator,
+  _ForwardIterator, __false_type) [with _InputIterator =
+  __gnu_cxx::__normal_iterator<std::string*, std::vector<std::string,
+  std::allocator<std::string> > >, _ForwardIterator =
+  __gnu_cxx::__normal_iterator<std::string*, std::vector<std::string,
+  std::allocator<std::string> > >]’ being inlined
 
 The program was tested on:
 
@@ -24,5 +45,5 @@ its math library. If you know any function which rounds a double to its
 closest integer and which does not depend on the actual rounding direction,
 please report to me.
 I haven't tried Solaris 10, which is promised to be compatible with Linux.
-Also I could not make it work under MinGW on MS Windows, because the POSIX
+Also, I could not make it work under MinGW on MS Windows, because the POSIX
 dlfcn.h is missing (for loading plugins.)
