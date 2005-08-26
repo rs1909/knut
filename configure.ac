@@ -3,24 +3,35 @@ AC_DEFINE(DEFS,"")
 AM_INIT_AUTOMAKE
 
 AC_PROG_CC
+AC_C_INLINE
 AC_PROG_CXX
 AC_PROG_RANLIB
+
+AC_LANG(C++)
+AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
+TMP_CXXFLAGS=$CXXFLAGS
+CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
+AC_COMPILE_IFELSE([int main() { return 0; }],[echo "yes"],
+[ CXXFLAGS=$TMP_CXXFLAGS
+echo "no"])
+
+AC_MSG_CHECKING([whether -fPIC --shared is supported by $CXX])
+TMP_CXXFLAGS=$CXXFLAGS
+CXXFLAGS="$CXXFLAGS -fPIC --shared"
+AC_COMPILE_IFELSE([int main() { return 0; }],
+[ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="-fPIC --shared"; echo "yes"],
+[ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=""; echo "no"])
 
 if test "$GXX" == yes; then
   NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
   CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
-  AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS)
+  MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
+  AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
 fi
 
 AC_ARG_WITH(no-optimization-flags,
 [  --with-no-optimization-flags=FLAGS       Choose an optimization flag for not optimizing some parts of the code (default: -O0)],
 [NOOPT_CFLAGS=$withval],[NOOPT_CFLAGS="-O0"])
-
-# AC_ARG_WITH(profile,
-# [  --with-profile=FLAGS       The generated program will produce profile info ],
-# [ CFLAGS="-fprofile-arcs -ftest-coverage" \
-#   CXXFLAGS="-fprofile-arcs -ftest-coverage" \
-#  AC_SUBST( CFLAGS CXXFLAGS ) ])
 
 AC_SUBST(NOOPT_CFLAGS)
 

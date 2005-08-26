@@ -124,30 +124,39 @@ public:
 template<class T>
 class Array2D{
 
+ private:
+	T* v;
  protected:
 
 	T* m;
-	int r,c;
+	int r, c;
 
  public:
-	Array2D( ) { r = 0; c = 0; m = 0; }
+	Array2D( ) { r = 0; c = 0; v = 0; m = 0; }
 
-	Array2D( int _r, int _c ) : r(_r), c(_c) { m = new T[r*c+1]; Clear(); }
+	Array2D( int _r, int _c ) : r(_r), c(_c)
+	{
+		v = new T[r*c+2];
+		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
+		Clear();
+	}
 
 	Array2D( const Array2D<T>& M ) : r(M.r), c(M.c)
 	{
-		m = new T[r*c+1];
+		v = new T[r*c+2];
+		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
 		for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 	}
 
-	virtual ~Array2D(){ delete []m; }
+	virtual ~Array2D(){ delete []v; }
 
 	void Init( int _r, int _c )
 	{
-		delete m;
+		delete v;
 		r = _r;
 		c = _c;
-		m = new T[r*c+1];
+		v = new T[r*c+2];
+		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
 		Clear();
 	}
 

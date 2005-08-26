@@ -1,4 +1,4 @@
-CXXFLAGS = @NOWARN_CXXFLAGS@
+CXXFLAGS = @MOD_CXXFLAGS@
 CXX=@CXX@
 
 NAME = sys-tq
@@ -6,7 +6,7 @@ NAME = sys-tq
 DSFILES = Makefile.in $(NAME).cpp 
 
 $(NAME).so: ../../src/pddesys.h
-	$(CXX) $(CXXFLAGS) -fPIC --shared -I../../src -o $(NAME).so $(NAME).cpp
+	$(CXX) $(CXXFLAGS) -I../../src -o $(NAME).so $(NAME).cpp
 
 distdir:
 	cp -pR $(DSFILES) $(distdir)
