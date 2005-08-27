@@ -30,9 +30,9 @@
 class PointData
 {
 	public:
-		PointData( int nsol, int npar, int nev ) : sol(nsol), par(npar), mRe(nev), mIm(nev) {}
+		inline PointData( int nsol, int npar, int nev ) : sol(nsol), par(npar), mRe(nev), mIm(nev) {}
 
-		void Save( ofstream& file )
+		inline void Save( ofstream& file )
 		{
 			for( int i=0; i < sol.Size(); i++ ) file<<sol(i)<<"\n";
 		}
@@ -71,28 +71,28 @@ class Point : public PointData
 		void    Stability( );
 
 		// supplementary
-		void    setSol( Vector& s ) { sol = s; }
-		Vector& getSol() { return sol; }
+		inline void    setSol( Vector& s ) { sol = s; }
+		inline Vector& getSol() { return sol; }
 		
-		void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
-		Vector& getPar() { return par; }
+		inline void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
+		inline Vector& getPar() { return par; }
 		
 		void    setCont( int i );
 		
-		void    setIter( int i ) { Iter = i; }
-		void    setRefEps( double d ) { RefEps = d; }
-		void    setContEps( double d ) { ContEps = d; }
-		void    setStartEps( double d ) { StartEps = d; }
+		inline void    setIter( int i ) { Iter = i; }
+		inline void    setRefEps( double d ) { RefEps = d; }
+		inline void    setContEps( double d ) { ContEps = d; }
+		inline void    setStartEps( double d ) { StartEps = d; }
 		
-		void    getqq( Vector& qq_ ) { if( qq ) qq_ = *qq; }
-		double  Norm() 
+		inline void    getqq( Vector& qq_ ) { if( qq ) qq_ = *qq; }
+		inline double  Norm() 
 		{
 			// double e=0;
 			// for( int j=0; j<colloc.Ndim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
 			return sqrt( colloc.Integrate( sol, sol ) );
 		}
-		double  NormMX() 
-		{ 
+		inline double  NormMX() 
+		{
 			double max=0.0, min=1.0e32;
 			for( int i=0; i<colloc.Nint()*colloc.Ndeg()+1; i++ )
 			{
@@ -111,7 +111,7 @@ class Point : public PointData
 		PtType  testBifAUTRot();
 		
 		void    Plot( GnuPlot& pl );
-		void    Print( char* file )
+		inline void    Print( char* file )
 		{
 			ofstream ff(file);
 			for( int i=0; i<colloc.Nint()*colloc.Ndeg()+1; i++ )
@@ -131,11 +131,11 @@ class Point : public PointData
 		void    FillSol( System& sys_ );
 	
 		// internal member-functions
-		double inline SolNorm( Vector& sol, Vector* qq, Vector& par );
+		inline double SolNorm( Vector& sol, Vector* qq, Vector& par );
 		
-		void /*inline*/   Jacobian( HyperMatrix& AA, HyperVector& RHS, Vector& par, 
-		                        Vector& solPrev, Vector& sol, JagMatrix3D& solData, 
-		                        Vector* q0, Vector* q );
+// 		void    Jacobian( HyperMatrix& AA, HyperVector& RHS, Vector& par, 
+// 		                        Vector& solPrev, Vector& sol, JagMatrix3D& solData, 
+// 		                        Vector* q0, Vector* q );
 		void Point::Jacobian
 		(
 			HyperMatrix& AA, HyperVector& RHS,                      // output
@@ -146,8 +146,8 @@ class Point : public PointData
 			double ds,       bool cont                              // the arclength; cont: true if continuation
 		);
 		
-		void inline   Update( HyperVector& X );                          // sol,   qq,   par            += X
-		void inline   ContUpdate( HyperVector& X );                      // solNu, qqNu, parNu, par(p1) += X
+		inline void   Update( HyperVector& X );                          // sol,   qq,   par            += X
+		inline void   ContUpdate( HyperVector& X );                      // solNu, qqNu, parNu, par(p1) += X
 
 		// convergence parameters
 		double       RefEps;
@@ -195,7 +195,6 @@ class Point : public PointData
 		// int the Newton iterations
 		HyperVector* xx;     // -> sol,   --- this will be the solution in the iterations i.e., Dxx
 		HyperVector* rhs;
-//		HyperVector* xxRM; // it retires qqR.
 		
 		// store the Jacobian
 		HyperMatrix* jac;
@@ -208,8 +207,6 @@ class Point : public PointData
 		
 		// characteristic matrix
 		baseCharMat* charMat;
-// 		SpFact       jacStabA;
-// 		SpMatrix     jacStabB;
 		StabMatrix   jacStab;
 };
 

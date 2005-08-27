@@ -43,9 +43,9 @@ protected:
 
 public:
 
-	Array1D() { n = 0; v = 0; }
+	inline Array1D() { n = 0; v = 0; }
 
-	Array1D( int i )
+	inline Array1D( int i )
 	{
 		n = i;
 		v = new T[i];
@@ -53,7 +53,7 @@ public:
 	}
 	
 	// specially for JagMatrix2D i.e. Array1D< Vector >, which is indexed as (i)(j)
-	Array1D( int i, int j )
+	inline Array1D( int i, int j )
 	{
 		n = i;
 		v = new T[i];
@@ -61,23 +61,23 @@ public:
 	}
 	
 	// specially for JagMatrix3D i.e. Array1D< Matrix >, which is indexed as (i)(j,k)
-	Array1D( int i, int j, int k )
+	inline Array1D( int i, int j, int k )
 	{
 		n = i;
 		v = new T[i+1];
 		for( int r=0; r<i; r++ ) v[r].Init(j,k);
 	}
 
-	Array1D( const Array1D<T> &V )
+	inline Array1D( const Array1D<T> &V )
 	{
 		n = V.n;
 		v = new T[V.n];
 		for( int i=0; i<V.n; i++ ) v[i]=V.v[i];
 	}
 	
-	~Array1D() { delete[] v; }
+	inline virtual ~Array1D() { delete[] v; }
 	
-	void Init( int i )
+	inline void Init( int i )
 	{
 		delete v;
 		n = i;
@@ -85,11 +85,11 @@ public:
 		Clear();
 	}
 
-	void Clear( ) { for(int j=0; j<n; j++) v[j]=T(); } // it was T(0), but for built in types it must be the same
+	inline void Clear( ) { for(int j=0; j<n; j++) v[j]=T(); } // it was T(0), but for built in types it must be the same
 	
-	int Size() const { return n; }
+	inline int Size() const { return n; }
 	
-	Array1D<T>& operator=( const Array1D<T>& V )
+	inline Array1D<T>& operator=( const Array1D<T>& V )
 	{
 	 #ifdef DEBUG
 		if( n != V.n )
@@ -102,7 +102,7 @@ public:
 		return *this;
 	}
 
-	T& operator()( int i )
+	inline T& operator()( int i )
 	{
 	 #ifdef DEBUG
 		if( i>=n ){ std::cout<<"Array1D::bound11& "<<n<<", "<<i<<"\n"; PDError(12); }
@@ -110,14 +110,13 @@ public:
 		return v[i];
 	}
 
-	T operator()( int i ) const
+	inline T operator()( int i ) const
 	{
 	 #ifdef DEBUG
 		if( i>=n ){ std::cout<<"vec_bound11_\n"; PDError(12); }
 	 #endif
-		return v[i]; 
+		return v[i];
 	}
-
 };
 
 
@@ -132,25 +131,25 @@ class Array2D{
 	int r, c;
 
  public:
-	Array2D( ) { r = 0; c = 0; v = 0; m = 0; }
+	inline Array2D( ) { r = 0; c = 0; v = 0; m = 0; }
 
-	Array2D( int _r, int _c ) : r(_r), c(_c)
+	inline Array2D( int _r, int _c ) : r(_r), c(_c)
 	{
 		v = new T[r*c+2];
 		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
 		Clear();
 	}
 
-	Array2D( const Array2D<T>& M ) : r(M.r), c(M.c)
+	inline Array2D( const Array2D<T>& M ) : r(M.r), c(M.c)
 	{
 		v = new T[r*c+2];
 		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
 		for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 	}
 
-	virtual ~Array2D(){ delete []v; }
+	inline virtual ~Array2D(){ delete []v; }
 
-	void Init( int _r, int _c )
+	inline void Init( int _r, int _c )
 	{
 		delete v;
 		r = _r;
@@ -160,9 +159,9 @@ class Array2D{
 		Clear();
 	}
 
-	void Clear() { for( int i = 0; i < r*c; i++ ) m[i] = T(0); }
+	inline void Clear() { for( int i = 0; i < r*c; i++ ) m[i] = T(0); }
 
-	Array2D<T>& operator= ( const Array2D<T>& M )
+	inline Array2D<T>& operator= ( const Array2D<T>& M )
 	{
 		if( (M.r == r)&&(M.c == c) )
 		{
@@ -174,7 +173,7 @@ class Array2D{
 		return *this;
 	} 
 
-	T& operator()( const int i, const int j )
+	inline T& operator()( const int i, const int j )
 	{
 	 #ifdef DEBUG
 		if((i>=r)||(j>=c)){ cout<<"bound& "<<r<<", "<<c<<",-"<<i<<", "<<j<<"\n"; PDError(1); }
@@ -183,7 +182,7 @@ class Array2D{
 		return m[i + r*j];
 	}
 
-	T operator()( const int i, const int j ) const
+	inline T operator()( const int i, const int j ) const
 	{
 	 #ifdef DEBUG
 		if((i>=r)||(j>=c)){ cout<<"bound_\n"; PDError(1); }
@@ -192,7 +191,7 @@ class Array2D{
 		return m[i + r*j];
 	}
 
-	T& operator()( int i )
+	inline T& operator()( int i )
 	{
 	 #ifdef DEBUG
 		if( i>=r*c ){ cout<<"bound11&\n"; PDError(1); }
@@ -201,7 +200,7 @@ class Array2D{
 		return m[i];
 	}
 
-	T operator()( int i ) const
+	inline T operator()( int i ) const
 	{
 	 #ifdef DEBUG
 		if( i>=r*c ){ cout<<"bound11_\n"; PDError(1); }
@@ -221,23 +220,23 @@ class Array3D{
 	int d1,d2,d3;
 
  public:
-	Array3D( ) { d1 = d2 = d3 = 0; m = 0; }
+	inline Array3D( ) { d1 = d2 = d3 = 0; m = 0; }
 
-	Array3D( int _d1, int _d2, int _d3 ) : d1(_d1), d2(_d2), d3(_d3)
+	inline Array3D( int _d1, int _d2, int _d3 ) : d1(_d1), d2(_d2), d3(_d3)
 	{
 		m = new T[d1*d2*d3+1];
 		Clear();
 	}
 
-	Array3D( const Array3D<T>& M ) : d1(M.d1), d2(M.d2), d3(M.d3)
+	inline Array3D( const Array3D<T>& M ) : d1(M.d1), d2(M.d2), d3(M.d3)
 	{
 		m = new T[d1*d2*d3+1];
 		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
 	}
 
-	virtual ~Array3D(){ delete []m; }
+	inline virtual ~Array3D(){ delete []m; }
 
-	void Init( int _d1, int _d2, int _d3 )
+	inline void Init( int _d1, int _d2, int _d3 )
 	{
 		delete m;
 		d1 = _d1;
@@ -247,9 +246,9 @@ class Array3D{
 		Clear();
 	}
 	
-	void Clear() { for( int i = 0; i < d1*d2*d3; i++ ) m[i] = 0; }
+	inline void Clear() { for( int i = 0; i < d1*d2*d3; i++ ) m[i] = 0; }
 	
-	Array3D<T>& operator= ( const Array3D<T>& M )
+	inline Array3D<T>& operator= ( const Array3D<T>& M )
 	{
 		if( (M.d1 == d1)&&(M.d2 == d2)&&(M.d3 == d3) )
 		{
@@ -261,7 +260,7 @@ class Array3D{
 		return *this;
 	}
 	
-	T& operator()( const int i, const int j, const int k )
+	inline T& operator()( const int i, const int j, const int k )
 	{
 	 #ifdef DEBUG
 		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
@@ -270,7 +269,7 @@ class Array3D{
 		return m[i + d1*(j + d2*k)];
 	}
 
-	T operator()( const int i, const int j, const int k ) const
+	inline T operator()( const int i, const int j, const int k ) const
 	{
 	 #ifdef DEBUG
 		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
@@ -298,9 +297,9 @@ template< class MT, class VT > class __op_mul_vec_plus_vec_rng;
 class rng
 {
  public:
-	rng( ) : i1(0), i2(0), j1(0), j2(0) { }
-	rng( int i1_, int i2_ ) : i1(i1_), i2(i2_), j1(0), j2(0) { }
-	rng( int i1_, int i2_, int j1_, int j2_ ) : i1(i1_), i2(i2_), j1(j1_), j2(j2_) { }
+	inline rng( ) : i1(0), i2(0), j1(0), j2(0) { }
+	inline rng( int i1_, int i2_ ) : i1(i1_), i2(i2_), j1(0), j2(0) { }
+	inline rng( int i1_, int i2_, int j1_, int j2_ ) : i1(i1_), i2(i2_), j1(j1_), j2(j2_) { }
 	
 	const int i1, i2, j1, j2;
 };
@@ -309,20 +308,20 @@ class rng
 template< class VT > class __scal_vec_trans_rng : public rng
 {
  public:
-	__scal_vec_trans_rng( const VT& v )                                        : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( 1.0 ), tr( NoTrans ) { }
-	__scal_vec_trans_rng( const VT& v, double a )                              : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( a ),   tr( NoTrans ) { }
-	__scal_vec_trans_rng( const VT& v, double a, enum cspblas_Trans t )        : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( a ),   tr( t ) { }
-	__scal_vec_trans_rng( const VT& v, rng r )                                 : rng( r ), vec( v ), alpha( 1.0 ), tr( NoTrans ) { }
-	__scal_vec_trans_rng( const VT& v, rng r, double a )                       : rng( r ), vec( v ), alpha( a ),   tr( NoTrans ) { }
-	__scal_vec_trans_rng( const VT& v, rng r, double a, enum cspblas_Trans t ) : rng( r ), vec( v ), alpha( a ),   tr( t ) { }
-	__scal_vec_trans_rng( __scal_vec_trans<VT> v );
+	inline __scal_vec_trans_rng( const VT& v )                                        : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( 1.0 ), tr( NoTrans ) { }
+	inline __scal_vec_trans_rng( const VT& v, double a )                              : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( a ),   tr( NoTrans ) { }
+	inline __scal_vec_trans_rng( const VT& v, double a, enum cspblas_Trans t )        : rng(0, v.Row(), 0, v.Col()), vec( v ), alpha( a ),   tr( t ) { }
+	inline __scal_vec_trans_rng( const VT& v, rng r )                                 : rng( r ), vec( v ), alpha( 1.0 ), tr( NoTrans ) { }
+	inline __scal_vec_trans_rng( const VT& v, rng r, double a )                       : rng( r ), vec( v ), alpha( a ),   tr( NoTrans ) { }
+	inline __scal_vec_trans_rng( const VT& v, rng r, double a, enum cspblas_Trans t ) : rng( r ), vec( v ), alpha( a ),   tr( t ) { }
+	inline __scal_vec_trans_rng( __scal_vec_trans<VT> v );
 	
-	__scal_vec_trans_rng< VT >     operator!( ) { return __scal_vec_trans_rng<VT>( alpha, *this, Trans ); }
-	__scal_vec_trans_rng< VT >     operator-( ) { return __scal_vec_trans_rng<VT>( -alpha, *this, tr ); }
-	__op_mul_vec_rng< VT, Vector > operator*( __scal_vec_trans_rng<Vector> v );
-	__op_mul_vec_rng< VT, Matrix > operator*( __scal_vec_trans_rng<Matrix> v );
-	__op_mul_vec_rng< VT, Vector > operator*( const Vector& v );
-	__op_mul_vec_rng< VT, Matrix > operator*( const Matrix& v );
+	inline __scal_vec_trans_rng< VT >     operator!( ) { return __scal_vec_trans_rng<VT>( alpha, *this, Trans ); }
+	inline __scal_vec_trans_rng< VT >     operator-( ) { return __scal_vec_trans_rng<VT>( -alpha, *this, tr ); }
+	inline __op_mul_vec_rng< VT, Vector > operator*( __scal_vec_trans_rng<Vector> v );
+	inline __op_mul_vec_rng< VT, Matrix > operator*( __scal_vec_trans_rng<Matrix> v );
+	inline __op_mul_vec_rng< VT, Vector > operator*( const Vector& v );
+	inline __op_mul_vec_rng< VT, Matrix > operator*( const Matrix& v );
 	
 	const VT& vec;
 	const double alpha;
@@ -333,14 +332,14 @@ template< class VT > class __scal_vec_trans_rng : public rng
 template< class MT, class VT > class __op_mul_vec_rng
 {
  public:
-	__op_mul_vec_rng( __scal_vec_trans_rng<MT> m, __scal_vec_trans_rng<VT> v ) : op( m ), vecA( v ) { }
+	inline __op_mul_vec_rng( __scal_vec_trans_rng<MT> m, __scal_vec_trans_rng<VT> v ) : op( m ), vecA( v ) { }
 	
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans_rng<VT> v );
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( const VT& v );
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans<VT> v );
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans_rng<VT> v );
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( const VT& v );
-	__op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans_rng<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator+( const VT& v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator+( __scal_vec_trans<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans_rng<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator-( const VT& v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>   operator-( __scal_vec_trans<VT> v );
 	
 	const __scal_vec_trans_rng<MT> op;
 	const __scal_vec_trans_rng<VT> vecA;
@@ -350,7 +349,7 @@ template< class MT, class VT > class __op_mul_vec_rng
 template< class MT, class VT > class __op_mul_vec_plus_vec_rng : public __op_mul_vec_rng<MT,VT>
 {
  public:
-	__op_mul_vec_plus_vec_rng( __op_mul_vec_rng<MT,VT> m, __scal_vec_trans_rng<VT> v ) : __op_mul_vec_rng<MT,VT>( m ), vecB( v ) { }
+	inline __op_mul_vec_plus_vec_rng( __op_mul_vec_rng<MT,VT> m, __scal_vec_trans_rng<VT> v ) : __op_mul_vec_rng<MT,VT>( m ), vecB( v ) { }
 	
 	const __scal_vec_trans_rng<VT> vecB;
 };
@@ -359,16 +358,16 @@ template< class MT, class VT > class __op_mul_vec_plus_vec_rng : public __op_mul
 template< class VT > class __scal_vec_trans
 {
  public:
-	__scal_vec_trans( const VT& m ) : vec(m), alpha( 1.0 ), tr( NoTrans ) { }
-	__scal_vec_trans( const VT& m, double a ) : vec( m ), alpha( a ), tr( NoTrans ) { }
-	__scal_vec_trans( const VT& m, double a, enum cspblas_Trans t ) : vec( m ), alpha( a ), tr(t) { }
+	inline __scal_vec_trans( const VT& m ) : vec(m), alpha( 1.0 ), tr( NoTrans ) { }
+	inline __scal_vec_trans( const VT& m, double a ) : vec( m ), alpha( a ), tr( NoTrans ) { }
+	inline __scal_vec_trans( const VT& m, double a, enum cspblas_Trans t ) : vec( m ), alpha( a ), tr(t) { }
 	
-	__scal_vec_trans< VT >                        operator!( ) { return __scal_vec_trans<VT>( alpha, vec, Trans ); }
-	__scal_vec_trans< VT >                        operator-( ) { return __scal_vec_trans<VT>( -alpha, vec, tr ); }
-	__op_mul_vec< VT, Vector >                    operator*( const Vector& v );
-	__op_mul_vec< VT, Matrix >                    operator*( const Matrix& v );
-	__op_mul_vec_rng< VT, Vector >                operator*( __scal_vec_trans_rng<Vector> v );
-	__op_mul_vec_rng< VT, Matrix >                operator*( __scal_vec_trans_rng<Matrix> v );
+	inline __scal_vec_trans< VT >                        operator!( ) { return __scal_vec_trans<VT>( alpha, vec, Trans ); }
+	inline __scal_vec_trans< VT >                        operator-( ) { return __scal_vec_trans<VT>( -alpha, vec, tr ); }
+	inline __op_mul_vec< VT, Vector >                    operator*( const Vector& v );
+	inline __op_mul_vec< VT, Matrix >                    operator*( const Matrix& v );
+	inline __op_mul_vec_rng< VT, Vector >                operator*( __scal_vec_trans_rng<Vector> v );
+	inline __op_mul_vec_rng< VT, Matrix >                operator*( __scal_vec_trans_rng<Matrix> v );
 	
 	const VT& vec;
 	double alpha;
@@ -378,14 +377,14 @@ template< class VT > class __scal_vec_trans
 template< class MT, class VT > class __op_mul_vec
 {
  public:
-	__op_mul_vec( __scal_vec_trans<MT> m, __scal_vec_trans<VT> v ) : op( m ), vecA( v ) { }
+	inline __op_mul_vec( __scal_vec_trans<MT> m, __scal_vec_trans<VT> v ) : op( m ), vecA( v ) { }
 	
-	__op_mul_vec_plus_vec<MT,VT>      operator+( __scal_vec_trans<VT> v );
-	__op_mul_vec_plus_vec<MT,VT>      operator-( __scal_vec_trans<VT> v );
-	__op_mul_vec_plus_vec_rng<MT,VT>  operator+( __scal_vec_trans_rng<VT> v );
-	__op_mul_vec_plus_vec_rng<MT,VT>  operator-( __scal_vec_trans_rng<VT> v );
-	__op_mul_vec_plus_vec<MT,VT>      operator+( const VT& v );
-	__op_mul_vec_plus_vec<MT,VT>      operator-( const VT& v );
+	inline __op_mul_vec_plus_vec<MT,VT>      operator+( __scal_vec_trans<VT> v );
+	inline __op_mul_vec_plus_vec<MT,VT>      operator-( __scal_vec_trans<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>  operator+( __scal_vec_trans_rng<VT> v );
+	inline __op_mul_vec_plus_vec_rng<MT,VT>  operator-( __scal_vec_trans_rng<VT> v );
+	inline __op_mul_vec_plus_vec<MT,VT>      operator+( const VT& v );
+	inline __op_mul_vec_plus_vec<MT,VT>      operator-( const VT& v );
 
 	const __scal_vec_trans<MT> op;
 	const __scal_vec_trans<VT> vecA;
@@ -394,7 +393,7 @@ template< class MT, class VT > class __op_mul_vec
 template< class MT, class VT > class __op_mul_vec_plus_vec : public __op_mul_vec<MT,VT>
 {
  public:
-	__op_mul_vec_plus_vec( __op_mul_vec<MT,VT> m, __scal_vec_trans<VT> v ) : __op_mul_vec<MT,VT>( m ), vecB( v ) { }
+	inline __op_mul_vec_plus_vec( __op_mul_vec<MT,VT> m, __scal_vec_trans<VT> v ) : __op_mul_vec<MT,VT>( m ), vecB( v ) { }
 	
 	const __scal_vec_trans<VT> vecB;
 };
@@ -406,24 +405,24 @@ class Vector : public Array1D<double>
 
 public:
 
-	Vector() { }
+	inline Vector() { }
 
-	Vector( int i ) : Array1D<double>( i ) { }
+	inline Vector( int i ) : Array1D<double>( i ) { }
 
-	Vector( const Vector& V ) : Array1D<double>( V ) { }
+	inline Vector( const Vector& V ) : Array1D<double>( V ) { }
 
-	~Vector() { }
+	inline ~Vector() { }
 
-	double *Pointer(){ return v; }
+	inline double *Pointer(){ return v; }
 	
-	void Print() const
+	inline void Print() const
 	{
 		for(int j=0; j<n; j++) std::cout<<v[j]<<'\t'; std::cout<<'\n';
 	}
 
 #ifndef PDDESYS_H
 	
-	Vector& operator=( const Vector& V )
+	inline Vector& operator=( const Vector& V )
 	{
 // 		std::cout<<"op= ";
 	#ifdef DEBUG
@@ -434,7 +433,7 @@ public:
 		return *this;
 	}
 
-	Vector& operator-=( const Vector& V )
+	inline Vector& operator-=( const Vector& V )
 	{
 // 		std::cout<<"op-= ";
 	#ifdef DEBUG
@@ -445,7 +444,7 @@ public:
 		return *this;
 	}
 	
-	Vector& operator+=( const Vector& V )
+	inline Vector& operator+=( const Vector& V )
 	{
 // 		std::cout<<"op+= ";
 		if( n != V.n ){ std::cout<<"Vector::operator+=(): incompatible sizes\n"; }
@@ -454,7 +453,7 @@ public:
 		return *this;
 	}
 	
-	Vector& operator/=( double div )
+	inline Vector& operator/=( double div )
 	{
 // 		std::cout<<"op/= ";
 // 		for( int i=0; i < n; i++ ) v[i] /= div;
@@ -462,7 +461,7 @@ public:
 		return *this;
 	}
 	
-	Vector& operator*=( double mul )
+	inline Vector& operator*=( double mul )
 	{
 // 		for( int i=0; i < n; i++ ) v[i] *= mul;
 // 		std::cout<<"op*= ";
@@ -471,7 +470,7 @@ public:
 	}
 
 	
-	double operator*( const Vector& V ) const
+	inline double operator*( const Vector& V ) const
 	{
 	#ifdef DEBUG
 		if( n != V.n ){ std::cout<<"Vector::operator*(): incompatible sizes\n"; }
@@ -480,20 +479,20 @@ public:
 	}
 	
 	// Matrix operations
-	Vector& operator=( const __scal_vec_trans<Vector> );
-	Vector& operator=( const __op_mul_vec<Matrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_vec<Matrix,Vector> );
-	Vector& operator=( const __op_mul_vec<SpMatrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> );
+	inline Vector& operator=( const __scal_vec_trans<Vector> );
+	inline Vector& operator=( const __op_mul_vec<Matrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec_plus_vec<Matrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec<SpMatrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> );
 	// with ranges
-	Vector& operator=( const __scal_vec_trans_rng<Vector> );
-	Vector& operator=( const __op_mul_vec_rng<Matrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> );
-	Vector& operator=( const __op_mul_vec_rng<SpMatrix,Vector> );
-	Vector& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Vector> );
+	inline Vector& operator=( const __scal_vec_trans_rng<Vector> );
+	inline Vector& operator=( const __op_mul_vec_rng<Matrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec_rng<SpMatrix,Vector> );
+	inline Vector& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Vector> );
 
-	__scal_vec_trans<Vector>     operator-( ) { return __scal_vec_trans<Vector>( *this, -1.0 ); }
-	__scal_vec_trans_rng<Vector> operator[ ] ( rng r ) { return __scal_vec_trans_rng<Vector>( *this, r ); }
+	inline __scal_vec_trans<Vector>     operator-( ) { return __scal_vec_trans<Vector>( *this, -1.0 ); }
+	inline __scal_vec_trans_rng<Vector> operator[ ] ( rng r ) { return __scal_vec_trans_rng<Vector>( *this, r ); }
 	
 #endif // PDDESYS_H
 	
@@ -508,73 +507,79 @@ class Matrix : public Array2D<double>
 {
  public:
 
-	Matrix() { }
+	inline Matrix() { }
 
-	Matrix( int i, int j ) : Array2D<double>( i, j ) { }
+	inline Matrix( int i, int j ) : Array2D<double>( i, j ) { }
 
-	Matrix( const Matrix& M ) : Array2D<double>( M ) { }
+	inline Matrix( const Matrix& M ) : Array2D<double>( M ) { }
 
-	virtual ~Matrix() { }
+	inline virtual ~Matrix() { }
 
-	int Row() const { return r; }
-	int Col() const { return c; }
-	int Size() const { if((r==1)||(c==1)){return r*c;}else{cout<<"Hs\n"; return 0;} }
+	inline int Row() const { return r; }
+	inline int Col() const { return c; }
+	inline int Size() const { if((r==1)||(c==1)){return r*c;}else{cout<<"Hs\n"; return 0;} }
 
 #ifndef PDDESYS_H
-	void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
+	inline void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
 	{
 		cblas_mmx( trans, r, c,  m, r, out, in, alpha );
 	}
-	void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
+	inline void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
 	{
 		cblas_mmxpy( trans, r, c, m, r, out, in, alpha, Y, beta );
 	}
-	void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
+	inline void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
 	{
 		cblas_mmxm( trans, r, c, m, r, out, ldout, in, ldin, alpha, nrhs );
 	}
-	void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, 
+	inline void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, 
 	              const double* in, int ldin, double alpha, const double* Y, int ldY, double beta, int nrhs ) const
 	{
 		cblas_mmxmpym( trans, r, c, m, r, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 	}
 	
-	Matrix& operator=( const __scal_vec_trans<Matrix> );
-	Matrix& operator=( const __op_mul_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> );
+	inline Matrix& operator=( const __scal_vec_trans<Matrix> );
+	inline Matrix& operator=( const __op_mul_vec<Matrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec<SpMatrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> );
 		// with ranges
-	Matrix& operator=( const __scal_vec_trans_rng<Matrix> );
-	Matrix& operator=( const __op_mul_vec_rng<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_rng<SpMatrix,Matrix> );
-	Matrix& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Matrix> );
+	inline Matrix& operator=( const __scal_vec_trans_rng<Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_rng<Matrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_rng<SpMatrix,Matrix> );
+	inline Matrix& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Matrix> );
 	
-	void AX( double* out, const double* in, double alpha, bool trans ) const;
-	void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
+	inline void AX( double* out, const double* in, double alpha, bool trans ) const;
+	inline void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
 	
 	void Eigval( Vector& re, Vector& im );
 	void Eigval( Vector& re, Vector& im, Matrix& lev, Matrix& rev );
 	void StrPlot( GnuPlot& pl );
 	
 	/* operators */
-	Matrix& operator*=( double mul )
+	inline Matrix& operator*=( double mul )
 	{
 		for( int i=0; i < r*c; i++ ) m[i] *= mul;
 		return *this;
 	}
 	
-	__op_mul_vec<Matrix,Vector>     operator*( Vector& v ) { return __op_mul_vec<Matrix,Vector>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
-	__op_mul_vec<Matrix,Matrix>     operator*( Matrix& v ) { return __op_mul_vec<Matrix,Matrix>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
-	__op_mul_vec_rng<Matrix,Vector> operator*( __scal_vec_trans_rng<Vector> v ) { return __op_mul_vec_rng<Matrix,Vector>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
-	__op_mul_vec_rng<Matrix,Matrix> operator*( __scal_vec_trans_rng<Matrix> v ) { return __op_mul_vec_rng<Matrix,Matrix>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
-	__scal_vec_trans<Matrix>        operator!( ) { return __scal_vec_trans<Matrix>( *this, 1.0, Trans ); }
-	__scal_vec_trans_rng<Matrix>    operator[ ] ( rng r ) { return __scal_vec_trans_rng<Matrix>( *this, r ); }
+	inline __op_mul_vec<Matrix,Vector>     operator*( Vector& v )
+		{ return __op_mul_vec<Matrix,Vector>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
+	inline __op_mul_vec<Matrix,Matrix>     operator*( Matrix& v )
+		{ return __op_mul_vec<Matrix,Matrix>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
+	inline __op_mul_vec_rng<Matrix,Vector> operator*( __scal_vec_trans_rng<Vector> v )
+		{ return __op_mul_vec_rng<Matrix,Vector>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
+	inline __op_mul_vec_rng<Matrix,Matrix> operator*( __scal_vec_trans_rng<Matrix> v )
+		{ return __op_mul_vec_rng<Matrix,Matrix>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
+	inline __scal_vec_trans<Matrix>        operator!( )
+		{ return __scal_vec_trans<Matrix>( *this, 1.0, Trans ); }
+	inline __scal_vec_trans_rng<Matrix>    operator[ ] ( rng r )
+		{ return __scal_vec_trans_rng<Matrix>( *this, r ); }
 	
 #endif // PDDESYS_H
 	
-	void Print()
+	inline void Print()
 	{
 		double sum=0.0;
 		for( int i = 0; i < r; i++ )
@@ -614,7 +619,7 @@ class MatFact : public Matrix
 
 	public:
 
-		MatFact( int _r, int _c ) : Matrix( _r, _c )
+		inline MatFact( int _r, int _c ) : Matrix( _r, _c )
 		{
 			fact = false;
 			mf = new double[r*c+1];
@@ -623,7 +628,7 @@ class MatFact : public Matrix
 			iwork = new integer[this->r];
 		}
 		
-		MatFact( const Matrix& M ) : Matrix( M )
+		inline MatFact( const Matrix& M ) : Matrix( M )
 		{
 			fact = false;
 			mf = new double[r*c+1];
@@ -632,19 +637,19 @@ class MatFact : public Matrix
 			iwork = new integer[this->r];
 		}
 		
-		~MatFact(){ delete[] iwork; delete[] work; delete[] ipiv; delete[] mf; }
+		inline ~MatFact(){ delete[] iwork; delete[] work; delete[] ipiv; delete[] mf; }
 
-		MatFact& operator=( MatFact& M )
+		inline MatFact& operator=( MatFact& M )
 		{
 			Matrix::operator=( M );
 			cout<<"Copying MatFact is not yet implemented, though the Matrix part will be copied normally\n";
 			return *this;
 		}
 		
-		void New() { fact = false; }
+		inline void New() { fact = false; }
 		
-		int  Row() const { return Matrix::Row(); }
-		int  Col() const { return Matrix::Col(); }
+		inline int  Row() const { return Matrix::Row(); }
+		inline int  Col() const { return Matrix::Col(); }
 		
 		void Fact();
 		void Solve( Vector& X, const Vector& B, bool TRANS=false );

@@ -34,16 +34,16 @@ class CollocTR
 		void ImportTan( Vector& out, Vector& Re, Vector& Im, double alpha );
 		void Save( char* dat, char* idx, const Vector& in );
 
-		int Ndeg1( ) { return ndeg1; }
-		int Ndeg2( ) { return ndeg2; }
-		int Nint1( ) { return nint1; }
-		int Nint2( ) { return nint2; }
+		inline int Ndeg1( ) { return ndeg1; }
+		inline int Ndeg2( ) { return ndeg2; }
+		inline int Nint1( ) { return nint1; }
+		inline int Nint2( ) { return nint2; }
 
 		//utils
 		inline int idxmap( int j1, int j2, int i1, int i2 );
 		inline int idxmapSep( int j1, int j2, int i1, int i2 );
 		inline int idxkk( int j1, int j2, int k );
-		System& Sys() { return *sys; }
+		inline System& Sys() { return *sys; }
 
 	private:
 		System* sys;

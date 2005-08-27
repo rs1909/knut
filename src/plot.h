@@ -23,8 +23,8 @@ class GnuPlot{
   vector<string> cmd;
   vector<string> data;
 public:
-  GnuPlot() : cmd(), data() { prg = popen("gnuplot","w"); }
-  ~GnuPlot() { pclose(prg); }
+  inline GnuPlot() : cmd(), data() { prg = popen("gnuplot","w"); }
+  inline ~GnuPlot() { pclose(prg); }
   void SetTerminal( char *term );
   void SetOutput( char *term );
   void SetPointSize( double ps );

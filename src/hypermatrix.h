@@ -17,12 +17,12 @@ class HyperVector
 {
 	public:
 	
-		HyperVector( int i, int j, int k ) : V1(i), V2(j), V3(k) { }
-		~HyperVector() { }
+		inline HyperVector( int i, int j, int k ) : V1(i), V2(j), V3(k) { }
+		inline ~HyperVector() { }
 		
-		Vector& getV1() { return V1; }
-		Vector& getV2() { return V2; }
-		Vector& getV3() { return V3; }
+		inline Vector& getV1() { return V1; }
+		inline Vector& getV2() { return V2; }
+		inline Vector& getV3() { return V3; }
 		
 	private:
 	
@@ -40,19 +40,19 @@ class HyperMatrix
 		HyperMatrix( int i, int j, int k, int nz );
 		~HyperMatrix();
 		
-		FACT&        getA11() { return *A11; }
-		JagVector2D& getA13() { return *A13; }
-		Vector&      getA13( int i ) { return (*A13)(i); }
-		Matrix&      getA21() { return *A21; }
-		MatFact&     getA22() { return *A22; }
-		JagVector2D& getA23() { return *A23; }
-		Vector&      getA23( int i ) { return (*A23)(i); }
-		JagVector2D& getA31() { return *A31; }
-		Vector&      getA31( int i ) { return (*A31)(i); }
-		JagVector2D& getA32() { return *A32; }
-		Vector&      getA32( int i ) { return (*A32)(i); }
-		Matrix&      getA33() { return *A33; }
-		double&      getA33( int i, int j ) { return (*A33)(i,j); }
+		inline FACT&        getA11() { return *A11; }
+		inline JagVector2D& getA13() { return *A13; }
+		inline Vector&      getA13( int i ) { return (*A13)(i); }
+		inline Matrix&      getA21() { return *A21; }
+		inline MatFact&     getA22() { return *A22; }
+		inline JagVector2D& getA23() { return *A23; }
+		inline Vector&      getA23( int i ) { return (*A23)(i); }
+		inline JagVector2D& getA31() { return *A31; }
+		inline Vector&      getA31( int i ) { return (*A31)(i); }
+		inline JagVector2D& getA32() { return *A32; }
+		inline Vector&      getA32( int i ) { return (*A32)(i); }
+		inline Matrix&      getA33() { return *A33; }
+		inline double&      getA33( int i, int j ) { return (*A33)(i,j); }
 		
 		template< class T > inline void GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 );
 		template< class T > inline void GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 );

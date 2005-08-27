@@ -18,7 +18,7 @@
 class baseCharMat
 {
 	public:
-		virtual ~baseCharMat() {}
+		inline virtual ~baseCharMat() {}
 		
 		virtual void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z ) = 0;
 		virtual void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector& q ) = 0;
@@ -38,19 +38,19 @@ class CharMat : public baseCharMat
 {
 	public:
 		CharMat( NColloc& col );
-		virtual ~CharMat() { }
+		inline virtual ~CharMat() { }
 		
 		void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z );
 		void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector& q );
 		
-		void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double ) { }
-		void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double, Vector& ) { }
+		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double ) { PDError(-1); }
+		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double, Vector& ) { PDError(-1); }
 		
 		void Delta( MatFact& delta, NColloc& col );
 		void Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		void Delta_p( Vector& delta_p, NColloc& col, const Vector& par, const JagMatrix3D& solData, int p );
 		
-		void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { }
+		inline void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { PDError(-1); }
 		
 		void Switch( Vector& tan, NColloc& col );
 		
@@ -70,10 +70,10 @@ class CharMatCPLX : public baseCharMat
 {
 	public:
 		CharMatCPLX( NColloc& col );
-		virtual ~CharMatCPLX() { }
+		inline virtual ~CharMatCPLX() { }
 		
-		void Init( NColloc& , const Vector& , const JagMatrix3D& , double ) { PDError(-1); }
-		void Init( NColloc& , const Vector& , const JagMatrix3D& , double , Vector&  ) { PDError(-1); }
+		inline void Init( NColloc& , const Vector& , const JagMatrix3D& , double ) { PDError(-1); }
+		inline void Init( NColloc& , const Vector& , const JagMatrix3D& , double , Vector&  ) { PDError(-1); }
 		
 		void Init( NColloc& , const Vector&, const JagMatrix3D&, double zzRe, double zzIm );
 		void Init( NColloc& , const Vector&, const JagMatrix3D&, double zzRe, double zzIm, Vector& q );
@@ -84,7 +84,7 @@ class CharMatCPLX : public baseCharMat
 		
 		void Delta_z( Vector& delta_z, NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		
-		void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
+		inline void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
 		
 		void Switch( Vector& Re, Vector& Im, double& alpha, NColloc& col );
 	private:
@@ -104,23 +104,23 @@ class CharMatLPAUT : public baseCharMat
 {
 	public:
 		CharMatLPAUT( NColloc& col );
-		virtual ~CharMatLPAUT() { }
+		inline virtual ~CharMatLPAUT() { }
 		
-		void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z ) 
+		inline void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z ) 
 			{ getQs( col, par, solData, 0 ); init( col, par, solData, Z, 0 ); }
-		void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector& q )
+		inline void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector& q )
 			{ getQs( col, par, solData, &q ); init( col, par, solData, Z, &q ); }
 		
-		void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double ) { }
-		void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double, Vector& ) { }
+		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double ) { PDError(-1); }
+		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double, Vector& ) { PDError(-1); }
 		
 		void Delta( MatFact& delta, NColloc& col );
 		void Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		void Delta_p( Vector& delta_p, NColloc& col, const Vector& par, const JagMatrix3D& solData, int p );
 		
-		void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { }
+		inline void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { PDError(-1); }
 		
-		void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { }
+		inline void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
 		
 	protected:
 		void init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector* q );

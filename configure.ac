@@ -10,7 +10,7 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
 TMP_CXXFLAGS=$CXXFLAGS
-CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden -fvisibility=hidden"
+CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
 AC_COMPILE_IFELSE([int main() { return 0; }],[echo "yes"],
 [ CXXFLAGS=$TMP_CXXFLAGS
 echo "no"])
@@ -24,7 +24,7 @@ AC_COMPILE_IFELSE([int main() { return 0; }],
 
 if test "$GXX" == yes; then
   NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
-  CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
+  CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall -Woverloaded-virtual"
   MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
   AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
 fi

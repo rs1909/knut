@@ -27,48 +27,48 @@ class PointTR
 		int  Continue( double ds, bool first );
 
 		// supplementary
-		void    setCont( int i ) { p1 = i; }
-		void    setSol( Vector& s ) { xx->getV1() = s; }
-		Vector& getSol() { return xx->getV1(); }
-		Vector& getTan() { return xxDot->getV1(); }
-		void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
-		void    setRho( double rho ) 
+		inline void    setCont( int i ) { p1 = i; }
+		inline void    setSol( Vector& s ) { xx->getV1() = s; }
+		inline Vector& getSol() { return xx->getV1(); }
+		inline Vector& getTan() { return xxDot->getV1(); }
+		inline void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
+		inline void    setRho( double rho ) 
 		{
 			par( colloc.Sys().npar() + ParRot ) = rho;
 			std::cout<<"RHO: "<<rho<<"\n";
 			std::cout<<"par(0): "<<par(0)<<"\n";
 		}
-		Vector& getPar() { return par; }
+		inline Vector& getPar() { return par; }
 		
-		void    setIter( int i ) { Iter = i; }
-		void    setRefEps( double d ) { RefEps = d; }
-		void    setContEps( double d ) { ContEps = d; }
-		void    setStartEps( double d ) { StartEps = d; }
+		inline void    setIter( int i ) { Iter = i; }
+		inline void    setRefEps( double d ) { RefEps = d; }
+		inline void    setContEps( double d ) { ContEps = d; }
+		inline void    setStartEps( double d ) { StartEps = d; }
 
-		int     idxmap( int j1, int j2, int i1, int i2 ) { return colloc.idxmap( j1, j2, i1, i2 ); }
+		inline int     idxmap( int j1, int j2, int i1, int i2 ) { return colloc.idxmap( j1, j2, i1, i2 ); }
 
-		void    ImportSol( Vector& Sol ) { colloc.ImportSol( xx->getV1(), Sol ); }
-		void    ImportTan( Vector& Re, Vector& Im, double alpha )
+		inline void    ImportSol( Vector& Sol ) { colloc.ImportSol( xx->getV1(), Sol ); }
+		inline void    ImportTan( Vector& Re, Vector& Im, double alpha )
 		{
 			colloc.ImportTan( xxDot->getV1(), Re, Im, alpha ); 
 			xxDot->getV3().Clear(); 
 			p1Dot = 0.0;
 		}
-		void    Start( double ds )
+		inline void    Start( double ds )
 		{
 			for( int i = 0; i < xx->getV1().Size(); i++ ) xx->getV1()(i) += ds*( xxDot->getV1()(i) );
 		}
-		double  Norm( ) { return sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) ); }
-		void    SaveSol( char* dat, char* idx ) { colloc.Save( dat, idx, xx->getV1() ); }
-		void    SaveTan( char* dat, char* idx ) { colloc.Save( dat, idx, xxDot->getV1() ); }
-		void    SaveAll( char* dat, char* idx ) 
+		inline double  Norm( ) { return sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) ); }
+		inline void    SaveSol( char* dat, char* idx ) { colloc.Save( dat, idx, xx->getV1() ); }
+		inline void    SaveTan( char* dat, char* idx ) { colloc.Save( dat, idx, xxDot->getV1() ); }
+		inline void    SaveAll( char* dat, char* idx ) 
 		{
 			Vector tmp(xxDot->getV1()); 
 			tmp *= 0.1;
 			tmp += xx->getV1();
 			colloc.Save( dat, idx, tmp ); 
 		}
-		int     npar() { return colloc.Sys().npar(); }
+		inline int     npar() { return colloc.Sys().npar(); }
 
 	private:
 		void Construct();

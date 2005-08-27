@@ -19,18 +19,15 @@ class NColloc
 	public:
 
 		NColloc( System& _sys, const int nint, const int ndeg, int nmat );      // computes mesh, metric, metricD
-//		NColloc( System& _sys, const Vector& Tmesh, const int ndeg ); // computes metric, metricD
-
+		
 		~NColloc() {}
-
+		
 		void Init( const Vector& par, const Vector& sol ); // computes time, kk, ee, dd, rr ...
 
 		void Interpolate( JagMatrix3D& out, const Vector& sol );
 		void InterpolateREAL( JagMatrix3D& out, const Vector& sol );
 		void InterpolateCPLX( JagMatrix3D& out, const Vector& sol );
-			// out(NDIM,NTAU+1,NDEG*NINT)
-			// out( ., NTAU, . ) contains the derivative
-
+		
 		void   Star( Vector& out, Vector& sol );
 		double Integrate( Vector& v1, Vector& v2 );
 		double IntegrateDerivative( Vector& v1, Vector& v2 );
@@ -42,23 +39,21 @@ class NColloc
 		void   Import( Vector& out, const Vector& in, const Vector& mesh, int deg_ );
 		void   Export( Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in );
 		
-		// computing the Jacobians, right-hand sides, characteristic matrices		
-
+		// computing the Jacobians, right-hand sides, characteristic matrices
+		
 		// continuation of solution
-	
-		void RHS( Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData );          // 
+		
+		void RHS( Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
 		void RHS_p( Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int p ); // sol is currently not needed
 		void RHS_x( SpMatrix& A, const Vector& par, const Vector& sol, const JagMatrix3D& solData );        // sol is currently not needed
 
 		// for stability computation
-		
-// 		void StabJac( SpMatrix& A, SpMatrix& B, const Vector& par, const JagMatrix3D& solData );
 		void StabJac( StabMatrix& AB, const Vector& par, const JagMatrix3D& solData );
 		// this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
 		// However, the variables will be contained within the NColloc class
-
+		
 		// continuation of bifurcations -> characteristic matrices
-
+		
 		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z );
 		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double ZRe, double ZIm );
 		
@@ -82,53 +77,53 @@ class NColloc
 		void CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha );
 
 		// supplementary
-		int Ndim() const { return ndim; }
-		int Npar() const { return npar; }
-		int Ntau() const { return ntau; }
-		int Nint() const { return nint; }
-		int Ndeg() const { return ndeg; }
+		inline int Ndim() const { return ndim; }
+		inline int Npar() const { return npar; }
+		inline int Ntau() const { return ntau; }
+		inline int Nint() const { return nint; }
+		inline int Ndeg() const { return ndeg; }
 		
 		void setMesh( const Vector& msh );
 		void getMesh( Vector& msh );
-		double Profile( int i, int d ) { return mesh(i) + meshINT(d)*(mesh(i+1)-mesh(i)); }
+		inline double Profile( int i, int d ) { return mesh(i) + meshINT(d)*(mesh(i+1)-mesh(i)); }
 
 	private:
 
 		// helper functions
 
-		int& WRIDX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
-		{ 
+		inline int& WRIDX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
+		{
 			return A.WrLi(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1)) );
 		}
 
-		double& WRDAT( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
-		{ 
+		inline double& WRDAT( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
+		{
 			return A.WrLx(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1)) );
 		}
 
 		// for CharJac_x
-		int& WRIDXCPLX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM )
-		{ 
+		inline int& WRIDXCPLX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM )
+		{
 			return A.WrLi( rIM + 2*(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM), cIM + 2*(cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1))) );
 		}
 
-		double& WRDATCPLX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM )
-		{ 
+		inline double& WRDATCPLX( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM )
+		{
 			return A.WrLx( rIM + 2*(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM), cIM + 2*(cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1))) );
 		}
 		
 		// for CharJac_x_x
-		int& WRIDXCPLXM( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM )
-		{ 
+		inline int& WRIDXCPLXM( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM )
+		{
 			return A.WrLi( rIM + 2*(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM), cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1)) );
 		}
 
-		double& WRDATCPLXM( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM )
-		{ 
+		inline double& WRDATCPLXM( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM )
+		{
 			return A.WrLx( rIM + 2*(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM), cDIM + ndim*( cDEG - dd(cTAU,idx)+rr(cTAU,idx)*(ndeg+1)) );
 		}
 		
-		int& WRIDXS( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
+		inline int& WRIDXS( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
 		{
 			return A.WrLi(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - ddS(cTAU,idx)+rrS(cTAU,idx)*(ndeg+1)) );
 		}
@@ -138,17 +133,17 @@ class NColloc
 			return A.WrLx(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - ddS(cTAU,idx)+rrS(cTAU,idx)*(ndeg+1)) );
 		}
 
-		int& WRIDXI( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
+		inline int& WRIDXI( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
 		{
 			return A.WrLi(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - ddI(cTAU,idx)+rrI(cTAU,idx)*(ndeg+1)) );
 		}
 
-		double& WRDATI( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
+		inline double& WRDATI( SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM )
 		{
 			return A.WrLx(ndim + ndim*( rDEG + ndeg*rINT ) + rDIM, cDIM + ndim*( cDEG - ddI(cTAU,idx)+rrI(cTAU,idx)*(ndeg+1)) );
 		}
 		
-		// the equations 
+		// the equations
 		System* sys;
 
 		int ndim;
