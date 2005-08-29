@@ -167,11 +167,7 @@ template< class FACT >
 inline void HyperMatrix::__BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
 {
 
-// 	Vector v( _b.Size() );
-// 	Vector vStar( _b.Size() );
 	double delta, deltaStar;
-// 	Vector w( _b.Size() );
-// 	Vector f1( _b.Size() );
 	double g1;
 	double y1, y2;
 	
@@ -184,14 +180,18 @@ inline void HyperMatrix::__BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d
 	// approx Y
 	y1 = (g - bem_vStar*f)/deltaStar;                                 // Step 5. Scalar + ddot
 	// residuals
-	for( int i=0; i<_b.Size(); i++ ) bem_f1(i) = f(i) - _b(i)*y1;     // Step 6. daxpy
-	g1 = g - _d*y1;                                               // Step 7. Scalar
+	bem_f1 = f;
+	bem_f1 -= y1 * _b;                                                // Step 6. daxpy
+// 	for( int i=0; i<_b.Size(); i++ ) bem_f1(i) = f(i) - _b(i)*y1;
+	g1 = g - _d*y1;                                                   // Step 7. Scalar
 	
 	// residual corrections
-	_A.Solve( bem_w, bem_f1 );                                            // Step 8.
+	_A.Solve( bem_w, bem_f1 );                                        // Step 8.
 	y2 = (g1 - _bStar*bem_w)/delta;                                   // Step 9. Scalar + ddot
-	for( int i=0; i<_b.Size(); i++ ) x(i) = bem_w(i) - bem_v(i)*y2;       // Step 10. daxpy
-	y = y1 + y2;                                                  // Step 11. Scalar
+	x = bem_w;
+	bem_w -= y2 * bem_v;                                              // Step 10. daxpy
+// 	for( int i=0; i<_b.Size(); i++ ) x(i) = bem_w(i) - bem_v(i)*y2;
+	y = y1 + y2;                                                      // Step 11. Scalar
 
 }
 
