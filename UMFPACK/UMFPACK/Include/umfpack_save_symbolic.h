@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -69,9 +68,7 @@ complex long Syntax:
 Purpose:
 
     Saves a Symbolic object to a file, which can later be read by
-    umfpack_*_load_symbolic.  The Symbolic object is not modified.  You need
-    to call umfpack_*_free_symbolic if you to delete the Symbolic object after
-    saving it to a file.
+    umfpack_*_load_symbolic.  The Symbolic object is not modified.
 
 Returns:
 

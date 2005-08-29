@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -20,9 +19,9 @@ GLOBAL void UMF_scale
     Entry X [ ]
 )
 {
-    Int i ;
     Entry x ;
     double s ;
+    Int i ;
 
     /* ---------------------------------------------------------------------- */
     /* compute the approximate absolute value of the pivot, and select method */
@@ -43,10 +42,20 @@ GLOBAL void UMF_scale
 	{
 	    /* X [i] /= pivot ; */
 	    x = X [i] ;
+
+#ifndef NO_DIVIDE_BY_ZERO
 	    if (IS_NONZERO (x))
 	    {
 		DIV (X [i], x, pivot) ;
 	    }
+#else
+	    /* Do not divide by zero */
+	    if (IS_NONZERO (x) && IS_NONZERO (pivot))
+	    {
+		DIV (X [i], x, pivot) ;
+	    }
+#endif
+
 	}
 
     }

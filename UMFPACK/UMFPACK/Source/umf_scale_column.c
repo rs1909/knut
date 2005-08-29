@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -53,11 +52,11 @@ GLOBAL void UMF_scale_column
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry pivot_value ;
+    Entry *Fcol, *Flublock, *Flblock, *Fublock, *Fcblock ;
     Int k, k1, fnr_curr, fnrows, fncols, *Frpos, *Fcpos, pivrow, pivcol,
 	*Frows, *Fcols, fnc_curr, fnpiv, *Row_tuples, nb,
 	*Col_tuples, *Rperm, *Cperm, fspos, col2, row2 ;
-    Entry pivot_value, *Fcol,
-	*Flublock, *Flblock, *Fublock, *Fcblock ;
 #ifndef NDEBUG
     Int *Col_degree, *Row_degree ;
 #endif

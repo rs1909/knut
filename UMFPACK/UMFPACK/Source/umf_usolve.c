@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -26,9 +25,10 @@ GLOBAL double UMF_usolve
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry xk ;
+    Entry *xp, *D, *Uval ;
     Int k, deg, j, *ip, col, *Upos, *Uilen, pos,
 	*Uip, n, ulen, up, newUchain, npiv, n1, *Ui ;
-    Entry *xp, xk, *D, *Uval ;
 
     /* ---------------------------------------------------------------------- */
     /* get parameters */
@@ -57,6 +57,7 @@ GLOBAL double UMF_usolve
     /* singular case */
     /* ---------------------------------------------------------------------- */
 
+#ifndef NO_DIVIDE_BY_ZERO
     /* handle the singular part of D, up to just before the last pivot */
     for (k = n-1 ; k >= npiv ; k--)
     {
@@ -67,6 +68,9 @@ GLOBAL double UMF_usolve
 	/* X [k] = xk / D [k] ; */
 	DIV (X [k], xk, D [k]) ;
     }
+#else
+    /* Do not divide by zero */
+#endif
 
     deg = Numeric->ulen ;
     if (deg > 0)
@@ -116,9 +120,18 @@ GLOBAL double UMF_usolve
 	    xp++ ;
 	}
 
+#ifndef NO_DIVIDE_BY_ZERO
 	/* Go ahead and divide by zero if D [k] is zero */
 	/* X [k] = xk / D [k] ; */
 	DIV (X [k], xk, D [k]) ;
+#else
+	/* Do not divide by zero */
+	if (IS_NONZERO (D [k]))
+	{
+	    /* X [k] = xk / D [k] ; */
+	    DIV (X [k], xk, D [k]) ;
+	}
+#endif
 
 	/* ------------------------------------------------------------------ */
 	/* make row k-1 of U in Pattern [0..deg-1] */
@@ -183,9 +196,20 @@ GLOBAL double UMF_usolve
 		MULT_SUB (xk, X [Ui [j]], Uval [j]) ;
 	    }
 	}
+
+#ifndef NO_DIVIDE_BY_ZERO
 	/* Go ahead and divide by zero if D [k] is zero */
 	/* X [k] = xk / D [k] ; */
 	DIV (X [k], xk, D [k]) ;
+#else
+	/* Do not divide by zero */
+	if (IS_NONZERO (D [k]))
+	{
+	    /* X [k] = xk / D [k] ; */
+	    DIV (X [k], xk, D [k]) ;
+	}
+#endif
+
     }
 
 #ifndef NDEBUG

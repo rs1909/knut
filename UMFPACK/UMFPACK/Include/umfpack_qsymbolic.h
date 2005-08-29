@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -98,6 +97,10 @@ complex long Syntax:
     status = umfpack_zl_qsymbolic (n_row, n_col, Ap, Ai, Ax, Az, Qinit,
 	&Symbolic, Control, Info) ;
 
+packed complex Syntax:
+
+    Same as above, except Az is NULL.
+
 Purpose:
 
     Given the nonzero pattern of a sparse matrix A in column-oriented form, and
@@ -137,4 +140,11 @@ Arguments:
 	column of the matrix A (:,Qinit) to be factorized.  If Qinit is an
 	(Int *) NULL pointer, then COLAMD or AMD are called instead.
 
+    double Control [UMFPACK_CONTROL] ;	Input argument, not modified.
+
+	If Qinit is not NULL, then only two strategies are recognized:
+	the unsymmetric strategy and the symmetric strategy.
+	If Control [UMFPACK_STRATEGY] is UMFPACK_STRATEGY_SYMMETRIC,
+	then the symmetric strategy is used.  Otherwise the unsymmetric
+	strategy is used.
 */

@@ -3,16 +3,14 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
 /* Current frontal matrix is too small.  Make it bigger. */
 
 #include "umf_internal.h"
-#include "umf_realloc.h"
 #include "umf_mem_free_tail_block.h"
 #include "umf_mem_alloc_tail_block.h"
 #include "umf_get_memory.h"
@@ -33,11 +31,11 @@ GLOBAL Int UMF_grow_front
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    double s ;
     Entry *Fcold, *Fcnew ;
     Int j, i, col, *Fcpos, *Fcols, fnrows_max, fncols_max, fnr_curr, nb,
 	fnrows_new, fncols_new, fnr_min, fnc_min, minsize,
 	newsize, fnrows, fncols, *E, eloc ;
-    double s ;
 
     /* ---------------------------------------------------------------------- */
     /* get parameters */

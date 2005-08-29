@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -28,14 +27,13 @@
 #include "umf_mem_alloc_head_block.h"
 #include "umf_mem_alloc_tail_block.h"
 #include "umf_mem_free_tail_block.h"
-#include "umf_free.h"
 #include "umf_scale.h"
 
 /* ========================================================================== */
 /* === packsp =============================================================== */
 /* ========================================================================== */
 
-/* remove zero entries from a singleton column of L or a row of U */
+/* remove zero or small entries from a column of L or a row of U */
 
 PRIVATE Int packsp	/* returns new value of pnew */
 (
@@ -44,12 +42,15 @@ PRIVATE Int packsp	/* returns new value of pnew */
 			   new pattern on output */
     Int *p_len,		/* ptr to length of old pattern on input,
 			   new pattern on output */
+    Int drop,		/* TRUE if small nonzero entries are to be dropped */
+    double droptol,	/* the drop tolerance */
     Unit *Memory	/* contains the sparse vector on input and output */
 )
 {
-    Entry x, *Bx, *Bx2 ;
-    Int p, i, len, len_new, *Bi, *Bi2 ;
+    Entry x ;
     double s ;
+    Entry *Bx, *Bx2 ;
+    Int p, i, len, len_new, *Bi, *Bi2 ;
 
     /* get the pointers to the sparse vector, and its length */
     p = *p_p ;
@@ -70,8 +71,13 @@ PRIVATE Int packsp	/* returns new value of pnew */
 	EDEBUGk (-4, x) ;
 	DEBUGm4 (("\n")) ;
 	ASSERT (i >= 0) ;
-	/* skip if zero */
+	/* skip if zero or below drop tolerance */
 	if (IS_ZERO (x)) continue ;
+	if (drop)
+	{
+	    APPROX_ABS (s, x) ;
+	    if (s <= droptol) continue ;
+	}
 	/* store the value back into the vector */
 	if (len_new != p)
 	{
@@ -147,19 +153,23 @@ GLOBAL Int UMF_kernel_init
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry x, pivot_value ;
+    double unused = 0, rsmin, rsmax, rs, droptol ;
+    Entry *D, *C, *Lval, **Rpx ;
+    double *Rs ;
     Int row, k, oldcol, size, e, p1, p2, p, nz, *Rows, *Cols, *E, i, *Upos,
 	*Lpos, n_row, n_col, *Wp, *Cperm_init, *Frpos, *Fcpos, *Row_degree, nn,
 	*Row_tlen, *Col_degree, *Col_tlen, oldrow, newrow, ilast, *Wrp,
 	*Rperm_init, col, n_inner, prefer_diagonal, *Diagonal_map, nempty,
 	*Diagonal_imap, fixQ, rdeg, cdeg, nempty_col, *Esize, esize, pnew,
 	*Lip, *Uip, *Lilen, *Uilen, llen, pa, *Cdeg, *Rdeg, n1, clen, do_scale,
-	lnz, unz, lip, uip, k1, *Rperm, *Cperm, pivcol, *Li, lilen,
+	lnz, unz, lip, uip, k1, *Rperm, *Cperm, pivcol, *Li, lilen, drop,
 	**Rpi, nempty_row, dense_row_threshold, empty_elements, rpi, rpx ;
-    double unused = 0, *Rs, rsmin, rsmax, rs ;
-    Entry *D, *C, x, *Lval, pivot_value, **Rpx ;
     Element *ep ;
     Unit *Memory ;
-
+#ifdef COMPLEX
+    Int split = SPLIT (Az) ;
+#endif
 #ifndef NRECIPROCAL
     Int do_recip = FALSE ;
 #endif
@@ -312,11 +322,15 @@ GLOBAL Int UMF_kernel_init
     Numeric->nUentries = 0 ;
     Numeric->lnz = 0 ;
     Numeric->unz = 0 ;
+    Numeric->all_lnz = 0 ;
+    Numeric->all_unz = 0 ;
     Numeric->maxfrsize = 0 ;
     Numeric->maxnrows = 0 ;
     Numeric->maxncols = 0 ;
     Numeric->flops = 0. ;
     Numeric->n1 = n1 ;
+    droptol = Numeric->droptol ;
+    drop = (droptol > 0) ;
 
     /* ---------------------------------------------------------------------- */
     /* compute the scale factors, if requested, and check the input matrix */
@@ -359,8 +373,8 @@ GLOBAL Int UMF_kernel_init
 	    }
 	    for (p = p1 ; p < p2 ; p++)
 	    {
-		double value ;
 		Entry aij ;
+		double value ;
 		row = Ai [p] ;
 		if (row <= ilast || row >= n_row)
 		{
@@ -368,7 +382,7 @@ GLOBAL Int UMF_kernel_init
 		    DEBUGm4 (("invalid matrix (Ai)\n")) ;
 		    return (FALSE) ;
 		}
-		ASSIGN (aij, Ax [p], Az [p]) ;
+		ASSIGN (aij, Ax, Az, p, split) ;
 		APPROX_ABS (value, aij) ;
 		rs = Rs [row] ;
 		if (!SCALAR_IS_NAN (rs))
@@ -525,6 +539,9 @@ GLOBAL Int UMF_kernel_init
 	    return (FALSE) ;	/* pattern changed */
 	}
 
+	Numeric->all_lnz += lnz ;
+	Numeric->all_unz += unz ;
+
 	/* allocate the column of L */
 	lip = p ;
 	p += UNITS (Int, lnz) ;
@@ -655,7 +672,7 @@ GLOBAL Int UMF_kernel_init
 	{
 	    oldrow = Ai [pa] ;
 	    newrow = Frpos [oldrow] ;
-	    ASSIGN (x, Ax [pa], Az [pa]) ;
+	    ASSIGN (x, Ax, Az, pa, split) ;
 
 	    /* scale the value using the scale factors, Rs */
 	    if (do_scale)
@@ -663,7 +680,7 @@ GLOBAL Int UMF_kernel_init
 #ifndef NRECIPROCAL
 		if (do_recip)
 		{
-		    SCALE_RECIP (x, Rs [oldrow]) ;
+		    SCALE (x, Rs [oldrow]) ;
 		}
 		else
 #endif
@@ -776,7 +793,7 @@ GLOBAL Int UMF_kernel_init
 	{
 	    oldrow = Ai [pa] ;
 	    newrow = Frpos [oldrow] ;
-	    ASSIGN (x, Ax [pa], Az [pa]) ;
+	    ASSIGN (x, Ax, Az, pa, split) ;
 
 	    /* scale the value using the scale factors, Rs */
 	    if (do_scale)
@@ -785,7 +802,7 @@ GLOBAL Int UMF_kernel_init
 		if (do_recip)
 		{
 		    /* multiply by the reciprocal */
-		    SCALE_RECIP (x, Rs [oldrow]) ;
+		    SCALE (x, Rs [oldrow]) ;
 		}
 		else
 #endif
@@ -852,7 +869,7 @@ GLOBAL Int UMF_kernel_init
     UMF_mem_free_tail_block (Numeric, rpx) ;
 
     /* ---------------------------------------------------------------------- */
-    /* prune zeros from the singleton rows and columns */
+    /* prune zeros and small entries from the singleton rows and columns */
     /* ---------------------------------------------------------------------- */
 
     if (n1 > 0)
@@ -862,10 +879,10 @@ GLOBAL Int UMF_kernel_init
 	for (k = 0 ; k < n1 ; k++)
 	{
 	    DEBUGm4 (("\nPrune singleton L col "ID"\n", k)) ;
-	    pnew = packsp (pnew, &Lip [k], &Lilen [k], Memory) ;
+	    pnew = packsp (pnew, &Lip [k], &Lilen [k], drop, droptol, Memory) ;
 	    Numeric->lnz += Lilen [k] ;
 	    DEBUGm4 (("\nPrune singleton U row "ID"\n", k)) ;
-	    pnew = packsp (pnew, &Uip [k], &Uilen [k], Memory) ;
+	    pnew = packsp (pnew, &Uip [k], &Uilen [k], drop, droptol, Memory) ;
 	    Numeric->unz += Uilen [k] ;
 	}
 	/* free the unused space at the head of memory */
@@ -896,15 +913,15 @@ GLOBAL Int UMF_kernel_init
 	{
 	    /* :: pattern change (dense row too short) :: */
 	    DEBUGm4 (("bad dense row (too short)\n")) ;
-	    return (FALSE) ;
+	    return (FALSE) ;	/* pattern changed */
 	}
     }
 
 #ifndef NDEBUG
     if (prefer_diagonal)
     {
-	Int *InvCperm, newcol ;
 	Entry aij ;
+	Int *InvCperm, newcol ;
 	UMF_dump_diagonal_map (Diagonal_map, Diagonal_imap, n1, nn, nempty) ;
 	InvCperm = (Int *) malloc (n_col * sizeof (Int)) ;
 	ASSERT (InvCperm != (Int *) NULL) ;
@@ -921,7 +938,7 @@ GLOBAL Int UMF_kernel_init
 	    {
 		oldrow = Ai [p] ;
 		newrow = Frpos [oldrow] ;
-		ASSIGN (aij, Ax [p], Az [p]) ;
+		ASSIGN (aij, Ax, Az, p, split) ;
 		if (newrow == Diagonal_map [newcol])
 		{
 		    DEBUG0 (("old row "ID" col "ID" new row "ID" col "ID,
@@ -933,7 +950,7 @@ GLOBAL Int UMF_kernel_init
 #ifndef NRECIPROCAL
 			if (do_recip)
 			{
-			    SCALE_RECIP (aij, Rs [oldrow]) ;
+			    SCALE (aij, Rs [oldrow]) ;
 			}
 			else
 #endif

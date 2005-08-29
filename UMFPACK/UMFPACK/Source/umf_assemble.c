@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -28,12 +27,12 @@ PRIVATE void row_assemble
 )
 {
 
+    Entry *S, *Fcblock, *Frow ;
     Int tpi, e, *E, *Fcpos, *Frpos, *Row_degree, *Row_tuples, *Row_tlen, rdeg0,
 	f, nrows, ncols, *Rows, *Cols, col, ncolsleft, j ;
     Tuple *tp, *tp1, *tp2, *tpend ;
     Unit *Memory, *p ;
     Element *ep ;
-    Entry *S, *Fcblock, *Frow ;
 
 #ifndef FIXQ
     Int *Col_degree ;
@@ -180,12 +179,12 @@ PRIVATE void col_assemble
 )
 {
 
+    Entry *S, *Fcblock, *Fcol ;
     Int tpi, e, *E, *Fcpos, *Frpos, *Row_degree, *Col_tuples, *Col_tlen, cdeg0,
 	f, nrows, ncols, *Rows, *Cols, row, nrowsleft, i ;
     Tuple *tp, *tp1, *tp2, *tpend ;
     Unit *Memory, *p ;
     Element *ep ;
-    Entry *S, *Fcblock, *Fcol ;
 
 #if !defined (FIXQ) || !defined (NDEBUG)
     Int *Col_degree ;

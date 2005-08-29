@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -84,6 +83,10 @@ complex long Syntax:
     status = umfpack_zl_report_triplet (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Control) ;
 
+packed complex Syntax:
+
+    Same as above, except Tz is NULL.
+
 Purpose:
 
     Verifies and prints a matrix in triplet form.
@@ -115,6 +118,7 @@ Arguments:
     Int Ti [nz] ;	Input argument, not modified.
     Int Tj [nz] ;	Input argument, not modified.
     double Tx [nz] ;	Input argument, not modified.
+			Size 2*nz for packed complex case.
     double Tz [nz] ;	Input argument, not modified, for complex versions.
 
 	Ti, Tj, Tx (and Tz for complex versions) hold the "triplet" form of a
@@ -123,12 +127,12 @@ Arguments:
 	imaginary part of a_ij is Tz [k] (for complex versions).  The row and
 	column indices i and j must be in the range 0 to n_row-1 or 0 to
 	n_col-1, respectively.  Duplicate entries may be present.  The
-	"triplets" may be in any order.  Tx and Tz are optional; if Tx or Tz are
-	not present ((double *) NULL pointers), then the numerical values are
+	"triplets" may be in any order.  Tx and Tz are optional; if Tx is
+	not present ((double *) NULL), then the numerical values are
 	not printed.
 
-	Future complex version:  if Tx is present and Tz is NULL, then both real
-	and imaginary parts will be contained in Tx[0..2*nz-1], with Tx[2*k]
+	If Tx is present and Tz is NULL, then both real
+	and imaginary parts are contained in Tx[0..2*nz-1], with Tx[2*k]
 	and Tx[2*k+1] being the real and imaginary part of the kth entry.
 
     double Control [UMFPACK_CONTROL] ;	Input argument, not modified.

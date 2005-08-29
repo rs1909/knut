@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD_control ========================================================== */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_control ========================================================= */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* User-callable.  Prints the control parameters for AMD.  See amd.h
  * for details.  If the Control array is not present, the defaults are

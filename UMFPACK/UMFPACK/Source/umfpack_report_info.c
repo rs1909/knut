@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -163,10 +162,18 @@ GLOBAL void UMFPACK_report_info
 #endif
 
     PRINTF (("    CPU timer:                        ")) ;
-#ifdef GETRUSAGE
-    PRINTF (("getrusage.\n")) ;
+#ifdef NO_TIMER
+    PRINTF (("none.\n")) ;
 #else
-    PRINTF (("ANSI C clock (may wrap-around).\n")) ;
+#ifndef NPOSIX
+    PRINTF (("POSIX times ( ) routine.\n")) ;
+#else
+#ifdef GETRUSAGE
+    PRINTF (("getrusage ( ) routine.\n")) ;
+#else
+    PRINTF (("ANSI clock ( ) routine.\n")) ;
+#endif
+#endif
 #endif
 
     /* ---------------------------------------------------------------------- */
@@ -458,6 +465,12 @@ GLOBAL void UMFPACK_report_info
 	Info [UMFPACK_FORCED_UPDATES]) ;
     PRINT_INFO ("    number of off-diagonal pivots:                 %.0f\n",
 	Info [UMFPACK_NOFF_DIAG]) ;
+    PRINT_INFO ("    nz in L (incl diagonal), if none dropped       %.0f\n",
+	Info [UMFPACK_ALL_LNZ]) ;
+    PRINT_INFO ("    nz in U (incl diagonal), if none dropped       %.0f\n",
+	Info [UMFPACK_ALL_UNZ]) ;
+    PRINT_INFO ("    number of small entries dropped                %.0f\n",
+	Info [UMFPACK_NZDROPPED]) ;
     PRINT_INFO ("    nonzeros on diagonal of U:                     %.0f\n",
 	Info [UMFPACK_UDIAG_NZ]) ;
     PRINT_INFO ("    min abs. value on diagonal of U:               %.2e\n",

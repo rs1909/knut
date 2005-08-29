@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === amd_internal.h ======================================================= */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === amd_internal.h ====================================================== */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* This file is for internal use in AMD itself, and does not normally need to
  * be included in user code.  Use amd.h instead.
@@ -34,13 +34,22 @@
  *	    regardless of whether or not -DNDEBUG is specified in your compiler
  *	    options.
  *
- * You can change the memory allocator routines by editting the definitions
- * of ALLOCATE and FREE, below, and recompilng AMD.
+ *	-DALLOCATE=allocation_routine
+ *	-DFREE=free_routine
+ *
+ *	    If you do not wish to use malloc or free, you can define the
+ *	    routines to be used here.  You must specify both of them, or
+ *	    neither.
+ *
+ *	-DPRINTF=printf_routine
+ *
+ *	    If you wish to use a routine other than printf, you can define it
+ *	    with -DPRINTF= followed by the name of the printf replacement.
  */
 
-/* ========================================================================== */
-/* === NDEBUG =============================================================== */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === NDEBUG ============================================================== */
+/* ========================================================================= */
 
 /*
     AMD will be exceedingly slow when running in debug mode.  The next three
@@ -55,14 +64,14 @@
 #undef NDEBUG
 */
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* ANSI include files */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 /* from stdlib.h:  malloc, free, realloc (when not compiling for MATLAB) */
 #include <stdlib.h>
 
-/* from stdio.h:  printf, NULL.  When in debug mode:  fopen, fscanf */
+/* from stdio.h:  printf.  When in debug mode:  fopen, fscanf */
 #include <stdio.h>
 
 /* from limits.h:  INT_MAX and LONG_MAX */
@@ -71,9 +80,9 @@
 /* from math.h: sqrt */
 #include <math.h>
 
-/* -------------------------------------------------------------------------- */
-/* MATLAB include files */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* MATLAB include files (only if being used in or via MATLAB) */
+/* ------------------------------------------------------------------------- */
 
 #ifdef MATHWORKS
 #include "util.h"
@@ -84,9 +93,9 @@
 #include "mex.h"
 #endif
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* basic definitions */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 #ifdef FLIP
 #undef FLIP
@@ -102,6 +111,14 @@
 
 #ifdef EMPTY
 #undef EMPTY
+#endif
+
+#ifdef GLOBAL
+#undef GLOBAL
+#endif
+
+#ifdef PRIVATE
+#undef PRIVATE
 #endif
 
 /* FLIP is a "negation about -1", and is used to mark an integer i that is
@@ -135,16 +152,17 @@
 #define EMPTY (-1)
 
 /* Note that Linux's gcc 2.96 defines NULL as ((void *) 0), but other */
-/* compilers (even gcc 2.95.2 on Solaris) define NULL as 0 or (0). */
+/* compilers (even gcc 2.95.2 on Solaris) define NULL as 0 or (0).  We */
+/* need to use the ANSI standard value of 0. */
 #ifdef NULL
 #undef NULL
 #endif
 
 #define NULL 0
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* integer type for AMD: int or long */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 #if defined (DLONG) || defined (ZLONG)
 
@@ -166,6 +184,9 @@
 #define AMD_dump amd_l_dump
 #define AMD_debug amd_l_debug
 #define AMD_debug_init amd_l_debug_init
+#define AMD_wpreprocess amd_l_wpreprocess
+#define AMD_preprocess amd_l_preprocess
+#define AMD_preprocess_valid amd_l_preprocess_valid
 
 #else
 
@@ -187,16 +208,20 @@
 #define AMD_dump amd_dump
 #define AMD_debug amd_debug
 #define AMD_debug_init amd_debug_init
+#define AMD_wpreprocess amd_wpreprocess
+#define AMD_preprocess amd_preprocess
+#define AMD_preprocess_valid amd_preprocess_valid
 
 #endif
 
-/* ========================================================================== */
-/* === Memory allocator ===================================================== */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === Memory allocator ==================================================== */
+/* ========================================================================= */
 
 /* The MATLAB mexFunction uses MATLAB's memory manager, while the C-callable */
 /* AMD routine uses the ANSI C malloc, free, and realloc routines. */
 
+#ifndef ALLOCATE
 #ifdef MATLAB_MEX_FILE
 #define ALLOCATE mxMalloc
 #define FREE mxFree
@@ -212,14 +237,16 @@
 #define FREE free
 #endif
 #endif
+#endif
 
 
-/* ========================================================================== */
-/* === PRINTF macro ========================================================= */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === PRINTF macro ======================================================== */
+/* ========================================================================= */
 
 /* All output goes through the PRINTF macro.  */
 
+#ifndef PRINTF
 #ifdef MATLAB_MEX_FILE
 #define PRINTF(params) { (void) mexPrintf params ; }
 #else
@@ -229,16 +256,17 @@
 #define PRINTF(params) { (void) printf params ; }
 #endif
 #endif
+#endif
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* AMD routine definitions (user-callable) */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 #include "amd.h"
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* AMD routine definitions (not user-callable) */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 GLOBAL Int AMD_valid
 (
@@ -315,9 +343,27 @@ GLOBAL Int AMD_post_tree
 #endif
 ) ;
 
-/* -------------------------------------------------------------------------- */
+GLOBAL void AMD_wpreprocess
+(
+    Int n,
+    const Int Ap [ ],
+    const Int Ai [ ],
+    Int Rp [ ],
+    Int Ri [ ],
+    Int W [ ],
+    Int Flag [ ]
+) ;
+
+GLOBAL Int AMD_preprocess_valid
+(
+    Int n,
+    const Int Ap [ ],
+    const Int Ai [ ]
+) ;
+
+/* ------------------------------------------------------------------------- */
 /* debugging definitions */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 /* from assert.h:  assert macro */
 #if !defined (MATHWORKS) && !defined (MATLAB_MEX_FILE)
@@ -346,6 +392,10 @@ GLOBAL void AMD_dump (
     Int W [ ],
     Int nel
 ) ;
+
+#ifdef ASSERT
+#undef ASSERT
+#endif
 
 #ifdef MATLAB_MEX_FILE
 #define ASSERT(expression) (mxAssert ((expression), ""))

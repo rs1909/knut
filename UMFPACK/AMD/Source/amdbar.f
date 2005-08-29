@@ -332,7 +332,7 @@ C-----------------------------------------------------------------------
 C LOCAL INTEGERS:
 C-----------------------------------------------------------------------
 
-        INTEGER DEG, DEGME, DEXT, DMAX, E, ELENME, ELN, HASH, HMOD, I,
+        INTEGER DEG, DEGME, DMAX, E, ELENME, ELN, HASH, HMOD, I,
      $          ILAST, INEXT, J, JLAST, JNEXT, K, KNT1, KNT2, KNT3,
      $          LENJ, LN, MAXMEM, ME, MEM, MINDEG, NEL, NEWMEM,
      $          NLEFT, NVI, NVJ, NVPIV, SLENME, WE, WFLG, WNVI, X
@@ -419,6 +419,7 @@ C=======================================================================
         DMAX = 0
         MEM = PFREE - 1
         MAXMEM = MEM
+	ME = 0
 
         DO 10 I = 1, N
            LAST (I) = 0

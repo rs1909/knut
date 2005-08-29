@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -15,8 +14,6 @@
 */
 
 #include "umf_internal.h"
-#include "umf_malloc.h"
-#include "umf_free.h"
 
 GLOBAL Int UMFPACK_report_matrix
 (
@@ -32,9 +29,12 @@ GLOBAL Int UMFPACK_report_matrix
     const double Control [UMFPACK_CONTROL]
 )
 {
+    Entry a ;
     Int prl, i, k, length, ilast, p, nz, prl1, p1, p2, n, n_i, do_values ;
     char *vector, *index ;
-    Entry a ;
+#ifdef COMPLEX
+    Int split = SPLIT (Az) ;
+#endif
 
     /* ---------------------------------------------------------------------- */
     /* determine the form, and check if inputs exist */
@@ -97,11 +97,7 @@ GLOBAL Int UMFPACK_report_matrix
 	return (UMFPACK_ERROR_argument_missing) ;
     }
 
-#ifdef COMPLEX
-    do_values = Ax && Az ;
-#else
     do_values = Ax != (double *) NULL ;
-#endif
 
     PRINTF4 (("\n")) ;
 
@@ -161,7 +157,7 @@ GLOBAL Int UMFPACK_report_matrix
 	    if (do_values && prl >= 4)
 	    {
 		PRINTF ((":")) ;
-		ASSIGN (a, Ax [p], Az [p]) ;
+		ASSIGN (a, Ax, Az, p, split) ;
 		PRINT_ENTRY (a) ;
 	    }
 	    if (i < 0 || i >= n_i)

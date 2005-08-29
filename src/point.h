@@ -143,7 +143,7 @@ class Point : public PointData
 			Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
 			Vector* qPrev,   Vector* q,                             // eigenvector
 			Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
-			double ds,       bool cont                              // the arclength; cont: true if continuation
+			bool cont                                               // cont: true if continuation
 		);
 		
 		inline void   Update( HyperVector& X );                          // sol,   qq,   par            += X

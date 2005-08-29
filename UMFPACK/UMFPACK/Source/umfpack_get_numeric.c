@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -125,13 +124,8 @@ GLOBAL Int UMFPACK_get_numeric
     /* allocate workspace */
     /* ---------------------------------------------------------------------- */
 
-#ifdef COMPLEX
-    getL = Lp && Lj && Lx && Lz ;
-    getU = Up && Ui && Ux && Uz ;
-#else
     getL = Lp && Lj && Lx ;
     getU = Up && Ui && Ux ;
-#endif
 
     if (getL || getU)
     {
@@ -191,22 +185,33 @@ GLOBAL Int UMFPACK_get_numeric
     if (Dx != (double *) NULL)
     {
 	D = Numeric->D ;
-	for (k = 0 ; k < n_inner ; k++)
-	{
-	    Dx [k] = REAL_COMPONENT (D [k]) ;
-	}
-    }
-
 #ifdef COMPLEX
-    if (Dz != (double *) NULL)
-    {
-	D = Numeric->D ;
-	for (k = 0 ; k < n_inner ; k++)
+	if (SPLIT (Dz))
 	{
-	    Dz [k] = IMAG_COMPONENT (D [k]) ;
+	    for (k = 0 ; k < n_inner ; k++)
+	    {
+		Dx [k] = REAL_COMPONENT (D [k]) ;
+		Dz [k] = IMAG_COMPONENT (D [k]) ;
+	    }
 	}
-    }
+	else
+	{
+	    for (k = 0 ; k < n_inner ; k++)
+	    {
+	        Dx [2*k  ] =  REAL_COMPONENT (D [k]) ;
+	        Dx [2*k+1] =  IMAG_COMPONENT (D [k]) ;
+	    }
+	}
+#else
+	{
+	    D = Numeric->D ;
+	    for (k = 0 ; k < n_inner ; k++)
+	    {
+		Dx [k] = D [k] ;
+	    }
+	}
 #endif
+    }
 
     /* return the flag stating whether the scale factors are to be multiplied,
      * or divided.   If do_recip is TRUE, multiply.  Otherwise, divided.
@@ -332,9 +337,13 @@ PRIVATE void get_L
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry value ;
+    Entry *xp, *Lval ;
     Int deg, *ip, j, row, n_row, n_col, n_inner, *Lpos, *Lilen, *Lip, p, llen,
-	lnz2, lp, newLchain, k, pos, npiv, *Li, n1 ;
-    Entry *xp, value, *Lval ;
+        lnz2, lp, newLchain, k, pos, npiv, *Li, n1 ;
+#ifdef COMPLEX
+    Int split = SPLIT (Lz) ;
+#endif
 
     /* ---------------------------------------------------------------------- */
     /* get parameters */
@@ -487,9 +496,20 @@ PRIVATE void get_L
 		{
 		    p = Wi [row]++ ;
 		    Lj [p] = k ;
-		    Lx [p] = REAL_COMPONENT (value) ;
 #ifdef COMPLEX
-		    Lz [p] = IMAG_COMPONENT (value) ;
+		    if (split)
+		    {
+
+		        Lx [p] = REAL_COMPONENT (value) ;
+			Lz [p] = IMAG_COMPONENT (value) ;
+		    }
+		    else
+		    {
+			Lx [2*p  ] = REAL_COMPONENT (value) ;
+			Lx [2*p+1] = IMAG_COMPONENT (value) ;
+		    }
+#else
+		    Lx [p] = value ;
 #endif
 		}
 	    }
@@ -550,9 +570,19 @@ PRIVATE void get_L
 	    {
 		p = Wi [row]++ ;
 		Lj [p] = k ;
-		Lx [p] = REAL_COMPONENT (value) ;
 #ifdef COMPLEX
-		Lz [p] = IMAG_COMPONENT (value) ;
+		if (split)
+		{
+		    Lx [p] = REAL_COMPONENT (value) ;
+		    Lz [p] = IMAG_COMPONENT (value) ;
+		}
+		else
+		{
+		    Lx [2*p  ] = REAL_COMPONENT (value) ;
+		    Lx [2*p+1] = IMAG_COMPONENT (value) ;
+		}
+#else
+		Lx [p] = value ;
 #endif
 	    }
 	}
@@ -563,10 +593,22 @@ PRIVATE void get_L
     {
 	p = Wi [row]++ ;
 	Lj [p] = row ;
-	Lx [p] = 1. ;
+
 #ifdef COMPLEX
-	Lz [p] = 0. ;
+	if (split)
+	{
+	    Lx [p] = 1. ;
+	    Lz [p] = 0. ;
+	}
+	else
+	{
+	    Lx [2*p  ] = 1. ;
+	    Lx [2*p+1] = 0. ;
+	}
+#else
+	Lx [p] = 1. ;
 #endif
+
 	ASSERT (Wi [row] == Lp [row+1]) ;
     }
 
@@ -660,10 +702,13 @@ PRIVATE void get_U
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry value ;
+    Entry *xp, *D, *Uval ;
     Int deg, j, *ip, col, *Upos, *Uilen, *Uip, n_col, ulen, *Usi,
-	unz2, p, k, up, newUchain, pos, npiv, n1 ;
-    Entry *xp, *D, value, *Uval ;
-
+        unz2, p, k, up, newUchain, pos, npiv, n1 ;
+#ifdef COMPLEX
+    Int split = SPLIT (Uz) ;
+#endif
 #ifndef NDEBUG
     Int nnzpiv = 0 ;
 #endif
@@ -842,9 +887,20 @@ PRIVATE void get_U
 	{
 	    p = --(Wi [col]) ;
 	    Ui [p] = col ;
-	    Ux [p] = REAL_COMPONENT (D [col]) ;
 #ifdef COMPLEX
-	    Uz [p] = IMAG_COMPONENT (D [col]) ;
+	    if (split)
+	    {
+
+	        Ux [p] = REAL_COMPONENT (D [col]) ;
+		Uz [p] = IMAG_COMPONENT (D [col]) ;
+	    }
+	    else
+	    {
+		Ux [2*p  ] = REAL_COMPONENT (D [col]) ;
+		Ux [2*p+1] = IMAG_COMPONENT (D [col]) ;
+	    }
+#else
+	    Ux [p] = D [col] ;
 #endif
 	}
     }
@@ -895,10 +951,21 @@ PRIVATE void get_U
 	    {
 		p = --(Wi [col]) ;
 		Ui [p] = k ;
-		Ux [p] = REAL_COMPONENT (value) ;
 #ifdef COMPLEX
-		Uz [p] = IMAG_COMPONENT (value) ;
+		if (split)
+		{
+		    Ux [p] = REAL_COMPONENT (value) ;
+		    Uz [p] = IMAG_COMPONENT (value) ;
+		}
+		else
+		{
+		    Ux [2*p  ] = REAL_COMPONENT (value) ;
+		    Ux [2*p+1] = IMAG_COMPONENT (value) ;
+		}
+#else
+		Ux [p] = value ;
 #endif
+
 	    }
 	}
 
@@ -959,9 +1026,19 @@ PRIVATE void get_U
 		{
 		    p = --(Wi [col]) ;
 		    Ui [p] = k ;
-		    Ux [p] = REAL_COMPONENT (value) ;
 #ifdef COMPLEX
-		    Uz [p] = IMAG_COMPONENT (value) ;
+		    if (split)
+		    {
+			Ux [p] = REAL_COMPONENT (value) ;
+			Uz [p] = IMAG_COMPONENT (value) ;
+		    }
+		    else
+		    {
+			Ux [2*p  ] = REAL_COMPONENT (value) ;
+			Ux [2*p+1] = IMAG_COMPONENT (value) ;
+		    }
+#else
+		    Ux [p] = value ;
 #endif
 		}
 	    }

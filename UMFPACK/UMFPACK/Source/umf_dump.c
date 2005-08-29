@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -244,13 +243,14 @@ GLOBAL void UMF_dump_rowcol
     Int check_degree	/* true if degree is to be checked */
 )
 {
+    Entry value ;
+    Entry *C ;
     Int f, nrows, j, jj, len, e, deg, index, n_row, n_col, *Cols, *Rows, nn,
 	dumpdeg, ncols, preve, *E, tpi, *Pattern, approx_deg, not_in_use ;
     Tuple *tp, *tend ;
     Element *ep ;
     Int *Row_tuples, *Row_degree, *Row_tlen ;
     Int *Col_tuples, *Col_degree, *Col_tlen ;
-    Entry value, *C ;
     Unit *p ;
     Int is_there ;
 
@@ -937,9 +937,12 @@ GLOBAL void UMF_dump_col_matrix
 )
 {
     Int col, p, p1, p2, row ;
+#ifdef COMPLEX
+    Int split = SPLIT (Az) ;
+#endif
+
     if (!Ai || !Ap) return ;
     DEBUG6 (("============================================ COLUMN FORM:\n")) ;
-
 
     ASSERT (n_col >= 0) ;
     nz = Ap [n_col] ;
@@ -965,13 +968,13 @@ GLOBAL void UMF_dump_col_matrix
 	    if (Ax != (double *) NULL)
 	    {
 #ifdef COMPLEX
-		if (Az != (double *) NULL)
+		if (split)
 		{
 		    DEBUG6 ((" (%e+%ei) ", Ax [p], Az [p])) ;
 		}
 		else
 		{
-		    DEBUG6 ((" %e", Ax [p])) ;
+		    DEBUG6 ((" (%e+%ei) ", Ax [2*p], Ax [2*p+1])) ;
 		}
 #else
 		DEBUG6 ((" %e", Ax [p])) ;
@@ -1044,6 +1047,8 @@ GLOBAL void UMF_dump_start
 )
 {
     FILE *ff ;
+
+    AMD_debug_init ("from umfpack") ;
 
     /* get the debug print level from the "debug.umf" file, if it exists */
     UMF_debug = -999 ;

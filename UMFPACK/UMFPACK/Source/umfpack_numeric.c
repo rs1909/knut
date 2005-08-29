@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -81,13 +80,14 @@ GLOBAL Int UMFPACK_numeric
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    double Info2 [UMFPACK_INFO], alloc_init, relpt, relpt2, droptol,
+	front_alloc_init, stats [2] ;
+    double *Info ;
+    WorkType WorkSpace, *Work ;
     NumericType *Numeric ;
     SymbolicType *Symbolic ;
-    WorkType WorkSpace, *Work ;
     Int n_row, n_col, n_inner, newsize, i, status, *inew, npiv, ulen, scale ;
     Unit *mnew ;
-    double Info2 [UMFPACK_INFO], *Info, alloc_init, relpt, relpt2,
-	front_alloc_init, stats [2] ;
 
     /* ---------------------------------------------------------------------- */
     /* get the amount of time used by the process so far */
@@ -117,9 +117,11 @@ GLOBAL Int UMFPACK_numeric
     front_alloc_init = GET_CONTROL (UMFPACK_FRONT_ALLOC_INIT,
 	UMFPACK_DEFAULT_FRONT_ALLOC_INIT) ;
     scale = GET_CONTROL (UMFPACK_SCALE, UMFPACK_DEFAULT_SCALE) ;
+    droptol = GET_CONTROL (UMFPACK_DROPTOL, UMFPACK_DEFAULT_DROPTOL) ;
 
     relpt   = MAX (0.0, MIN (relpt,  1.0)) ;
     relpt2  = MAX (0.0, MIN (relpt2, 1.0)) ;
+    droptol = MAX (0.0, droptol) ;
     front_alloc_init = MIN (1.0, front_alloc_init) ;
 
     if (scale != UMFPACK_SCALE_NONE && scale != UMFPACK_SCALE_MAX)
@@ -187,11 +189,7 @@ GLOBAL Int UMFPACK_numeric
     Info [UMFPACK_NCOL] = n_col ;
     Info [UMFPACK_SIZE_OF_UNIT] = (double) (sizeof (Unit)) ;
 
-    if (!Ap || !Ai || !Ax || !NumericHandle
-#ifdef COMPLEX
-	|| !Az
-#endif
-    )
+    if (!Ap || !Ai || !Ax || !NumericHandle)
     {
 	Info [UMFPACK_STATUS] = UMFPACK_ERROR_argument_missing ;
 	return (UMFPACK_ERROR_argument_missing) ;
@@ -262,6 +260,7 @@ GLOBAL Int UMFPACK_numeric
     /* set control parameters */
     Numeric->relpt = relpt ;
     Numeric->relpt2 = relpt2 ;
+    Numeric->droptol = droptol ;
     Numeric->alloc_init = alloc_init ;
     Numeric->front_alloc_init = front_alloc_init ;
     Numeric->scale = scale ;
@@ -464,6 +463,13 @@ GLOBAL Int UMFPACK_numeric
     Info [UMFPACK_RSMAX] = Numeric->rsmax ;
     Info [UMFPACK_WAS_SCALED] = Numeric->scale ;
 
+    /* nz in L and U with no dropping of small entries */
+    Info [UMFPACK_ALL_LNZ] = Numeric->all_lnz + n_inner ;
+    Info [UMFPACK_ALL_UNZ] = Numeric->all_unz + Numeric->nnzpiv ;
+    Info [UMFPACK_NZDROPPED] =
+	  (Numeric->all_lnz - Numeric->lnz)
+	+ (Numeric->all_unz - Numeric->unz) ;
+
     /* estimate of the reciprocal of the condition number. */
     if (SCALAR_IS_ZERO (Numeric->min_udiag)
      || SCALAR_IS_ZERO (Numeric->max_udiag)
@@ -530,9 +536,9 @@ PRIVATE Int numeric_alloc
     Int scale
 )
 {
+    double nsize, bsize ;
     Int n_row, n_col, n_inner, min_usage, trying ;
     NumericType *Numeric ;
-    double nsize, bsize ;
 
     DEBUG0 (("numeric alloc:\n")) ;
 

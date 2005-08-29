@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -24,9 +23,9 @@ GLOBAL Int UMF_start_front    /* returns TRUE if successful, FALSE otherwise */
     SymbolicType *Symbolic
 )
 {
+    double maxbytes ;
     Int fnrows_max, fncols_max, fnr2, fnc2, fsize, fcurr_size, maxfrsize,
 	overflow, nb, f, cdeg ;
-    double maxbytes ;
 
     nb = Symbolic->nb ;
     fnrows_max = Symbolic->Chain_maxrows [chain] ;

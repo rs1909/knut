@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -22,12 +21,11 @@
 #include "umf_row_search.h"
 #include "umf_mem_free_tail_block.h"
 
-/* Version 4.1:  relaxed amalgamation control parameters are now fixed, and
- * cannot be changed via Control [..] settings, as they could in Version 4.0. */
-#define RELAX1 0.25	    /* this was UMFPACK_DEFAULT_RELAXED_AMALGAMATION */
-#define SYM_RELAX1 0.0	    /* this is new to Version 4.1 */
-#define RELAX2 0.1	    /* this was UMFPACK_DEFAULT_RELAXED2_AMALGAMATION */
-#define RELAX3 0.125	    /* this was UMFPACK_DEFAULT_RELAXED3_AMALGAMATION */
+/* relaxed amalgamation control parameters are fixed at compile time */
+#define RELAX1 0.25
+#define SYM_RELAX1 0.0
+#define RELAX2 0.1
+#define RELAX3 0.125
 
 /* ========================================================================== */
 /* === remove_candidate ===================================================== */
@@ -119,9 +117,9 @@ GLOBAL Int UMF_local_search
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    double relax1 ;
     Entry *Flblock, *Fublock, *Fs, *Fcblock, *C, *Wx, *Wy, *Fu, *Flublock,
 	*Flu ;
-    double relax1 ;
     Int pos, nrows, *Cols, *Rows, e, f, status, max_cdeg, fnzeros, nb, j, col,
 	i, row, cdeg_in, rdeg [2][2], fnpiv, nothing [2], new_LUsize,
 	pivrow [2][2], pivcol [2], *Wp, *Fcpos, *Frpos, new_fnzeros, cdeg_out,

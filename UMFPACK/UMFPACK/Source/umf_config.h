@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -100,6 +99,10 @@
 	    C clock ( ) routine will be used.  The default is to use getrusage
 	    ( ) on Unix systems, and to use clock on all other architectures.
 
+	-DNO_TIMER
+
+	    If -DNO_TIMER is set, then no timing routines are used at all.
+
 	-DNUTIL
 
 	    If -DNUTIL is set, then the internal MATLAB utMalloc, utFree, and
@@ -143,6 +146,11 @@
 	    (the default case), then the scale factors are normally applied by
 	    multiplying by the reciprocal.  If, however, the smallest scale
 	    factor is tiny, then the scale factors are applied via division.
+
+	-DNO_DIVIDE_BY_ZERO
+
+	    If the pivot is zero, and this flag is set, then no divide-by-zero
+	    occurs.
 
     You should normally not set these flags yourself:
 
@@ -247,7 +255,7 @@
     about 36 minutes.  BE CAREFUL:  if you compare the run time of UMFPACK with
     other sparse matrix packages, be sure to use the same timer.  See
     umfpack_tictoc.c for the timer used internally by UMFPACK.  See also
-    umfpack_timer.c for the timer used in an earlier version of UMFPACK (V4.0).
+    umfpack_timer.c for the timer used in an earlier version of UMFPACK.
     That timer is still available as a user-callable routine, but it is no
     longer used internally by UMFPACK.
 */

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -710,6 +709,7 @@ PRIVATE Int finish_permutation
 	{
 	    /* this row/col is empty in the pruned submatrix */
 	    ASSERT (s < nx - nempty) ;
+	    DEBUG0 (("empty k "ID"\n", k)) ;
 	    nempty++ ;
 	    Xperm [nx - nempty] = x ;
 	}
@@ -745,6 +745,7 @@ GLOBAL Int UMF_singletons
     const Int Ap [ ],	    /* size n_col+1 */
     const Int Ai [ ],	    /* size nz = Ap [n_col] */
     const Int Quser [ ],    /* size n_col if present */
+    Int strategy,	    /* strategy requested by user */
 
     /* output, not defined on input: */
     Int Cdeg [ ],	/* size n_col */
@@ -821,9 +822,21 @@ GLOBAL Int UMF_singletons
 
     if (Quser != (Int *) NULL)
     {
-	/* look for singletons, but respect the user's input permutation */
-	n1 = find_user_singletons (n_row, n_col, Ap, Ai, Quser,
-		Cdeg, Rdeg, Cperm, Rperm, &n1r, &n1c, Rp, Ri, W) ;
+	/* user has provided an input column ordering */
+	if (strategy == UMFPACK_STRATEGY_UNSYMMETRIC)
+	{
+	    /* look for singletons, but respect the user's input permutation */
+	    n1 = find_user_singletons (n_row, n_col, Ap, Ai, Quser,
+		    Cdeg, Rdeg, Cperm, Rperm, &n1r, &n1c, Rp, Ri, W) ;
+	}
+	else
+	{
+	    /* do not look for singletons if Quser given and strategy is
+	     * not unsymmetric */
+	    n1 = 0 ;
+	    n1r = 0 ;
+	    n1c = 0 ;
+	}
     }
     else
     {
@@ -842,8 +855,19 @@ GLOBAL Int UMF_singletons
     /* eliminate empty rows and complete the row permutation */
     /* ---------------------------------------------------------------------- */
 
-    nempty_row = finish_permutation (n1, n_row, Rdeg, (Int *) NULL, Rperm,
-	&max_rdeg) ;
+    if (Quser != (Int *) NULL && strategy == UMFPACK_STRATEGY_SYMMETRIC)
+    {
+	/* rows should be symmetrically permuted according to Quser */
+	ASSERT (n_row == n_col) ;
+	nempty_row = finish_permutation (n1, n_row, Rdeg, Quser, Rperm,
+	    &max_rdeg) ;
+    }
+    else
+    {
+	/* rows should not be symmetrically permuted according to Quser */
+	nempty_row = finish_permutation (n1, n_row, Rdeg, (Int *) NULL, Rperm,
+	    &max_rdeg) ;
+    }
 
     /* ---------------------------------------------------------------------- */
     /* compute the inverse of Rperm */

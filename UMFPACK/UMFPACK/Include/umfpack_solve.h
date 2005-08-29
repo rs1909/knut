@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -98,6 +97,10 @@ complex long Syntax:
     status = umfpack_zl_solve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,
 	Control, Info) ;
 
+packed complex Syntax:
+
+    Same as above, Xz, Bz, and Az are NULL.
+
 Purpose:
 
     Given LU factors computed by umfpack_*_numeric (PAQ=LU, PRAQ=LU, or
@@ -145,12 +148,10 @@ Arguments:
 	For the other values of the sys argument, iterative refinement is not
 	performed (Control [UMFPACK_IRSTEP], Ap, Ai, Ax, and Az are ignored).
 
-	Earlier versions used a string argument for sys.  It was changed to an
-	integer to make it easier for a Fortran code to call UMFPACK.
-
     Int Ap [n+1] ;	Input argument, not modified.
     Int Ai [nz] ;	Input argument, not modified.
     double Ax [nz] ;	Input argument, not modified.
+			Size 2*nz for packed complex case.
     double Az [nz] ;	Input argument, not modified, for complex versions.
 
 	If iterative refinement is requested (Control [UMFPACK_IRSTEP] >= 1,
@@ -164,25 +165,27 @@ Arguments:
 	system other than Ax=b, A'x=b, or A.'x=b is being solved, or if A is
 	singular, since in each of these cases A is not accessed.
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be contained in Ax[0..2*nz-1], with Ax[2*k]
+	If Az, Xz, or Bz are NULL, then both real
+	and imaginary parts are contained in Ax[0..2*nz-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
     double X [n] ;	Output argument.
     or:
-    double Xx [n] ;	Output argument, real part.
+    double Xx [n] ;	Output argument, real part
+			Size 2*n for packed complex case.
     double Xz [n] ;	Output argument, imaginary part.
 
 	The solution to the linear system, where n = n_row = n_col is the
 	dimension of the matrices A, L, and U.
 
-	Future complex version:  if Xx is present and Xz is NULL, then both real
-	and imaginary parts will be returned in Xx[0..2*n-1], with Xx[2*k] and
+	If Az, Xz, or Bz are NULL, then both real
+	and imaginary parts are returned in Xx[0..2*n-1], with Xx[2*k] and
 	Xx[2*k+1] being the real and imaginary part of the kth entry.
 
     double B [n] ;	Input argument, not modified.
     or:
     double Bx [n] ;	Input argument, not modified, real part.
+			Size 2*n for packed complex case.
     double Bz [n] ;	Input argument, not modified, imaginary part.
 
 	The right-hand side vector, b, stored as a conventional array of size n
@@ -190,8 +193,8 @@ Arguments:
 	solve for multiple right-hand-sides, nor does it allow b to be stored in
 	a sparse-column form.
 
-	Future complex version:  if Bx is present and Bz is NULL, then both real
-	and imaginary parts will be contained in Bx[0..2*n-1], with Bx[2*k]
+	If Az, Xz, or Bz are NULL, then both real
+	and imaginary parts are contained in Bx[0..2*n-1], with Bx[2*k]
 	and Bx[2*k+1] being the real and imaginary part of the kth entry.
 
     void *Numeric ;		Input argument, not modified.
@@ -229,7 +232,7 @@ Arguments:
 
 	    UMFPACK_WARNING_singular_matrix
 
-		A divide-by-zero occured.  Your solution will contain Inf's
+		A divide-by-zero occurred.  Your solution will contain Inf's
 		and/or NaN's.  Some parts of the solution may be valid.  For
 		example, solving Ax=b with
 
@@ -243,9 +246,9 @@ Arguments:
 	    UMFPACK_ERROR_argument_missing
 
 		One or more required arguments are missing.  The B, X, (or
-		Bx, Bz, Xx and Xz for the complex versions) arguments
+		Bx and Xx for the complex versions) arguments
 		are always required.  Info and Control are not required.  Ap,
-		Ai, Ax (and Az for complex versions) are required if Ax=b,
+		Ai, Ax are required if Ax=b,
 		A'x=b, A.'x=b is to be solved, the (default) iterative
 		refinement is requested, and the matrix A is nonsingular.
 
@@ -289,10 +292,6 @@ Arguments:
 	    (if any).
 
 	Info [UMFPACK_SOLVE_TIME]:  The time taken, in seconds.
-
-	------------------------------------------------------------------------
-	The following statistic was added to Version 4.1:
-	------------------------------------------------------------------------
 
         Info [UMFPACK_SOLVE_WALLTIME]:  The wallclock time taken, in seconds.
 

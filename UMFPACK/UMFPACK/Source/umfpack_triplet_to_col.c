@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -13,7 +12,7 @@
     User callable.  Converts triplet input to column-oriented form.  Duplicate
     entries may exist (they are summed in the output).  The columns of the
     column-oriented form are in sorted order.  The input is not modified.
-    Returns 1 if OK, 0 if an error occured.  See umfpack_triplet_to_col.h for
+    Returns 1 if OK, 0 if an error occurred.  See umfpack_triplet_to_col.h for
     details.
 
     If Map is present (a non-NULL pointer to an Int array of size nz), then on
@@ -72,7 +71,11 @@ GLOBAL Int UMFPACK_triplet_to_col
     /* ---------------------------------------------------------------------- */
 
     Int *RowCount, *Rp, *Rj, *W, nn, do_values, do_map, *Map2, status ;
-    double *Rx, *Rz ;
+    double *Rx ;
+#ifdef COMPLEX
+    double *Rz ;
+    Int split ;
+#endif
 
 #ifndef NDEBUG
     UMF_dump_start ( ) ;
@@ -105,36 +108,32 @@ GLOBAL Int UMFPACK_triplet_to_col
     /* ---------------------------------------------------------------------- */
 
     Rx = (double *) NULL ;
-    Rz = (double *) NULL ;
 
-#ifdef COMPLEX
-    do_values = Ax && Tx && Az && Tz ;
-    if (do_values)
-    {
-	Rx = (double *) UMF_malloc (nz+1, sizeof (double)) ;
-	Rz = (double *) UMF_malloc (nz+1, sizeof (double)) ;
-	if (!Rx || !Rz)
-	{
-	    DEBUGm4 (("out of memory: triplet work (complex)\n")) ;
-	    (void) UMF_free ((void *) Rx) ;
-	    (void) UMF_free ((void *) Rz) ;
-	    ASSERT (UMF_malloc_count == init_count) ;
-	    return (UMFPACK_ERROR_out_of_memory) ;
-	}
-    }
-#else
     do_values = Ax && Tx ;
+
     if (do_values)
     {
+#ifdef COMPLEX
+	Rx = (double *) UMF_malloc (2*nz+2, sizeof (double)) ;
+	split = SPLIT (Tz) && SPLIT (Az) ;
+	if (split)
+	{
+	    Rz = Rx + nz ;
+	}
+	else
+	{
+	    Rz = (double *) NULL ;
+	}
+#else
 	Rx = (double *) UMF_malloc (nz+1, sizeof (double)) ;
+#endif
 	if (!Rx)
 	{
-	    DEBUGm4 (("out of memory: triplet work (real)\n")) ;
+	    DEBUGm4 (("out of memory: triplet work \n")) ;
 	    ASSERT (UMF_malloc_count == init_count) ;
 	    return (UMFPACK_ERROR_out_of_memory) ;
 	}
     }
-#endif
 
     do_map = (Map != (Int *) NULL) ;
     Map2 = (Int *) NULL ;
@@ -146,7 +145,6 @@ GLOBAL Int UMFPACK_triplet_to_col
 	{
 	    DEBUGm4 (("out of memory: triplet map\n")) ;
 	    (void) UMF_free ((void *) Rx) ;
-	    (void) UMF_free ((void *) Rz) ;
 	    ASSERT (UMF_malloc_count == init_count) ;
 	    return (UMFPACK_ERROR_out_of_memory) ;
 	}
@@ -160,7 +158,6 @@ GLOBAL Int UMFPACK_triplet_to_col
     {
 	DEBUGm4 (("out of memory: triplet work (int)\n")) ;
 	(void) UMF_free ((void *) Rx) ;
-	(void) UMF_free ((void *) Rz) ;
 	(void) UMF_free ((void *) Map2) ;
 	(void) UMF_free ((void *) Rp) ;
 	(void) UMF_free ((void *) Rj) ;
@@ -171,7 +168,7 @@ GLOBAL Int UMFPACK_triplet_to_col
     }
 
     ASSERT (UMF_malloc_count == init_count + 4 +
-	(Rx != (double *) NULL) + (Rz != (double *) NULL) + do_map) ;
+	(Rx != (double *) NULL) + do_map) ;
 
     /* ---------------------------------------------------------------------- */
     /* convert from triplet to column form */
@@ -217,7 +214,6 @@ GLOBAL Int UMFPACK_triplet_to_col
     /* ---------------------------------------------------------------------- */
 
     (void) UMF_free ((void *) Rx) ;
-    (void) UMF_free ((void *) Rz) ;
     (void) UMF_free ((void *) Map2) ;
     (void) UMF_free ((void *) Rp) ;
     (void) UMF_free ((void *) Rj) ;

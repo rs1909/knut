@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -94,6 +93,10 @@ or:
     status = umfpack_zl_report_matrix (n_row, n_col, Ap, Ai, Ax, Az, 0,
 	Control) ;
 
+packed complex Syntax:
+
+    Same as above, except Az is NULL.
+
 Purpose:
 
     Verifies and prints a row or column-oriented sparse matrix.
@@ -149,6 +152,7 @@ Arguments:
 	to n_col-1 (the matrix is 0-based).
 
     double Ax [nz] ;	Input argument, not modified, of size nz = Ap [n].
+			Size 2*nz for packed complex case.
 
 	The numerical values of the sparse matrix A.
 
@@ -156,23 +160,24 @@ Arguments:
 	for column j is stored in Ai [(Ap [j]) ... (Ap [j+1]-1)], and the
 	corresponding (real) numerical values are stored in
 	Ax [(Ap [j]) ... (Ap [j+1]-1)].  The imaginary parts are stored in
-	Az [(Ap [j]) ... (Ap [j+1]-1)], for the complex versions.
+	Az [(Ap [j]) ... (Ap [j+1]-1)], for the complex versions
+	(see below if Az is NULL).
 
 	Otherwise, the nonzero pattern (column indices) for row j
 	is stored in Ai [(Ap [j]) ... (Ap [j+1]-1)], and the corresponding
 	(real) numerical values are stored in Ax [(Ap [j]) ... (Ap [j+1]-1)].
 	The imaginary parts are stored in Az [(Ap [j]) ... (Ap [j+1]-1)],
-	for the complex versions.
+	for the complex versions (see below if Az is NULL).
 
-	No numerical values are printed if Ax or Az are (double *) NULL.
+	No numerical values are printed if Ax is NULL.
 
     double Az [nz] ;	Input argument, not modified, for complex versions.
 
 	The imaginary values of the sparse matrix A.   See the description
-	of Ax, above.  No numerical values are printed if Az is NULL. 
+	of Ax, above.
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be contained in Ax[0..2*nz-1], with Ax[2*k]
+	If Az is NULL, then both real
+	and imaginary parts are contained in Ax[0..2*nz-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
     Int col_form ;	Input argument, not modified.

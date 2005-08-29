@@ -142,21 +142,21 @@ inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, 
 	
 	// Doolittle
 	_A.Solve( vStar, _bStar, true );                              // Step 1.
-	deltaStar = _d - vStar*_b;                                    // Step 2.
+	deltaStar = _d - vStar*_b;                                    // Step 2. Scalar + ddot
 	// Crout
 	_A.Solve( v, _b );                                            // Step 3.
-	delta = _d - _bStar*v;                                        // Step 4.
+	delta = _d - _bStar*v;                                        // Step 4. Scalar + ddot
 	// approx Y
-	y1 = (g - vStar*f)/deltaStar;                                 // Step 5.
+	y1 = (g - vStar*f)/deltaStar;                                 // Step 5. Scalar + ddot
 	// residuals
-	for( int i=0; i<_b.Size(); i++ ) f1(i) = f(i) - _b(i)*y1;     // Step 6.
-	g1 = g - _d*y1;                                               // Step 7.
+	for( int i=0; i<_b.Size(); i++ ) f1(i) = f(i) - _b(i)*y1;     // Step 6. daxpy
+	g1 = g - _d*y1;                                               // Step 7. Scalar
 	
 	// residual corrections
 	_A.Solve( w, f1 );                                            // Step 8.
-	y2 = (g1 - _bStar*w)/delta;                                   // Step 9.
-	for( int i=0; i<_b.Size(); i++ ) x(i) = w(i) - v(i)*y2;       // Step 10.
-	y = y1 + y2;                                                  // Step 11.
+	y2 = (g1 - _bStar*w)/delta;                                   // Step 9. Scalar + ddot
+	for( int i=0; i<_b.Size(); i++ ) x(i) = w(i) - v(i)*y2;       // Step 10. daxpy
+	y = y1 + y2;                                                  // Step 11. Scalar
 
 }
 
@@ -176,13 +176,13 @@ inline void __BEMWS
 		const int ddlen = k-1;
 		const int idx   = k-1;
 		
-		// Y_k = ( -v*_k 1 )^T . f_k 
+		// Y_k = ( -v*_k 1 )^T . f_k
 		Y(k) = F(k)( len );
-		for( int r=0; r < len; r++ ) Y(k) -= VStar(k)( r )*F(k)( r );
+		for( int r=0; r < len; r++ ) Y(k) -= VStar(k)( r )*F(k)( r ); // ddot with range
 		Y(k) /= deltaStar(k);
 		
 		// residuals
-		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = F(k)( r )         - B(idx)( r )*Y(k);
+		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = F(k)( r )         - B(idx)( r )*Y(k); // ???
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = F(k)( aalen + r ) - D( r, idx )*Y(k);
 		G(k) = F(k)( len ) - D( idx, idx )*Y(k);
 	}
@@ -198,11 +198,11 @@ inline void __BEMWS
 		const int idx   = k-1;
 		
 		ypp = G(k);
-		for( int r=0; r < aalen; r++ ) ypp -= BStar(idx)( r )*X(k-1)( r );
-		for( int r=0; r < ddlen; r++ ) ypp -= D( idx, r )*X(k-1)( aalen + r );
+		for( int r=0; r < aalen; r++ ) ypp -= BStar(idx)( r )*X(k-1)( r );      // ddot with range
+		for( int r=0; r < ddlen; r++ ) ypp -= D( idx, r )*X(k-1)( aalen + r );  // ddot with range this won't be vectorized.
 		ypp /= delta(k);
 		
-		for( int r=0; r < len; r++ ) X(k)( r ) = X(k-1)( r ) - V(k)( r )*ypp;
+		for( int r=0; r < len; r++ ) X(k)( r ) = X(k-1)( r ) - V(k)( r )*ypp;   // daxpy with range
 		X(k)( len ) = Y(k) + ypp;
 	}
 }
@@ -225,29 +225,29 @@ inline void __BEMWF
 		const int idx   = k-1;
 		
 		// with the ordinary solver
-		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = B(idx)( r );
-		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( r, idx );
+		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = B(idx)( r );  // dcopy with range
+		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( r, idx );  // dcopy with range
 		
 		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, V, VStar, delta, deltaStar, false );
 		
 		// VV
-		for( int r=0; r < len; r++ ) V(k)( r ) = X(k-1)( r );
+		for( int r=0; r < len; r++ ) V(k)( r ) = X(k-1)( r ); // dcopy with range
 		// delta
 		delta(k) = D(idx,idx);
-		for( int r=0; r < aalen; r++ ) delta(k) -= BStar(idx)( r )*V(k)( r );
+		for( int r=0; r < aalen; r++ ) delta(k) -= BStar(idx)( r )*V(k)( r );  // ddot with range
 		for( int r=0; r < ddlen; r++ ) delta(k) -= D( idx, r )*V(k)( aalen + r );
 		
 		// with the adjoint solver
-		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = BStar(idx)( r );
+		for( int r=0; r < aalen; r++ ) F(k-1)( r )         = BStar(idx)( r );  // dcopy with range
 		for( int r=0; r < ddlen; r++ ) F(k-1)( aalen + r ) = D( idx, r );
 		
 		__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, k-1, VStar, V, deltaStar, delta, true );
 		
 		// VV
-		for( int r=0; r < len; r++ ) VStar(k)( r ) = X(k-1)( r );
+		for( int r=0; r < len; r++ ) VStar(k)( r ) = X(k-1)( r );            // dcopy with range
 		// delta
 		deltaStar(k) = D(idx,idx);
-		for( int r=0; r < aalen; r++ ) deltaStar(k) -= B(idx)( r )*VStar(k)( r );
+		for( int r=0; r < aalen; r++ ) deltaStar(k) -= B(idx)( r )*VStar(k)( r );         // ddot with range
 		for( int r=0; r < ddlen; r++ ) deltaStar(k) -= D( r, idx )*VStar(k)( aalen + r );
 	}
 }
@@ -265,13 +265,13 @@ void inline __BEMW
 {
 	__BEMWF<FACT>( bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar );
 	
-	for( int i = 0; i < A.Row(); i++ ) F(bord)( i )           = f( i );
-	for( int i = 0; i < bord; i++ )    F(bord)( A.Row() + i ) = g( i );
+	for( int i = 0; i < A.Row(); i++ ) F(bord)( i )           = f( i ); // dcopy with range : F(bord)[rng(0,A.Row)] = f;
+	for( int i = 0; i < bord; i++ )    F(bord)( A.Row() + i ) = g( i ); // dcopy with range : F(bord)[rng(A.Row,A.Row+bord)] = g[rng(0,bord)];
 	
 	__BEMWS<FACT>( A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, false );
 	
-	for( int i = 0; i < A.Row(); i++ ) x(i) = X(bord)( i );
-	for( int i = 0; i < bord; i++ )    y(i) = X(bord)( A.Row() + i );
+	for( int i = 0; i < A.Row(); i++ ) x(i) = X(bord)( i );             // dcopy with range : x = X(bord)[rng(0,A.Row)];
+	for( int i = 0; i < bord; i++ )    y(i) = X(bord)( A.Row() + i );   // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
 }
 
 template< class FACT >
@@ -292,7 +292,7 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	double gg;
 	
 	_A22.Solve( xi, _A32, true );
-	cc = (-1.0)*_A21*xi + _A31;
+	cc = (-1.0)*_A21*xi + _A31; // 1. mpm cc writeable, so initialize with _A31 !!!
 // 	_A21.AXpY( cc, xi, _A31, -1.0, 1.0, false ); // cc = A31 - xi*A21
 	dd = _A33 - xi*_A23;
 	gg = F3 - xi*F2;
@@ -309,7 +309,7 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	beta_xi *= beta;
 	m_beta = -beta;
 	
-	fr = -1.0*!_A21*X1 + (-1.0*X3)*_A23;
+	fr = -1.0*!_A21*X1 + (-1.0*X3)*_A23; // 2. mpm: fr writeable, initialize with F2 !!! fr( F2 ); fr -= !_A21*X1; fr -= X3*_A23
 // 	_A21.AXpY( fr, X1, _A23, -1.0, -X3, true ); // fr = F2 - A21*X1 - A23*X3
 	fr += F2;
 	gr = F3 - _A31*X1 - _A33*X3;
@@ -337,7 +337,7 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	for( int i=0; i < bord; i++ )
 	{
 		_A22.Solve( xi(i), _A32(i), true );
-		cc(i) = -1.0*_A21*xi(i) + _A31(i);
+		cc(i) = -1.0*_A21*xi(i) + _A31(i); // 3. mpm : cc writeable, initialize with _A31 !!!
 // 		_A21.AXpY( cc(i), xi(i), _A31(i), -1.0, 1.0, false ); // cc = A31 - xi*A21
 		for( int j=0; j < bord; j++ )
 		{
@@ -358,18 +358,19 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	
 	for( int i=0; i < bord; i++ )
 	{
-		beta_xi(i)  = xi(i);
+		beta_xi(i)  = xi(i);     // daxpy : beta_x1 = beta * xi
 		beta_xi(i) *= beta;
 	}
 	for( int i=0; i < bord; i++ ) m_beta(i,i) = -beta;
 	
 	// fr = F2 - A21*x1 - A23*X3
+	// fr( F2 ); fr -= !_A21*X1; for(j<bord) { fr -= X3(j) * _A23(j); }
 	fr = -1.0*!_A21*X1;
-// 	_A21.AX( fr, X1, -1.0, true );
-	for( int i=0; i < fr.Size(); i++ )
+	// _A21.AX( fr, X1, -1.0, true );
+	for( int i=0; i < fr.Size(); i++ ) // daxpy with range!
 	{
 		fr(i) += F2(i);
-		for( int j=0; j < bord; j++ ) fr(i) -= _A23(j)(i)*X3(j);
+		for( int j=0; j < bord; j++ ) fr(i) -= _A23(j)(i)*X3(j); // fr
 	}
 	
 	// gr = F3 - A31*X1 - A33*X3;
@@ -639,7 +640,7 @@ void HyperMatrix::SolveDIRECT( HyperVector& X, HyperVector& F )
 		for( int j=0;j<dim1;j++ )
 		{
 			AA.WrLi( dim1 + dim2 + i, j ) = j;
-			AA.WrLx( dim1 + dim2 + i, j ) = getA31(i)(j);	
+			AA.WrLx( dim1 + dim2 + i, j ) = getA31(i)(j);
 		}
 		for( int j=0;j<dim2;j++ )
 		{

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -13,15 +12,13 @@
     Not user callable.  Converts triplet input to column-oriented form.
     Duplicate entries may exist (they are summed in the output).  The columns
     of the column-oriented form are in sorted order.  The input is not modified.
-    Returns 1 if OK, 0 if an error occured.
+    Returns 1 if OK, 0 if an error occurred.
 
     Compiled into four different routines for each version (di, dl, zi, zl),
     for a total of 16 different routines.
 */
 
 #include "umf_internal.h"
-#include "umf_malloc.h"
-#include "umf_free.h"
 
 #ifdef DO_MAP
 #ifdef DO_VALUES
@@ -73,6 +70,11 @@ GLOBAL Int UMF_triplet_nomap_nox
 #ifdef DO_MAP
     Int duplicates ;
 #endif
+#ifdef DO_VALUES
+#ifdef COMPLEX
+    Int split = SPLIT (Tz) && SPLIT (Az) && SPLIT (Rz) ;
+#endif
+#endif
 
     /* ---------------------------------------------------------------------- */
     /* count the entries in each row (also counting duplicates) */
@@ -98,7 +100,7 @@ GLOBAL Int UMF_triplet_nomap_nox
 #ifdef DO_VALUES
 	{
 	    Entry tt ;
-	    ASSIGN (tt, Tx [k], Tz [k]) ;
+	    ASSIGN (tt, Tx, Tz, k, split) ;
 	    EDEBUG2 (tt) ;
 	    DEBUG1 (("\n")) ;
 	}
@@ -131,9 +133,19 @@ GLOBAL Int UMF_triplet_nomap_nox
 #endif
 	Rj [p] = Tj [k] ;
 #ifdef DO_VALUES
-	Rx [p] = Tx [k] ;
 #ifdef COMPLEX
-	Rz [p] = Tz [k] ;
+	if (split)
+	{
+	    Rx [p] = Tx [k] ;
+	    Rz [p] = Tz [k] ;
+	}
+	else
+	{
+	    Rx [2*p  ] = Tx [2*k  ] ;
+	    Rx [2*p+1] = Tx [2*k+1] ;
+	}
+#else
+	Rx [p] = Tx [k] ;
 #endif
 #endif
     }
@@ -206,9 +218,19 @@ GLOBAL Int UMF_triplet_nomap_nox
 #endif
 #ifdef DO_VALUES
 		/* sum the entry */
-		Rx [pj] += Rx [p] ;
 #ifdef COMPLEX
-		Rz [pj] += Rz [p] ;
+		if (split)
+		{
+		    Rx [pj] += Rx [p] ;
+		    Rz [pj] += Rz [p] ;
+		}
+		else
+		{
+		    Rx[2*pj  ] += Rx[2*p  ] ;
+		    Rx[2*pj+1] += Rx[2*p+1] ;
+		}
+#else
+		Rx [pj] += Rx [p] ;
 #endif
 #endif
 	    }
@@ -225,9 +247,19 @@ GLOBAL Int UMF_triplet_nomap_nox
 		{
 		    Rj [pdest] = j ;
 #ifdef DO_VALUES
-		    Rx [pdest] = Rx [p] ;
 #ifdef COMPLEX
-		    Rz [pdest] = Rz [p] ;
+		    if (split)
+		    {
+			Rx [pdest] = Rx [p] ;
+			Rz [pdest] = Rz [p] ;
+		    }
+		    else
+		    {
+			Rx [2*pdest  ] = Rx [2*p  ] ;
+			Rx [2*pdest+1] = Rx [2*p+1] ;
+		    }
+#else
+		    Rx [pdest] = Rx [p] ;
 #endif
 #endif
 		}
@@ -325,9 +357,19 @@ GLOBAL Int UMF_triplet_nomap_nox
 #endif
 	    Ai [cp] = i ;
 #ifdef DO_VALUES
-	    Ax [cp] = Rx [p] ;
 #ifdef COMPLEX
-	    Az [cp] = Rz [p] ;
+	    if (split)
+	    {
+		Ax [cp] = Rx [p] ;
+		Az [cp] = Rz [p] ;
+	    }
+	    else
+	    {
+		Ax [2*cp  ] = Rx [2*p  ] ;
+		Ax [2*cp+1] = Rx [2*p+1] ;
+	    }
+#else
+	    Ax [cp] = Rx [p] ;
 #endif
 #endif
 	}

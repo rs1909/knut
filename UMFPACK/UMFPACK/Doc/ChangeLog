@@ -1,3 +1,93 @@
+Jan. 28, 2005: v4.4 released
+
+    * bug fix:  when Qinit is provided to umfpack_*_qsymbolic,
+	only the symmetric and unsymmetric strategies are now permitted.
+	The auto and 2-by-2 strategies are not allowed.  In v4.3 and
+	earlier, providing Qinit and requesting the symmetric strategy
+	did not always work (you got the unsymmetric strategy instead).
+	This does not affect umfpack_*_symbolic, which computes its own
+	ordering and can use all 4 strategies (auto, symmetric, unsymmetric,
+	and 2-by-2).
+
+    * umfpack_get_determinant added.
+
+    * packed complex case added for all routines (previously only used in
+	umfpack_report_vector).  This allows arrays of ANSI C/C++ complex
+	type to be passed directly to UMFPACK.
+
+    * added umf_multicomple.c to assist in the compilation of UMFPACK
+	in Microsoft Visual Studio, which does not have the required
+	flexibility of the Unix "make" command.
+
+    * local variable declarations reordered to encourage double-word
+	alignment of double's and Entry's, for better performance.
+
+    * note that with the exception of the behavior when a user-provided
+	ordering is passed to umfpack_*_qsymbolic, versions 4.1 through 4.4
+	have comparable performance (ordering quality, memory usage,
+	and run time).  v4.1 is much better than v4.0 in performance.
+
+Jan. 11, 2005: v4.3.1 released
+
+    * bug fix in umf_solve.  This bug is only the 4th one found in the C
+	versions of UMFPACK to date (Version 3.0 to 4.3.1, from March 2001 to
+	Jan. 2005, excluding workarounds for quirky compilers).  No bugs have
+	been reported in the last Fortran version of UMFPACK (MA38, or UMFPACK
+	V2.2.1) since its release in Jan. 1998.
+
+	In Version 4.3, a bug in umf_solve caused iterative refinement
+	to be disabled when solving A'x=b or A.'x=b after factorizing A.
+	Modified the umfpack mexFunction to factorize A and then solve A'x=b
+	when performing the operation x=b/A (as "umfpack(b,'/',A).  Note that
+	this has no effect on the use of UMFPACK in MATLAB itself, since MATLAB
+	does not use the umfpack mexFunction for x=b/A.  When computing x=b/A,
+	MATLAB factorizes A' and computes x=(A'\b')' instead. The following
+	source code files changed:
+
+	    UMFPACK/MATLAB/umfpackmex.c	 (see above)
+	    UMFPACK/Source/umf_solve.c	 (see source code: 2 lines changed)
+	    UMFPACK/Include/umfpack.h    (version and date changed)
+	    UMFPACK/MATLAB/umfpack_test.m   (new file)
+
+Jan. 16, 2004: v4.3 released.
+
+    * user interface of v4.3 is upwardly-compatible with v4.2 and v4.1.
+	No bugs found in v4.1 (except for one workaround for an old compiler).
+	These changes add features only.
+
+    * Note that v4.0 has a bug in umf_scale_column.c.  The bug was patched
+	in that version on Jan. 12, 2004.  The bug does not appear in v4.1
+	and later.  The bug is thus present in MATLAB 6.5, but it occurs
+	very rarely, fortunately.  It can occur when dividing a nonzero entry
+	in the pivot column by the pivot value results in an underflow.
+
+    * <float.h> added to umfpackmex.c, for DBL_EPSILON.  Some non-standard
+	compilers (Microsoft Visual C++) require this.
+
+    * #pragma added to umf_analyze.c, as a workaround around a bug in an
+	old Intel compiler.
+
+    * mexFunction interface to MATLAB modified.  Call to mexCallMATLAB removed,
+	which can be slow.  In V4.1 it was used only to get MATLAB's
+	spparms ('spumoni') value.
+
+    * The AMD mexFunction was also modified in the same way (v1.1), with
+	the call to mexCallMATLAB removed.  Note that UMFPACK v4.1 through
+	v4.3 can use either AMD v1.0 or AMD v1.1.
+
+    * -DNO_DIVIDE_BY_ZERO option added.  If this non-default option is enabled
+	at compile time, and if the pivot value is zero, then no division
+	occurs (zeros on the diagonal of U are treated as if they were equal
+	to one).  By default, the division by zero does occur.
+
+    * -DNO_TIMER option added.  If this non-default option is enabled at
+	compile time, then no timers (times ( ), clock ( ), getrusage ( ))
+	are used.
+
+V4.2:  A special release for COMSOL, Inc., only (FEMLAB)
+
+    * drop tolerance added.  A few new parameters in the Control array are used,
+	and a few new Info entries.
 
 May 6, 2003:  V4.1 released.
 
@@ -228,24 +318,24 @@ August-October, 2001:
     * added umfpack_btf M-file.
 
     * modified the BLAS update in the frontal matrix.  If there are only
-      a few pivots in remaining in the current front, then the BLAS3 update
-      is delayed to include pivots in the next front.
+	a few pivots in remaining in the current front, then the BLAS3 update
+	is delayed to include pivots in the next front.
 
     * Removed the special-case handling of dense columns from the numerical
-      factorization (kept it in the colamd preordering).  This improves the
-      performance of UMFPACK on dense matrices by a factor of 5 or so, and
-      simplifies the code.
+	factorization (kept it in the colamd preordering).  This improves the
+	performance of UMFPACK on dense matrices by a factor of 5 or so, and
+	simplifies the code.
 
     * Added a symmetric-preference pivoting option.  The option slightly
-      (but uniformly) improves the ordering when factorizing matrices with
-      symmetric nonzero pattern.  That class of matrix is better handled by
-      the symmetric-pattern multifrontal method (MA41 in the Harwell
-      Subroutine Library), however.
+	(but uniformly) improves the ordering when factorizing matrices with
+	symmetric nonzero pattern.  That class of matrix is better handled by
+	the symmetric-pattern multifrontal method (MA41 in the Harwell
+	Subroutine Library), however.
 
     * Fixed the detection of integer overflow.  The 32-bit version cannot
-      make use of more than 2GB of main memory (use the 64-bit version
-      in that case, instead).  The 32-bit version did not correctly detect
-      when it was trying to factorize too large of a matrix.
+	make use of more than 2GB of main memory (use the 64-bit version
+	in that case, instead).  The 32-bit version did not correctly detect
+	when it was trying to factorize too large of a matrix.
 
 May 4, 2001:
 
@@ -257,8 +347,8 @@ April 30, 2001:  UMFPACK Version 3.0 released.  Changes since 3.0Beta release:
     * Long integer version added (umfpack_l_* user-callable routines).
 
     * Peak memory usage in the numerical factorization reduced by a total of
-	12n integers (8n temporary workspace used during numerical
-	factorization, and 4n for the permanent LU factors which was allocated
+	12n integers (8n temporary workspace used during numerical factorization,
+	and 4n for the permanent LU factors which was allocated
 	at the beginning of factorization).
 
     * Ported to the IBM RS 6000 and Compaq Alpha, with help from Anshul Gupta

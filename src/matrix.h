@@ -858,7 +858,7 @@ inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> R )
 {
 	R.op.vec.mmxmpym( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecA.vec.c );
 // 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans || R.vecB.tr != NoTrans ) std::cout<<"Dmmxmpym err";
-// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
+	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
 	return *this;
 }
 

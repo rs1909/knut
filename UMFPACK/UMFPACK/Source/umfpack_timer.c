@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -13,9 +12,21 @@
     User-callable.  Returns the time in seconds used by the process.  BE
     CAREFUL:  if you compare the run time of UMFPACK with other sparse matrix
     packages, be sure to use the same timer.  See umfpack_timer.h for details.
-    This was the timer used internally by UMFPACK Version 4.0.  See
-    umfpack_tictoc.h, which is the timer now used internally by UMFPACK V4.1.
+    See umfpack_tictoc.h, which is the timer used internally by UMFPACK.
 */
+
+#ifdef NO_TIMER
+
+/* -------------------------------------------------------------------------- */
+/* no timer used if -DNO_TIMER is defined at compile time */
+/* -------------------------------------------------------------------------- */
+
+double umfpack_timer ( void )
+{
+    return (0) ;
+}
+
+#else
 
 #ifdef GETRUSAGE
 
@@ -68,4 +79,5 @@ double umfpack_timer ( void )
     return (((double) (clock ( ))) / ((double) (CLOCKS_PER_SEC))) ;
 }
 
+#endif
 #endif

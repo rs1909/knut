@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -61,6 +60,9 @@ GLOBAL Int UMF_transpose
     /* ---------------------------------------------------------------------- */
 
     Int i, j, k, p, bp, newj, do_values ;
+#ifdef COMPLEX
+    Int split ;
+#endif
 
     /* ---------------------------------------------------------------------- */
     /* check inputs */
@@ -185,16 +187,16 @@ GLOBAL Int UMF_transpose
     /* ---------------------------------------------------------------------- */
 
     do_values = Ax && Rx ;
-#ifdef COMPLEX
-    do_values = do_values && Az && Rz ;
-#endif
 
 #ifdef COMPLEX
+    split = SPLIT (Az) && SPLIT (Rz) ;
+
     if (do_conjugate && do_values)
     {
 	if (Q != (Int *) NULL)
 	{
-
+	    if (split)
+	    {
 		/* R = A (P,Q)' */
 		for (newj = 0 ; newj < nq ; newj++)
 		{
@@ -208,11 +210,28 @@ GLOBAL Int UMF_transpose
 			Rz [bp] = -Az [p] ;
 		    }
 		}
-
+	    }
+	    else
+	    {
+		/* R = A (P,Q)' (merged complex values) */
+		for (newj = 0 ; newj < nq ; newj++)
+		{
+		    j = Q [newj] ;
+		    ASSERT (j >= 0 && j < n_col) ;
+		    for (p = Ap [j] ; p < Ap [j+1] ; p++)
+		    {
+			bp = W [Ai [p]]++ ;
+			Ri [bp] = newj ;
+			Rx [2*bp] = Ax [2*p] ;
+			Rx [2*bp+1] = -Ax [2*p+1] ;
+		    }
+		}
+	    }
 	}
 	else
 	{
-
+	    if (split)
+	    {
 		/* R = A (P,:)' */
 		for (j = 0 ; j < n_col ; j++)
 		{
@@ -224,7 +243,21 @@ GLOBAL Int UMF_transpose
 			Rz [bp] = -Az [p] ;
 		    }
 		}
-
+	    }
+	    else
+	    {
+		/* R = A (P,:)' (merged complex values) */
+		for (j = 0 ; j < n_col ; j++)
+		{
+		    for (p = Ap [j] ; p < Ap [j+1] ; p++)
+		    {
+			bp = W [Ai [p]]++ ;
+			Ri [bp] = j ;
+			Rx [2*bp] = Ax [2*p] ;
+			Rx [2*bp+1] = -Ax [2*p+1] ;
+		    }
+		}
+	    }
 	}
     }
     else
@@ -234,27 +267,47 @@ GLOBAL Int UMF_transpose
 	{
 	    if (do_values)
 	    {
-
-		/* R = A (P,Q).' */
-		for (newj = 0 ; newj < nq ; newj++)
-		{
-		    j = Q [newj] ;
-		    ASSERT (j >= 0 && j < n_col) ;
-		    for (p = Ap [j] ; p < Ap [j+1] ; p++)
-		    {
-			bp = W [Ai [p]]++ ;
-			Ri [bp] = newj ;
-			Rx [bp] = Ax [p] ;
 #ifdef COMPLEX
-			Rz [bp] = Az [p] ;
+		if (split)
 #endif
+		{
+		    /* R = A (P,Q).' */
+		    for (newj = 0 ; newj < nq ; newj++)
+		    {
+			j = Q [newj] ;
+			ASSERT (j >= 0 && j < n_col) ;
+			for (p = Ap [j] ; p < Ap [j+1] ; p++)
+			{
+			    bp = W [Ai [p]]++ ;
+			    Ri [bp] = newj ;
+			    Rx [bp] = Ax [p] ;
+#ifdef COMPLEX
+			    Rz [bp] = Az [p] ;
+#endif
+			}
 		    }
 		}
-
+#ifdef COMPLEX
+		else
+		{
+		    /* R = A (P,Q).' (merged complex values) */
+		    for (newj = 0 ; newj < nq ; newj++)
+		    {
+			j = Q [newj] ;
+			ASSERT (j >= 0 && j < n_col) ;
+			for (p = Ap [j] ; p < Ap [j+1] ; p++)
+			{
+			    bp = W [Ai [p]]++ ;
+			    Ri [bp] = newj ;
+			    Rx [2*bp] = Ax [2*p] ;
+			    Rx [2*bp+1] = Ax [2*p+1] ;
+			}
+		    }
+		}
+#endif
 	    }
 	    else
 	    {
-
 		/* R = pattern of A (P,Q).' */
 		for (newj = 0 ; newj < nq ; newj++)
 		{
@@ -265,32 +318,49 @@ GLOBAL Int UMF_transpose
 			Ri [W [Ai [p]]++] = newj ;
 		    }
 		}
-
 	    }
 	}
 	else
 	{
 	    if (do_values)
 	    {
-
-		/* R = A (P,:).' */
-		for (j = 0 ; j < n_col ; j++)
-		{
-		    for (p = Ap [j] ; p < Ap [j+1] ; p++)
-		    {
-			bp = W [Ai [p]]++ ;
-			Ri [bp] = j ;
-			Rx [bp] = Ax [p] ;
 #ifdef COMPLEX
-			Rz [bp] = Az [p] ;
+		if (split)
 #endif
+		{
+		    /* R = A (P,:).' */
+		    for (j = 0 ; j < n_col ; j++)
+		    {
+			for (p = Ap [j] ; p < Ap [j+1] ; p++)
+			{
+			    bp = W [Ai [p]]++ ;
+			    Ri [bp] = j ;
+			    Rx [bp] = Ax [p] ;
+#ifdef COMPLEX
+			    Rz [bp] = Az [p] ;
+#endif
+			}
 		    }
 		}
-
+#ifdef COMPLEX
+		else
+		{
+		    /* R = A (P,:).' (merged complex values) */
+		    for (j = 0 ; j < n_col ; j++)
+		    {
+			for (p = Ap [j] ; p < Ap [j+1] ; p++)
+			{
+			    bp = W [Ai [p]]++ ;
+			    Ri [bp] = j ;
+			    Rx [2*bp] = Ax [2*p] ;
+			    Rx [2*bp+1] = Ax [2*p+1] ;
+			}
+		    }
+		}
+#endif
 	    }
 	    else
 	    {
-
 		/* R = pattern of A (P,:).' */
 		for (j = 0 ; j < n_col ; j++)
 		{
@@ -299,10 +369,8 @@ GLOBAL Int UMF_transpose
 			Ri [W [Ai [p]]++] = j ;
 		    }
 		}
-
 	    }
 	}
-
     }
 
 #ifndef NDEBUG

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -66,6 +65,10 @@ complex long Syntax:
     double *Bx, *Bz, *Xx, *Xz ;
     status = umfpack_zl_scale (Xx, Xz, Bx, Bz, Numeric) ;
 
+packed complex Syntax:
+
+    Same as above, except both Xz and Bz are NULL.
+
 Purpose:
 
     Given LU factors computed by umfpack_*_numeric (PAQ=LU, PRAQ=LU, or
@@ -79,23 +82,27 @@ Returns:
     UMFPACK_ERROR_invalid_Numeric_object is returned in the Numeric
     object is invalid.  UMFPACK_ERROR_argument_missing is returned if
     any of the input vectors are missing (X and B for the real version,
-    and Xx, Xz, Bx, and Bz for the complex version).
+    and Xx and Bx for the complex version).
 
 Arguments:
 
     double X [n_row] ;	Output argument.
     or:
     double Xx [n_row] ;	Output argument, real part.
+			Size 2*n_row for packed complex case.
     double Xz [n_row] ;	Output argument, imaginary part.
 
-	The output vector X.
+	The output vector X.  If either Xz or Bz are NULL, the vector
+	X is in packed complex form, with the kth entry in Xx [2*k] and
+	Xx [2*k+1], and likewise for B.
 
     double B [n_row] ;	Input argument, not modified.
     or:
     double Bx [n_row] ;	Input argument, not modified, real part.
+			Size 2*n_row for packed complex case.
     double Bz [n_row] ;	Input argument, not modified, imaginary part.
 
-	The input vector B.
+	The input vector B.  See above if either Xz or Bz are NULL.
 
     void *Numeric ;		Input argument, not modified.
 

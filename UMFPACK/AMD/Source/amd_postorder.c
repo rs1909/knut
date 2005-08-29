@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD_postorder ======================================================== */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_postorder ======================================================= */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* Perform a postordering (via depth-first search) of an assembly tree. */
 
@@ -39,9 +39,9 @@ GLOBAL void AMD_postorder
 	Sibling [j] = EMPTY ;
     }
 
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
     /* place the children in link lists - bigger elements tend to be last */
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
     for (j = nn-1 ; j >= 0 ; j--)
     {
@@ -62,7 +62,7 @@ GLOBAL void AMD_postorder
 #ifndef NDEBUG
     {
 	Int nels, ff, nchild ;
-	AMD_DEBUG1 (("\n\n================================ AMD_postorder:\n")) ;
+	AMD_DEBUG1 (("\n\n================================ AMD_postorder:\n"));
 	nels = 0 ;
 	for (j = 0 ; j < nn ; j++)
 	{
@@ -96,9 +96,9 @@ GLOBAL void AMD_postorder
 		 "the biggest child last in each list:\n")) ;
 #endif
 
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
     /* place the largest child last in the list of children for each node */
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
     for (i = 0 ; i < nn ; i++)
     {
@@ -145,7 +145,7 @@ GLOBAL void AMD_postorder
 
 	    if (fnext != EMPTY)
 	    {
-		/* if fnext is EMPTY, then bigf is already at the end of list */
+		/* if fnext is EMPTY then bigf is already at the end of list */
 
 		if (bigfprev == EMPTY)
 		{
@@ -181,9 +181,9 @@ GLOBAL void AMD_postorder
 	}
     }
 
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
     /* postorder the assembly tree */
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
     for (i = 0 ; i < nn ; i++)
     {

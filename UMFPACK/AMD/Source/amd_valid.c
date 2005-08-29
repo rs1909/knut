@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD_valid ============================================================ */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_valid =========================================================== */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* Check if a column-form matrix is valid or not.  The matrix A is
  * n_row-by-n_col.  The row indices of entries in column j are in
@@ -68,7 +68,7 @@ GLOBAL Int AMD_valid
 	    if (i <= ilast || i >= n_row)
 	    {
 		/* row index out of range, or unsorted */
-		AMD_DEBUG0 (("index out of range, col "ID" row "ID"\n", j, i)) ;
+		AMD_DEBUG0 (("index out of range, col "ID" row "ID"\n", j, i));
 		return (FALSE) ;
 	    }
 	    ilast = i ;

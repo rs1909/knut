@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -15,6 +14,9 @@
     routine names all start with the letters "umfpack_".  Non-user-accessible
     file names and routine names all start with "umf_".
 */
+
+#ifndef _UMF_INTERNAL
+#define _UMF_INTERNAL
 
 /* -------------------------------------------------------------------------- */
 /* ANSI standard include files */
@@ -298,20 +300,20 @@ typedef union Unit_union Unit ;
 */
 
 #ifdef DINT
-#define NUMERIC_VALID  15974
-#define SYMBOLIC_VALID 41934
+#define NUMERIC_VALID  15977
+#define SYMBOLIC_VALID 41937
 #endif
 #ifdef DLONG
-#define NUMERIC_VALID  399789120
-#define SYMBOLIC_VALID 399192913
+#define NUMERIC_VALID  399789720
+#define SYMBOLIC_VALID 399192713
 #endif
 #ifdef ZINT
-#define NUMERIC_VALID  17954
-#define SYMBOLIC_VALID 40923
+#define NUMERIC_VALID  17957
+#define SYMBOLIC_VALID 40927
 #endif
 #ifdef ZLONG
-#define NUMERIC_VALID  129987654
-#define SYMBOLIC_VALID 110291234
+#define NUMERIC_VALID  129987754
+#define SYMBOLIC_VALID 110291734
 #endif
 
 typedef struct	/* NumericType */
@@ -320,6 +322,7 @@ typedef struct	/* NumericType */
 	flops,		/* "true" flop count */
 	relpt,		/* relative pivot tolerance used */
 	relpt2,		/* relative pivot tolerance used for sym. */
+	droptol,
 	alloc_init,	/* initial allocation of Numeric->memory */
 	front_alloc_init, /* frontal matrix allocation parameter */
 	rsmin,		/* smallest row sum */
@@ -391,7 +394,9 @@ typedef struct	/* NumericType */
 	nUentries,	/* number of entries in U, including diagonal */
 			/* Some entries may be numerically zero. */
 	lnz,		/* number of nonzero entries in L, excl. diagonal */
+	all_lnz,	/* lnz plus entries dropped from L */
 	unz,		/* number of nonzero entries in U, excl. diagonal */
+	all_unz,	/* unz plus entries dropped form U */
 	maxfrsize ;	/* largest actual front size */
 
     Int maxnrows, maxncols ;	/* not the same as Symbolic->maxnrows/cols* */
@@ -744,10 +749,12 @@ typedef struct	/* SymbolicType */
 
 /* for testing out-of-memory conditions: */
 #define UMF_TCOV_TEST
-GLOBAL extern Int umf_fail, umf_fail_lo, umf_fail_hi ;
-GLOBAL extern Int umf_realloc_fail, umf_realloc_lo, umf_realloc_hi ;
+GLOBAL extern int umf_fail, umf_fail_lo, umf_fail_hi ;
+GLOBAL extern int umf_realloc_fail, umf_realloc_lo, umf_realloc_hi ;
 
 /* for testing malloc count: */
 #define UMF_MALLOC_COUNT
+
+#endif
 
 #endif

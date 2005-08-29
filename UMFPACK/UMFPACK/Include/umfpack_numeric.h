@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -85,8 +84,12 @@ complex long Syntax:
     void *Symbolic, *Numeric ;
     long *Ap, *Ai, status ;
     double *Ax, *Az, Control [UMFPACK_CONTROL], Info [UMFPACK_INFO] ;
-    status = umfpack_zl_numeric (Ap, Ai, Ax, Symbolic, &Numeric,
+    status = umfpack_zl_numeric (Ap, Ai, Ax, Az, Symbolic, &Numeric,
 	Control, Info) ;
+
+packed complex Syntax:
+
+    Same as above, except that Az is NULL.
 
 Purpose:
 
@@ -119,6 +122,7 @@ Arguments:
 	This must be identical to the Ai array passed to umfpack_*_*symbolic.
 
     double Ax [nz] ;	Input argument, not modified, of size nz = Ap [n_col].
+			Size 2*nz for packed complex case.
 
 	The numerical values of the sparse matrix A.  The nonzero pattern (row
 	indices) for column j is stored in Ai [(Ap [j]) ... (Ap [j+1]-1)], and
@@ -130,8 +134,8 @@ Arguments:
 	For the complex versions, this holds the imaginary part of A.  The
 	imaginary part of column j is held in Az [(Ap [j]) ... (Ap [j+1]-1)].
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be contained in Ax[0..2*nz-1], with Ax[2*k]
+	If Az is NULL, then both real
+	and imaginary parts are contained in Ax[0..2*nz-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
     void *Symbolic ;	Input argument, not modified.
@@ -162,8 +166,7 @@ Arguments:
 	    greater than or equal to Control [UMFPACK_PIVOT_TOLERANCE] times
 	    the largest absolute value in the column.  A value of 1.0 gives true
 	    partial pivoting.  If less than or equal to zero, then any nonzero
-	    entry is numerically acceptable as a pivot (this is changed from
-	    Version 4.0).  Default: 0.1.
+	    entry is numerically acceptable as a pivot.  Default: 0.1.
 
 	    Smaller values tend to lead to sparser LU factors, but the solution
 	    to the linear system can become inaccurate.  Larger values can lead
@@ -175,7 +178,7 @@ Arguments:
 	    instead of the more expensive-to-compute exact absolute value
 	    sqrt (a_real^2 + a_imag^2)).
 
-	Control [UMFPACK_SYM_PIVOT_TOLERANCE]:  This parameter is new to V4.1.
+	Control [UMFPACK_SYM_PIVOT_TOLERANCE]:
 	    If diagonal pivoting is attempted (the symmetric or symmetric-2by2
 	    strategies are used) then this parameter is used to control when the
 	    diagonal entry is selected in a given pivot column.  The absolute
@@ -208,8 +211,7 @@ Arguments:
 
 	    In both cases, the symmetry of the Schur complement is preserved.
 
-	Control [UMFPACK_SCALE]:  This parameter is new to V4.1.  Version 4.0
-	    did not scale the matrix.  Note that the user's input matrix is
+	Control [UMFPACK_SCALE]:  Note that the user's input matrix is
 	    never modified, only an internal copy is scaled.
 
 	    There are three valid settings for this parameter.  If any other
@@ -236,7 +238,7 @@ Arguments:
 
 	    Default: UMFPACK_SCALE_SUM.
 
-	Control [UMFPACK_ALLOC_INIT]:  This parameter has changed in V4.1.
+	Control [UMFPACK_ALLOC_INIT]:
 
 	    When umfpack_*_numeric starts, it allocates memory for the Numeric
 	    object.  Part of this is of fixed size (approximately n double's +
@@ -281,7 +283,7 @@ Arguments:
 	    The strategy of attempting to "malloc" a working space, and
 	    re-trying with a smaller space, may not work under MATLAB, since
 	    mxMalloc aborts the mexFunction if it fails.  The built-in umfpack
-	    routine (version 4.0) in MATLAB 6.5 uses utMalloc instead, which
+	    routine in MATLAB 6.5 uses utMalloc instead, which
 	    avoids this problem.  As a mexFunction, utMalloc is used unless
 	    -DNUTIL is defined at compile time.  The utMalloc routine, and
 	    utFree and utRealloc, are not documented.  If the mexFunction
@@ -298,7 +300,7 @@ Arguments:
 	    count.  It has a small impact on run-time (the extra time required
 	    to do the garbage collection and memory reallocation).
 
-	Control [UMFPACK_FRONT_ALLOC_INIT]:  This parameter is new to V4.1.
+	Control [UMFPACK_FRONT_ALLOC_INIT]:
 
 	    When UMFPACK starts the factorization of each "chain" of frontal
 	    matrices, it allocates a working array to hold the frontal matrices
@@ -319,6 +321,15 @@ Arguments:
 	    regardless of the ordering method or ordering strategy used.
 
 	    Default: 0.5.
+
+	Control [UMFPACK_DROPTOL]:
+
+	    Entries in L and U with absolute value less than or equal to the
+	    drop tolerance are removed from the data structures (unless leaving
+	    them there reduces memory usage by reducing the space required
+	    for the nonzero pattern of L and U).
+
+	    Default: 0.0.
 
     double Info [UMFPACK_INFO] ;	Output argument.
 
@@ -491,10 +502,6 @@ Arguments:
 	Info [UMFPACK_MAX_FRONT_SIZE]: the size of the
 	    largest frontal matrix (number of entries).
 
-	------------------------------------------------------------------------
-	The following statistics were added to Version 4.1:
-	------------------------------------------------------------------------
-
 	Info [UMFPACK_NUMERIC_WALLTIME]:  The wallclock time taken, in seconds.
 
 	Info [UMFPACK_MAX_FRONT_NROWS]: the max number of
@@ -522,6 +529,16 @@ Arguments:
 
 	Info [UMFPACK_NOFF_DIAG]: number of off-diagonal pivots selected, if the
 	    symmetric or 2-by-2 strategies are used.
+
+	Info [UMFPACK_NZDROPPED]: the number of entries smaller in absolute
+	    value than Control [UMFPACK_DROPTOL] that were dropped from L and U.
+	    Note that entries on the diagonal of U are never dropped.
+
+	Info [UMFPACK_ALL_LNZ]: the number of entries in L, including the
+	    diagonal, if no small entries are dropped.
+
+	Info [UMFPACK_ALL_UNZ]: the number of entries in U, including the
+	    diagonal, if no small entries are dropped.
 
 	Only the above listed Info [...] entries are accessed.  The remaining
 	entries of Info are not accessed or modified by umfpack_*_numeric.

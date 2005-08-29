@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD_aat ============================================================== */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_aat ============================================================= */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* AMD_aat:  compute the symmetry of the pattern of A, and count the number of
  * nonzeros each column of A+A' (excluding the diagonal).  Assume the input
@@ -21,7 +21,7 @@ GLOBAL Int AMD_aat	/* returns nz in A+A' */
     Int n,
     const Int Ap [ ],
     const Int Ai [ ],
-    Int Len [ ],	/* Len [j]: length of column j of A+A', excl. diagonal*/
+    Int Len [ ],	/* Len [j]: length of column j of A+A', excl diagonal*/
     Int Tp [ ],		/* workspace of size n */
     double Info [ ]
 ) 
@@ -71,7 +71,7 @@ GLOBAL Int AMD_aat	/* returns nz in A+A' */
 		 * add both A (j,k) and A (k,j) to the matrix A+A' */
 		Len [j]++ ;
 		Len [k]++ ;
-		AMD_DEBUG3 (("    upper ("ID","ID") ("ID","ID")\n", j,k, k,j)) ;
+		AMD_DEBUG3 (("    upper ("ID","ID") ("ID","ID")\n", j,k, k,j));
 		p++ ;
 	    }
 	    else if (j == k)
@@ -138,9 +138,9 @@ GLOBAL Int AMD_aat	/* returns nz in A+A' */
 	}
     }
 
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
     /* compute the symmetry of the nonzero pattern of A */
-    /* ---------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
     /* Given a matrix A, the symmetry of A is:
      *	B = tril (spones (A), -1) + triu (spones (A), 1) ;
@@ -162,7 +162,7 @@ GLOBAL Int AMD_aat	/* returns nz in A+A' */
     {
 	nzaat += Len [k] ;
     }
-    AMD_DEBUG1 (("AMD nz in A+A', excluding diagonal (nzaat) = "ID"\n", nzaat));
+    AMD_DEBUG1 (("AMD nz in A+A', excluding diagonal (nzaat) = "ID"\n",nzaat));
     AMD_DEBUG1 (("   nzboth: "ID" nz: "ID" nzdiag: "ID" symmetry: %g\n",
 		nzboth, nz, nzdiag, sym)) ;
 

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -21,9 +20,9 @@ GLOBAL void UMFPACK_report_control
     const double Control [UMFPACK_CONTROL]
 )
 {
-    Int prl, nb, irstep, strategy, scale, s ;
     double drow, dcol, relpt, relpt2, alloc_init, front_alloc_init, amd_alpha,
-	tol, force_fixQ, aggr ;
+	tol, force_fixQ, droptol, aggr ;
+    Int prl, nb, irstep, strategy, scale, s ;
 
     prl = GET_CONTROL (UMFPACK_PRL, UMFPACK_DEFAULT_PRL) ;
 
@@ -271,6 +270,14 @@ GLOBAL void UMFPACK_report_control
     }
 
     /* ---------------------------------------------------------------------- */
+    /* drop tolerance */
+    /* ---------------------------------------------------------------------- */
+
+    droptol = GET_CONTROL (UMFPACK_DROPTOL, UMFPACK_DEFAULT_DROPTOL) ;
+    PRINTF (("    "ID": drop tolerance: %g\n",
+	(Int) INDEX (UMFPACK_DROPTOL), droptol)) ;
+
+    /* ---------------------------------------------------------------------- */
     /* aggressive absorption */
     /* ---------------------------------------------------------------------- */
 
@@ -333,6 +340,10 @@ GLOBAL void UMFPACK_report_control
 #endif
 #endif
 
+#ifdef NO_TIMER
+    PRINTF (("    "ID": no CPU timer \n",
+	(Int) INDEX (UMFPACK_COMPILED_WITH_GETRUSAGE))) ;
+#else
 #ifndef NPOSIX
     PRINTF (("    "ID": CPU timer is POSIX times ( ) routine.\n",
 	(Int) INDEX (UMFPACK_COMPILED_WITH_GETRUSAGE))) ;
@@ -343,6 +354,7 @@ GLOBAL void UMFPACK_report_control
 #else
     PRINTF (("    "ID": CPU timer is ANSI C clock (may wrap around).\n",
 	(Int) INDEX (UMFPACK_COMPILED_WITH_GETRUSAGE))) ;
+#endif
 #endif
 #endif
 

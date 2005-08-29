@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -31,9 +30,10 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry xk ;
+    Entry *xp, *D, *Uval ;
     Int k, deg, j, *ip, col, *Upos, *Uilen, kstart, kend, up,
 	*Uip, n, uhead, ulen, pos, npiv, n1, *Ui ;
-    Entry *xp, xk, *D, *Uval ;
 
     /* ---------------------------------------------------------------------- */
     /* get parameters */
@@ -66,6 +66,8 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
     for (k = 0 ; k < n1 ; k++)
     {
 	DEBUG4 (("Singleton k "ID"\n", k)) ;
+
+#ifndef NO_DIVIDE_BY_ZERO
 	/* Go ahead and divide by zero if D [k] is zero. */
 #ifdef CONJUGATE_SOLVE
 	/* xk = X [k] / conjugate (D [k]) ; */
@@ -74,6 +76,20 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
 	/* xk = X [k] / D [k] ; */
 	DIV (xk, X [k], D [k]) ;
 #endif
+#else
+	/* Do not divide by zero */
+	if (IS_NONZERO (D [k]))
+	{
+#ifdef CONJUGATE_SOLVE
+	    /* xk = X [k] / conjugate (D [k]) ; */
+	    DIV_CONJ (xk, X [k], D [k]) ;
+#else
+	    /* xk = X [k] / D [k] ; */
+	    DIV (xk, X [k], D [k]) ;
+#endif
+	}
+#endif
+
 	X [k] = xk ;
 	deg = Uilen [k] ;
 	if (deg > 0 && IS_NONZERO (xk))
@@ -234,6 +250,7 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
 	    /* use row k of U */
 	    /* -------------------------------------------------------------- */
 
+#ifndef NO_DIVIDE_BY_ZERO
 	    /* Go ahead and divide by zero if D [k] is zero. */
 #ifdef CONJUGATE_SOLVE
 	    /* xk = X [k] / conjugate (D [k]) ; */
@@ -242,6 +259,20 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
 	    /* xk = X [k] / D [k] ; */
 	    DIV (xk, X [k], D [k]) ;
 #endif
+#else
+	    /* Do not divide by zero */
+	    if (IS_NONZERO (D [k]))
+	    {
+#ifdef CONJUGATE_SOLVE
+		/* xk = X [k] / conjugate (D [k]) ; */
+		DIV_CONJ (xk, X [k], D [k]) ;
+#else
+		/* xk = X [k] / D [k] ; */
+		DIV (xk, X [k], D [k]) ;
+#endif
+	    }
+#endif
+
 	    X [k] = xk ;
 	    if (IS_NONZERO (xk))
 	    {
@@ -273,6 +304,7 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
 	ASSERT (uhead == n) ;
     }
 
+#ifndef NO_DIVIDE_BY_ZERO
     for (k = npiv ; k < n ; k++)
     {
 	/* This is an *** intentional *** divide-by-zero, to get Inf or Nan,
@@ -283,6 +315,7 @@ UMF_utsolve			/* solve U.'x=b (array transpose) */
 	DIV (xk, X [k], D [k]) ;
 	X [k] = xk ;
     }
+#endif
 
 #ifndef NDEBUG
     for (j = 0 ; j < n ; j++)

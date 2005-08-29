@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -110,14 +109,17 @@ complex long Syntax:
     status = umfpack_zl_get_numeric (Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q,
 	Dx, Dz, &do_recip, Rs, Numeric) ;
 
+packed complex int/long Syntax:
+
+    Same as above, except Lz, Uz, and Dz are all NULL.
+
 Purpose:
 
     This routine copies the LU factors and permutation vectors from the Numeric
     object into user-accessible arrays.  This routine is not needed to solve a
     linear system.  Note that the output arrays Lp, Lj, Lx, Up, Ui, Ux, P, Q,
     Dx, and Rs are not allocated by umfpack_*_get_numeric; they must exist on
-    input.  Similarly, Lz, Uz and Dz must exist on input for the complex
-    versions.
+    input.
 
     All output arguments are optional.  If any of them are NULL
     on input, then that part of the LU factorization is not copied.  You can
@@ -141,7 +143,7 @@ Arguments:
 
     Int Lp [n_row+1] ;	Output argument.
     Int Lj [lnz] ;	Output argument.
-    double Lx [lnz] ;	Output argument.
+    double Lx [lnz] ;	Output argument.  Size 2*lnz for packed complex case.
     double Lz [lnz] ;	Output argument for complex versions.
 
 	The n_row-by-min(n_row,n_col) matrix L is returned in compressed-row
@@ -155,19 +157,19 @@ Arguments:
 	respectively.  Each row is stored in sorted order, from low column
 	indices to higher.  The last entry in each row is the diagonal, which
 	is numerically equal to one.  The sizes of Lp, Lj, Lx, and Lz are
-	returned by umfpack_*_get_lunz.    If Lp, Lj, or Ux (or Uz for the
-	complex version) are not present, then the matrix L is not returned.
-	This is not an error condition.  The L matrix can be printed if n_row,
-	Lp, Lj, Lx (and Lz for the complex versions) are passed to
-	umfpack_*_report_matrix (using the "row" form).
+	returned by umfpack_*_get_lunz.    If Lp, Lj, or Lx are not present,
+	then the matrix L is not returned.  This is not an error condition.
+	The L matrix can be printed if n_row, Lp, Lj, Lx (and Lz for the split
+	complex case) are passed to umfpack_*_report_matrix (using the
+	"row" form).
 
-	Future complex version:  if Lx is present and Lz is NULL, then both real
-	and imaginary parts will be returned in Lx[0..2*lnz-1], with Lx[2*k]
+	If Lx is present and Lz is NULL, then both real
+	and imaginary parts are returned in Lx[0..2*lnz-1], with Lx[2*k]
 	and Lx[2*k+1] being the real and imaginary part of the kth entry.
 
     Int Up [n_col+1] ;	Output argument.
     Int Ui [unz] ;	Output argument.
-    double Ux [unz] ;	Output argument.
+    double Ux [unz] ;	Output argument. Size 2*unz for packed complex case.
     double Uz [unz] ;	Output argument for complex versions.
 
 	The min(n_row,n_col)-by-n_col matrix U is returned in compressed-column
@@ -181,14 +183,14 @@ Arguments:
 	respectively.  Each column is stored in sorted order, from low row
 	indices to higher.  The last entry in each column is the diagonal
 	(assuming that it is nonzero).  The sizes of Up, Ui, Ux, and Uz are
-	returned by umfpack_*_get_lunz.  If Up, Ui, or Ux (or Uz for the complex
-	version) are not present, then the matrix U is not returned.  This is
-	not an error condition.  The U matrix can be printed if n_col, Up, Ui,
-	Ux (and Uz for the complex versions) are passed to
-	umfpack_*_report_matrix (using the "column" form).
+	returned by umfpack_*_get_lunz.  If Up, Ui, or Ux are not present,
+	then the matrix U is not returned.  This is not an error condition.
+	The U matrix can be printed if n_col, Up, Ui, Ux (and Uz for the
+	split complex case) are passed to umfpack_*_report_matrix (using the
+	"column" form).
 
-	Future complex version:  if Ux is present and Uz is NULL, then both real
-	and imaginary parts will be returned in Ux[0..2*unz-1], with Ux[2*k]
+	If Ux is present and Uz is NULL, then both real
+	and imaginary parts are returned in Ux[0..2*unz-1], with Ux[2*k]
 	and Ux[2*k+1] being the real and imaginary part of the kth entry.
 
     Int P [n_row] ;		Output argument.
@@ -208,7 +210,8 @@ Arguments:
 	the description of Qtree and Front_npivcol in umfpack_*_get_symbolic for
 	details.
 
-    double Dx [min(n_row,n_col)] ;	Output argument.
+    double Dx [min(n_row,n_col)] ;	Output argument.  Size 2*n for
+					the packed complex case.
     double Dz [min(n_row,n_col)] ;	Output argument for complex versions.
 
 	The diagonal of U is also returned in Dx and Dz.  You can extract the
@@ -216,8 +219,8 @@ Arguments:
 	Dz for the complex version) and passing Up, Ui, and Ux as NULL.  Dx is
 	the real part of the diagonal, and Dz is the imaginary part.
 
-	Future complex version:  if Dx is present and Dz is NULL, then both real
-	and imaginary parts will be returned in Dx[0..2*min(n_row,n_col)-1],
+	If Dx is present and Dz is NULL, then both real
+	and imaginary parts are returned in Dx[0..2*min(n_row,n_col)-1],
 	with Dx[2*k] and Dx[2*k+1] being the real and imaginary part of the kth
 	entry.
 
@@ -231,8 +234,6 @@ Arguments:
 	built-in routine or as a mexFunction, then the NRECIPROCAL flag is
 	set, and do_recip will always be zero (false).
 
-	NOTE: this argument is new to version 4.1.
-
     double Rs [n_row] ;		Output argument.
 
 	The row scale factors are returned in Rs [0..n_row-1].  Row i of A is
@@ -243,8 +244,6 @@ Arguments:
 	Otherwise, Rs [i] = 1.  If row i is all zero, Rs [i] = 1 as well.  For
 	the complex version, an approximate absolute value is used
 	(|x_real|+|x_imag|).
-
-	NOTE: this argument is new to version 4.1.
 
     void *Numeric ;	Input argument, not modified.
 

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -108,6 +107,10 @@ complex long Syntax:
     status = umfpack_zl_wsolve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,
 	Control, Info, Wi, W) ;
 
+packed complex Syntax:
+
+    Same as above, except Az, Xz, and Bz are NULL.
+
 Purpose:
 
     Given LU factors computed by umfpack_*_numeric (PAQ=LU) and the
@@ -128,6 +131,7 @@ Arguments:
     Int Ap [n+1] ;	Input argument, not modified.
     Int Ai [nz] ;	Input argument, not modified.
     double Ax [nz] ;	Input argument, not modified.
+			Size 2*nz in packed complex case.
     double X [n] ;	Output argument.
     double B [n] ;	Input argument, not modified.
     void *Numeric ;	Input argument, not modified.
@@ -137,8 +141,10 @@ Arguments:
     for complex versions:
     double Az [nz] ;	Input argument, not modified, imaginary part
     double Xx [n] ;	Output argument, real part.
+			Size 2*n in packed complex case.
     double Xz [n] ;	Output argument, imaginary part
-    double Bx [n] ;	Input argument, not modified, real part
+    double Bx [n] ;	Input argument, not modified, real part.
+			Size 2*n in packed complex case.
     double Bz [n] ;	Input argument, not modified, imaginary part
 
 	The above arguments are identical to umfpack_*_solve, except that the

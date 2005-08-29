@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -422,12 +421,13 @@ GLOBAL void UMF_2by2
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry aij ;
+    double cmax, value, rs, ctol, dvalue ;
     Int k, p, row, col, do_values, do_sum, do_max, do_scale, nweak, weak,
 	p1, p2, dfound, unmatched, n2, oldrow, newrow, oldcol, newcol, pp ;
-
-    double cmax, value, rs, ctol, dvalue ;
-    Entry aij ;
-
+#ifdef COMPLEX
+    Int split = SPLIT (Az) ;
+#endif
 #ifndef NRECIPROCAL
     Int do_recip = FALSE ;
 #endif
@@ -448,12 +448,7 @@ GLOBAL void UMF_2by2
 
     /* use the values, but only if they are present */
     /* ignore the values if tol <= 0 */
-    do_values = (tol > 0)
-	&& (Ax != (double *) NULL)
-#ifdef COMPLEX
-	&& (Az != (double *) NULL)
-#endif
-    ;
+    do_values = (tol > 0) && (Ax != (double *) NULL) ;
     if (do_values && (Rs != (double *) NULL))
     {
 	do_sum = (scale == UMFPACK_SCALE_SUM) ;
@@ -490,7 +485,7 @@ GLOBAL void UMF_2by2
 	    for (p = Ap [col] ; p < p2 ; p++)
 	    {
 		row = Ai [p] ;
-		ASSIGN (aij, Ax [p], Az [p]) ;
+		ASSIGN (aij, Ax, Az, p, split) ;
 		APPROX_ABS (value, aij) ;
 		rs = Rs [row] ;
 		if (!SCALAR_IS_NAN (rs))
@@ -601,7 +596,7 @@ GLOBAL void UMF_2by2
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    ASSERT (newrow >= -n1 && newrow < n2) ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    /* if either cmax or value is NaN, define cmax as NaN */
 		    if (!SCALAR_IS_NAN (cmax))
@@ -635,7 +630,7 @@ GLOBAL void UMF_2by2
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    ASSERT (newrow >= -n1 && newrow < n2) ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    value *= Rs [oldrow] ;
 		    /* if either cmax or value is NaN, define cmax as NaN */
@@ -670,7 +665,7 @@ GLOBAL void UMF_2by2
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    ASSERT (newrow >= -n1 && newrow < n2) ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    value /= Rs [oldrow] ;
 		    /* if either cmax or value is NaN, define cmax as NaN */
@@ -755,7 +750,7 @@ GLOBAL void UMF_2by2
 		    oldrow = Ai [p] ;
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    weak = WEAK (value, ctol) ;
 		    if (!weak)
@@ -775,7 +770,7 @@ GLOBAL void UMF_2by2
 		    oldrow = Ai [p] ;
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    value *= Rs [oldrow] ;
 		    weak = WEAK (value, ctol) ;
@@ -796,7 +791,7 @@ GLOBAL void UMF_2by2
 		    oldrow = Ai [p] ;
 		    newrow = InvRperm1 [oldrow] - n1 ;
 		    if (newrow < 0) continue ;
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, split) ;
 		    APPROX_ABS (value, aij) ;
 		    value /= Rs [oldrow] ;
 		    weak = WEAK (value, ctol) ;

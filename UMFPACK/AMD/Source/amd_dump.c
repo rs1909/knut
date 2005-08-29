@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD_dump ============================================================= */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_dump ============================================================ */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* Debugging routines for AMD.  Not used if NDEBUG is not defined at compile-
  * time (the default).  See comments in amd_internal.h on how to enable
@@ -21,9 +21,9 @@
 /* This global variable is present only when debugging */
 GLOBAL Int AMD_debug = -999 ;		/* default is no debug printing */
 
-/* ========================================================================== */
-/* === AMD_debug_init ======================================================= */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_debug_init ====================================================== */
+/* ========================================================================= */
 
 /* Sets the debug print level, by reading the file debug.amd (if it exists) */
 
@@ -40,12 +40,12 @@ GLOBAL void AMD_debug_init ( char *s )
 	fscanf (f, ID, &AMD_debug) ;
 	fclose (f) ;
     }
-    if (AMD_debug >= 0) printf ("%s: AMD_debug_init, D= "ID"\n", s, AMD_debug) ;
+    if (AMD_debug >= 0) printf ("%s: AMD_debug_init, D= "ID"\n", s, AMD_debug);
 }
 
-/* ========================================================================== */
-/* === AMD_dump ============================================================= */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD_dump ============================================================ */
+/* ========================================================================= */
 
 /* Dump AMD's data structure, except for the hash buckets.  This routine
  * cannot be called when the hash buckets are non-empty.
@@ -95,12 +95,12 @@ GLOBAL void AMD_dump (
 		else
 		{
 		    ASSERT (pe < EMPTY) ;
-		    AMD_DEBUG3 ((" i "ID" -> parent "ID"\n", i, FLIP (Pe [i]))) ;
+		    AMD_DEBUG3 ((" i "ID" -> parent "ID"\n", i, FLIP (Pe[i])));
 		}
 	    }
 	    else
 	    {
-		AMD_DEBUG3 (("\nI "ID": active principal supervariable:\n", i)) ;
+		AMD_DEBUG3 (("\nI "ID": active principal supervariable:\n",i));
 		AMD_DEBUG3 (("   nv(i): "ID"  Flag: %d\n", nv, (nv < 0))) ;
 		ASSERT (elen >= 0) ;
 		ASSERT (nv > 0 && pe >= 0) ;

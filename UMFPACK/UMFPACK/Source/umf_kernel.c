@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -53,7 +52,7 @@ GLOBAL Int UMF_kernel
     /* ---------------------------------------------------------------------- */
 
     Int j, f1, f2, chain, nchains, *Chain_start, status, fixQ, evaporate,
-	*Front_npivcol, jmax, nb ;
+	*Front_npivcol, jmax, nb, drop ;
 
     /* ---------------------------------------------------------------------- */
     /* initialize memory space and load the matrix. Optionally scale. */
@@ -83,6 +82,7 @@ GLOBAL Int UMF_kernel
     Front_npivcol = Symbolic->Front_npivcol ;
     nb = Symbolic->nb ;
     fixQ = Symbolic->fixQ ;
+    drop = Numeric->droptol > 0.0 ;
 
 #ifndef NDEBUG
     for (chain = 0 ; chain < nchains ; chain++)
@@ -177,7 +177,14 @@ GLOBAL Int UMF_kernel
 		if (Work->do_update)
 		{
 		    UMF_blas3_update (Work) ;
-		    DO (UMF_store_lu (Numeric, Work)) ;
+		    if (drop)
+		    {
+			DO (UMF_store_lu_drop (Numeric, Work)) ;
+		    }
+		    else
+		    {
+			DO (UMF_store_lu (Numeric, Work)) ;
+		    }
 		}
 
 		/* ---------------------------------------------------------- */
@@ -223,7 +230,15 @@ GLOBAL Int UMF_kernel
 		if (Work->fnpiv >= nb || evaporate)
 		{
 		    UMF_blas3_update (Work) ;
-		    DO (UMF_store_lu (Numeric, Work)) ;
+		    if (drop)
+		    {
+			DO (UMF_store_lu_drop (Numeric, Work)) ;
+		    }
+		    else
+		    {
+			DO (UMF_store_lu (Numeric, Work)) ;
+		    }
+
 		}
 
 		Work->pivrow_in_front = FALSE ;
@@ -253,7 +268,14 @@ GLOBAL Int UMF_kernel
 	 * ------------------------------------------------------------------ */
 
 	UMF_blas3_update (Work) ;
-	DO (UMF_store_lu (Numeric, Work)) ;
+	if (drop)
+	{
+	    DO (UMF_store_lu_drop (Numeric, Work)) ;
+	}
+	else
+	{
+	    DO (UMF_store_lu (Numeric, Work)) ;
+	}
 	Work->fnrows_new = Work->fnrows ;
 	Work->fncols_new = Work->fncols ;
 	DO (UMF_create_element (Numeric, Work, Symbolic)) ;

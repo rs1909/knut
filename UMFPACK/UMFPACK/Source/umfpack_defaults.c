@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -89,6 +88,9 @@ GLOBAL void UMFPACK_defaults
 #endif
 #endif
 
+#ifdef NO_TIMER
+    /* no timer used */
+    Control [UMFPACK_COMPILED_WITH_GETRUSAGE] = 3 ;
 #ifndef NPOSIX
     /* uses the POSIX sysconf ( ) and times ( ) routines in UMFPACK_tic, toc */
     Control [UMFPACK_COMPILED_WITH_GETRUSAGE] = 2 ;
@@ -100,6 +102,7 @@ GLOBAL void UMFPACK_defaults
     /* uses the ANSI standard clock routine to get CPU time */
     /* this may wrap around */
     Control [UMFPACK_COMPILED_WITH_GETRUSAGE] = 0 ;
+#endif
 #endif
 #endif
 

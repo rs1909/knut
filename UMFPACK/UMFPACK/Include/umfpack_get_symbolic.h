@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -183,8 +182,6 @@ Arguments:
 	in the pivot row, or the pivot column, or both).  These appear first in
 	the output permutations P and Q.
 
-	NOTE: this argument is new to version 4.1.
-
     Int *nz ;		Output argument.
 
 	The number of nonzeros in A.
@@ -281,11 +278,11 @@ Arguments:
 
 	Front_1strow [k] is the row index of the first row in A (P,Q)
 	whose leftmost entry is in a pivot column for the kth front.  This is
-	necessary only to properly factorize singular matrices.  It is new to
-	Version 4.0.  Rows in the range Front_1strow [k] to
-	Front_1strow [k+1]-1 first become pivot row candidates at the kth front.
-	Any rows not eliminated in the kth front may be selected as pivot rows
-	in the parent of k (Front_parent [k]) and so on up the tree.
+	necessary only to properly factorize singular matrices.  Rows in the
+	range Front_1strow [k] to Front_1strow [k+1]-1 first become pivot row
+	candidates at the kth front.  Any rows not eliminated in the kth front
+	may be selected as pivot rows in the parent of k (Front_parent [k])
+	and so on up the tree.
 
     Int Front_leftmostdesc [n_col+1] ;	Output argument.
 

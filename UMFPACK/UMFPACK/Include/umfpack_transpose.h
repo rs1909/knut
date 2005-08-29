@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -98,6 +97,10 @@ complex long Syntax:
     status = umfpack_zl_transpose (n_row, n_col, Ap, Ai, Ax, Az, P, Q,
 	Rp, Ri, Rx, Rz, do_conjugate) ;
 
+packed complex Syntax:
+
+    Same as above, except Az are Rz are NULL.
+
 Purpose:
 
     Transposes and optionally permutes a sparse matrix in row or column-form,
@@ -111,12 +114,7 @@ Purpose:
     A.  Factorizing A' or A.' instead of A can be much better, particularly if
     AA' is much sparser than A'A.  You can still solve Ax=b if you factorize
     A' or A.', by solving with the sys argument UMFPACK_At or UMFPACK_Aat,
-    respectively, in umfpack_*_*solve.  The umfpack mexFunction (umfpackmex.c)
-    is one example.  To compute x = A/b, it computes x = (A.'\b.').' instead,
-    by factorizing A.'.  It then uses the regular solve, since b.' and x.' are
-    stored identically as b and x, respectively (both b.' and b are dense
-    vectors).  If b and x were arrays, the umfpack mexFunction would need to
-    first compute b.' and then transpose the resulting solution.
+    respectively, in umfpack_*_*solve.
 
 Returns:
 
@@ -155,6 +153,7 @@ Arguments:
 	Row indices must be in the range 0 to n_row-1 (the matrix is 0-based).
 
     double Ax [nz] ;	Input argument, not modified, of size nz = Ap [n_col].
+			Size 2*nz if Az or Rz are NULL.
     double Az [nz] ;	Input argument, not modified, for complex versions.
 
 	If present, these are the numerical values of the sparse matrix A.
@@ -162,13 +161,12 @@ Arguments:
 	Ai [(Ap [j]) ... (Ap [j+1]-1)], and the corresponding real numerical
 	values are stored in Ax [(Ap [j]) ... (Ap [j+1]-1)].  The imaginary
 	values are stored in Az [(Ap [j]) ... (Ap [j+1]-1)].  The values are
-	transposed only if Ax and Rx are present (for the real version), and
-	only if all four (Ax, Az, Rx, and Rz) are present for the complex
-	version.  These are not an error conditions; you are able to transpose
+	transposed only if Ax and Rx are present.
+	This is not an error conditions; you are able to transpose
 	and permute just the pattern of a matrix.
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be contained in Ax[0..2*nz-1], with Ax[2*k]
+	If Az or Rz are NULL, then both real
+	and imaginary parts are contained in Ax[0..2*nz-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
     Int P [n_row] ;		Input argument, not modified.
@@ -200,18 +198,19 @@ Arguments:
 	same form as the row indices Ai for the matrix A.
 
     double Rx [nz] ;	Output argument.
+			Size 2*nz if Az or Rz are NULL.
     double Rz [nz] ;	Output argument, imaginary part for complex versions.
 
 	If present, these are the numerical values of the sparse matrix R,
 	in the same form as the values Ax and Az of the matrix A.
 
-	Future complex version:  if Rx is present and Rz is NULL, then both real
-	and imaginary parts will be contained in Rx[0..2*nz-1], with Rx[2*k]
+	If Az or Rz are NULL, then both real
+	and imaginary parts are contained in Rx[0..2*nz-1], with Rx[2*k]
 	and Rx[2*k+1] being the real and imaginary part of the kth entry.
 
     Int do_conjugate ;	Input argument for complex versions only.
 
-	If true, and if Ax, Az, Rx, and Rz are all present, then the linear
+	If true, and if Ax and Rx are present, then the linear
 	algebraic transpose is computed (complex conjugate).  If false, the
 	array transpose is computed instead.
 */

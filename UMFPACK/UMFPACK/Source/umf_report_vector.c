@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -19,14 +18,13 @@ PRIVATE void print_value
 (
     Int i,
     const double Xx [ ],
-    const double Xz [ ],
+    const double Xz [ ],    /* used for complex case only */
     Int scalar		    /* if true, then print real part only */
 )
 {
-    Entry *X, xi ;
+    Entry xi ;
     /* if Xz is null, then X is in "merged" format (compatible with Entry, */
     /* and ANSI C99 double _Complex type). */
-    X = (Entry *) Xx ;
     PRINTF (("    "ID" :", INDEX (i))) ;
     if (scalar)
     {
@@ -34,14 +32,7 @@ PRIVATE void print_value
     }
     else
     {
-	if (Xz != (double *) NULL)
-	{
-	    ASSIGN (xi, Xx [i], Xz [i]) ;
-	}
-	else
-	{
-	    xi = X [i] ;
-	}
+	ASSIGN (xi, Xx, Xz, i, SPLIT (Xz)) ;
 	PRINT_ENTRY (xi) ;
     }
     PRINTF (("\n")) ;

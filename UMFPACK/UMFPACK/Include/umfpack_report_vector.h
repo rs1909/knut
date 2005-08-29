@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -75,7 +74,7 @@ Returns:
     UMFPACK_OK if Control [UMFPACK_PRL] <= 2 (the input is not checked).
 
     Otherwise:
-    
+
     UMFPACK_OK if the vector is valid.
     UMFPACK_ERROR_argument_missing if X or Xx is missing.
     UMFPACK_ERROR_n_nonpositive if n <= 0.
@@ -108,13 +107,13 @@ Arguments:
 	when passed to umfpack_*_report_vector (this is untested, however).
 	This is the "merged" form of the complex vector X.
 
-	Future work:  all complex routines in UMFPACK could use this same
+	Note that all complex routines in UMFPACK V4.4 use this same
 	strategy for their complex arguments.  The split format is useful for
 	MATLAB, which holds its real and imaginary parts in seperate arrays.
-	The merged format is compatible with the intrinsic double _Complex
+	The packed format is compatible with the intrinsic double _Complex
 	type in ANSI C99, and is also compatible with SuperLU's method of
-	storing complex matrices.  In the current version, only 
-	umfpack_*_report_vector supports both formats.
+	storing complex matrices.  In Version 4.3, this routine was the only
+	one that allowed for packed complex arguments.
 
     double Control [UMFPACK_CONTROL] ;	Input argument, not modified.
 

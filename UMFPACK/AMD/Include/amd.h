@@ -1,13 +1,13 @@
-/* ========================================================================== */
-/* === AMD:  approximate minimum degree ordering ============================ */
-/* ========================================================================== */
+/* ========================================================================= */
+/* === AMD:  approximate minimum degree ordering =========================== */
+/* ========================================================================= */
 
-/* -------------------------------------------------------------------------- */
-/* AMD Version 1.0 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A. Davis,   */
-/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.          */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
-/* web: http://www.cise.ufl.edu/research/sparse/amd                           */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD Version 1.1 (Jan. 21, 2004), Copyright (c) 2004 by Timothy A. Davis,  */
+/* Patrick R. Amestoy, and Iain S. Duff.  See ../README for License.         */
+/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.           */
+/* web: http://www.cise.ufl.edu/research/sparse/amd                          */
+/* ------------------------------------------------------------------------- */
 
 /* AMD finds a symmetric ordering P of a matrix A so that the Cholesky
  * factorization of P*A*P' has fewer nonzeros and takes less work than the
@@ -15,22 +15,22 @@
  * ordering on the matrix A+A'.  Two sets of user-callable routines are
  * provided, one for "int" integers and the other for "long" integers.
  *
- * The method is based on the approximate minimum degree algorithm, discussed in
- * Amestoy, Davis, and Duff, "An approximate degree ordering algorithm", SIAM
- * Journal of Matrix Analysis and Applications, vol. 17, no. 4, pp.  886-905,
- * 1996.  This package can perform both the AMD ordering (with aggressive
- * absorption), and the AMDBAR ordering (without aggressive absorption)
- * discussed in the above paper.  This package differs from the Fortran codes
- * discussed in the paper:
+ * The method is based on the approximate minimum degree algorithm, discussed
+ * in Amestoy, Davis, and Duff, "An approximate degree ordering algorithm",
+ * SIAM Journal of Matrix Analysis and Applications, vol. 17, no. 4, pp.
+ * 886-905, 1996.  This package can perform both the AMD ordering (with
+ * aggressive absorption), and the AMDBAR ordering (without aggressive
+ * absorption) discussed in the above paper.  This package differs from the
+ * Fortran codes discussed in the paper:
  *
- *	(1) it can ignore "dense" rows and columns, leading to faster run times,
- *	(2) it computes the ordering of A+A' if A is not symmetric,
+ *	(1) it can ignore "dense" rows and columns, leading to faster run times
+ *	(2) it computes the ordering of A+A' if A is not symmetric
  *	(3) it is followed by a depth-first post-ordering of the assembly tree
  *	    (or supernodal elimination tree)
  *
  * For historical reasons, the Fortran versions, amd.f and amdbar.f, have
- * been left unchanged.  They compute the identical ordering as described in
- * the above paper.
+ * been left (nearly) unchanged.  They compute the identical ordering as
+ * described in the above paper.
  */
 
 #ifndef AMD_H
@@ -84,7 +84,8 @@ long amd_l_order (	    /* see above for description of arguments */
  * pattern of the matrix A is the same as that used internally by MATLAB.
  * If you wish to use a more flexible input structure, please see the
  * umfpack_*_triplet_to_col routines in the UMFPACK package, at
- * http://www.cise.ufl.edu/research/sparse/umfpack.
+ * http://www.cise.ufl.edu/research/sparse/umfpack, or use the amd_preprocess
+ * routine discussed below.
  *
  * Restrictions:  n >= 0.  Ap [0] = 0.  Ap [j] <= Ap [j+1] for all j in the
  *	range 0 to n-1.  nz = Ap [n] >= 0.  For all j in the range 0 to n-1,
@@ -105,11 +106,11 @@ long amd_l_order (	    /* see above for description of arguments */
  *	AMD_INVALID if the input arguments n, Ap, Ai are invalid, or if P is
  *	    NULL.
  *
- * The AMD routine first forms the pattern of the matrix A+A', and then computes
- * a fill-reducing ordering, P.  If P [k] = i, then row/column i of the original
- * is the kth pivotal row.  In MATLAB notation, the permuted matrix is A (P,P),
- * except that 0-based indexing is used instead of the 1-based indexing in
- * MATLAB.
+ * The AMD routine first forms the pattern of the matrix A+A', and then
+ * computes a fill-reducing ordering, P.  If P [k] = i, then row/column i of
+ * the original is the kth pivotal row.  In MATLAB notation, the permuted
+ * matrix is A (P,P), except that 0-based indexing is used instead of the
+ * 1-based indexing in MATLAB.
  *
  * The Control array is used to set various parameters for AMD.  If a NULL
  * pointer is passed, default values are used.  The Control array is not
@@ -117,12 +118,12 @@ long amd_l_order (	    /* see above for description of arguments */
  *
  *	Control [AMD_DENSE]:  controls the threshold for "dense" rows/columns.
  *	    A dense row/column in A+A' can cause AMD to spend a lot of time in
- *	    ordering the matrix.  If Control [AMD_DENSE] >= 0, rows/columns with
- *	    more than Control [AMD_DENSE] * sqrt (n) entries are ignored during
- *	    the ordering, and placed last in the output order.  The default
- *	    value of Control [AMD_DENSE] is 10.  If negative, no rows/columns
- *	    are treated as "dense".  Rows/columns with 16 or fewer off-diagonal
- *	    entries are never considered "dense".
+ *	    ordering the matrix.  If Control [AMD_DENSE] >= 0, rows/columns
+ *	    with more than Control [AMD_DENSE] * sqrt (n) entries are ignored
+ *	    during the ordering, and placed last in the output order.  The
+ *	    default value of Control [AMD_DENSE] is 10.  If negative, no
+ *	    rows/columns are treated as "dense".  Rows/columns with 16 or
+ *	    fewer off-diagonal entries are never considered "dense".
  *
  *	Control [AMD_AGGRESSIVE]: controls whether or not to use aggressive
  *	    absorption, in which a prior element is absorbed into the current
@@ -130,10 +131,10 @@ long amd_l_order (	    /* see above for description of arguments */
  *	    adjacent to the current pivot element (refer to Amestoy, Davis,
  *	    & Duff, 1996, for more details).  The default value is nonzero,
  *	    which means to perform aggressive absorption.  This nearly always
- *	    leads to a better ordering (because the approximate degrees are more
- *	    accurate) and a lower execution time.  There are cases where it can
- *	    lead to a slightly worse ordering, however.  To turn it off, set
- *	    Control [AMD_AGGRESSIVE] to 0.
+ *	    leads to a better ordering (because the approximate degrees are
+ *	    more accurate) and a lower execution time.  There are cases where
+ *	    it can lead to a slightly worse ordering, however.  To turn it off,
+ *	    set Control [AMD_AGGRESSIVE] to 0.
  *
  *	Control [2..4] are not used in the current version, but may be used in
  *	    future versions.
@@ -204,9 +205,109 @@ long amd_l_order (	    /* see above for description of arguments */
  *	    future versions.
  */    
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/* AMD preprocess */
+/* ------------------------------------------------------------------------- */
+
+/* amd_preprocess: sorts, removes duplicate entries, and transposes the
+ * nonzero pattern of a column-form matrix A, to obtain the matrix R.
+ *
+ * Alternatively, you can consider this routine as constructing a row-form
+ * matrix from a column-form matrix.  Duplicate entries are allowed in A (and
+ * removed in R). The columns of R are sorted.  Checks its input A for errors.
+ *
+ * On input, A can have unsorted columns, and can have duplicate entries.
+ * Ap [0] must still be zero, and Ap must be monotonically nondecreasing.
+ * Row indices must be in the range 0 to n-1.
+ *
+ * On output, if this routine returns AMD_OK, then the matrix R is a valid
+ * input matrix for AMD_order.  It has sorted columns, with no duplicate
+ * entries in each column.  Since AMD_order operates on the matrix A+A', it
+ * can just as easily use A or A', so the transpose has no significant effect
+ * (except for minor tie-breaking, which can lead to a minor effect in the
+ * quality of the ordering).  As an example, compare the output of amd_demo.c
+ * and amd_demo2.c.
+ *
+ * This routine transposes A to get R because that's the simplest way to
+ * sort and remove duplicate entries from a matrix.
+ *
+ * Allocates 2*n integer work arrays, and free's them when done.
+ *
+ * If you wish to call amd_order, but do not know if your matrix has unsorted
+ * columns or duplicate entries, then you can use the following code, which is
+ * fairly efficient.  amd_order will not allocate any internal matrix until
+ * it checks that the input matrix is valid, so the method below is memory-
+ * efficient as well.  This code snippet assumes that Rp and Ri are already
+ * allocated, and are the same size as Ap and Ai respectively.
+
+    result = amd_order (n, p, Ap, Ai, Control, Info) ;
+    if (result == AMD_INVALID)
+    {
+	if (amd_preprocess (n, Ap, Ai, Rp, Ri) == AMD_OK)
+	{
+	    result = amd_order (n, p, Rp, Ri, Control, Info) ;
+	}
+    }
+
+ * amd_preprocess will still return AMD_INVALID if any row index in Ai is out
+ * of range or if the Ap array is invalid.  These errors are not corrected by
+ * amd_preprocess since they represent a more serious error that should be
+ * flagged with the AMD_INVALID error code.
+ */ 
+
+int amd_preprocess
+(
+    int n,
+    const int Ap [ ],
+    const int Ai [ ],
+    int Rp [ ],
+    int Ri [ ]
+) ;
+
+long amd_l_preprocess
+(
+    long n,
+    const long Ap [ ],
+    const long Ai [ ],
+    long Rp [ ],
+    long Ri [ ]
+) ;
+
+/* Input arguments (not modified):
+ *
+ *	n: the matrix A is n-by-n.
+ *	Ap: an int/long array of size n+1, containing the column pointers of A.
+ *	Ai: an int/long array of size nz, containing the row indices of A,
+ *	    where nz = Ap [n].
+ *	The nonzero pattern of column j of A is in Ai [Ap [j] ... Ap [j+1]-1].
+ *	Ap [0] must be zero, and Ap [j] <= Ap [j+1] must hold for all j in the
+ *	range 0 to n-1.  Row indices in Ai must be in the range 0 to n-1.
+ *	The row indices in any one column need not be sorted, and duplicates
+ *	may exist.
+ *
+ * Output arguments (not defined on input):
+ *
+ *	Rp: an int/long array of size n+1, containing the column pointers of R.
+ *	Ri: an int/long array of size rnz, containing the row indices of R,
+ *	    where rnz = Rp [n].  Note that Rp [n] will be less than Ap [n] if
+ *	    duplicates appear in A.  In general, Rp [n] <= Ap [n].
+ *      The data structure for R is the same as A, except that each column of
+ *      R contains sorted row indices, and no duplicates appear in any column.
+ *
+ * amd_preprocess returns:
+ *
+ *	AMD_OK if the matrix A is valid and sufficient memory can be allocated
+ *	    to perform the preprocessing.
+ *
+ *	AMD_OUT_OF_MEMORY if not enough memory can be allocated.
+ *
+ *	AMD_INVALID if the input arguments n, Ap, Ai are invalid, or if Rp or
+ *	    Ri are NULL.
+ */
+
+/* ------------------------------------------------------------------------- */
 /* AMD Control and Info arrays */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 /* amd_defaults:  sets the default control settings */
 void amd_defaults   (double Control [ ]) ;
@@ -247,12 +348,12 @@ void amd_l_info     (double Info [ ]) ;
 #define AMD_NMULTSUBS_LU 12  /* number of fl. point (*,-) pairs for LU */
 #define AMD_DMAX 13	     /* max nz. in any column of L, incl. diagonal */
 
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 /* return values of AMD */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
 
 #define AMD_OK 0		/* success */
-#define AMD_OUT_OF_MEMORY -1	/* malloc failed, or 2.4*nz+9*n is too large */
+#define AMD_OUT_OF_MEMORY -1	/* malloc failed */
 #define AMD_INVALID -2		/* input arguments are not valid */
 
 #endif

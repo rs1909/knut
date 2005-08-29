@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -24,7 +23,10 @@
 /* size of Info and Control arrays */
 /* -------------------------------------------------------------------------- */
 
-#define UMFPACK_INFO 90		/* these might be larger in future versions */
+/* These might be larger in future versions, since there are only 3 unused
+ * entries in Info, and no unused entries in Control. */
+
+#define UMFPACK_INFO 90
 #define UMFPACK_CONTROL 20
 
 /* -------------------------------------------------------------------------- */
@@ -57,6 +59,7 @@
 #include "umfpack_load_numeric.h"
 #include "umfpack_save_symbolic.h"
 #include "umfpack_load_symbolic.h"
+#include "umfpack_get_determinant.h"
 
 /* Reporting routines (the above 14 routines print nothing): */
 #include "umfpack_report_status.h"
@@ -77,10 +80,10 @@
 /* Version, copyright, and license */
 /* -------------------------------------------------------------------------- */
 
-#define UMFPACK_VERSION "UMFPACK V4.1 (Apr. 30, 2003)"
+#define UMFPACK_VERSION "UMFPACK V4.4 (Jan. 28, 2005)"
 
 #define UMFPACK_COPYRIGHT \
-"UMFPACK:  Copyright (c) 2003 by Timothy A. Davis.  All Rights Reserved.\n"
+"UMFPACK:  Copyright (c) 2005 by Timothy A. Davis.  All Rights Reserved.\n"
 
 #define UMFPACK_LICENSE_PART1 \
 "\nUMFPACK License:\n" \
@@ -111,7 +114,8 @@
 /* contents of Info */
 /* -------------------------------------------------------------------------- */
 
-/* Note that umfpack_report.m must coincide with these definitions. */
+/* Note that umfpack_report.m must coincide with these definitions.  S is
+ * the submatrix of A after removing row/col singletons and empty rows/cols. */
 
 /* returned by all routines that use Info: */
 #define UMFPACK_STATUS 0	/* UMFPACK_OK, or other result */
@@ -158,10 +162,10 @@
 #define UMFPACK_2BY2_NZDIAG 55		    /* nz on diagonal of PS+(PS)' */
 
 /* statistcs for singleton pruning */
-#define UMFPACK_COL_SINGLETONS 56
-#define UMFPACK_ROW_SINGLETONS 57
-#define UMFPACK_N2 58
-#define UMFPACK_S_SYMMETRIC 59
+#define UMFPACK_COL_SINGLETONS 56	/* # of column singletons */
+#define UMFPACK_ROW_SINGLETONS 57	/* # of row singletons */
+#define UMFPACK_N2 58			/* size of S */
+#define UMFPACK_S_SYMMETRIC 59		/* 1 if S square and symmetricly perm.*/
 
 /* estimates computed in UMFPACK_*symbolic: */
 #define UMFPACK_NUMERIC_SIZE_ESTIMATE 20    /* final size of Numeric->Memory */
@@ -208,6 +212,10 @@
 #define UMFPACK_NUMERIC_WALLTIME 75	    /* numeric wall clock time */
 #define UMFPACK_NOFF_DIAG 76		    /* number of off-diagonal pivots */
 
+#define UMFPACK_ALL_LNZ 77		    /* nz in L, if no dropped entries */
+#define UMFPACK_ALL_UNZ 78		    /* nz in U, if no dropped entries */
+#define UMFPACK_NZDROPPED 79		    /* # of dropped small entries */
+
 /* computed in UMFPACK_solve: */
 #define UMFPACK_IR_TAKEN 80	    /* # of iterative refinement steps taken */
 #define UMFPACK_IR_ATTEMPTED 81	    /* # of iter. refinement steps attempted */
@@ -217,7 +225,7 @@
 #define UMFPACK_SOLVE_TIME 85	    /* solve time (seconds) */
 #define UMFPACK_SOLVE_WALLTIME 86   /* solve time (wall clock, seconds) */
 
-/* Info [77, 78, 79, 87, 88, 89] unused */
+/* Info [87, 88, 89] unused */
 
 /* Unused parts of Info may be used in future versions of UMFPACK. */
 
@@ -252,7 +260,7 @@
 #define UMFPACK_SYM_PIVOT_TOLERANCE 15	/* threshold, only for diag. entries */
 #define UMFPACK_SCALE 16		/* what row scaling to do */
 #define UMFPACK_FRONT_ALLOC_INIT 17	/* frontal matrix allocation ratio */
-
+#define UMFPACK_DROPTOL 18		/* drop tolerance for entries in L,U */
 
 /* used in UMFPACK_*solve only: */
 #define UMFPACK_IRSTEP 7		/* max # of iterative refinements */
@@ -262,17 +270,6 @@
 #define UMFPACK_COMPILED_FOR_MATLAB 9	    /* 1 if MATLAB mexFunction, etc. */
 #define UMFPACK_COMPILED_WITH_GETRUSAGE 10  /* uses getrusage timer, or not */
 #define UMFPACK_COMPILED_IN_DEBUG_MODE 11   /* debugging enabled (very slow!) */
-
-#if 0
-/* No longer unused.  These parameters are now used for the new symmetric and
- * 2-by-2 ordering strategies.  See 5, 12, 13, and 14, above. */
-#define UMFPACK_RELAXED_AMALGAMATION 5	    /* unused (was in v4.0) */
-#define UMFPACK_PIVOT_OPTION 12		    /* unused (was in v3.2) */
-#define UMFPACK_RELAXED2_AMALGAMATION 13    /* unused (was in v4.0) */
-#define UMFPACK_RELAXED3_AMALGAMATION 14    /* unused (was in v4.0) */
-#endif
-
-/* Control [18] unused */
 
 /* -------------------------------------------------------------------------- */
 
@@ -295,14 +292,6 @@
 /* default values of Control: */
 /* -------------------------------------------------------------------------- */
 
-/* Note that the default block sized changed for Version 3.1 and following.
- * In Version 4.1, the relaxed amalgamation parameters were removed.  These are
- * now fixed internally (see umf_local_search.c), and cannot be changed.
- * COLAMD aggressive absorption did not exist in v4.0.  In v4.1, it is in
- * use by default (but can be turned off).  Aggressive absorption is used by
- * default in AMD, also.
- */
-
 #define UMFPACK_DEFAULT_PRL 1
 #define UMFPACK_DEFAULT_DENSE_ROW 0.2
 #define UMFPACK_DEFAULT_DENSE_COL 0.2
@@ -318,13 +307,7 @@
 #define UMFPACK_DEFAULT_AMD_DENSE AMD_DEFAULT_DENSE
 #define UMFPACK_DEFAULT_FIXQ 0
 #define UMFPACK_DEFAULT_AGGRESSIVE 1
-
-#if 0
-/* no longer unused: for unsymmetric strategy (were used in v4.0) */
-#define UMFPACK_DEFAULT_RELAXED_AMALGAMATION 0.25	/* unused */
-#define UMFPACK_DEFAULT_RELAXED2_AMALGAMATION 0.1	/* unused */
-#define UMFPACK_DEFAULT_RELAXED3_AMALGAMATION 0.125	/* unused */
-#endif
+#define UMFPACK_DEFAULT_DROPTOL 0
 
 /* default values of Control may change in future versions of UMFPACK. */
 
@@ -338,6 +321,10 @@
 /* A Symbolic or Numeric object was still created. */
 #define UMFPACK_WARNING_singular_matrix (1)
 
+/* The following warnings were added in umfpack_*_get_determinant */
+#define UMFPACK_WARNING_determinant_underflow (2)
+#define UMFPACK_WARNING_determinant_overflow (3)
+
 /* status < 0 means an error, and the method was not successful. */
 /* No Symbolic of Numeric object was created. */
 #define UMFPACK_ERROR_out_of_memory (-1)
@@ -345,25 +332,12 @@
 #define UMFPACK_ERROR_invalid_Symbolic_object (-4)
 #define UMFPACK_ERROR_argument_missing (-5)
 #define UMFPACK_ERROR_n_nonpositive (-6)
-#define UMFPACK_ERROR_invalid_matrix (-8)   /* replaces errors -[7:10,12,14] */
+#define UMFPACK_ERROR_invalid_matrix (-8)
 #define UMFPACK_ERROR_different_pattern (-11)
 #define UMFPACK_ERROR_invalid_system (-13)
 #define UMFPACK_ERROR_invalid_permutation (-15)
-#define UMFPACK_ERROR_internal_error (-911)
+#define UMFPACK_ERROR_internal_error (-911) /* yes, call me if you get this! */
 #define UMFPACK_ERROR_file_IO (-17)
-
-/* The following error codes are no longer used.  They are left in for
- * historical reasons.  They appeared in Version 4.0.  Most of them are combined
- * into the single UMFPACK_ERROR_invalid_matrix error code (-8).  The last one,
- * UMFPACK_ERROR_problem_too_large, has been removed.  This error can no longer
- * occur. */
-#define UMFPACK_ERROR_nz_negative (-7)			/* unused */
-#define UMFPACK_ERROR_jumbled_matrix (-8)		/* unused */
-#define UMFPACK_ERROR_Ap0_nonzero (-9)			/* unused */
-#define UMFPACK_ERROR_row_index_out_of_bounds (-10)	/* unused */
-#define UMFPACK_ERROR_col_length_negative (-12)		/* unused */
-#define UMFPACK_ERROR_invalid_triplet (-14)		/* unused */
-#define UMFPACK_ERROR_problem_too_large (-16)		/* unused */
 
 /* -------------------------------------------------------------------------- */
 /* solve codes */

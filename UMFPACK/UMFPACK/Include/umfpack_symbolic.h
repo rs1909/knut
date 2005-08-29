@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -94,6 +93,10 @@ complex long Syntax:
     status = umfpack_zl_symbolic (n_row, n_col, Ap, Ai, Ax, Az,
 	&Symbolic, Control, Info) ;
 
+packed complex Syntax:
+
+    Same as above, except Az is NULL.
+
 Purpose:
 
     Given nonzero pattern of a sparse matrix A in column-oriented form,
@@ -145,6 +148,7 @@ Arguments:
 	to print the matrix A.
 
     double Ax [nz] ;	Optional input argument, not modified.
+			Size 2*nz for packed complex case.
 
 	The numerical values of the sparse matrix A.  The nonzero pattern (row
 	indices) for column j is stored in Ai [(Ap [j]) ... (Ap [j+1]-1)], and
@@ -161,8 +165,8 @@ Arguments:
 	For the complex versions, this holds the imaginary part of A.  The
 	imaginary part of column j is held in Az [(Ap [j]) ... (Ap [j+1]-1)].
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be contained in Ax[0..2*nz-1], with Ax[2*k]
+	If Az is NULL, then both real
+	and imaginary parts are contained in Ax[0..2*nz-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
 	Used by the 2-by-2 strategy only.  See the description of Ax, above.
@@ -187,8 +191,7 @@ Arguments:
 
 	Control [UMFPACK_STRATEGY]:  This is the most important control
 	    parameter.  It determines what kind of ordering and pivoting
-	    strategy that UMFPACK should use.  It is new to Version 4.1
-	    There are 4 options:
+	    strategy that UMFPACK should use.  There are 4 options:
 
 	    UMFPACK_STRATEGY_AUTO:  This is the default.  The input matrix is
 		analyzed to determine how symmetric the nonzero pattern is, and
@@ -200,8 +203,7 @@ Arguments:
 		is used to order the columns of A, followed by a postorder of
 		the column elimination tree.  No attempt is made to perform
 		diagonal pivoting.  The column ordering is refined during
-		factorization.  This strategy was the only one provided with
-		UMFPACK V4.0.
+		factorization.
 
 		In the numerical factorization, the
 		Control [UMFPACK_SYM_PIVOT_TOLERANCE] parameter is ignored.  A
@@ -209,8 +211,8 @@ Arguments:
 		Control [UMFPACK_PIVOT_TOLERANCE] (default 0.1) times the
 		largest entry in its column.
 
-	    UMFPACK_STRATEGY_SYMMETRIC:  Use the symmetric strategy (new to
-		Version 4.1).  In this method, the approximate minimum degree
+	    UMFPACK_STRATEGY_SYMMETRIC:  Use the symmetric strategy
+		In this method, the approximate minimum degree
 		ordering (AMD) is applied to A+A', followed by a postorder of
 		the elimination tree of A+A'.  UMFPACK attempts to perform
 		diagonal pivoting during numerical factorization.  No refinement
@@ -251,16 +253,15 @@ Arguments:
 	    parameter affects when updates are applied to the working frontal
 	    matrix, and can indirectly affect fill-in and operation count.
 	    As long as the block size is large enough (8 or so), this parameter
-	    has a modest effect on performance. 
+	    has a modest effect on performance.
 
 	Control [UMFPACK_2BY2_TOLERANCE]:  a diagonal entry S (k,k) is
 	    considered "small" if it is < tol * max (abs (S (:,k))), where S a
 	    submatrix of the scaled input matrix, with pivots of zero Markowitz
 	    cost removed.
 
-	Control [UMFPACK_SCALE]:  This parameter is new to V4.1.  See
-	    umfpack_numeric.h for a description.  Only affects the 2-by-2
-	    strategy.  Default: UMFPACK_SCALE_SUM.
+	Control [UMFPACK_SCALE]:  See umfpack_numeric.h for a description.
+	    Only affects the 2-by-2 strategy.  Default: UMFPACK_SCALE_SUM.
 
 	Control [UMFPACK_FIXQ]:  If > 0, then the pre-ordering Q is not modified
 	    during numeric factorization.  If < 0, then Q may be modified.  If
@@ -314,9 +315,6 @@ Arguments:
 
 		Something very serious went wrong.  This is a bug.
 		Please contact the author (davis@cise.ufl.edu).
-
-	    Note that the UMFPACK_ERROR_problem_too_large error code is no
-	    longer returned (it was in Version 4.0).
 
 	Info [UMFPACK_NROW]:  the value of the input argument n_row.
 
@@ -378,7 +376,7 @@ Arguments:
 
 	Info [UMFPACK_VARIABLE_PEAK_ESTIMATE]: the estimated peak size (in
 	    Units) of the variable-sized part of the Numeric object.  This is
-	    usually an upper bound, but that is not guaranteed. 
+	    usually an upper bound, but that is not guaranteed.
 
 	Info [UMFPACK_VARIABLE_FINAL_ESTIMATE]: the estimated final size (in
 	    Units) of the variable-sized part of the Numeric object.  This is
@@ -440,10 +438,6 @@ Arguments:
 	    pivoting during numerical factorization.
 
 	Info [UMFPACK_SYMBOLIC_TIME]:  The CPU time taken, in seconds.
-
-	------------------------------------------------------------------------
-	The rest of the statistics are new to Version 4.1:
-	------------------------------------------------------------------------
 
 	Info [UMFPACK_SYMBOLIC_WALLTIME]:  The wallclock time taken, in seconds.
 

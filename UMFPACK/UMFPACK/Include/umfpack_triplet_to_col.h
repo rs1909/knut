@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -98,10 +97,14 @@ long Syntax:
     status = umfpack_zl_triplet_to_col (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Ap, Ai, Ax, Az, Map) ;
 
+packed complex Syntax:
+
+    Same as above, except Tz and Az are NULL.
+
 Purpose:
 
     Converts a sparse matrix from "triplet" form to compressed-column form.
-    Analogous to A = spconvert (Ti, Tj, Tx + Tx*1i) in MATLAB, except that
+    Analogous to A = spconvert (Ti, Tj, Tx + Tz*1i) in MATLAB, except that
     zero entries present in the triplet form are present in A.
 
     The triplet form of a matrix is a very simple data structure for basic
@@ -174,6 +177,7 @@ Arguments:
     Int Ti [nz] ;	Input argument, not modified.
     Int Tj [nz] ;	Input argument, not modified.
     double Tx [nz] ;	Input argument, not modified.
+			Size 2*nz if Tz or Az are NULL.
     double Tz [nz] ;	Input argument, not modified, for complex versions.
 
 	Ti, Tj, Tx, and Tz hold the "triplet" form of a sparse matrix.  The kth
@@ -183,14 +187,13 @@ Arguments:
 	n_row-1 and 0 to n_col-1, respectively.  Duplicate entries may be
 	present; they are summed in the output matrix.  This is not an error
 	condition.  The "triplets" may be in any order.  Tx, Tz, Ax, and Az
-	are optional.  For the real version, Ax is computed only if both Ax
-	and Tx are present (not (double *) NULL).  For the complex version, Ax
-	and Az are computed only if Tx, Tz, Ax, and Az are all present.  These
-	are not error conditions; the routine can create just the pattern of
-	the output matrix from the pattern of the triplets.
+	are optional.  Ax is computed only if both Ax and Tx are present
+	(not (double *) NULL).  This is not error condition; the routine can
+	create just the pattern of the output matrix from the pattern of the
+	triplets.
 
-	Future complex version:  if Tx is present and Tz is NULL, then both real
-	and imaginary parts will be contained in Tx[0..2*nz-1], with Tx[2*k]
+	If Az or Tz are NULL, then both real
+	and imaginary parts are contained in Tx[0..2*nz-1], with Tx[2*k]
 	and Tx[2*k+1] being the real and imaginary part of the kth entry.
 
     Int Ap [n_col+1] ;	Output argument.
@@ -213,7 +216,7 @@ Arguments:
 	are in ascending order, and no duplicate row indices are present.
 	Row indices are in the range 0 to n_col-1 (the matrix is 0-based).
 
-    double Ax [nz] ;	Output argument.
+    double Ax [nz] ;	Output argument.  Size 2*nz if Tz or Az are NULL.
     double Az [nz] ;	Output argument for complex versions.
 
 	Ax and Az (for the complex versions) are double arrays of size nz on
@@ -221,8 +224,7 @@ Arguments:
 	in both arrays.
 
 	Ax is optional; if Tx and/or Ax are not present (a (double *) NULL
-	pointer), then Ax is not computed.  Az is also optional; if Tz and/or
-	Az are not present, then Az is not computed.  If present, Ax holds the
+	pointer), then Ax is not computed.  If present, Ax holds the
 	numerical values of the the real part of the sparse matrix A and Az
 	holds the imaginary parts.  The nonzero pattern (row indices) for
 	column j is stored in Ai [(Ap [j]) ... (Ap [j+1]-1)], and the
@@ -230,8 +232,8 @@ Arguments:
 	Ax [(Ap [j]) ... (Ap [j+1]-1)].  The imaginary parts are stored in
 	Az [(Ap [j]) ... (Ap [j+1]-1)], for the complex versions.
 
-	Future complex version:  if Ax is present and Az is NULL, then both real
-	and imaginary parts will be returned in Ax[0..2*nz2-1], with Ax[2*k]
+	If Az or Tz are NULL, then both real
+	and imaginary parts are returned in Ax[0..2*nz2-1], with Ax[2*k]
 	and Ax[2*k+1] being the real and imaginary part of the kth entry.
 
     int Map [nz] ;	Optional output argument.
@@ -247,8 +249,8 @@ Arguments:
 	first one, without calling this routine.  If Ti and Tj do not change,
 	then Ap, and Ai can be reused from the prior call to
 	umfpack_*_triplet_to_col.  You only need to recompute Ax (and Az for the
-	complex version).  This code excerpt properly sums up all duplicate
-	values (for the real version):
+	split complex version).  This code excerpt properly sums up all
+	duplicate values (for the real version):
 
 	    for (p = 0 ; p < Ap [n_col] ; p++) Ax [p] = 0 ;
 	    for (k = 0 ; k < nz ; k++) Ax [Map [k]] += Tx [k] ;

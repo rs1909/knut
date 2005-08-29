@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -16,12 +15,15 @@
 
 #include "umf_internal.h"
 #include "umf_mem_alloc_head_block.h"
-#include "umf_mem_free_tail_block.h"
 #include "umf_get_memory.h"
 
 /* ========================================================================== */
 
+#ifdef DROP
+GLOBAL Int UMF_store_lu_drop
+#else
 GLOBAL Int UMF_store_lu
+#endif
 (
     NumericType *Numeric,
     WorkType *Work
@@ -31,6 +33,12 @@ GLOBAL Int UMF_store_lu
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    Entry pivot_value ;
+#ifdef DROP
+    double droptol ;
+#endif
+    Entry *D, *Lval, *Uval, *Fl1, *Fl2, *Fu1, *Fu2,
+	*Flublock, *Flblock, *Fublock ;
     Int i, k, fnr_curr, fnrows, fncols, row, col, pivrow, pivcol, *Frows,
 	*Fcols, *Lpattern, *Upattern, *Lpos, *Upos, llen, ulen, fnc_curr, fnpiv,
 	uilen, lnz, unz, nb, *Lilen,
@@ -38,11 +46,14 @@ GLOBAL Int UMF_store_lu
 	pivrow_position, p, size, lip, uip, lnzi, lnzx, unzx, lnz2i, lnz2x,
 	unz2i, unz2x, zero_pivot, *Pivrow, *Pivcol, kk,
 	Lnz [MAXNB] ;
-    Entry *D, pivot_value, *Lval, *Uval, *Fl1, *Fl2, *Fu1, *Fu2,
-	*Flublock, *Flblock, *Fublock ;
 
 #ifndef NDEBUG
     Int *Col_degree, *Row_degree ;
+#endif
+
+#ifdef DROP
+    Int all_lnz, all_unz ;
+    droptol = Numeric->droptol ;
 #endif
 
     /* ---------------------------------------------------------------------- */
@@ -84,7 +95,7 @@ GLOBAL Int UMF_store_lu
     nb = Work->nb ;
 
 #ifndef NDEBUG
-    DEBUG1 (("\n##################################### STORE LU: fnrows "ID
+    DEBUG1 (("\nSTORE LU: fnrows "ID
 	" fncols "ID"\n", fnrows, fncols)) ;
 
     DEBUG2 (("\nFrontal matrix, including all space:\n"
@@ -197,19 +208,52 @@ GLOBAL Int UMF_store_lu
 	lnz2i = 0 ;
 	lnz2x = llen ;
 
-	for (i = kk + 1 ; i < fnpiv ; i++)
-	{
-	    if (IS_ZERO (Fl1 [i])) continue ;
-	    lnz++ ;
-	    if (Lpos [Pivrow [i]] == EMPTY) lnz2i++ ;
-	}
+#ifdef DROP
+	    all_lnz = 0 ;
 
-	for (i = 0 ; i < fnrows ; i++)
-	{
-	    if (IS_ZERO (Fl2 [i])) continue ;
-	    lnz++ ;
-	    if (Lpos [Frows [i]] == EMPTY) lnz2i++ ;
-	}
+	    for (i = kk + 1 ; i < fnpiv ; i++)
+	    {
+		Entry x ;
+		double s ;
+		x = Fl1 [i] ;
+		if (IS_ZERO (x)) continue ;
+		all_lnz++ ;
+		APPROX_ABS (s, x) ;
+		if (s <= droptol) continue ;
+		lnz++ ;
+		if (Lpos [Pivrow [i]] == EMPTY) lnz2i++ ;
+	    }
+
+	    for (i = 0 ; i < fnrows ; i++)
+	    {
+		Entry x ;
+		double s ;
+		x = Fl2 [i] ;
+		if (IS_ZERO (x)) continue ;
+		all_lnz++ ;
+		APPROX_ABS (s, x) ;
+		if (s <= droptol) continue ;
+		lnz++ ;
+		if (Lpos [Frows [i]] == EMPTY) lnz2i++ ;
+	    }
+
+#else
+
+	    for (i = kk + 1 ; i < fnpiv ; i++)
+	    {
+		if (IS_ZERO (Fl1 [i])) continue ;
+		lnz++ ;
+		if (Lpos [Pivrow [i]] == EMPTY) lnz2i++ ;
+	    }
+
+	    for (i = 0 ; i < fnrows ; i++)
+	    {
+		if (IS_ZERO (Fl2 [i])) continue ;
+		lnz++ ;
+		if (Lpos [Frows [i]] == EMPTY) lnz2i++ ;
+	    }
+
+#endif
 
 	lnz2x += lnz2i ;
 
@@ -339,70 +383,158 @@ GLOBAL Int UMF_store_lu
 
 	    ASSERT (llen == 0) ;
 
-	    for (i = kk + 1 ; i < fnpiv ; i++)
-	    {
-		Int row2, pos ;
-		Entry x = Fl1 [i] ;
-		if (IS_ZERO (x)) continue ;
-		row2 = Pivrow [i] ;
-		pos = llen++ ;
-		Lpattern [pos] = row2 ;
-		Lpos [row2] = pos ;
-		Li [pos] = row2 ;
-		Lval [pos] = x ;
-	    }
+#ifdef DROP
 
-	    for (i = 0 ; i < fnrows ; i++)
-	    {
-		Int row2, pos ;
-		Entry x = Fl2 [i] ;
-		if (IS_ZERO (x)) continue ;
-		row2 = Frows [i] ;
-		pos = llen++ ;
-		Lpattern [pos] = row2 ;
-		Lpos [row2] = pos ;
-		Li [pos] = row2 ;
-		Lval [pos] = x ;
-	    }
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int row2, pos ;
+		    x = Fl1 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    row2 = Pivrow [i] ;
+		    pos = llen++ ;
+		    Lpattern [pos] = row2 ;
+		    Lpos [row2] = pos ;
+		    Li [pos] = row2 ;
+		    Lval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fnrows ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int row2, pos ;
+		    x = Fl2 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    row2 = Frows [i] ;
+		    pos = llen++ ;
+		    Lpattern [pos] = row2 ;
+		    Lpos [row2] = pos ;
+		    Li [pos] = row2 ;
+		    Lval [pos] = x ;
+		}
+
+#else
+
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    Int row2, pos ;
+		    x = Fl1 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    row2 = Pivrow [i] ;
+		    pos = llen++ ;
+		    Lpattern [pos] = row2 ;
+		    Lpos [row2] = pos ;
+		    Li [pos] = row2 ;
+		    Lval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fnrows ; i++)
+		{
+		    Entry x ;
+		    Int row2, pos ;
+		    x = Fl2 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    row2 = Frows [i] ;
+		    pos = llen++ ;
+		    Lpattern [pos] = row2 ;
+		    Lpos [row2] = pos ;
+		    Li [pos] = row2 ;
+		    Lval [pos] = x ;
+		}
+
+#endif
 
 	}
 	else
 	{
 	    ASSERT (llen > 0) ;
 
-	    for (i = kk + 1 ; i < fnpiv ; i++)
-	    {
-		Int row2, pos ;
-		Entry x = Fl1 [i] ;
-		if (IS_ZERO (x)) continue ;
-		row2 = Pivrow [i] ;
-		pos = Lpos [row2] ;
-		if (pos == EMPTY)
-		{
-		    pos = llen++ ;
-		    Lpattern [pos] = row2 ;
-		    Lpos [row2] = pos ;
-		    *Li++ = row2 ;
-		}
-		Lval [pos] = x ;
-	    }
+#ifdef DROP
 
-	    for (i = 0 ; i < fnrows ; i++)
-	    {
-		Int row2, pos ;
-		Entry x = Fl2 [i] ;
-		if (IS_ZERO (x)) continue ;
-		row2 = Frows [i] ;
-		pos = Lpos [row2] ;
-		if (pos == EMPTY)
+		for (i = kk + 1 ; i < fnpiv ; i++)
 		{
-		    pos = llen++ ;
-		    Lpattern [pos] = row2 ;
-		    Lpos [row2] = pos ;
-		    *Li++ = row2 ;
+		    Entry x ;
+		    double s ;
+		    Int row2, pos ;
+		    x = Fl1 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    row2 = Pivrow [i] ;
+		    pos = Lpos [row2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = llen++ ;
+			Lpattern [pos] = row2 ;
+			Lpos [row2] = pos ;
+			*Li++ = row2 ;
+		    }
+		    Lval [pos] = x ;
 		}
-		Lval [pos] = x ;
-	    }
+
+		for (i = 0 ; i < fnrows ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int row2, pos ;
+		    x = Fl2 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    row2 = Frows [i] ;
+		    pos = Lpos [row2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = llen++ ;
+			Lpattern [pos] = row2 ;
+			Lpos [row2] = pos ;
+			*Li++ = row2 ;
+		    }
+		    Lval [pos] = x ;
+		}
+
+#else
+
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    Int row2, pos ;
+		    x = Fl1 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    row2 = Pivrow [i] ;
+		    pos = Lpos [row2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = llen++ ;
+			Lpattern [pos] = row2 ;
+			Lpos [row2] = pos ;
+			*Li++ = row2 ;
+		    }
+		    Lval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fnrows ; i++)
+		{
+		    Entry x ;
+		    Int row2, pos ;
+		    x = Fl2 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    row2 = Frows [i] ;
+		    pos = Lpos [row2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = llen++ ;
+			Lpattern [pos] = row2 ;
+			Lpos [row2] = pos ;
+			*Li++ = row2 ;
+		    }
+		    Lval [pos] = x ;
+		}
+
+#endif
 
 	}
 	DEBUG4 (("llen "ID" lnzx "ID"\n", llen, lnzx)) ;
@@ -410,8 +542,20 @@ GLOBAL Int UMF_store_lu
 	ASSERT (lnz <= llen) ;
 	DEBUG4 (("lnz "ID" \n", lnz)) ;
 
-	Numeric->lnz += lnz ;
-	Lnz [kk] = lnz ;
+#ifdef DROP
+
+	    DEBUG4 (("all_lnz "ID" \n", all_lnz)) ;
+	    ASSERT (lnz <= all_lnz) ;
+	    Numeric->lnz += lnz ;
+	    Numeric->all_lnz += all_lnz ;
+	    Lnz [kk] = all_lnz ;
+
+#else
+
+	    Numeric->lnz += lnz ;
+	    Numeric->all_lnz += lnz ;
+	    Lnz [kk] = lnz ;
+#endif
 
 	Numeric->nLentries += lnzx ;
 	Work->llen = llen ;
@@ -496,19 +640,52 @@ GLOBAL Int UMF_store_lu
 
 	ASSERT (unz2x >= 0) ;
 
-	for (i = kk + 1 ; i < fnpiv ; i++)
-	{
-	    if (IS_ZERO (Fu1 [i*nb])) continue ;
-	    unz++ ;
-	    if (Upos [Pivcol [i]] == EMPTY) unz2i++ ;
-	}
+#ifdef DROP
+	    all_unz = 0 ;
 
-	for (i = 0 ; i < fncols ; i++)
-	{
-	    if (IS_ZERO (Fu2 [i])) continue ;
-	    unz++ ;
-	    if (Upos [Fcols [i]] == EMPTY) unz2i++ ;
-	}
+	    for (i = kk + 1 ; i < fnpiv ; i++)
+	    {
+		Entry x ;
+		double s ;
+		x = Fu1 [i*nb] ;
+		if (IS_ZERO (x)) continue ;
+		all_unz++ ;
+		APPROX_ABS (s, x) ;
+		if (s <= droptol) continue ;
+		unz++ ;
+		if (Upos [Pivcol [i]] == EMPTY) unz2i++ ;
+	    }
+
+	    for (i = 0 ; i < fncols ; i++)
+	    {
+		Entry x ;
+		double s ;
+		x = Fu2 [i] ;
+		if (IS_ZERO (x)) continue ;
+		all_unz++ ;
+		APPROX_ABS (s, x) ;
+		if (s <= droptol) continue ;
+		unz++ ;
+		if (Upos [Fcols [i]] == EMPTY) unz2i++ ;
+	    }
+
+#else
+
+	    for (i = kk + 1 ; i < fnpiv ; i++)
+	    {
+		if (IS_ZERO (Fu1 [i*nb])) continue ;
+		unz++ ;
+		if (Upos [Pivcol [i]] == EMPTY) unz2i++ ;
+	    }
+
+	    for (i = 0 ; i < fncols ; i++)
+	    {
+		if (IS_ZERO (Fu2 [i])) continue ;
+		unz++ ;
+		if (Upos [Fcols [i]] == EMPTY) unz2i++ ;
+	    }
+
+#endif
 
 	unz2x += unz2i ;
 
@@ -681,29 +858,67 @@ GLOBAL Int UMF_store_lu
 	{
 	    ASSERT (ulen == 0) ;
 
-	    for (i = kk + 1 ; i < fnpiv ; i++)
-	    {
-		Int col2, pos ;
-		Entry x = Fu1 [i*nb] ;
-		if (IS_ZERO (x)) continue ;
-		col2 = Pivcol [i] ;
-		pos = ulen++ ;
-		Upattern [pos] = col2 ;
-		Upos [col2] = pos ;
-		Uval [pos] = x ;
-	    }
+#ifdef DROP
 
-	    for (i = 0 ; i < fncols ; i++)
-	    {
-		Int col2, pos ;
-		Entry x = Fu2 [i] ;
-		if (IS_ZERO (x)) continue ;
-		col2 = Fcols [i] ;
-		pos = ulen++ ;
-		Upattern [pos] = col2 ;
-		Upos [col2] = pos ;
-		Uval [pos] = x ;
-	    }
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int col2, pos ;
+		    x = Fu1 [i*nb] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    col2 = Pivcol [i] ;
+		    pos = ulen++ ;
+		    Upattern [pos] = col2 ;
+		    Upos [col2] = pos ;
+		    Uval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fncols ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int col2, pos ;
+		    x = Fu2 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    col2 = Fcols [i] ;
+		    pos = ulen++ ;
+		    Upattern [pos] = col2 ;
+		    Upos [col2] = pos ;
+		    Uval [pos] = x ;
+		}
+
+#else
+
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    Int col2, pos ;
+		    x = Fu1 [i*nb] ;
+		    if (IS_ZERO (x)) continue ;
+		    col2 = Pivcol [i] ;
+		    pos = ulen++ ;
+		    Upattern [pos] = col2 ;
+		    Upos [col2] = pos ;
+		    Uval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fncols ; i++)
+		{
+		    Entry x ;
+		    Int col2, pos ;
+		    x = Fu2 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    col2 = Fcols [i] ;
+		    pos = ulen++ ;
+		    Upattern [pos] = col2 ;
+		    Upos [col2] = pos ;
+		    Uval [pos] = x ;
+		}
+
+#endif
 
 	}
 	else
@@ -713,37 +928,83 @@ GLOBAL Int UMF_store_lu
 
 	    /* store the numerical entries and find new nonzeros */
 
-	    for (i = kk + 1 ; i < fnpiv ; i++)
-	    {
-		Int col2, pos ;
-		Entry x = Fu1 [i*nb] ;
-		if (IS_ZERO (x)) continue ;
-		col2 = Pivcol [i] ;
-		pos = Upos [col2] ;
-		if (pos == EMPTY)
-		{
-		    pos = ulen++ ;
-		    Upattern [pos] = col2 ;
-		    Upos [col2] = pos ;
-		}
-		Uval [pos] = x ;
-	    }
+#ifdef DROP
 
-	    for (i = 0 ; i < fncols ; i++)
-	    {
-		Int col2, pos ;
-		Entry x = Fu2 [i] ;
-		if (IS_ZERO (x)) continue ;
-		col2 = Fcols [i] ;
-		pos = Upos [col2] ;
-		if (pos == EMPTY)
+		for (i = kk + 1 ; i < fnpiv ; i++)
 		{
-		    pos = ulen++ ;
-		    Upattern [pos] = col2 ;
-		    Upos [col2] = pos ;
+		    Entry x ;
+		    double s ;
+		    Int col2, pos ;
+		    x = Fu1 [i*nb] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    col2 = Pivcol [i] ;
+		    pos = Upos [col2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = ulen++ ;
+			Upattern [pos] = col2 ;
+			Upos [col2] = pos ;
+		    }
+		    Uval [pos] = x ;
 		}
-		Uval [pos] = x ;
-	    }
+
+		for (i = 0 ; i < fncols ; i++)
+		{
+		    Entry x ;
+		    double s ;
+		    Int col2, pos ;
+		    x = Fu2 [i] ;
+		    APPROX_ABS (s, x) ;
+		    if (s <= droptol) continue ;
+		    col2 = Fcols [i] ;
+		    pos = Upos [col2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = ulen++ ;
+			Upattern [pos] = col2 ;
+			Upos [col2] = pos ;
+		    }
+		    Uval [pos] = x ;
+		}
+
+#else
+
+		for (i = kk + 1 ; i < fnpiv ; i++)
+		{
+		    Entry x ;
+		    Int col2, pos ;
+		    x = Fu1 [i*nb] ;
+		    if (IS_ZERO (x)) continue ;
+		    col2 = Pivcol [i] ;
+		    pos = Upos [col2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = ulen++ ;
+			Upattern [pos] = col2 ;
+			Upos [col2] = pos ;
+		    }
+		    Uval [pos] = x ;
+		}
+
+		for (i = 0 ; i < fncols ; i++)
+		{
+		    Entry x ;
+		    Int col2, pos ;
+		    x = Fu2 [i] ;
+		    if (IS_ZERO (x)) continue ;
+		    col2 = Fcols [i] ;
+		    pos = Upos [col2] ;
+		    if (pos == EMPTY)
+		    {
+			pos = ulen++ ;
+			Upattern [pos] = col2 ;
+			Upos [col2] = pos ;
+		    }
+		    Uval [pos] = x ;
+		}
+
+#endif
 
 	}
 
@@ -751,10 +1012,24 @@ GLOBAL Int UMF_store_lu
 	ASSERT (unz <= ulen) ;
 	DEBUG4 (("unz "ID" \n", unz)) ;
 
-	Numeric->unz += unz ;
-	/* count the "true" flops, based on LU pattern only */
-	Numeric->flops += DIV_FLOPS * Lnz [kk]	/* scale pivot column */
-	    + MULTSUB_FLOPS * (Lnz [kk] * unz) ;    /* outer product */
+#ifdef DROP
+
+	    DEBUG4 (("all_unz "ID" \n", all_unz)) ;
+	    ASSERT (unz <= all_unz) ;
+	    Numeric->unz += unz ;
+	    Numeric->all_unz += all_unz ;
+	    /* count the "true" flops, based on LU pattern only */
+	    Numeric->flops += DIV_FLOPS * Lnz [kk]	/* scale pivot column */
+		+ MULTSUB_FLOPS * (Lnz [kk] * all_unz) ;    /* outer product */
+
+#else
+
+	    Numeric->unz += unz ;
+	    Numeric->all_unz += unz ;
+	    /* count the "true" flops, based on LU pattern only */
+	    Numeric->flops += DIV_FLOPS * Lnz [kk]	/* scale pivot column */
+		+ MULTSUB_FLOPS * (Lnz [kk] * unz) ;    /* outer product */
+#endif
 
 	Numeric->nUentries += unzx ;
 	Work->ulen = ulen ;

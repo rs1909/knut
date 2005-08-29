@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -30,8 +29,11 @@ GLOBAL Int UMFPACK_report_triplet
     const double Control [UMFPACK_CONTROL]
 )
 {
-    Int prl, prl1, k, i, j, do_values ;
     Entry t ;
+    Int prl, prl1, k, i, j, do_values ;
+#ifdef COMPLEX
+    Int split = SPLIT (Tz) ;
+#endif
 
     prl = GET_CONTROL (UMFPACK_PRL, UMFPACK_DEFAULT_PRL) ;
 
@@ -63,11 +65,7 @@ GLOBAL Int UMFPACK_report_triplet
 
     PRINTF4 (("\n")) ;
 
-#ifdef COMPLEX
-    do_values = Tx && Tz ;
-#else
     do_values = Tx != (double *) NULL ;
-#endif
 
     prl1 = prl ;
     for (k = 0 ; k < nz ; k++)
@@ -77,7 +75,7 @@ GLOBAL Int UMFPACK_report_triplet
 	PRINTF4 (("    "ID" : "ID" "ID" ", INDEX (k), INDEX (i), INDEX (j))) ;
 	if (do_values && prl >= 4)
 	{
-	    ASSIGN (t, Tx [k], Tz [k]) ;
+	    ASSIGN (t, Tx, Tz, k, split) ;
 	    PRINT_ENTRY (t) ;
 	}
 	PRINTF4 (("\n")) ;

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -57,11 +56,6 @@ complex long Syntax:
 Purpose:
 
     Sets the default control parameter settings.
-
-    NOTE:  new control parameters have been added to the Control array for
-    Version 4.1.  These entries were unused in Version 4.0.  The default block
-    size for the BLAS has increased from 24 to 32.  Some rarely used control
-    parameters have been removed (those that controlled relaxed amalgamation).
 
 Arguments:
 

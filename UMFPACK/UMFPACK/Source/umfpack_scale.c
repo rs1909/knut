@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -46,6 +45,9 @@ GLOBAL Int UMFPACK_scale
     NumericType *Numeric ;
     Int n, i ;
     double *Rs ;
+#ifdef COMPLEX
+    Int split = SPLIT (Xz) && SPLIT (Bz) ;
+#endif
 
     Numeric = (NumericType *) NumericHandle ;
     if (!UMF_valid_numeric (Numeric))
@@ -56,11 +58,7 @@ GLOBAL Int UMFPACK_scale
     n = Numeric->n_row ;
     Rs = Numeric->Rs ;
 
-    if (!Xx || !Bx
-#ifdef COMPLEX
-	|| !Xz || !Bz
-#endif
-    )
+    if (!Xx || !Bx)
     {
 	return (UMFPACK_ERROR_argument_missing) ;
     }
@@ -75,37 +73,85 @@ GLOBAL Int UMFPACK_scale
 	if (Numeric->do_recip)
 	{
 	    /* multiply by the scale factors */
+#ifdef COMPLEX
+	    if (split)
+	    {
+		for (i = 0 ; i < n ; i++)
+		{
+		    Xx [i] = Bx [i] * Rs [i] ;
+		    Xz [i] = Bz [i] * Rs [i] ;
+		}
+	    }
+	    else
+	    {
+		for (i = 0 ; i < n ; i++)
+		{
+		    Xx [2*i  ] = Bx [2*i  ] * Rs [i] ;
+		    Xx [2*i+1] = Bx [2*i+1] * Rs [i] ;
+		}
+	    }
+#else
 	    for (i = 0 ; i < n ; i++)
 	    {
 		Xx [i] = Bx [i] * Rs [i] ;
-#ifdef COMPLEX
-		Xz [i] = Bz [i] * Rs [i] ;
-#endif
 	    }
+#endif
 	}
 	else
 #endif
 	{
 	    /* divide by the scale factors */
+#ifdef COMPLEX
+	    if (split)
+	    {
+		for (i = 0 ; i < n ; i++)
+		{
+		    Xx [i] = Bx [i] / Rs [i] ;
+		    Xz [i] = Bz [i] / Rs [i] ;
+		}
+	    }
+	    else
+	    {
+		for (i = 0 ; i < n ; i++)
+		{
+		    Xx [2*i  ] = Bx [2*i  ] / Rs [i] ;
+		    Xx [2*i+1] = Bx [2*i+1] / Rs [i] ;
+		}
+	    }
+#else
 	    for (i = 0 ; i < n ; i++)
 	    {
 		Xx [i] = Bx [i] / Rs [i] ;
-#ifdef COMPLEX
-		Xz [i] = Bz [i] / Rs [i] ;
-#endif
 	    }
+#endif
 	}
     }
     else
     {
 	/* no scale factors, just copy B into X */
+#ifdef COMPLEX
+        if (split)
+	{
+	    for (i = 0 ; i < n ; i++)
+	    {
+		Xx [i] = Bx [i] ;
+		Xz [i] = Bz [i] ;
+	    }
+	}
+	else
+	{
+	    for (i = 0 ; i < n ; i++)
+	    {
+		Xx [2*i  ] = Bx [2*i  ] ;
+		Xx [2*i+1] = Bx [2*i+1] ;
+	    }
+	}
+#else
 	for (i = 0 ; i < n ; i++)
 	{
 	    Xx [i] = Bx [i] ;
-#ifdef COMPLEX
-	    Xz [i] = Bz [i] ;
-#endif
 	}
+#endif
     }
 
     return (UMFPACK_OK) ;

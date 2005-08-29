@@ -18,6 +18,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <cfloat>
 
 // specified in the constsnts file
 #define NITER 30
@@ -316,9 +317,9 @@ void Point::Construct( )
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);
 	
 	xxDot   = new HyperVector( dim1, dim2, dim3+1 );
-		
+	
 	xx      = new HyperVector( dim1, dim2, dim3+1 );
-//	xxRM    = new HyperVector( dim1, dim2, dim3+1 );
+	
 	rhs     = new HyperVector( dim1, dim2, dim3+1 );
 	
 	jac     = new HyperMatrix( dim1, dim2, dim3+1, NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) );
@@ -360,11 +361,11 @@ double inline Point::SolNorm( Vector& sol, Vector* qq, Vector& par )
 
 void Point::Jacobian(
 		HyperMatrix& AA, HyperVector& RHS,                      // output
-		Vector& parPrev, Vector& par,                           // parameters
+		Vector& /*parPrev*/, Vector& par,                           // parameters
 		Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
 		Vector* qPrev,   Vector* q,                             // eigenvector
 		Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
-		double ds,       bool cont )                            // the arclength; cont: true if continuation
+		bool cont )                                             // cont: true if continuation
 {
 // uses also: eqn, var, CharMat, qqR
 // ---------------------------------------------------------------------------------------------------------------- //
@@ -794,7 +795,7 @@ int Point::Start(  )
 // 		jac->getA22().Print();
 		
 		// finding the minimal eigenvalueone = 1.;
-		double absval, min=10.0;
+		double absval, min = DBL_MAX;
 		int imin=-1;
 		for( int i = 0; i < dim2; i++ )
 		{
@@ -900,18 +901,8 @@ int Point::Refine( )
 	int it=0;
 	double Xnorm, Dnorm;
 	
-	if( qq )
-	{
-		*qq0 = *qq;
-	}
-	for( int i = 0; i < NINT*NDEG+1; i++ )
-	{
-		for( int j = 0; j < NDIM; j++ )
-		{
-			solNu( j + NDIM*i ) = sol(j + NDIM*i);// + 0.1*sin((double)i*2.0*M_PI/(NINT*NDEG+1));
-		}
-	}
-// 	solNu = sol; // here solNu is the previous solution
+	if( qq ) *qq0 = *qq;
+	solNu = sol; // here solNu is the previous solution
 	parNu = par; // here parNu is the previous parameter
 
 	std::cout<<"\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
@@ -921,30 +912,14 @@ int Point::Refine( )
 		colloc.Init( par, sol );
 		colloc.Interpolate( solData, sol );
 	
-		Jacobian( *jac, *rhs, parNu, par, solNu, sol, solData, qq0, qq, varMap, 0.0, false );
-// 		Xnorm = sqrt( colloc.Integrate( rhs->getV1(), rhs->getV1() ) );//SolNorm( sol, qq, par );
-// 		std::cout<<"residual "<<Xnorm<<"\n--\n";
-// 		rhs->getV1().Print();
-// 		PDError(-1);
-// 		for( int k=0;k<parNu.Size();k++) std::cout<<" par("<<k<<"): "<<par(k);
-// 		std::cout<<"\n--\n";
-// 		sol = rhs->getV1();
-// 		return 0;
-		//Jacobian( *jac, *rhs, par, solNu, sol, solData, qq0, qq ); // the first qq should be qq0
-		//jac->SolveDIRECT( *xx, *rhs );
+		Jacobian( *jac, *rhs, parNu, par, solNu, sol, solData, qq0, qq, varMap, false );
 		jac->Solve( *xx, *rhs, dim3 );
 		
 		Update( *xx );
 		
 		// computing norms to determine convergence
-		Xnorm = sqrt( colloc.Integrate( sol, sol ) );//SolNorm( sol, qq, par );
-// 		double XDnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) );
-// 		double QDnorm = sqrt( (xx->getV2())*(xx->getV2()) );
-// 		double ODnorm = sqrt((xx->getV3())*(xx->getV3()) );
+		Xnorm = sqrt( colloc.Integrate( sol, sol ) );
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + (xx->getV2())*(xx->getV2()) + (xx->getV3())*(xx->getV3()) );
-// 		std::cout<<"XDnorm: "<<XDnorm<<" QDnorm: "<<QDnorm<<" ODnorm: "<<ODnorm<<'\n';
-// 		std::cout<<"Ref: ";
-// 		for( int k=0;k<parNu.Size();k++) std::cout<<" par("<<k<<"): "<<par(k);
 		std::cout<<" "<<it<<"\t"<<Dnorm/(1.0+Xnorm)<<"\t"<<Xnorm<<"\t"<<Dnorm<<'\n';
 	}
 	while( (Dnorm/(1.0+Xnorm) >= RefEps)&&(it++ < Iter) );
@@ -1126,8 +1101,6 @@ void Point::Tangent( )
 {
 	double norm;
 	
-// 	std::cout<<"Entering Tangent\n"; std::cout.flush();
-
 	if( qq )
 	{
 		*qq0 = *qq;
@@ -1137,54 +1110,23 @@ void Point::Tangent( )
 	colloc.Interpolate( solData, sol );
 	
 	varMapCont( varMap.Size() ) = p1; // not necessary
-	Jacobian( *jac, *rhs, par, par, sol, sol, solData, qq0, qq, varMapCont, 0.0, false );
-
-// 	rhs->getV1().Print();
-// 	rhs->getV2().Print();
-// 	rhs->getV3().Print();
-// 	std::cout<<dim3<<"\n";
-// 	Jacobian( *jac, *rhs, par, sol, sol, solData, qq0, qq );  // az RHS-t feleslegesen szamolja ki && the first qq should be qq0
-// 	if( dim2 > 0 )
-// 	{
-// 		jac->getA22().Print();
-// 		jac->getA32(0).Print();
-// 		jac->getA33().Print();
-// 		qq->Print();
-// 		jac->getA23(0).Print();
-// 	}
+	// az RHS-t feleslegesen szamolja ki && the first qq should be qq0
+	Jacobian( *jac, *rhs, par, par, sol, sol, solData, qq0, qq, varMapCont, false );
+	
 	rhs->getV1() = jac->getA13( dim3 );
 	if( dim2 != 0 ) rhs->getV2() = jac->getA23( dim3 );
 	for( int i = 0; i < dim3; i++ ) rhs->getV3()(i) = jac->getA33( i, dim3 );
-
-// 	Derivative( *rhs, par, sol, solData, p1 ); // the derivative is in 'rhs'
-// 	cout<<" RHS1: "<<colloc.Integrate(rhs->getV1(),rhs->getV1())<<" rhs2: "<<rhs->getV2()*rhs->getV2()<<" RHS3: "<<rhs->getV3()*rhs->getV3()<<"\n";
-// 	std::cout<<"Tangent Solve START\n"; std::cout.flush();
-// 	jac->SolveDIRECT( *xxDot, *rhs );
+	
 	jac->Solve( *xxDot, *rhs, dim3 );
 	xxDot->getV3()(dim3) = -1.0;
-// 	std::cout<<"Tangent Solve eND\n"; std::cout.flush();
-		
+	
 	norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV2())*(xxDot->getV2()) + (xxDot->getV3())*(xxDot->getV3()) );
-// 	std::cout<<"Tangent NORM eND\n"; std::cout.flush();
+	
 	xxDot->getV1() /= -norm;
 	xxDot->getV2() /= -norm;
 	xxDot->getV3() /= -norm;
 	p1Dot = 1.0/norm;
 	xxDot->getV3()(dim3) = p1Dot;
-	
-// 	// updating the tangent
-// 	Jacobian( *jac, *rhs, par, par, sol, sol, solData, qq0, qq, varMapCont, 0.0, true );
-// 	jac->AX( *rhs, *xxDot );
-// 	rhs->getV3()(dim3) = 0.0;
-// 	jac->Solve( *xx, *rhs );
-// 	xxDot->getV1() -= xx->getV1();
-// 	xxDot->getV2() -= xx->getV2();
-// 	xxDot->getV3() -= xx->getV3();
-// 	norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV2())*(xxDot->getV2()) + (xxDot->getV3())*(xxDot->getV3()) );
-// 	xxDot->getV1() /= norm;
-// 	xxDot->getV2() /= norm;
-// 	xxDot->getV3() /= norm;
-// 	p1Dot = xxDot->getV3()(dim3);
 	
 // 	std::cout<<"Tangent Cnorm: "<<norm<<'\n';
 // 	double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
@@ -1223,8 +1165,8 @@ int Point::Continue( double ds )
 		colloc.Init( parNu, solNu );
 		colloc.Interpolate( solData, solNu );
 		
-		Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, qq, qqNu, varMapCont, ds, true );
-				
+		Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, qq, qqNu, varMapCont, true );
+		
 		jac->Solve( *xx, *rhs );
 		
 		ContUpdate( *xx );
@@ -1339,19 +1281,17 @@ void Point::Stability( )
 	
 	colloc.Init( par, sol );
 	colloc.Interpolate( solData, sol );
-
+	
 	colloc.StabJac( jacStab, par, solData );
-
-	// jacStabA.Swap(); jacStabB.Swap();
+	
 	jacStab.Eigval( mRe, mIm );
-// 	GenEigval( jacStab.getA0(), jacStab.getAI(0), mRe, mIm );
 // 	mRe.Print();
 // 	mIm.Print();
 }
 
 static inline int instab( Vector& mRe, Vector& mIm, int aut )
 {
-	double dmin1 = 1.0e+32, dmin2 = 1.0e+32;
+	double dmin1 = DBL_MAX, dmin2 = DBL_MAX;
 	int imin1 = -1, imin2 = -1;
 	if( aut > 0 )
 	{
@@ -1401,17 +1341,17 @@ static inline PtType testbif( Vector& mRe, Vector& mIm, int aut )
 		if( imin2 == -1 ) std::cout<<"testbif-2: Accuracy problem?\n";
 	}
 
-	double dminLP = 1.0e32, dminPD = 1.0e32, dminNS = 1.0e32;;
+	double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
 	int iminLP = -1, iminPD = -1, iminNS = -1;
 	for( int i = 0; i < mRe.Size(); i++ )
 	{
 		if( (i != imin1)&&(i != imin2) )
 		{
-			const double LPabs = fabs( sqrt((mRe(i)-1.0)*(mRe(i)-1.0) + mIm(i)*mIm(i)) );
-			const double PDabs = fabs( sqrt((mRe(i)+1.0)*(mRe(i)+1.0) + mIm(i)*mIm(i)) );
+			const double LPabs = fabs( sqrt((mRe(i)-1.0)*(mRe(i)-1.0)) );
+			const double PDabs = fabs( sqrt((mRe(i)+1.0)*(mRe(i)+1.0)) );
 			const double NSabs = fabs( sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0 );
-			if( dminLP > LPabs ) { dminLP = LPabs; iminLP = i; }
-			if( dminPD > PDabs ) { dminPD = PDabs; iminPD = i; }
+			if( (dminLP > LPabs) && (mIm(i) == 0.0) ) { dminLP = LPabs; iminLP = i; }
+			if( (dminPD > PDabs) && (mIm(i) == 0.0) ) { dminPD = PDabs; iminPD = i; }
 			if( (dminNS > NSabs) && (mIm(i) != 0.0) ) { dminNS = NSabs; iminNS = i; }
 		}
 	}

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -158,13 +157,12 @@ PRIVATE Int prune_singletons
 )
 {
     Int row, k, pp, p, oldcol, newcol, newrow, nzdiag, do_nzdiag ;
+#ifdef COMPLEX
+    Int split = SPLIT (Az) ;
+#endif
 
     nzdiag = 0 ;
-    do_nzdiag = (Ax != (double *) NULL)
-#ifdef COMPLEX
-	&& (Az != (double *) NULL)
-#endif
-	;
+    do_nzdiag = (Ax != (double *) NULL) ;
 
 #ifndef NDEBUG
     DEBUGm4 (("Prune : S = A (Cperm1 (n1+1:end), Rperm1 (n1+1:end))\n")) ;
@@ -204,14 +202,29 @@ PRIVATE Int prune_singletons
 		    if (newrow == newcol)
 		    {
 			/* this is the diagonal entry */
-			if (SCALAR_IS_NONZERO (Ax [p])
 #ifdef COMPLEX
-			 || SCALAR_IS_NONZERO (Az [p])
-#endif
-			)
+		        if (split)
+			{
+			    if (SCALAR_IS_NONZERO (Ax [p]) ||
+				SCALAR_IS_NONZERO (Az [p]))
+			    {
+				nzdiag++ ;
+			    }
+			}
+			else
+			{
+			    if (SCALAR_IS_NONZERO (Ax [2*p  ]) ||
+				SCALAR_IS_NONZERO (Ax [2*p+1]))
+			    {
+				nzdiag++ ;
+			    }
+			}
+#else
+			if (SCALAR_IS_NONZERO (Ax [p]))
 			{
 			    nzdiag++ ;
 			}
+#endif
 		    }
 		}
 	    }
@@ -220,7 +233,6 @@ PRIVATE Int prune_singletons
     }
     Sp [n_col - n1] = pp ;
 
-    ASSERT (AMD_valid (n_row - n1, n_col - n1, Sp, Si)) ;
     return (nzdiag) ;
 }
 
@@ -304,6 +316,12 @@ GLOBAL Int UMFPACK_qsymbolic
     /* local variables */
     /* ---------------------------------------------------------------------- */
 
+    double knobs [COLAMD_KNOBS], flops, f, r, c, force_fixQ,
+	Info2 [UMFPACK_INFO], drow, dcol, dtail_usage, dlf, duf, dmax_usage,
+	dhead_usage, dlnz, dunz, dmaxfrsize, dClen, dClen_analyze, sym,
+	amd_Info [AMD_INFO], dClen_amd, dr, dc, cr, cc, cp,
+	amd_Control [AMD_CONTROL], stats [2], tol ;
+    double *Info ;
     Int i, nz, j, newj, status, f1, f2, maxnrows, maxncols, nfr, col,
 	nchains, maxrows, maxcols, p, nb, nn, *Chain_start, *Chain_maxrows,
 	*Chain_maxcols, *Front_npivcol, *Ci, Clen, colamd_stats [COLAMD_STATS],
@@ -316,12 +334,8 @@ GLOBAL Int UMFPACK_qsymbolic
 	*Fr_cols, nempty_row, nempty_col, user_auto_strategy, fail, max_rdeg,
 	head_usage, tail_usage, lnz, unz, esize, *Esize, rdeg, *Cdeg, *Rdeg,
 	*Cperm1, *Rperm1, n1, oldcol, newcol, n1c, n1r, *Rperm_2by2, oldrow,
-	dense_row_threshold, tlen, aggressive ;
-    double knobs [COLAMD_KNOBS], flops, f, r, c, *Info, force_fixQ,
-	Info2 [UMFPACK_INFO], drow, dcol, dtail_usage, dlf, duf, dmax_usage,
-	dhead_usage, dlnz, dunz, dmaxfrsize, dClen, dClen_analyze, sym,
-	amd_Info [AMD_INFO], dClen_amd, dr, dc, cr, cc, cp,
-	amd_Control [AMD_CONTROL], stats [2], tol, scale ;
+	dense_row_threshold, tlen, aggressive, scale, *Rp, *Ri ;
+
     SymbolicType *Symbolic ;
     SWType SWspace, *SW ;
 
@@ -439,6 +453,20 @@ GLOBAL Int UMFPACK_qsymbolic
     {
 	/* unrecognized strategy */
 	strategy = UMFPACK_STRATEGY_AUTO ;
+    }
+
+    if (Quser != (Int *) NULL)
+    {
+	/* when the user provides Q, only symmetric and unsymmetric strategies
+	 * are available */
+	if (strategy == UMFPACK_STRATEGY_2BY2)
+	{
+	    strategy = UMFPACK_STRATEGY_SYMMETRIC ;
+	}
+	if (strategy != UMFPACK_STRATEGY_SYMMETRIC)
+	{
+	    strategy = UMFPACK_STRATEGY_UNSYMMETRIC ;
+	}
     }
 
     user_auto_strategy = (strategy == UMFPACK_STRATEGY_AUTO) ;
@@ -653,7 +681,8 @@ GLOBAL Int UMFPACK_qsymbolic
      * and use Rperm_init as workspace */
     ASSERT (Clen >= nz + n_row + MAX (n_row, n_col)) ;
 
-    status = UMF_singletons (n_row, n_col, Ap, Ai, Quser, Cdeg, Cperm1, Rdeg,
+    status = UMF_singletons (n_row, n_col, Ap, Ai, Quser, strategy,
+	Cdeg, Cperm1, Rdeg,
 	Rperm1, InvRperm1, &n1, &n1c, &n1r, &nempty_col, &nempty_row, &is_sym,
 	&max_rdeg, /* workspace: */ Rperm_init, Ci, Ci + nz, Ci + nz + n_row) ;
 
@@ -696,9 +725,8 @@ GLOBAL Int UMFPACK_qsymbolic
     {
 	/* either the pruned submatrix rectangular, or it is square and
 	 * Rperm [n1 .. n-nempty-1] is not the same as Cperm [n1 .. n-nempty-1].
-	 * For the auto strategy, switch to the unsymmetric strategy.
-	 * Otherwise, if the strategy selected by the user is symmetric or
-	 * 2-by-2, then the singletons will be discarded. */
+	 * Switch to the unsymmetric strategy, ignoring user-requested
+	 * strategy. */
 	strategy = UMFPACK_STRATEGY_UNSYMMETRIC ;
 	DEBUGm4 (("Strategy: Unsymmetric singletons\n")) ;
     }
@@ -742,10 +770,35 @@ GLOBAL Int UMFPACK_qsymbolic
 	    , Rperm1, nn
 #endif
 	    ) ;
-	nzaat = AMD_aat (n2, Sp, Si, Sdeg, Wq, amd_Info) ;
+
+	/* use Ci as workspace to sort S into R, if needed [ */
+	if (Quser != (Int *) NULL)
+	{
+	    /* need to sort the columns of S first */
+	    Rp = Ci ;
+	    Ri = Ci + (n_row) + 1 ;
+	    (void) UMF_transpose (n2, n2, Sp, Si, (double *) NULL,
+		(Int *) NULL, (Int *) NULL, 0,
+		Rp, Ri, (double *) NULL, Wq, FALSE
+#ifdef COMPLEX
+		, (double *) NULL, (double *) NULL, FALSE
+#endif
+		) ;
+	}
+	else
+	{
+	    /* S already has sorted columns */
+	    Rp = Sp ;
+	    Ri = Si ;
+	}
+	ASSERT (AMD_valid (n2, n2, Rp, Ri)) ;
+
+	nzaat = AMD_aat (n2, Rp, Ri, Sdeg, Wq, amd_Info) ;
 	sym = amd_Info [AMD_SYMMETRY] ;
 	Info [UMFPACK_N2] = n2 ;
 	/* nzdiag = amd_Info [AMD_NZDIAG] counts the zero entries of S too */
+
+	/* done using Ci as workspace to sort S into R ] */
 
 #ifndef NDEBUG
 	for (k = 0 ; k < n2 ; k++)
@@ -755,6 +808,7 @@ GLOBAL Int UMFPACK_qsymbolic
 	ASSERT (Sp [n2] - n2 <= nzaat && nzaat <= 2 * Sp [n2]) ;
 	DEBUG0 (("Explicit zeros: "ID" %g\n", nzdiag, amd_Info [AMD_NZDIAG])) ;
 #endif
+
     }
 
     /* get statistics from amd_aat, if computed */
@@ -809,9 +863,8 @@ GLOBAL Int UMFPACK_qsymbolic
 
     if (strategy == UMFPACK_STRATEGY_2BY2)
     {
-	Int *Rp, *Ri, *Blen, *W, nz_papat, nzd2, nweak, unmatched,
-	    Clen3 ;
 	double sym2 ;
+	Int *Blen, *W, nz_papat, nzd2, nweak, unmatched, Clen3 ;
 
 	/* ------------------------------------------------------------------ */
 	/* get workspace for UMF_2by2 */
@@ -1550,7 +1603,7 @@ GLOBAL Int UMFPACK_qsymbolic
 	/* empty rows go to dummy front nfr */
 	for (row = 0 ; row < n_row ; row++)
 	{
-	    InFront [row] = nfr ;	
+	    InFront [row] = nfr ;
 	}
 	/* assign the singleton pivot rows to the "empty" front */
 	for (k = 0 ; k < n1 ; k++)
@@ -1808,13 +1861,9 @@ GLOBAL Int UMFPACK_qsymbolic
 		Entry aij ;
 		oldrow = Ai [p] ;
 		newrow = Ci [oldrow] ;
-		if (Ax != (double *) NULL
-#ifdef COMPLEX
-		 && Az != (double *) NULL
-#endif
-			)
+		if (Ax != (double *) NULL)
 		{
-		    ASSIGN (aij, Ax [p], Az [p]) ;
+		    ASSIGN (aij, Ax, Az, p, SPLIT (Az)) ;
 		}
 		if (oldrow == oldcol)
 		{

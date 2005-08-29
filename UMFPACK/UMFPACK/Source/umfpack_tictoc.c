@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.1 (Apr. 30, 2003), Copyright (c) 2003 by Timothy A.      */
-/* Davis.  All Rights Reserved.  See ../README for License.                   */
-/* email: davis@cise.ufl.edu    CISE Department, Univ. of Florida.            */
+/* UMFPACK Version 4.4, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
@@ -21,6 +20,30 @@
 
 #include "umf_internal.h"
 
+#ifdef NO_TIMER
+
+/* -------------------------------------------------------------------------- */
+/* no timer used if -DNO_TIMER is defined at compile time */
+/* -------------------------------------------------------------------------- */
+
+void umfpack_tic (double stats [2])
+{
+    stats [0] = 0 ;
+    stats [1] = 0 ;
+}
+
+void umfpack_toc (double stats [2])
+{
+    stats [0] = 0 ;
+    stats [1] = 0 ;
+}
+
+#else
+
+/* -------------------------------------------------------------------------- */
+/* timer routines, using either times() or clock() */
+/* -------------------------------------------------------------------------- */
+
 #define TINY_TIME 1e-4
 
 #ifndef NPOSIX
@@ -34,8 +57,8 @@ void umfpack_tic (double stats [2])
     /* stats [0]: current wallclock time, in seconds */
     /* stats [1]: user + system time for the process, in seconds */
 
-    struct tms t ;
     double ticks ;
+    struct tms t ;
 
     ticks = (double) sysconf (_SC_CLK_TCK) ;
     stats [0] = (double) times (&t) / ticks ;
@@ -79,3 +102,5 @@ void umfpack_toc (double stats [2])
     if (stats [1] < 0) stats [1] = 0 ;
 
 }
+
+#endif
