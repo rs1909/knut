@@ -54,6 +54,28 @@ class HyperMatrix
 		inline Matrix&      getA33() { return *A33; }
 		inline double&      getA33( int i, int j ) { return (*A33)(i,j); }
 		
+		template< class T > inline void __BEM( T& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g );
+		template< class T > inline void __BEMWS
+			(
+				T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
+				JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
+				int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans
+			);
+		template< class T > inline void __BEMWF
+			(
+				int bord,
+				T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
+				JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
+				JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector& deltaStar
+			);
+		template< class FACT > void inline __BEMW
+			(
+				int bord,
+				FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
+				JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
+				JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector&       deltaStar,
+				Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
+			);
 		template< class T > inline void GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 );
 		template< class T > inline void GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, const Vector& F1, const Vector& F2, const Vector& F3 );
 
@@ -113,6 +135,25 @@ class HyperMatrix
 		Vector*			delta2;
 		Vector*			delta2Star;
 
+		// BEM temporaries
+		Vector         bem_v;
+		Vector         bem_vStar;
+		Vector         bem_w;
+		Vector         bem_f1;
+	
+		// GMBE temporaries
+		Vector         gmbe_xi;
+		Vector         gmbe_cc;
+		Vector         cm_fr;
+	
+		// GMBEW temporaries
+		JagVector2D    gmbew_xi;
+		JagVector2D    gmbew_cc;
+		Matrix         gmbew_dd;
+		Vector         gmbew_gg;
+		Vector         gmbew_gr;
+		Vector         gmbew_yy;
+		Matrix         gmbew_m_beta;
 	
 };
 

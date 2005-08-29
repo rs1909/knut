@@ -92,7 +92,7 @@ class CharMatCPLX : public baseCharMat
 		double      zRe, zIm;
 		Vector      phi;
 		
-		SpFact      AmzB;    // A - zB
+		SpFact      AmzB;    // A - zB : Change this to packed complex format
 		SpMatrix    AmzB_x;
 		Vector      AmzB_p;
 		Vector      AmzB_z;
@@ -107,9 +107,9 @@ class CharMatLPAUT : public baseCharMat
 		inline virtual ~CharMatLPAUT() { }
 		
 		inline void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z ) 
-			{ getQs( col, par, solData, 0 ); init( col, par, solData, Z, 0 ); }
+			{ init( col, par, solData, Z, 0 ); }
 		inline void Init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector& q )
-			{ getQs( col, par, solData, &q ); init( col, par, solData, Z, &q ); }
+			{ init( col, par, solData, Z, &q ); }
 		
 		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double ) { PDError(-1); }
 		inline void Init( NColloc& , const Vector&, const JagMatrix3D&, double, double, Vector& ) { PDError(-1); }
@@ -124,7 +124,7 @@ class CharMatLPAUT : public baseCharMat
 		
 	protected:
 		void init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector* q );
-		void getQs( NColloc& col, const Vector& par, const JagMatrix3D& solData, Vector* qq );
+// 		void getQs( NColloc& col, const Vector& par, const JagMatrix3D& solData, Vector* qq );
 		
 		inline void mktmp_x( NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		inline void mktmp_p( NColloc& col, const Vector& par, const JagMatrix3D& solData, int p );

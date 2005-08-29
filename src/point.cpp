@@ -69,10 +69,12 @@ Point::Point( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, in
 	solData( ndeg*nint, sys_.ndim(), 2*sys_.ntau()+1 ),
 	jacStab( nmat, NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) )
 {
-	RefEps   = ERRTOL;
-	ContEps  = ERRTOLCONT;
-	StartEps = BIFTOL;
-	Iter     = NITER;
+	RefEps    = ERRTOL;
+	ContEps   = ERRTOLCONT;
+	StartEps  = BIFTOL;
+	RefIter   = NITER;
+	ContIter  = NITER;
+	StartIter = NITER;
 	
 	rotRe(0) = 0;
 	rotIm(0) = 1;
@@ -885,7 +887,7 @@ int Point::Start(  )
 			std::cout<<" s"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
 			for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
 			std::cout<<"\t"<<cit<<"\n";
-		}while( (fabs( par(p1) ) > StartEps)&&(++it < Iter) );
+		}while( (fabs( par(p1) ) > StartEps)&&(++it < StartIter) );
 		par( p1 ) = 0.0;
 		qqR->Clear();
 	}else
@@ -922,7 +924,7 @@ int Point::Refine( )
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + (xx->getV2())*(xx->getV2()) + (xx->getV3())*(xx->getV3()) );
 		std::cout<<" "<<it<<"\t"<<Dnorm/(1.0+Xnorm)<<"\t"<<Xnorm<<"\t"<<Dnorm<<'\n';
 	}
-	while( (Dnorm/(1.0+Xnorm) >= RefEps)&&(it++ < Iter) );
+	while( (Dnorm/(1.0+Xnorm) >= RefEps)&&(it++ < RefIter) );
 	
 	return it;
 }
@@ -1205,7 +1207,7 @@ int Point::Continue( double ds )
 		// end updating tangent
 
 	}
-	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < Iter) );
+	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < ContIter) );
 	if( !conv )
 	{
 		

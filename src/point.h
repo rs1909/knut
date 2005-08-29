@@ -79,7 +79,9 @@ class Point : public PointData
 		
 		void    setCont( int i );
 		
-		inline void    setIter( int i ) { Iter = i; }
+		inline void    setRefIter( int i ) { RefIter = i; }
+		inline void    setContIter( int i ) { ContIter = i; }
+		inline void    setStartIter( int i ) { StartIter = i; }
 		inline void    setRefEps( double d ) { RefEps = d; }
 		inline void    setContEps( double d ) { ContEps = d; }
 		inline void    setStartEps( double d ) { StartEps = d; }
@@ -153,7 +155,9 @@ class Point : public PointData
 		double       RefEps;
 		double       ContEps;
 		double       StartEps;
-		int          Iter;
+		int          RefIter;
+		int          ContIter;
+		int          StartIter;
 		
 		// variables and equations
 		Array1D<Var> var;

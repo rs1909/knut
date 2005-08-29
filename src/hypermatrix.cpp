@@ -9,14 +9,28 @@
 
 #include "matrix.h"
 #include "spmatrix.h"
-#include "tst-hyp.h"
+#include "hypermatrix.h"
 
 #include "plot.h"
 #include <cmath>
 
 #define FACT_A11 SpFact
 // constructing Sparse-Dense type hypermatrix
-HyperMatrix :: HyperMatrix( int i, int j, int k, int nz )
+HyperMatrix :: HyperMatrix( int i, int j, int k, int nz ) :
+	bem_v( i ),
+	bem_vStar( i ),
+	bem_w( i ),
+	bem_f1( i ),
+	gmbe_xi( j ),
+	gmbe_cc( i ),
+	cm_fr( j ),
+	gmbew_xi( k, j ),
+	gmbew_cc( k, i ),
+	gmbew_dd( k, k ),
+	gmbew_gg( k ),
+	gmbew_gr( k ),
+	gmbew_yy( k ),
+	gmbew_m_beta( k, k )
 {
 	// constructing the data members
 	if( i != 0 ) A11 = new FACT_A11( 'R', i, nz ); else A11 = 0;
@@ -127,41 +141,62 @@ HyperMatrix :: ~HyperMatrix()
 	delete delta2Star;
 }
 
+// 	BEM temporaries
+// 	Vector v( _b.Size() ); == A.Size()                     bem_v
+// 	Vector vStar( _b.Size() );                             bem_vStar
+// 	Vector w( _b.Size() );                                 bem_w
+// 	Vector f1( _b.Size() );                                bem_f1;
+
+// 	GMBE temporaries 
+// 	Vector xi( _A32.Size() ); == dim2                      gmbe_xi;
+// 	Vector cc( _A31 ); == dim1                             gmbe_cc
+// 	Vector fr( F2 ); == dim2                               cm_fr
+
+// GMBEW temporaries
+// 	JagVector2D xi( bord, _A32(0).Size() );  -> different  gmbew_xi
+// 	JagVector2D cc( _A31 );                  -> different  gmbew_cc
+// 	Matrix dd( bord, bord );                               gmbew_dd
+// 	Vector gg( bord );                                     gmbew_gg
+// 	Vector fr( F2.Size() ); -> same as GMBE                cm_fr
+// 	Vector gr( bord );                                     gmbew_gr
+// 	Vector yy( bord );                                     gmbew_yy
+// 	Matrix m_beta( bord, bord );                           gmbew_m_beta
+
 // BEM
 template< class FACT >
-inline void __BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
+inline void HyperMatrix::__BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
 {
 
-	Vector v( _b.Size() );
-	Vector vStar( _b.Size() );
+// 	Vector v( _b.Size() );
+// 	Vector vStar( _b.Size() );
 	double delta, deltaStar;
-	Vector w( _b.Size() );
-	Vector f1( _b.Size() );
+// 	Vector w( _b.Size() );
+// 	Vector f1( _b.Size() );
 	double g1;
 	double y1, y2;
 	
 	// Doolittle
-	_A.Solve( vStar, _bStar, true );                              // Step 1.
-	deltaStar = _d - vStar*_b;                                    // Step 2. Scalar + ddot
+	_A.Solve( bem_vStar, _bStar, true );                              // Step 1.
+	deltaStar = _d - bem_vStar*_b;                                    // Step 2. Scalar + ddot
 	// Crout
-	_A.Solve( v, _b );                                            // Step 3.
-	delta = _d - _bStar*v;                                        // Step 4. Scalar + ddot
+	_A.Solve( bem_v, _b );                                            // Step 3.
+	delta = _d - _bStar*bem_v;                                        // Step 4. Scalar + ddot
 	// approx Y
-	y1 = (g - vStar*f)/deltaStar;                                 // Step 5. Scalar + ddot
+	y1 = (g - bem_vStar*f)/deltaStar;                                 // Step 5. Scalar + ddot
 	// residuals
-	for( int i=0; i<_b.Size(); i++ ) f1(i) = f(i) - _b(i)*y1;     // Step 6. daxpy
+	for( int i=0; i<_b.Size(); i++ ) bem_f1(i) = f(i) - _b(i)*y1;     // Step 6. daxpy
 	g1 = g - _d*y1;                                               // Step 7. Scalar
 	
 	// residual corrections
-	_A.Solve( w, f1 );                                            // Step 8.
-	y2 = (g1 - _bStar*w)/delta;                                   // Step 9. Scalar + ddot
-	for( int i=0; i<_b.Size(); i++ ) x(i) = w(i) - v(i)*y2;       // Step 10. daxpy
+	_A.Solve( bem_w, bem_f1 );                                            // Step 8.
+	y2 = (g1 - _bStar*bem_w)/delta;                                   // Step 9. Scalar + ddot
+	for( int i=0; i<_b.Size(); i++ ) x(i) = bem_w(i) - bem_v(i)*y2;       // Step 10. daxpy
 	y = y1 + y2;                                                  // Step 11. Scalar
 
 }
 
 template< class FACT >
-inline void __BEMWS
+inline void HyperMatrix :: __BEMWS
 	(
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
 		JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
@@ -208,7 +243,7 @@ inline void __BEMWS
 }
 
 template< class FACT >
-inline void __BEMWF
+inline void HyperMatrix :: __BEMWF
 	(
 		int bord,
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
@@ -254,7 +289,7 @@ inline void __BEMWF
 
 // BEMW
 template< class FACT >
-void inline __BEMW
+void inline HyperMatrix :: __BEMW
 	(
 		int bord,
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
@@ -274,6 +309,7 @@ void inline __BEMW
 	for( int i = 0; i < bord; i++ )    y(i) = X(bord)( A.Row() + i );   // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
 }
 
+
 template< class FACT >
 inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vector& F1, const Vector& F2, const double& F3 )
 {
@@ -286,35 +322,34 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	Vector&     _A32 = (*A32)(0);
 	double&     _A33 = (*A33)(0);
 	
-	Vector xi( _A32.Size() );
-	Vector cc( _A31.Size() );
 	double dd;
 	double gg;
 	
-	_A22.Solve( xi, _A32, true );
-	cc = (-1.0)*_A21*xi + _A31; // 1. mpm cc writeable, so initialize with _A31 !!!
-// 	_A21.AXpY( cc, xi, _A31, -1.0, 1.0, false ); // cc = A31 - xi*A21
-	dd = _A33 - xi*_A23;
-	gg = F3 - xi*F2;
+	_A22.Solve( gmbe_xi, _A32, true );
+	// gmbe_cc = A31 - gmbe_xi*A21
+	gmbe_cc = _A31;
+	gmbe_cc -= _A21*gmbe_xi; // 1. mpm gmbe_cc writeable, so initialize with _A31 !!!
+	// 	_A21.AXpY( gmbe_cc, gmbe_xi, _A31, -1.0, 1.0, false ); 
+	dd = _A33 - gmbe_xi*_A23;
+	gg = F3 - gmbe_xi*F2;
 	
-	__BEM<FACT>( _A11, _A13, cc, dd, X1, X3, F1, gg );
+	__BEM<FACT>( _A11, _A13, gmbe_cc, dd, X1, X3, F1, gg );
 	
-	Vector fr( _A23.Size() );
 	double gr;
 	double yy;
 	double beta = 1.0;
-	double m_beta;
-	Vector beta_xi( xi );
+	double m_beta = -beta;
 	
-	beta_xi *= beta;
-	m_beta = -beta;
+	gmbe_xi *= beta;
 	
-	fr = -1.0*!_A21*X1 + (-1.0*X3)*_A23; // 2. mpm: fr writeable, initialize with F2 !!! fr( F2 ); fr -= !_A21*X1; fr -= X3*_A23
-// 	_A21.AXpY( fr, X1, _A23, -1.0, -X3, true ); // fr = F2 - A21*X1 - A23*X3
-	fr += F2;
+	// cm_fr = F2 - A21*X1 - A23*X3
+	cm_fr = F2;
+	cm_fr -= !_A21*X1;
+	cm_fr -= X3*_A23;
+// 	_A21.AXpY( cm_fr, X1, _A23, -1.0, -X3, true );
 	gr = F3 - _A31*X1 - _A33*X3;
 	
-	__BEM<MatFact>( _A22, beta_xi, _A32, m_beta, X2, yy, fr, gr );
+	__BEM<MatFact>( _A22, gmbe_xi, _A32, m_beta, X2, yy, cm_fr, gr );
 }
 
 template< class FACT >
@@ -329,58 +364,48 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 	JagVector2D& _A32 = *A32;
 	Matrix&      _A33 = *A33;
  
-	JagVector2D xi( bord, _A32(0).Size() );
-	JagVector2D cc( bord, _A31(0).Size() );
-	Matrix dd( bord, bord );
-	Vector gg( bord );
-	
 	for( int i=0; i < bord; i++ )
 	{
-		_A22.Solve( xi(i), _A32(i), true );
-		cc(i) = -1.0*_A21*xi(i) + _A31(i); // 3. mpm : cc writeable, initialize with _A31 !!!
-// 		_A21.AXpY( cc(i), xi(i), _A31(i), -1.0, 1.0, false ); // cc = A31 - xi*A21
+		_A22.Solve( gmbew_xi(i), _A32(i), true );
+		// gmbew_cc = A31 - gmbew_xi*A21
+		gmbew_cc(i) = _A31(i);
+		gmbew_cc(i) -= _A21*gmbew_xi(i);
+// 		_A21.AXpY( gmbew_cc(i), gmbew_xi(i), _A31(i), -1.0, 1.0, false ); 
 		for( int j=0; j < bord; j++ )
 		{
-			dd( i, j ) = _A33( i, j ) - xi(i)*_A23(j);         // dd = A33 - xi*A23;
+			gmbew_dd( i, j ) = _A33( i, j ) - gmbew_xi(i)*_A23(j);         // gmbew_dd = A33 - gmbew_xi*A23;
 		}
-		gg(i) = F3( i ) - xi(i)*F2;                           // gg = F3 - xi*F2;
+		gmbew_gg(i) = F3( i ) - gmbew_xi(i)*F2;                           // gmbew_gg = F3 - gmbew_xi*F2;
 	}
 	
-	__BEMW<FACT>( bord, _A11, _A13, cc, dd, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, gg );
+	__BEMW<FACT>( bord, _A11, _A13, gmbew_cc, gmbew_dd, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, gmbew_gg );
 	
-	Vector fr( F2.Size() );
-	Vector gr( bord );
-	Vector yy( bord );
-	double beta=1.0;
-	Matrix m_beta( bord, bord );
-	JagVector2D beta_xi( bord, _A32(0).Size() );
-	Vector temp_gr( bord );
+	double beta = 1.0;
 	
 	for( int i=0; i < bord; i++ )
 	{
-		beta_xi(i)  = xi(i);     // daxpy : beta_x1 = beta * xi
-		beta_xi(i) *= beta;
+		gmbew_xi(i) *= beta;
 	}
-	for( int i=0; i < bord; i++ ) m_beta(i,i) = -beta;
+	for( int i=0; i < bord; i++ ) gmbew_m_beta(i,i) = -beta;
 	
-	// fr = F2 - A21*x1 - A23*X3
-	// fr( F2 ); fr -= !_A21*X1; for(j<bord) { fr -= X3(j) * _A23(j); }
-	fr = -1.0*!_A21*X1;
-	// _A21.AX( fr, X1, -1.0, true );
-	for( int i=0; i < fr.Size(); i++ ) // daxpy with range!
+	// cm_fr = F2 - A21*x1 - A23*X3
+	cm_fr = F2;
+	cm_fr = -1.0*!_A21*X1;
+	// _A21.AX( cm_fr, X1, -1.0, true );
+	for( int i=0; i < cm_fr.Size(); i++ ) // daxpy with range!
 	{
-		fr(i) += F2(i);
-		for( int j=0; j < bord; j++ ) fr(i) -= _A23(j)(i)*X3(j); // fr
+		cm_fr(i) += F2(i);
+		for( int j=0; j < bord; j++ ) cm_fr(i) -= _A23(j)(i)*X3(j); // cm_fr
 	}
 	
-	// gr = F3 - A31*X1 - A33*X3;
+	// gmbew_gr = F3 - A31*X1 - A33*X3;
 	for( int i=0; i < bord; i++ )
 	{
-		gr(i) = F3(i) - _A31(i)*X1;
-		for( int j=0; j < bord; j++ ) gr(i) -= _A33(i,j)*X3(j);
+		gmbew_gr(i) = F3(i) - _A31(i)*X1;
+		for( int j=0; j < bord; j++ ) gmbew_gr(i) -= _A33(i,j)*X3(j);
 	}
 
-	__BEMW<MatFact>( bord, _A22, beta_xi, _A32, m_beta, *XX2, *YY2, *FF2, *GG2, *VV2, *VV2Star, *delta2, *delta2Star, X2, yy, fr, gr );
+	__BEMW<MatFact>( bord, _A22, gmbew_xi, _A32, gmbew_m_beta, *XX2, *YY2, *FF2, *GG2, *VV2, *VV2Star, *delta2, *delta2Star, X2, gmbew_yy, cm_fr, gmbew_gr );
 
 }
 

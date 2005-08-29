@@ -27,6 +27,7 @@ typedef double doublereal;
 #include "error.h"
 extern "C" {
 #include "cspblas.h"
+#include "cblas.h"
 }
 #endif
 
@@ -68,11 +69,11 @@ public:
 		for( int r=0; r<i; r++ ) v[r].Init(j,k);
 	}
 
-	inline Array1D( const Array1D<T> &V )
+	inline Array1D( const Array1D<T>& V_ )
 	{
-		n = V.n;
-		v = new T[V.n];
-		for( int i=0; i<V.n; i++ ) v[i]=V.v[i];
+		n = V_.n;
+		v = new T[V_.n];
+		*this = V_;
 	}
 	
 	inline virtual ~Array1D() { delete[] v; }
@@ -83,6 +84,14 @@ public:
 		n = i;
 		v = new T[i];
 		Clear();
+	}
+
+	inline void Init( const Array1D<T>& V_ )
+	{
+		delete v;
+		n = V_.n;
+		v = new T[V_.n];
+		*this = V_;
 	}
 
 	inline void Clear( ) { for(int j=0; j<n; j++) v[j]=T(); } // it was T(0), but for built in types it must be the same
@@ -123,39 +132,34 @@ public:
 template<class T>
 class Array2D{
 
- private:
-	T* v;
  protected:
 
 	T* m;
 	int r, c;
 
  public:
-	inline Array2D( ) { r = 0; c = 0; v = 0; m = 0; }
+	inline Array2D( ) { r = 0; c = 0; m = 0; }
 
 	inline Array2D( int _r, int _c ) : r(_r), c(_c)
 	{
-		v = new T[r*c+2];
-		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
+		m = new T[r*c+1];
 		Clear();
 	}
 
 	inline Array2D( const Array2D<T>& M ) : r(M.r), c(M.c)
 	{
-		v = new T[r*c+2];
-		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
+		m = new T[r*c+1];
 		for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 	}
 
-	inline virtual ~Array2D(){ delete []v; }
+	inline virtual ~Array2D(){ delete[] m; }
 
 	inline void Init( int _r, int _c )
 	{
-		delete v;
+		delete m;
 		r = _r;
 		c = _c;
-		v = new T[r*c+2];
-		if( (unsigned int)v % (2*sizeof(T)) == 0 ) m = v; else m = v + 1;
+		m = new T[r*c+1];
 		Clear();
 	}
 
@@ -171,7 +175,7 @@ class Array2D{
 			cout<<"Array2D<T>::operator= : incompatible sizes\n";
 		}
 		return *this;
-	} 
+	}
 
 	inline T& operator()( const int i, const int j )
 	{
@@ -253,7 +257,7 @@ class Array3D{
 		if( (M.d1 == d1)&&(M.d2 == d2)&&(M.d3 == d3) )
 		{
 			for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
-		} else 
+		} else
 		{
 			cout<<"Array3D<T>::operator= : incompatible sizes\n";
 		}
@@ -422,73 +426,34 @@ public:
 
 #ifndef PDDESYS_H
 	
-	inline Vector& operator=( const Vector& V )
-	{
-// 		std::cout<<"op= ";
-	#ifdef DEBUG
-		if( n != V.n ){ std::cout<<"Vector::operator=(): incompatible sizes\n"; }
-	#endif // DEBUG
-// 		for( int i=0; i < n; i++ ) v[i] = V.v[i];
-		cblas_dnvcopy( n, v, V.v, 1.0 );
-		return *this;
-	}
-
-	inline Vector& operator-=( const Vector& V )
-	{
-// 		std::cout<<"op-= ";
-	#ifdef DEBUG
-		if( n != V.n ){ std::cout<<"Vector::operator-=(): incompatible sizes\n"; }
-	#endif // DEBUG
-		for( int i=0; i < n; i++ ) v[i] -= V.v[i];
-// 		cblas_dnaxpy( n, v, v, 1.0, V.v, -1.0 );
-		return *this;
-	}
-	
-	inline Vector& operator+=( const Vector& V )
-	{
-// 		std::cout<<"op+= ";
-		if( n != V.n ){ std::cout<<"Vector::operator+=(): incompatible sizes\n"; }
-		for( int i=0; i < n; i++ ) v[i] += V.v[i];
-// 		cblas_dnaxpy( n, v, v, 1.0, V.v, 1.0 );
-		return *this;
-	}
-	
-	inline Vector& operator/=( double div )
-	{
-// 		std::cout<<"op/= ";
-// 		for( int i=0; i < n; i++ ) v[i] /= div;
-		cblas_dnvcopy( n, v, v, 1.0/div );
-		return *this;
-	}
-	
-	inline Vector& operator*=( double mul )
-	{
-// 		for( int i=0; i < n; i++ ) v[i] *= mul;
-// 		std::cout<<"op*= ";
-		cblas_dnvcopy( n, v, v, mul );
-		return *this;
-	}
-
-	
-	inline double operator*( const Vector& V ) const
-	{
-	#ifdef DEBUG
-		if( n != V.n ){ std::cout<<"Vector::operator*(): incompatible sizes\n"; }
-	#endif // DEBUG
-		return cblas_dndot( n, this->v, V.v, 1.0 );
-	}
+	inline Vector& operator= ( const Vector& V );
+	inline Vector& operator+=( const Vector& V );
+	inline Vector& operator-=( const Vector& V );
+	inline Vector& operator/=( double div );
+	inline Vector& operator*=( double mul );
+	inline double  operator* ( const Vector& V ) const;
 	
 	// Matrix operations
-	inline Vector& operator=( const __scal_vec_trans<Vector> );
-	inline Vector& operator=( const __op_mul_vec<Matrix,Vector> );
-	inline Vector& operator=( const __op_mul_vec_plus_vec<Matrix,Vector> );
-	inline Vector& operator=( const __op_mul_vec<SpMatrix,Vector> );
-	inline Vector& operator=( const __op_mul_vec_plus_vec<SpMatrix,Vector> );
-	// with ranges
+	inline Vector& operator= ( const __scal_vec_trans<Vector> );
+	inline Vector& operator+=( const __scal_vec_trans<Vector> );
+	inline Vector& operator-=( const __scal_vec_trans<Vector> );
+	inline Vector& operator= ( const __op_mul_vec<Matrix,Vector> );
+	inline Vector& operator+=( const __op_mul_vec<Matrix,Vector> );
+	inline Vector& operator-=( const __op_mul_vec<Matrix,Vector> );
+	inline Vector& operator+=( const __op_mul_vec_plus_vec<Matrix,Vector> );
+	inline Vector& operator-=( const __op_mul_vec_plus_vec<Matrix,Vector> );
+	// for SpMatrix
+	inline Vector& operator= ( const __op_mul_vec<SpMatrix,Vector> );
+	// obsolote
+	inline Vector& operator= ( const __op_mul_vec_plus_vec<SpMatrix,Vector> );
+	/// with ranges
 	inline Vector& operator=( const __scal_vec_trans_rng<Vector> );
 	inline Vector& operator=( const __op_mul_vec_rng<Matrix,Vector> );
+	// obsolote
 	inline Vector& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> );
+	// for SpMatrix
 	inline Vector& operator=( const __op_mul_vec_rng<SpMatrix,Vector> );
+	// obsolote
 	inline Vector& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Vector> );
 
 	inline __scal_vec_trans<Vector>     operator-( ) { return __scal_vec_trans<Vector>( *this, -1.0 ); }
@@ -538,31 +503,31 @@ class Matrix : public Array2D<double>
 		cblas_mmxmpym( trans, r, c, m, r, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
 	}
 	
-	inline Matrix& operator=( const __scal_vec_trans<Matrix> );
-	inline Matrix& operator=( const __op_mul_vec<Matrix,Matrix> );
+	inline Matrix& operator= ( const __scal_vec_trans<Matrix> );
+	inline Matrix& operator= ( const __op_mul_vec<Matrix,Matrix> );
+	inline Matrix& operator+=( const __op_mul_vec<Matrix,Matrix> );
+	inline Matrix& operator-=( const __op_mul_vec<Matrix,Matrix> );
+	// obsolote
 	inline Matrix& operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> );
+	// with SpMatrix
 	inline Matrix& operator=( const __op_mul_vec<SpMatrix,Matrix> );
+	// obsolote
 	inline Matrix& operator=( const __op_mul_vec_plus_vec<SpMatrix,Matrix> );
-		// with ranges
+	/// with ranges
 	inline Matrix& operator=( const __scal_vec_trans_rng<Matrix> );
 	inline Matrix& operator=( const __op_mul_vec_rng<Matrix,Matrix> );
+	// obsolote
 	inline Matrix& operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> );
+	// with SpMatrix
 	inline Matrix& operator=( const __op_mul_vec_rng<SpMatrix,Matrix> );
+	// obsolote
 	inline Matrix& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Matrix> );
-	
-	inline void AX( double* out, const double* in, double alpha, bool trans ) const;
-	inline void AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const;
 	
 	void Eigval( Vector& re, Vector& im );
 	void Eigval( Vector& re, Vector& im, Matrix& lev, Matrix& rev );
 	void StrPlot( GnuPlot& pl );
 	
 	/* operators */
-	inline Matrix& operator*=( double mul )
-	{
-		for( int i=0; i < r*c; i++ ) m[i] *= mul;
-		return *this;
-	}
 	
 	inline __op_mul_vec<Matrix,Vector>     operator*( Vector& v )
 		{ return __op_mul_vec<Matrix,Vector>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
@@ -666,6 +631,13 @@ template< > inline void Array1D< Vector >::Clear( ) { for( int i=0; i<n; i++ ) v
 template< > inline void Array1D< Array2D<int> >::Clear( ) { for( int i=0; i<n; i++ ) v[i].Clear(); }
 template< > inline void Array1D< Array2D<double> >::Clear( ) { for( int i=0; i<n; i++ ) v[i].Clear(); }
 template< > inline void Array1D< Matrix >::Clear( ) { for( int i=0; i<n; i++ ) v[i].Clear(); }
+
+template< > inline Array1D< Vector >::Array1D( const Array1D< Vector >& V_ )
+{
+	n = V_.n;
+	v = new Vector[V_.n];
+	for( int i=0; i<V_.n; i++ ) v[i].Init( V_.v[i] );
+}
 
 /// Member functions and Operators for __scal_vec_trans_rng
 template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng( const Vector& v )
@@ -775,56 +747,145 @@ inline __scal_vec_trans < Matrix >                      operator-( const Matrix&
 inline __scal_vec_trans < SpMatrix >                    operator-( const SpMatrix& v )
 	{ return __scal_vec_trans<SpMatrix>( v, -1.0 ); }
 
-// Implementation of Matrix
-
-inline void Matrix::AX( double* out, const double* in, double alpha, bool trans ) const
-{
-	mmx( trans ? Trans : NoTrans, out, in, alpha );
-}
-
-inline void Matrix::AXpY( double* out, const double* in, const double* Y, double alpha, double beta, bool trans ) const
-{
-	mmxpy( trans ? Trans : NoTrans, out, in, alpha, Y, beta );
-}
-
-// End of implementation of Matrix
-
 // Implementation of Vector
 
-inline Vector& Vector::operator=( const __scal_vec_trans<Vector> )
+inline Vector& Vector::operator=( const Vector& V )
 {
-	std::cout<<"__scal_vec\n"; return *this;
+#ifdef DEBUG
+	if( n != V.n ){ std::cout<<"Vector::operator=(): incompatible sizes\n"; PDError(-1); }
+#endif // DEBUG
+	cblas_dcopy( n, V.v, 1, v, 1 );
+	return *this;
 }
+
+inline Vector& Vector::operator+=( const Vector& V )
+{
+#ifdef DEBUG
+	if( n != V.n ){ std::cout<<"Vector::operator+=(): incompatible sizes\n"; PDError(-1); }
+#endif // DEBUG
+	cblas_daxpy( n, 1.0, V.v, 1, v, 1 );
+	return *this;
+}
+
+inline Vector& Vector::operator-=( const Vector& V )
+{
+#ifdef DEBUG
+	if( n != V.n ){ std::cout<<"Vector::operator-=(): incompatible sizes\n"; PDError(-1); }
+#endif // DEBUG
+	cblas_daxpy( n, -1.0, V.v, 1, v, 1 );
+	return *this;
+}
+
+inline Vector& Vector::operator/=( double div )
+{
+	cblas_dscal( n, 1.0/div, v, 1 );
+	return *this;
+}
+
+inline Vector& Vector::operator*=( double mul )
+{
+	cblas_dscal( n, mul, v, 1 );
+	return *this;
+}
+
+inline double Vector::operator*( const Vector& V ) const
+{
+#ifdef DEBUG
+	if( n != V.n ){ std::cout<<"Vector::operator*(): incompatible sizes\n"; }
+#endif // DEBUG
+	return cblas_ddot( n, V.v, 1, v, 1 );
+}
+
+// With the intermediate classes
+
+// scal_vec_trans
+
+inline Vector& Vector::operator=( const __scal_vec_trans<Vector> R )
+{
+	cblas_dcopy( n, R.vec.v, 1, v, 1 );
+	cblas_dscal( n, R.alpha, v, 1 );
+	std::cout<<" = __scal_vec\n"; return *this;
+}
+
+inline Vector& Vector::operator+=( const __scal_vec_trans<Vector> R )
+{
+	cblas_daxpy( n, R.alpha, R.vec.v, 1, v, 1 );
+	std::cout<<" += __scal_vec\n"; return *this;
+}
+
+inline Vector& Vector::operator-=( const __scal_vec_trans<Vector> R )
+{
+	cblas_daxpy( n, -R.alpha, R.vec.v, 1, v, 1 );
+	std::cout<<"-= __scal_vec\n"; return *this;
+}
+
+// op_mul_vec
 
 inline Vector& Vector::operator=( const __op_mul_vec<Matrix,Vector> R )
 {
-	R.op.vec.mmx( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha );
+	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r, 
+		R.vecA.vec.v, 1, 0.0, this->v, 1 );
 // 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
 // 	std::cout<<"__op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
 
-inline Vector& Vector::operator=( const __op_mul_vec_plus_vec<Matrix,Vector> R )
+inline Vector& Vector::operator+=( const __op_mul_vec<Matrix,Vector> R )
 {
-	R.op.vec.mmxpy( R.op.tr, this->v, R.vecA.vec.v, R.op.alpha, R.vecB.vec.v, R.vecB.alpha );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans || R.vecB.tr != NoTrans ) std::cout<<"Dmmxpy err";
-// 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Vector>\n";
+	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r, 
+		R.vecA.vec.v, 1, 1.0, this->v, 1 );
+// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
+// 	std::cout<<"+= __op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
 
+inline Vector& Vector::operator-=( const __op_mul_vec<Matrix,Vector> R )
+{
+	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r, 
+		R.vecA.vec.v, 1, 1.0, this->v, 1 );
+// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
+// 	std::cout<<"-= __op_mul_vec<Matrix,Vector>\n";
+	return *this;
+}
+
+// op_mul_vec_plus_vec, but only += and -=
+
+inline Vector& Vector::operator+=( const __op_mul_vec_plus_vec<Matrix,Vector> R )
+{
+	cblas_daxpy( n, R.vecB.alpha, R.vecB.vec.v, 1, v, 1 );
+	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r, 
+		R.vecA.vec.v, 1, 1.0, this->v, 1 );
+	std::cout<<"+=__op_mul_vec_plus_vec<Matrix,Vector>\n";
+	return *this;
+}
+
+inline Vector& Vector::operator-=( const __op_mul_vec_plus_vec<Matrix,Vector> R )
+{
+	cblas_daxpy( n, -R.vecB.alpha, R.vecB.vec.v, 1, v, 1 );
+	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r, 
+		R.vecA.vec.v, 1, 1.0, this->v, 1 );
+	std::cout<<"-=__op_mul_vec_plus_vec<Matrix,Vector>\n";
+	return *this;
+}
+
+/// WITH RANGES
+
 inline Vector& Vector::operator=( const __scal_vec_trans_rng<Vector> )
 {
-	std::cout<<"__scal_vec_rng\n"; return *this;
+	std::cout<<"__scal_vec_rng\n";
+	PDError(-1);
 	return *this;
 }
 
 inline Vector& Vector::operator=( const __op_mul_vec_rng<Matrix,Vector> R )
 {
+	// cblas_dgemv( ... )
 	cblas_mmx( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ],
 	           R.op.vec.r, this->v, &R.vecA.vec.v[ R.vecA.i1 ], R.op.alpha );
 
 // 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
-// 	std::cout<<"__op_mul_vec_rngMatrix,Vector>\n";
+	std::cout<<"__op_mul_vec_rngMatrix,Vector>\n";
+	PDError(-1);
 	return *this;
 }
 
@@ -832,7 +893,8 @@ inline Vector& Vector::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector>
 {
 	cblas_mmxpy( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
 	             this->v, &R.vecA.vec.v[ R.vecA.i1 ], R.op.alpha, &R.vecB.vec.v[ R.vecB.i1 ], R.vecB.alpha );
-// 	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Vector>\n";
+	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Vector>\n";
+	PDError(-1);
 	return *this;
 }
 
@@ -842,40 +904,74 @@ inline Vector& Vector::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector>
 
 inline Matrix& Matrix::operator=( const __scal_vec_trans<Matrix> )
 {
-	std::cout<<"__scal_vec\n"; return *this;
+	std::cout<<"__scal_vec\n";
+	PDError(-1);
 	return *this;
 }
 
 inline Matrix& Matrix::operator=( const __op_mul_vec<Matrix,Matrix> R )
 {
-	R.op.vec.mmxm( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c );
+	cblas_dgemm( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+	             this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+	             R.vecA.vec.m, R.vecA.vec.r, 0.0, this->m, this->r );
+// 	R.op.vec.mmxm( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c );
 // 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmxm err";
-// 	std::cout<<"__op_mul_vec<Matrix,Matrix>\n";
+	std::cout<<"= __op_mul_vec<Matrix,Matrix>\n";
+	PDError(-1);
 	return *this;
 }
+
+inline Matrix& Matrix::operator+=( const __op_mul_vec<Matrix,Matrix> R )
+{
+	cblas_dgemm( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+	             this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+	             R.vecA.vec.m, R.vecA.vec.r, 1.0, this->m, this->r );
+	std::cout<<"+= __op_mul_vec<Matrix,Matrix>\n";
+	PDError(-1);
+	return *this;
+}
+
+inline Matrix& Matrix::operator-=( const __op_mul_vec<Matrix,Matrix> R )
+{
+	cblas_dgemm( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+	             this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+	             R.vecA.vec.m, R.vecA.vec.r, -1.0, this->m, this->r );
+	std::cout<<"-= __op_mul_vec<Matrix,Matrix>\n";
+	PDError(-1);
+	return *this;
+}
+
+// obsolote : op_mul_vec_plus_vec
 
 inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> R )
 {
 	R.op.vec.mmxmpym( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecA.vec.c );
 // 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans || R.vecB.tr != NoTrans ) std::cout<<"Dmmxmpym err";
 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
+	PDError(-1);
 	return *this;
 }
+
+/// WITH RANGES
 
 inline Matrix& Matrix::operator=( const __scal_vec_trans_rng<Matrix> )
 {
 	std::cout<<"__scal_vec_rng\n"; return *this;
+	PDError(-1);
 	return *this;
 }
 
 inline Matrix& Matrix::operator=( const __op_mul_vec_rng<Matrix,Matrix> R )
 {
+	// cblas_dgemm( ... );
 	cblas_mmxm( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
 	           this->m, this->r, &R.vecA.vec.m[ R.vecA.i1 + R.vecA.vec.r * R.vecA.j1 ], R.vecA.vec.r, R.op.alpha, R.vecA.j2 - R.vecA.j1 );
-// 	std::cout<<"__op_mul_vec_rngMatrix,Matrix>\n";
+	std::cout<<"__op_mul_vec_rngMatrix,Matrix>\n";
+	PDError(-1);
 	return *this;
 }
 
+// obsolote
 inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> R )
 {
 	cblas_mmxmpym( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
@@ -883,7 +979,8 @@ inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix>
 	              &R.vecA.vec.m[ R.vecA.i1 + R.vecA.vec.r * R.vecA.j1 ], R.vecA.vec.r, R.op.alpha, // in1
 	              &R.vecB.vec.m[ R.vecB.i1 + R.vecB.vec.r * R.vecB.j1 ], R.vecB.vec.r, R.vecB.alpha, // in2
 	              R.vecA.j2 - R.vecA.j1 ); // nrhs
-// 	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Matrix>\n";
+	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Matrix>\n";
+	PDError(-1);
 	return *this;
 }
 

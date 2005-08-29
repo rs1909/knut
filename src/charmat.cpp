@@ -129,7 +129,7 @@ void CharMat::Switch( Vector& tan, NColloc& /*col*/ )
 CharMatCPLX::CharMatCPLX( NColloc& col ) : 
 	phi( 2*NDIM*(NDEG*NINT+1) ),
 	AmzB( 'R', 2*NDIM*(NDEG*NINT+1), 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
-	AmzB_x( 'R', 2*NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1), 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
+	AmzB_x( 'R', 2*NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1), 2*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
 	AmzB_p( 2*NDIM*(NDEG*NINT+1) ),
 	AmzB_z( 2*NDIM*(NDEG*NINT+1) ),
 	phiData( 2*NDEG*NINT, NDIM, NTAU+1 )
@@ -188,7 +188,7 @@ void CharMatCPLX::Delta_x( Matrix& delta_x, NColloc& col, const Vector& par, con
 	col.CharJac_x_x( AmzB_x, par, solData, phiData, zRe, zIm );
 	
 	for( int i = 0; i < NDIM; i++ ) // L - zM
-	{ 
+	{
 		LmzM( 2*i, 2*i ) = -1.0;
 		LmzM( 2*i+1, 2*i+1 ) = -1.0;
 		LmzM( 2*(i + NDIM*NDEG*NINT), 2*i )     = 1.0*zRe;
@@ -237,7 +237,7 @@ void CharMatCPLX::Delta_z( Vector& delta_z, NColloc& col, const Vector& par, con
 // colloc is not needed (just for compatibility reasons)
 void CharMatCPLX::Switch( Vector& Re, Vector& Im, double& alpha, NColloc& /*col*/ )
 {
-	std::cout<<"CharmatCPLX::Switch entering\n";
+// 	std::cout<<"CharmatCPLX::Switch entering\n";
 	if( (2*Re.Size() != phi.Size())||(2*Im.Size() != phi.Size()) )
 	{
 		std::cout<<"CharmatCPLX::Switch: Bad sizes\n";
@@ -257,7 +257,7 @@ void CharMatCPLX::Switch( Vector& Re, Vector& Im, double& alpha, NColloc& /*col*
 	{
 		alpha = atan( fabs(zRe/zIm) ) + M_PI/2.0;
 	}
-	std::cout<<"alpha "<<alpha<<"\n";
+// 	std::cout<<"alpha "<<alpha<<"\n";
 // 	PDError(-1);
 }
 
@@ -301,10 +301,10 @@ CharMatLPAUT::CharMatLPAUT( NColloc& col ) :
 // 
 // }
 
-void CharMatLPAUT::getQs( NColloc& col, const Vector& par, const JagMatrix3D& solData, Vector* qq )
-{
-
-}
+// void CharMatLPAUT::getQs( NColloc& col, const Vector& par, const JagMatrix3D& solData, Vector* qq )
+// {
+// 
+// }
 
 // void CharMatLPAUTROT::getQs( NColloc& col, const Vector& par, const JagMatrix3D& solData, Vector* qq )
 // {

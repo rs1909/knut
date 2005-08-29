@@ -5,11 +5,11 @@ ___bin_pdde_SOURCES =	main.cpp charmat.cpp plot.cpp ncolloc.cpp torcolloc.cpp po
 			system.cpp system.h pointtype.h error.h error.cpp
 incdir = $(includedir)
 inc_HEADERS = pddesys.h matrix.h
-INCLUDES = -I$(top_srcdir)/UMFPACK/UMFPACK/Include
+INCLUDES = -I$(top_srcdir)/UMFPACK/UMFPACK/Include -I$(top_srcdir)/ATLAS/include
 AM_LDFLAGS = -L$(top_srcdir)/UMFPACK/UMFPACK/Lib \
 	-L$(top_srcdir)/UMFPACK/AMD/Lib \
 	-L$(top_srcdir)/ATLAS/lib \
 	-L$(top_srcdir)/libf2c \
-	-L$(top_srcdir)/laarpack
+	-L$(top_srcdir)/laarpack -Wl,--as-needed
 
-LDADD = -llaarpack -lumfpack -lamd -lcblas -latlas -lpddef2c -ldl
+LDADD = -llaarpack -lumfpack -lamd -lcblas -latlas -lpddef2c -ldl 

@@ -251,3 +251,7 @@ umfpack_gn_%.o: umfpack_%.c $(INC)
 
 purge: clean
 	- $(RM) ../Lib/libumfpack.a
+
+distdir:
+	cp -p Makefile *.c *.h $(distdir)
+

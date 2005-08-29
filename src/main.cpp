@@ -28,7 +28,8 @@ sys-milltwofull.so   SYSNAME
 12 12 4 4				NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)chips were the best though! Even NASA thinks so
 126 -100.0 100.0		STEPS, P0MIN, P0MAX
 0.1 0.01 0.2 0.1		DS, DSMIN, DSMAX, DSSTART
-30 1e-4 1e-4 1e-4		NITER, EPSC, EPSR, EPSS
+1e-4 1e-4 1e-4	 	   EPSC, EPSR, EPSS
+30 30 30					NITC, NITR, NITS
 
 */
 
@@ -61,10 +62,12 @@ struct cfile {
 	double   DSMAX;
 	double   DSSTART;
 	int      NADAPT;
-	int      NITER;
 	double   EPSC;
 	double   EPSR;
 	double   EPSS;
+	int      NITC;
+	int      NITR;
+	int      NITS;
 };
 
 void getParams( cfile* pms, const char* filename )
@@ -127,7 +130,9 @@ void getParams( cfile* pms, const char* filename )
 		file >> pms->DS >> pms->DSMIN >> pms->DSMAX >> pms->DSSTART;
 		while( file.get() != '\n' );
 		
-		file >> pms->NITER >> pms->EPSC >> pms->EPSR >> pms->EPSS;
+		file >> pms->NITC >> pms->EPSC >> pms->EPSR >> pms->EPSS;
+		pms->NITR = pms->NITC;
+		pms->NITS = pms->NITC;
 		// Ignore the rest of the file
 	}
 	catch (ifstream::failure e)
@@ -158,7 +163,7 @@ void printParams( cfile* pms )
 	std::cout<<pms->NINT1<<" "<<pms->NINT2<<" "<<pms->NDEG1<<" "<<pms->NDEG2<<" \t\tNINT1, NINT2, NDEG1, NDEG2\n";
 	std::cout<<pms->STEPS<<" "<<pms->P0MIN<<" "<<pms->P0MAX<<" \t\tSTEPS, P0MIN, P0MAX\n";
 	std::cout<<pms->DS<<" "<<pms->DSMIN<<" "<<pms->DSMAX<<" "<<pms->DSSTART<<" \tDS, DSMIN, DSMAX, DSSTART \n";
-	std::cout<<pms->NITER<<" "<<pms->EPSC<<" "<<pms->EPSR<<" "<<pms->EPSS<<" \tNITER, EPSC, EPSR, EPSS\n";
+	std::cout<<pms->NITC<<" "<<pms->EPSC<<" "<<pms->EPSR<<" "<<pms->EPSS<<" \tNITER, EPSC, EPSR, EPSS\n";
 }
 
 int initEqnVar( System& sys, cfile* params,
@@ -424,7 +429,9 @@ int main( int argc, const char** argv )
 		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->NINT, params->NDEG, params->NMUL, params->NMAT );
 		Point& pt = *pt_ptr;
 		
-		pt.setIter( params->NITER );
+		pt.setContIter( params->NITC );
+		pt.setRefIter( params->NITR );
+		pt.setStartIter( params->NITS );
 		pt.setRefEps( params->EPSR );
 		pt.setContEps( params->EPSC );
 		pt.setStartEps( params->EPSS );
@@ -562,7 +569,7 @@ int main( int argc, const char** argv )
 				bool decr = true;
 				for( int l=0; l < it.Size(); l++ ) if( it(l) > 3 ) decr = false;
 				if( decr&&(fabs(ds)*1.414 > params->DSMIN)&&(fabs(ds)*1.414 < params->DSMAX) ) ds *= 1.414;
-				if( (itc >= params->NITER)&&(fabs(ds)/2.0 < params->DSMIN) )
+				if( (itc >= params->NITC)&&(fabs(ds)/2.0 < params->DSMIN) )
 				{
 					PDError(1);
 				}

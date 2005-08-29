@@ -66,3 +66,6 @@ amdbar.o: amdbar.f
 
 purge: clean
 	- $(RM) ../Lib/libamd.a ../Lib/libamdf77.a
+
+distdir:
+	cp -p Makefile *.c *.h $(distdir)

@@ -923,6 +923,8 @@ void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solD
 	}
 }
 
+
+// this has to be changed only to packed complex.
 void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Re, double Im )
 {
 	Matrix dfx(NDIM,NDIM);
