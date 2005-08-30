@@ -77,7 +77,7 @@ The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
 $ tar xvzf pdde-cont-%\@version%.tar.gz
 \end{lstlisting} \end{quote} } \noindent
-The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a}, \filef{libcblas.a} and \filef{libf77blas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for several processors so in most cases no compilation step is necessary.
+The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for several processors so in most cases no compilation step is necessary.
 
 The second step is to configure the package using the \filef{configure} script.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]

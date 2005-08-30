@@ -1,8 +1,6 @@
-all:
-	( cd UMFPACK; make )
-
-DSDIRS = AMD UMFPACK
-DSFILES = Makefile
+DSDIRS =
+DSFILES = Makefile \
+	Make.alpha Make.include Make.linux Make.rs6000 Make.sgi Make.solaris
 
 distdir:
 	list='$(DSDIRS)'; for subdir in $$list; do \
@@ -12,10 +10,11 @@ distdir:
 	list='$(DSFILES)'; for ff in $$list; do \
 	cp -pR $$ff $(distdir); \
 	done;
-	   
-clean:
-	( cd UMFPACK; make clean )
 
+all:
+	
+clean:
+	
 install:
 	
 

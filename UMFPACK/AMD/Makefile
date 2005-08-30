@@ -33,8 +33,8 @@ doc:
 # get ready for distribution
 dist: purge
 
-DSDIRS = Lib Source
-DSFILES = Include Make  Makefile README
+DSDIRS = Include Lib Make Source
+DSFILES = Makefile README
 
 distdir:
 	list='$(DSDIRS)'; for subdir in $$list; do \

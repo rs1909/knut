@@ -1,8 +1,5 @@
-all:
-	( cd UMFPACK; make )
-
-DSDIRS = AMD UMFPACK
-DSFILES = Makefile
+DSDIRS = 
+DSFILES = cblas.h clapack.h Makefile
 
 distdir:
 	list='$(DSDIRS)'; for subdir in $$list; do \
@@ -12,10 +9,11 @@ distdir:
 	list='$(DSFILES)'; for ff in $$list; do \
 	cp -pR $$ff $(distdir); \
 	done;
-	   
-clean:
-	( cd UMFPACK; make clean )
 
+all:
+	
+clean:
+	
 install:
 	
 

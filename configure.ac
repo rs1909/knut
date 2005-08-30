@@ -45,8 +45,6 @@ AC_CONFIG_FILES([Makefile
 	bin/pcompile
 	libf2c/Makefile
 	laarpack/Makefile
-	UMFPACK/Makefile
-	ATLAS/Makefile
 	doc/Makefile
 	doc/fig/Makefile
 	doc/html/Makefile

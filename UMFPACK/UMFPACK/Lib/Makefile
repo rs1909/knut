@@ -1,7 +1,4 @@
-all:
-	( cd UMFPACK; make )
-
-DSDIRS = AMD UMFPACK
+DSDIRS =
 DSFILES = Makefile
 
 distdir:
@@ -12,10 +9,11 @@ distdir:
 	list='$(DSFILES)'; for ff in $$list; do \
 	cp -pR $$ff $(distdir); \
 	done;
-	   
-clean:
-	( cd UMFPACK; make clean )
 
+all:
+	
+clean:
+	
 install:
 	
 

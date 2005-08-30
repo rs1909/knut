@@ -46,13 +46,15 @@ doc:
 dist: purge
 	( cd ../AMD ; make dist )
 
-DSDIRS  = Lib Source
-DSFILES = Doc Include Make Makefile README
+DSDIRS  = Doc Include Lib Make Source
+DSFILES = Makefile README
 
 distdir:
 	list='$(DSDIRS)'; for subdir in $$list; do \
 	mkdir $(distdir)/$$subdir; \
 	( cd $$subdir; make distdir="$(distdir)/$$subdir" distdir ) \
 	done;
-	cp -pR $(DSFILES) $(distdir)
+	list='$(DSFILES)'; for ff in $$list; do \
+	cp -pR $$ff $(distdir); \
+	done;
 	
