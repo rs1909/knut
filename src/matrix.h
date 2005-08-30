@@ -482,23 +482,6 @@ class Matrix : public Array2D<double>
 	inline int Size() const { if((r==1)||(c==1)) { return r*c; } else { std::cout<<"Hs\n"; return 0; } }
 
 #ifndef PDDESYS_H
-	inline void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
-	{
-		cblas_mmx( trans, r, c,  m, r, out, in, alpha );
-	}
-	inline void mmxpy( enum cspblas_Trans trans, double* out, const double* in, double alpha, const double* Y, double beta ) const
-	{
-		cblas_mmxpy( trans, r, c, m, r, out, in, alpha, Y, beta );
-	}
-	inline void mmxm( enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs ) const
-	{
-		cblas_mmxm( trans, r, c, m, r, out, ldout, in, ldin, alpha, nrhs );
-	}
-	inline void mmxmpym( enum cspblas_Trans trans, double* out, int ldout, 
-	              const double* in, int ldin, double alpha, const double* Y, int ldY, double beta, int nrhs ) const
-	{
-		cblas_mmxmpym( trans, r, c, m, r, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs );
-	}
 	
 	inline Matrix& operator= ( const __scal_vec_trans<Matrix> );
 	inline Matrix& operator= ( const __op_mul_vec<Matrix,Matrix> );
@@ -823,7 +806,6 @@ inline Vector& Vector::operator=( const __op_mul_vec<Matrix,Vector> R )
 {
 	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r, 
 		R.vecA.vec.v, 1, 0.0, this->v, 1 );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
 // 	std::cout<<"__op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
@@ -832,7 +814,6 @@ inline Vector& Vector::operator+=( const __op_mul_vec<Matrix,Vector> R )
 {
 	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r, 
 		R.vecA.vec.v, 1, 1.0, this->v, 1 );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
 // 	std::cout<<"+= __op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
@@ -841,7 +822,6 @@ inline Vector& Vector::operator-=( const __op_mul_vec<Matrix,Vector> R )
 {
 	cblas_dgemv( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r, 
 		R.vecA.vec.v, 1, 1.0, this->v, 1 );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
 // 	std::cout<<"-= __op_mul_vec<Matrix,Vector>\n";
 	return *this;
 }
@@ -875,22 +855,16 @@ inline Vector& Vector::operator=( const __scal_vec_trans_rng<Vector> )
 	return *this;
 }
 
-inline Vector& Vector::operator=( const __op_mul_vec_rng<Matrix,Vector> R )
+inline Vector& Vector::operator=( const __op_mul_vec_rng<Matrix,Vector> )
 {
 	// cblas_dgemv( ... )
-	cblas_mmx( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ],
-	           R.op.vec.r, this->v, &R.vecA.vec.v[ R.vecA.i1 ], R.op.alpha );
-
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmx err";
 	std::cout<<"__op_mul_vec_rngMatrix,Vector>\n";
 	PDError(-1);
 	return *this;
 }
 
-inline Vector& Vector::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> R )
+inline Vector& Vector::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Vector> )
 {
-	cblas_mmxpy( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
-	             this->v, &R.vecA.vec.v[ R.vecA.i1 ], R.op.alpha, &R.vecB.vec.v[ R.vecB.i1 ], R.vecB.alpha );
 	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Vector>\n";
 	PDError(-1);
 	return *this;
@@ -912,8 +886,6 @@ inline Matrix& Matrix::operator=( const __op_mul_vec<Matrix,Matrix> R )
 	cblas_dgemm( CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
 	             this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
 	             R.vecA.vec.m, R.vecA.vec.r, 0.0, this->m, this->r );
-// 	R.op.vec.mmxm( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans ) std::cout<<"Dmmxm err";
 	std::cout<<"= __op_mul_vec<Matrix,Matrix>\n";
 	PDError(-1);
 	return *this;
@@ -941,10 +913,8 @@ inline Matrix& Matrix::operator-=( const __op_mul_vec<Matrix,Matrix> R )
 
 // obsolote : op_mul_vec_plus_vec
 
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> R )
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec<Matrix,Matrix> )
 {
-	R.op.vec.mmxmpym( R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecA.vec.c );
-// 	if( R.vecA.alpha != 1.0 || R.vecA.tr != NoTrans || R.vecB.tr != NoTrans ) std::cout<<"Dmmxmpym err";
 	std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
 	PDError(-1);
 	return *this;
@@ -959,24 +929,17 @@ inline Matrix& Matrix::operator=( const __scal_vec_trans_rng<Matrix> )
 	return *this;
 }
 
-inline Matrix& Matrix::operator=( const __op_mul_vec_rng<Matrix,Matrix> R )
+inline Matrix& Matrix::operator=( const __op_mul_vec_rng<Matrix,Matrix> )
 {
 	// cblas_dgemm( ... );
-	cblas_mmxm( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
-	           this->m, this->r, &R.vecA.vec.m[ R.vecA.i1 + R.vecA.vec.r * R.vecA.j1 ], R.vecA.vec.r, R.op.alpha, R.vecA.j2 - R.vecA.j1 );
 	std::cout<<"__op_mul_vec_rngMatrix,Matrix>\n";
 	PDError(-1);
 	return *this;
 }
 
 // obsolote
-inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> R )
+inline Matrix& Matrix::operator=( const __op_mul_vec_plus_vec_rng<Matrix,Matrix> )
 {
-	cblas_mmxmpym( R.op.tr, R.op.i2 - R.op.i1, R.op.j2 - R.op.j1, &R.op.vec.m[ R.op.i1 + R.op.vec.r * R.op.j1 ], R.op.vec.r,
-	              this->m, this->r, // out
-	              &R.vecA.vec.m[ R.vecA.i1 + R.vecA.vec.r * R.vecA.j1 ], R.vecA.vec.r, R.op.alpha, // in1
-	              &R.vecB.vec.m[ R.vecB.i1 + R.vecB.vec.r * R.vecB.j1 ], R.vecB.vec.r, R.vecB.alpha, // in2
-	              R.vecA.j2 - R.vecA.j1 ); // nrhs
 	std::cout<<"__op_mul_vec_plus_vec_rng<Matrix,Matrix>\n";
 	PDError(-1);
 	return *this;
