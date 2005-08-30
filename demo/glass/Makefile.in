@@ -3,7 +3,7 @@ CXX=@CXX@
 
 NAME = sys-glass
 
-DSFILES = Makefile.in $(NAME).cpp cfile-start cfile-pdsw
+DSFILES = Makefile.in $(NAME).cpp cfile-start cfile-pdsw cfile-pd
 
 $(NAME).so: ../../src/pddesys.h
 	$(CXX) $(CXXFLAGS) -I../../src -o $(NAME).so $(NAME).cpp

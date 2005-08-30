@@ -491,7 +491,7 @@ int main( int argc, const char** argv )
 			}
 			else if( params->SWITCH == HOPFSwitch )
 			{
-				std::cout<<"\nSwitching to the periodic dolution branch at the HOPF point.\n";
+				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point.\n";
 				pt.SwitchHOPF( params->DSSTART );
 				pt.setCont( params->CP );
 			}

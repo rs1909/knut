@@ -177,14 +177,14 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
 			out(1) = 0.0;
 			break;
 		default:
-			cout << "dtau: not implemented\n";
+			std::cout << "dtau: not implemented\n";
 			break;
 	}
 }
 
 void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 {
-  if( (t < 0)||(t > 1) ){ cout << "rhs: t is not element of the interval\n"; }
+  if( (t < 0)||(t > 1) ){ std::cout << "rhs: t is not element of the interval\n"; }
   double g;
   if( t < TAU2 ) g = 1.0;
   else g = 0.0;
@@ -198,7 +198,7 @@ void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
-  if( (t < 0)||(t > 1) ){ cout << "deri: t is not element of the interval\n"; }
+  if( (t < 0)||(t > 1) ){ std::cout << "deri: t is not element of the interval\n"; }
   double g;
   if( t < TAU2 ) g = 1.0;
   else g = 0.0;
@@ -221,7 +221,7 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
       out(1,1) = 0.0;
       break;
     default:
-      cout << "deri: not implemented\n";
+      std::cout << "deri: not implemented\n";
       break;
     }
   }     
@@ -229,14 +229,14 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
   if( (nx == 0) && (np == 1) ){
     switch( vp[0] ){
     case 0: //  T period length
-      cout << "deri w.r.t. T: not implemented\n";
+      std::cout << "deri w.r.t. T: not implemented\n";
       break;
     case 2:
       out(0) = 0.0;
       out(1) = g*scf( phi, x(0,0), x(0,1) );
       break;
     default:
-      cout << "deri: not implemented\n";
+      std::cout << "deri: not implemented\n";
       break;
     }
   }
@@ -255,17 +255,17 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 	out(0,1) = 0.0;
 	out(1,0) = g*par(2)*d_scf_x0x0( phi, x(0,0), x(0,1) )*vv(0,0);
 	out(1,1) = 0.0;
-	//std::cout<<"-00-"<<g*par(2)*d_scf_x0x0( x(0,0), x(0,1) )*vv(0,0);
+	//std::std::cout<<"-00-"<<g*par(2)*d_scf_x0x0( x(0,0), x(0,1) )*vv(0,0);
 	break;
       case 1:
 	out(0,0) = 0.0;
 	out(0,1) = 0.0;
 	out(1,0) = g*par(2)*d_scf_x0x1( phi, x(0,0), x(0,1) )*vv(0,0);
 	out(1,1) = 0.0;
-	//std::cout<<"-01-"<<g*par(2)*d_scf_x0x1( x(0,0), x(0,1) )*vv(0,0);
+	//std::std::cout<<"-01-"<<g*par(2)*d_scf_x0x1( x(0,0), x(0,1) )*vv(0,0);
 	break;
       default:
-	cout << "deri: not implemented\n";
+	std::cout << "deri: not implemented\n";
 	break;
       }
       break;
@@ -278,22 +278,22 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 	out(0,1) = 0.0;
 	out(1,0) = g*par(2)*d_scf_x0x1( phi, x(0,0), x(0,1) )*vv(0,1);
 	out(1,1) = 0.0;
-	//std::cout<<"-10-"<<g*par(2)*d_scf_x0x1( x(0,0), x(0,1) )*vv(0,1);
+	//std::std::cout<<"-10-"<<g*par(2)*d_scf_x0x1( x(0,0), x(0,1) )*vv(0,1);
 	break;
       case 1:
 	out(0,0) = 0.0;
 	out(0,1) = 0.0;
 	out(1,0) = g*par(2)*d_scf_x1x1( phi, x(0,0), x(0,1) )*vv(0,1);
 	out(1,1) = 0.0;
-	//std::cout<<"-11-"<<g*par(2)*d_scf_x1x1( x(0,0), x(0,1) )*vv(0,1);
+	//std::std::cout<<"-11-"<<g*par(2)*d_scf_x1x1( x(0,0), x(0,1) )*vv(0,1);
 	break;
       default:
-	cout << "deri: not implemented\n";
+	std::cout << "deri: not implemented\n";
 	break;
       }
       break;
     default:
-      cout << "deri: not implemented\n";
+      std::cout << "deri: not implemented\n";
       break;
     }
   }
@@ -301,7 +301,7 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
   if( (nx == 1) && (np == 1) ){
     switch( vp[0] ){
     case 0: //  T period length
-      cout << "deri w.r.t. T: not implemented\n";
+      std::cout << "deri w.r.t. T: not implemented\n";
       break;
     case 2:
       switch( vx[0] ){
@@ -318,12 +318,12 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 	out(1,1) = 0.0;
 	break;
       default:
-	cout << "deri: not implemented\n";
+	std::cout << "deri: not implemented\n";
 	break;
       }		
       break;
     default:
-      cout << "deri: not implemented\n";
+      std::cout << "deri: not implemented\n";
       break;
     }
   }
