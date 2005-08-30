@@ -41,8 +41,8 @@ void GnuPlot::Plot( int n, char *style )
 {
   if( n >= (int)cmd.size() ) { 
     for( int i = cmd.size(); i <= n; i++ ) {
-      cmd.insert(cmd.end(), string() );
-      data.insert(data.end(), string() );
+      cmd.insert(cmd.end(), std::string() );
+      data.insert(data.end(), std::string() );
     }
   }
   cmd[n] = style;
@@ -50,8 +50,8 @@ void GnuPlot::Plot( int n, char *style )
 
 void GnuPlot::AddData( int n, double x, double y )
 {
-  ostringstream tmp;
-  if( n >= (int)cmd.size() ){ cout<<"Gnuplot::AddData: Bad index\n"; exit(-1); }
+  std::ostringstream tmp;
+  if( n >= (int)cmd.size() ){ std::cout<<"Gnuplot::AddData: Bad index\n"; exit(-1); }
   
   tmp<<x<<'\t'<<y<<'\n'; 
   data[n] += tmp.str();
@@ -59,8 +59,8 @@ void GnuPlot::AddData( int n, double x, double y )
 
 void GnuPlot::AddSData( int n, double x, double y )
 {
-  ostringstream tmp;
-  if( n >= (int)cmd.size() ){ cout<<"Gnuplot::AddData: Bad index\n"; exit(-1); }
+  std::ostringstream tmp;
+  if( n >= (int)cmd.size() ){ std::cout<<"Gnuplot::AddData: Bad index\n"; exit(-1); }
   
   tmp<<"\n\n"<<x<<'\t'<<y<<'\n'; 
   data[n] += tmp.str();

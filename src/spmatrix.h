@@ -117,7 +117,7 @@ class SpMatrix
 		/// plots the structure of the matrix
 		void StrPlot( GnuPlot& pl );
 		/// prints out Ap
-		void PrintAp(){ for(int i=0; i<n+1; i++) cout<<Ap[i]<<'\t'; cout<<'\n'; }
+		void PrintAp(){ for(int i=0; i<n+1; i++) std::cout<<Ap[i]<<'\t'; std::cout<<'\n'; }
 		/// prints the whole matrix onto the screen
 		void Print();
 };
@@ -147,7 +147,7 @@ class SpFact : public SpMatrix
 		SpFact( SpMatrix& M );
 		inline SpFact( SpFact& ) : SpMatrix( 'F', 1, 1 )
 		{
-			cout<<"SpFact::SpFact(SpFact&): not implemented\n";
+			std::cout<<"SpFact::SpFact(SpFact&): not implemented\n";
 		}
 		~SpFact();
 
@@ -201,7 +201,7 @@ class StabMatrix
 
 inline void SpMatrix::Init( char F, int n_, int m_, int nz )
 {
-	if( (F != 'R')&&(F != 'C') ) cout<<"SpMatrix::CONSTRUCTOR: invalid format specification.\n";
+	if( (F != 'R')&&(F != 'C') ) std::cout<<"SpMatrix::CONSTRUCTOR: invalid format specification.\n";
 	format = F;
 	n = 0;
 	m = m_;
@@ -267,7 +267,7 @@ inline int& SpMatrix::WrLi( int l, int e )
 #ifdef DEBUG
 	}else
 	{
-		cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ai[Ap[l]+e];
+		std::cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ai[Ap[l]+e];
 	}
 #endif
 }
@@ -282,7 +282,7 @@ inline double& SpMatrix::WrLx( int l, int e )
 #ifdef DEBUG
 	}else
 	{
-		cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ax[Ap[l]+e];
+		std::cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ax[Ap[l]+e];
 	}
 #endif
 }
@@ -297,7 +297,7 @@ inline int SpMatrix::GetL( int n_ )
 #ifdef DEBUG
 	}else
 	{
-		cout<<"SpMatrix::GetL: Error\n"; return -1;
+		std::cout<<"SpMatrix::GetL: Error\n"; return -1;
 	}
 #endif
 }

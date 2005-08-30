@@ -32,11 +32,11 @@ class PointData
 	public:
 		inline PointData( int nsol, int npar, int nev ) : sol(nsol), par(npar), mRe(nev), mIm(nev) {}
 
-		inline void Save( ofstream& file )
+		inline void Save( std::ofstream& file )
 		{
 			for( int i=0; i < sol.Size(); i++ ) file<<sol(i)<<"\n";
 		}
-		void Load( ifstream& file );
+		void Load( std::ifstream& file );
 
 	protected:
 
@@ -115,16 +115,16 @@ class Point : public PointData
 		void    Plot( GnuPlot& pl );
 		inline void    Print( char* file )
 		{
-			ofstream ff(file);
+			std::ofstream ff(file);
 			for( int i=0; i<colloc.Nint()*colloc.Ndeg()+1; i++ )
 			{
 				for( int j=0; j<colloc.Ndim(); j++ ) ff<<sol(colloc.Ndim()*i + j)<<"\t";
 				ff<<"\n";
 			}
 		}
-		void ReadNull( ifstream& file );
-		void Read( ifstream& file, bool tan=false );
-		void Write( ofstream& file );
+		void ReadNull( std::ifstream& file );
+		void Read( std::ifstream& file, bool tan=false );
+		void Write( std::ofstream& file );
 
 	private:
 		

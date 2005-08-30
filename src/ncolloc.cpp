@@ -56,7 +56,7 @@ static void poly_gau( Vector& roots )
 			a(0,4) = 0.0; a(0,5) = -21.0/13; a(0,6) = 0;
 			break;
 		default:
-			cout << "Something wrong! \n";
+			std::cout << "Something wrong! \n";
 			PDError(-1);
 			return;
 			break;
@@ -66,7 +66,7 @@ static void poly_gau( Vector& roots )
 	for(int i = 0; i < m-1; i++)
 	{
 		for( int j = 0; j < m; j++)
-		{ 
+		{
 			if( i+1 == j ) a(i,j) = 1.0;
 			else a(i,j) = 0.0;
 		}
@@ -123,7 +123,7 @@ static void poly_lgr( Vector& t, Vector &out, double c )
 
 	if( t.Size() != out.Size() )
 	{
-		cout << "poly_lgr: wrong dimensions" << '\n';
+		std::cout << "poly_lgr: wrong dimensions" << '\n';
 		PDError(-1);
 	}
 	for( int i = 0; i < t.Size(); i++)
@@ -146,7 +146,7 @@ static void poly_dlg( Vector& t, Vector& out, double c)
 
 	if( t.Size() != out.Size() )
 	{
-		cout << "poly_dlg: wrong dimensions" << '\n';
+		std::cout << "poly_dlg: wrong dimensions" << '\n';
 		PDError(-1);
 	}
 

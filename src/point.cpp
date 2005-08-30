@@ -1409,7 +1409,7 @@ void Point::Plot( GnuPlot& pl )
 	pl.Show();
 }
 
-void Point::Write( ofstream& file )
+void Point::Write( std::ofstream& file )
 {
 	Vector msh( NDEG*NINT+1 );
 	colloc.getMesh( msh );
@@ -1429,7 +1429,7 @@ void Point::Write( ofstream& file )
 	file.flush();
 }
 
-void Point::Read( ifstream& file, bool tan )
+void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
@@ -1489,7 +1489,7 @@ void Point::Read( ifstream& file, bool tan )
 	}
 }
 
-void Point::ReadNull( ifstream& file )
+void Point::ReadNull( std::ifstream& file )
 {
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;

@@ -781,7 +781,7 @@ void CollocTR::ImportTan( Vector& out, Vector& Re, Vector& Im, double alpha )
 void CollocTR::Save( char* dat, char* idx, const Vector& in )
 {
 	// writing to file for plotting
-	ofstream ff(dat);
+	std::ofstream ff(dat);
 	for( int i2 = 0; i2 < nint2; i2++ )
 	{
 		for( int j2 = 0; j2 < ndeg2; j2++ )
@@ -801,7 +801,7 @@ void CollocTR::Save( char* dat, char* idx, const Vector& in )
 		}
 	}
 
-	ofstream gg(idx);
+	std::ofstream gg(idx);
 	for( int i1 = 0; i1 < nint1; i1++ )
 	{
 		for( int j1 = 0; j1 < ndeg1; j1++ )

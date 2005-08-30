@@ -471,7 +471,7 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 				R1(i) -= F1(i);
 			}
 		}
-		cout<<"F1: "<<sqrt(F1*F1)<<"R1: "<<sqrt(R1*R1)<<"\n";
+		std::cout<<"F1: "<<sqrt(F1*F1)<<"R1: "<<sqrt(R1*R1)<<"\n";
 	}
 	
 	if( A22 )
@@ -490,7 +490,7 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 				R2(i) -= F2(i);
 			}
 		}
-		cout<<"F2: "<<sqrt(F2*F2)<<"R2: "<<sqrt(R2*R2)<<"\n";
+		std::cout<<"F2: "<<sqrt(F2*F2)<<"R2: "<<sqrt(R2*R2)<<"\n";
 	}
 	
 	for( int i=0; i<F3.Size(); i++)
@@ -503,7 +503,7 @@ void HyperMatrix::Check( HyperVector& X, HyperVector& F )
 	{
 		R3_t = _A33 * X3; //_A33.AX( R3_t, X3, 1.0, false );
 		R3 += R3_t;
-		cout<<"F3: "<<sqrt(F3*F3)<<"R3: "<<sqrt(R3*R3)<<"\n";
+		std::cout<<"F3: "<<sqrt(F3*F3)<<"R3: "<<sqrt(R3*R3)<<"\n";
 	}
 }
 

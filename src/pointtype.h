@@ -121,6 +121,7 @@ inline const char* VarToStr( Var var )
 	return "VarInvalid";
 }
 
+template< class T > class Array1D;
 // helper function
 void PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx );
 

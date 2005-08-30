@@ -31,9 +31,6 @@ extern "C" {
 }
 #endif
 
-using namespace std;
-
-
 template<class T>
 class Array1D{
 
@@ -172,7 +169,7 @@ class Array2D{
 			for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 		} else
 		{
-			cout<<"Array2D<T>::operator= : incompatible sizes\n";
+			std::cout<<"Array2D<T>::operator= : incompatible sizes\n";
 		}
 		return *this;
 	}
@@ -180,8 +177,8 @@ class Array2D{
 	inline T& operator()( const int i, const int j )
 	{
 	 #ifdef DEBUG
-		if((i>=r)||(j>=c)){ cout<<"bound& "<<r<<", "<<c<<",-"<<i<<", "<<j<<"\n"; PDError(1); }
-		if((i<0)||(j<0)){ cout<<"lbound& "<<i<<", "<<j<<"\n"; PDError(1); }
+		if((i>=r)||(j>=c)){ std::cout<<"bound& "<<r<<", "<<c<<",-"<<i<<", "<<j<<"\n"; PDError(1); }
+		if((i<0)||(j<0)){ std::cout<<"lbound& "<<i<<", "<<j<<"\n"; PDError(1); }
 	 #endif
 		return m[i + r*j];
 	}
@@ -189,8 +186,8 @@ class Array2D{
 	inline T operator()( const int i, const int j ) const
 	{
 	 #ifdef DEBUG
-		if((i>=r)||(j>=c)){ cout<<"bound_\n"; PDError(1); }
-		if((i<0)||(j<0)){ cout<<"lbound_\n"; PDError(1); }
+		if((i>=r)||(j>=c)){ std::cout<<"bound_\n"; PDError(1); }
+		if((i<0)||(j<0)){ std::cout<<"lbound_\n"; PDError(1); }
 	 #endif
 		return m[i + r*j];
 	}
@@ -198,8 +195,8 @@ class Array2D{
 	inline T& operator()( int i )
 	{
 	 #ifdef DEBUG
-		if( i>=r*c ){ cout<<"bound11&\n"; PDError(1); }
-		if((r!=1)&&(c!=1)){ cout<<"H&\n"; PDError(1); }
+		if( i>=r*c ){ std::cout<<"bound11&\n"; PDError(1); }
+		if((r!=1)&&(c!=1)){ std::cout<<"H&\n"; PDError(1); }
 	 #endif
 		return m[i];
 	}
@@ -207,8 +204,8 @@ class Array2D{
 	inline T operator()( int i ) const
 	{
 	 #ifdef DEBUG
-		if( i>=r*c ){ cout<<"bound11_\n"; PDError(1); }
-		if((r!=1)&&(c!=1)){ cout<<"H&\n"; PDError(1); }
+		if( i>=r*c ){ std::cout<<"bound11_\n"; PDError(1); }
+		if((r!=1)&&(c!=1)){ std::cout<<"H&\n"; PDError(1); }
 	 #endif
 		return m[i];
 	}
@@ -259,7 +256,7 @@ class Array3D{
 			for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
 		} else
 		{
-			cout<<"Array3D<T>::operator= : incompatible sizes\n";
+			std::cout<<"Array3D<T>::operator= : incompatible sizes\n";
 		}
 		return *this;
 	}
@@ -267,8 +264,8 @@ class Array3D{
 	inline T& operator()( const int i, const int j, const int k )
 	{
 	 #ifdef DEBUG
-		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
-		if((i<0)||(j<0)||(k<0)) cout<<"lbound&\n";
+		if((i>=d1)||(j>=d2)||(k>=d3)) std::cout<<"bound&\n";
+		if((i<0)||(j<0)||(k<0)) std::cout<<"lbound&\n";
 	 #endif
 		return m[i + d1*(j + d2*k)];
 	}
@@ -276,8 +273,8 @@ class Array3D{
 	inline T operator()( const int i, const int j, const int k ) const
 	{
 	 #ifdef DEBUG
-		if((i>=d1)||(j>=d2)||(k>=d3)) cout<<"bound&\n";
-		if((i<0)||(j<0)||(k<0)) cout<<"lbound&\n";
+		if((i>=d1)||(j>=d2)||(k>=d3)) std::cout<<"bound&\n";
+		if((i<0)||(j<0)||(k<0)) std::cout<<"lbound&\n";
 	 #endif
 		return m[i + d1*(j + d2*k)];
 	}
@@ -482,7 +479,7 @@ class Matrix : public Array2D<double>
 
 	inline int Row() const { return r; }
 	inline int Col() const { return c; }
-	inline int Size() const { if((r==1)||(c==1)){return r*c;}else{cout<<"Hs\n"; return 0;} }
+	inline int Size() const { if((r==1)||(c==1)) { return r*c; } else { std::cout<<"Hs\n"; return 0; } }
 
 #ifndef PDDESYS_H
 	inline void mmx( enum cspblas_Trans trans, double* out, const double* in, double alpha ) const
@@ -556,7 +553,7 @@ class Matrix : public Array2D<double>
 			}
 			std::cout<<'\n';
 		}
-		cout<<"SUM: "<<sum<<'\n';
+		std::cout<<"SUM: "<<sum<<'\n';
 	}
 	
 	friend class Vector;
@@ -607,7 +604,7 @@ class MatFact : public Matrix
 		inline MatFact& operator=( MatFact& M )
 		{
 			Matrix::operator=( M );
-			cout<<"Copying MatFact is not yet implemented, though the Matrix part will be copied normally\n";
+			std::cout<<"Copying MatFact is not yet implemented, though the Matrix part will be copied normally\n";
 			return *this;
 		}
 		
@@ -816,7 +813,8 @@ inline Vector& Vector::operator+=( const __scal_vec_trans<Vector> R )
 inline Vector& Vector::operator-=( const __scal_vec_trans<Vector> R )
 {
 	cblas_daxpy( n, -R.alpha, R.vec.v, 1, v, 1 );
-	std::cout<<"-= __scal_vec\n"; return *this;
+// 	std::cout<<"-= __scal_vec\n";
+	return *this;
 }
 
 // op_mul_vec

@@ -15,13 +15,11 @@
 #include <sstream>
 #include <stdio.h>
 
-using namespace std;
-
 class GnuPlot{
-  FILE*          prg;
-  ostringstream  pl;
-  vector<string> cmd;
-  vector<string> data;
+  FILE*               prg;
+  std::ostringstream  pl;
+  std::vector<std::string> cmd;
+  std::vector<std::string> data;
 public:
   inline GnuPlot() : cmd(), data() { prg = popen("gnuplot","w"); }
   inline ~GnuPlot() { pclose(prg); }

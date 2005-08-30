@@ -13,6 +13,7 @@
 #include "torpoint.h"
 #include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <fstream>
 #include <cmath>
 
@@ -23,10 +24,10 @@
 
 sys-milltwofull.so   SYSNAME
 0							LABEL
-0 1 0						TYPE, P0, NPARX, PARX ....
+0 1 0						TYPE, CP, NPARX, PARX ....
 200 4 5					NINT, NDEG, NMUL, STAB, NMAT
 12 12 4 4				NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)chips were the best though! Even NASA thinks so
-126 -100.0 100.0		STEPS, P0MIN, P0MAX
+126 -100.0 100.0		STEPS, CPMIN, CPMAX
 0.1 0.01 0.2 0.1		DS, DSMIN, DSMAX, DSSTART
 1e-4 1e-4 1e-4	 	   EPSC, EPSR, EPSS
 30 30 30					NITC, NITR, NITS
@@ -49,14 +50,14 @@ struct cfile {
 	int      STAB;            // compute stability or not STAB == 0 -> NO else yes
 	int      NMAT;            // number of intervals, when computing stability
 	int      NINT1, NINT2, NDEG1, NDEG2;
-	int      P0;              // the principal continuation parameter
-	int      P0Type;          // type of the principal continuation parameter
+	int      CP;              // the principal continuation parameter
+	int      CPType;          // type of the principal continuation parameter
 	int      NPARX;           // number of additional parameters
 	int      PARX[MAX_PARX];
 	int      PARXType[MAX_PARX];
 	int      STEPS;
-	double   P0MIN;
-	double   P0MAX;
+	double   CPMIN;
+	double   CPMAX;
 	double   DS;
 	double   DSMIN;
 	double   DSMAX;
@@ -73,7 +74,7 @@ struct cfile {
 void getParams( cfile* pms, const char* filename )
 {
 	std::ifstream file;
-	file.exceptions ( ifstream::eofbit | ifstream::failbit | ifstream::badbit );
+	file.exceptions ( std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit );
 	try
 	{
 		char pt;
@@ -85,8 +86,8 @@ void getParams( cfile* pms, const char* filename )
 		file >> pms->LABEL;
 		while( file.get() != '\n' );
 		
-		file >> pms->TYPE >> pt >> pms->P0; pms->P0Type = pt;
-		if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: P0: Bad parameter type."; PDError(-1); }
+		file >> pms->TYPE >> pt >> pms->CP; pms->CPType = pt;
+		if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: CP: Bad parameter type."; PDError(-1); }
 		pms->EXTSYS = (pms->TYPE == -1);
 		if( pms->EXTSYS )
 		{
@@ -124,15 +125,15 @@ void getParams( cfile* pms, const char* filename )
 		file >> pms->NINT1 >> pms->NINT2 >> pms->NDEG1 >> pms->NDEG2;
 		while( file.get() != '\n' );
 		
-		file >> pms->STEPS >> pms->P0MIN >> pms->P0MAX;
+		file >> pms->STEPS >> pms->CPMIN >> pms->CPMAX;
 		while( file.get() != '\n' );
 		
 		file >> pms->DS >> pms->DSMIN >> pms->DSMAX >> pms->DSSTART;
 		while( file.get() != '\n' );
 		
-		file >> pms->NITC >> pms->EPSC >> pms->EPSR >> pms->EPSS;
-		pms->NITR = pms->NITC;
-		pms->NITS = pms->NITC;
+		file >> pms->EPSC >> pms->EPSR >> pms->EPSS;
+		while( file.get() != '\n' );
+		file >> pms->NITC >> pms->NITR >> pms->NITS;
 		// Ignore the rest of the file
 	}
 	catch (ifstream::failure e)
@@ -148,22 +149,23 @@ void printParams( cfile* pms )
 	std::cout<<pms->LABEL<<" \t\t\tLABEL\n";
 	if( pms->TYPE != -1 )
 	{
-		std::cout<<pms->TYPE<<" "<<pms->P0<<" "<<pms->NPARX<<" ";
-		for( int i=0; i<pms->NPARX; i++ ) std::cout<<(pms->PARX)[i]<<" ";
-		std::cout<<"\t\tTYPE, P0, NPARX, PARX[NPARX]\n";
+		std::cout<<pms->TYPE<<" "<<(char)(pms->CPType)<<pms->CP<<" "<<pms->NPARX<<" ";
+		for( int i=0; i<pms->NPARX; i++ ) std::cout<<(char)(pms->PARXType)[i]<<(pms->PARX)[i]<<" ";
+		std::cout<<"\t\tTYPE, CP, NPARX, PARX[NPARX]\n";
 	}else
 	{
-		std::cout<<pms->TYPE<<" "<<pms->P0<<" "<<pms->SWITCH<<" "<<pms->NEQN<<" ";
+		std::cout<<pms->TYPE<<" "<<pms->CP<<" "<<pms->SWITCH<<" "<<pms->NEQN<<" ";
 		for( int i=0; i<pms->NEQN; i++ ) std::cout<<"E"<<(pms->EQN)[i]<<" ";
 		std::cout<<pms->NVAR<<" ";
 		for( int i=0; i<pms->NVAR; i++ ) std::cout<<(char)(pms->VARType)[i]<<(pms->VAR)[i]<<" ";
-		std::cout<<"\t\tTYPE, P0, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
+		std::cout<<"\t\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
 	}
 	std::cout<<pms->NINT<<" "<<pms->NDEG<<" "<<pms->NMUL<<" "<<pms->STAB<<" "<<pms->NMAT<<" \t\tNINT, NDEG, NMUL, STAB, NMAT\n";
 	std::cout<<pms->NINT1<<" "<<pms->NINT2<<" "<<pms->NDEG1<<" "<<pms->NDEG2<<" \t\tNINT1, NINT2, NDEG1, NDEG2\n";
-	std::cout<<pms->STEPS<<" "<<pms->P0MIN<<" "<<pms->P0MAX<<" \t\tSTEPS, P0MIN, P0MAX\n";
+	std::cout<<pms->STEPS<<" "<<pms->CPMIN<<" "<<pms->CPMAX<<" \t\tSTEPS, CPMIN, CPMAX\n";
 	std::cout<<pms->DS<<" "<<pms->DSMIN<<" "<<pms->DSMAX<<" "<<pms->DSSTART<<" \tDS, DSMIN, DSMAX, DSSTART \n";
-	std::cout<<pms->NITC<<" "<<pms->EPSC<<" "<<pms->EPSR<<" "<<pms->EPSS<<" \tNITER, EPSC, EPSR, EPSS\n";
+	std::cout<<pms->EPSC<<" "<<pms->EPSR<<" "<<pms->EPSS<<" \tEPSC, EPSR, EPSS\n";
+	std::cout<<pms->NITC<<" "<<pms->NITR<<" "<<pms->NITS<<" \tNITC, NITR, NITS\n";
 }
 
 int initEqnVar( System& sys, cfile* params,
@@ -223,8 +225,8 @@ int initEqnVar( System& sys, cfile* params,
 				break;
 		}
 	}
-	// initializing P0
-	if( params->P0Type == 'I' ) params->P0 += sys.npar();
+	// initializing CP
+	if( params->CPType == 'I' ) params->CP += sys.npar();
 	
 	// checking whether it is an autonomous problem or not
 	bool aut = false;
@@ -266,7 +268,7 @@ int initEqnVar( System& sys, cfile* params,
 	// We suppose that if there is a switch we use one parameter continuation afterwards
 	// without using characteristic matrices. This means that the we can switch on the characteristic matrix,
 	// include the equation for the eigenvector norm before the other equations and
-	// add P0 to the variables as a normal parameter.
+	// add CP to the variables as a normal parameter.
 	Eqn eqn_temp;
 	switch( params->SWITCH )
 	{
@@ -284,7 +286,7 @@ int initEqnVar( System& sys, cfile* params,
 			eqn_start(1) = eqn_temp;
 			var_start(1) = VarNullSpace;
 			eqn_start(2) = EqnNorm;
-			var_start( var.Size() ) = (Var)(VarPAR0 + params->P0);
+			var_start( var.Size() ) = (Var)(VarPAR0 + params->CP);
 			for( int i = 2; i < eqn.Size(); i++ )
 			{
 				eqn_start(i+1) = eqn(i);
@@ -302,7 +304,7 @@ int initEqnVar( System& sys, cfile* params,
 			eqn_start(2) = EqnCPLXNormRe;
 			eqn_start(3) = EqnCPLXNormIm;
 			var_start(2) = VarAngle;
-			var_start( var_refine.Size() + 1 ) = (Var)(VarPAR0 + params->P0);
+			var_start( var_refine.Size() + 1 ) = (Var)(VarPAR0 + params->CP);
 			for( int i = 2; i < eqn_refine.Size(); i++ )
 			{
 				eqn_start(i+2) = eqn_refine(i);
@@ -389,8 +391,8 @@ int main( int argc, const char** argv )
 	System sys( params->SYSNAME );
 
 	Vector par(sys.npar()+ParEnd);
-	ofstream ff( branchFile );
-	ofstream out( outFile );
+	std::ofstream ff( branchFile );
+	std::ofstream out( outFile );
 	out<<std::scientific;
 	out.precision(12);
 	ff<<std::scientific;
@@ -435,7 +437,7 @@ int main( int argc, const char** argv )
 		pt.setRefEps( params->EPSR );
 		pt.setContEps( params->EPSC );
 		pt.setStartEps( params->EPSS );
-		pt.setCont( params->P0 );
+		pt.setCont( params->CP );
 		
 		std::cout<<std::scientific;
 		std::cout.precision(6);
@@ -443,7 +445,7 @@ int main( int argc, const char** argv )
 		// load the initial guess
 		if( params->LABEL != 0 )
 		{
-			ifstream istr( inFile );
+			std::ifstream istr( inFile );
 			for( int i=0; i<params->LABEL-1; i++ )
 			{
 				pt.ReadNull( istr );
@@ -466,11 +468,11 @@ int main( int argc, const char** argv )
 			
 			for( int j=0; j<npar+ParEnd; j++ ) par(j) = pt.getPar()(j);
 			//
-			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->P0 )<<parNum( npar, params->P0 )<<"\t";
+			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->CP )<<parNum( npar, params->CP )<<"\t";
 			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 			std::cout<<"\n";
 			//
-			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->P0);
+			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->CP);
 			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
 			std::cout<<"\n";
 			
@@ -479,24 +481,24 @@ int main( int argc, const char** argv )
 			{
 				std::cout<<"\nSwitching to the period two branch.\n";
 				pt.SwitchPD( );
-				pt.setCont( params->P0 );
+				pt.setCont( params->CP );
 			}
 			else if( params->SWITCH == LPSwitch )
 			{
 				std::cout<<"\nSwitching to the other branch.\n";
 				pt.SwitchLP( );
-				pt.setCont( params->P0 );
+				pt.setCont( params->CP );
 			}
 			else if( params->SWITCH == HOPFSwitch )
 			{
 				std::cout<<"\nSwitching to the periodic dolution branch at the HOPF point.\n";
 				pt.SwitchHOPF( params->DSSTART );
-				pt.setCont( params->P0 );
+				pt.setCont( params->CP );
 			}
 			else
 			{
 				std::cout<<"\nFinding the tangent.\n";
-				pt.setCont( params->P0 );
+				pt.setCont( params->CP );
 				pt.Tangent();
 			}
 			pt.Reset( eqn, var );
@@ -513,7 +515,7 @@ int main( int argc, const char** argv )
 			{
 				if( i % 24 == 0 )
 				{
-					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->P0Type<<params->P0<<"\t";
+					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->CPType<<params->CP<<"\t";
 					for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 					std::cout<<"\tUSTAB\tIT\n";
 				}
@@ -528,7 +530,7 @@ int main( int argc, const char** argv )
 				norm = pt.Norm();
 
 				// console output
-				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->P0);
+				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->CP);
 				for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
 				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos);
 				if( i != 0  && ustab != ustabprev )
@@ -606,7 +608,7 @@ int main( int argc, const char** argv )
 			pttr.setPar( par );
 			
 			pttr.setRho( alpha/(2.0*M_PI) );
-			pttr.setCont( params->P0 );
+			pttr.setCont( params->CP );
 
 			double ds = params->DS;
 			for( int i = 0; i < params->STEPS; i++ )

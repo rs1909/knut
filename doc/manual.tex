@@ -25,7 +25,7 @@
 \author{R\'obert Szalai}
 \newcommand{\pddever}{0.9.17}
 \version{\pddever}
-\date{25 August, 2005}
+\date{30 August, 2005}
 \maketitle
 
 \begin{center}
@@ -117,9 +117,10 @@ sys-glass.so        SYSNAME
 0 P1 0              TYPE, CP, NPARX, PARX ....
 50 4 5 1 1          NINT, NDEG, NMUL, STAB, NMAT
 12 12 4 4           NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)
-200 -100.0 100.0    STEPS, P0MIN, P0MAX
+200 -100.0 100.0    STEPS, CPMIN, CPMAX
 0.01 0.01 0.01 0.01 DS, DSMIN, DSMAX, DSSTART
-30 1e-4 1e-4 1e-7   NITER, EPSC, EPSR, EPSS
+1e-4 1e-4 1e-7      EPSC, EPSR, EPSS
+12 12 12            NITC, NITR, NITS
 \end{lstlisting} \end{quote} } \noindent
 In the first separated column are the parameter values, while the second column refers to their meaning. 
 When this file is read the program interprets only the first half of each line, that is, it moves to the next line
@@ -214,21 +215,18 @@ This is the ration of the maximum delay and the period length, more precisely, t
 \item[\funp{STEPS}] ~\\
 Maximum number of steps on the solution branch.
 %
-\item[\funp{P0MIN}, \funp{P0MAX}] ~\\
+\item[\funp{CPMIN}, \funp{CPMAX}] ~\\
 Currently not referenced, just write two numbers.
 %
 \item[\funp{DS}] ~\\
 Starting value of the stepsize in the pseudo-arclength continuation.
-It should be reasonably small depending on the problem. \funp{DS} is corrected in every continuation step between its minimum and maximum value. If the Newton method exceeds \funp{NITER} iterations and \funp{DS} reached its minimum value, the continuation is stopped.
+It should be reasonably small depending on the problem. \funp{DS} is corrected in every continuation step between its minimum and maximum value. If the Newton method exceeds \funp{NITC} iterations and \funp{DS} reached its minimum value, the continuation is stopped.
 %
 \item[\funp{DSMIN}, \funp{DSMAX}] ~\\
 The minimum and maximum value of \funp{DS}.
 %
 \item[\funp{DSSTART}] ~\\
 Used at branch switch from fixed point to periodic solution and periodic solution to torus. The initial solution is approximated linearly, by adding the linear guess multiplied by \funp{DSSTART} to the fixed point or periodic solution. This guess is in fact the tangent vector of the emanating solution and has unit norm.
-%
-\item[\funp{NITER}] ~\\
-Maximum number of Newton iteration steps.
 %
 \item[\funp{EPSC}] ~\\
 Convergence tolerance to a periodic solution during continuation. For periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of bifurcations it can be a bit larger about $10^{-4}$ to achieve reasonable stepsizes (\funp{DS}).
@@ -238,6 +236,17 @@ Tolerance in the refinement of solutions. (Solution refinement is used only befo
 %
 \item[\funp{EPSS}] ~\\
 Tolerance of \funp{CP} in converging to a bifurcation point. (Used at branch switching.)
+%
+\item[\funp{NITC}] ~\\
+Maximum number of Newton iteration steps in continuation.
+%
+\item[\funp{NITR}] ~\\
+Maximum number of Newton iteration steps, when converging to an initial solution.
+%
+\item[\funp{NITS}] ~\\
+Maximum number of continuation steps, when finding a bifurcation point using a secant method.
+The Newton iterations within a continuation step is controlled by \funp{NITC}.
+%
 \end{description}
 
 \subsection{User defined equations}
@@ -464,7 +473,7 @@ Here, each iteration step (\funp{IT}) is displayed: \funp{SOLnorm} is the $L^2$ 
 \[
 	\funp{ERR} = \frac{\funp{DIFFnorm}}{1+\funp{SOLnorm}} < \funp{EPSR}.
 \]
-If the prescribed accuracy is not reached, but \funp{IT} reaches \funp{NITER}, the program stops with error.
+If the prescribed accuracy is not reached, but \funp{IT} reaches \funp{NITR}, the program stops with error.
 
 In the next step, if appropriate, the program tries to find the bifurcation point. This is done by using a secant method, so it needs several steps to converge:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -474,7 +483,7 @@ LABEL      NORM         I1              P0              P2              IT
  s10    9.141645e-01    -2.792157e-06   5.506216e+00    1.555451e+00    2
  s11    9.141645e-01    -9.487486e-07   5.506216e+00    1.555451e+00    2
 \end{lstlisting} \end{quote} } \noindent
-The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other columns contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITER}. The \funp{IT} column denotes the number of Newton iteration steps, within each continuation step.
+The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other columns contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITS}. The \funp{IT} column denotes the number of Newton iteration steps within each continuation step.
 
 The main continuation proceeds similarly:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -650,12 +659,13 @@ parameter $b$ (\funp{P2}). The corresponding constants file (\filef{cfile-start}
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
 0                       LABEL
-10 P2 1 P0              TYPE, P0, NPARX, PARX ....
+10 P2 1 P0              TYPE, CP, NPARX, PARX ....
 200 4 5 1 1             NINT, NDEG, NMUL, STAB, NMAT
 12 12 4 4               NINT1, NINT2, NDEG1, NDEG2
-120 -100.0 100.0        STEPS, P0MIN, P0MAX
+120 -100.0 100.0        STEPS, CPMIN, CPMAX
 -0.002 0.002 0.002 0.1  DS, DSMIN, DSMAX, DSSTART
-12 1e-5 1e-5 1e-6       NITER, EPSC, EPSR, EPSS
+1e-5 1e-5 1e-6          EPSC, EPSR, EPSS
+12 12 12                NITC, NITR, NITS
 \end{lstlisting} \end{quote} } \noindent
 Invoke the program:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -693,7 +703,7 @@ by changing the solution type to \funp{12} and including an additional parameter
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
 112                     LABEL
-12 P2 2 P0 P1           TYPE, P0, NPARX, PARX ....
+12 P2 2 P0 P1           TYPE, CP, NPARX, PARX ....
 ...
 \end{lstlisting} \end{quote} } \noindent
 The continuation starts with the following command
@@ -712,7 +722,7 @@ Also, the arising period-2 orbits can be computed by switching to this new branc
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
 112                     LABEL
-14 P2 1 P0              TYPE, P0, NPARX, PARX ....
+14 P2 1 P0              TYPE, CP, NPARX, PARX ....
 ...
 \end{lstlisting} \end{quote} } \noindent
 %
