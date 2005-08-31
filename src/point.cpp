@@ -115,7 +115,7 @@ void Point::Reset( Array1D<Eqn>& eqn_, Array1D<Var>& var_ )
 }
 
 // not even member function public
-void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, const int* parx )
+void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, const int* parx, int npar_ )
 {
 	switch( Pt ){
 		case Sol:
@@ -145,8 +145,8 @@ void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, c
 			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 4 );
 			varr.Init( 4 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnCPLXNormRe; eqnr(3) = EqnCPLXNormIm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = VarAngle;      varr(3) = (Var)(VarPAR0 + parx[0]);
+			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnCPLXNormRe;                     eqnr(3) = EqnCPLXNormIm;
+			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = (Var)(VarPAR0 + npar_ + ParAngle); varr(3) = (Var)(VarPAR0 + parx[0]);
 			break;
 		case SolAUT:
 		case SolAUTPDSW:
@@ -177,8 +177,8 @@ void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, c
 			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 			eqnr.Init( 5 );
 			varr.Init( 5 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnPhase; eqnr(3) = EqnCPLXNormRe;            eqnr(4) = EqnCPLXNormIm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = VarAngle; varr(3) = (Var)(VarPAR0 + parx[0]); varr(4) = (Var)(VarPAR0 + parx[1]);
+			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnPhase;                          eqnr(3) = EqnCPLXNormRe;            eqnr(4) = EqnCPLXNormIm;
+			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = (Var)(VarPAR0 + npar_ + ParAngle); varr(3) = (Var)(VarPAR0 + parx[0]); varr(4) = (Var)(VarPAR0 + parx[1]);
 			break;
 		case SolTor:
 			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
@@ -285,7 +285,6 @@ void Point::Construct( )
 				charMat = 0;
 				dim2 = 0;
 				break;
-				
 			default:
 				std::cout<<" bad EqnNullSpace ";
 				PDError(-1);
@@ -295,25 +294,14 @@ void Point::Construct( )
 	
 	for( int i = 2; i < var.Size(); i++ )
 	{
-		if( (var(i) - VarPAR0 >= 0)&&(var(i) - VarPAR0 < NPAR) )
-		{ 
+		if( (var(i) - VarPAR0 >= 0)&&(var(i) - VarPAR0 < NPAR + ParEnd) )
+		{
 			varMap( i ) = var(i) - VarPAR0;
 		}
 		else
 		{
-			switch( var(i) )
-			{
-				case VarAngle:
-						varMap( i ) = NPAR + ParAngle;
-						break;
-				case VarNorm:
-						varMap( i ) = NPAR + ParNorm;
-					break;
-				default:
-					std::cout<<" bad PARAMETERS1 "<<i<<", "<<var(i)<<"\n";
-					PDError(-1);
-					break;
-			}
+			std::cout<<" bad PARAMETERS1 "<<i<<", "<<var(i)<<"\n";
+			PDError(-1);
 		}
 	}
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);

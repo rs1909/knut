@@ -1,3 +1,63 @@
+In 0.9.17 : This is the last release before 1.0
+ - Changes in the constants file. New constants are introduced:
+	DSSTART to control the branch swithing
+	NITER was removed to introduce NITC, NITR, NITS for more control 
+	over iteration steps. The first two are the maximum
+	Newton iteration steps allowed in continuation and refinement, 
+	respectively.
+	NITS is the maximum number of continuation steps, when converging to
+	a bifurcation point.
+ - A converter utility is introduced to convert older constants files to the
+   new format:
+	cfile09to10 <contants-file>
+   converts the old constants file into the new one: It sets STAB = 1,
+   NMAT = 1, NITC = NITR = NITC = NITER(the old parameter), DSSTART = DS.
+   This is a fairly good conversion and worked in all examples except
+   "laser", where NMAT=22.
+   This utility is safe in the sense that is does not accept new constants
+   files or already converted files.
+ - Lots of small bug fixes: the computation of rotation numbers corrected,
+   etc.
+ - Use the cblas everywhere, so no fortran BLAS is necessary anymore
+ - Matrix computation through overloaded operators. This was implemented
+   after a thorough testing. This has the same performance as the direct
+   call to CBLAS, because the compiler removes the overhead. It was checked
+   by examining the compiler's assembly output: gcc 4.0.1 is especially good
+   in this, gcc 3.4.4 is a bit worse, but not noticeably.
+ - Extensive use of templates in order to remove virtual functions for more
+   efficiency. Destructors of inherited classes remained and will remain 
+   virtual, though.
+ - Update UMFPACK for v4.1 to v4.4
+ - All demos are working:
+	glass : 
+	   make test : computes the period-1 branch and the period-2
+           branch
+           make test-pd : continues the period doubling bifurcation curve
+           of the period-1 solution. It will not to converge after a
+           while.
+	laser :
+	   make test : computes a periodic solution branch and its firts
+           bifurcation curve.
+	milloneup :
+	   make test : finds the Neimark_sacker bifurcation of the period-1
+	   solution and then continues the bifurcation curve.
+	   make test-tr : continues the arising invariant tori at the
+	   Neimark-Sacker point.
+	traffic :
+	   make test1 : finds Hopf points (2) of the fixed point and then
+	   continues them.
+	   make test2 : at the first Hopf point switches to the arising
+	   periodic orbits.
+	   make test3 : same at the second Hopf point
+	   make test4 : continues the fold bifurcation on the periodic
+	   solution branch
+	   make test5 : same as test4, but with the other fold bifurcation.
+	turn :
+	   make test : continues fixed points, finds Hopf bifurcation;
+	   continues it in two parameters and the computes the arising
+	   periodic orbits. This should not to converge after a while, 
+	   because the non-smoothness of the equation.
+
 In 0.9.14
  - The torus continuation is working again, but it is still experimental.
  - there is a demo in demo/milloneup/ which uses the torus continuation:

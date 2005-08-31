@@ -19,6 +19,7 @@
 
 #define MAX_PARX 8
 #define MAX_EQVAR 8
+#define MAX_SYM 4
 
 /*
 
@@ -69,7 +70,20 @@ struct cfile {
 	int      NITC;
 	int      NITR;
 	int      NITS;
+	int      NSYM;
+	int      RESYM[MAX_SYM];
+	int      IMSYM[MAX_SYM];
 };
+
+inline void parNamePrint( Vector& /*par*/, int npar, Array1D<Var>& var )
+{
+	for( int j = 2; j < var.Size(); j++ ) std::cout<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
+}
+
+inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
+{
+	for( int j = 2; j < var.Size(); j++ ) std::cout<<"\t"<<par( var(j) - VarPAR0 );
+}
 
 void getParams( cfile* pms, const char* filename )
 {
@@ -95,9 +109,10 @@ void getParams( cfile* pms, const char* filename )
 			file >> ival;
 			pms->SWITCH = (BranchSW)ival;
 			file >> pms->NEQN;
+			if( pms->NEQN > MAX_EQVAR ) { std::cout<<"Error: NEQN: System limit has been reached."; PDError(-1); }
 			for( int i = 0; i < pms->NEQN; i++ )
 			{
-				file >> pt >> (pms->EQN)[i]; 
+				file >> pt >> (pms->EQN)[i];
 				if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; PDError(-1); }
 			}
 			file >> pms->NVAR;
@@ -111,6 +126,7 @@ void getParams( cfile* pms, const char* filename )
 		}else
 		{
 			file >> pms->NPARX;
+			if( pms->NPARX > MAX_PARX ) { std::cout<<"Error: NPARX: System limit has been reached."; PDError(-1); }
 			for( int i = 0; i < pms->NPARX; i++ )
 			{
 				file >> pt >> (pms->PARX)[i]; (pms->PARXType)[i] = pt;
@@ -185,14 +201,15 @@ int initEqnVar( System& sys, cfile* params,
 			else if( (params->VARType)[i] == 'P' ) var(i) = (Var)( VarPAR0 + (params->VAR)[i] );
 			else if( (params->VARType)[i] == 'I' ) var(i) = (Var)( VarPAR0 + sys.npar() + (params->VAR)[i] );
 		}
-		params->NPARX = 0;
-		for( int i=0; i<eqn.Size(); i++ )
-		{
-			if( ((params->VARType)[i] == 'P')||((params->VARType)[i] == 'I') )
-			{
-				params->PARX[(params->NPARX)++] = var(i) - VarPAR0;
-			}
-		}
+		// fill up PARX and NPARX for the printing routines later
+// 		params->NPARX = 0;
+// 		for( int i=0; i<eqn.Size(); i++ )
+// 		{
+// 			if( ((params->VARType)[i] == 'P')||((params->VARType)[i] == 'I') )
+// 			{
+// 				params->PARX[(params->NPARX)++] = var(i) - VarPAR0;
+// 			}
+// 		}
 // 		for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
 // 		std::cout<<'\n';
 // 		for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
@@ -203,7 +220,7 @@ int initEqnVar( System& sys, cfile* params,
 		{
 			if( (params->PARXType)[i] == 'I' ) (params->PARX)[i] += sys.npar();
 		}
-		PtToEqnVar( eqn, var, (PtType)params->TYPE, params->NPARX, params->PARX );
+		PtToEqnVar( eqn, var, (PtType)params->TYPE, params->NPARX, params->PARX, sys.npar() );
 		switch( (PtType)params->TYPE )
 		{
 			case SolLPSW:
@@ -262,7 +279,7 @@ int initEqnVar( System& sys, cfile* params,
 		eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone;
 		var_refine(0) = VarSol; var_refine(1) = VarNone;
 	}
-	if( params->SWITCH == HOPFSwitch ) PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX );
+	if( params->SWITCH == HOPFSwitch ) PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX, sys.npar() ); // NPARX == 0
 	
 	// Here, we set up the branch switching.
 	// We suppose that if there is a switch we use one parameter continuation afterwards
@@ -303,7 +320,7 @@ int initEqnVar( System& sys, cfile* params,
 			var_start(1) = VarNullSpace;
 			eqn_start(2) = EqnCPLXNormRe;
 			eqn_start(3) = EqnCPLXNormIm;
-			var_start(2) = VarAngle;
+			var_start(2) = (Var)(VarPAR0 + sys.npar() + ParAngle); // CH
 			var_start( var_refine.Size() + 1 ) = (Var)(VarPAR0 + params->CP);
 			for( int i = 2; i < eqn_refine.Size(); i++ )
 			{
@@ -469,11 +486,11 @@ int main( int argc, const char** argv )
 			for( int j=0; j<npar+ParEnd; j++ ) par(j) = pt.getPar()(j);
 			//
 			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->CP )<<parNum( npar, params->CP )<<"\t";
-			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
+			parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 			std::cout<<"\n";
 			//
 			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->CP);
-			for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
+			parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
 			std::cout<<"\n";
 			
 			// making tangents
@@ -516,7 +533,7 @@ int main( int argc, const char** argv )
 				if( i % 24 == 0 )
 				{
 					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->CPType<<params->CP<<"\t";
-					for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
+					parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
 					std::cout<<"\tUSTAB\tIT\n";
 				}
 				itpos = (itpos+1) % ithist;
@@ -531,7 +548,7 @@ int main( int argc, const char** argv )
 
 				// console output
 				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->CP);
-				for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
+				parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
 				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos);
 				if( i != 0  && ustab != ustabprev )
 				{

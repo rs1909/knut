@@ -36,13 +36,8 @@ enum Var {
 	VarNone      = 0,
 	VarSol       = 1,
 	VarNullSpace = 8,
-	VarNorm      = 16,
-	VarAngle     = 17,
 	VarTORSol    = 32,
 	VarPAR0      = 64
-// 	VarPAR1,
-// 	VarPAR2,
-// 	VarPAR3
 };
 
 // this applies to torpoint.h too...
@@ -112,8 +107,6 @@ inline const char* VarToStr( Var var )
 		case VarNone:           return "VarNone          "; break;
 		case VarSol:            return "VarSol           "; break;
 		case VarNullSpace:      return "VarNullSpace     "; break;
-		case VarNorm:           return "VarNorm          "; break;
-		case VarAngle:          return "VarAngle         "; break;
 		case VarTORSol:         return "VarTORSol        "; break;
 		default:                return "Var ??????????   "; break;
 	}
@@ -122,7 +115,8 @@ inline const char* VarToStr( Var var )
 }
 
 template< class T > class Array1D;
+
 // helper function
-void PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx );
+void PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx, int npar_ );
 
 #endif
