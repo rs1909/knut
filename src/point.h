@@ -77,7 +77,12 @@ class Point : public PointData
 		inline void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
 		inline Vector& getPar() { return par; }
 		
-		void    setCont( int i );
+		inline void    setCont( int p ) { p1 = p; varMapCont( varMap.Size() ) = p1; }
+		inline void    setSym( int n, int* sRe, int* sIm )
+		{
+			rotRe.Init(n); rotIm.Init(n);
+			for( int i=0; i<n; i++ ) { rotRe(i) = sRe[i]; rotIm(i) = sIm[i]; }
+		}
 		
 		inline void    setRefIter( int i ) { RefIter = i; }
 		inline void    setContIter( int i ) { ContIter = i; }

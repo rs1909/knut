@@ -1124,12 +1124,6 @@ void Point::Tangent( )
 // 	std::cout<<"Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm<<'\n';
 }
 
-void Point::setCont( int p )
-{
-	p1 = p;
-	varMapCont( varMap.Size() ) = p1;
-}
-
 int Point::Continue( double ds )
 {
 	double Xnorm, Dnorm, Rnorm, Tnorm;

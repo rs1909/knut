@@ -150,6 +150,26 @@ void getParams( cfile* pms, const char* filename )
 		file >> pms->EPSC >> pms->EPSR >> pms->EPSS;
 		while( file.get() != '\n' );
 		file >> pms->NITC >> pms->NITR >> pms->NITS;
+		// Check whether we need to load NSYM
+		bool isSYM = false;
+		if( pms->EXTSYS)
+		{
+			for( int i = 2; i < pms->NEQN; i++ )
+			{
+				if( (Eqn)(pms->EQN)[i] == EqnPhaseRot ) isSYM = true;
+			}
+		}
+		if( isSYM )
+		{
+			// first go to the next line
+			while( file.get() != '\n' );
+			file >> pms->NSYM;
+			if( pms->NSYM > MAX_SYM ) { std::cout<<"Error: NSYM: System limit has been reached."; PDError(-1); }
+			for( int i = 0; i < pms->NSYM; i++ )
+			{
+				file >> (pms->RESYM)[i] >> (pms->IMSYM)[i];
+			}
+		}else pms->NSYM = 0;
 		// Ignore the rest of the file
 	}
 	catch (ifstream::failure e)
@@ -174,14 +194,22 @@ void printParams( cfile* pms )
 		for( int i=0; i<pms->NEQN; i++ ) std::cout<<"E"<<(pms->EQN)[i]<<" ";
 		std::cout<<pms->NVAR<<" ";
 		for( int i=0; i<pms->NVAR; i++ ) std::cout<<(char)(pms->VARType)[i]<<(pms->VAR)[i]<<" ";
-		std::cout<<"\t\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
+		std::cout<<"\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
 	}
 	std::cout<<pms->NINT<<" "<<pms->NDEG<<" "<<pms->NMUL<<" "<<pms->STAB<<" "<<pms->NMAT<<" \t\tNINT, NDEG, NMUL, STAB, NMAT\n";
 	std::cout<<pms->NINT1<<" "<<pms->NINT2<<" "<<pms->NDEG1<<" "<<pms->NDEG2<<" \t\tNINT1, NINT2, NDEG1, NDEG2\n";
 	std::cout<<pms->STEPS<<" "<<pms->CPMIN<<" "<<pms->CPMAX<<" \t\tSTEPS, CPMIN, CPMAX\n";
 	std::cout<<pms->DS<<" "<<pms->DSMIN<<" "<<pms->DSMAX<<" "<<pms->DSSTART<<" \tDS, DSMIN, DSMAX, DSSTART \n";
 	std::cout<<pms->EPSC<<" "<<pms->EPSR<<" "<<pms->EPSS<<" \tEPSC, EPSR, EPSS\n";
-	std::cout<<pms->NITC<<" "<<pms->NITR<<" "<<pms->NITS<<" \tNITC, NITR, NITS\n";
+	std::cout<<pms->NITC<<" "<<pms->NITR<<" "<<pms->NITS<<" \t\tNITC, NITR, NITS\n";
+	if( pms->NSYM != 0 )
+	{
+		std::cout<<pms->NSYM<<" ";
+		for( int i=0; i<pms->NSYM; i++ ) std::cout<<pms->RESYM[i]<<" "<<pms->IMSYM[i]<<" ";
+		std::cout<<"\t\tNSYM";
+		for( int i=0; i<pms->NSYM; i++ ) std::cout<<", R"<<i<<", I"<<i;
+		std::cout<<"\n";
+	}
 }
 
 int initEqnVar( System& sys, cfile* params,
@@ -201,15 +229,6 @@ int initEqnVar( System& sys, cfile* params,
 			else if( (params->VARType)[i] == 'P' ) var(i) = (Var)( VarPAR0 + (params->VAR)[i] );
 			else if( (params->VARType)[i] == 'I' ) var(i) = (Var)( VarPAR0 + sys.npar() + (params->VAR)[i] );
 		}
-		// fill up PARX and NPARX for the printing routines later
-// 		params->NPARX = 0;
-// 		for( int i=0; i<eqn.Size(); i++ )
-// 		{
-// 			if( ((params->VARType)[i] == 'P')||((params->VARType)[i] == 'I') )
-// 			{
-// 				params->PARX[(params->NPARX)++] = var(i) - VarPAR0;
-// 			}
-// 		}
 // 		for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
 // 		std::cout<<'\n';
 // 		for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
@@ -455,6 +474,7 @@ int main( int argc, const char** argv )
 		pt.setContEps( params->EPSC );
 		pt.setStartEps( params->EPSS );
 		pt.setCont( params->CP );
+		if( params->NSYM != 0 ) pt.setSym( params->NSYM, params->RESYM, params->IMSYM );
 		
 		std::cout<<std::scientific;
 		std::cout.precision(6);
