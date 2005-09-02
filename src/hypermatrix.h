@@ -68,7 +68,7 @@ class HyperMatrix
 				JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
 				JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector& deltaStar
 			);
-		template< class FACT > void inline __BEMW
+		template< class FACT > inline void __BEMW
 			(
 				int bord,
 				FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,

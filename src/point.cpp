@@ -333,7 +333,7 @@ void Point::Dispose()
 }
 
 // private
-double inline Point::SolNorm( Vector& sol, Vector* qq, Vector& par )
+inline double Point::SolNorm( Vector& sol, Vector* qq, Vector& par )
 {
 	double Xnorm = colloc.Integrate( sol, sol );
 	
@@ -688,14 +688,14 @@ void Point::Jacobian(
 //
 // **************************************************************************************************************** //
 
-void inline Point::Update( HyperVector& X )
+inline void Point::Update( HyperVector& X )
 {
 	sol += X.getV1();
 	if( qq ) *qq += X.getV2();
 	for( int i = 2; i < varMap.Size(); i++ ) par( varMap(i) ) += X.getV3()(i-2);
 }
 
-void inline Point::ContUpdate( HyperVector& X )
+inline void Point::ContUpdate( HyperVector& X )
 {
 	solNu += X.getV1();
 	if( qqNu ) *qqNu += X.getV2();

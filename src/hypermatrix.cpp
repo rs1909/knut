@@ -289,7 +289,7 @@ inline void HyperMatrix :: __BEMWF
 
 // BEMW
 template< class FACT >
-void inline HyperMatrix :: __BEMW
+inline void HyperMatrix :: __BEMW
 	(
 		int bord,
 		FACT&        A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,

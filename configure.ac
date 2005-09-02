@@ -1,4 +1,4 @@
-AC_INIT([PDDE-CONT], [0.9.17])
+AC_INIT([PDDE-CONT], [0.9.18-rc1])
 AC_DEFINE(DEFS,"")
 AM_INIT_AUTOMAKE
 
@@ -24,7 +24,7 @@ AC_COMPILE_IFELSE([int main() { return 0; }],
 
 if test "$GXX" == yes; then
   NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
-  CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall -Woverloaded-virtual"
+  CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
   MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
   AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
 fi

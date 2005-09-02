@@ -85,98 +85,116 @@ inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
 	for( int j = 2; j < var.Size(); j++ ) std::cout<<"\t"<<par( var(j) - VarPAR0 );
 }
 
+inline void pdioassert( std::istream& is )
+{
+	if( is.rdstate() & (std::istream::eofbit | std::istream::failbit | std::istream::badbit) )
+	{
+		switch( is.rdstate() )
+		{
+			case std::istream::eofbit:
+				std::cout<<"Unexpected end of file\n";
+				break;
+			case std::istream::failbit:
+				std::cout<<"Input failed\n";
+				break;
+			case std::istream::badbit:
+				std::cout<<"Bad input\n";
+				break;
+			default:
+				break;
+		}
+		PDError(-1);
+	}
+}
+
 void getParams( cfile* pms, const char* filename )
 {
 	std::ifstream file;
-	file.exceptions ( std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit );
-	try
+	char pt;
+	int ival;
+	
+	file.open( filename );
+	if(!file){ std::cout<<"Cannot open "<<filename<<"\n"; PDError(-1); }
+	
+	file >> pms->SYSNAME; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->LABEL; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->TYPE >> pt >> pms->CP; pms->CPType = pt; pdioassert(file);
+	if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: CP: Bad parameter type."; PDError(-1); }
+	
+	pms->EXTSYS = (pms->TYPE == -1);
+	if( pms->EXTSYS )
 	{
-		char pt;
-		int ival;
-		file.open( filename );
-		file >> pms->SYSNAME;
-		while( file.get() != '\n' );
-		
-		file >> pms->LABEL;
-		while( file.get() != '\n' );
-		
-		file >> pms->TYPE >> pt >> pms->CP; pms->CPType = pt;
-		if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: CP: Bad parameter type."; PDError(-1); }
-		pms->EXTSYS = (pms->TYPE == -1);
-		if( pms->EXTSYS )
+		// we need extended specifications
+		file >> ival;
+		pms->SWITCH = (BranchSW)ival;
+		file >> pms->NEQN; pdioassert(file);
+		if( pms->NEQN > MAX_EQVAR ) { std::cout<<"Error: NEQN: System limit has been reached."; PDError(-1); }
+		for( int i = 0; i < pms->NEQN; i++ )
 		{
-			// we need extended specifications
-			file >> ival;
-			pms->SWITCH = (BranchSW)ival;
-			file >> pms->NEQN;
-			if( pms->NEQN > MAX_EQVAR ) { std::cout<<"Error: NEQN: System limit has been reached."; PDError(-1); }
-			for( int i = 0; i < pms->NEQN; i++ )
-			{
-				file >> pt >> (pms->EQN)[i];
-				if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; PDError(-1); }
-			}
-			file >> pms->NVAR;
-			if( pms->NEQN != pms->NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; PDError(-1); }
-			for( int i = 0; i < pms->NVAR; i++ )
-			{
-				file >> pt >> (pms->VAR)[i]; (pms->VARType)[i] = pt;
-				if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; PDError(-1); }
-			}
-			while( file.get() != '\n' );
-		}else
-		{
-			file >> pms->NPARX;
-			if( pms->NPARX > MAX_PARX ) { std::cout<<"Error: NPARX: System limit has been reached."; PDError(-1); }
-			for( int i = 0; i < pms->NPARX; i++ )
-			{
-				file >> pt >> (pms->PARX)[i]; (pms->PARXType)[i] = pt;
-				if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; PDError(-1); }
-			}
-			while( file.get() != '\n' );
+			file >> pt >> (pms->EQN)[i]; pdioassert(file);
+			if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; PDError(-1); }
 		}
-		
-		file >> pms->NINT >> pms->NDEG >> pms->NMUL >> pms->STAB >> pms->NMAT;
-		while( file.get() != '\n' );
-		
-		file >> pms->NINT1 >> pms->NINT2 >> pms->NDEG1 >> pms->NDEG2;
-		while( file.get() != '\n' );
-		
-		file >> pms->STEPS >> pms->CPMIN >> pms->CPMAX;
-		while( file.get() != '\n' );
-		
-		file >> pms->DS >> pms->DSMIN >> pms->DSMAX >> pms->DSSTART;
-		while( file.get() != '\n' );
-		
-		file >> pms->EPSC >> pms->EPSR >> pms->EPSS;
-		while( file.get() != '\n' );
-		file >> pms->NITC >> pms->NITR >> pms->NITS;
-		// Check whether we need to load NSYM
-		bool isSYM = false;
-		if( pms->EXTSYS)
+		file >> pms->NVAR; pdioassert(file);
+		if( pms->NEQN != pms->NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; PDError(-1); }
+		for( int i = 0; i < pms->NVAR; i++ )
 		{
-			for( int i = 2; i < pms->NEQN; i++ )
-			{
-				if( (Eqn)(pms->EQN)[i] == EqnPhaseRot ) isSYM = true;
-			}
+			file >> pt >> (pms->VAR)[i]; (pms->VARType)[i] = pt; pdioassert(file);
+			if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; PDError(-1); }
 		}
-		if( isSYM )
-		{
-			// first go to the next line
-			while( file.get() != '\n' );
-			file >> pms->NSYM;
-			if( pms->NSYM > MAX_SYM ) { std::cout<<"Error: NSYM: System limit has been reached."; PDError(-1); }
-			for( int i = 0; i < pms->NSYM; i++ )
-			{
-				file >> (pms->RESYM)[i] >> (pms->IMSYM)[i];
-			}
-		}else pms->NSYM = 0;
-		// Ignore the rest of the file
-	}
-	catch (ifstream::failure e)
+		while( file.get() != '\n' ); pdioassert(file);
+	}else
 	{
-		std::cout << "Exception: opening/reading the constants file.";
-		PDError(-1);
+		file >> pms->NPARX; pdioassert(file);
+		if( pms->NPARX > MAX_PARX ) { std::cout<<"Error: NPARX: System limit has been reached."; PDError(-1); }
+		for( int i = 0; i < pms->NPARX; i++ )
+		{
+			file >> pt >> (pms->PARX)[i]; (pms->PARXType)[i] = pt; pdioassert(file);
+			if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; PDError(-1); }
+		}
+		while( file.get() != '\n' ); pdioassert(file);
 	}
+	
+	file >> pms->NINT >> pms->NDEG >> pms->NMUL >> pms->STAB >> pms->NMAT; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->NINT1 >> pms->NINT2 >> pms->NDEG1 >> pms->NDEG2; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->STEPS >> pms->CPMIN >> pms->CPMAX; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->DS >> pms->DSMIN >> pms->DSMAX >> pms->DSSTART; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->EPSC >> pms->EPSR >> pms->EPSS; pdioassert(file);
+	while( file.get() != '\n' ); pdioassert(file);
+	
+	file >> pms->NITC >> pms->NITR >> pms->NITS; pdioassert(file);
+	// Check whether we need to load NSYM
+	bool isSYM = false;
+	if( pms->EXTSYS)
+	{
+		for( int i = 2; i < pms->NEQN; i++ )
+		{
+			if( (Eqn)(pms->EQN)[i] == EqnPhaseRot ) isSYM = true;
+		}
+	}
+	if( isSYM )
+	{
+		// first go to the next line
+		while( file.get() != '\n' ); pdioassert(file);
+		file >> pms->NSYM; pdioassert(file);
+		if( pms->NSYM > MAX_SYM ) { std::cout<<"Error: NSYM: System limit has been reached."; PDError(-1); }
+		for( int i = 0; i < pms->NSYM; i++ )
+		{
+			file >> (pms->RESYM)[i] >> (pms->IMSYM)[i]; pdioassert(file);
+		}
+	}else pms->NSYM = 0;
+	// Ignore the rest of the file
 }
 
 void printParams( cfile* pms )
