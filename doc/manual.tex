@@ -250,12 +250,14 @@ The Newton iterations within a continuation step is controlled by \funp{NITC}.
 \end{description}
 
 \subsection{User defined equations}
-If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants file is different. For example:
+If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants file is different. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-...
--1 P2 0 3 E1 E0 E24 3 S1 S0 P0  TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
+sys-glass.so							SYSNAME
+0											LABEL
+-1 P2 0 3 E1 E0 E24 3 S1 S0 P0	TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
 ...
 \end{lstlisting} \end{quote} } \noindent
+specifies three equations and three variables, but the second equation and variable are just placeholders. The first equation \funp{E1} is for the periodic solution \funp{S1}. The third equation \funp{E24} is the phase condition of autonomous systems while the third variable is the period \funp{P0}. The detailed descriptions of possible paramters are as follows.
 \begin{description}
 \item[\funp{CP}] ~\\
 	The continuation parameter, same as above.
@@ -299,6 +301,16 @@ If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants fi
 \item[\funp{S8} -] The kernel of the characteristic matrix.
 \item[\funp{S32} -] Quasi-periodic solution.
 \end{description}
+In the case of an equation with additonal symmetry, when \funp{E25} is specified, also the symmetric components of the solution has to be declared.
+The declaration is the last line of the constants file and contains which parts of the solution are complex. The first number is the number of complex solutions,
+while the further numbers are the real and imaginary components in the solution vector. For example
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+...
+12 12 12            NITC, NITR, NITS
+2 0 1 3 4           NSYM, R0, I0, R1, I1
+\end{lstlisting} \end{quote} } \noindent
+specifies two symmetric components, where the first complex variable has its real and imaginary parts in the zeroth and first component of the solution vector.
+Similarly the second rotational symmetric complex solution component has its real and imaginary part in the third and forth component of the solution vector.
 \end{description}
 
 
@@ -543,11 +555,11 @@ void Sys::tau( Vector& out, double t, const Vector& par )
 
 void Sys::dtau( Vector& out, double t, const Vector& par, int p ) 
 {
-	switch( p ) 
+	switch( p )
 	{
 		case 0:
 			out(0) = 0.0; out(1) = 0.0; break;
-		case 1: 
+		case 1:
 			out(0) = 0.0; out(1) = 0.0; break;
 		case 2:
 			out(0) = 0.0; out(1) = 0.0; break;
@@ -634,7 +646,7 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 						out(0,0) = 0.0; break;
 					case 1:
 						out(0,0) = (1.0 - 9.0*pow(x(0,1), 10.0) )/
-							((1.0 + pow(x(0,1), 10.0))*(1.0+pow(x(0,1), 10.0)) ); 
+							((1.0 + pow(x(0,1), 10.0))*(1.0+pow(x(0,1), 10.0)) );
 						break;
 				} break;
 			case 3:
@@ -741,15 +753,14 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 
 \section{Algorithms used in the software}
 
-The algorithms of this software is described in Szalai et al.\ \cite{szalai-cont}, with the exception of torus continuation. For continuation, the pseudo-arclength method is used (see \cite{handbook, tutorial1, tutorial2}). Periodic orbits are discretized by orthogonal collocation, which was also used in several other software packages. The stability and convergence of this method was proved by Engelborghs and Doedel \cite{engstab} (see also \cite{engcol}). Bifurcations are continued using the newly introduced characteristic matrices for periodic solutions \cite{szalai-cont}.
+The algorithms of this software are described in Szalai et al.\ \cite{szalai-cont}, with the exception of torus continuation. For continuation, the pseudo-arclength method is used (see \cite{handbook, tutorial1, tutorial2}). Periodic orbits are discretized by orthogonal collocation, which was also used in several other software packages. The stability and convergence of this method was proved by Engelborghs and Doedel \cite{engstab} (see also \cite{engcol}). Bifurcations are continued using the newly introduced characteristic matrices for periodic solutions \cite{szalai-cont}.
 
 \subsection*{Acknowledgments}
 
 The author is highly indebted to G\'abor St\'ep\'an (Budapest University of 
 Technology and Economics) for his constant support. He is also
 obliged to S. John Hogan for partially supporting a 5 month visit at the University of Bristol.
-This research was supported financially by a 
-Hungarian E\"otv\"os Scholarship and a Fulbright grant.
+This research was supported financially by a Hungarian E\"otv\"os Scholarship and a Fulbright grant.
 
 \bibliographystyle{siam}
 \bibliography{manual-bibl.bib} \label{sec:bibliography}
