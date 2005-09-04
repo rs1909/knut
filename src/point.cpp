@@ -919,7 +919,7 @@ int Point::Refine( )
 
 
 // this is just for periodic systems in case of pitchfork bifurcation
-void Point::SwitchLP( )
+void Point::SwitchLP( double ds )
 {
 	Vector qq_(NDIM);
 	MatFact DD( NDIM, NDIM );
@@ -972,9 +972,12 @@ void Point::SwitchLP( )
 	
 	double norm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() ));
 	xxDot->getV1() /= norm;
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+	sol += ds * xxDot->getV1();
 }
 
-void Point::SwitchPD( )
+void Point::SwitchPD( double ds )
 {
 	Vector qq_(NDIM);
 	MatFact DD( NDIM, NDIM );
@@ -1030,14 +1033,13 @@ void Point::SwitchPD( )
 	par(0) *= 2.0;
 	//	only in case of period doubling and equidistant mesh
 	{
-		double norm = sqrt(colloc.Integrate( tan, tan ));
 		Vector tmp(sol);
 		for( int i=0; i<(NDEG*NINT+1)/2; i++ )
 		{
 			for( int j=0; j<NDIM; j++ )
 			{
-				xxDot->getV1()(NDIM*i+j)                   =  tan(NDIM*2*i+j)/norm;
-				xxDot->getV1()(NDIM*((NDEG*NINT+1)/2+i)+j) = -tan(NDIM*2*i+j)/norm;
+				xxDot->getV1()(NDIM*i+j)                   =  tan(NDIM*2*i+j);
+				xxDot->getV1()(NDIM*((NDEG*NINT+1)/2+i)+j) = -tan(NDIM*2*i+j);
 				sol(NDIM*i+j)                   = tmp(NDIM*2*i+j);
 				sol(NDIM*((NDEG*NINT+1)/2+i)+j) = tmp(NDIM*2*i+j);
 			}
@@ -1051,6 +1053,11 @@ void Point::SwitchPD( )
 			}
 		}
 	}
+	double norm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() ));
+	xxDot->getV1() /= norm;
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+	sol += ds * xxDot->getV1();
 }
 
 // it should be moved to NColloc, because we need the mesh to construct tangent

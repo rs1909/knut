@@ -790,7 +790,8 @@ inline Vector& Vector::operator=( const __scal_vec_trans<Vector> R )
 inline Vector& Vector::operator+=( const __scal_vec_trans<Vector> R )
 {
 	cblas_daxpy( n, R.alpha, R.vec.v, 1, v, 1 );
-	std::cout<<" += __scal_vec\n"; return *this;
+// 	std::cout<<" += __scal_vec\n";
+	return *this;
 }
 
 inline Vector& Vector::operator-=( const __scal_vec_trans<Vector> R )

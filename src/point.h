@@ -59,8 +59,8 @@ class Point : public PointData
 
 		// algorithms
 		void    Reset( Array1D<Eqn>& eqn_, Array1D<Var>& var_ );
-		void    SwitchLP( ); // switches branch
-		void    SwitchPD( ); // switches branch
+		void    SwitchLP( double ds ); // switches branch
+		void    SwitchPD( double ds ); // switches branch
 		void    SwitchHOPF( double ds );
 		void    SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: solution
 		void    SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent

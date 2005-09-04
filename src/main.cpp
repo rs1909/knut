@@ -406,6 +406,10 @@ int main( int argc, const char** argv )
 				case 'b':
 					branchFile = argv[++acnt];
 					break;
+				case 'v':
+					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<"\n";
+					exit(0);
+					break;
 				default:
 					std::cout<<"Unexected CL argument.\n"; 
 					PDError(-1);
@@ -535,13 +539,13 @@ int main( int argc, const char** argv )
 			if( params->SWITCH == PDSwitch )
 			{
 				std::cout<<"\nSwitching to the period two branch.\n";
-				pt.SwitchPD( );
+				pt.SwitchPD( params->DSSTART );
 				pt.setCont( params->CP );
 			}
 			else if( params->SWITCH == LPSwitch )
 			{
 				std::cout<<"\nSwitching to the other branch.\n";
-				pt.SwitchLP( );
+				pt.SwitchLP( params->DSSTART );
 				pt.setCont( params->CP );
 			}
 			else if( params->SWITCH == HOPFSwitch )
