@@ -16,4 +16,4 @@ AM_LDFLAGS = -L$(top_srcdir)/UMFPACK/UMFPACK/Lib \
 	-L$(top_srcdir)/libf2c \
 	-L$(top_srcdir)/laarpack
 
-LDADD = -llaarpack -lumfpack -lamd -lcblas -latlas -lpddef2c -ldl 
+LDADD = -llaarpack -lumfpack -lamd -lcblas -latlas -lpddef2c @DL_LIB@

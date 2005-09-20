@@ -634,6 +634,7 @@ int main( int argc, const char** argv )
 				{
 					PDError(1);
 				}
+				std::cout.flush();
 			}
 		}else
 		{

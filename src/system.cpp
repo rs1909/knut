@@ -16,7 +16,6 @@
 extern "C" {
 #include <stdlib.h>
 #include <stdio.h>
-#include <dlfcn.h>
 }
 
 #include <string>
@@ -26,88 +25,88 @@ System::System( char* shobj )
 	std::string objname(shobj);
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
 	
-	handle = dlopen (objname.c_str(), RTLD_NOW);
+	handle = tdlopen ( objname.c_str() );
 	if (!handle)
 	{
-		fprintf (stderr, "This prg:%s\n", dlerror());
+		fprintf (stderr, "This prg:%s\n", tdlerror());
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_ndim) = dlsym(handle, "_ZN3Sys4ndimEv" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_ndim) = tdlsym(handle, "_ZN3Sys4ndimEv" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::ndim: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_npar) = dlsym(handle, "_ZN3Sys4nparEv" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_npar) = tdlsym(handle, "_ZN3Sys4nparEv" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::npar: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_ntau) = dlsym(handle, "_ZN3Sys4ntauEv" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_ntau) = tdlsym(handle, "_ZN3Sys4ntauEv" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::ntau: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_nderi) = dlsym(handle, "_ZN3Sys5nderiEv" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_nderi) = tdlsym(handle, "_ZN3Sys5nderiEv" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::nderi: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_tau) = dlsym(handle, "_ZN3Sys3tauER6VectordRKS0_" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_tau) = tdlsym(handle, "_ZN3Sys3tauER6VectordRKS0_" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::tau: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_dtau) = dlsym(handle, "_ZN3Sys4dtauER6VectordRKS0_i" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_dtau) = tdlsym(handle, "_ZN3Sys4dtauER6VectordRKS0_i" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::dtau: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_rhs) = dlsym(handle, "_ZN3Sys3rhsER6VectordRK6MatrixRKS0_" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_rhs) = tdlsym(handle, "_ZN3Sys3rhsER6VectordRK6MatrixRKS0_" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::rhs: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_deri) = dlsym(handle, "_ZN3Sys4deriER6MatrixdRKS0_RK6VectoriPKiiS8_S3_" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_deri) = tdlsym(handle, "_ZN3Sys4deriER6MatrixdRKS0_RK6VectoriPKiiS8_S3_" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::deri: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_stpar) = dlsym(handle, "_ZN3Sys5stparER6Vector" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_stpar) = tdlsym(handle, "_ZN3Sys5stparER6Vector" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::stpar: %s\n", error);
 		exit(1);
 	}
 	
-	dlerror();    /* Clear any existing error */
-	*(void **) (&v_stsol) = dlsym(handle, "_ZN3Sys5stsolER6Vectord" );
-	if ((error = dlerror()) != NULL)
+	tdlerror();    /* Clear any existing error */
+	*(void **) (&v_stsol) = tdlsym(handle, "_ZN3Sys5stsolER6Vectord" );
+	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::stsol: %s\n", error);
 		exit(1);
@@ -126,7 +125,7 @@ System::System( char* shobj )
 
 System::~System()
 {
-	dlclose(handle);
+	tdlclose(handle);
 }
 
 

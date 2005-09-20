@@ -1,3 +1,7 @@
+In 0.9.18 :
+ - The software compiles under Windows using the MinGW environment and
+   Windows' native plugin architecture.
+
 In 0.9.17 : This is the last release before 1.0
  - Changes in the constants file. New constants are introduced:
 	DSSTART to control the branch swithing

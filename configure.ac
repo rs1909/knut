@@ -1,4 +1,4 @@
-AC_INIT([PDDE-CONT], [0.9.18-rc1])
+AC_INIT([PDDE-CONT], [0.9.18])
 AC_DEFINE(DEFS,"")
 AM_INIT_AUTOMAKE
 
@@ -33,7 +33,13 @@ AC_ARG_WITH(no-optimization-flags,
 [  --with-no-optimization-flags=FLAGS       Choose an optimization flag for not optimizing some parts of the code (default: -O0)],
 [NOOPT_CFLAGS=$withval],[NOOPT_CFLAGS="-O0"])
 
-AC_SUBST(NOOPT_CFLAGS)
+AC_CHECK_LIB(dl,dlopen, [
+	DL_LIB="-ldl"
+	], [
+	DL_LIB=""
+	])
+
+AC_SUBST(NOOPT_CFLAGS DL_LIB)
 
 # AC_DEFINE([DEBUG])
 
