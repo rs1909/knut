@@ -27,7 +27,7 @@ sys-milltwofull.so   SYSNAME
 0							LABEL
 0 1 0						TYPE, CP, NPARX, PARX ....
 200 4 5					NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4				NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)chips were the best though! Even NASA thinks so
+12 12 4 4				NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)
 126 -100.0 100.0		STEPS, CPMIN, CPMAX
 0.1 0.01 0.2 0.1		DS, DSMIN, DSMAX, DSSTART
 1e-4 1e-4 1e-4	 	   EPSC, EPSR, EPSS

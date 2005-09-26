@@ -875,6 +875,7 @@ int Point::Start(  )
 			std::cout<<" s"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
 			for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
 			std::cout<<"\t"<<cit<<"\n";
+			std::cout.flush();
 		}while( (fabs( par(p1) ) > StartEps)&&(++it < StartIter) );
 		par( p1 ) = 0.0;
 		qqR->Clear();
@@ -911,6 +912,7 @@ int Point::Refine( )
 		Xnorm = sqrt( colloc.Integrate( sol, sol ) );
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + (xx->getV2())*(xx->getV2()) + (xx->getV3())*(xx->getV3()) );
 		std::cout<<" "<<it<<"\t"<<Dnorm/(1.0+Xnorm)<<"\t"<<Xnorm<<"\t"<<Dnorm<<'\n';
+		std::cout.flush();
 	}
 	while( (Dnorm/(1.0+Xnorm) >= RefEps)&&(it++ < RefIter) );
 	

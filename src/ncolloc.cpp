@@ -344,7 +344,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 				if( t[0] - ttau(k) >= 0 ) kkS(k+1, idx) = low;
 				else kkS(k+1, idx) = low - NINT;
 				
-				kkI(k+1, idx ) = low + NINT*lrint(floor(t[0] - ttau(k)));
+				kkI(k+1, idx ) = low + NINT*static_cast<int>(floor(t[0] - ttau(k)));
 				
 				const double hk = mesh(up) - mesh(low);
 				// x(t-\tau_i)

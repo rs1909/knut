@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{0.9.17}
+\newcommand{\pddever}{0.9.18}
 \version{\pddever}
-\date{30 August, 2005}
+\date{26 September, 2005}
 \maketitle
 
 \begin{center}
@@ -35,7 +35,8 @@
     \hline Sept.\ 2002 -- Jan.\ 2004 & & Budapest University of Technology and Economics \\
     \hline Febr.\ 2004 -- July 2004 & & University of Bristol \\
     \hline Sept.\ 2004 -- June 2005 & 0.9.2 -- 0.9.8 & Massachusetts Institute of Technology \\
-    \hline July 2005 -- Sept. 2005 & 0.9.9 -- & N.A. \\
+    \hline July 2005 -- Sept. 2005 & 0.9.9 -- 0.9.17 & N.A. \\
+    \hline Sept. 2005 -- & 0.9.18 -- & Budapest University of Technology and Economics \\
     \hline
   \end{tabular}
 \end{center}
@@ -43,6 +44,10 @@
 \vskip 3em
 \hrule
 \vskip 2em
+\begin{center} {\bf \large Trademarks } \vskip 0.25em \end{center}
+The product names used in this manual are for identification purposes only. All trademarks and registered trademarks are the property of their respective owners.
+
+\newpage
 
 \tableofcontents
 
@@ -71,31 +76,51 @@ The software can continue periodic solutions of (\ref{gensys}), if there is an i
 \paragraph{Remark.} Fixed points of autonomous systems can be also handled, as periodic solutions of periodic systems by keeping the period constant. Although it is very inefficient, this capability might be useful, when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can be continued by switching to the periodic solution branch using the solution \funp{TYPE=16}. The failure or success of the switch depends on the choice of the period length for the fixed point and the starting solution amplitude \funp{DSSTART}.
 As a rule of thumb, the period should be chosen as small as possible to reliably detect the period of the arising periodic orbit. If the period is chosen to be large, the detected period will be some integer multiple of the actual period.
 
-\subsection{Installation}
+\section{Installation}
+
+The recommended way of compiling the package is to use the GNU toolchain, the GNU C and C++ compilers and the GNU make utility. The recommended versions of gcc are 3.2.3 or newer.
+Other compilers might work with small or no modifications of the build system and/or the source code.
+
+\subsection{Linux and Solaris}
 
 The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.gz}, so it has to be unzipped first into an empty directory using the following command.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
-$ tar xvzf pdde-cont-%\@version%.tar.gz
+$ gzip -d pdde-cont-%\@version%.tar.gz
+$ tar xvf pdde-cont-%\@version%.tar
 \end{lstlisting} \end{quote} } \noindent
-The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for several processors so in most cases no compilation step is necessary.
+The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases no compilation step is necessary.
 
 The second step is to configure the package using the \filef{configure} script.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ cd pdde-cont-%\@version%
 $ ./configure --prefix=$HOME/pdde-cont/
 \end{lstlisting} \end{quote} } \noindent
-This generates the platform dependent \filef{Makefile}s and configures the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
+This generates the platform dependent \filef{Makefile}s and instructs the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ make
-$ make install
+$ gmake
+$ gmake install
 \end{lstlisting} \end{quote} } \noindent
 In order to make the software functioning, the \filef{PATH} environment variables has to be set up. In case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
-line into the \filef{.bash\_profile} configuration file in your \filef{HOME} directory. For activating the changes log out and then log in again.
+line into the \filef{.bash\_profile} configuration file in your \filef{HOME} directory. For the C shell (\filef{csh}) insert the following line
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+set path=( $path $home/pdde-cont/bin )
+\end{lstlisting} \end{quote} } \noindent
+into \filef{.cshrc}. To activate the changes log out and log in again.
 
-\paragraph{Remark.} The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the software, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature exists only on few computing platforms, and in most cases they are incompatible. Our implementation chose Linux's way of loading shared objects as system definition, which is known to work on Sun's Solaris too. Other platforms such as SGI Irix, MS Windows or Darwin are not supported yet.
+\subsection{Windows}
+
+In order to install the software on Windows the MinGW and MinSYS packages have to be installed first (\url{http://www.mingw.org/}). When installing MinGW, check in all the installation options expect those which refer to the source packages. Copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$home$\backslash$$<$username$>$$\backslash$}. Also, the ATLAS linear algebra library is required to build the software. For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors. If all the prequisites are at hand, start the MSys shell and follow the Linux installation instructions above. The only difference that \filef{.profile} has to be created in your MSys \filef{HOME} directory:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+$ echo 'export PATH=$PATH:$HOME/pdde-cont/bin' >.profile
+\end{lstlisting} \end{quote} } \noindent
+After installing the package restart the MSys shell and the software is ready to use.
+
+\subsection{Unix}
+
+The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible wit each other. Our implementation chose Linux's way of loading shared objects as system definition, which is known to work on Sun's Solaris too. Other platforms such as SGI Irix or Darwin are not supported yet.
 
 \section{Command line arguments}
 

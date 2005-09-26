@@ -209,8 +209,8 @@ void CollocTR::index( int* kk, int* ee, int* rr, Vector& par, Vector& tau, doubl
 	
 	for( int k=0; k<NTAU+1; k++ )
 	{
-		int i1 = lrint(floor(nint1*t1[k]));
-		int i2 = lrint(floor(nint2*t2[k]));
+		int i1 = static_cast<int>(floor(nint1*t1[k]));
+		int i2 = static_cast<int>(floor(nint2*t2[k]));
 		// some error checking
 		if( (t1[k] > 1.0)||(t2[k] > 1.0)||
 		    (t1[k] < 0.0)||(t2[k] < 0.0) ) std::cout<<"Er ";
@@ -272,8 +272,8 @@ void CollocTR::indexSep( int* kk, int* ee, int* rr, Vector& par, Vector& tau, do
 	
 	for( int k=0; k<NTAU+1; k++ )
 	{
-		int i1 = lrint(floor(nint1*t1[k]));
-		int i2 = lrint(floor(nint2*t2[k]));
+		int i1 = static_cast<int>(floor(nint1*t1[k]));
+		int i2 = static_cast<int>(floor(nint2*t2[k]));
 		// some error checking
 		if( (t1[k] > 1.0)||(t2[k] > 1.0)||
 		    (t1[k] < -1.0)||(t2[k] < 0.0) ) std::cout<<"Er ";
