@@ -34,16 +34,16 @@ AC_DEFUN([PDDE_CHECK_UNIX], [
 ])
 
 AC_DEFUN([PDDE_CHECK_SHARED],
-[ AC_MSG_CHECKING([whether -fPIC --shared is supported by $CXX])
+[ AC_MSG_CHECKING([whether --shared -fPIC is supported by $CXX])
   TMP_CXXFLAGS=$CXXFLAGS
-  CXXFLAGS="$CXXFLAGS -fPIC --shared"
+  CXXFLAGS="$CXXFLAGS --shared -fPIC"
   AC_LINK_IFELSE([int main() { return 0; }],
-  [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="$CXXFLAGS -fPIC --shared"; echo "yes"], 
+  [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=$CXXFLAGS; echo "yes"], 
   [ echo "no"
     AC_MSG_CHECKING([whether -G -KPIC is supported by $CXX])
     CXXFLAGS="$TMP_CXXFLAGS -G -KPIC"
     AC_LINK_IFELSE([int main() { return 0; }], 
-      [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="$CXXFLAGS -G -KPIC"; echo "yes"],
+      [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=$CXXFLAGS; echo "yes"],
       [ AC_MSG_ERROR($NO_SHARED) ])
   ])
 ])
