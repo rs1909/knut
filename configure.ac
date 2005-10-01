@@ -36,14 +36,14 @@ AC_DEFUN([PDDE_CHECK_UNIX], [
 AC_DEFUN([PDDE_CHECK_SHARED],
 [ AC_MSG_CHECKING([whether --shared -fPIC is supported by $CXX])
   TMP_CXXFLAGS=$CXXFLAGS
-  CXXFLAGS="$CXXFLAGS --shared -fPIC"
+  CXXFLAGS="$TMP_CXXFLAGS --shared -fPIC"
   AC_LINK_IFELSE([int main() { return 0; }],
-  [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=$CXXFLAGS; echo "yes"], 
+  [ MOD_CXXFLAGS=$CXXFLAGS; CXXFLAGS=$TMP_CXXFLAGS; echo "yes"], 
   [ echo "no"
     AC_MSG_CHECKING([whether -G -KPIC is supported by $CXX])
     CXXFLAGS="$TMP_CXXFLAGS -G -KPIC"
     AC_LINK_IFELSE([int main() { return 0; }], 
-      [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=$CXXFLAGS; echo "yes"],
+      [ MOD_CXXFLAGS=$CXXFLAGS; CXXFLAGS=$TMP_CXXFLAGS; echo "yes"],
       [ AC_MSG_ERROR($NO_SHARED) ])
   ])
 ])
@@ -80,9 +80,9 @@ dnl if GNU C++ is used
 case "$CXX" in
   *g++*)
     echo "Setting up the warning flags for $CXX"
-    NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
-    CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
-    MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
+    NOWARN_CXXFLAGS="-fno-rtti -fno-exceptions"
+    CXXFLAGS="$CXXFLAGS -W -Wall $NOWARN_CXXFLAGS"
+    MOD_CXXFLAGS="$MOD_CXXFLAGS $NOWARN_CXXFLAGS"  
     AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
     
     AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
