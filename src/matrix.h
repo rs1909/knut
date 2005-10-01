@@ -24,7 +24,7 @@ typedef double doublereal;
 
 #ifndef PDDESYS_H
 #include "plot.h"
-#include "error.h"
+#include "pderror.h"
 extern "C" {
 #include "cspblas.h"
 #include "cblas.h"

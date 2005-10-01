@@ -13,7 +13,7 @@
 #include "matrix.h"
 #include "spmatrix.h"
 #include "ncolloc.h"
-#include "error.h"
+#include "pderror.h"
 
 class baseCharMat
 {

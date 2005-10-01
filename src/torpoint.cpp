@@ -11,7 +11,7 @@
 
 #include "system.h"
 #include "torpoint.h"
-#include "error.h"
+#include "pderror.h"
 
 PointTR::PointTR( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_ ) :
 	var(var_), eqn(eqn_),

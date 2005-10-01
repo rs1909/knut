@@ -7,7 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
-#include "error.h"
+#include "pderror.h"
 #include "matrix.h"
 #include "spmatrix.h"
 #include "ncolloc.h"

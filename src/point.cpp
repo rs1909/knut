@@ -7,7 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
-#include "error.h"
+#include "pderror.h"
 #include "point.h"
 #include "ncolloc.h"
 #include "system.h"

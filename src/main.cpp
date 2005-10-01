@@ -7,7 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
-#include "error.h"
+#include "pderror.h"
 #include "system.h"
 #include "point.h"
 #include "torpoint.h"

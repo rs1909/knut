@@ -12,7 +12,7 @@
 
 #include "matrix.h"
 #include "plot.h"
-#include "error.h"
+#include "pderror.h"
 #include <vector>
 
 extern "C" {
