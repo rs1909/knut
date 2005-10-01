@@ -1,3 +1,8 @@
+In 0.9.19 :
+ - UMFPACK build system is rewritten to use automake and make it more
+   portable.
+ - Platform dependent configure.ac
+
 In 0.9.18 :
  - The software compiles under Windows using the MinGW environment and
    Windows' native plugin architecture.
