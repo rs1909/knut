@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{0.9.18}
+\newcommand{\pddever}{0.9.19}
 \version{\pddever}
-\date{26 September, 2005}
+\date{30 September, 2005}
 \maketitle
 
 \begin{center}
@@ -78,8 +78,7 @@ As a rule of thumb, the period should be chosen as small as possible to reliably
 
 \section{Installation}
 
-The recommended way of compiling the package is to use the GNU toolchain, the GNU C and C++ compilers and the GNU make utility. The recommended versions of gcc are 3.2.3 or newer.
-Other compilers might work with small or no modifications of the build system and/or the source code.
+The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.2.3 and later. Also the Sun Studio 10 compilers can build the package.
 
 \subsection{Linux and Solaris}
 
@@ -97,8 +96,8 @@ $ ./configure --prefix=$HOME/pdde-cont/
 \end{lstlisting} \end{quote} } \noindent
 This generates the platform dependent \filef{Makefile}s and instructs the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ gmake
-$ gmake install
+$ make
+$ make install
 \end{lstlisting} \end{quote} } \noindent
 In order to make the software functioning, the \filef{PATH} environment variables has to be set up. In case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -120,7 +119,7 @@ After installing the package restart the MSys shell and the software is ready to
 
 \subsection{Unix}
 
-The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible wit each other. Our implementation chose Linux's way of loading shared objects as system definition, which is known to work on Sun's Solaris too. Other platforms such as SGI Irix or Darwin are not supported yet.
+The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on computing platforms too.
 
 \section{Command line arguments}
 
@@ -411,7 +410,7 @@ done typically by issuing the command
 $ pcompile sys-<problem>.cpp
 \end{lstlisting} \end{quote} } \noindent
 which produces the file \filef{sys-$<$problem$>$.so}.
-The system definition should include the header file \filef{pddesys.h} (\fun{#include pddesys.h}), which defines the syntax of the functions. Also, all the user defined functions should be in the \fun{Sys} namespace and all the routines are required. This definition of a system of equations in PDDE-CONT is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that are passed to the user defined functions are
+The system definition should include the header file \filef{pddesys.h} (\fun{#include pddesys.h}), which defines the syntax of the functions. Also, all the functions must be declared as \fun{extern "C"}, to make their names independent of the C++ name mangling. The definition of a system of equations in \pdde is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that are passed to the user defined functions are
 \begin{itemize}
   \item[-] \fun{t} (\fun{double}) is the time instance within a period. It is
   scaled into $[ 0, 1 ]$ by the period length $T$, i.e., \fun{t}$ = t/T$.
@@ -423,35 +422,35 @@ The system definition should include the header file \filef{pddesys.h} (\fun{#in
 \end{itemize}
 The required functions are
 \begin{itemize}
-  \item[-] \fun{ int Sys::ndim(); } \\ 
+  \item[-] \fun{ int sys_ndim(); } \\ 
   This function returns the dimension of the
-  system. e.g.: \fun{ int Sys::ndim() \{ return 2; \} }
+  system. e.g.: \fun{ int sys_ndim() \{ return 2; \} }
   
-  \item[-] \fun{ int Sys::npar(); } \\ 
+  \item[-] \fun{ int sys_npar(); } \\ 
   This function returns the number of parameters. It
   includes the period $T$, which is the 0th parameter.
   
-  \item[-] \fun{ int Sys::ntau(); } \\ 
+  \item[-] \fun{ int sys_ntau(); } \\ 
   This function returns the number of delays including the non-delayed term, i.e., $x ( t )$ as well.
   
-  \item[-] \fun{ int Sys::nderi(); } \\ 
-  This function returns the order of supplied derivatives. In case of $0$ the \fun{Sys::deri(...)} can be empty, although should be defined. For $1$ only the first order derivatives with respect to the state variables and the parameters need to be supplied. If the returned value is $2$ all the required derivatives are supplied by the user. The internal computation technique of the derivatives is the same as in DDE-BIFTOOL, which is the finite difference method. The derivatives are computed recursively, so the second order derivatives are calculated using the first order derivatives.
+  \item[-] \fun{ int sys_nderi(); } \\ 
+  This function returns the order of supplied derivatives. In case of $0$ the \fun{sys_deri(...)} can be empty, although should be defined. For $1$ only the first order derivatives with respect to the state variables and the parameters need to be supplied. If the returned value is $2$ all the required derivatives are supplied by the user. The internal computation technique of the derivatives is the same as in DDE-BIFTOOL, which is the finite difference method. The derivatives are computed recursively, so the second order derivatives are calculated using the first order derivatives.
   
-  \item[-] \fun{ void Sys::tau( Vector\& out, double t, const Vector\& par ); } \\
+  \item[-] \fun{ void sys_tau( Vector\& out, double t, const Vector\& par ); } \\
   \fun{out} is the output variable and contains the vector of delays
   including a zero for the non-delayed term. For example for $\dot{x} ( t ) =
   f ( t, x ( t ), x ( t - T ) )$ \fun{out} is a vector with 2 elements:
   \fun{out(0)}$=0.0$, \fun{out(1) = par(0)}.
   
-  \item[-] \fun{void Sys::dtau( Vector\& out, double t, const Vector\& par, int p );} \\
+  \item[-] \fun{void sys_dtau( Vector\& out, double t, const Vector\& par, int p );} \\
   \fun{out} contains the derivatives of delays with respect to the parameter
   \fun{p}. If \fun{p==0} in the above example, the result is
   \fun{out(0)=0.0} and \fun{out(1)=1.0}.
   
-  \item[-] \fun{void Sys::rhs( Vector\& out, double t, const Matrix\& xx, const Vector\& par );} \\ 
+  \item[-] \fun{void sys_rhs( Vector\& out, double t, const Matrix\& xx, const Vector\& par );} \\ 
   The output \fun{out} is simply $f ( t, x ( t ), \ldots, x ( t - \tau_i ), \ldots )$.
   
-  \item[-] \fun{void Sys::deri( Matrix\& out, double t, const Matrix\& xx, const Vector\& par, int nx, int* vx, int np, int* vp, const Matrix\& v );} \\
+  \item[-] \fun{void sys_deri( Matrix\& out, double t, const Matrix\& xx, const Vector\& par, int nx, int* vx, int np, int* vp, const Matrix\& v );} \\
   This function supplies the derivatives of $f$ with respect to variables and parameters. As mentioned before, this function can be empty or can supply some or all the necessary derivatives.
   \fun{nx} is the queried order (0, 1 or 2) of derivatives with respect to $x( t -
   \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies which argument(s) of $f$ is used in
@@ -470,23 +469,23 @@ The required functions are
   2 & 0 & $\ds \in \mathbb{R}^{n \times \funp{NTAU}}$ & $\ds \frac{\partial}{\partial x(t-\tau_{\mathrm{vx[1]}})} \left( A_{\mathrm{vx[0]}} v(\,.,\mathrm{vx[0]}) \right) $
   \end{tabular}
   \end{center}
-  \caption{Possible outputs of \fun{void Sys::deri(...)}. }
+  \caption{Possible outputs of \fun{void sys_deri(...)}. }
   \end{table}
   
-  \item \fun{void Sys::stpar( Vector\& par );} \\
+  \item \fun{void sys_stpar( Vector\& par );} \\
   This function returns the parameter values at the starting point, which is a known periodic solution of the system.
   
-  \item \fun{void Sys::stsol( Vector\& out, double t );} \\
+  \item \fun{void sys_stsol( Vector\& out, double t );} \\
   This function returns the value of the known periodic solution at time \fun{t}.
 \end{itemize}
 
 \section{Running the software}
 
 After invoking the software \filef{pdde}, it either loads a solution profile from the input file (see Sect.\ \ref{constfile}) or uses the 
-\fun{Sys::stpar} and \fun{Sys::stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
+\fun{sys_stpar} and \fun{sys_stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
 \begin{enumerate}
 \item The software starts a Newton iteration to converge to a more precise solution.
-\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighborhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{Sys::nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
+\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighborhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{sys_nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
 \item It finds the tangent of the solution branch at its first point. In general, it computes the tangent as a kernel vector of the linearized defining system. In the case of branch switching, the critical eigenfunctions are used to construct the tangent vector.
 \end{enumerate}
 If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
@@ -556,13 +555,15 @@ manifold of this periodic orbit.
 The system definition file can be found in the directory
 \filef{demo/glass/sys-glass.cpp}. The first few functions are trivial:
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-#include <cmath> 
+#include <cmath>
 #include "pddesys.h"
 
-int Sys::ndim(){ return 1; }
-int Sys::npar(){ return 4; }
-int Sys::ntau(){ return 2; }
-int Sys::nderi(){ return 2; }
+extern "C" {
+int sys_ndim(){ return 1; }
+int sys_npar(){ return 4; }
+int sys_ntau(){ return 2; }
+int sys_nderi(){ return 2; }
+} // extern "C"
 \end{lstlisting} \end{quote} } \noindent
 Here we have four parameters:
 \funp{P0}$\to T$, the period length;
@@ -572,13 +573,15 @@ Here we have four parameters:
 The total number of delays is two, because we have a non-delayed and a delayed term.
 The functions that define the delays are
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-void Sys::tau( Vector& out, double t, const Vector& par ) 
+extern "C"
+void sys_tau( Vector& out, double t, const Vector& par ) 
 {
 	out(0) = 0.0;
 	out(1) = par(3);
 }
 
-void Sys::dtau( Vector& out, double t, const Vector& par, int p ) 
+extern "C"
+void sys_dtau( Vector& out, double t, const Vector& par, int p ) 
 {
 	switch( p )
 	{
@@ -593,11 +596,12 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int p )
 	}
 }
 \end{lstlisting} \end{quote} } \noindent
-The values of the delays are returned by \fun{Sys::tau(...)} in the \fun{out} vector, while their derivatives with respect to the \fun{p}-th parameter are returned by \fun{Sys::dtau(...)}.
+The values of the delays are returned by \fun{sys_tau(...)} in the \fun{out} vector, while their derivatives with respect to the \fun{p}-th parameter are returned by \fun{sys_dtau(...)}.
 
 The right-hand side of the equation is defined as (see (\ref{ct:glass}))
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
+extern "C"
+void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 {
 	out(0) = par(1)*x(0,0) + par(2)*x(0,1)/(1.0+pow(x(0,1), 10.0));
 }
@@ -606,9 +610,10 @@ Here, the non-delayed term is \fun{x(0,0)} while the delayed term
 is \fun{x(0,1)}.
 
 The most difficult part of the definition is always the derivatives of the
-right-hand side. (Note that the contruction of this function can be avoided by returning zero in \fun{ int Sys::nderi(); }.)
+right-hand side. (Note that the contruction of this function can be avoided by returning zero in \fun{ int sys_nderi(); }.)
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
+extern "C"
+void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 					int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
 	// derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
@@ -784,7 +789,7 @@ The algorithms of this software are described in Szalai et al.\ \cite{szalai-con
 
 The author is highly indebted to G\'abor St\'ep\'an (Budapest University of 
 Technology and Economics) for his constant support. He is also
-obliged to S. John Hogan for partially supporting a 5 month visit at the University of Bristol.
+obliged to S.~John Hogan for partially supporting a 5 month visit at the University of Bristol.
 This research was supported financially by a Hungarian E\"otv\"os Scholarship and a Fulbright grant.
 
 \bibliographystyle{siam}

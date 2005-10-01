@@ -388,10 +388,11 @@ void CollocTR::Jacobian( SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vect
 	Matrix dummy(0,0);
 	Matrix xx(NDIM,NTAU+2*(NTAU+1));
 	
-	double t1[NTAU+1],  t2[NTAU+1];
-	int*   kk = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
-	int*   ee = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
-	int*   rr = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
+	double* t1 = new double[NTAU+1];
+	double* t2 = new double[NTAU+1];
+	int*    kk = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
+	int*    ee = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
+	int*    rr = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
 	
 	A.Clear();
 	for( int r=0; r<var.Size(); r++ ) Avar(r)->Clear();
@@ -561,6 +562,8 @@ void CollocTR::Jacobian( SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vect
 	delete[] rr;
 	delete[] ee;
 	delete[] kk;
+	delete[] t2;
+	delete[] t1;
 }
 
 //***************************************************************************************

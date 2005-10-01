@@ -298,7 +298,7 @@ NColloc::NColloc( System& _sys, const int _nint, const int _ndeg, int _nmat )
 
 void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 {
-	double t[NTAU+1];
+	double *t = new double[NTAU+1];
 	Vector ttau(NTAU);
 
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
@@ -462,6 +462,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 			}
 		}
 	}
+	delete[] t;
 }
 
 void NColloc::getMesh( Vector& msh )
@@ -481,7 +482,7 @@ void NColloc::setMesh( const Vector& msh )
 }
 
 
-void NColloc::Interpolate( JagMatrix3D& out, const Vector& sol ) 
+void NColloc::Interpolate( JagMatrix3D& jag, const Vector& sol ) 
 {
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -493,20 +494,20 @@ void NColloc::Interpolate( JagMatrix3D& out, const Vector& sol )
 			{
 				for( int k = 0; k < NDIM; k++ )
 				{
-					out(idx)( k, p ) = 0.0;
+					jag(idx)( k, p ) = 0.0;
 					for( int l = 0; l < NDEG+1; l++ )
 					{
-						out(idx)( k, p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( p+1, l, idx );
+						jag(idx)( k, p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( p+1, l, idx );
 					}
 				}
 			}
 			// x'(t)
 			for( int k = 0; k < NDIM; k++ )
 			{
-				out(idx)( k, NTAU ) = 0.0;
+				jag(idx)( k, NTAU ) = 0.0;
 				for( int l = 0; l < NDEG+1; l++ )
 				{
-					out(idx)( k, NTAU ) += sol( k + NDIM*(l+kk(0,idx)*NDEG) )*tt( 0, l, idx );
+					jag(idx)( k, NTAU ) += sol( k + NDIM*(l+kk(0,idx)*NDEG) )*tt( 0, l, idx );
 				}
 			}
 			// x'(t-\tau_i)
@@ -514,10 +515,10 @@ void NColloc::Interpolate( JagMatrix3D& out, const Vector& sol )
 			{
 				for( int k = 0; k < NDIM; k++ )
 				{
-					out(idx)( k, NTAU+1+p ) = 0.0;
+					jag(idx)( k, NTAU+1+p ) = 0.0;
 					for( int l = 0; l < NDEG+1; l++ )
 					{
-						out(idx)( k, NTAU+1+p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( NTAU+1+p, l, idx );
+						jag(idx)( k, NTAU+1+p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( NTAU+1+p, l, idx );
 					}
 				}
 			}
@@ -525,7 +526,7 @@ void NColloc::Interpolate( JagMatrix3D& out, const Vector& sol )
 	}
 }
 
-void NColloc::InterpolateREAL( JagMatrix3D& out, const Vector& sol ) 
+void NColloc::InterpolateREAL( JagMatrix3D& jag, const Vector& sol ) 
 {
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -538,20 +539,20 @@ void NColloc::InterpolateREAL( JagMatrix3D& out, const Vector& sol )
 				for( int k = 0; k < NDIM; k++ )
 				{
 					// std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
-					out(idx)( k, p ) = 0.0;
+					jag(idx)( k, p ) = 0.0;
 					for( int l = 0; l < NDEG+1; l++ )
 					{
-						out(idx)( k, p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( p+1, l, idx );
+						jag(idx)( k, p ) += sol( k + NDIM*(l+kk(p+1,idx)*NDEG) )*tt( p+1, l, idx );
 					}
 				}
 			}
 			// x'(t)
 			for( int k = 0; k < NDIM; k++ )
 			{
-				out(idx)( k, NTAU ) = 0.0;
+				jag(idx)( k, NTAU ) = 0.0;
 				for( int l = 0; l < NDEG+1; l++ )
 				{
-					out(idx)( k, NTAU ) += sol( k + NDIM*(l+kk(0,idx)*NDEG) )*tt( 0, l, idx );
+					jag(idx)( k, NTAU ) += sol( k + NDIM*(l+kk(0,idx)*NDEG) )*tt( 0, l, idx );
 				}
 			}
 		}
@@ -560,7 +561,7 @@ void NColloc::InterpolateREAL( JagMatrix3D& out, const Vector& sol )
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void NColloc::InterpolateCPLX( JagMatrix3D& out, const Vector& sol ) 
+void NColloc::InterpolateCPLX( JagMatrix3D& jag, const Vector& sol ) 
 {
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -574,23 +575,23 @@ void NColloc::InterpolateCPLX( JagMatrix3D& out, const Vector& sol )
 			{
 				for( int k = 0; k < NDIM; k++ )
 				{
-					out(idxRe)( k, p ) = 0.0;
-					out(idxIm)( k, p ) = 0.0;
+					jag(idxRe)( k, p ) = 0.0;
+					jag(idxIm)( k, p ) = 0.0;
 					for( int l = 0; l < NDEG+1; l++ )
 					{
-						out(idxRe)( k, p ) += sol( 2*(k + NDIM*(l+kk(p+1,idx)*NDEG)) )*tt( p+1, l, idx );
-						out(idxIm)( k, p ) += sol( 2*(k + NDIM*(l+kk(p+1,idx)*NDEG)) + 1 )*tt( p+1, l, idx );
+						jag(idxRe)( k, p ) += sol( 2*(k + NDIM*(l+kk(p+1,idx)*NDEG)) )*tt( p+1, l, idx );
+						jag(idxIm)( k, p ) += sol( 2*(k + NDIM*(l+kk(p+1,idx)*NDEG)) + 1 )*tt( p+1, l, idx );
 					}
 				}
 			}
 			for( int k = 0; k < NDIM; k++ )
 			{
-				out(idxRe)( k, NTAU ) = 0.0;
-				out(idxIm)( k, NTAU ) = 0.0;
+				jag(idxRe)( k, NTAU ) = 0.0;
+				jag(idxIm)( k, NTAU ) = 0.0;
 				for( int l = 0; l < NDEG+1; l++ )
 				{
-					out(idxRe)( k, NTAU ) += sol( 2*(k + NDIM*(l+kk(0,idx)*NDEG)) )*tt( 0, l, idx );
-					out(idxIm)( k, NTAU ) += sol( 2*(k + NDIM*(l+kk(0,idx)*NDEG)) + 1 )*tt( 0, l, idx );
+					jag(idxRe)( k, NTAU ) += sol( 2*(k + NDIM*(l+kk(0,idx)*NDEG)) )*tt( 0, l, idx );
+					jag(idxIm)( k, NTAU ) += sol( 2*(k + NDIM*(l+kk(0,idx)*NDEG)) + 1 )*tt( 0, l, idx );
 				}
 			}
 		}
@@ -2083,7 +2084,7 @@ static inline int meshlookup( const Vector& mesh, double t )
 	return low;
 }
 
-void NColloc::Import( Vector& out, const Vector& in, const Vector& msh_, int deg_ )
+void NColloc::Import( Vector& outs, const Vector& in, const Vector& msh_, int deg_ )
 {
 	if( (msh_.Size()-1) % deg_ != 0 ) { std::cout<<"NColloc::Import: bad mesh"; PDError(-1); }
 	int int_ = (msh_.Size()-1)/deg_;
@@ -2111,23 +2112,23 @@ void NColloc::Import( Vector& out, const Vector& in, const Vector& msh_, int deg
 			// in_lgr.Print();
 			for( int p = 0; p < NDIM; p++ )
 			{
-				out( p + NDIM*(NDEG*i + j) ) = 0.0;
+				outs( p + NDIM*(NDEG*i + j) ) = 0.0;
 				for( int r = 0; r < deg_+1; r++ )
 				{
-					out( p + NDIM*(NDEG*i + j) ) += in( p + NDIM*(deg_*k + r) ) * in_lgr(r);
+					outs( p + NDIM*(NDEG*i + j) ) += in( p + NDIM*(deg_*k + r) ) * in_lgr(r);
 				}
 			}
 		}
 	}
 	for( int p = 0; p < NDIM; p++ )
 	{
-		out( p + NDIM*(NINT*NDEG) ) = in( p + NDIM*(int_*deg_) );
+		outs( p + NDIM*(NINT*NDEG) ) = in( p + NDIM*(int_*deg_) );
 	}
 }
 
 
 // it exports for CollocTR and PointTR, so no last value is necessary
-void   NColloc::Export( Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in )
+void   NColloc::Export( Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in )
 {
 	int nint_ = mshint.Size()-1;
 	int ndeg_ = mshdeg.Size()-1;
@@ -2149,10 +2150,10 @@ void   NColloc::Export( Vector& out, const Vector& mshint, const Vector& mshdeg,
 			// in_lgr.Print();
 			for( int p = 0; p < NDIM; p++ )
 			{
-				out( p + NDIM*(j + i*ndeg_) ) = 0.0;
+				outs( p + NDIM*(j + i*ndeg_) ) = 0.0;
 				for( int r = 0; r < NDEG+1; r++ )
 				{
-					out( p + NDIM*(j + i*ndeg_) ) += in( p + NDIM*(r + k*NDEG) ) * in_lgr(r);
+					outs( p + NDIM*(j + i*ndeg_) ) += in( p + NDIM*(r + k*NDEG) ) * in_lgr(r);
 				}
 			}
 		}

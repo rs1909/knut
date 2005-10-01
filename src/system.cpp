@@ -33,7 +33,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_ndim) = tdlsym(handle, "_ZN3Sys4ndimEv" );
+	*(void **) (&v_ndim) = tdlsym(handle, "sys_ndim" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::ndim: %s\n", error);
@@ -41,7 +41,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_npar) = tdlsym(handle, "_ZN3Sys4nparEv" );
+	*(void **) (&v_npar) = tdlsym(handle, "sys_npar" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::npar: %s\n", error);
@@ -49,7 +49,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_ntau) = tdlsym(handle, "_ZN3Sys4ntauEv" );
+	*(void **) (&v_ntau) = tdlsym(handle, "sys_ntau" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::ntau: %s\n", error);
@@ -57,7 +57,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_nderi) = tdlsym(handle, "_ZN3Sys5nderiEv" );
+	*(void **) (&v_nderi) = tdlsym(handle, "sys_nderi" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::nderi: %s\n", error);
@@ -65,7 +65,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_tau) = tdlsym(handle, "_ZN3Sys3tauER6VectordRKS0_" );
+	*(void **) (&v_tau) = tdlsym(handle, "sys_tau" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::tau: %s\n", error);
@@ -73,7 +73,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_dtau) = tdlsym(handle, "_ZN3Sys4dtauER6VectordRKS0_i" );
+	*(void **) (&v_dtau) = tdlsym(handle, "sys_dtau" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::dtau: %s\n", error);
@@ -81,7 +81,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_rhs) = tdlsym(handle, "_ZN3Sys3rhsER6VectordRK6MatrixRKS0_" );
+	*(void **) (&v_rhs) = tdlsym(handle, "sys_rhs" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::rhs: %s\n", error);
@@ -89,7 +89,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_deri) = tdlsym(handle, "_ZN3Sys4deriER6MatrixdRKS0_RK6VectoriPKiiS8_S3_" );
+	*(void **) (&v_deri) = tdlsym(handle, "sys_deri" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::deri: %s\n", error);
@@ -97,7 +97,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_stpar) = tdlsym(handle, "_ZN3Sys5stparER6Vector" );
+	*(void **) (&v_stpar) = tdlsym(handle, "sys_stpar" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::stpar: %s\n", error);
@@ -105,7 +105,7 @@ System::System( char* shobj )
 	}
 	
 	tdlerror();    /* Clear any existing error */
-	*(void **) (&v_stsol) = tdlsym(handle, "_ZN3Sys5stsolER6Vectord" );
+	*(void **) (&v_stsol) = tdlsym(handle, "sys_stsol" );
 	if ((error = tdlerror()) != NULL)
 	{
 		fprintf (stderr, "System::stsol: %s\n", error);

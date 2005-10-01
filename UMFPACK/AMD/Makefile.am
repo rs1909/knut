@@ -1,0 +1,2 @@
+SUBDIRS = Include Lib Source
+EXTRA_DIST = README

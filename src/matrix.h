@@ -519,8 +519,8 @@ class Matrix : public Array2D<double>
 		{ return __op_mul_vec_rng<Matrix,Matrix>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
 	inline __scal_vec_trans<Matrix>        operator!( )
 		{ return __scal_vec_trans<Matrix>( *this, 1.0, Trans ); }
-	inline __scal_vec_trans_rng<Matrix>    operator[ ] ( rng r )
-		{ return __scal_vec_trans_rng<Matrix>( *this, r ); }
+	inline __scal_vec_trans_rng<Matrix>    operator[ ] ( rng r_ )
+		{ return __scal_vec_trans_rng<Matrix>( *this, r_ ); }
 	
 #endif // PDDESYS_H
 	

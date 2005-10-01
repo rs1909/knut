@@ -24,18 +24,21 @@
 // x[2N-2] = h_{N-1}
 // dim = 2N-1 
 
-int Sys::ndim() { return 5; }
-int Sys::npar() { return 5; }
-int Sys::ntau() { return 2; }
-int Sys::nderi() { return 0; }
+extern "C"
+{
 
-void Sys::tau( Vector& out, double t, const Vector& par )
+int sys_ndim() { return 5; }
+int sys_npar() { return 5; }
+int sys_ntau() { return 2; }
+int sys_nderi() { return 0; }
+
+void sys_tau( Vector& out, double t, const Vector& par )
 {
 	out(0) = 0.0;
 	out(1) = par(2);
 }
 
-void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 {
 	out(0) = 0.0;
 	if( vp == 2 ) out(1) = 1.0;
@@ -47,7 +50,7 @@ static inline double V( double x )
 	return pow( ( x - 1 ) / 1, 3.0 ) / ( pow( ( x - 1 ) / 1, 3.0 ) + 1);
 }
 
-void Sys::rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
+void sys_rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
 {
 #define xx(i,j) yy(i-1,j-1)
 #define f(i,j) out(i-1)
@@ -74,13 +77,13 @@ void Sys::rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
 	f(5,1) = xx(3,1) - xx(2,1);
 }
 
-void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
+void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
 
 }
 
-void Sys::stpar( Vector& par )
+void sys_stpar( Vector& par )
 {
 	par(0) = 1.1; // T the period length 
 	par(1) = 2.1; // L/N
@@ -89,11 +92,13 @@ void Sys::stpar( Vector& par )
 	par(4) = 0.8; // v_0
 }
 
-void Sys::stsol( Vector& out, double t )
+void sys_stsol( Vector& out, double t )
 {
 	out(0) = 2.0;// + 1.3*sin(2*M_PI*t);
 	out(1) = 2.0;// + 1.3*(2*M_PI*t+2*M_PI/3);
 	out(2) = 2.0;// + 1.3*sin(2*M_PI*t+4*M_PI/3);
 	out(3) = 2.1;// - 0.5*cos(2*M_PI*t+2*M_PI/3);
 	out(4) = 2.1;// - 0.5*cos(2*M_PI*t+4*M_PI/3);
+}
+
 }

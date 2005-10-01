@@ -146,14 +146,14 @@ class NColloc
 		// the equations
 		System* sys;
 
-		int ndim;
-		int npar;
-		int ntau;
+		const int ndim;
+		const int npar;
+		const int ntau;
 		
-		int nint;
-		int ndeg;
+		const int nint;
+		const int ndeg;
 		
-		int nmat;
+		const int nmat;
 
 		Vector mesh;
 		Vector time;

@@ -1,6 +1,8 @@
 In 0.9.18 :
  - The software compiles under Windows using the MinGW environment and
    Windows' native plugin architecture.
+ - It can be compiled with Sun Studio 10 though dynamic loading is not
+   working at this stage
 
 In 0.9.17 : This is the last release before 1.0
  - Changes in the constants file. New constants are introduced:

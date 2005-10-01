@@ -12,7 +12,7 @@
 
 #include "matrix.h"
 
-namespace Sys
+extern "C"
 {
 	int    ndim();
 	int    npar();

@@ -1,5 +1,5 @@
-AC_INIT([PDDE-CONT], [0.9.18])
-AC_DEFINE(DEFS,"")
+AC_INIT([PDDE-CONT], [0.9.19])
+AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 
 AC_PROG_CC
@@ -8,38 +8,115 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 
 AC_LANG(C++)
-AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
-TMP_CXXFLAGS=$CXXFLAGS
-CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
-AC_COMPILE_IFELSE([int main() { return 0; }],[echo "yes"],
-[ CXXFLAGS=$TMP_CXXFLAGS
-echo "no"])
 
-AC_MSG_CHECKING([whether -fPIC --shared is supported by $CXX])
-TMP_CXXFLAGS=$CXXFLAGS
-CXXFLAGS="$CXXFLAGS -fPIC --shared"
-AC_COMPILE_IFELSE([int main() { return 0; }],
-[ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="-fPIC --shared"; echo "yes"],
-[ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS=""; echo "no"])
+UNSUPPORTED_OS="PDDE-CONT is currently unsupported on your platform.
+If you are interested in making it work on your platform, you are
+more than *welcome*. Contact szalai@mm.bme.hu for details."
 
-if test "$GXX" == yes; then
-  NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
-  CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
-  MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
-  AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
-fi
+MISSING_DLFCN_H="Missing dlfcn.h. The software could not be built."
+MISSING_WINDOWS_H="Missing windows.h. The software could not be built."
+MISSING_DLOPEN="Missing dlopen. The software could not be built."
+NO_SHARED="Cannot find a method to create dynamically loadable objects."
+
+AC_DEFUN([PDDE_DISP_ARCH], [
+  echo ============================================================
+  echo  Setting up build environment for ${target_cpu}-${target_os}
+  echo ============================================================
+])
+
+AC_DEFUN([PDDE_CHECK_UNIX], [
+  AC_CHECK_HEADERS( dlfcn.h, [ ], [ AC_MSG_ERROR($MISSING_DLFCN_H) ] )
+  AC_CHECK_LIB( dl, dlopen, 
+    [ DL_LIB="-ldl" ], [ 
+      AC_CHECK_LIB( ,dlopen, [ DL_LIB=""], [ AC_MSG_ERROR($MISSING_DLOPEN) ]) 
+    ])
+  AC_SUBST(DL_LIB)
+])
+
+AC_DEFUN([PDDE_CHECK_SHARED],
+[ AC_MSG_CHECKING([whether -fPIC --shared is supported by $CXX])
+  TMP_CXXFLAGS=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS -fPIC --shared"
+  AC_LINK_IFELSE([int main() { return 0; }],
+  [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="$CXXFLAGS -fPIC --shared"; echo "yes"], 
+  [ echo "no"
+    AC_MSG_CHECKING([whether -G -KPIC is supported by $CXX])
+    CXXFLAGS="$TMP_CXXFLAGS -G -KPIC"
+    AC_LINK_IFELSE([int main() { return 0; }], 
+      [ CXXFLAGS=$TMP_CXXFLAGS; MOD_CXXFLAGS="$CXXFLAGS -G -KPIC"; echo "yes"],
+      [ AC_MSG_ERROR($NO_SHARED) ])
+  ])
+])
+
+case "${target_os}" in
+  linux*)
+    PDDE_DISP_ARCH()
+    PDDE_CHECK_SHARED()
+    PDDE_CHECK_UNIX()
+    ;;
+  mingw32*)
+    PDDE_DISP_ARCH()    
+    PDDE_CHECK_SHARED()
+    AC_CHECK_HEADERS( windows.h, [ echo "yes" ], [ AC_MSG_ERROR($MISSING_WINDOWS_H) ])
+    ;;
+  solaris*)
+    PDDE_DISP_ARCH()
+    PDDE_CHECK_SHARED()
+    PDDE_CHECK_UNIX()
+    ;;
+  irix*)
+    PDDE_DISP_ARCH()
+    PDDE_CHECK_SHARED()
+    PDDE_CHECK_UNIX()
+    ;;
+  *)
+    AC_MSG_ERROR($UNSUPPORTED_OS)
+    ;;
+esac
+
+dnl setting up warning message handling
+dnl if GNU C++ is used
+
+case "$GXX" in
+  *[!-a-zA-Z0-9_]*)
+    echo "Setting up the warning flags for $GXX"
+    NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
+    CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
+    MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
+    AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
+    
+    AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
+    TMP_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
+    AC_RUN_IFELSE([int main() { return 0; }],[echo "yes"],
+    [ CXXFLAGS=$TMP_CXXFLAGS
+    echo "no"])
+    ;;
+esac
+
+dnl Setting up the cflags for not optimizing
+dnl the dlamch.c in laarpack.
+dnl This is needed if the architecture has wider
+dnl floating point registers than double's stored size
+
+case "$CC" in
+  gcc*)
+    NOOPT_CFLAGS="-O0"
+    ;;
+  *)
+    NOOPT_CFLAGS=$CFLAGS
+    ;;
+esac
+
+dnl This also can be specified by a command line argument
 
 AC_ARG_WITH(no-optimization-flags,
 [  --with-no-optimization-flags=FLAGS       Choose an optimization flag for not optimizing some parts of the code (default: -O0)],
-[NOOPT_CFLAGS=$withval],[NOOPT_CFLAGS="-O0"])
+[NOOPT_CFLAGS=$withval], )
 
-AC_CHECK_LIB(dl,dlopen, [
-	DL_LIB="-ldl"
-	], [
-	DL_LIB=""
-	])
+AC_SUBST(NOOPT_CFLAGS)
 
-AC_SUBST(NOOPT_CFLAGS DL_LIB)
+dnl remove "#" if the software crashes
 
 # AC_DEFINE([DEBUG])
 
@@ -65,6 +142,12 @@ AC_CONFIG_FILES([Makefile
 	demo/tq/Makefile 
 	demo/traffic/Makefile 
 	demo/turn/Makefile 
-	demo/laser/Makefile ])
+	demo/laser/Makefile 
+	UMFPACK/Make.include 
+	UMFPACK/Makefile 
+	UMFPACK/AMD/Makefile 
+	UMFPACK/AMD/Source/Makefile 
+	UMFPACK/UMFPACK/Makefile
+	UMFPACK/UMFPACK/Source/Makefile ])
 	
 AC_OUTPUT

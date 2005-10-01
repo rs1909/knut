@@ -5,18 +5,21 @@
 //      0  1     2   3  4  5      6     7       8          9      10     11 12  13
 // par: T  alpha eta TT Pc lambda sigma omega_m thetascale Escale Nscale bb tau omega_0
 
-int Sys::ndim(){ return 5; }
-int Sys::npar(){ return 14; }
-int Sys::ntau(){ return 2; }
-int Sys::nderi(){ return 0; }
+extern "C"
+{
+
+int sys_ndim(){ return 5; }
+int sys_npar(){ return 14; }
+int sys_ntau(){ return 2; }
+int sys_nderi(){ return 0; }
  
-void Sys::tau( Vector& out, double t, const Vector& par )
+void sys_tau( Vector& out, double t, const Vector& par )
 {
 	out(0) = 0.0;
 	out(1) = par(12);
 }
 
-void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 {
 	// it is a constant delay
 	out(0) = 0.0;
@@ -24,7 +27,7 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
 	else out(1) = 0.0;	
 }
 
-void Sys::rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
+void sys_rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
 {
 
 #define xx(a,b) yy(a-1,b-1)
@@ -63,19 +66,20 @@ out(4)=(tmp*(-(par(5)*par(9)*sin(phi)*xx(1,2))
                 -par(5)*par(9)*xx(5,1)))/par(9);
 }
 
-
-void Sys::deri( Matrix &out, double t, const Matrix& xx, const Vector& par, 
+void sys_deri( Matrix &out, double t, const Matrix& xx, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
 
 }
 
-void Sys::stpar( Vector& par )
+void sys_stpar( Vector& par )
 {
 	// par(0) = 16.0;
 }
 
-void Sys::stsol( Vector& out, double t )
+void sys_stsol( Vector& out, double t )
 {
 	// out(0)   = 0.9+0.3*sin(2*M_PI*t);
 }
+
+} // extern "C"

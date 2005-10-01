@@ -6,18 +6,20 @@
 #include <iostream>
 #include <cmath>
 #include "pddesys.h"
+extern "C"
+{
 
-int Sys::ndim(){ return 1; }
-int Sys::npar(){ return 2; }
-int Sys::ntau(){ return 2; }
+int sys_ndim(){ return 1; }
+int sys_npar(){ return 2; }
+int sys_ntau(){ return 2; }
 
-void Sys::tau( Vector& out, double t, const Vector& par )
+void sys_tau( Vector& out, double t, const Vector& par )
 {
   out(0) = 0.0;
   out(1) = 1.0;
 }
 
-void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 {
 	switch( vp )
 	{
@@ -35,12 +37,12 @@ void Sys::dtau( Vector& out, double t, const Vector& par, int vp )
 	}
 }
 
-void Sys::rhs( Vector& out, double t, const Matrix& x, const Vector& par )
+void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 {
   out(0) = ( par(1)-x(0,1) )*x(0,0);
 }
 
-void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
+void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
 	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
 {
   if( (t < 0)||(t > 1) ){ std::cout << "deri: t is not element of the interval\n"; }
@@ -139,3 +141,5 @@ void Sys::deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 		}
 	}
 }
+
+} // extern "C"
