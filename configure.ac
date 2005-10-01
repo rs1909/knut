@@ -77,9 +77,9 @@ esac
 dnl setting up warning message handling
 dnl if GNU C++ is used
 
-case "$GXX" in
-  *[!-a-zA-Z0-9_]*)
-    echo "Setting up the warning flags for $GXX"
+case "$CXX" in
+  *g++*)
+    echo "Setting up the warning flags for $CXX"
     NOWARN_CXXFLAGS="$CXXFLAGS -fno-rtti -fno-exceptions"
     CXXFLAGS="$NOWARN_CXXFLAGS -W -Wall"
     MOD_CXXFLAGS="$NOWARN_CXXFLAGS $MOD_CXXFLAGS"  
@@ -92,6 +92,9 @@ case "$GXX" in
     [ CXXFLAGS=$TMP_CXXFLAGS
     echo "no"])
     ;;
+  *)
+    echo "Not using g++ and not setting warning and visibility flags for $CXX"
+    ;;
 esac
 
 dnl Setting up the cflags for not optimizing
@@ -100,13 +103,11 @@ dnl This is needed if the architecture has wider
 dnl floating point registers than double's stored size
 
 case "$CC" in
-  gcc*)
-    NOOPT_CFLAGS="-O0"
-    ;;
-  *)
-    NOOPT_CFLAGS=$CFLAGS
-    ;;
+  gcc*) NOOPT_CFLAGS="-O0" ;;
+  *) NOOPT_CFLAGS=$CFLAGS ;;
 esac
+
+echo "Flag for not optimizing with $CC: $NOOPT_CFLAGS"
 
 dnl This also can be specified by a command line argument
 
