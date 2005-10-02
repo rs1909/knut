@@ -3,26 +3,45 @@
     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>PDDE-CONT</title>
-    <style>h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
-a:link { color: #004faf; text-decoration: none }
-a:visited { color: #672967; text-decoration: none }
-td.postheader { font-family: sans-serif }
-tr.address { font-family: sans-serif }
-body { background: "#ffffff"; color: black; }</style>
+	<title>PDDE-CONT</title>
+	<style>h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+		a:link { color: #004faf; text-decoration: none }
+		a:visited { color: #672967; text-decoration: none }
+		td.postheader { font-family: sans-serif }
+		tr.address { font-family: sans-serif }
+		body { background: "#ffffff"; color: black; }
+	</style>
 </head>
+
 <body>
+
 <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
 	<tr>
-		<th bgcolor="#a2c511"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
+		<th bgcolor="#507C9A" style="color: white"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
 	</tr>
 </table>
 
-<h2> Download </h2>
+<h2> Capabilities </h2>
 <ul>
 <p>
-<a href="pdde-cont-@VERSION@.tar.gz"> Download the current version </a>
+PDDE-CONT can continue periodic solutions of autonomous and periodically forced delay equations in the general form</p>
+<p align=center>
+<i>dx(t)/dt = f(t, x(t-&tau;<sub>0</sub>), x(t-&tau;<sub>1</sub>), ..., x(t-&tau;<sub>r</sub>), &lambda;).</i>
 </p>
+<p>
+To start the continuation, the software needs an initial periodic solution <i>x<sub>0</sub>(t)</i> at some parameter value <i>&lambda;<sub>0</sub></i>. This starting periodic
+solution has to be specified either in the system definition (C++ source file) or it can be loaded from
+an input file. The periodic solutions can bifurcate in several ways. If one of the three common codimension-one
+bifurcations (fold, period doubling, Neimark-Sacker) is found along the branch of periodic
+solutions, the point can be used as a starting point for continuing the branch of bifurcation points in a two parameter space.
+</p>
+
+<p>
+Fixed points of autonomous systems can be also handled, as periodic solutions of periodic
+systems by keeping the period constant. Although it is very inefficient, this capability might be useful,
+when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points
+are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can
+be continued by switching to the periodic solution branch.</p>
 </ul>
 
 <h2> Documentation </h2> 
@@ -30,6 +49,37 @@ body { background: "#ffffff"; color: black; }</style>
 <p>
 See the <a href="manual.pdf"> User's Manual </a> with plain cover or with a 
 <a href="manual-fancy.pdf"> fancy cover </a>.
+</p>
+</ul>
+
+<h2> Download </h2>
+<ul>
+<p>
+Download the <a href="pdde-cont-@VERSION@.tar.gz">current version (@VERSION@)</a>
+</p>
+<p>
+Download the <a href="pdde-cont-0.9.17.tar.gz">previous version (0.9.17)</a>
+</p>
+<p>
+<b>Note:</b> the two versions are incompatible. From v0.9.18 the function naming scheme in the system definition has been changed. The functions in the system definition code are defined as <tt> extern "C" </tt> to enforce "C" style linking. The namespace specifier <tt> Sys:: </tt> in front of the function name was replaced by the <tt> sys_ </tt> prefix (e.g. <tt> int Sys::ndim(); </tt> &#8594 <tt> extern "C" int sys_ndim();</tt> ).
+</p>
+<p>
+The required ATLAS linear algebra library is available for different platforms in binary form. (The files were collected from different places across the internet.) If the binary for a particular computing platform is not found here, download the source from the <a href="http://math-atlas.sourceforge.net/"> ATLAS web page</a> and follow the compilation instructions.
+</p>
+<p>
+<table cellpadding="2" cellspacing="1" border="0" bgcolor="#e5e5e5">
+<tr style="color: white"><th bgcolor="#507C9A">Operating system, Processor</th> <th bgcolor="#507C9A"> Binary package </th>
+</tr>
+<tr>
+<td>Linux, Pentium 4 </td> <td> <a href="atlas3.6.0_Linux_P4SSE2.tar.gz"> atlas3.6.0_Linux_P4SSE2.tar.gz </a> </td></tr>
+<tr>
+<td>Linux, Pentium-M (Centrino) </td> <td> <a href="atlas3.6.0_Linux_PIIISSE2.tgz"> atlas3.6.0_Linux_PIIISSE2.tgz </a> </td></tr>
+<tr>
+<td>Windows NT, 2000, XP, Pentium 4 </td> <td> <a href="atlas3.6.0_WinNT_P4SSE2.tgz"> atlas3.6.0_WinNT_P4SSE2.tgz </a> </td></tr>
+<tr>
+<td>Solaris, UltraSparc II and newer </td> <td> <a href="atlas3.5.0beta_SunOS_SunUS2_2.tar.gz"> atlas3.5.0beta_SunOS_SunUS2_2.tar.gz  </a> </td>
+</tr>
+</table>
 </p>
 </ul>
 
