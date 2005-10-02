@@ -121,6 +121,8 @@ dnl remove "#" if the software crashes
 
 # AC_DEFINE([DEBUG])
 
+AC_CHECK_PROG(SED, sed, sed, no)
+
 AC_PROG_INSTALL
 
 AC_CONFIG_FILES([Makefile  

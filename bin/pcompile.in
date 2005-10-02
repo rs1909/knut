@@ -1,2 +1,2 @@
 # !/bin/sh
-g++ @MOD_CXXFLAGS@ -I@prefix@/include $1 -o `echo $1 | sed s/.cpp/.so/`
+@CXX@ @MOD_CXXFLAGS@ -I@prefix@/include $1 -o `echo $1 | @SED@ s/.cpp/.so/`
