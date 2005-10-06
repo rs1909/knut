@@ -5,7 +5,7 @@
 <head>
 	<title>PDDE-CONT</title>
 	<style>h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
-		a:link { color: #004faf; text-decoration: none }
+		a:link { color: #2B5E82; text-decoration: none }
 		a:visited { color: #672967; text-decoration: none }
 		td.postheader { font-family: sans-serif }
 		tr.address { font-family: sans-serif }
@@ -17,7 +17,7 @@
 
 <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
 	<tr>
-		<th bgcolor="#507C9A" style="color: white"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
+		<th bgcolor="#333366" style="color: white"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
 	</tr>
 </table>
 
@@ -67,8 +67,8 @@ Download the <a href="pdde-cont-0.9.17.tar.gz">previous version (0.9.17)</a>
 The required ATLAS linear algebra library is available for different platforms in binary form. (The files were collected from different places across the internet.) If the binary for a particular computing platform is not found here, download the source from the <a href="http://math-atlas.sourceforge.net/"> ATLAS web page</a> and follow the compilation instructions.
 </p>
 <p>
-<table cellpadding="2" cellspacing="1" border="0" bgcolor="#e5e5e5">
-<tr style="color: white"><th bgcolor="#507C9A">Operating system, Processor</th> <th bgcolor="#507C9A"> Binary package </th>
+<table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#F6F6F6">
+<tr style="color: white"><th bgcolor="#333366">Operating system, Processor</th> <th bgcolor="#333366"> Binary package </th>
 </tr>
 <tr>
 <td>Linux, Pentium 4 </td> <td> <a href="atlas3.6.0_Linux_P4SSE2.tar.gz"> atlas3.6.0_Linux_P4SSE2.tar.gz </a> </td></tr>

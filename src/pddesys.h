@@ -14,16 +14,16 @@
 
 extern "C"
 {
-	int    ndim();
-	int    npar();
-	int    ntau();
-	int    nderi();
-	void   tau( Vector& out, double t, const Vector& par );
-	void   dtau( Vector& out, double t, const Vector& par, int vp );
-	void   rhs( Vector& out, double t, const Matrix& x, const Vector& par );
-	void   deri( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v );
-	void   stpar( Vector& par );
-	void   stsol( Vector& out, double t );
+	int    sys_ndim();
+	int    sys_npar();
+	int    sys_ntau();
+	int    sys_nderi();
+	void   sys_tau( Vector& out, double t, const Vector& par );
+	void   sys_dtau( Vector& out, double t, const Vector& par, int vp );
+	void   sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par );
+	void   sys_deri( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v );
+	void   sys_stpar( Vector& par );
+	void   sys_stsol( Vector& out, double t );
 };
 
 #endif
