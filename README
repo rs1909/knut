@@ -1,46 +1,43 @@
 For istallation instructions read the manual (manual.pdf),
 which can be found in the doc/ subdirectory.
 
-Future versions:
-Some constants will be added to the `constants file', so that the current files
-will not be compatible with the future versions. After the release of
-version 1.0 the file structures will not change. Till then be cautious and
-check the manual frequently.
+------------------------------------------------------------------------------
+
+The program was tested on:
+
+  Linux x86, GNU gcc 3.4.2, 3.4.3, 3.4.4 (Fedora Core 3 and Debian 3.0)
+  Linux x86, GNU gcc 4.0.0, 4.0.1 (Fedora Core 4)
+  Linux x86, GNU gcc 3.3.5 (SuSE 9.3 and Debian 3.1)
+  Linux x86, Intel C,C++ v8.1, (Fedora Core 4)
+   with the following configure options:
+
+    ./configure --prefix=/home/szalai/pdde-cont/ "CC=icc" "CFLAGS=-xB -O2 -g"
+    "CXX=icpc" "CXXFLAGS=-cxxlib-icc -xB -O2 -g"
+
+   The `-cxxlib-icc' is necessary, because icc v8.1 was not compatible with
+   the installed gcc 4.0.2. This option can be safely removed when 
+   gcc v3.x.y is installed. The `-xB' flag correponds to the Pentium-M
+   processor, so it migh not be appropriate for other processors.
+
+  Windows XP, mingw32, GNU gcc 3.4.2
+  Sun Solaris 9, UltraSparc IIIi, gcc 3.3.2
+  Sun Solaris 9, UltraSparc IIIi, Sun C, C++ 5.7 2005/01/07
+   with the following configure options:
+
+    ./configure --prefix=/home/szalai/pdde-cont/ "CC=cc" "CXX=CC"
+
+  gcc 2.x.y __CANNOT__ compile the program because it has insufficient template
+  support.
+
+------------------------------------------------------------------------------
 
 BUGS:
   There are some unsused variables as function arguments, which will be
   removed in a future release and now they are producing warning messages.
   This does not affect anything, just the beauty of the compile process.
 
-  gcc 4.0.1 produces the following warning message, which is a minor
-  gcc bug and NOT a PDDE-CONT bug, and it does not affect anything:
-
-  /home/szalai/local/gcc-4.0.1/bin/../lib/gcc/i686-pc-linux-gnu/4.0.1/../../../../include/c++/4.0.1/bits/stl_uninitialized.h:
-  In member function ‘void
-  std::vector<_Tp,_Alloc>::_M_insert_aux(__gnu_cxx::__normal_iterator<typename_Alloc::pointer,
-  std::vector<_Tp, _Alloc> >, const _Tp&) [with _Tp = std::string, _Alloc =
-  std::allocator<std::string>]’:/home/szalai/local/gcc-4.0.1/bin/../lib/gcc/i686-pc-linux-gnu/4.0.1/../../../../include/c++/4.0.1/bits/stl_uninitialized.h:112:
-  warning: control may reach end of non-void function ‘_ForwardIterator
-  std::__uninitialized_copy_aux(_InputIterator, _InputIterator,
-  _ForwardIterator, __false_type) [with _InputIterator =
-  __gnu_cxx::__normal_iterator<std::string*, std::vector<std::string,
-  std::allocator<std::string> > >, _ForwardIterator =
-  __gnu_cxx::__normal_iterator<std::string*, std::vector<std::string,
-  std::allocator<std::string> > >]’ being inlined
-
-The program was tested on:
-
-Linux x86, gcc 3.4.2, 3.4.3, 3.4.4 (Fedora Core 3 and Debian 3.0)
-Linux x86, gcc 4.0.0, 4.0.1 (Fedora Core 4)
-SuSE 9.3
-
-gcc 2.95.3 __CANNOT__ compile the program because it has insufficient template
-support.
-
-Sun Solaris 5.9 sun4u does not work because "long int lrint( double )" is missing from
-its math library. If you know any function which rounds a double to its
-closest integer and which does not depend on the actual rounding direction,
-please report to me.
-I haven't tried Solaris 10, which is promised to be compatible with Linux.
-Also, I could not make it work under MinGW on MS Windows, because the POSIX
-dlfcn.h is missing (for loading plugins.)
+Future versions:
+  Some constants will be added to the onstants file', so that the current
+  files will not be compatible with the future versions. After the release of
+  version 1.0 the file structures will not change. Till then be cautious and
+  check the manual frequently.

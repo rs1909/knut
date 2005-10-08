@@ -143,7 +143,7 @@ class Point : public PointData
 // 		void    Jacobian( HyperMatrix& AA, HyperVector& RHS, Vector& par, 
 // 		                        Vector& solPrev, Vector& sol, JagMatrix3D& solData, 
 // 		                        Vector* q0, Vector* q );
-		void Point::Jacobian
+		void Jacobian
 		(
 			HyperMatrix& AA, HyperVector& RHS,                      // output
 			Vector& parPrev, Vector& par,                           // parameters

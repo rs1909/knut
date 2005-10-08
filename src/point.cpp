@@ -1424,7 +1424,7 @@ void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<nmul_<<"\n"; PDError(-1); }
+	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
 	for( int i=0; i<NPAR; i++ ) file>>par(i);
 	
 	file>>nmul_;
@@ -1485,7 +1485,7 @@ void Point::ReadNull( std::ifstream& file )
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<nmul_<<"\n"; PDError(-1); }
+	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
 	for( int i=0; i<NPAR; i++ ) file>>tmp;
 	
 	file>>nmul_;
