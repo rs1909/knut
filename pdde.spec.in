@@ -1,12 +1,11 @@
 Summary: Numerical continuation software for delay-differential equations
 Name: pdde-cont
-Version: 0.9.14
+Version: @VERSION@
 Release: 1
-License: Custom
-Group: Applications/Scientific
-Source: pdde-cont-0.9.14.tar.gz
+License: GPL
+Group: Application/Scientific
+Source: @PACKAGE@-@VERSION@.tar.gz
 URL: N/A
-Distribution: Fedora 4
 Vendor: Unknown
 Packager: Robert Szalai <s z a l a i _at_ m m . b m e . h u>
 Buildroot: %{_tmppath}/%{name}-%{version}-buildroot
