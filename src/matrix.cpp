@@ -166,8 +166,8 @@ void MatFact::Fact()
 void MatFact::Solve( Vector& x, const Vector& b, bool trans )
 {
 	if( this->r != this->c ) { cout<<"MatFact::Solve not a square matrix\n"; PDError(1); return; }
-	if( (b.Size() != this->c)||(b.Size() != x.Size()) ) { cout<<"MatFact::Solve Vector sizes differ\n"; PDError(1); return; }
-	
+	else if( b.Size() != this->c ) { cout<<"MatFact::Solve Vector sizes differ: M-V\n"; PDError(1); return; }
+	else if( b.Size() != x.Size() ) { cout<<"MatFact::Solve Vector sizes differ: V-V\n"; PDError(1); return; }
 	
 	const Matrix& AA = *this;
 	double det;

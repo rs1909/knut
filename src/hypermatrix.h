@@ -54,7 +54,8 @@ class HyperMatrix
 		inline Matrix&      getA33() { return *A33; }
 		inline double&      getA33( int i, int j ) { return (*A33)(i,j); }
 		
-		template< class T > inline void __BEM( T& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g );
+		template< class T > inline void __BEM( T& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g,
+			Vector& bem_v, Vector& bem_vStar, Vector& bem_w, Vector& bem_f1 );
 		template< class T > inline void __BEMWS
 			(
 				T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
@@ -136,10 +137,14 @@ class HyperMatrix
 		Vector*			delta2Star;
 
 		// BEM temporaries
-		Vector         bem_v;
-		Vector         bem_vStar;
-		Vector         bem_w;
-		Vector         bem_f1;
+		Vector         bem_v_1;
+		Vector         bem_vStar_1;
+		Vector         bem_w_1;
+		Vector         bem_f1_1;
+		Vector         bem_v_2;
+		Vector         bem_vStar_2;
+		Vector         bem_w_2;
+		Vector         bem_f1_2;
 	
 		// GMBE temporaries
 		Vector         gmbe_xi;

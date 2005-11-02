@@ -17,10 +17,14 @@
 #define FACT_A11 SpFact
 // constructing Sparse-Dense type hypermatrix
 HyperMatrix :: HyperMatrix( int i, int j, int k, int nz ) :
-	bem_v( i ),
-	bem_vStar( i ),
-	bem_w( i ),
-	bem_f1( i ),
+	bem_v_1( i ),
+	bem_vStar_1( i ),
+	bem_w_1( i ),
+	bem_f1_1( i ),
+	bem_v_2( j ),
+	bem_vStar_2( j ),
+	bem_w_2( j ),
+	bem_f1_2( j ),
 	gmbe_xi( j ),
 	gmbe_cc( i ),
 	cm_fr( j ),
@@ -164,7 +168,8 @@ HyperMatrix :: ~HyperMatrix()
 
 // BEM
 template< class FACT >
-inline void HyperMatrix::__BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g )
+inline void HyperMatrix::__BEM( FACT& _A, Vector& _b, Vector& _bStar, double& _d, Vector& x, double& y, const Vector& f, const double& g,
+	Vector& bem_v, Vector& bem_vStar, Vector& bem_w, Vector& bem_f1 )
 {
 
 	double delta, deltaStar;
@@ -320,7 +325,7 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	Vector&     _A23 = (*A23)(0);
 	Vector&     _A31 = (*A31)(0);
 	Vector&     _A32 = (*A32)(0);
-	double&     _A33 = (*A33)(0);
+	double&     _A33 = (*A33)(0,0);
 	
 	double dd;
 	double gg;
@@ -333,7 +338,7 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 	dd = _A33 - gmbe_xi*_A23;
 	gg = F3 - gmbe_xi*F2;
 	
-	__BEM<FACT>( _A11, _A13, gmbe_cc, dd, X1, X3, F1, gg );
+	__BEM<FACT>( _A11, _A13, gmbe_cc, dd, X1, X3, F1, gg, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1 );
 	
 	double gr;
 	double yy;
@@ -349,7 +354,7 @@ inline void HyperMatrix :: GMBE( Vector& X1, Vector& X2, double& X3, const Vecto
 // 	_A21.AXpY( cm_fr, X1, _A23, -1.0, -X3, true );
 	gr = F3 - _A31*X1 - _A33*X3;
 	
-	__BEM<MatFact>( _A22, gmbe_xi, _A32, m_beta, X2, yy, cm_fr, gr );
+	__BEM<MatFact>( _A22, gmbe_xi, _A32, m_beta, X2, yy, cm_fr, gr, bem_v_2, bem_vStar_2, bem_w_2, bem_f1_2 );
 }
 
 template< class FACT >
@@ -412,7 +417,7 @@ inline void HyperMatrix :: GMBEW( int bord, Vector& X1, Vector& X2, Vector& X3, 
 // Wrapper functions
 void HyperMatrix::Solve( Vector& x, double& z, const Vector& f, const double& h ) // BEM
 {
-	__BEM<FACT_A11>( *A11, (*A13)(0), (*A31)(0), (*A33)(0,0), x, z, f, h );
+	__BEM<FACT_A11>( *A11, (*A13)(0), (*A31)(0), (*A33)(0,0), x, z, f, h, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1 );
 }
 
 void HyperMatrix::Solve( int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3 ) // BEMW

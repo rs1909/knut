@@ -111,7 +111,7 @@ into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
-In order to install the software on Windows the MinGW and MinSYS packages have to be installed first (\url{http://www.mingw.org/}). When installing MinGW, check in all the installation options expect those which refer to the source packages. Copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$home$\backslash$$<$username$>$$\backslash$}. Also, the ATLAS linear algebra library is required to build the software. For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors. If all the prequisites are at hand, start the MSys shell and follow the Linux installation instructions above. The only difference that \filef{.profile} has to be created in your MSys \filef{HOME} directory:
+In order to install the software on Windows the MinGW and MinSYS packages have to be installed first (\url{http://www.mingw.org/}). When installing MinGW, check in all the installation options except those which refer to the source packages. Copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$home$\backslash$$<$username$>$$\backslash$}. Also, the ATLAS linear algebra library is required to build the software. For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors. If all the prequisites are at hand, start the MSys shell and follow the Linux installation instructions above. The only difference that \filef{.profile} has to be created in your MSys \filef{HOME} directory:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ echo 'export PATH=$PATH:$HOME/pdde-cont/bin' >.profile
 \end{lstlisting} \end{quote} } \noindent
@@ -119,7 +119,7 @@ After installing the package restart the MSys shell and the software is ready to
 
 \subsection{Unix}
 
-The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on computing platforms too.
+The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on other computing platforms too.
 
 \section{Command line arguments}
 
@@ -281,7 +281,7 @@ sys-glass.so							SYSNAME
 -1 P2 0 3 E1 E0 E24 3 S1 S0 P0	TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
 ...
 \end{lstlisting} \end{quote} } \noindent
-specifies three equations and three variables, but the second equation and variable are just placeholders. The first equation \funp{E1} is for the periodic solution \funp{S1}. The third equation \funp{E24} is the phase condition of autonomous systems while the third variable is the period \funp{P0}. The detailed descriptions of possible paramters are as follows.
+specifies three equations and three variables, but the second equation and variable are just placeholders. The first equation \funp{E1} is for the periodic solution \funp{S1}. The third equation \funp{E24} is the phase condition of autonomous systems while the third variable is the period \funp{P0}. The detailed descriptions of possible parameters are as follows.
 \begin{description}
 \item[\funp{CP}] ~\\
 	The continuation parameter, same as above.
@@ -325,7 +325,7 @@ specifies three equations and three variables, but the second equation and varia
 \item[\funp{S8} -] The kernel of the characteristic matrix.
 \item[\funp{S32} -] Quasi-periodic solution.
 \end{description}
-In the case of an equation with additonal symmetry, when \funp{E25} is specified, also the symmetric components of the solution has to be declared.
+In the case of an equation with additional symmetry, when \funp{E25} is specified, also the symmetric components of the solution has to be declared.
 The declaration is the last line of the constants file and contains which parts of the solution are complex. The first number is the number of complex solutions,
 while the further numbers are the real and imaginary components in the solution vector. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -610,7 +610,7 @@ Here, the non-delayed term is \fun{x(0,0)} while the delayed term
 is \fun{x(0,1)}.
 
 The most difficult part of the definition is always the derivatives of the
-right-hand side. (Note that the contruction of this function can be avoided by returning zero in \fun{ int sys_nderi(); }.)
+right-hand side. (Note that the construction of this function can be avoided by returning zero in \fun{ int sys_nderi(); }.)
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 extern "C"
 void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 

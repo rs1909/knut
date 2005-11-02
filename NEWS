@@ -1,3 +1,7 @@
+In 0.9.20 :
+ - A grave bug was fixed in src/hypermatric.cpp and src/hypermatrix.h
+ - some spelling errors were corrected in doc/manual.tex
+
 In 0.9.19 :
  - UMFPACK build system is rewritten to use automake and make it more
    portable.
