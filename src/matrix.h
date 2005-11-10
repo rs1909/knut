@@ -25,9 +25,15 @@ typedef double doublereal;
 #ifndef PDDESYS_H
 #include "plot.h"
 #include "pderror.h"
+
 extern "C" {
+
 #include "cspblas.h"
 #include "cblas.h"
+
+// LAPACK random vector generator
+int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
+
 }
 #endif
 
@@ -422,6 +428,14 @@ public:
 	}
 
 #ifndef PDDESYS_H
+
+	inline void Rand( )
+	{
+		static integer idist = 2;
+		static integer iseed[4] = { 1, 3, 5, 7 };
+		integer N = static_cast<integer>( n );
+		dlarnv_ ( &idist, iseed, &N, v );
+	}
 	
 	inline Vector& operator= ( const Vector& V );
 	inline Vector& operator+=( const Vector& V );
@@ -784,7 +798,8 @@ inline Vector& Vector::operator=( const __scal_vec_trans<Vector> R )
 {
 	cblas_dcopy( n, R.vec.v, 1, v, 1 );
 	cblas_dscal( n, R.alpha, v, 1 );
-	std::cout<<" = __scal_vec\n"; return *this;
+// 	std::cout<<" = __scal_vec\n"; 
+	return *this;
 }
 
 inline Vector& Vector::operator+=( const __scal_vec_trans<Vector> R )
