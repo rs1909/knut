@@ -10,7 +10,7 @@ extern "C"
 
 int sys_npar(){ return 4; }
 int sys_ntau(){ return 2; }
-int sys_nderi(){ return 0; }
+int sys_nderi(){ return 2; }
  
 void sys_tau( Vector& out, double t, const Vector& par )
 {
