@@ -36,6 +36,8 @@ int dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, d
 int dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal * a, integer * lda, doublereal * wr, doublereal * wi, doublereal * vl, integer * ldvl,
 				doublereal * vr, integer * ldvr, doublereal * work, integer * lwork, integer * info, ftnlen jobvl_len, ftnlen jobvr_len);
 
+int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
+
 // from dlamch.c
 doublereal dlamch_ (char *cmach, ftnlen cmach_len);
 
@@ -97,8 +99,6 @@ static int dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integ
 static int dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info);
 
 static int dlaruv_ (integer * iseed, integer * n, doublereal * x);
-
-static int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
 
 static int dlarft_ (char *direct, char *storev, integer * n, integer * k, doublereal * v, integer * ldv, doublereal * tau, doublereal * t, integer * ldt,
 						  ftnlen direct_len, ftnlen storev_len);
@@ -12153,8 +12153,7 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 
 }	/* dlarfx_ */
 
-static int
-dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
+int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
 {
 	/* System generated locals */
 	integer i__1, i__2, i__3;
