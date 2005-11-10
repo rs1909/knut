@@ -27,7 +27,11 @@ enum Eqn {
 	EqnPhaseRot       = 25,
 	EqnTORSol         = 32,
 	EqnTORPhase0      = 40,
-	EqnTORPhase1      = 41
+	EqnTORPhase1      = 41,
+	EqnTFLP           = 64,
+	EqnTFPD           = 65,
+	EqnTFLPAUT        = 66,
+	EqnTFLPAUTROT     = 67
 };
 
 // this applies to torpoint.h too...
