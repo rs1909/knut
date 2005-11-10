@@ -231,9 +231,10 @@ void printParams( cfile* pms )
 }
 
 int initEqnVar( System& sys, cfile* params,
-                Array1D<Eqn>& eqn, Array1D<Var>& var,
-                Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,
-                Array1D<Eqn>& eqn_start, Array1D<Var>& var_start )
+                Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
+                Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
+                Array1D<Eqn>& eqn_start, Array1D<Var>& var_start,
+                Array1D<Eqn>& eqn_startTF, Array1D<Var>& var_startTF, Eqn& testFN )
 {
 	// initializing the equations and variables
 	if( params->EXTSYS )
@@ -285,29 +286,39 @@ int initEqnVar( System& sys, cfile* params,
 	// checking whether it is an autonomous problem or not
 	bool aut = false;
 	bool phaseRot = false;
+	testFN = EqnNone;
+	int  testFN_idx = -1;
 	for( int i = 0; i < eqn.Size(); i++ ) 
 	{
 		if( eqn(i) == EqnPhase ) aut = true;
 		if( eqn(i) == EqnPhaseRot ) phaseRot = true;
+		if( (eqn(i) == EqnTFPD)||
+		    (eqn(i) == EqnTFLP)||
+		    (eqn(i) == EqnTFLPAUT)||
+		    (eqn(i) == EqnTFLPAUTROT) )
+		{
+			if( testFN_idx == -1 ) { testFN = eqn(i); testFN_idx = i; }
+			else PDError(-1);
+		}
 	}
 	
 	// setting up for refinement
 	if( aut )
 	{
-		if( !phaseRot )
+		if( phaseRot )
 		{
-// 			std::cout<<"Phase\n";
-			eqn_refine.Init(3);
-			var_refine.Init(3);
-			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase;
-			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-1);
-		}else
-		{
-// 			std::cout<<"Phase and PhaseRot\n";
+			// 			std::cout<<"Phase and PhaseRot\n";
 			eqn_refine.Init(4);
 			var_refine.Init(4);
 			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase; eqn_refine(3) = EqnPhaseRot;
 			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-2); var_refine(3) = var(var.Size()-1);
+		}else
+		{
+			// 			std::cout<<"Phase\n";
+			eqn_refine.Init(3);
+			var_refine.Init(3);
+			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase;
+			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-1);
 		}
 	}else
 	{
@@ -316,11 +327,26 @@ int initEqnVar( System& sys, cfile* params,
 		eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone;
 		var_refine(0) = VarSol; var_refine(1) = VarNone;
 	}
+	
+	if( testFN != EqnNone )
+	{
+		eqn_startTF.Init( eqn.Size()-1 );
+		var_startTF.Init( var.Size()-1 );
+		for( int i=0,j=0; i<eqn.Size(); i++ )
+		{
+			if( i != testFN_idx) eqn_startTF(j++) = eqn(i);
+		}
+		for( int i=0; i<var.Size()-1; i++ ) var_startTF(i) = var(i);
+	}
+		for( int i=0; i<eqn_startTF.Size(); i++ ) std::cout<<EqnToStr( eqn_startTF(i) )<<", ";
+		std::cout<<'\n';
+		for( int i=0; i<var_startTF.Size(); i++ ) std::cout<<VarToStr( var_startTF(i) )<<", ";
+		std::cout<<'\n';
 	if( params->SWITCH == HOPFSwitch ) PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX, sys.npar() ); // NPARX == 0
 	
 	// Here, we set up the branch switching.
 	// We suppose that if there is a switch we use one parameter continuation afterwards
-	// without using characteristic matrices. This means that the we can switch on the characteristic matrix,
+	// without using characteristic matrices. This means that we can switch on the characteristic matrix,
 	// include the equation for the eigenvector norm before the other equations and
 	// add CP to the variables as a normal parameter.
 	Eqn eqn_temp;
@@ -335,7 +361,7 @@ int initEqnVar( System& sys, cfile* params,
 		skip:
 			eqn_start.Init( eqn.Size() + 1 ); 
 			var_start.Init( var.Size() + 1 );
-			eqn_start(0) = eqn(0); 
+			eqn_start(0) = eqn(0);
 			var_start(0) = var(0);
 			eqn_start(1) = eqn_temp;
 			var_start(1) = VarNullSpace;
@@ -351,7 +377,7 @@ int initEqnVar( System& sys, cfile* params,
 		case TORSwitch:
 			eqn_start.Init( eqn_refine.Size() + 2 );
 			var_start.Init( var_refine.Size() + 2 );
-			eqn_start(0) = eqn_refine(0); 
+			eqn_start(0) = eqn_refine(0);
 			var_start(0) = var_refine(0);
 			eqn_start(1) = EqnCPLXNullSpace;
 			var_start(1) = VarNullSpace;
@@ -469,8 +495,11 @@ int main( int argc, const char** argv )
 	Array1D<Var> var_refine;
 	Array1D<Eqn> eqn_start;
 	Array1D<Var> var_start;
+	Array1D<Eqn> eqn_startTF;
+	Array1D<Var> var_startTF;
+	Eqn          testFN;
 	
-	int trivial = initEqnVar( sys, params, eqn, var, eqn_refine, var_refine, eqn_start, var_start );
+	int trivial = initEqnVar( sys, params, eqn, var, eqn_refine, var_refine, eqn_start, var_start, eqn_startTF, var_startTF, testFN );
 	const int npar = sys.npar();
 	
 // 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
@@ -513,11 +542,17 @@ int main( int argc, const char** argv )
 		}
 		
 		pt.Refine();
-		if( eqn_start(1) != EqnNone )
+		if( eqn_start(1) != EqnNone ) // pt.Start is called only when there is a characteristic matrix
 		{
 			std::cout<<"\n--- Finding the kernel of the characteristic matrix ---\n";
 			pt.Reset( eqn_start, var_start );
 			pt.Start();
+		}
+		if( eqn_startTF.Size() != 0 )
+		{
+			pt.Reset( eqn, var );
+			pt.setCont( params->CP );
+			pt.Refine(); // pt.StartTF( testFN );
 		}
 		
 		// start the continuation!
