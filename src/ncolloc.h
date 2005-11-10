@@ -54,7 +54,7 @@ class NColloc
 		
 		// continuation of bifurcations -> characteristic matrices
 		
-		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z );
+		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z, bool tf = false );
 		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double ZRe, double ZIm );
 		
 		void CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int p );
@@ -67,13 +67,13 @@ class NColloc
 		// we do need Re, Im
 		
 		// for the autonomous FOLD bifurcation
-		void CharJac_mB(   SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z );
+		void CharJac_mB(   SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z, bool tf = false );
 		void CharJac_mB_p( Vector& V,   const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha );
 		void CharJac_mB_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z );
 		
 		// autonoumous trivial eigenvector
 		void CharJac_phi( Vector& V, const Vector& par, const JagMatrix3D& solData );
-		void CharJac_phi_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData );
+		template<bool trans> void CharJac_phi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi );
 		void CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha );
 
 		// supplementary
@@ -161,8 +161,8 @@ class NColloc
 		// these store the structure of the sparse matrix NO SEPARATION
 		Array2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval 
 		Array2D<int> ee;   // dim(NTAU+1,NDEG*NINT) : the ordering of kk
-		Array2D<int> dd;	 // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
-		Array2D<int> rr;	 // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
+		Array2D<int> dd;   // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
+		Array2D<int> rr;   // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
 
 		// these store the structure of the sparse matrix WITH SEPARATION
 		Array2D<int> kkS;  // same as kk, but not folded back
@@ -196,5 +196,71 @@ class NColloc
 		// for rhs, and derivatives
 		// Matrix fx, dfx, t_dfx, dummy
 };
+
+#define NDIM ndim
+#define NPAR npar
+#define NTAU ntau
+#define NINT nint
+#define NDEG ndeg
+#define NMAT nmat
+
+// MM transposed
+//! RHS_x without derivative. Mulitlied from the right: w* . D_x phi
+template<bool trans> void NColloc::CharJac_phi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi )
+{
+	Matrix dfx(NDIM,NDIM);
+	Matrix dummy(0,0);
+	
+	V.Clear();
+	
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			
+			int nx=1, vx, np=0, vp;
+			for( int k = 0; k < NTAU+1; k++ )
+			{
+				if( ee(k,idx) != 0 )
+				{
+					vx = ee(k,idx)-1;
+					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
+				}
+				for( int l = 0; l < NDEG+1; l++) // degree
+				{
+					for( int p = 0; p < NDIM; p++ )  // row
+					{
+						for( int q = 0; q < NDIM; q++ )  //column
+						{
+							if( ee(k,idx) != 0 )
+							{
+								if(trans) V( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) ) -= 
+								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( NDIM + p + NDIM*idx );
+								else      V( NDIM + p + NDIM*idx ) -= 
+								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) );
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	// if trans==true : need __NOT__ to make it periodic
+	if(!trans)
+	{
+		for( int r = 0; r < NDIM; r++ )
+		{
+			V(r) = V(r+NDIM*NDEG*NINT);
+		}
+	}
+}
+
+#undef NDIM
+#undef NPAR
+#undef NTAU
+#undef NINT
+#undef NDEG
+#undef NMAT
 
 #endif
