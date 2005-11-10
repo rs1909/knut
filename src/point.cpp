@@ -252,7 +252,6 @@ void Point::Construct( )
 				charMat = new CharMat( colloc );
 				dim2 = NDIM;
 				break;
-				
 			case EqnCPLXNullSpace:
 				qq   = new Vector( 2*NDIM );
 				qq0  = new Vector( 2*NDIM );
@@ -292,6 +291,31 @@ void Point::Construct( )
 		}
 	}
 	
+	testFunct = 0;
+	for( int i = 2; i < eqn.Size(); i++ )
+	{
+		switch( eqn(i) ) 
+		{
+			case EqnTFLP:
+				if( testFunct == 0 ) testFunct = new TestFunct( colloc, 1.0 );
+				else PDError(-1);
+				break;
+			case EqnTFPD:
+				if( testFunct == 0 ) testFunct = new TestFunct( colloc, -1.0 );
+				else PDError(-1);
+				break;
+			case EqnTFLPAUT:
+				if( testFunct == 0 ) testFunct = new TestFunctLPAUT( colloc, 1.0 );
+				else PDError(-1);
+				break;
+			case EqnTFLPAUTROT:
+				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT_S( colloc, rotRe, rotIm, 1.0 );
+				else PDError(-1);
+				break;
+			default:
+				break;
+		}
+	}
 	for( int i = 2; i < var.Size(); i++ )
 	{
 		if( (var(i) - VarPAR0 >= 0)&&(var(i) - VarPAR0 < NPAR + ParEnd) )
@@ -318,6 +342,7 @@ void Point::Construct( )
 // private
 void Point::Dispose()
 {
+	delete testFunct;
 	delete jac;
 	
 	delete rhs;
@@ -660,6 +685,36 @@ void Point::Jacobian(
 				// RHS
 				RHS.getV3()(i-2) = -( AA.getA31(i-2)*sol ); // -par(NPAR+ParNorm)*(xxRM->getV3()(i-2))
 				break;
+			case EqnTFLP:
+			case EqnTFPD:
+			case EqnTFLPAUT:
+			case EqnTFLPAUTROT:
+				RHS.getV3()(i-2) = testFunct->Funct( colloc, par, solData );
+				testFunct->Funct_x( AA.getA31(i-2), colloc, par, solData );
+				if( dim2 != 0 ) AA.getA32(i-2).Clear();
+				for( int j=2; j<varMap.Size(); j++ )
+				{
+					if( varMap(i) < NPAR )
+					{
+						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, solData, varMap(j) );
+					}else
+					{
+						switch( varMap(i)-NPAR )
+						{
+							case ParNorm:
+								AA.getA33(i-2,j-2) = 0.0;
+								break;
+							case ParAngle:
+								AA.getA33(i-2,j-2) = 0.0;
+								break;
+							default:
+								std::cout<<" bad PARAMETERS9 "<<varMap(i)<<"\n";
+								PDError(-1);
+								break;
+						}
+					}
+				}
+				break;
 			default:
 				std::cout<<" EqnOther: not supported ";
 				PDError(-1);
@@ -706,7 +761,10 @@ inline void Point::ContUpdate( HyperVector& X )
 	parNu( p1 ) += X.getV3()(dim3);
 }
 
-// rewrite with the secant method! The derivative is not reliable.
+/// rewrite with the secant method! The derivative is not reliable.
+/// --------------------------------------------------------------
+/// Starting bifurcation continuation with CHARACTERISTIC MATRICES
+/// --------------------------------------------------------------
 int Point::Start(  )
 {
 	colloc.Init( par, sol );
@@ -885,6 +943,66 @@ int Point::Start(  )
 	}
 	
 	return 0;
+}
+
+/// --------------------------------------------------------------
+/// Starting bifurcation continuation using TEST FUNCTIONS
+/// --------------------------------------------------------------
+
+/// IT IS __NOT__ USED, BECAUSE IT DIVERGES. BUT REFINE CONVERGES, WHICH IS EXCELLENT!!!
+
+int Point::StartTF( Eqn test_eqn )
+{
+	baseTestFunct *locTestFunct;
+	
+	colloc.Init( par, sol );
+	colloc.Interpolate( solData, sol );
+	
+	switch( test_eqn ) 
+	{
+		case EqnTFLP:
+			locTestFunct = new TestFunct( colloc, 1.0 );
+			break;
+		case EqnTFPD:
+			locTestFunct = new TestFunct( colloc, -1.0 );
+			break;
+		case EqnTFLPAUT:
+			locTestFunct = new TestFunctLPAUT( colloc, 1.0 );
+			break;
+		case EqnTFLPAUTROT:
+			locTestFunct = new TestFunctLPAUTROT( colloc, 1.0 );
+			break;
+		default:
+			locTestFunct = 0;
+			break;
+	}
+	std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( NPAR, p1 )<<parNum( NPAR, p1 )<<"\t";
+	for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<parType( NPAR, varMap(j) )<<parNum( NPAR, varMap(j) )<<"\t";
+	std::cout<<"\tIT\n";
+	
+	// Actually nothing needs to be set up
+	Tangent();
+	double TF, DTF;
+	int cit=0, it=0;
+	TF  = locTestFunct->Funct( colloc, par, solData );
+	DTF = locTestFunct->Funct_p( colloc, par, solData, p1 );
+	do
+	{
+		std::cout<<"TF/DTF "<<TF/DTF<<"\n";
+		cit = Continue( TF/DTF/1.5 ); // 0 = TF1 = TF - DTF*DPAR;
+		colloc.Init( par, sol );
+		colloc.Interpolate( solData, sol );
+		TF  = locTestFunct->Funct( colloc, par, solData );
+		DTF = locTestFunct->Funct_p( colloc, par, solData, p1 );
+		std::cout<<" t"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
+		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
+		std::cout<<"\t"<<cit<<"\n";
+		std::cout.flush();
+	}while( (fabs( TF ) > StartEps)&&(++it < StartIter) );
+	
+	delete locTestFunct;
+	
+	return it;
 }
 
 int Point::Refine( )
@@ -1138,6 +1256,8 @@ int Point::Continue( double ds )
 	double Xnorm, Dnorm, Rnorm, Tnorm;
 // 	double Dnorm1, Dnorm2, Dnorm3;
 	
+// 	testFunct->Funct( colloc, par, solData );
+	
 	parNu = par;
 	for( int i=0; i< solNu.Size(); i++ )     solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
 	if( qqNu ) for( int i=0; i< qqNu->Size(); i++ ) (*qqNu)(i)  = (*qq)(i)         + ds * xxDot->getV2()(i);
@@ -1209,15 +1329,17 @@ int Point::Continue( double ds )
 // 		std::cout<<"\n";
 		
 		// checking the tangent and the secant
-// 		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
-// 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
-// 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm<<'\n';
-// 		
-// 		xx->getV1() = solNu;
-// 		xx->getV1() -= sol;
-// 		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
-// 		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
-// 		xx->getV3()(dim3) = parNu(p1) - par(p1);
+		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
+		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
+		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
+		std::cout<<'\n';
+		
+		xx->getV1() = solNu;
+		xx->getV1() -= sol;
+		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
+		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
+		xx->getV3()(dim3) = parNu(p1) - par(p1);
 		
 		// replacing xxDot with the secant... it may improve...
 // 		xxDot->getV1() = xxCont->getV1(); 
@@ -1233,13 +1355,15 @@ int Point::Continue( double ds )
 // 		p1Dot /= norm;
 		// end of replacing!!!		
 		
-// 		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
-// 		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
-// 		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
-// 		Onorm = 0;
-// 		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
-// 		Onorm = sqrt(Onorm)/ds;
-// 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm<<'\n';
+		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
+		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
+		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
+		Onorm = 0;
+		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
+		Onorm = sqrt(Onorm)/ds;
+		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
+		std::cout<<'\n';
 		
 		// copying back the solution
 		sol = solNu;
