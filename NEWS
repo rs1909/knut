@@ -5,7 +5,8 @@ In 0.9.20 :
 In 0.9.19 :
  - UMFPACK build system is rewritten to use automake and make it more
    portable.
- - Platform dependent configure.ac
+ - New configure.ac to support several computing platforms
+ - Sun Studio 10 compiler is fully supported
 
 In 0.9.18 :
  - The software compiles under Windows using the MinGW environment and
@@ -13,7 +14,7 @@ In 0.9.18 :
  - It can be compiled with Sun Studio 10 though dynamic loading is not
    working at this stage
 
-In 0.9.17 : This is the last release before 1.0
+In 0.9.17 : This is (should have been) the last release before 1.0
  - Changes in the constants file. New constants are introduced:
 	DSSTART to control the branch swithing
 	NITER was removed to introduce NITC, NITR, NITS for more control 

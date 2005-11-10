@@ -1,4 +1,4 @@
-AC_INIT([PDDE-CONT], [0.9.20])
+AC_INIT([PDDE-CONT], [0.9.20M])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 
@@ -119,7 +119,9 @@ AC_SUBST(NOOPT_CFLAGS)
 
 dnl remove "#" if the software crashes
 
-# AC_DEFINE([DEBUG])
+AC_DEFINE([DEBUG])
+CFLAGS="$CFLAGS -fno-inline"
+CXXFLAGS="$CXXFLAGS -fno-inline"
 
 AC_CHECK_PROG(SED, sed, sed, no)
 
