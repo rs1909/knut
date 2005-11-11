@@ -309,7 +309,7 @@ void Point::Construct( )
 				else PDError(-1);
 				break;
 			case EqnTFLPAUTROT:
-				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT_S( colloc, rotRe, rotIm, 1.0 );
+				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc/*, rotRe, rotIm*/, 1.0 );
 				else PDError(-1);
 				break;
 			default:
@@ -539,12 +539,12 @@ void Point::Jacobian(
 				AA.getA32(i-2) = *qPrev;
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -571,12 +571,12 @@ void Point::Jacobian(
 				// AA.getA32(i-2) = *qPrev; this is the same...
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -585,7 +585,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS6 "<<var(i)<<"\n";
+								std::cout<<" bad PARAMETERS6 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -603,12 +603,12 @@ void Point::Jacobian(
 				}
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -617,7 +617,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS7 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS7 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -633,12 +633,12 @@ void Point::Jacobian(
 				// other variables
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -647,7 +647,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -662,12 +662,12 @@ void Point::Jacobian(
 				// other variables
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -676,7 +676,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -694,12 +694,12 @@ void Point::Jacobian(
 				if( dim2 != 0 ) AA.getA32(i-2).Clear();
 				for( int j=2; j<varMap.Size(); j++ )
 				{
-					if( varMap(i) < NPAR )
+					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, solData, varMap(j) );
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0;
@@ -708,7 +708,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS9 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
