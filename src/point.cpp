@@ -309,13 +309,15 @@ void Point::Construct( )
 				else PDError(-1);
 				break;
 			case EqnTFLPAUTROT:
-				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc/*, rotRe, rotIm*/, 1.0 );
+				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT_S( colloc, rotRe, rotIm, 1.0 );
 				else PDError(-1);
 				break;
 			default:
 				break;
 		}
 	}
+	if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
+	
 	for( int i = 2; i < var.Size(); i++ )
 	{
 		if( (var(i) - VarPAR0 >= 0)&&(var(i) - VarPAR0 < NPAR + ParEnd) )
@@ -585,7 +587,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS6 "<<varMap(j)<<"\n";
+								std::cout<<" bad PARAMETERS6 "<<var(i)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -617,7 +619,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS7 "<<varMap(j)<<"\n";
+								std::cout<<" bad PARAMETERS7 "<<varMap(i)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -647,7 +649,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -667,7 +669,7 @@ void Point::Jacobian(
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(j)-NPAR )
+						switch( varMap(i)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -676,7 +678,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -697,6 +699,7 @@ void Point::Jacobian(
 					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, solData, varMap(j) );
+						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
 					}else
 					{
 						switch( varMap(j)-NPAR )
@@ -708,7 +711,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
+								std::cout<<" bad PARAMETERS9 "<<varMap(i)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -970,7 +973,7 @@ int Point::StartTF( Eqn test_eqn )
 			locTestFunct = new TestFunctLPAUT( colloc, 1.0 );
 			break;
 		case EqnTFLPAUTROT:
-			locTestFunct = new TestFunctLPAUTROT( colloc, 1.0 );
+			locTestFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 			break;
 		default:
 			locTestFunct = 0;
@@ -1256,8 +1259,6 @@ int Point::Continue( double ds )
 	double Xnorm, Dnorm, Rnorm, Tnorm;
 // 	double Dnorm1, Dnorm2, Dnorm3;
 	
-// 	testFunct->Funct( colloc, par, solData );
-	
 	parNu = par;
 	for( int i=0; i< solNu.Size(); i++ )     solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
 	if( qqNu ) for( int i=0; i< qqNu->Size(); i++ ) (*qqNu)(i)  = (*qq)(i)         + ds * xxDot->getV2()(i);
@@ -1300,6 +1301,7 @@ int Point::Continue( double ds )
 // 		std::cout<<" Xnorm:"<<Xnorm<<" Dnorm:"<<Dnorm<<"\nDnorm1:"<<Dnorm1<<" Dnorm2:"<<Dnorm2<<" Dnorm3:"<<Dnorm3<<" "<<it<<'\n';
 // 		std::cout<<"Par   "; par.Print(); //std::cout<<"\n";
 // 		std::cout<<"ParNu "; parNu.Print(); std::cout<<"\n";
+		std::cout<<"ParNu0 "<<parNu(0)<<"\n";
 // 		if( qqNu ) { std::cout<<"Dq "; rhs->getV2().Print(); std::cout<<"\n"; }
 		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm >= 10.0*ContEps);
 		
@@ -1328,42 +1330,32 @@ int Point::Continue( double ds )
 // 		for( int i=0; i<dim3; i++ ) std::cout<<" t3 "<<jacCont->getA33(i,dim3);
 // 		std::cout<<"\n";
 		
-		// checking the tangent and the secant
-		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
-		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
-		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
-		std::cout<<'\n';
+// 		testFunct->Funct( colloc, par, solData );
 		
-		xx->getV1() = solNu;
-		xx->getV1() -= sol;
-		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
-		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
-		xx->getV3()(dim3) = parNu(p1) - par(p1);
-		
-		// replacing xxDot with the secant... it may improve...
-// 		xxDot->getV1() = xxCont->getV1(); 
-// 		xxDot->getV2() = xxCont->getV2(); 
-// 		for( int i=0; i<dim3; i++ ) xxDot->getV3()(i) = xxCont->getV3()(i);
-// 		p1Dot = xxCont->getV3()(dim3);
+		/// checking the tangent and the secant
+// 		testFunct->Funct( colloc, par, solData );
+// 		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
+// 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
+// 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+// 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
+// 		std::cout<<'\n';
 // 		
-// 		norm = sqrt( p1Dot*p1Dot + colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV2())*(xxDot->getV2()) + (xxDot->getV3())*(xxDot->getV3()) );
+// 		xx->getV1() = solNu;
+// 		xx->getV1() -= sol;
+// 		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
+// 		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
+// 		xx->getV3()(dim3) = parNu(p1) - par(p1);
 // 		
-// 		xxDot->getV1() /= norm;
-// 		xxDot->getV2() /= norm;
-// 		xxDot->getV3() /= norm;
-// 		p1Dot /= norm;
-		// end of replacing!!!		
-		
-		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
-		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
-		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
-		Onorm = 0;
-		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
-		Onorm = sqrt(Onorm)/ds;
-		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
-		std::cout<<'\n';
+// 		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
+// 		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
+// 		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
+// 		Onorm = 0;
+// 		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
+// 		Onorm = sqrt(Onorm)/ds;
+// 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+// 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
+// 		std::cout<<'\n';
+		/// END OF CHECKING
 		
 		// copying back the solution
 		sol = solNu;

@@ -16,8 +16,8 @@ The program was tested on:
 
    The `-cxxlib-icc' is necessary, because icc v8.1 was not compatible with
    the installed gcc 4.0.2. This option can be safely removed when 
-   gcc v3.x.y is installed. The `-xB' flag correponds to the Pentium-M
-   processor, so it migh not be appropriate for other processors.
+   gcc v3.x.y is installed. The `-xB' is for the Pentium-M processor, 
+   so it migh not be appropriate for other processors.
 
   Windows XP, mingw32, GNU gcc 3.4.2
   Sun Solaris 9, UltraSparc IIIi, gcc 3.3.2

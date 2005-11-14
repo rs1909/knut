@@ -1892,6 +1892,12 @@ void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& so
 
 			if( alpha == 0 )
 			{
+// 				sys->rhs( fx, time(idx), solData(idx), par );
+// 				for( int p = 0; p < NDIM; p++ )
+// 				{
+// 					V( NDIM + p + NDIM*idx ) = -fx(p); 
+// 					// if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
+// 				}
 				nx = 1; np = 0;
 				for( int r=0; r<NTAU; r++ )
 				{
@@ -1914,7 +1920,7 @@ void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& so
 			{
 				nx = 0, np = 1; vp = alpha;
 				sys->deri( dfx2, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
-				for( int k = 0; k < NDIM; k++ ) V( NDIM + k + NDIM*idx ) = -dfx2(k);
+				for( int k = 0; k < NDIM; k++ ) V( NDIM + k + NDIM*idx ) = - dfx2(k);
 				
 				nx = 1, np = 0;
 				for( int r=0; r<NTAU; r++ )

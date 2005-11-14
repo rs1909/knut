@@ -21,6 +21,47 @@
 #define NTAU (col.Ntau())
 #define NPAR (col.Npar())
 
+void inline rotbord( Vector& V, NColloc& col, const JagMatrix3D& solData, Array1D<int>& Re, Array1D<int>& Im )
+{
+	V.Clear();
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			for( int k = 0; k < Re.Size(); k++ )
+			{
+				V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = solData( idx )( Im(k), 0 );
+				V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - solData( idx )( Re(k), 0 );
+			}
+		}
+	}
+}
+
+template<bool trans> void inline rotbord( Vector& V, NColloc& col, Vector& IN, Array1D<int>& Re, Array1D<int>& Im )
+{
+	V.Clear();
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			for( int k = 0; k < Re.Size(); k++ )
+			{
+				if(trans)
+				{
+					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
+					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
+				}else
+				{
+					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
+					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
+				}
+			}
+		}
+	}
+}
+
 TestFunct::TestFunct( NColloc& col, double Z ) :
 	ZZ(Z),
 	AHAT( NDIM*(NDEG*NINT+1), 0, 1, NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
@@ -194,8 +235,10 @@ double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const JagMatrix3D
 	AHAT.getA13(0) = vv1;
 	AHAT.Solve  ( vv1, gg1, rhs, one1 );
 	AHAT.SolveTR( uu1, hh1, rhs, one1 );
-	AHAT.getA13(0) = (1.0/sqrt(uu1*uu1))*uu1;
-	AHAT.getA31(0) = (1.0/sqrt(vv1*vv1))*vv1;
+	const double nrm_vv1 = (1.0/sqrt(vv1*vv1));
+	const double nrm_uu1 = (1.0/sqrt(uu1*uu1));
+	AHAT.getA13(0) = nrm_uu1 * uu1;
+	AHAT.getA31(0) = nrm_vv1 * vv1;
 // 	std::cout<<"T0: "<<gg1<<", "<<hh1;
 	
 	// continuing the non-trivial kernel
@@ -203,10 +246,10 @@ double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const JagMatrix3D
 	AHAT.Solve  ( 2, vv2, gg2, rhs, one2 );
 	AHAT.SolveTR( 2, uu2, hh2, rhs, one2 );
 	
-	const double nrm_v = (1.0/sqrt(vv2*vv2));
-	const double nrm_u = (1.0/sqrt(uu2*uu2));
-	AHAT.getA31(1) = nrm_v * vv2;
-	AHAT.getA13(1) = nrm_u * uu2;
+	const double nrm_vv2 = (1.0/sqrt(vv2*vv2));
+	const double nrm_uu2 = (1.0/sqrt(uu2*uu2));
+	AHAT.getA31(1) = nrm_vv2 * vv2;
+	AHAT.getA13(1) = nrm_uu2 * uu2;
 	
 // 	std::cout<<"TF: "<<gg2(1)<<", "<<hh2(1)<<"\n";
 // 	if( gg2(1) > 0.0 ) std::cout<<"\t+++\n";
@@ -216,36 +259,36 @@ double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const JagMatrix3D
 
 double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const JagMatrix3D& solData, int alpha )
 {
-// 	JagMatrix3D vv1Data( NDEG*NINT, NDIM, 2*NTAU+1 );
-// 	col.Interpolate( vv1Data, vv1 );
+	JagMatrix3D vv1Data( NDEG*NINT, NDIM, 2*NTAU+1 );
+	col.Interpolate( vv1Data, vv1 );
 	col.Interpolate( vv2Data, vv2 );
 	Vector mB_p( NDIM*(NDEG*NINT+1) );
 	col.CharJac_x_p( A_p, par, solData, vv2Data, ZZ, alpha );
-// 	col.CharJac_mB_p( mB_p, par, solData, vv1Data, ZZ, alpha );
-	const double gg_p = (uu2 * A_p) /*+ gg2(0) * (uu2 * mB_p)*/;
-// 	std::cout<<"GP "<<alpha<<":"<<gg_p;
+	col.CharJac_mB_p( mB_p, par, solData, vv1Data, ZZ, alpha );
+	const double gg_p = (uu2 * A_p) - gg2(0) * (uu2 * mB_p);
+	std::cout<<"GP "<<alpha<<":"<<gg_p;
 	return gg_p; // positive, because the test function is not negated in the Jacobian
 }
 
 void   TestFunctLPAUT::Funct_x( Vector& func, NColloc& col, const Vector& par, const JagMatrix3D& solData )
 {
-// 	JagMatrix3D vv1Data( NDEG*NINT, NDIM, 2*NTAU+1 );
-// 	col.Interpolate( vv1Data, vv1 );
+	JagMatrix3D vv1Data( NDEG*NINT, NDIM, 2*NTAU+1 );
+	col.Interpolate( vv1Data, vv1 );
 	col.Interpolate( vv2Data, vv2 );
 	col.CharJac_x_x( A_x, par, solData, vv2Data, ZZ );
-// 	SpMatrix mB_x( 'R', NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) );
-// 	col.CharJac_mB_x( mB_x, par, solData, vv1Data, ZZ );
+	SpMatrix mB_x( 'R', NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) );
+	col.CharJac_mB_x( mB_x, par, solData, vv1Data, ZZ );
 	func = !A_x * uu2;
-// 	Vector temp( NDIM*(NDEG*NINT+1) );
-// 	temp = !mB_x * uu2;
-// 	func += gg2(0) * temp;
+	Vector temp( NDIM*(NDEG*NINT+1) );
+	temp = !mB_x * uu2;
+	func -= gg2(0) * temp;
 }
 
 /// -----------------------------------------------------------------------
 /// test function for FOLD BIFURCATIONS in autonomous systems with SIMMETRY
 /// -----------------------------------------------------------------------
 
-TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, double Z ) :
+TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z ) :
 	ZZ(Z),
 	AHAT( NDIM*(NDEG*NINT+1), 0, 3, NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
 	A_p( NDIM*(NDEG*NINT+1) ),
@@ -264,6 +307,7 @@ TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, double Z ) :
 	gg3(3),
 	hh3(3),
 	one3(3),
+	Re(CRe), Im(CIm),
 	vv3Data( NDEG*NINT, NDIM, 2*NTAU+1 )
 {
 	first = true;
@@ -392,10 +436,17 @@ double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const JagMat
 {
 	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_p( A_p, par, solData, vv3Data, ZZ, alpha );
-	const double gg_p = (uu3 * A_p);
-	std::cout<<"GP "<<alpha<<":"<<gg_p;
-	if( alpha==0 ) return 22*gg_p;
-	else return gg_p;
+	double gg_p = (uu3 * A_p);
+	
+// 	Vector wSmB( NDIM*(NDEG*NINT+1) );
+// 	wSmB = !mB * uu3;
+// 	Vector wSmBDxphi( NDIM*(NDEG*NINT+1) );
+// 	col.CharJac_phi_p( wSmBDxphi, par, solData, alpha );
+// 	gg_p += gg3(0) * (wSmBDxphi * wSmB);
+	
+	if( alpha==0 ) gg_p = gg3(0);
+	std::cout<<"\nGP "<<alpha<<":"<<gg_p;
+	return gg_p;
 }
 
 void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par, const JagMatrix3D& solData )
@@ -403,6 +454,16 @@ void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par
 	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_x( A_x, par, solData, vv3Data, ZZ );
 	func = (1.0)*!A_x * uu3; // positive, because the test function is not negated in the Jacobian
+	
+// 	Vector wSmB( NDIM*(NDEG*NINT+1) );
+// 	wSmB = !mB * uu3;
+// 	Vector wSmBDxphi( NDIM*(NDEG*NINT+1) );
+// 	col.CharJac_phi_x<true>( wSmBDxphi, par, solData, wSmB );
+// 	func += gg3(0)*wSmBDxphi;
+// 	
+// 	Vector wSmBLAM( NDIM*(NDEG*NINT+1) );
+// 	rotbord<true>( wSmBLAM, col, wSmB, Re, Im );
+// 	func += gg3(1)*wSmBLAM;
 }
 
 /// -----------------------------------------------------------------------
@@ -438,47 +499,6 @@ TestFunctLPAUTROT_S::~TestFunctLPAUTROT_S()
 {
 }
 
-void inline rotbord( Vector& V, NColloc& col, const JagMatrix3D& solData, Array1D<int>& Re, Array1D<int>& Im )
-{
-	V.Clear();
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
-	{
-		for( int j = 0; j < NDEG; j++ )
-		{
-			const int idx = j+i*NDEG;
-			for( int k = 0; k < Re.Size(); k++ )
-			{
-				V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = solData( idx )( Im(k), 0 );
-				V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - solData( idx )( Re(k), 0 );
-			}
-		}
-	}
-}
-
-template<bool trans> void inline rotbord( Vector& V, NColloc& col, Vector& IN, Array1D<int>& Re, Array1D<int>& Im )
-{
-	V.Clear();
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
-	{
-		for( int j = 0; j < NDEG; j++ )
-		{
-			const int idx = j+i*NDEG;
-			for( int k = 0; k < Re.Size(); k++ )
-			{
-				if(trans)
-				{
-					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
-					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
-				}else
-				{
-					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
-					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
-				}
-			}
-		}
-	}
-}
-
 void TestFunctLPAUTROT_S::Init( NColloc& col, const Vector& par, const JagMatrix3D& solData )
 {
 	// creating the matrix
@@ -512,10 +532,14 @@ void TestFunctLPAUTROT_S::Init( NColloc& col, const Vector& par, const JagMatrix
 	{
 		AHAT.Solve  ( 3, vv3, gg3, rhs, one3 );
 		AHAT.SolveTR( 3, uu3, hh3, rhs, one3 );
-		const double nrm_v = (1.0/sqrt(vv3*vv3));
-		const double nrm_u = (1.0/sqrt(uu3*uu3));
-		AHAT.getA31(2) = nrm_v * vv3;
-		AHAT.getA13(2) = nrm_u * uu3;
+		const double nrm_v = (1.0/sqrt(vv3*vv3+gg3(0)*gg3(0)+gg3(1)*gg3(1)));
+		const double nrm_u = (1.0/sqrt(uu3*uu3+hh3(0)*hh3(0)+hh3(1)*hh3(1)));
+		AHAT.getA31(2)   = nrm_v * vv3;
+		AHAT.getA33(2,0) = nrm_v * gg3(0);
+		AHAT.getA33(2,1) = nrm_v * gg3(1);
+		AHAT.getA13(2)   = nrm_u * uu3;
+		AHAT.getA33(0,2) = nrm_u * hh3(0);
+		AHAT.getA33(1,2) = nrm_u * hh3(1);
 	}
 	std::cout<<"TF: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 }
@@ -537,11 +561,15 @@ double TestFunctLPAUTROT_S::Funct( NColloc& col, const Vector& par, const JagMat
 	
 	AHAT.Solve  ( 3, vv3, gg3, rhs, one3 );
 	AHAT.SolveTR( 3, uu3, hh3, rhs, one3 );
-	const double nrm3_v = (1.0/sqrt(vv3*vv3));
-	const double nrm3_u = (1.0/sqrt(uu3*uu3));
-	AHAT.getA31(2) = nrm3_v * vv3;
-	AHAT.getA13(2) = nrm3_u * uu3;
-	std::cout<<"TF: "<<gg3(2)<<", "<<hh3(2)<<"\n";
+	const double nrm_v = (1.0/sqrt(vv3*vv3+gg3(0)*gg3(0)+gg3(1)*gg3(1)));
+	const double nrm_u = (1.0/sqrt(uu3*uu3+hh3(0)*hh3(0)+hh3(1)*hh3(1)));
+	AHAT.getA31(2)   = nrm_v * vv3;
+	AHAT.getA33(2,0) = nrm_v * gg3(0);
+	AHAT.getA33(2,1) = nrm_v * gg3(1);
+	AHAT.getA13(2)   = nrm_u * uu3;
+	AHAT.getA33(0,2) = nrm_u * hh3(0);
+	AHAT.getA33(1,2) = nrm_u * hh3(1);
+	std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
 	if( gg3(2) > 0.0 ) std::cout<<"\t+++\n";
 	else               std::cout<<"\t---\n";
@@ -574,12 +602,12 @@ double TestFunctLPAUTROT_S::Funct_p( NColloc& col, const Vector& par, const JagM
 	
 	Vector Dxphiv( NDIM*(NDEG*NINT+1) );
 	col.CharJac_phi_p( Dxphiv, par, solData, alpha );
-	/*if (alpha!=0)*/ gg_p += hh3(0) * col.Integrate(Dxphiv, vv3);
-
+	gg_p += hh3(0) * col.Integrate(Dxphiv, vv3);
+	std::cout<<"\nGP3 "<<alpha<<":"<<gg_p;
+	
+// 	if( alpha==0 ) gg_p *= 22;
 	std::cout<<"\nGP "<<alpha<<":"<<gg_p;
-
-	if(alpha==0) return 22*gg_p;
-	else return gg_p;
+	return gg_p;
 }
 
 void   TestFunctLPAUTROT_S::Funct_x( Vector& func, NColloc& col, const Vector& par, const JagMatrix3D& solData )
@@ -605,7 +633,7 @@ void   TestFunctLPAUTROT_S::Funct_x( Vector& func, NColloc& col, const Vector& p
 	func += gg3(0)*wSmBDxphi;
 	
 	Vector wSmBLAM( NDIM*(NDEG*NINT+1) );
-	rotbord<true>( wSmBLAM, col, wSmB, Re, Im );
+	rotbord<false>( wSmBLAM, col, wSmB, Re, Im );
 	func += gg3(1)*wSmBLAM;
 	
 	Vector Dxphiv( NDIM*(NDEG*NINT+1) );
@@ -616,7 +644,7 @@ void   TestFunctLPAUTROT_S::Funct_x( Vector& func, NColloc& col, const Vector& p
 	
 	Vector LAMv( NDIM*(NDEG*NINT+1) );
 	Vector LAMvS( NDIM*(NDEG*NINT+1) );
-	rotbord<true/*false*/>( LAMv, col, vv3, Re, Im );
+	rotbord<false>( LAMv, col, vv3, Re, Im );
 	col.Star( LAMvS, LAMv );
 	func += hh3(1) * LAMvS;
 }

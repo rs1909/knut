@@ -80,7 +80,7 @@ class TestFunctLPAUT : public baseTestFunct
 class TestFunctLPAUTROT : public baseTestFunct
 {
 	public:
-		TestFunctLPAUTROT( NColloc& col, double Z );
+		TestFunctLPAUTROT( NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z );
 		~TestFunctLPAUTROT( );
 		void   Init( NColloc& col, const Vector& par, const JagMatrix3D& solData );
 		double Funct( NColloc& col, const Vector& par, const JagMatrix3D& solData );
@@ -107,6 +107,7 @@ class TestFunctLPAUTROT : public baseTestFunct
 		Vector      gg3;
 		Vector      hh3;
 		Vector      one3;  // this is ( 0.0, 1.0 )
+		Array1D<int> Re, Im;
 		JagMatrix3D vv3Data;
 };
 
