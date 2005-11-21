@@ -382,7 +382,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 				poly_dlg( meshINT, out, (tMSH[k] - mesh(lowMSH))/hkMSH );
 				for( int l = 0; l < NDEG+1; l++ ) 
 				{
-					tt( NTAU+k, l, idx ) = out(l)/hkMSH;
+					ttMSH( NTAU+k, l, idx ) = out(l)/hkMSH;
 				}
 				// REPR ENDS
 			}
