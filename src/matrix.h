@@ -270,8 +270,8 @@ class Array3D{
 	inline T& operator()( const int i, const int j, const int k )
 	{
 	 #ifdef DEBUG
-		if((i>=d1)||(j>=d2)||(k>=d3)) std::cout<<"bound&\n";
-		if((i<0)||(j<0)||(k<0)) std::cout<<"lbound&\n";
+		if((i>=d1)||(j>=d2)||(k>=d3)) { std::cout<<"bound&\n"; PDError(1); }
+		if((i<0)||(j<0)||(k<0)) { std::cout<<"lbound&\n"; PDError(1); }
 	 #endif
 		return m[i + d1*(j + d2*k)];
 	}
@@ -279,8 +279,8 @@ class Array3D{
 	inline T operator()( const int i, const int j, const int k ) const
 	{
 	 #ifdef DEBUG
-		if((i>=d1)||(j>=d2)||(k>=d3)) std::cout<<"bound&\n";
-		if((i<0)||(j<0)||(k<0)) std::cout<<"lbound&\n";
+		if((i>=d1)||(j>=d2)||(k>=d3)) { std::cout<<"bound\n"; PDError(1); }
+		if((i<0)||(j<0)||(k<0)) { std::cout<<"lbound\n"; PDError(1); }
 	 #endif
 		return m[i + d1*(j + d2*k)];
 	}

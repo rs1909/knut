@@ -309,14 +309,14 @@ void Point::Construct( )
 				else PDError(-1);
 				break;
 			case EqnTFLPAUTROT:
-				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT_S( colloc, rotRe, rotIm, 1.0 );
+				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 				else PDError(-1);
 				break;
 			default:
 				break;
 		}
 	}
-	if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
+// 	if( testFunct == 0 ) testFunct = new TestFunctLPAUT( colloc, 1.0 );
 	
 	for( int i = 2; i < var.Size(); i++ )
 	{
@@ -691,15 +691,15 @@ void Point::Jacobian(
 			case EqnTFPD:
 			case EqnTFLPAUT:
 			case EqnTFLPAUTROT:
-				RHS.getV3()(i-2) = testFunct->Funct( colloc, par, solData );
-				testFunct->Funct_x( AA.getA31(i-2), colloc, par, solData );
+				RHS.getV3()(i-2) = testFunct->Funct( colloc, par, sol, solData );
+				testFunct->Funct_x( AA.getA31(i-2), colloc, par, sol, solData );
 				if( dim2 != 0 ) AA.getA32(i-2).Clear();
 				for( int j=2; j<varMap.Size(); j++ )
 				{
 					if( varMap(j) < NPAR )
 					{
-						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, solData, varMap(j) );
-						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
+						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, sol, solData, varMap(j) );
+// 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
 					}else
 					{
 						switch( varMap(j)-NPAR )
@@ -987,16 +987,16 @@ int Point::StartTF( Eqn test_eqn )
 	Tangent();
 	double TF, DTF;
 	int cit=0, it=0;
-	TF  = locTestFunct->Funct( colloc, par, solData );
-	DTF = locTestFunct->Funct_p( colloc, par, solData, p1 );
+	TF  = locTestFunct->Funct( colloc, par, sol, solData );
+	DTF = locTestFunct->Funct_p( colloc, par, sol, solData, p1 );
 	do
 	{
 		std::cout<<"TF/DTF "<<TF/DTF<<"\n";
 		cit = Continue( TF/DTF/1.5 ); // 0 = TF1 = TF - DTF*DPAR;
 		colloc.Init( par, sol );
 		colloc.Interpolate( solData, sol );
-		TF  = locTestFunct->Funct( colloc, par, solData );
-		DTF = locTestFunct->Funct_p( colloc, par, solData, p1 );
+		TF  = locTestFunct->Funct( colloc, par, sol, solData );
+		DTF = locTestFunct->Funct_p( colloc, par, sol, solData, p1 );
 		std::cout<<" t"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
 		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
 		std::cout<<"\t"<<cit<<"\n";
@@ -1272,6 +1272,8 @@ int Point::Continue( double ds )
 	
 	varMapCont( varMap.Size() ) = p1;
 
+	testFunct->Funct( colloc, par, sol, solData );
+
 	int  it=0;
 	bool conv;
 	do
@@ -1301,7 +1303,6 @@ int Point::Continue( double ds )
 // 		std::cout<<" Xnorm:"<<Xnorm<<" Dnorm:"<<Dnorm<<"\nDnorm1:"<<Dnorm1<<" Dnorm2:"<<Dnorm2<<" Dnorm3:"<<Dnorm3<<" "<<it<<'\n';
 // 		std::cout<<"Par   "; par.Print(); //std::cout<<"\n";
 // 		std::cout<<"ParNu "; parNu.Print(); std::cout<<"\n";
-		std::cout<<"ParNu0 "<<parNu(0)<<"\n";
 // 		if( qqNu ) { std::cout<<"Dq "; rhs->getV2().Print(); std::cout<<"\n"; }
 		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm >= 10.0*ContEps);
 		
@@ -1329,8 +1330,6 @@ int Point::Continue( double ds )
 // 		if( qq ) std::cout<<" Tan2 "<<(jacCont->getA23(dim3))*(jacCont->getA23(dim3));
 // 		for( int i=0; i<dim3; i++ ) std::cout<<" t3 "<<jacCont->getA33(i,dim3);
 // 		std::cout<<"\n";
-		
-// 		testFunct->Funct( colloc, par, solData );
 		
 		/// checking the tangent and the secant
 // 		testFunct->Funct( colloc, par, solData );

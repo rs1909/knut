@@ -252,6 +252,19 @@ static void poly_diff_int( Matrix& out, Vector& t )
 // the NColloc class
 //
 
+static inline int meshlookup( const Vector& mesh, double t )
+{
+	// binary search for in which interval is t-tau(k)
+	int mid, low=0, up=mesh.Size()-1;
+	while( up - low > 1 )
+	{
+		mid = low + (up - low)/2;
+		if( (mesh(low) <= t) && (mesh(mid) > t) ) up = mid;
+		else low = mid;
+	}
+	return low;
+}
+
 #define NDIM ndim
 #define NPAR npar
 #define NTAU ntau
@@ -277,6 +290,8 @@ NColloc::NColloc( System& _sys, const int _nint, const int _ndeg, int _nmat )
 		mmI(ntau+1, nint*ndeg), szI(nmat+1, nint*ndeg),
 		
 		tt(2*ntau+1, ndeg+1, ndeg*nint),
+		ttMSH( 2*ntau, ndeg+1, ndeg*nint + 1 ),
+		kkMSH(ntau, nint*ndeg+1),
 		metric(ndeg+1, ndeg+1),
 		metricPhase(ndeg+1, ndeg+1),
 		col(ndeg),
@@ -299,6 +314,7 @@ NColloc::NColloc( System& _sys, const int _nint, const int _ndeg, int _nmat )
 void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 {
 	double *t = new double[NTAU+1];
+	double *tMSH = new double[NTAU];
 	Vector ttau(NTAU);
 
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
@@ -316,7 +332,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 			kkI(0, idx) = i;
 			poly_dlg( meshINT, out, col(j) );
 			// out.Print(); std::cout<<"SS\n";
-			for( int k = 0; k < NDEG+1; k++ ) 
+			for( int k = 0; k < NDEG+1; k++ )
 			{
 				tt( 0, k, idx ) = out(k)/h0;
 			}
@@ -329,16 +345,9 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 				if( ttau(k) > NMAT ){ std::cout<<"\n NColloc::Init: DELAY > NMAT*PERIOD  "<<k<<"\n\n"; PDError(12); }
 				if( ttau(k) < 0.0 ){ std::cout<<"\n NColloc::Init: Negative DELAY "<<k<<"\n\n"; PDError(12); }
 				t[1+k] = (t[0] - ttau(k)) - floor(t[0] - ttau(k));  // nem szetvalasztott
-
+				
 				// binary search for in which interval is t-tau(k)
-				// can we replace it by meshlookup (see at the end of the file)?
-				int mid, low=0, up=NINT;
-				while( up - low > 1 )
-				{
-					mid = low + (up - low)/2;
-					if( (mesh(low) <= t[1+k]) && (mesh(mid) > t[1+k]) ) up = mid;
-					else low = mid;
-				}
+				const int low = meshlookup( mesh, t[1+k] );
 				kk(k+1, idx) = low;
 
 				if( t[0] - ttau(k) >= 0 ) kkS(k+1, idx) = low;
@@ -346,7 +355,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 				
 				kkI(k+1, idx ) = low + NINT*static_cast<int>(floor(t[0] - ttau(k)));
 				
-				const double hk = mesh(up) - mesh(low);
+				const double hk = mesh(low+1) - mesh(low);
 				// x(t-\tau_i)
 				poly_lgr( meshINT, out, (t[1+k] - mesh(low))/hk );
 				for( int l = 0; l < NDEG+1; l++ ) 
@@ -359,6 +368,23 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 				{
 					tt( NTAU+1+k, l, idx ) = out(l)/hk;
 				}
+				// creating interpolation at the representation points
+				tMSH[k] = mesh(i) + j*h0/(double)NDEG - ttau(k) - floor(mesh(i) + j*h0/(double)NDEG - ttau(k));
+				const int lowMSH = meshlookup( mesh, tMSH[k] );
+				kkMSH(k, idx) = lowMSH;
+				const double hkMSH = mesh(lowMSH+1) - mesh(lowMSH);
+				poly_lgr( meshINT, out, (tMSH[k] - mesh(lowMSH))/hkMSH );
+				for( int l = 0; l < NDEG+1; l++ ) 
+				{
+					ttMSH( k, l, idx ) = out(l);
+				}
+				// x'(t-\tau_i)
+				poly_dlg( meshINT, out, (tMSH[k] - mesh(lowMSH))/hkMSH );
+				for( int l = 0; l < NDEG+1; l++ ) 
+				{
+					tt( NTAU+k, l, idx ) = out(l)/hkMSH;
+				}
+				// REPR ENDS
 			}
 
 			// sorting kk
@@ -462,6 +488,17 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 			}
 		}
 	}
+	// making periodic
+	for( int k = 0; k < NTAU; k++ )
+	{
+		kkMSH(k, NDEG*NINT) = kkMSH(k, 0);
+		for( int l = 0; l < NDEG+1; l++ ) 
+		{
+			ttMSH( k, l, NDEG*NINT ) = ttMSH( k, l, 0 );
+			ttMSH( NTAU+k, l, NDEG*NINT ) = ttMSH( NTAU+k, l, 0 );
+		}
+	}
+	delete[] tMSH;
 	delete[] t;
 }
 
@@ -481,8 +518,7 @@ void NColloc::setMesh( const Vector& msh )
 	mesh( NINT ) = 1.0;
 }
 
-
-void NColloc::Interpolate( JagMatrix3D& jag, const Vector& sol ) 
+void NColloc::Interpolate( JagMatrix3D& jag, const Vector& sol )
 {
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -526,7 +562,7 @@ void NColloc::Interpolate( JagMatrix3D& jag, const Vector& sol )
 	}
 }
 
-void NColloc::InterpolateREAL( JagMatrix3D& jag, const Vector& sol ) 
+void NColloc::InterpolateREAL( JagMatrix3D& jag, const Vector& sol )
 {
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -554,6 +590,46 @@ void NColloc::InterpolateREAL( JagMatrix3D& jag, const Vector& sol )
 				{
 					jag(idx)( k, NTAU ) += sol( k + NDIM*(l+kk(0,idx)*NDEG) )*tt( 0, l, idx );
 				}
+			}
+		}
+	}
+}
+
+void NColloc::InterpolateMSH( JagMatrix3D& jag, const Vector& sol )
+{
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			
+			for( int p = 0; p < NTAU; p++ )
+			{
+				for( int k = 0; k < NDIM; k++ )
+				{
+					// std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
+					jag(idx)( k, p )      = 0.0;
+					jag(idx)( k, NTAU+p ) = 0.0;
+					for( int l = 0; l < NDEG+1; l++ )
+					{
+						jag(idx)( k, p )      += sol( k + NDIM*(l+kkMSH(p,idx)*NDEG) )*ttMSH( p, l, idx );
+						jag(idx)( k, NTAU+p ) += sol( k + NDIM*(l+kkMSH(p,idx)*NDEG) )*ttMSH( NTAU+p, l, idx );
+					}
+				}
+			}
+		}
+	}
+	for( int p = 0; p < NTAU; p++ )
+	{
+		for( int k = 0; k < NDIM; k++ )
+		{
+			// std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
+			jag(NDEG*NINT)( k, p )        = 0.0;
+			jag(NDEG*NINT)( k, NTAU + p ) = 0.0;
+			for( int l = 0; l < NDEG+1; l++ )
+			{
+				jag(NDEG*NINT)( k, p )      += sol( k + NDIM*(l+kkMSH(p,NDEG*NINT)*NDEG) )*ttMSH( p, l, NDEG*NINT );
+				jag(NDEG*NINT)( k, NTAU+p ) += sol( k + NDIM*(l+kkMSH(p,NDEG*NINT)*NDEG) )*ttMSH( NTAU+p, l, NDEG*NINT );
 			}
 		}
 	}
@@ -1568,6 +1644,13 @@ void NColloc::CharJac_mB( SpMatrix& B, const Vector& par, const JagMatrix3D& sol
 
 	B.Clear('R');
 	
+	Vector ZP(NMAT+1);
+	ZP(0) = 1.0;
+	for( int r = 1; r < NMAT+1; r++ )
+	{
+		ZP(r) = Z*ZP(r-1);
+	}
+	
 	// boundary conditions: no boundary condition
 	for( int r = 0; r < NDIM; r++ )
 	{
@@ -1577,13 +1660,6 @@ void NColloc::CharJac_mB( SpMatrix& B, const Vector& par, const JagMatrix3D& sol
 		else     B.WrLx(r,0) = 0.0;
 	}
 
-	Vector ZP(NMAT+1);
-	ZP(0) = 1.0;
-	for( int r = 1; r < NMAT+1; r++ )
-	{
-		ZP(r) = Z*ZP(r-1);
-	}
-	
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
 		for( int j = 0; j < NDEG; j++ )
@@ -1666,7 +1742,7 @@ void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& sol
 				{
 					const int zpow = (-kkI(k+1,idx) + NINT-1)/NINT;
 					nx = 1; np = 0;
-					vx[0] = k; 
+					vx[0] = k;
 					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy );
 					fx.Clear();
 					for( int p = 0; p < NDIM; p++ )
@@ -1701,7 +1777,7 @@ void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& sol
 					{
 						if( zpow > 0 )
 						{
-							V( NDIM +p+NDIM*(j+NDEG*i) ) += zpow*ZP(zpow-1)*fx(p);
+							V( NDIM+p+NDIM*(j+NDEG*i) ) += zpow*ZP(zpow-1)*fx(p);
 						}
 					}
 				}
@@ -1713,7 +1789,7 @@ void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& sol
 				{
 					const int zpow = (-kkI(k+1,idx) + NINT-1)/NINT;
 					nx = 1; np = 1;
-					vx[0] = k; 
+					vx[0] = k;
 					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy );
 					fx.Clear();
 					for( int p = 0; p < NDIM; p++ )
@@ -1866,6 +1942,29 @@ void NColloc::CharJac_phi( Vector& V, const Vector& par, const JagMatrix3D& solD
 	}
 }
 
+void NColloc::CharJac_MSHphi( Vector& V, const Vector& par, const JagMatrix3D& solData )
+{
+	Vector fx(NDIM); // it should be a variable in the class itself
+	
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		const double h = mesh(i+1) - mesh(i);
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			
+			sys->rhs( fx, mesh(i) + j*h/(double)NDEG, solData(idx), par );
+			for( int k = 0; k < NDIM; k++ ) V( k + NDIM*(j+NDEG*i) ) = - fx(k);
+		}
+	}
+	// make it periodic
+	sys->rhs( fx, 1.0, solData(NDEG*NINT), par );
+	for( int r = 0; r < NDIM; r++ )
+	{
+		V(NDIM*NDEG*NINT + r) = - fx(r);
+	}
+}
+
 //! RHS_p without derivative, meaning that it is the same!!!!
 void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
 {
@@ -1878,6 +1977,8 @@ void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& so
 	Matrix dfx2(NDIM,1);
 	Matrix dummy(0,0);
 
+	V.Clear(); // it is not cleared otherwise!!!!
+	
 	// boundary conditions
 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
 	{
@@ -1946,6 +2047,92 @@ void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& so
 	for( int r = 0; r < NDIM; r++ )
 	{
 		V(r) = V(r+NDIM*NDEG*NINT);
+	}
+}
+
+
+void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
+{
+// Vector& rhs, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha
+
+	Vector tau(NTAU);
+	Vector dtau(NTAU);
+	Vector fx(NDIM);
+	Matrix dfx(NDIM,NDIM);
+	Matrix dfx2(NDIM,1);
+	Matrix dummy(0,0);
+	
+	V.Clear(); /// it is not cleared otherwise!!!!
+	
+	// boundary conditions
+	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	{
+		const double h = mesh(i+1) - mesh(i);
+		for( int j = 0; j < NDEG; j++ )
+		{
+			const int idx = j+i*NDEG;
+			
+			sys->tau( tau, time(idx), par );
+			sys->dtau( dtau, time(idx), par, alpha );
+
+			int nx,vx,np,vp;
+
+			if( alpha == 0 )
+			{
+// 				sys->rhs( fx, time(idx), solData(idx), par );
+// 				for( int p = 0; p < NDIM; p++ )
+// 				{
+// 					V( p + NDIM*idx ) = -fx(p); 
+// 					// if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
+// 				}
+				nx = 1; np = 0;
+				for( int r=0; r<NTAU; r++ )
+				{
+					const double d = (dtau(r)-tau(r)/par(0))/par(0);
+					if( d != 0.0 )
+					{
+// 						std::cout<<"P0"; // working for the glass an logistic eqns
+						vx = r;
+						sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+						for( int p=0; p<NDIM; p++ )
+						{
+							for( int q=0; q<NDIM; q++ )
+							{
+								V( p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+r);
+							}
+						}
+					}
+				}
+			}else
+			{
+				nx = 0, np = 1; vp = alpha;
+				sys->deri( dfx2, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+				for( int k = 0; k < NDIM; k++ ) V( k + NDIM*idx ) = - dfx2(k);
+				
+				nx = 1, np = 0;
+				for( int r=0; r<NTAU; r++ )
+				{
+					const double d = dtau(r)/par(0);
+					if( d != 0.0 )
+					{
+						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
+						vx = r;
+						sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+						for( int p=0; p<NDIM; p++ )
+						{
+							for( int q=0; q<NDIM; q++ )
+							{
+								V( p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+r);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	for( int r = 0; r < NDIM; r++ )
+	{
+		V(r+NDIM*NDEG*NINT) = V(r);
 	}
 }
 
@@ -2078,19 +2265,6 @@ void NColloc::PhaseRotStar( Vector& V1, Vector& V2, Array1D<int>& Re, Array1D<in
 			}
 		}
 	}
-}
-
-static inline int meshlookup( const Vector& mesh, double t )
-{
-	// binary search for in which interval is t-tau(k)
-	int mid, low=0, up=mesh.Size()-1;
-	while( up - low > 1 )
-	{
-		mid = low + (up - low)/2;
-		if( (mesh(low) <= t) && (mesh(mid) > t) ) up = mid;
-		else low = mid;
-	}
-	return low;
 }
 
 void NColloc::Import( Vector& outs, const Vector& in, const Vector& msh_, int deg_ )

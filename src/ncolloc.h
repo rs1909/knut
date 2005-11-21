@@ -27,6 +27,7 @@ class NColloc
 		void Interpolate( JagMatrix3D& out, const Vector& sol );
 		void InterpolateREAL( JagMatrix3D& out, const Vector& sol );
 		void InterpolateCPLX( JagMatrix3D& out, const Vector& sol );
+		void InterpolateMSH( JagMatrix3D& out, const Vector& sol );
 		
 		void   Star( Vector& out, Vector& sol );
 		double Integrate( Vector& v1, Vector& v2 );
@@ -73,8 +74,11 @@ class NColloc
 		
 		// autonoumous trivial eigenvector
 		void CharJac_phi( Vector& V, const Vector& par, const JagMatrix3D& solData );
+		void CharJac_MSHphi( Vector& V, const Vector& par, const JagMatrix3D& solData );
 		template<bool trans> void CharJac_phi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi );
+		template<bool trans> void CharJac_MSHphi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi );
 		void CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha );
+		void CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha );
 
 		// supplementary
 		inline int Ndim() const { return ndim; }
@@ -181,7 +185,9 @@ class NColloc
 		Array2D<int> szI;
 		
 		// it stores all the collocation data
-		Array3D<double> tt;
+		Array3D<double> tt;     // interpolation at the collocation points
+		Array3D<double> ttMSH;  // interpolation at the representation points
+		Array2D<int>    kkMSH;
 
 		// matrix for integration
 		Matrix metric;
@@ -252,6 +258,41 @@ template<bool trans> void NColloc::CharJac_phi_x( Vector& V, const Vector& par, 
 		for( int r = 0; r < NDIM; r++ )
 		{
 			V(r) = V(r+NDIM*NDEG*NINT);
+		}
+	}
+}
+
+template<bool trans> void NColloc::CharJac_MSHphi_x( Vector& V, const Vector& par, const JagMatrix3D& solMSHData, const Vector& phi )
+{
+	Matrix dfx(NDIM,NDIM);
+	Matrix dummy(0,0);
+	
+	V.Clear(); /// it is not cleared otherwise!!!!
+	
+	for( int idx = 0; idx < NINT*NDEG+1; idx++ )  // i: interval; j: which collocation point
+	{
+		const int i = (idx / NDEG) % NINT;
+		const int j = idx % NDEG;
+		const double h = mesh(i+1) - mesh(i);
+		
+		int nx=1, vx, np=0, vp;
+		for( int k = 0; k < NTAU; k++ )
+		{
+			vx = k;
+			sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solMSHData(idx), par, nx, &vx, np, &vp, dummy );
+			for( int l = 0; l < NDEG+1; l++) // degree
+			{
+				for( int p = 0; p < NDIM; p++ )  // row
+				{
+					for( int q = 0; q < NDIM; q++ )  //column
+					{
+						if(trans) V( q+NDIM*(l+NDEG*kkMSH(k,idx)) ) -= 
+										dfx(p,q)*ttMSH(k,l,idx)*phi( p + NDIM*idx );
+						else      V( p + NDIM*idx ) -= 
+										dfx(p,q)*ttMSH(k,l,idx)*phi( q+NDIM*(l+NDEG*kkMSH(k,idx)) );
+					}
+				}
+			}
 		}
 	}
 }
