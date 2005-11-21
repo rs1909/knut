@@ -176,6 +176,7 @@ class Array2D{
 		} else
 		{
 			std::cout<<"Array2D<T>::operator= : incompatible sizes\n";
+			PDError(-1);
 		}
 		return *this;
 	}

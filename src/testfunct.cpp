@@ -21,42 +21,21 @@
 #define NTAU (col.Ntau())
 #define NPAR (col.Npar())
 
-void inline rotbord( Vector& V, NColloc& col, const JagMatrix3D& solData, Array1D<int>& Re, Array1D<int>& Im )
-{
-	V.Clear();
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
-	{
-		for( int j = 0; j < NDEG; j++ )
-		{
-			const int idx = j+i*NDEG;
-			for( int k = 0; k < Re.Size(); k++ )
-			{
-				V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = solData( idx )( Im(k), 0 );
-				V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - solData( idx )( Re(k), 0 );
-			}
-		}
-	}
-}
-
 template<bool trans> void inline rotbord( Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im )
 {
 	V.Clear();
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+	for( int idx = 0; idx < NINT*NDEG+1; idx++ )
 	{
-		for( int j = 0; j < NDEG; j++ )
+		for( int k = 0; k < Re.Size(); k++ )
 		{
-			const int idx = j+i*NDEG;
-			for( int k = 0; k < Re.Size(); k++ )
+			if(trans)
 			{
-				if(trans)
-				{
-					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
-					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
-				}else
-				{
-					V( NDIM + Re(k) + NDIM*(j+NDEG*i) ) = IN( NDIM + Im(k) + NDIM*(j+NDEG*i) );
-					V( NDIM + Im(k) + NDIM*(j+NDEG*i) ) = - IN( NDIM + Re(k) + NDIM*(j+NDEG*i) );
-				}
+				V( Re(k) + NDIM*idx ) = - IN( Im(k) + NDIM*idx );
+				V( Im(k) + NDIM*idx ) = IN( Re(k) + NDIM*idx );
+			}else
+			{
+				V( Re(k) + NDIM*idx ) = IN( Im(k) + NDIM*idx );
+				V( Im(k) + NDIM*idx ) = - IN( Re(k) + NDIM*idx );
 			}
 		}
 	}
@@ -167,7 +146,7 @@ TestFunctLPAUT::TestFunctLPAUT( NColloc& col, double Z ) :
 	one2(2),
 	phiData( NDEG*NINT, NDIM, 2*NTAU+1 ),
 	vv2Data( NDEG*NINT, NDIM, 2*NTAU+1 ),
-	solMSHData( NDEG*NINT+1, NDIM, 2*NTAU )
+	solMSHData( NDEG*NINT+1, NDIM, 2*NTAU+1 )
 {
 	first = true;
 }
@@ -252,6 +231,13 @@ double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const Vector& s
 	col.CharJac_mB_p( mB_p, par, solData, phiData, ZZ, alpha );
 	
 	col.CharJac_MSHphi_p( DpPhi, par, solMSHData, alpha );
+	// check
+	col.CharJac_x_p( temp, par, solData, phiData, ZZ, alpha );
+	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+	temp = AHAT.getA11() * DpPhi;
+	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+	std::cout<<"d: "<<alpha<<", "<<DpPhi*DpPhi<<"\n";
+	// end check
 	temp = mB * DpPhi;
 	temp += mB_p;
 	
@@ -304,7 +290,7 @@ TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, Array1D<int> CRe, Array1D<in
 	temp( NDIM*(NDEG*NINT+1) ),
 	phiLAMData( NDEG*NINT, NDIM, 2*NTAU+1 ),
 	vv3Data( NDEG*NINT, NDIM, 2*NTAU+1 ),
-	solMSHData( NDEG*NINT+1, NDIM, 2*NTAU )
+	solMSHData( NDEG*NINT+1, NDIM, 2*NTAU+1 )
 {
 	first = true;
 }
@@ -330,7 +316,7 @@ void TestFunctLPAUTROT::Init( NColloc& col, const Vector& par, const Vector& sol
 
 	rotbord<false>( LAM, col, sol, Re, Im );
 	col.Star( AHAT.getA31(1), LAM );
-	AHAT.getA13(1) = mB * LAM;
+	AHAT.getA13(1) = LAM;
 	
 	AHAT.getA13(2).Rand();
 	AHAT.getA31(2).Rand();
@@ -368,18 +354,21 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
 	col.CharJac_mB( mB, par, solData, ZZ, true );
 	
-	JagMatrix3D solMSHData( NDEG*NINT+1, NDIM, 2*NTAU );
 	col.InterpolateMSH( solMSHData, sol );
 	col.CharJac_MSHphi( phi, par, solMSHData );
 	
 // 	temp = AHAT.getA11() * phi;
 // 	std::cout<<"temp: "<<temp*temp<<" phi: "<<phi*phi<<"\n";
+	
 	col.Star( AHAT.getA31(0), phi );
 	AHAT.getA13(0) = mB * phi;
 
 	rotbord<false>( LAM, col, sol, Re, Im );
 	col.Star( AHAT.getA31(1), LAM );
-	AHAT.getA13(1) = mB * LAM;
+	AHAT.getA13(1) = LAM;
+	
+// 	temp = AHAT.getA11() * LAM;
+// 	std::cout<<"temp: "<<temp*temp<<" LAM: "<<LAM*LAM<<"\n";
 	
 	AHAT.Solve  ( 3, vv3, gg3, rhs3, one3 );
 	AHAT.SolveTR( 3, uu3, hh3, rhs3, one3 );
@@ -391,37 +380,36 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 	AHAT.getA13(2)   = nrm_u * uu3;
 	AHAT.getA33(0,2) = nrm_u * hh3(0);
 	AHAT.getA33(1,2) = nrm_u * hh3(1);
+	
+	// for subsequent use
+	col.Interpolate( phiLAMData, phi );
+	col.Interpolate( vv3Data, vv3 );
 // 	std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
-// 	if( gg3(2) > 0.0 ) std::cout<<"\t+++\n";
-// 	else               std::cout<<"\t---\n";
+	if( gg3(2) > 0.0 ) std::cout<<"\t+++\n";
+	else               std::cout<<"\t---\n";
 	return gg3(2);
 }
 
 double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
 {
-	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_p( A_p, par, solData, vv3Data, ZZ, alpha );
-	double gg_p = (uu3 * A_p);
-// 	std::cout<<"\nGP0 "<<alpha<<":"<<gg_p;
+	col.CharJac_mB_p( mB_p, par, solData, phiLAMData, ZZ, alpha );
 	
-	temp =  gg3(0) * phi;/*phi*/
-	temp += gg3(1) * LAM;/*LAMBDA * v*/
-	col.Interpolate( phiLAMData, temp );
-	col.CharJac_mB_p( temp, par, solData, phiLAMData, ZZ, alpha );
-	gg_p += uu3 * temp;
-// 	std::cout<<"\nGP1 "<<alpha<<":"<<gg_p;
+	col.CharJac_MSHphi_p( DpPhi, par, solMSHData, alpha );
+	// check
+// 	col.CharJac_x_p( temp, par, solData, phiLAMData, ZZ, alpha );
+// 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+// 	temp = AHAT.getA11() * DpPhi;
+// 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+// 	std::cout<<"d: "<<alpha<<", "<<DpPhi*DpPhi<<"\n";
+	// end check
+	temp = mB * DpPhi;
+	temp += mB_p;
 	
-	temp = !mB * uu3;
-	col.CharJac_phi_p( DpPhi, par, solData, alpha );
-	gg_p += gg3(0) * (temp * DpPhi);
-// 	std::cout<<"\nGP2 "<<alpha<<":"<<gg_p;
-	
-	gg_p += hh3(0) * col.Integrate(DpPhi, vv3);
-// 	std::cout<<"\nGP3 "<<alpha<<":"<<gg_p;
-	
-// 	if( alpha==0 ) gg_p *= -2;
-// 	std::cout<<"\nGP "<<alpha<<":"<<gg_p;
+	double gg_p = (uu3 * A_p) + gg3(0) * (uu3 * temp) + hh3(0) * col.Integrate( DpPhi, vv3 );
+	if( alpha==0 ) gg_p = -gg3(0);
+	std::cout<<"\nGP "<<alpha<<":"<<gg_p;
 	return gg_p;
 }
 
@@ -429,23 +417,19 @@ void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par
 {
 	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_x( A_x, par, solData, vv3Data, ZZ );
+	col.CharJac_mB_x( mB_x, par, solData, phiLAMData, ZZ );
 	func = !A_x * uu3;
 	
-	temp =  gg3(0) * phi;/*phi*/
-	temp += gg3(1) * LAM;/*LAMBDA * v*/
-	col.Interpolate( phiLAMData, temp );
-	col.CharJac_mB_x( mB_x, par, solData, phiLAMData, ZZ );
-	temp = !mB_x * uu3;
-	func += temp;
-	
 	temp = !mB * uu3;
-	col.CharJac_phi_x<true>( DxPhi, par, solData, temp );
+	col.CharJac_MSHphi_x<true>( DxPhi, par, solMSHData, temp );
 	func += gg3(0) * DxPhi;
+	temp = !mB_x * uu3;
+	func += gg3(0) * temp;
 	
-	rotbord<true>( DxLAM, col, temp, Re, Im );
+	rotbord<true>( DxLAM, col, uu3, Re, Im );
 	func += gg3(1) * DxLAM;
 	
-	col.CharJac_phi_x<true>( DxPhi, par, solData, vv3 );
+	col.CharJac_MSHphi_x<true>( DxPhi, par, solMSHData, vv3 );
 	col.Star( temp, DxPhi );
 	func += hh3(0) * temp;
 	

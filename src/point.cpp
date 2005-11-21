@@ -316,7 +316,7 @@ void Point::Construct( )
 				break;
 		}
 	}
-// 	if( testFunct == 0 ) testFunct = new TestFunctLPAUT( colloc, 1.0 );
+	if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 	
 	for( int i = 2; i < var.Size(); i++ )
 	{
@@ -1332,28 +1332,28 @@ int Point::Continue( double ds )
 // 		std::cout<<"\n";
 		
 		/// checking the tangent and the secant
-// 		testFunct->Funct( colloc, par, solData );
-// 		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
-// 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
-// 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-// 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
-// 		std::cout<<'\n';
-// 		
-// 		xx->getV1() = solNu;
-// 		xx->getV1() -= sol;
-// 		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
-// 		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
-// 		xx->getV3()(dim3) = parNu(p1) - par(p1);
-// 		
-// 		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
-// 		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
-// 		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
-// 		Onorm = 0;
-// 		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
-// 		Onorm = sqrt(Onorm)/ds;
-// 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-// 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
-// 		std::cout<<'\n';
+		testFunct->Funct( colloc, par, sol, solData );
+		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
+		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
+		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
+		std::cout<<'\n';
+		
+		xx->getV1() = solNu;
+		xx->getV1() -= sol;
+		if( qq ){ xx->getV2() = *qqNu; xx->getV2() -= *qq; }
+		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
+		xx->getV3()(dim3) = parNu(p1) - par(p1);
+		
+		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
+		Qnorm = sqrt( (xx->getV2())*(xx->getV2()) )/ds; 
+		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
+		Onorm = 0;
+		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
+		Onorm = sqrt(Onorm)/ds;
+		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
+		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
+		std::cout<<'\n';
 		/// END OF CHECKING
 		
 		// copying back the solution

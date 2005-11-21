@@ -1966,89 +1966,89 @@ void NColloc::CharJac_MSHphi( Vector& V, const Vector& par, const JagMatrix3D& s
 }
 
 //! RHS_p without derivative, meaning that it is the same!!!!
-void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
-{
-// Vector& rhs, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha
-
-	Vector tau(NTAU);
-	Vector dtau(NTAU);
-	Vector fx(NDIM);
-	Matrix dfx(NDIM,NDIM);
-	Matrix dfx2(NDIM,1);
-	Matrix dummy(0,0);
-
-	V.Clear(); // it is not cleared otherwise!!!!
-	
-	// boundary conditions
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
-	{
-		for( int j = 0; j < NDEG; j++ )
-		{
-			const int idx = j+i*NDEG;
-			
-			sys->tau( tau, time(idx), par );
-			sys->dtau( dtau, time(idx), par, alpha );
-
-			int nx,vx,np,vp;
-
-			if( alpha == 0 )
-			{
-// 				sys->rhs( fx, time(idx), solData(idx), par );
-// 				for( int p = 0; p < NDIM; p++ )
+// void NColloc::CharJac_phi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
+// {
+// // Vector& rhs, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha
+// 
+// 	Vector tau(NTAU);
+// 	Vector dtau(NTAU);
+// 	Vector fx(NDIM);
+// 	Matrix dfx(NDIM,NDIM);
+// 	Matrix dfx2(NDIM,1);
+// 	Matrix dummy(0,0);
+// 
+// 	V.Clear(); // it is not cleared otherwise!!!!
+// 	
+// 	// boundary conditions
+// 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+// 	{
+// 		for( int j = 0; j < NDEG; j++ )
+// 		{
+// 			const int idx = j+i*NDEG;
+// 			
+// 			sys->tau( tau, time(idx), par );
+// 			sys->dtau( dtau, time(idx), par, alpha );
+// 
+// 			int nx,vx,np,vp;
+// 
+// 			if( alpha == 0 )
+// 			{
+// // 				sys->rhs( fx, time(idx), solData(idx), par );
+// // 				for( int p = 0; p < NDIM; p++ )
+// // 				{
+// // 					V( NDIM + p + NDIM*idx ) = -fx(p); 
+// // 					// if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
+// // 				}
+// 				nx = 1; np = 0;
+// 				for( int r=0; r<NTAU; r++ )
 // 				{
-// 					V( NDIM + p + NDIM*idx ) = -fx(p); 
-// 					// if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
+// 					const double d = (dtau(r)-tau(r)/par(0))/par(0);
+// 					if( d != 0.0 )
+// 					{
+// // 						std::cout<<"P0"; // working for the glass an logistic eqns
+// 						vx = r;
+// 						sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
+// 						for( int p=0; p<NDIM; p++ )
+// 						{
+// 							for( int q=0; q<NDIM; q++ )
+// 							{
+// 								V( NDIM + p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+1+r);
+// 							}
+// 						}
+// 					}
 // 				}
-				nx = 1; np = 0;
-				for( int r=0; r<NTAU; r++ )
-				{
-					const double d = (dtau(r)-tau(r)/par(0))/par(0);
-					if( d != 0.0 )
-					{
-// 						std::cout<<"P0"; // working for the glass an logistic eqns
-						vx = r;
-						sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
-						for( int p=0; p<NDIM; p++ )
-						{
-							for( int q=0; q<NDIM; q++ )
-							{
-								V( NDIM + p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+1+r);
-							}
-						}
-					}
-				}
-			}else
-			{
-				nx = 0, np = 1; vp = alpha;
-				sys->deri( dfx2, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
-				for( int k = 0; k < NDIM; k++ ) V( NDIM + k + NDIM*idx ) = - dfx2(k);
-				
-				nx = 1, np = 0;
-				for( int r=0; r<NTAU; r++ )
-				{
-					const double d = dtau(r)/par(0);
-					if( d != 0.0 )
-					{
-						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
-						vx = r;
-						sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
-						for( int p=0; p<NDIM; p++ )
-						{
-							for( int q=0; q<NDIM; q++ )
-							{
-								V( NDIM + p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+1+r);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	for( int r = 0; r < NDIM; r++ )
-	{
-		V(r) = V(r+NDIM*NDEG*NINT);
-	}
-}
+// 			}else
+// 			{
+// 				nx = 0, np = 1; vp = alpha;
+// 				sys->deri( dfx2, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
+// 				for( int k = 0; k < NDIM; k++ ) V( NDIM + k + NDIM*idx ) = - dfx2(k);
+// 				
+// 				nx = 1, np = 0;
+// 				for( int r=0; r<NTAU; r++ )
+// 				{
+// 					const double d = dtau(r)/par(0);
+// 					if( d != 0.0 )
+// 					{
+// 						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
+// 						vx = r;
+// 						sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
+// 						for( int p=0; p<NDIM; p++ )
+// 						{
+// 							for( int q=0; q<NDIM; q++ )
+// 							{
+// 								V( NDIM + p + NDIM*idx ) += d*dfx(p,q)*solData(idx)(q,NTAU+1+r);
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	for( int r = 0; r < NDIM; r++ )
+// 	{
+// 		V(r) = V(r+NDIM*NDEG*NINT);
+// 	}
+// }
 
 
 void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
