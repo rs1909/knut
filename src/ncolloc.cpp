@@ -1006,7 +1006,7 @@ void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solD
 
 
 // this has to be changed only to packed complex.
-void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Re, double Im )
+void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Re, double Im, bool tf )
 {
 	Matrix dfx(NDIM,NDIM);
 	Matrix dummy(0,0);
@@ -1016,12 +1016,24 @@ void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solD
 	// boundary conditions
 	for( int r = 0; r < NDIM; r++ )
 	{
-		A.NewL( 1 );    // Re
+		A.NewL( 3 );    // Re
+		// L
 		A.WrLi(2*r,0) = 2*r;
 		A.WrLx(2*r,0) = 1.0;
-		A.NewL( 1 );    // Im
+		// -z M
+		A.WrLi(2*r,1) = 2*NDIM*NINT*NDEG + 2*r;
+		A.WrLi(2*r,2) = 2*NDIM*NINT*NDEG + 2*r + 1;
+		if( tf ) { A.WrLx(2*r,1) = -1.0 * Re; A.WrLx(2*r,2) = 1.0 * Im; }
+		else     { A.WrLx(2*r,1) = 0.0;       A.WrLx(2*r,2) = 0.0; }
+		A.NewL( 3 );    // Im
+		// L
 		A.WrLi(2*r+1,0) = 2*r+1;
 		A.WrLx(2*r+1,0) = 1.0;
+		// -z M
+		A.WrLi(2*r+1,1) = 2*NDIM*NINT*NDEG + 2*r;
+		A.WrLi(2*r+1,2) = 2*NDIM*NINT*NDEG + 2*r + 1;
+		if( tf ) { A.WrLx(2*r+1,1) = -1.0 * Im; A.WrLx(2*r+1,2) = -1.0 * Re; }
+		else     { A.WrLx(2*r+1,1) = 0.0;       A.WrLx(2*r+1,2) = 0.0; }
 	}
 	
 	// computing the powers of the multiplier
@@ -1280,7 +1292,7 @@ void NColloc::CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solD
 				{
 					const int zpow = (-kkI(k+1,idx) + NINT-1)/NINT;
 					nx = 1; np = 0;
-					vx[0] = k; 
+					vx[0] = k;
 					fxRe.Clear();
 					fxIm.Clear();
 					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy );
@@ -1297,7 +1309,7 @@ void NColloc::CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solD
 					np = 0;
 					for( int r = 0; r < NTAU; r++ )
 					{
-						double d = (dtau(r)-tau(r)/par(0));;
+						double d = (dtau(r)-tau(r)/par(0));
 						if( d != 0.0 )
 						{
 							// std::cout<<"cP0";  // NOT TESTED !!!
@@ -1576,7 +1588,7 @@ void NColloc::CharJac_x_x( SpMatrix& A, const Vector& par, const JagMatrix3D& so
 
 // this is for CharmatCPLX
 
-void NColloc::CharJac_x_z( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im )
+void NColloc::CharJac_x_z( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi, const JagMatrix3D& phiData, double Re, double Im, bool tf )
 {
 	Matrix dfx(NDIM,NDIM);
 	Matrix dummy(0,0);
@@ -1586,8 +1598,14 @@ void NColloc::CharJac_x_z( Vector& V, const Vector& par, const JagMatrix3D& solD
 	// boundary conditions
 	for( int r = 0; r < NDIM; r++ )
 	{
-		V(2*r) = 0.0;
-		V(2*r+1) = 0.0;
+		if( tf )
+		{
+			V(2*r)   = -phi( 2*(r + NDIM*NDEG*NINT) );
+			V(2*r+1) = -phi( 2*(r + NDIM*NDEG*NINT)+1 );
+		}else{
+			V(2*r)   = 0.0;
+			V(2*r+1) = 0.0;
+		}
 	}
 	
 	// computing the powers of the multiplier

@@ -221,7 +221,7 @@ void CharMatCPLX::Delta_z( Vector& delta_z, NColloc& col, const Vector& par, con
 {
 	Vector temp_z( phi.Size() );
 	
-	col.CharJac_x_z( AmzB_z, par, solData, phiData, zRe, zIm );
+	col.CharJac_x_z( AmzB_z, par, solData, phi, phiData, zRe, zIm );
 	
 	AmzB.Solve( temp_z, AmzB_z );
 	for( int i = 0; i < NDIM; i++ )

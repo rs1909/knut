@@ -199,7 +199,7 @@ class Array2D{
 		return m[i + r*j];
 	}
 
-	inline T& operator()( int i )
+	inline T& operator()( const int i )
 	{
 	 #ifdef DEBUG
 		if( i>=r*c ){ std::cout<<"bound11&\n"; PDError(1); }
@@ -208,7 +208,7 @@ class Array2D{
 		return m[i];
 	}
 
-	inline T operator()( int i ) const
+	inline T operator()( const int i ) const
 	{
 	 #ifdef DEBUG
 		if( i>=r*c ){ std::cout<<"bound11_\n"; PDError(1); }

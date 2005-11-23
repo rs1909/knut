@@ -312,11 +312,18 @@ void Point::Construct( )
 				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 				else PDError(-1);
 				break;
+			case EqnTFCPLX_RE:
+				if( eqn(i+1) != EqnTFCPLX_IM ) { std::cout<<"EqnTFCPLX_RE is not paired\n"; PDError(-1); }
+				if( testFunct == 0 ) testFunct = new TestFunctCPLX( colloc );
+				else PDError(-1);
+				break;
+			case EqnTFCPLX_IM:
+				if( eqn(i-1) != EqnTFCPLX_RE ) { std::cout<<"EqnTFCPLX_IM is not paired\n"; PDError(-1); }
 			default:
 				break;
 		}
 	}
-	if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
+	if( testFunct == 0 ) testFunct = new TestFunctCPLX( colloc );
 	
 	for( int i = 2; i < var.Size(); i++ )
 	{
@@ -553,7 +560,7 @@ void Point::Jacobian(
 								break;
 							case ParAngle: // not supported in Real cases
 							default:
-								std::cout<<" bad PARAMETERS5 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS5 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -587,7 +594,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS6 "<<var(i)<<"\n";
+								std::cout<<" bad PARAMETERS6 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -619,7 +626,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS7 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS7 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -649,7 +656,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -669,7 +676,7 @@ void Point::Jacobian(
 						AA.getA33()(i-2,j-2) = 0.0;
 					}else
 					{
-						switch( varMap(i)-NPAR )
+						switch( varMap(j)-NPAR )
 						{
 							case ParNorm:
 								AA.getA33(i-2,j-2) = 0.0; // xxRM->getV3()(j-2);
@@ -678,7 +685,7 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
@@ -711,12 +718,46 @@ void Point::Jacobian(
 								AA.getA33(i-2,j-2) = 0.0;
 								break;
 							default:
-								std::cout<<" bad PARAMETERS9 "<<varMap(i)<<"\n";
+								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
 								PDError(-1);
 								break;
 						}
 					}
 				}
+				break;
+			case EqnTFCPLX_RE:
+				if( eqn(i+1) != EqnTFCPLX_IM ) { std::cout<<"EqnTFCPLX_RE is not paired "<<varMap(i)<<"\n"; PDError(-1); }
+				testFunct->Funct( RHS.getV3()(i-2), RHS.getV3()(i-1), colloc, par, sol, solData, 
+				                  cos(par(NPAR+ParAngle)), sin(par(NPAR+ParAngle)) );
+				testFunct->Funct_x( AA.getA31(i-2), AA.getA31(i-1), colloc, par, sol, solData );
+				if( dim2 != 0 ) { AA.getA32(i-2).Clear(); AA.getA32(i-1).Clear(); }
+				for( int j=2; j<varMap.Size(); j++ )
+				{
+					if( varMap(j) < NPAR )
+					{
+						testFunct->Funct_p( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData, varMap(j) );
+// 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
+					}else
+					{
+						switch( varMap(j)-NPAR )
+						{
+							case ParNorm:
+								AA.getA33(i-2,j-2) = 0.0;
+								AA.getA33(i-1,j-2) = 0.0;
+								break;
+							case ParAngle:
+								testFunct->Funct_z( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData );
+								break;
+							default:
+								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
+								PDError(-1);
+								break;
+						}
+					}
+				}
+				break;
+			case EqnTFCPLX_IM:
+				if( eqn(i-1) != EqnTFCPLX_RE ) { std::cout<<"EqnTFCPLX_IM is not paired "<<varMap(i)<<"\n"; PDError(-1); }
 				break;
 			default:
 				std::cout<<" EqnOther: not supported ";
@@ -954,58 +995,39 @@ int Point::Start(  )
 
 /// IT IS __NOT__ USED, BECAUSE IT DIVERGES. BUT REFINE CONVERGES, WHICH IS EXCELLENT!!!
 
-int Point::StartTF( Eqn test_eqn )
+int Point::StartTF( Eqn FN )
 {
-	baseTestFunct *locTestFunct;
-	
-	colloc.Init( par, sol );
-	colloc.Interpolate( solData, sol );
-	
-	switch( test_eqn ) 
+	if( (FN == EqnTFCPLX_RE) || (FN == EqnTFCPLX_IM) )
 	{
-		case EqnTFLP:
-			locTestFunct = new TestFunct( colloc, 1.0 );
-			break;
-		case EqnTFPD:
-			locTestFunct = new TestFunct( colloc, -1.0 );
-			break;
-		case EqnTFLPAUT:
-			locTestFunct = new TestFunctLPAUT( colloc, 1.0 );
-			break;
-		case EqnTFLPAUTROT:
-			locTestFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
-			break;
-		default:
-			locTestFunct = 0;
-			break;
+		Stability();
+		double dmin = 10.0;
+		int imin=0;
+		for( int i=0; i< mRe.Size(); i++ )
+		{
+			if( dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0) )
+			{
+				if( fabs(mIm(i)) > MIN_NSIMAG )
+				{
+					dmin = fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0);
+					imin = i;
+				}
+			}
+		}
+		double zRe = mRe(imin);
+		double zIm = fabs(mIm(imin));
+		double nrm = sqrt( zRe*zRe + zIm*zIm );
+		std::cout<<"mRe(imin) "<<zRe<<" mIm(imin) "<<zIm<<" nrm: "<<nrm<<"\n";
+
+		if( zRe > 0 )
+		{
+			par(NPAR+ParAngle) = atan( zIm/zRe );
+		}
+		else
+		{
+			par(NPAR+ParAngle) = atan( fabs(zRe/zIm) ) + M_PI/2.0;
+		}
 	}
-	std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( NPAR, p1 )<<parNum( NPAR, p1 )<<"\t";
-	for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<parType( NPAR, varMap(j) )<<parNum( NPAR, varMap(j) )<<"\t";
-	std::cout<<"\tIT\n";
-	
-	// Actually nothing needs to be set up
-	Tangent();
-	double TF, DTF;
-	int cit=0, it=0;
-	TF  = locTestFunct->Funct( colloc, par, sol, solData );
-	DTF = locTestFunct->Funct_p( colloc, par, sol, solData, p1 );
-	do
-	{
-		std::cout<<"TF/DTF "<<TF/DTF<<"\n";
-		cit = Continue( TF/DTF/1.5 ); // 0 = TF1 = TF - DTF*DPAR;
-		colloc.Init( par, sol );
-		colloc.Interpolate( solData, sol );
-		TF  = locTestFunct->Funct( colloc, par, sol, solData );
-		DTF = locTestFunct->Funct_p( colloc, par, sol, solData, p1 );
-		std::cout<<" t"<<it+1<<"\t"<<Norm()<<"\t"<<par(p1);
-		for( int j = 2; j < varMap.Size(); j++ ) std::cout<<"\t"<<par(varMap(j));
-		std::cout<<"\t"<<cit<<"\n";
-		std::cout.flush();
-	}while( (fabs( TF ) > StartEps)&&(++it < StartIter) );
-	
-	delete locTestFunct;
-	
-	return it;
+	return Refine();
 }
 
 int Point::Refine( )
@@ -1257,7 +1279,6 @@ void Point::Tangent( )
 int Point::Continue( double ds )
 {
 	double Xnorm, Dnorm, Rnorm, Tnorm;
-// 	double Dnorm1, Dnorm2, Dnorm3;
 	
 	parNu = par;
 	for( int i=0; i< solNu.Size(); i++ )     solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
@@ -1289,21 +1310,9 @@ int Point::Continue( double ds )
 		
 		Rnorm = sqrt( colloc.Integrate( rhs->getV1(), rhs->getV1() ) + 
 		              (rhs->getV2())*(rhs->getV2()) + (rhs->getV3())*(rhs->getV3()) );
-// 		if( qq) std::cout<<"RN: "<<Rnorm<<" r "<<sqrt((rhs->getV2())*(rhs->getV2()))<<" q "<<sqrt((*qqNu)*(*qqNu))<<' ';
-		
-		Xnorm = sqrt( colloc.Integrate( solNu, solNu ) );//SolNorm( solNu, qqNu, parNu );
-// 		std::cout<<" XN: "<<Xnorm;
+		Xnorm = sqrt( colloc.Integrate( solNu, solNu ) );
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + 
 		              (xx->getV2())*(xx->getV2()) + (xx->getV3())*(xx->getV3()) );
-// 		Dnorm1 = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) );
-// 		Dnorm2 = sqrt( (xx->getV2())*(xx->getV2()) );
-// 		Dnorm3 = sqrt( (xx->getV3())*(xx->getV3()) );
-// 		std::cout<<"Cont:";
-// 		for( int k=0;k<parNu.Size();k++) std::cout<<" par("<<k<<"): "<<par(k);
-// 		std::cout<<" Xnorm:"<<Xnorm<<" Dnorm:"<<Dnorm<<"\nDnorm1:"<<Dnorm1<<" Dnorm2:"<<Dnorm2<<" Dnorm3:"<<Dnorm3<<" "<<it<<'\n';
-// 		std::cout<<"Par   "; par.Print(); //std::cout<<"\n";
-// 		std::cout<<"ParNu "; parNu.Print(); std::cout<<"\n";
-// 		if( qqNu ) { std::cout<<"Dq "; rhs->getV2().Print(); std::cout<<"\n"; }
 		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm >= 10.0*ContEps);
 		
 		// updating the tangent
@@ -1324,15 +1333,10 @@ int Point::Continue( double ds )
 	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < ContIter) );
 	if( !conv )
 	{
-		
-		
-// 		std::cout<<"Tan1 "<<colloc.Integrate( jacCont->getA13(dim3), jacCont->getA13(dim3) );
-// 		if( qq ) std::cout<<" Tan2 "<<(jacCont->getA23(dim3))*(jacCont->getA23(dim3));
-// 		for( int i=0; i<dim3; i++ ) std::cout<<" t3 "<<jacCont->getA33(i,dim3);
-// 		std::cout<<"\n";
-		
 		/// checking the tangent and the secant
-		testFunct->Funct( colloc, par, sol, solData );
+	#ifdef DEBUG
+		double f1, f2;
+		testFunct->Funct( f1, f2, colloc, par, sol, solData, -1.0, 0.0 );
 		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
@@ -1354,14 +1358,14 @@ int Point::Continue( double ds )
 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
 		std::cout<<'\n';
+	#endif
 		/// END OF CHECKING
 		
 		// copying back the solution
 		sol = solNu;
 		par = parNu;
 		if( qq ) *qq = *qqNu;
-// 		if( qq ){ std::cout<<" Cont end qq: "; qq->Print(); }
-		// renorming qq // 
+		// renorming qq
 		if( qq )
 		{
 			double norm = sqrt((*qq)*(*qq));
@@ -1371,12 +1375,8 @@ int Point::Continue( double ds )
 		
 	}else
 	{
-// 		sol = solNu;
-// 		par = parNu;
-// 		if( qq ) *qq = *qqNu;
-		
 		std::cout<<"\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
- 		// PDError(12);
+		// PDError(12);
 	}
 	
 	return it;

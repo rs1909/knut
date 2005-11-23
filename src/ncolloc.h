@@ -56,7 +56,7 @@ class NColloc
 		// continuation of bifurcations -> characteristic matrices
 		
 		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z, bool tf = false );
-		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double ZRe, double ZIm );
+		void CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double ZRe, double ZIm, bool tf = false );
 		
 		void CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int p );
 		void CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double ZRe, double ZIm, int p );
@@ -64,7 +64,7 @@ class NColloc
 		void CharJac_x_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z );
 		void CharJac_x_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im );
 		
-		void CharJac_x_z( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im );
+		void CharJac_x_z( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi, const JagMatrix3D& phiData, double Re, double Im, bool tf=false );
 		// we do need Re, Im
 		
 		// for the autonomous FOLD bifurcation
@@ -212,55 +212,55 @@ class NColloc
 
 // MM transposed
 //! RHS_x without derivative. Mulitlied from the right: w* . D_x phi
-template<bool trans> void NColloc::CharJac_phi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi )
-{
-	Matrix dfx(NDIM,NDIM);
-	Matrix dummy(0,0);
-	
-	V.Clear();
-	
-	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
-	{
-		for( int j = 0; j < NDEG; j++ )
-		{
-			const int idx = j+i*NDEG;
-			
-			int nx=1, vx, np=0, vp;
-			for( int k = 0; k < NTAU+1; k++ )
-			{
-				if( ee(k,idx) != 0 )
-				{
-					vx = ee(k,idx)-1;
-					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
-				}
-				for( int l = 0; l < NDEG+1; l++) // degree
-				{
-					for( int p = 0; p < NDIM; p++ )  // row
-					{
-						for( int q = 0; q < NDIM; q++ )  //column
-						{
-							if( ee(k,idx) != 0 )
-							{
-								if(trans) V( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) ) -= 
-								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( NDIM + p + NDIM*idx );
-								else      V( NDIM + p + NDIM*idx ) -= 
-								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) );
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	// if trans==true : need __NOT__ to make it periodic
-	if(!trans)
-	{
-		for( int r = 0; r < NDIM; r++ )
-		{
-			V(r) = V(r+NDIM*NDEG*NINT);
-		}
-	}
-}
+// template<bool trans> void NColloc::CharJac_phi_x( Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi )
+// {
+// 	Matrix dfx(NDIM,NDIM);
+// 	Matrix dummy(0,0);
+// 	
+// 	V.Clear();
+// 	
+// 	for( int i = 0; i < NINT; i++ )  // i: interval; j: which collocation point
+// 	{
+// 		for( int j = 0; j < NDEG; j++ )
+// 		{
+// 			const int idx = j+i*NDEG;
+// 			
+// 			int nx=1, vx, np=0, vp;
+// 			for( int k = 0; k < NTAU+1; k++ )
+// 			{
+// 				if( ee(k,idx) != 0 )
+// 				{
+// 					vx = ee(k,idx)-1;
+// 					sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
+// 				}
+// 				for( int l = 0; l < NDEG+1; l++) // degree
+// 				{
+// 					for( int p = 0; p < NDIM; p++ )  // row
+// 					{
+// 						for( int q = 0; q < NDIM; q++ )  //column
+// 						{
+// 							if( ee(k,idx) != 0 )
+// 							{
+// 								if(trans) V( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) ) -= 
+// 								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( NDIM + p + NDIM*idx );
+// 								else      V( NDIM + p + NDIM*idx ) -= 
+// 								            dfx(p,q)*tt(ee(k,idx),l,idx)*phi( q+NDIM*(l+NDEG*kk(ee(k,idx),idx)) );
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	// if trans==true : need __NOT__ to make it periodic
+// 	if(!trans)
+// 	{
+// 		for( int r = 0; r < NDIM; r++ )
+// 		{
+// 			V(r) = V(r+NDIM*NDEG*NINT);
+// 		}
+// 	}
+// }
 
 template<bool trans> void NColloc::CharJac_MSHphi_x( Vector& V, const Vector& par, const JagMatrix3D& solMSHData, const Vector& phi )
 {

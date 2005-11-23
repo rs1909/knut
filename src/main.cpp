@@ -295,7 +295,8 @@ int initEqnVar( System& sys, cfile* params,
 		if( (eqn(i) == EqnTFPD)||
 		    (eqn(i) == EqnTFLP)||
 		    (eqn(i) == EqnTFLPAUT)||
-		    (eqn(i) == EqnTFLPAUTROT) )
+		    (eqn(i) == EqnTFLPAUTROT)||
+		    (eqn(i) == EqnTFCPLX_RE) )
 		{
 			if( testFN_idx == -1 ) { testFN = eqn(i); testFN_idx = i; }
 			else PDError(-1);
@@ -552,7 +553,7 @@ int main( int argc, const char** argv )
 		{
 			pt.Reset( eqn, var );
 			pt.setCont( params->CP );
-			pt.Refine(); // pt.StartTF( testFN );
+			pt.StartTF( testFN );
 		}
 		
 		// start the continuation!

@@ -31,7 +31,9 @@ enum Eqn {
 	EqnTFLP           = 64,
 	EqnTFPD           = 65,
 	EqnTFLPAUT        = 66,
-	EqnTFLPAUTROT     = 67
+	EqnTFLPAUTROT     = 67,
+	EqnTFCPLX_RE      = 68,
+	EqnTFCPLX_IM      = 69
 };
 
 // this applies to torpoint.h too...

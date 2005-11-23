@@ -66,7 +66,7 @@ class Point : public PointData
 		void    SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: solution
 		void    SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent
 		int     Start( ); // approximating qq
-		int     StartTF( Eqn test_eqn );
+		int     StartTF( Eqn FN );
 		int     Refine( );
 		void    Tangent( );
 		int     Continue( double ds );
