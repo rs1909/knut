@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{0.9.19}
+\newcommand{\pddever}{0.9.21}
 \version{\pddever}
-\date{30 September, 2005}
+\date{23 November 2005}
 \maketitle
 
 \begin{center}
@@ -78,7 +78,7 @@ As a rule of thumb, the period should be chosen as small as possible to reliably
 
 \section{Installation}
 
-The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.2.3 and later. Also the Sun Studio 10 compilers can build the package.
+The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.2.3 and later. Also the Sun Studio 10, and the Intel C,C++ (v. 8.1 or later) compilers can build the package.
 
 \subsection{Linux and Solaris}
 
@@ -314,6 +314,12 @@ specifies three equations and three variables, but the second equation and varia
 \item[\funp{E32} -] Quasiperiodic solution on a torus.
 \item[\funp{E40} -] The first phase condition for the torus. This is applied only in the case of autonomous equations.
 \item[\funp{E41} -] The second phase condition for the torus. It is always necessary.
+\item[\funp{E64} -] Test functional for fold bifurcations in forced systems.
+\item[\funp{E65} -] Test functional for period doubling bifurcations in forced systems.
+\item[\funp{E66} -] Test functional for fold bifurcations in autonomous systems.
+\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems with symmetry. Note: It is working only if the period is not continued.
+\item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker bifurcation.
+\item[\funp{E69} -] Imaginary part of the complex test functional for Neimark-Sacker bifurcation. This imaginary part should directly follow the real part in the equation list, otherwise the program will not start the continuation.
 \end{description}
 \item[\funp{NVAR}] ~\\
 	Number of free variables. This must equal to the number of equations. Similarly, the first variable is always the periodic solution, the second is either not specified or the kernel vector of the characteristic matrix.
