@@ -41,6 +41,18 @@ template<bool trans> void inline rotbord( Vector& V, NColloc& col, const Vector&
 	}
 }
 
+void inline conjugate( Vector& V, NColloc& col, const Vector& IN )
+{
+	for( int idx = 0; idx < NINT*NDEG+1; idx++ )
+	{
+		for( int k = 0; k < NDIM; k++ )
+		{
+			V( 2*(k+NDIM*idx) )   = -IN( 2*(k+NDIM*idx)+1 );
+			V( 2*(k+NDIM*idx)+1 ) =  IN( 2*(k+NDIM*idx) );
+		}
+	}
+}
+
 TestFunct::TestFunct( NColloc& col, double Z ) :
 	ZZ(Z),
 	AHAT( NDIM*(NDEG*NINT+1), 0, 1, NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
@@ -123,7 +135,112 @@ void   TestFunct::Funct_x( Vector& func, NColloc& col, const Vector& par, const 
 }
 
 /// ---------------------------------------------------------
-/// test function for FOLD BIFURCATIONS in autonomous systems Second Try
+/// test function for TORUS BIFURCATIONS
+/// ---------------------------------------------------------
+
+TestFunctCPLX::TestFunctCPLX( NColloc& col ) :
+	first(true),
+	AHAT( 2*NDIM*(NDEG*NINT+1), 0, 2, 4*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
+	A_p( 2*NDIM*(NDEG*NINT+1) ),
+	A_x( 'R', 2*NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1), 2*NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
+	rhs( 2*NDIM*(NDEG*NINT+1) ),
+	one( 2 ),
+	uu( 2*NDIM*(NDEG*NINT+1) ),
+	vv( 2*NDIM*(NDEG*NINT+1) ),
+	gg( 2 ),
+	hh( 2 ),
+	vvData( 2*NDEG*NINT, NDIM, NTAU+1 )
+{
+}
+
+TestFunctCPLX::~TestFunctCPLX( )
+{
+}
+
+void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+									double Re, double Im )
+{
+	ZRe = Re; ZIm = Im;
+	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im, true );
+	AHAT.getA13(0).Rand();
+	AHAT.getA31(0).Rand();
+	AHAT.getA33().Clear();
+	// norming the borders
+	AHAT.getA31(0) /= sqrt( AHAT.getA31(0) * AHAT.getA31(0) );
+	AHAT.getA13(0) /= sqrt( AHAT.getA13(0) * AHAT.getA13(0) );
+	// conjugate
+	conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
+	conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
+	
+	rhs.Clear();
+	one(0) = 1.0; one(1) = 0.0;
+	
+	for( int i = 0; i < NKERNITER; i++ )
+	{
+		AHAT.Solve  ( 2, vv, gg, rhs, one );
+		AHAT.SolveTR( 2, uu, hh, rhs, one );
+		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
+		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
+		conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
+		conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
+	}
+// 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
+}
+
+void TestFunctCPLX::Funct  ( double& f1, double& f2,
+					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im )
+{
+	if( first ){ Init( col, par, sol, solData, Re, Im ); first = false; }
+	
+	ZRe = Re; ZIm = Im;
+	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im, true );
+	AHAT.Solve  ( 2, vv, gg, rhs, one );
+	AHAT.SolveTR( 2, uu, hh, rhs, one );
+	AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
+	AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
+	conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
+	conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
+	// for later use
+	col.InterpolateCPLX( vvData, AHAT.getA31(0)/*vv*/ );
+	
+	f1 = gg(0);
+	f2 = gg(1);
+// 	std::cout<<"gg: "<<gg(0)<<", "<<gg(1)<<", "<<hh(0)<<", "<<hh(1)<<"\n";
+// 	if( gg(0) > 0.0 ) std::cout<<"\t+++\n";
+// 	else               std::cout<<"\t---\n";
+// 	if( gg(1) > 0.0 ) std::cout<<"\t+++\n";
+// 	else               std::cout<<"\t---\n";
+}
+
+void TestFunctCPLX::Funct_p( double& f1, double& f2,
+					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+					int alpha )
+{
+	col.CharJac_x_p( A_p, par, solData, vvData, ZRe, ZIm, alpha );
+	f1 = (AHAT.getA13(0)/*uu*/ * A_p);
+	f2 = (AHAT.getA13(1)/*uu^conj*/ * A_p);
+}
+
+void TestFunctCPLX::Funct_z( double& f1, double& f2,
+					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+{
+	col.CharJac_x_z( A_p, par, solData, AHAT.getA31(0), vvData, ZRe, ZIm, true );
+	const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
+	const double dzim = (AHAT.getA13(1)/*uu^conj*/ * A_p);
+	f1 = (- dzre * ZIm - dzim * ZRe);
+	f2 = (  dzre * ZRe - dzim * ZIm);
+}
+
+void TestFunctCPLX::Funct_x( Vector& func1, Vector& func2,
+					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+{
+	col.CharJac_x_x( A_x, par, solData, vvData, ZRe, ZIm );
+	func1 = !A_x * AHAT.getA13(0); /*uu*/
+	func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
+}
+
+/// ---------------------------------------------------------
+/// test function for FOLD BIFURCATIONS in autonomous systems
 /// ---------------------------------------------------------
 
 TestFunctLPAUT::TestFunctLPAUT( NColloc& col, double Z ) :
@@ -264,7 +381,7 @@ void   TestFunctLPAUT::Funct_x( Vector& func, NColloc& col, const Vector& par, c
 }
 
 /// -----------------------------------------------------------------------
-/// test function for FOLD BIFURCATIONS in autonomous systems with SIMMETRY  Second try
+/// test function for FOLD BIFURCATIONS in autonomous systems with SIMMETRY
 /// -----------------------------------------------------------------------
 
 TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z ) :
@@ -288,7 +405,7 @@ TestFunctLPAUTROT::TestFunctLPAUTROT( NColloc& col, Array1D<int> CRe, Array1D<in
 	rhs3( NDIM*(NDEG*NINT+1) ),
 	one3(3),
 	temp( NDIM*(NDEG*NINT+1) ),
-	phiLAMData( NDEG*NINT, NDIM, 2*NTAU+1 ),
+	phiData( NDEG*NINT, NDIM, 2*NTAU+1 ),
 	vv3Data( NDEG*NINT, NDIM, 2*NTAU+1 ),
 	solMSHData( NDEG*NINT+1, NDIM, 2*NTAU+1 )
 {
@@ -382,7 +499,7 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 	AHAT.getA33(1,2) = nrm_u * hh3(1);
 	
 	// for subsequent use
-	col.Interpolate( phiLAMData, phi );
+	col.Interpolate( phiData, phi );
 	col.Interpolate( vv3Data, vv3 );
 // 	std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
@@ -394,11 +511,11 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
 {
 	col.CharJac_x_p( A_p, par, solData, vv3Data, ZZ, alpha );
-	col.CharJac_mB_p( mB_p, par, solData, phiLAMData, ZZ, alpha );
+	col.CharJac_mB_p( mB_p, par, solData, phiData, ZZ, alpha );
 	
 	col.CharJac_MSHphi_p( DpPhi, par, solMSHData, alpha );
 	// check
-// 	col.CharJac_x_p( temp, par, solData, phiLAMData, ZZ, alpha );
+// 	col.CharJac_x_p( temp, par, solData, phiData, ZZ, alpha );
 // 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
 // 	temp = AHAT.getA11() * DpPhi;
 // 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
@@ -417,7 +534,7 @@ void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par
 {
 	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_x( A_x, par, solData, vv3Data, ZZ );
-	col.CharJac_mB_x( mB_x, par, solData, phiLAMData, ZZ );
+	col.CharJac_mB_x( mB_x, par, solData, phiData, ZZ );
 	func = !A_x * uu3;
 	
 	temp = !mB * uu3;

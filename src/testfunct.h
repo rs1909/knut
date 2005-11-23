@@ -23,6 +23,18 @@ class baseTestFunct
 		virtual double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) = 0;
 		virtual double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha ) = 0;
 		virtual void   Funct_x( Vector& func, NColloc& col, const Vector& sol, const Vector& par, const JagMatrix3D& solData ) = 0;
+
+		virtual void Init   ( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		                      double Re, double Im ) = 0;
+		virtual void Funct  ( double& f1, double& f2,
+		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im ) = 0;
+		virtual void Funct_p( double& f1, double& f2,
+		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		                      int alpha ) = 0;
+		virtual void Funct_z( double& f1, double& f2,
+		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) = 0;
+		virtual void Funct_x( Vector& func1, Vector& func2,
+		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) = 0;
 };
 
 class TestFunct : public baseTestFunct
@@ -34,6 +46,18 @@ class TestFunct : public baseTestFunct
 		double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
 		double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha );
 		void   Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		
+		void Init   ( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              double Re, double Im ) {}
+		void Funct  ( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im ) {}
+		void Funct_p( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              int alpha ) {}
+		void Funct_z( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Funct_x( Vector& func1, Vector& func2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 	
 	private:
 		bool        first;
@@ -47,6 +71,44 @@ class TestFunct : public baseTestFunct
 		JagMatrix3D vvData;
 };
 
+class TestFunctCPLX : public baseTestFunct
+{
+	public:
+		TestFunctCPLX( NColloc& col );
+		~TestFunctCPLX( );
+		void   Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) { return 0.0; }
+		double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
+			{ return 0.0; }
+		void   Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		
+		void Init   ( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              double Re, double Im );
+		void Funct  ( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im );
+		void Funct_p( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              int alpha );
+		void Funct_z( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		void Funct_x( Vector& func1, Vector& func2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+	
+	private:
+		bool        first;
+		double      ZRe, ZIm;
+		HyperMatrix AHAT;
+		Vector      A_p;
+		SpMatrix    A_x;
+		Vector      rhs;
+		Vector      one;
+		Vector      uu;
+		Vector      vv;
+		Vector      gg;
+		Vector      hh;
+		JagMatrix3D vvData;
+};
+
 class TestFunctLPAUT : public baseTestFunct
 {
 	public:
@@ -56,6 +118,18 @@ class TestFunctLPAUT : public baseTestFunct
 		double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
 		double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha );
 		void   Funct_x( Vector& func, NColloc& col, const Vector& sol, const Vector& par, const JagMatrix3D& solData );
+		
+		void Init   ( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              double Re, double Im ) {}
+		void Funct  ( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im ) {}
+		void Funct_p( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              int alpha ) {}
+		void Funct_z( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Funct_x( Vector& func1, Vector& func2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 	
 	private:
 		bool        first;
@@ -90,6 +164,18 @@ class TestFunctLPAUTROT : public baseTestFunct
 		double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
 		double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha );
 		void   Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		
+		void Init   ( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              double Re, double Im ) {}
+		void Funct  ( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im ) {}
+		void Funct_p( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+		              int alpha ) {}
+		void Funct_z( double& f1, double& f2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Funct_x( Vector& func1, Vector& func2,
+		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 	
 	private:
 		bool         first;
@@ -113,7 +199,7 @@ class TestFunctLPAUTROT : public baseTestFunct
 		Vector       rhs3;
 		Vector       one3;  // this is ( 0.0, 1.0 )
 		Vector       temp;
-		JagMatrix3D  phiLAMData;
+		JagMatrix3D  phiData;
 		JagMatrix3D  vv3Data;
 		JagMatrix3D  solMSHData;
 };
