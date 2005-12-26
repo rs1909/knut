@@ -175,8 +175,10 @@ class Array2D{
 			for( int i = 0; i < r*c; i++ ) m[i] = M.m[i];
 		} else
 		{
+		#ifdef DEBUG
 			std::cout<<"Array2D<T>::operator= : incompatible sizes\n";
 			PDError(-1);
+		#endif
 		}
 		return *this;
 	}

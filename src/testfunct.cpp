@@ -349,11 +349,11 @@ double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const Vector& s
 	
 	col.CharJac_MSHphi_p( DpPhi, par, solMSHData, alpha );
 	// check
-	col.CharJac_x_p( temp, par, solData, phiData, ZZ, alpha );
-	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
-	temp = AHAT.getA11() * DpPhi;
-	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
-	std::cout<<"d: "<<alpha<<", "<<DpPhi*DpPhi<<"\n";
+// 	col.CharJac_x_p( temp, par, solData, phiData, ZZ, alpha );
+// 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+// 	temp = AHAT.getA11() * DpPhi;
+// 	std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
+// 	std::cout<<"d: "<<alpha<<", "<<DpPhi*DpPhi<<"\n";
 	// end check
 	temp = mB * DpPhi;
 	temp += mB_p;

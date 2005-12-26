@@ -18,3 +18,18 @@ install: $(NAME).so
 	
 all: $(NAME).so
 	
+test:
+	pdde -c cfile-start -o out-start -b br-start
+test-tr:
+	pdde -c cfile-tr -i out-start -o out-tr -b br-tr
+test-pdsw:
+	pdde -c cfile-pdsw-1 -i out-start -o out-pdsw-1 -b br-pdsw-1
+	pdde -c cfile-pdsw-2 -i out-start -o out-pdsw-2 -b br-pdsw-2
+test-lp-1-a:
+	pdde -c cfile-lp-1-a -i out-pdsw-1 -o out-lp-1-a -b br-lp-1-a
+test-lp-1-b:
+	pdde -c cfile-lp-1-b -i out-pdsw-1 -o out-lp-1-b -b br-lp-1-b
+test-lp-2-a:
+	pdde -c cfile-lp-2-a -i out-pdsw-2 -o out-lp-2-a -b br-lp-2-a
+test-lp-2-b:
+	pdde -c cfile-lp-2-b -i out-pdsw-2 -o out-lp-2-b -b br-lp-2-b

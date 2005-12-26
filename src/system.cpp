@@ -154,6 +154,7 @@ void System::discrderi( Matrix &out, double t, const Matrix& xx, const Vector& p
 // 	const double rel_eps_p2=1e-6;
 	
 	const int n = ndim();
+	const int m = 2 * ntau() + 1;
 	
 	// f, f_eps, xx_eps
 	// derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
@@ -162,7 +163,8 @@ void System::discrderi( Matrix &out, double t, const Matrix& xx, const Vector& p
 		rhs( f, t, xx, par );
 		for( int j = 0; j < n; j++ )
 		{
-			xx_eps = xx;
+			// xx_eps = xx;
+			for( int q = 0; q < m; q++ ) for( int p = 0; p < n; p++ ) xx_eps(p,q) = xx(p,q);
 			const double eps = abs_eps_x1 + rel_eps_x1 * fabs(xx(j,vx[0]));
 			xx_eps(j,vx[0]) = xx(j,vx[0]) + eps;
 			rhs( f_eps, t, xx_eps, par );

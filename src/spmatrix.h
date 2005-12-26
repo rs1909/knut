@@ -160,7 +160,8 @@ class SpFact : public SpMatrix
 		void Solve( double* x, double* b, bool trans = false );
 		void Solve( Vector& x, const Vector& b, bool trans = false );
 		void Solve( Matrix& x, const Matrix& b, bool trans = false );
-		
+		/// get the diagonal of the Upper factor
+		int GetDX( Vector& V ) { if( !fact ) Fact(); return umfpack_di_get_numeric ( 0, 0, 0, 0, 0, 0, 0, 0, V.v, 0, 0, Numeric ); }
 	private:
 		void Fact();
 };

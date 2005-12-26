@@ -119,9 +119,9 @@ AC_SUBST(NOOPT_CFLAGS)
 
 dnl remove "#" if the software crashes
 
-AC_DEFINE([DEBUG])
-CFLAGS="$CFLAGS -fno-inline"
-CXXFLAGS="$CXXFLAGS -fno-inline"
+# AC_DEFINE([DEBUG])
+# CFLAGS="$CFLAGS -fno-inline"
+# CXXFLAGS="$CXXFLAGS -fno-inline"
 
 AC_CHECK_PROG(SED, sed, sed, no)
 

@@ -655,10 +655,12 @@ int main( int argc, const char** argv )
 				
 				// file output
 				pt.Write( out );
-
+				
+				double CHmin, CHmax;
+				pt.getDX( CHmin, CHmax );
 				// branch output
 				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
-				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
+				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\t"<<CHmin<<"\t"<<CHmax<<"\n";
 				ff.flush();
 				int itc = it( itpos );
 				if( (itc > 3)&&(fabs(ds)/1.414 > params->DSMIN)&&(fabs(ds)/1.414 < params->DSMAX) ) ds /= 1.414;

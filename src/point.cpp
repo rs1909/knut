@@ -281,7 +281,7 @@ void Point::Construct( )
 				qq0 = 0;
 				qqR = 0;
 				qqNu = 0;
-				charMat = 0;
+				charMat = new CharMat( colloc );
 				dim2 = 0;
 				break;
 			default:
@@ -1313,7 +1313,7 @@ int Point::Continue( double ds )
 		Xnorm = sqrt( colloc.Integrate( solNu, solNu ) );
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + 
 		              (xx->getV2())*(xx->getV2()) + (xx->getV3())*(xx->getV3()) );
-		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm >= 10.0*ContEps);
+		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm/(1.0+Xnorm) >= ContEps);
 		
 		// updating the tangent
 		jac->AX( *rhs, *xxDot );
@@ -1333,6 +1333,10 @@ int Point::Continue( double ds )
 	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < ContIter) );
 	if( !conv )
 	{
+		/// computing CharMat
+		charMat->Init( colloc, par, solData, 1.0 );
+// 		double a,b;
+// 		charMat->getDX( a, b );
 		/// checking the tangent and the secant
 	#ifdef DEBUG
 		double f1, f2;

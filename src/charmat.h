@@ -32,6 +32,8 @@ class baseCharMat
 		
 		virtual void Delta_z( Vector& delta_z, NColloc& col, const Vector& par, const JagMatrix3D& solData ) = 0;
 		virtual void Switch( Vector& sol, NColloc& col ) = 0;
+
+		virtual void getDX( double& min, double& max ) = 0;
 };
 
 class CharMat : public baseCharMat
@@ -53,6 +55,7 @@ class CharMat : public baseCharMat
 		inline void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { PDError(-1); }
 		
 		void Switch( Vector& tan, NColloc& col );
+		void getDX( double& min, double& max );
 		
 	private:
 	
@@ -87,6 +90,8 @@ class CharMatCPLX : public baseCharMat
 		inline void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
 		
 		void Switch( Vector& Re, Vector& Im, double& alpha, NColloc& col );
+		void getDX( double& min, double& max );
+	
 	private:
 	
 		double      zRe, zIm;
@@ -121,6 +126,7 @@ class CharMatLPAUT : public baseCharMat
 		inline void Delta_z( Vector&, NColloc&, const Vector&, const JagMatrix3D& ) { PDError(-1); }
 		
 		inline void Switch( Vector& /*tan*/, NColloc& /*col*/ ) { PDError(-1); }
+		void getDX( double& min, double& max );
 		
 	protected:
 		void init( NColloc& col, const Vector& par, const JagMatrix3D& solData, double Z, Vector* q );

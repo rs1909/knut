@@ -54,13 +54,32 @@ void CharMat::Init( NColloc& col, const Vector& par, const JagMatrix3D& solData,
 	col.Interpolate( phiData, phi );
 }
 
+void CharMat::getDX( double& min, double& max )
+{
+	// getting the diagonal
+	Vector DX( phi.Size() );
+	AmzB.GetDX( DX );
+	double min1 = 1.0e12, min2 = 1.0e12, min3 = 1.0e12, min4 = 1.0e12, max1 = 0;
+	for( int i = 0; i < phi.Size(); i++ )
+	{
+		if( min1 > fabs(DX(i)) ) min1 = fabs(DX(i));
+		if( (min2 > fabs(DX(i))) && (min1 < fabs(DX(i))) ) min2 = fabs(DX(i));
+		if( (min3 > fabs(DX(i))) && (min2 < fabs(DX(i))) ) min3 = fabs(DX(i));
+		if( (min4 > fabs(DX(i))) && (min3 < fabs(DX(i))) ) min4 = fabs(DX(i));
+		if( max1 < fabs(DX(i)) ) max1 = fabs(DX(i));
+	}
+	std::cout<<"DM1 "<<min1<<" DM2 "<<min2<<" DM3 "<<min3<<" DM4 "<<min4<<" DMX "<<max<<"\n";
+	min = min1;
+	max = max1;
+}
+
 // creates a new delta, by overwriting it
 
 void CharMat::Delta( MatFact& delta, NColloc& col )
 {
 	Matrix shift( phi.Size(), NDIM );
 	Matrix out( phi.Size(), NDIM );
-  
+	
 	delta.New();
 	for( int i = 0; i < NDIM; i++ ) shift( i, i ) = 1.0;
 	AmzB.Solve( out, shift );
@@ -158,6 +177,25 @@ void CharMatCPLX::Init( NColloc& col, const Vector& par, const JagMatrix3D& solD
 	AmzB.Solve( phi, shift );
 	
 	col.InterpolateCPLX( phiData, phi );
+}
+
+void CharMatCPLX::getDX( double& min, double& max )
+{
+	// getting the diagonal
+	Vector DX( phi.Size() );
+	AmzB.GetDX( DX );
+	double min1 = 1.0e12, min2 = 1.0e12, min3 = 1.0e12, min4 = 1.0e12, max1 = 0;
+	for( int i = 0; i < phi.Size(); i++ )
+	{
+		if( min1 > fabs(DX(i)) ) min1 = fabs(DX(i));
+		if( (min2 > fabs(DX(i))) && (min1 < fabs(DX(i))) ) min2 = fabs(DX(i));
+		if( (min3 > fabs(DX(i))) && (min2 < fabs(DX(i))) ) min3 = fabs(DX(i));
+		if( (min4 > fabs(DX(i))) && (min3 < fabs(DX(i))) ) min4 = fabs(DX(i));
+		if( max1 < fabs(DX(i)) ) max1 = fabs(DX(i));
+	}
+	std::cout<<"DM1 "<<min1<<" DM2 "<<min2<<" DM3 "<<min3<<" DM4 "<<min4<<" DMX "<<max<<"\n";
+	min = min1;
+	max = max1;
 }
 
 void CharMatCPLX::Delta( MatFact& delta, NColloc& col )
@@ -378,6 +416,25 @@ void CharMatLPAUT::init( NColloc& col, const Vector& par, const JagMatrix3D& sol
 		col.InterpolateREAL( Phi1Data, Phi1 );
 		col.InterpolateREAL( SigmaData, Sigma );
 	}
+}
+
+void CharMatLPAUT::getDX( double& min, double& max )
+{
+	// getting the diagonal
+	Vector DX( Phi1.Size() );
+	AmzB.GetDX( DX );
+	double min1 = 1.0e12, min2 = 1.0e12, min3 = 1.0e12, min4 = 1.0e12, max1 = 0;
+	for( int i = 0; i < Phi1.Size(); i++ )
+	{
+		if( min1 > fabs(DX(i)) ) min1 = fabs(DX(i));
+		if( (min2 > fabs(DX(i))) && (min1 < fabs(DX(i))) ) min2 = fabs(DX(i));
+		if( (min3 > fabs(DX(i))) && (min2 < fabs(DX(i))) ) min3 = fabs(DX(i));
+		if( (min4 > fabs(DX(i))) && (min3 < fabs(DX(i))) ) min4 = fabs(DX(i));
+		if( max1 < fabs(DX(i)) ) max1 = fabs(DX(i));
+	}
+	std::cout<<"DM1 "<<min1<<" DM2 "<<min2<<" DM3 "<<min3<<" DM4 "<<min4<<" DMX "<<max<<"\n";
+	min = min1;
+	max = max1;
 }
 
 void CharMatLPAUT::Delta( MatFact& delta, NColloc& col )

@@ -86,6 +86,7 @@ class Point : public PointData
 			for( int i=0; i<n; i++ ) { rotRe(i) = sRe[i]; rotIm(i) = sIm[i]; }
 		}
 		
+		inline void    getDX( double& min, double& max ) { if( charMat ) charMat->getDX( min, max ); }
 		inline void    setRefIter( int i ) { RefIter = i; }
 		inline void    setContIter( int i ) { ContIter = i; }
 		inline void    setStartIter( int i ) { StartIter = i; }
