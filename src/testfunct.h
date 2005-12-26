@@ -35,6 +35,7 @@ class baseTestFunct
 		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) = 0;
 		virtual void Funct_x( Vector& func1, Vector& func2,
 		                      NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) = 0;
+		virtual void Switch( Vector& phi ) = 0;
 };
 
 class TestFunct : public baseTestFunct
@@ -58,6 +59,7 @@ class TestFunct : public baseTestFunct
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 		void Funct_x( Vector& func1, Vector& func2,
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Switch( Vector& phi );
 	
 	private:
 		bool        first;
@@ -93,6 +95,9 @@ class TestFunctCPLX : public baseTestFunct
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
 		void Funct_x( Vector& func1, Vector& func2,
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		inline void Switch( Vector& phi ) {}
+		void Switch( Vector& Re, Vector& Im, double& alpha );
+		void SwitchHB( Vector& Re, Vector& Im, NColloc& col );
 	
 	private:
 		bool        first;
@@ -130,6 +135,7 @@ class TestFunctLPAUT : public baseTestFunct
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 		void Funct_x( Vector& func1, Vector& func2,
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Switch( Vector& phi );
 	
 	private:
 		bool        first;
@@ -176,6 +182,7 @@ class TestFunctLPAUTROT : public baseTestFunct
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
 		void Funct_x( Vector& func1, Vector& func2,
 		              NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData ) {}
+		void Switch( Vector& phi );
 	
 	private:
 		bool         first;

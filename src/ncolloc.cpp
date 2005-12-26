@@ -762,7 +762,7 @@ void NColloc::RHS_p( Vector& rhs, const Vector& par, const Vector& /*sol*/, cons
 				{
 					if( dtau(r) != 0.0 )
 					{
-						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
+// 						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
 						vx = r;
 						sys->deri( dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy );
 						for( int p=0; p<NDIM; p++ )
@@ -2133,7 +2133,7 @@ void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D&
 					const double d = dtau(r)/par(0);
 					if( d != 0.0 )
 					{
-						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
+// 						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
 						vx = r;
 						sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
 						for( int p=0; p<NDIM; p++ )

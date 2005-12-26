@@ -114,90 +114,155 @@ void Point::Reset( Array1D<Eqn>& eqn_, Array1D<Var>& var_ )
 	delete qq_temp;
 }
 
-// not even member function public
-void PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, const int* parx, int npar_ )
+struct PtTab
 {
-	switch( Pt ){
+	BranchSW sw;
+	int      neqn;
+	int      nparx;
+	Eqn      eqns[5];
+	Var      vars[5];
+};
+
+// not even member function public
+BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, const int* parx, int npar_ )
+{
+	PtTab tab;
+	const Var PANGLE = (Var)(VarPAR0+npar_+ParAngle);
+	const Var PX0 = (Var)(VarPAR0 + parx[0]);
+	const Var PX1 = (Var)(VarPAR0 + parx[1]);
+	switch( Pt )
+	{
+	/// TIME PERIODIC CHARACTERISTIC MATRIX
 		case Sol:
+			tab = (PtTab){ NOSwitch,   2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
+		case SolBRSW:
+			tab = (PtTab){ BRSwitch,   2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
 		case SolPDSW:
-		case SolLPSW:
-			if( nparx != 0 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 2 );
-			varr.Init( 2 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnNone;
-			varr(0) = VarSol; varr(1) = VarNone;
-			break;
+			tab = (PtTab){ PDSwitch,   2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
 		case BifLP:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 3 );
-			varr.Init( 3 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnLPNullSpace; eqnr(2) = EqnNorm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]);
-			break;
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnLPNullSpace,    EqnNorm },
+			 {VarSol, VarNullSpace,      PX0 } };   break;
 		case BifPD:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 3 );
-			varr.Init( 3 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnPDNullSpace; eqnr(2) = EqnNorm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]);
-			break;
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnPDNullSpace,    EqnNorm },
+			 {VarSol, VarNullSpace,      PX0 } };   break;
 		case BifNS:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 4 );
-			varr.Init( 4 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnCPLXNormRe;                     eqnr(3) = EqnCPLXNormIm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = (Var)(VarPAR0 + npar_ + ParAngle); varr(3) = (Var)(VarPAR0 + parx[0]);
-			break;
+			tab = (PtTab){ NOSwitch,   4, 1,
+			 {EqnSol, EqnCPLXNullSpace,  EqnCPLXNormRe, EqnCPLXNormIm },
+			 {VarSol, VarNullSpace,      PX0,           PX1 } };         break;
+	/// AUTONOMOUS CHARACTERISTIC MATRIX
 		case SolAUT:
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case SolAUTBRSW:
+			tab = (PtTab){ BRSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
 		case SolAUTPDSW:
-		case SolAUTHOPFSW:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 3 );
-			varr.Init( 3 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnNone; eqnr(2) = EqnPhase;
-			varr(0) = VarSol; varr(1) = VarNone; varr(2) = (Var)(VarPAR0 + parx[0]);
-			break;
+			tab = (PtTab){ PDSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case SolAUTHBSW:
+			tab = (PtTab){ HBSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
 		case BifAUTLP:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 4 );
-			varr.Init( 4 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnLPAUTNullSpace; eqnr(2) = EqnPhase;                 eqnr(3) = EqnNorm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;      varr(2) = (Var)(VarPAR0 + parx[0]); varr(3) = (Var)(VarPAR0 + parx[1]);
-			break;
+			tab = (PtTab){ NOSwitch,   4, 2,
+			 {EqnSol, EqnLPAUTNullSpace, EqnPhase,      EqnNorm },
+			 {VarSol, VarNullSpace,      PX0,           PX1 } };   break;
 		case BifAUTPD:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 4 );
-			varr.Init( 4 );
-// 			eqnr(0) = EqnSol; eqnr(1) = EqnPDNullSpace; eqnr(2) = EqnPhase;                 eqnr(3) = EqnNorm;
-// 			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]); varr(3) = (Var)(VarPAR0 + parx[1]);
-			eqnr(0) = EqnSol; eqnr(1) = EqnPDNullSpace; eqnr(2) = EqnNorm;                  eqnr(3) = EqnPhase;  
-			varr(0) = VarSol; varr(1) = VarNullSpace;   varr(2) = (Var)(VarPAR0 + parx[0]); varr(3) = (Var)(VarPAR0 + parx[1]);
-			break;
+			tab = (PtTab){ NOSwitch,   4, 2,
+			 {EqnSol, EqnPDNullSpace,    EqnPhase,      EqnNorm },
+			 {VarSol, VarNullSpace,      PX0,           PX1 } }; break;
 		case BifAUTNS:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 5 );
-			varr.Init( 5 );
-			eqnr(0) = EqnSol; eqnr(1) = EqnCPLXNullSpace; eqnr(2) = EqnPhase;                          eqnr(3) = EqnCPLXNormRe;            eqnr(4) = EqnCPLXNormIm;
-			varr(0) = VarSol; varr(1) = VarNullSpace;     varr(2) = (Var)(VarPAR0 + npar_ + ParAngle); varr(3) = (Var)(VarPAR0 + parx[0]); varr(4) = (Var)(VarPAR0 + parx[1]);
-			break;
+			tab = (PtTab){ NOSwitch,   5, 2,
+			 {EqnSol, EqnCPLXNullSpace,  EqnPhase,      EqnCPLXNormRe, EqnCPLXNormIm },
+			 {VarSol, VarNullSpace,      PANGLE,        PX0,           PX1 } };         break;
+	/// TIME-PERIODIC TEST-FUNCTIONAL
+		case SolTF: // same as "case Sol:"
+			tab = (PtTab){ NOSwitch,   2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
+		case SolTFBRSW:
+			tab = (PtTab){ TFBRSwitch, 2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
+		case SolTFPDSW:
+			tab = (PtTab){ TFPDSwitch, 2, 0,
+			 {EqnSol, EqnNone },
+			 {VarSol, VarNone } }; break;
+		case BifTFLP:
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnTFLP },
+			 {VarSol, VarNone,           PX0 } }; break;
+		case BifTFPD:
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnTFPD },
+			 {VarSol, VarNone,           PX0 } }; break;
+		case BifTFNS:
+			tab = (PtTab){ NOSwitch,   4, 1,
+			 {EqnSol, EqnNone,           EqnTFCPLX_RE,  EqnTFCPLX_IM },
+			 {VarSol, VarNone,           PANGLE,        PX0 } };        break;
+	/// AUTONOMOUS TEST-FUNCTIONAL
+		case SolTFAUT: // same as "case SolAUT:"
+			tab = (PtTab){ NOSwitch,   3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case SolTFAUTBRSW:
+			tab = (PtTab){ TFBRSwitch, 3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case SolTFAUTPDSW:
+			tab = (PtTab){ TFPDSwitch, 3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case SolTFAUTHBSW:
+			tab = (PtTab){ TFHBSwitch, 3, 1,
+			 {EqnSol, EqnNone,           EqnPhase },
+			 {VarSol, VarNone,           PX0 } };    break;
+		case BifTFAUTLP:
+			tab = (PtTab){ NOSwitch,   4, 2,
+			 {EqnSol, EqnNone,           EqnPhase,      EqnTFLP },
+			 {VarSol, VarNone,           PX0,           PX1 } };   break;
+		case BifTFAUTPD:
+			tab = (PtTab){ NOSwitch,   4, 2,
+			 {EqnSol, EqnNone,           EqnPhase,      EqnTFPD },
+			 {VarSol, VarNone,           PX0,           PX1 } };   break;
+		case BifTFAUTNS:
+			tab = (PtTab){ NOSwitch,   5, 2,
+			 {EqnSol, EqnNone,           EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
+			 {VarSol, VarNone,           PANGLE,        PX0,           PX1 } };        break;
+	/// TORUS
 		case SolTor:
-			if( nparx != 1 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 2 );
-			varr.Init( 2 );
-			eqnr(0) = EqnTORSol; eqnr(1) = EqnTORPhase1;
-			varr(0) = VarTORSol; varr(1) = (Var)(VarPAR0 + parx[0]);
-			break;
+			tab = (PtTab){ TFTRSwitch, 2, 1,
+			 {EqnTORSol, EqnTORPhase1 },
+			 {VarTORSol, PX0 } };        break;
 		case SolAUTTor:
-			if( nparx != 2 ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
-			eqnr.Init( 3 );
-			varr.Init( 3 );
-			eqnr(0) = EqnTORSol; eqnr(1) = EqnTORPhase0;             eqnr(2) = EqnTORPhase1;
-			varr(0) = VarTORSol; varr(1) = (Var)(VarPAR0 + parx[0]); varr(2) = (Var)(VarPAR0 + parx[1]);
-			break;
+			tab = (PtTab){ TFTRSwitch, 2, 2,
+			 {EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
+			 {VarTORSol, PX0,          PX1 } };        break;
 		default:
+			tab = (PtTab){ NOSwitch,  0, 0, { EqnNone }, { VarNone } };
 			std::cout<<"No such pointtype\n"; PDError(-1);
 			break;
 	}
+	if( tab.nparx != nparx ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
+	eqnr.Init( tab.neqn );
+	varr.Init( tab.neqn );
+	for( int i = 0; i < tab.neqn; i++ )
+	{
+		eqnr(i) = tab.eqns[i];
+		varr(i) = tab.vars[i];
+	}
+	return tab.sw;
 }
 
 // private
@@ -323,7 +388,6 @@ void Point::Construct( )
 				break;
 		}
 	}
-	if( testFunct == 0 ) testFunct = new TestFunctCPLX( colloc );
 	
 	for( int i = 2; i < var.Size(); i++ )
 	{
@@ -993,7 +1057,7 @@ int Point::Start(  )
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
 
-/// IT IS __NOT__ USED, BECAUSE IT DIVERGES. BUT REFINE CONVERGES, WHICH IS EXCELLENT!!!
+/// It only computes the critical characteristic multiplier and refines the solution
 
 int Point::StartTF( Eqn FN )
 {
@@ -1205,10 +1269,9 @@ void Point::SwitchPD( double ds )
 	sol += ds * xxDot->getV1();
 }
 
+/// This _IS_ specific to characteristic matrices!!!
 // it should be moved to NColloc, because we need the mesh to construct tangent
 // Here, it is NOT assumed that the mesh is equidistant
-// Moreover, ds should be controlled from the constants file. Currently it is fixed at 0.2,
-// which seems to be working for the traffic model
 void Point::SwitchHOPF( double ds )
 {
 	if( par(NPAR+ParAngle) < 0 ) par(NPAR+ParAngle) *= -1.0;
@@ -1237,6 +1300,114 @@ void Point::SwitchHOPF( double ds )
 	{
 		sol( i ) += ds*xxDot->getV1()(i);
 	}
+}
+
+void Point::SwitchTFHB( double ds )
+{
+	if( par(NPAR+ParAngle) < 0 ) par(NPAR+ParAngle) *= -1.0;
+	if( par(NPAR+ParAngle) < M_PI ) par(0) *= 2*M_PI/par(NPAR+ParAngle);
+	else par(0) *= 2*M_PI/(par(NPAR+ParAngle) - M_PI);
+	std::cout<<"SwitchHOPF: T = "<<par(0)<<", angle/2PI = "<<par(NPAR+ParAngle)/(2*M_PI)<<"\n";
+	
+	TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);
+	Vector QRE(NDIM), QIM(NDIM);
+	tf->SwitchHB( QRE, QIM, colloc );
+	
+	for( int i = 0; i < NINT; i++ )
+	{
+		for( int j = 0; j < NDEG+1; j++ )
+		{
+			const double t = colloc.Profile( i, j );
+			for( int p = 0; p < NDIM; p++ )
+			{
+				xxDot->getV1()( p + (j+i*NDEG)*NDIM ) = sin(2.0*M_PI*t) * QIM(p) + cos(2.0*M_PI*t) * QRE(p);
+			}
+		}
+	}
+
+	double norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) );
+	xxDot->getV1() /= norm;
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+// 	std::cout<<"HOPFtanNorm "<<norm<<"\n";
+	
+	for( int i = 0; i < NDIM*(NINT*NDEG+1); i++ )
+	{
+		sol( i ) += ds*xxDot->getV1()(i);
+	}
+}
+
+/// Switching with the test functionals!!!
+
+void Point::SwitchTFLP( double ds )
+{
+	Vector qq_(NDIM);
+	MatFact DD( NDIM, NDIM );
+	Vector wr( NDIM ), wi( NDIM );
+	Matrix vr( NDIM, NDIM ), vl( NDIM, NDIM );
+
+	std::cout<<"Point::SwitchTF_LP\n";
+	xxDot->getV1().Clear();
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+	p1Dot = 0.0;
+	
+	TestFunct* tf = new TestFunct( colloc, 1.0 );
+	tf->Funct( colloc, par, sol, solData );
+	tf->Switch( xxDot->getV1() );
+	delete tf;
+	
+	sol += ds * xxDot->getV1();
+}
+
+void Point::SwitchTFPD( double ds )
+{
+	Vector qq_(NDIM);
+	MatFact DD( NDIM, NDIM );
+	Vector wr( NDIM ), wi( NDIM );
+	Matrix vr( NDIM, NDIM ), vl( NDIM, NDIM );
+
+	std::cout<<"Point::SwitchTF_PD\n";
+	xxDot->getV1().Clear();
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+	p1Dot = 0.0;
+	
+	Vector tan(xxDot->getV1().Size());
+	TestFunct* tf = new TestFunct( colloc, -1.0 );
+	tf->Funct( colloc, par, sol, solData );
+	tf->Switch( tan );
+	delete tf;
+	
+	// setting the period two double
+	par(0) *= 2.0;
+	//	only in case of period doubling and equidistant mesh
+	{
+		Vector tmp(sol);
+		for( int i=0; i<(NDEG*NINT+1)/2; i++ )
+		{
+			for( int j=0; j<NDIM; j++ )
+			{
+				xxDot->getV1()(NDIM*i+j)                   =  tan(NDIM*2*i+j);
+				xxDot->getV1()(NDIM*((NDEG*NINT+1)/2+i)+j) = -tan(NDIM*2*i+j);
+				sol(NDIM*i+j)                   = tmp(NDIM*2*i+j);
+				sol(NDIM*((NDEG*NINT+1)/2+i)+j) = tmp(NDIM*2*i+j);
+			}
+		}
+		if( (NDEG*NINT+1)%2 != 0 )
+		{
+			for( int j=0; j<NDIM; j++ )
+			{
+				xxDot->getV1()(NDIM*NDEG*NINT+j) = xxDot->getV1()(NDIM*(NDEG*NINT-1)+j);
+				sol(NDIM*NDEG*NINT+j) = sol(j);
+			}
+		}
+	}
+	double norm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() ));
+	xxDot->getV1() /= norm;
+	xxDot->getV2().Clear();
+	xxDot->getV3().Clear();
+	sol += ds * xxDot->getV1();
 }
 
 void Point::Tangent( )
@@ -1293,8 +1464,6 @@ int Point::Continue( double ds )
 	
 	varMapCont( varMap.Size() ) = p1;
 
-	testFunct->Funct( colloc, par, sol, solData );
-
 	int  it=0;
 	bool conv;
 	do
@@ -1333,14 +1502,8 @@ int Point::Continue( double ds )
 	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < ContIter) );
 	if( !conv )
 	{
-		/// computing CharMat
-		charMat->Init( colloc, par, solData, 1.0 );
-// 		double a,b;
-// 		charMat->getDX( a, b );
 		/// checking the tangent and the secant
 	#ifdef DEBUG
-		double f1, f2;
-		testFunct->Funct( f1, f2, colloc, par, sol, solData, -1.0, 0.0 );
 		double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
@@ -1621,11 +1784,6 @@ void Point::ReadNull( std::ifstream& file )
 	for( int i=0; i<NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
 }
 
-void Point::SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg ) // starting data for tori: solution
-{
-	colloc.Export( Sol, mshint, mshdeg, sol );
-}
-
 void Point::SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ) // starting data for tori: tangent
 {
 	Vector TRe(sol.Size()), TIm(sol.Size());
@@ -1639,6 +1797,22 @@ void Point::SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& ms
 	}else
 	{
 		std::cout<<"Not the complex characteristic matrix\n";
+		PDError(-1);
+	}
+}
+
+void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ) // starting data for tori: tangent
+{
+	Vector TRe(sol.Size()), TIm(sol.Size());
+	TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct);
+	if( tf )
+	{
+		tf->Switch( TRe, TIm, alpha );
+		colloc.Export( Re, mshint, mshdeg, TRe );
+		colloc.Export( Im, mshint, mshdeg, TIm );
+	}else
+	{
+		std::cout<<"Not the complex test functional\n";
 		PDError(-1);
 	}
 }

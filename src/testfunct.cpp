@@ -134,6 +134,11 @@ void   TestFunct::Funct_x( Vector& func, NColloc& col, const Vector& par, const 
 // 	func *= 100.0;
 }
 
+void   TestFunct::Switch( Vector& phi )
+{
+	phi = vv;
+}
+
 /// ---------------------------------------------------------
 /// test function for TORUS BIFURCATIONS
 /// ---------------------------------------------------------
@@ -239,6 +244,37 @@ void TestFunctCPLX::Funct_x( Vector& func1, Vector& func2,
 	func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
 }
 
+void TestFunctCPLX::Switch( Vector& Re, Vector& Im, double& alpha )
+{
+	if( (2*Re.Size() != vv.Size())||(2*Im.Size() != vv.Size()) )
+	{
+		std::cout<<"TestFunctCPLX::Switch: Bad sizes\n";
+		PDError(-12);
+	}
+	std::cout<<"zRe="<<ZRe<<", zIm="<<ZIm<<"\n";
+	for( int i=0; i<Re.Size(); i++ )
+	{
+		Re(i) = vv( 2*i );
+		Im(i) = vv( 2*i + 1 );
+	}
+	if( ZRe > 0.0 )
+	{
+		alpha = atan( fabs(ZIm/ZRe) );
+	}
+	else
+	{
+		alpha = atan( fabs(ZRe/ZIm) ) + M_PI/2.0;
+	}
+}
+
+void TestFunctCPLX::SwitchHB( Vector& Re, Vector& Im, NColloc& col )
+{
+	for( int i = 0; i < NDIM; i++ )
+	{
+		Re(i) = vv( 2*i );
+		Im(i) = vv( 2*i + 1 );
+	}
+}
 /// ---------------------------------------------------------
 /// test function for FOLD BIFURCATIONS in autonomous systems
 /// ---------------------------------------------------------
@@ -378,6 +414,11 @@ void   TestFunctLPAUT::Funct_x( Vector& func, NColloc& col, const Vector& par, c
 	col.CharJac_MSHphi_x<true>( DxPhi, par, solMSHData, vv2 );
 	col.Star( temp, DxPhi );
 	func += hh2(0) * temp;
+}
+
+void   TestFunctLPAUT::Switch( Vector& phi )
+{
+	phi = vv2;
 }
 
 /// -----------------------------------------------------------------------
@@ -553,4 +594,9 @@ void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par
 	rotbord<true>( DxLAM, col, vv3, Re, Im );
 	col.Star( temp, DxLAM );
 	func += hh3(1) * temp;
+}
+
+void   TestFunctLPAUTROT::Switch( Vector& phi )
+{
+	phi = vv3;
 }

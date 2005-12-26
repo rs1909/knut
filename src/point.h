@@ -60,11 +60,16 @@ class Point : public PointData
 
 		// algorithms
 		void    Reset( Array1D<Eqn>& eqn_, Array1D<Var>& var_ );
-		void    SwitchLP( double ds ); // switches branch
-		void    SwitchPD( double ds ); // switches branch
-		void    SwitchHOPF( double ds );
-		void    SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: solution
-		void    SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent
+		void    SwitchLP( double ds ); // switches branch with charmat
+		void    SwitchPD( double ds ); // switches branch with charmat
+		void    SwitchTFLP( double ds ); // switches branch with testFunct
+		void    SwitchTFPD( double ds ); // switches branch with testFunct
+		void    SwitchHOPF( double ds ); // switches branch with charmat
+		void    SwitchTFHB( double ds ); // switches branch with testFunct
+		void    SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg )
+			{ colloc.Export( Sol, mshint, mshdeg, sol ); } // starting data for tori: solution
+		void    SwitchTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent with charMAT
+		void    SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent WITH testFunct
 		int     Start( ); // approximating qq
 		int     StartTF( Eqn FN );
 		int     Refine( );

@@ -49,27 +49,46 @@ enum Var {
 // this applies to torpoint.h too...
 
 enum PtType {
-	Sol        = 0,
-	BifLP      = 1,
-	BifPD      = 2,
-	BifNS      = 3,
-	SolPDSW    = 4,
-	SolLPSW    = 5,
-	SolAUT     = 10,
-	BifAUTLP   = 11,
-	BifAUTPD   = 12,
-	BifAUTNS   = 13,
-	SolAUTPDSW = 14,
-	SolAUTHOPFSW = 16,
-	SolTor     = 20,
-	SolAUTTor  = 30
+/// TIME PERIODIC CHARACTERISTIC MATRIX
+	Sol          = 0,
+	BifLP        = 1,
+	BifPD        = 2,
+	BifNS        = 3,
+	SolBRSW      = 4,
+	SolPDSW      = 5,
+/// AUTONOMOUS CHARACTERISTIC MATRIX
+	SolAUT       = 10,
+	BifAUTLP     = 11,
+	BifAUTPD     = 12,
+	BifAUTNS     = 13,
+	SolAUTBRSW   = 14,
+	SolAUTPDSW   = 15,
+	SolAUTHBSW   = 16,
+/// TORUS
+	SolTor       = 20,
+	SolAUTTor    = 30,
+/// TIME-PERIODIC TEST-FUNCTIONAL
+	SolTF        = 40,
+	BifTFLP      = 41,
+	BifTFPD      = 42,
+	BifTFNS      = 43,
+	SolTFBRSW    = 44,
+	SolTFPDSW    = 45,
+/// AUTONOMOUS TEST-FUNCTIONAL
+	SolTFAUT     = 50,
+	BifTFAUTLP   = 51,
+	BifTFAUTPD   = 52,
+	BifTFAUTNS   = 53,
+	SolTFAUTBRSW = 54,
+	SolTFAUTPDSW = 55,
+	SolTFAUTHBSW = 56,
 };
 
 // internal parameters, placed after the defined parameters
 
 enum Par { ParAngle=0, ParNorm, ParRot, ParEnd };
 
-enum BranchSW { NOSwitch=0, LPSwitch, PDSwitch, HOPFSwitch, TORSwitch };
+enum BranchSW { NOSwitch=0, BRSwitch, PDSwitch, HBSwitch, TFBRSwitch, TFPDSwitch, TFHBSwitch, TRSwitch, TFTRSwitch };
 
 inline char parType( int npar, int p )
 {
@@ -123,6 +142,6 @@ inline const char* VarToStr( Var var )
 template< class T > class Array1D;
 
 // helper function
-void PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx, int npar_ );
+BranchSW PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx, int npar_ );
 
 #endif

@@ -233,8 +233,7 @@ void printParams( cfile* pms )
 int initEqnVar( System& sys, cfile* params,
                 Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
                 Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
-                Array1D<Eqn>& eqn_start, Array1D<Var>& var_start,
-                Array1D<Eqn>& eqn_startTF, Array1D<Var>& var_startTF, Eqn& testFN )
+                Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, Eqn& testFN )
 {
 	// initializing the equations and variables
 	if( params->EXTSYS )
@@ -248,37 +247,13 @@ int initEqnVar( System& sys, cfile* params,
 			else if( (params->VARType)[i] == 'P' ) var(i) = (Var)( VarPAR0 + (params->VAR)[i] );
 			else if( (params->VARType)[i] == 'I' ) var(i) = (Var)( VarPAR0 + sys.npar() + (params->VAR)[i] );
 		}
-// 		for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
-// 		std::cout<<'\n';
-// 		for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
-// 		std::cout<<'\n';
 	}else
 	{
 		for( int i = 0; i < params->NPARX; i++ )
 		{
 			if( (params->PARXType)[i] == 'I' ) (params->PARX)[i] += sys.npar();
 		}
-		PtToEqnVar( eqn, var, (PtType)params->TYPE, params->NPARX, params->PARX, sys.npar() );
-		switch( (PtType)params->TYPE )
-		{
-			case SolLPSW:
-				params->SWITCH = LPSwitch;
-				break;
-			case SolPDSW:
-			case SolAUTPDSW:
-				params->SWITCH = PDSwitch;
-				break;
-			case SolAUTHOPFSW:
-				params->SWITCH = HOPFSwitch;
-				break;
-			case SolTor:
-			case SolAUTTor:
-				params->SWITCH = TORSwitch;
-				break;
-			default:
-				params->SWITCH = NOSwitch;
-				break;
-		}
+		params->SWITCH = PtToEqnVar( eqn, var, (PtType)params->TYPE, params->NPARX, params->PARX, sys.npar() );
 	}
 	// initializing CP
 	if( params->CPType == 'I' ) params->CP += sys.npar();
@@ -329,21 +304,8 @@ int initEqnVar( System& sys, cfile* params,
 		var_refine(0) = VarSol; var_refine(1) = VarNone;
 	}
 	
-	if( testFN != EqnNone )
-	{
-		eqn_startTF.Init( eqn.Size()-1 );
-		var_startTF.Init( var.Size()-1 );
-		for( int i=0,j=0; i<eqn.Size(); i++ )
-		{
-			if( i != testFN_idx) eqn_startTF(j++) = eqn(i);
-		}
-		for( int i=0; i<var.Size()-1; i++ ) var_startTF(i) = var(i);
-	}
-		for( int i=0; i<eqn_startTF.Size(); i++ ) std::cout<<EqnToStr( eqn_startTF(i) )<<", ";
-		std::cout<<'\n';
-		for( int i=0; i<var_startTF.Size(); i++ ) std::cout<<VarToStr( var_startTF(i) )<<", ";
-		std::cout<<'\n';
-	if( params->SWITCH == HOPFSwitch ) PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX, sys.npar() ); // NPARX == 0
+	if( (params->SWITCH == HBSwitch)||(params->SWITCH == TFHBSwitch) )
+		PtToEqnVar( eqn_refine, var_refine, Sol, 0, params->PARX, sys.npar() ); // NPARX == 0
 	
 	// Here, we set up the branch switching.
 	// We suppose that if there is a switch we use one parameter continuation afterwards
@@ -353,29 +315,29 @@ int initEqnVar( System& sys, cfile* params,
 	Eqn eqn_temp;
 	switch( params->SWITCH )
 	{
-		case LPSwitch:
+		case BRSwitch:
 			if( aut ) eqn_temp = EqnLPAUTNullSpace; else eqn_temp = EqnLPNullSpace;
 			goto skip;
 		case PDSwitch:
 			eqn_temp = EqnPDNullSpace;
 			goto skip;
 		skip:
-			eqn_start.Init( eqn.Size() + 1 ); 
-			var_start.Init( var.Size() + 1 );
-			eqn_start(0) = eqn(0);
-			var_start(0) = var(0);
+			eqn_start.Init( eqn_refine.Size() + 1 ); 
+			var_start.Init( var_refine.Size() + 1 );
+			eqn_start(0) = eqn_refine(0);
+			var_start(0) = var_refine(0);
 			eqn_start(1) = eqn_temp;
 			var_start(1) = VarNullSpace;
 			eqn_start(2) = EqnNorm;
-			var_start( var.Size() ) = (Var)(VarPAR0 + params->CP);
-			for( int i = 2; i < eqn.Size(); i++ )
+			var_start( var_refine.Size() ) = (Var)(VarPAR0 + params->CP);
+			for( int i = 2; i < eqn_refine.Size(); i++ )
 			{
-				eqn_start(i+1) = eqn(i);
-				var_start(i) = var(i);
+				eqn_start(i+1) = eqn_refine(i);
+				var_start(i) = var_refine(i);
 			}
 			break;
-		case HOPFSwitch:
-		case TORSwitch:
+		case HBSwitch:
+		case TRSwitch:
 			eqn_start.Init( eqn_refine.Size() + 2 );
 			var_start.Init( var_refine.Size() + 2 );
 			eqn_start(0) = eqn_refine(0);
@@ -391,6 +353,48 @@ int initEqnVar( System& sys, cfile* params,
 				eqn_start(i+2) = eqn_refine(i);
 				var_start(i+1) = var_refine(i);
 			}
+			break;
+/// with TEST FUNCTIONALS
+		case TFBRSwitch:
+			if( aut ) eqn_temp = EqnTFLPAUT; else eqn_temp = EqnTFLP;
+			goto tfskip;
+		case TFPDSwitch:
+			eqn_temp = EqnTFPD;
+			goto tfskip;
+		tfskip:
+			eqn_start.Init( eqn_refine.Size() + 1 ); 
+			var_start.Init( var_refine.Size() + 1 );
+			eqn_start(0) = eqn_refine(0);
+			var_start(0) = var_refine(0);
+			eqn_start(1) = EqnNone;
+			var_start(1) = VarNone;
+			eqn_start(2) = eqn_temp;
+			var_start( var_refine.Size() ) = (Var)(VarPAR0 + params->CP);
+			for( int i = 2; i < eqn_refine.Size(); i++ )
+			{
+				eqn_start(i+1) = eqn_refine(i);
+				var_start(i) = var_refine(i);
+			}
+			testFN = eqn_temp;
+			break;
+		case TFTRSwitch:
+		case TFHBSwitch:
+			eqn_start.Init( eqn_refine.Size() + 2 );
+			var_start.Init( var_refine.Size() + 2 );
+			eqn_start(0) = eqn_refine(0);
+			var_start(0) = var_refine(0);
+			eqn_start(1) = EqnNone;
+			var_start(1) = VarNone;
+			eqn_start(2) = EqnTFCPLX_RE;
+			eqn_start(3) = EqnTFCPLX_IM;
+			var_start(2) = (Var)(VarPAR0 + sys.npar() + ParAngle); // CH
+			var_start( var_refine.Size() + 1 ) = (Var)(VarPAR0 + params->CP);
+			for( int i = 2; i < eqn_refine.Size(); i++ )
+			{
+				eqn_start(i+2) = eqn_refine(i);
+				var_start(i+1) = var_refine(i);
+			}
+			testFN = EqnTFCPLX_RE;
 			break;
 		default:
 			eqn_start.Init( eqn.Size() );
@@ -496,11 +500,9 @@ int main( int argc, const char** argv )
 	Array1D<Var> var_refine;
 	Array1D<Eqn> eqn_start;
 	Array1D<Var> var_start;
-	Array1D<Eqn> eqn_startTF;
-	Array1D<Var> var_startTF;
 	Eqn          testFN;
 	
-	int trivial = initEqnVar( sys, params, eqn, var, eqn_refine, var_refine, eqn_start, var_start, eqn_startTF, var_startTF, testFN );
+	int trivial = initEqnVar( sys, params, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
 	const int npar = sys.npar();
 	
 // 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
@@ -549,15 +551,16 @@ int main( int argc, const char** argv )
 			pt.Reset( eqn_start, var_start );
 			pt.Start();
 		}
-		if( eqn_startTF.Size() != 0 )
+		else if( testFN != EqnNone )
 		{
-			pt.Reset( eqn, var );
+			std::cout<<"\n--- Finding the bifurcation point (TF) ---\n";
+			pt.Reset( eqn_start, var_start );
 			pt.setCont( params->CP );
-			pt.StartTF( testFN );
+			pt.StartTF( testFN ); // it only computes the characteristic multiplier refines the solution
 		}
 		
 		// start the continuation!
-		if( params->SWITCH != TORSwitch )
+		if( (params->SWITCH != TRSwitch)&&(params->SWITCH != TFTRSwitch) )
 		{
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
@@ -578,16 +581,34 @@ int main( int argc, const char** argv )
 				pt.SwitchPD( params->DSSTART );
 				pt.setCont( params->CP );
 			}
-			else if( params->SWITCH == LPSwitch )
+			else if( params->SWITCH == BRSwitch )
 			{
 				std::cout<<"\nSwitching to the other branch.\n";
-				pt.SwitchLP( params->DSSTART );
+				pt.SwitchTFLP( params->DSSTART );
 				pt.setCont( params->CP );
 			}
-			else if( params->SWITCH == HOPFSwitch )
+			else if( params->SWITCH == HBSwitch )
 			{
 				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point.\n";
 				pt.SwitchHOPF( params->DSSTART );
+				pt.setCont( params->CP );
+			}
+			else if( params->SWITCH == TFPDSwitch )
+			{
+				std::cout<<"\nSwitching to the period two branch (TF).\n";
+				pt.SwitchTFPD( params->DSSTART );
+				pt.setCont( params->CP );
+			}
+			else if( params->SWITCH == TFBRSwitch )
+			{
+				std::cout<<"\nSwitching to the other branch (TF).\n";
+				pt.SwitchTFLP( params->DSSTART );
+				pt.setCont( params->CP );
+			}
+			else if( params->SWITCH == TFHBSwitch )
+			{
+				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
+				pt.SwitchTFHB( params->DSSTART );
 				pt.setCont( params->CP );
 			}
 			else
@@ -656,8 +677,8 @@ int main( int argc, const char** argv )
 				// file output
 				pt.Write( out );
 				
-				double CHmin, CHmax;
-				pt.getDX( CHmin, CHmax );
+				double CHmin=0.0, CHmax=0.0;
+				if( eqn(1) != EqnNone ) pt.getDX( CHmin, CHmax );
 				// branch output
 				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\t"<<CHmin<<"\t"<<CHmax<<"\n";
@@ -689,7 +710,8 @@ int main( int argc, const char** argv )
 
 			// getting the sol and tangents
 			pt.SwitchTRSol( Sol, meshint, meshdeg );
-			pt.SwitchTRTan( TRe, TIm, alpha, meshint, meshdeg );
+			if( params->SWITCH == TRSwitch ) pt.SwitchTRTan  ( TRe, TIm, alpha, meshint, meshdeg );
+			else                             pt.SwitchTFTRTan( TRe, TIm, alpha, meshint, meshdeg );
 
 			// getting the parameters
 			for( int j=0; j<npar; j++ ) par(j) = pt.getPar()(j);
