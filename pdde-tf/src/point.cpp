@@ -285,6 +285,7 @@ void Point::Construct( )
 		}
 	}
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);
+	varMapCont( varMap.Size() ) = p1;
 	
 	xxDot   = new HyperVector( dim1, 0, dim3+1 );
 	
@@ -507,11 +508,7 @@ inline void Point::Update( HyperVector& X )
 inline void Point::ContUpdate( HyperVector& X )
 {
 	solNu += X.getV1();
-	for( int i = 2; i < varMap.Size(); i++ )
-	{
-		parNu( varMap(i) ) += X.getV3()(i-2);
-	}
-	parNu( p1 ) += X.getV3()(dim3);
+	for( int i = 2; i < varMapCont.Size(); i++ ) parNu( varMapCont(i) ) += X.getV3()(i-2);
 }
 
 /// --------------------------------------------------------------

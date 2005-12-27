@@ -519,7 +519,7 @@ int main( int argc, const char** argv )
 		{
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
-			for( int j=0; j<npar+ParEnd; j++ ) par(j) = pt.getPar()(j);
+			for( int j=0; j<par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
 			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->CP )<<parNum( npar, params->CP )<<"\t";
 			parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
@@ -579,7 +579,7 @@ int main( int argc, const char** argv )
 				if( params->STAB != 0) pt.Stability();
 				ustabprev = ustab;
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
-				for( int j=0; j<npar; j++ ) par(j) = pt.getPar()(j);
+				for( int j=0; j<par.Size(); j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
 
 				// console output

@@ -70,7 +70,7 @@ TestFunct::~TestFunct()
 {
 }
 
-void TestFunct::Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+void TestFunct::Init( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	// creating the matrix
 	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
@@ -117,7 +117,7 @@ double TestFunct::Funct( NColloc& col, const Vector& par, const Vector& sol, con
 	return gg;
 }
 
-double TestFunct::Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
+double TestFunct::Funct_p( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha )
 {
 	col.Interpolate( vvData, vv );
 	col.CharJac_x_p( A_p, par, solData, vvData, ZZ, alpha );
@@ -126,7 +126,7 @@ double TestFunct::Funct_p( NColloc& col, const Vector& par, const Vector& sol, c
 	return gg_p; // positive, because the test function is not negated in the Jacobian
 }
 
-void   TestFunct::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+void   TestFunct::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	col.Interpolate( vvData, vv );
 	col.CharJac_x_x( A_x, par, solData, vvData, ZZ );
@@ -162,7 +162,7 @@ TestFunctCPLX::~TestFunctCPLX( )
 {
 }
 
-void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData,
 									double Re, double Im )
 {
 	ZRe = Re; ZIm = Im;
@@ -218,7 +218,7 @@ void TestFunctCPLX::Funct  ( double& f1, double& f2,
 }
 
 void TestFunctCPLX::Funct_p( double& f1, double& f2,
-					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+					NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData,
 					int alpha )
 {
 	col.CharJac_x_p( A_p, par, solData, vvData, ZRe, ZIm, alpha );
@@ -227,17 +227,17 @@ void TestFunctCPLX::Funct_p( double& f1, double& f2,
 }
 
 void TestFunctCPLX::Funct_z( double& f1, double& f2,
-					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+					NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	col.CharJac_x_z( A_p, par, solData, AHAT.getA31(0), vvData, ZRe, ZIm, true );
 	const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
 	const double dzim = (AHAT.getA13(1)/*uu^conj*/ * A_p);
-	f1 = (- dzre * ZIm - dzim * ZRe);
-	f2 = (  dzre * ZRe - dzim * ZIm);
+	f1 = ( -dzim*ZRe - dzre*ZIm );
+	f2 = (  dzre*ZRe - dzim*ZIm );
 }
 
 void TestFunctCPLX::Funct_x( Vector& func1, Vector& func2,
-					NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+					NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	col.CharJac_x_x( A_x, par, solData, vvData, ZRe, ZIm );
 	func1 = !A_x * AHAT.getA13(0); /*uu*/
@@ -378,7 +378,7 @@ double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const Vector& sol
 	return gg2(1);
 }
 
-double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
+double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha )
 {
 	col.CharJac_x_p( A_p, par, solData, vv2Data, ZZ, alpha );
 	col.CharJac_mB_p( mB_p, par, solData, phiData, ZZ, alpha );
@@ -399,7 +399,7 @@ double TestFunctLPAUT::Funct_p( NColloc& col, const Vector& par, const Vector& s
 	return gg_p;
 }
 
-void   TestFunctLPAUT::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+void   TestFunctLPAUT::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	col.CharJac_x_x( A_x, par, solData, vv2Data, ZZ );
 	col.CharJac_mB_x( mB_x, par, solData, phiData, ZZ );
@@ -549,7 +549,7 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 	return gg3(2);
 }
 
-double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha )
+double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha )
 {
 	col.CharJac_x_p( A_p, par, solData, vv3Data, ZZ, alpha );
 	col.CharJac_mB_p( mB_p, par, solData, phiData, ZZ, alpha );
@@ -571,7 +571,7 @@ double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector
 	return gg_p;
 }
 
-void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
+void   TestFunctLPAUTROT::Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	col.Interpolate( vv3Data, vv3 );
 	col.CharJac_x_x( A_x, par, solData, vv3Data, ZZ );
