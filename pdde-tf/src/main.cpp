@@ -585,7 +585,7 @@ int main( int argc, const char** argv )
 				// console output
 				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->CP);
 				parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
-				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos);
+				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
 				if( i != 0  && ustab != ustabprev )
 				{
 					PtType bif = SolTF;

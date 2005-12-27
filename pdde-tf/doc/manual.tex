@@ -71,7 +71,7 @@ The software can handle delay-differential equation in the general form
 \end{equation}
 where $f(t, \dots ) = f(t + T, \dots)$ is $T$-periodic, $x \in \mathbb{R}^n$ is the dependent variable defined on $I \subset \mathbb{R}$, $\lambda \in \mathbb{R}^p$ is the parameter vector and $0 \le \tau_i$ are positive delays, which can depend on the parameters $\tau_i : \mathbb{R}^p \to [0,\infty)$.
 In general $f$ need not depend on $t$, which is called the autonomous case and is handled separately by imposing a so-called phase condition.
-The software can continue periodic solutions of (\ref{gensys}), if there is an initial periodic solution available $x_0(t)$ at some parameter value $\lambda_0$. This starting periodic solution has to be specified either in the system definition (C++ source file) or it can be loaded from an input file. The periodic solutions can bifurcate in several ways. If one of the three common one-codimension bifurcations (fold, period doubling, Neimark-Sacker) are found along the branch of periodic solutions, they can be used as starting points for continuing them along two parameters.
+The software can continue periodic solutions of (\ref{gensys}), if there is an initial periodic solution available $x_0(t)$ at some parameter value $\lambda_0$. This starting periodic solution has to be specified either in the system definition (C++ source file) or it can be loaded from an input file. The periodic solutions can bifurcate in several ways. If one of the three common codimension-one bifurcations (fold, period doubling, Neimark-Sacker) are found along the branch of periodic solutions, they can be used as starting points for continuing them along two parameters.
 
 \paragraph{Remark.} Fixed points of autonomous systems can be also handled, as periodic solutions of periodic systems by keeping the period constant. Although it is very inefficient, this capability might be useful, when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can be continued by switching to the periodic solution branch using the solution \funp{TYPE=16}. The failure or success of the switch depends on the choice of the period length for the fixed point and the starting solution amplitude \funp{DSSTART}.
 As a rule of thumb, the period should be chosen as small as possible to reliably detect the period of the arising periodic orbit. If the period is chosen to be large, the detected period will be some integer multiple of the actual period.
@@ -208,7 +208,7 @@ If none of the above apply to a problem, it is possible to specify the set of eq
 \item[\funp{CP}] ~\\
 It defines the main continuation parameter. The parameters always start with the letter `\funp{P}', if they are user defined or with `\funp{I}' if they are internal parameters, such as the argument of the characteristic multiplier or
 the rotation number of a quasiperiodic orbit.
-% (Recognition of internal parameters is not yet implemented, however the can be specified using ordinary parameters. E.g., if \funp{NPAR} is the number of ordinary parameters then an interal parameter is equivalent to P(\funp{NPAR} + internal parameter number)). 
+% (Recognition of internal parameters is not yet implemented, however the can be specified using ordinary parameters. E.g., if \funp{NPAR} is the number of ordinary parameters then an internal parameter is equivalent to P(\funp{NPAR} + internal parameter number)). 
 These  internal parameters are
 \begin{description}
 \item[\funp{I0} -] The argument of the characteristic multiplier in the case of Neimark-Sacker bifurcation continuation.
@@ -260,7 +260,7 @@ Convergence tolerance to a periodic solution during continuation. For periodic o
 Tolerance in the refinement of solutions. (Solution refinement is used only before continuation starts.) It should be less than or equal to \funp{EPSC}.
 %
 \item[\funp{EPSS}] ~\\
-Tolerance of \funp{CP} in converging to a bifurcation point. (Used at branch switching.)
+Tolerance when converging to a bifurcation point. (Used at branch switching.) (\emph{Currently \funp{EPSR} is used instead if this.})
 %
 \item[\funp{NITC}] ~\\
 Maximum number of Newton iteration steps in continuation.
@@ -269,8 +269,7 @@ Maximum number of Newton iteration steps in continuation.
 Maximum number of Newton iteration steps, when converging to an initial solution.
 %
 \item[\funp{NITS}] ~\\
-Maximum number of continuation steps, when finding a bifurcation point using a secant method.
-The Newton iterations within a continuation step is controlled by \funp{NITC}.
+Maximum number of iteration steps, when finding a bifurcation point. (\emph{Currently \funp{NITR} is used instead if this.})
 %
 \end{description}
 
@@ -493,7 +492,7 @@ After invoking the software \filef{pdde}, it either loads a solution profile fro
 \fun{sys_stpar} and \fun{sys_stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
 \begin{enumerate}
 \item The software starts a Newton iteration to converge to a more precise solution.
-\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a secant method. Clearly, if there is no bifurcation point in a sufficiently small neighborhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{sys_nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
+\item If there is a bifurcation involved, e.g., in case of a bifurcation continuation or branch switching, the software tries to find the bifurcation point using a Newton method. Clearly, if there is no bifurcation point in a sufficiently small neighborhood of the specified solution, this step will fail. In very rare cases and for `difficult' problems, if the first and second derivatives of the right hand side are computed numerically (\fun{sys_nderi} returns zero or one), the search for a bifurcation can fail even when the starting solution is the bifurcation point with high accuracy.
 \item It finds the tangent of the solution branch at its first point. In general, it computes the tangent as a kernel vector of the linearized defining system. In the case of branch switching, the critical eigenfunctions are used to construct the tangent vector.
 \end{enumerate}
 If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
@@ -516,15 +515,14 @@ Here, each iteration step (\funp{IT}) is displayed: \funp{SOLnorm} is the $L^2$ 
 \]
 If the prescribed accuracy is not reached, but \funp{IT} reaches \funp{NITR}, the program stops with error.
 
-In the next step, if appropriate, the program tries to find the bifurcation point. This is done by using a secant method, so it needs several steps to converge:
+In the next step, if appropriate, the program tries to find the bifurcation point. This is done by the same Newton method, so it will quickly converge if the bifurcation point is sufficiently close:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-LABEL      NORM         I1              P0              P2              IT
- s1     9.141494e-01    -5.444928e-02   5.506283e+00    1.555261e+00    2
-  |          |               |               |               |          |
- s10    9.141645e-01    -2.792157e-06   5.506216e+00    1.555451e+00    2
- s11    9.141645e-01    -9.487486e-07   5.506216e+00    1.555451e+00    2
+--- Finding the bifurcation point (TF) ---
+
+IT      ERR             SOLnorm         DIFFnorm
+ 0      3.521412e-04    9.141656e-01    6.740565e-04
+ 1      8.795736e-06    9.141643e-01    1.683648e-05
 \end{lstlisting} \end{quote} } \noindent
-The first column is the number of the continuation step along the solution branch. \funp{NORM} refers to the solution norm, while the other columns contain the parameter values that are allowed to change. The parameter \funp{I1} refers to the smallest eigenvalue of the characteristic matrix. The iteration stops if $\funp{I1} < \funp{EPSS}$ or the \funp{LABEL} field reached \funp{NITS}. The \funp{IT} column denotes the number of Newton iteration steps within each continuation step.
 
 The main continuation proceeds similarly:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -533,7 +531,7 @@ LABEL      NORM         P2              P0              USTAB   IT
   2     9.143658e-01    1.557164e+00    1.101898e+01      0     1
   3     9.144963e-01    1.558277e+00    1.102330e+01      0     1
 \end{lstlisting} \end{quote} } \noindent
-The first column, \funp{LABEL} will be the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characteristic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
+The first column, \funp{LABEL} is the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on, the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characteristic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
 
 \section{Example: Mackey-Glass equation}
 
@@ -791,7 +789,7 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 
 \section{Algorithms used in the software}
 
-% The algorithms of this software are described in Szalai et al.\ \cite{szalai-cont}, with the exception of torus continuation. For continuation, the pseudo-arclength method is used (see \cite{handbook, tutorial1, tutorial2}). Periodic orbits are discretized by orthogonal collocation, which was also used in several other software packages. The stability and convergence of this method was proved by Engelborghs and Doedel \cite{engstab} (see also \cite{engcol}). Bifurcations are continued using the newly introduced characteristic matrices for periodic solutions \cite{szalai-cont}.
+The software uses orthogonal collocation to discretize periodic orbits \cite{engstab,engcol}. It is also possible to use staggared grid Chebyshev collocation \cite{kopriva} by changing the collocation and representation points in \filef{src/ncolloc.cpp}. For continuation, the pseudo arclength method is used (see, e.g., \cite{handbook, tutorial1, tutorial2}). Codimension-one bifurcations are computed using the newly proposed test functionals \cite{szalai-tf}. The arising bordered sparse linear systems are solved using the BEMW method developed by Govaerts and Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral method mentioned above \cite{kopriva}.
 
 \subsection*{Acknowledgments}
 
@@ -892,7 +890,7 @@ Availability: \url{http://www.cise.ufl.edu/research/sparse/amd}\\[0.5em]
 Note: The code of AMD was \emph{not} modified, only its build system was rewritten to use 
 the GNU automake.
 
-\bibliographystyle{siam}
+\bibliographystyle{plain}
 \bibliography{manual-bibl.bib} \label{sec:bibliography}
 
 
