@@ -138,11 +138,8 @@ class Point : public PointData
 		void    FillSol( System& sys_ );
 	
 		// internal member-functions
-		inline double SolNorm( Vector& sol, Vector& par );
+// 		inline double SolNorm( Vector& sol, Vector& par );
 		
-// 		void    Jacobian( HyperMatrix& AA, HyperVector& RHS, Vector& par, 
-// 		                        Vector& solPrev, Vector& sol, JagMatrix3D& solData, 
-// 		                        Vector* q0, Vector* q );
 		void Jacobian
 		(
 			HyperMatrix& AA, HyperVector& RHS,                      // output

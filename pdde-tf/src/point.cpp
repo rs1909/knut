@@ -83,8 +83,8 @@ Point::Point( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, in
 	
 	Construct();
 	FillSol( sys_ );
-	par(NPAR+ParNorm) = 0.0;
 	par(NPAR+ParAngle) = 0.0;
+	par(NPAR+ParRot) = 0.0;
 }
 
 Point::~Point()
@@ -308,14 +308,14 @@ void Point::Dispose()
 }
 
 // private
-inline double Point::SolNorm( Vector& sol, Vector& par )
-{
-	double Xnorm = colloc.Integrate( sol, sol );
-	
-	for( int i = 2; i < varMap.Size(); i++ ) Xnorm += par( varMap(i) )*par( varMap(i) );
-	
-	return sqrt( Xnorm );
-}
+// inline double Point::SolNorm( Vector& sol, Vector& par )
+// {
+// 	double Xnorm = colloc.Integrate( sol, sol );
+// 	
+// 	for( int i = 2; i < varMap.Size(); i++ ) Xnorm += par( varMap(i) )*par( varMap(i) );
+// 	
+// 	return sqrt( Xnorm );
+// }
 
 // **************************************************************************************************************** //
 //
@@ -330,7 +330,7 @@ void Point::Jacobian(
 		Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
 		bool cont )                                             // cont: true if continuation
 {
-// uses also: eqn, var, CharMat, qqR
+// uses also: eqn, var
 // ---------------------------------------------------------------------------------------------------------------- //
 //
 //                           The periodic solution part
@@ -348,19 +348,13 @@ void Point::Jacobian(
 			{
 				colloc.RHS_p( AA.getA13(i-2), par, sol, solData, varMap(i) );
 			}
-			else
+			else if( varMap(i)-NPAR == ParAngle )
 			{
-				switch( varMap(i)-NPAR )
-				{
-					case ParNorm:
-					case ParAngle:
-						AA.getA13(i-2).Clear();
-						break;
-					default:
-						std::cout<<" bad PARAMETERS2 "<<varMap(i)<<"\n";
-						PDError(-1);
-						break;
-				}
+				AA.getA13(i-2).Clear();
+			} else
+			{
+				std::cout<<" bad PARAMETERS2 "<<varMap(i)<<"\n";
+				PDError(-1);
 			}
 		}
 	}
@@ -371,14 +365,10 @@ void Point::Jacobian(
 //
 // ---------------------------------------------------------------------------------------------------------------- //
 	
-	switch( eqn(1) )
+	switch( eqn(1) != EqnNone )
 	{
-		case EqnNone:
-			break;
-		default:
-			std::cout<<" EqnNullSpace: not supported ";
-			PDError(-1);
-			break;
+		std::cout<<" EqnNullSpace: not supported ";
+		PDError(-1);
 	}
 
 // ---------------------------------------------------------------------------------------------------------------- //
@@ -400,18 +390,14 @@ void Point::Jacobian(
 					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
-					}else
+					}
+					else if( varMap(j)-NPAR == ParAngle )
 					{
-						switch( varMap(j)-NPAR )
-						{
-							case ParAngle:
-								AA.getA33(i-2,j-2) = 0.0;
-								break;
-							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
-								PDError(-1);
-								break;
-						}
+						AA.getA33(i-2,j-2) = 0.0;
+					} else
+					{
+						std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
+						PDError(-1);
 					}
 				}
 				// RHS
@@ -425,18 +411,14 @@ void Point::Jacobian(
 					if( varMap(j) < NPAR )
 					{
 						AA.getA33()(i-2,j-2) = 0.0;
-					}else
+					}
+					else if( varMap(j)-NPAR == ParAngle )
 					{
-						switch( varMap(j)-NPAR )
-						{
-							case ParAngle:
-								AA.getA33(i-2,j-2) = 0.0;
-								break;
-							default:
-								std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
-								PDError(-1);
-								break;
-						}
+						AA.getA33(i-2,j-2) = 0.0;
+					} else
+					{
+						std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
+						PDError(-1);
 					}
 				}
 				// RHS
@@ -454,18 +436,14 @@ void Point::Jacobian(
 					{
 						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, sol, solData, varMap(j) );
 // 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
-					}else
+					}
+					else if( varMap(j)-NPAR == ParAngle )
 					{
-						switch( varMap(j)-NPAR )
-						{
-							case ParAngle:
-								AA.getA33(i-2,j-2) = 0.0;
-								break;
-							default:
-								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
-								PDError(-1);
-								break;
-						}
+						AA.getA33(i-2,j-2) = 0.0;
+					} else
+					{
+						std::cout<<" bad PARAMETERS10 "<<varMap(j)<<"\n";
+						PDError(-1);
 					}
 				}
 				break;
@@ -480,23 +458,22 @@ void Point::Jacobian(
 					{
 						testFunct->Funct_p( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData, varMap(j) );
 // 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
-					}else
+					}
+					else if( varMap(j)-NPAR == ParAngle )
 					{
-						switch( varMap(j)-NPAR )
-						{
-							case ParAngle:
-								testFunct->Funct_z( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData );
-								break;
-							default:
-								std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
-								PDError(-1);
-								break;
-						}
+						testFunct->Funct_z( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData );
+					} else
+					{
+						std::cout<<" bad PARAMETERS11 "<<varMap(j)<<"\n";
+						PDError(-1);
 					}
 				}
 				break;
 			case EqnTFCPLX_IM:
-				if( eqn(i-1) != EqnTFCPLX_RE ) { std::cout<<"EqnTFCPLX_IM is not paired "<<varMap(i)<<"\n"; PDError(-1); }
+				if( eqn(i-1) != EqnTFCPLX_RE )
+				{
+					std::cout<<"EqnTFCPLX_IM is not paired "<<varMap(i)<<"\n"; PDError(-1);
+				}
 				break;
 			default:
 				std::cout<<" EqnOther: not supported ";
@@ -511,10 +488,6 @@ void Point::Jacobian(
 		for( int i = 0; i < dim3; i++ ) AA.getA33()(dim3,i) = xxDot->getV3()(i);
 		AA.getA33()(dim3,dim3) = p1Dot;
 		
-		// the arclength difference
-// 		double R = ds - p1Dot * (par(p1) - parPrev(p1)) - colloc.IntegrateCont( xxDot->getV1(), sol, solPrev );
-// 		for( int i = 2; i < varMap.Size()-1; i++ ) R -= xxDot->getV3()(i-2) * ( par(varMap(i)) - parPrev(varMap(i)) );
-// 		if( q ) for( int i = 0; i < qPrev->Size(); i++ ) R -= xxDot->getV2()(i) * ( (*q)(i) - (*qPrev)(i) );
 		RHS.getV3()(dim3) = 0.0;
 	}
 }
