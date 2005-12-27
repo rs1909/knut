@@ -762,9 +762,9 @@ int Point::Continue( double ds )
 	while( conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/&&(++it < ContIter) );
 	if( !conv )
 	{
-		/// checking the tangent and the secant
 	#ifdef DEBUG
-		double Pnorm = sqrt(p1Dot*p1Dot)
+		/// checking the tangent and the secant
+		double Pnorm = sqrt(p1Dot*p1Dot);
 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
@@ -783,8 +783,8 @@ int Point::Continue( double ds )
 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
 		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
 		std::cout<<'\n';
-	#endif
 		/// END OF CHECKING
+	#endif
 		
 		// copying back the solution
 		sol = solNu;
