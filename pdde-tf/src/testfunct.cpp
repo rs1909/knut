@@ -73,7 +73,7 @@ TestFunct::~TestFunct()
 void TestFunct::Init( NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
 	// creating the matrix
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
 	AHAT.getA13(0).Rand();
 	AHAT.getA31(0).Rand();
 	AHAT.getA33()(0,0) = 0.0;
@@ -105,7 +105,7 @@ double TestFunct::Funct( NColloc& col, const Vector& par, const Vector& sol, con
 	
 	if( first ){ Init( col, par, sol, solData ); first = false; }
 	
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
 	
 	AHAT.Solve  ( vv, gg, rhs, one );
 	AHAT.SolveTR( uu, hh, rhs, one );
@@ -166,7 +166,7 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 									double Re, double Im )
 {
 	ZRe = Re; ZIm = Im;
-	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im );
 	AHAT.getA13(0).Rand();
 	AHAT.getA31(0).Rand();
 	AHAT.getA33().Clear();
@@ -198,7 +198,7 @@ void TestFunctCPLX::Funct  ( double& f1, double& f2,
 	if( first ){ Init( col, par, sol, solData, Re, Im ); first = false; }
 	
 	ZRe = Re; ZIm = Im;
-	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, Re, Im );
 	AHAT.Solve  ( 2, vv, gg, rhs, one );
 	AHAT.SolveTR( 2, uu, hh, rhs, one );
 	AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
@@ -229,7 +229,7 @@ void TestFunctCPLX::Funct_p( double& f1, double& f2,
 void TestFunctCPLX::Funct_z( double& f1, double& f2,
 					NColloc& col, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData )
 {
-	col.CharJac_x_z( A_p, par, solData, AHAT.getA31(0), vvData, ZRe, ZIm, true );
+	col.CharJac_x_z( A_p, par, solData, AHAT.getA31(0), vvData, ZRe, ZIm );
 	const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
 	const double dzim = (AHAT.getA13(1)/*uu^conj*/ * A_p);
 	f1 = ( -dzim*ZRe - dzre*ZIm );
@@ -311,8 +311,8 @@ TestFunctLPAUT::~TestFunctLPAUT()
 void TestFunctLPAUT::Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
 {
 	// creating the matrix
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
-	col.CharJac_mB( mB, par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
+	col.CharJac_mB( mB, par, solData, ZZ );
 	
 	col.InterpolateMSH( solMSHData, sol );
 	col.CharJac_MSHphi( phi, par, solMSHData );
@@ -348,8 +348,8 @@ double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const Vector& sol
 {
 	if( first ){ Init( col, par, sol, solData ); first = false; }
 	
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
-	col.CharJac_mB( mB, par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
+	col.CharJac_mB( mB, par, solData, ZZ );
 	
 	col.InterpolateMSH( solMSHData, sol );
 	col.CharJac_MSHphi( phi, par, solMSHData );
@@ -460,8 +460,8 @@ TestFunctLPAUTROT::~TestFunctLPAUTROT()
 void TestFunctLPAUTROT::Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
 {
 	// creating the matrix
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
-	col.CharJac_mB( mB, par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
+	col.CharJac_mB( mB, par, solData, ZZ );
 	
 	JagMatrix3D solMSHData( NDEG*NINT+1, NDIM, 2*NTAU );
 	col.InterpolateMSH( solMSHData, sol );
@@ -509,8 +509,8 @@ double TestFunctLPAUTROT::Funct( NColloc& col, const Vector& par, const Vector& 
 {
 	if( first ){ Init( col, par, sol, solData ); first = false; }
 	
-	col.CharJac_x( AHAT.getA11(), par, solData, ZZ, true );
-	col.CharJac_mB( mB, par, solData, ZZ, true );
+	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
+	col.CharJac_mB( mB, par, solData, ZZ );
 	
 	col.InterpolateMSH( solMSHData, sol );
 	col.CharJac_MSHphi( phi, par, solMSHData );
