@@ -1,14 +1,7 @@
 In 0.9.21
  - Test functionals are implemented, which are a lot faster than the old
    characteristic matrices. This is an experimental feature, but for the
-   examples it works well, sometimes better than the old method. The only
-   weakness that there is no branch switching implemented yet. When switching
-   to bifurcation continuation we use the Newton method instead of a
-   hompotopy method that is applied when characteristic matrices are
-   involved. Test functionals also need initializations. We find the left
-   and right singular vectors by inverse iteration, which is currently
-   contains 20 iterations. Although this could be improved, this is not a
-   significant inefficiency compared the whole computation time.
+   examples it works well, sometimes better than the old method.
 
 In 0.9.20 :
  - A grave bug was fixed in src/hypermatric.cpp and src/hypermatrix.h

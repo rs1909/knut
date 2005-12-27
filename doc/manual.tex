@@ -163,7 +163,11 @@ solution. If \funp{LABEL}=0 it uses the default solution given in the system
 definition file.
 %
 \item[\funp{TYPE}] ~\\
-Specifies the type of the solution to be continued. (The numbers in the parentheses after the description denote the required number of additional free parameters.) For time-periodic systems:
+Specifies the type of the solution to be continued. 
+The bifurcation points are either defined by characteristic matrices (\funp{1}-\funp{5}, \funp{11}-\funp{16}) or by test functionals (\funp{41}-\funp{45}, \funp{51}-\funp{56}). It is recommended to use the algorithms with test functionals, because they are faster and usually more reliable than the characteristic matrices. In case of any difficulties try both methods before reporting the problem.
+In the following the possible algorthms are listed. After a description the number in parentheses refer to the required number of additional free parameters.
+
+Algorithms for time-periodic (non-autonomous) systems with characteristic matrices:
 \begin{description}
 \item[\funp{0} -] Continuation of periodic solutions (0).
 %
@@ -173,10 +177,10 @@ Specifies the type of the solution to be continued. (The numbers in the parenthe
 %
 \item[\funp{3} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (1).
 %
-\item[\funp{4} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits (0). The switching is done by computing the critical eigenfunction $\varphi^{cr}$. The new solution becomes $x_0(t) = x^{cr}(2\,t)$ and similarly, the tangent of the solution $x'(t) = \varphi^{cr}(2\,t)$. Finally, the tangent is re-normed to norm 1, and the continuation can start.
+\item[\funp{4} -] Switches to the other solution at a branching point and follows the orbits (0). Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start.
 %
-\item[\funp{5} -] Switches to the other solution at a branching point and follows the orbits (0). Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start.
+\item[\funp{5} -] The software first switches to the period-2 branch at a period doubling bifurcation point
+(-1 multiplier) and then follows the arising orbits (0). The switching is done by computing the critical eigenfunction $\varphi^{cr}$. The new solution becomes $x_0(t) = x^{cr}(2\,t)$ and similarly, the tangent of the solution $x'(t) = \varphi^{cr}(2\,t)$. Finally, the tangent is re-normed to norm 1, and the continuation can start.
 \end{description}
 In the case of autonomous systems, the bifurcation continuations and branch switching are started in the same way, the only difference is the inclusion of the phase-condition and a different defining system for fold bifurcations.
 \begin{description}
@@ -188,14 +192,46 @@ In the case of autonomous systems, the bifurcation continuations and branch swit
 %
 \item[\funp{13} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (2).
 %
-\item[\funp{14} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits (1).
+\item[\funp{14} -] Switches to the other solution at a branching point and follows the orbits (1).
 %
-\item[\funp{15} -] Switches to the other solution at a branching point and follows the orbits (1).
+\item[\funp{15} -] The software first switches to the period-2 branch at a period doubling bifurcation point
+(-1 multiplier) and then follows the arising orbits (1).
 %
 \item[\funp{16} -] Switches to a periodic solution arising in a Hopf bifurcation point. The input is a constant solution, which represents a fixed point (1). For detailed description see the Remark in Sect.\ \ref{capabilities}.
 \end{description}
-The software can also continue invariant tori arising at Neimark-Sacker bifurcation points. To continue these quasi-periodic orbits use the following parameters when restarting from Neimark-Sacker points.
+The algorithms with test functionals are similarly numbered. For time-periodic systems:
+\begin{description}
+\item[\funp{40} -] Continuation of periodic solutions (0).
+%
+\item[\funp{41} -] Continuation of fold bifurcations in two parameters (1). The input is a periodic solution at a fold bifurcation point. The software first generates a starting point, that is, it tries to converge to the fold point using a secant method. After the fold point is found with a good accuracy (see \funp{EPSS}), the tangent of the fold curve is computed so that the continuation can start. All the bifurcations are started in this way.
+%
+\item[\funp{42} -] Continuation of period-doubling bifurcations (1).
+%
+\item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (1).
+%
+\item[\funp{44} -] Switches to the other solution at a branching point and follows the orbits (0). Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start.
+%
+\item[\funp{45} -] The software first switches to the period-2 branch at a period doubling bifurcation point
+(-1 multiplier) and then follows the arising orbits (0).
+\end{description}
+For autonomous systems:
+\begin{description}
+\item[\funp{50} -] Continuation of periodic solutions in autonomous systems (1). The additional parameter is usually the period length \funp{P0}.
+%
+\item[\funp{51} -] Continuation of fold bifurcations in two parameters (2).
+%
+\item[\funp{52} -] Continuation of period-doubling bifurcations (2).
+%
+\item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (2).
+%
+\item[\funp{54} -] Switches to the other solution at a branching point and follows the orbits (1).
+%
+\item[\funp{55} -] The software first switches to the period-2 branch at a period doubling bifurcation point
+(-1 multiplier) and then follows the arising orbits (1).
+%
+\item[\funp{56} -] Switches to a periodic solution arising in a Hopf bifurcation point. The input is a constant solution, which represents a fixed point (1).
+\end{description}
+The software can also continue invariant tori arising at Neimark-Sacker bifurcation points. To continue these quasi-periodic orbits use the following parameters when restarting from Neimark-Sacker points. This is an experimental feature. Since the output format was designed for periodic orbits the quasiperiodic solutions are not written there.
 \begin{description}
 \item[\funp{20} -] In the case of time-periodic systems
 %
@@ -811,7 +847,7 @@ required to refer to the present User's Manual.
 Robert Szalai, \emph{\pdde : A continuation and bifurcation software for 
 delay-differential equations}, Tech.\ Rep., Budapest University of Technology and Economics (2005)
 \end{quote}
-In the case of modification of the program please notify the original author and include clear description about what was modified and who did the 
+In the case of modification of the program please notify the original author and include a clear description about what was modified and who did the 
 modification. Please state clearly that any contribution to this software contains code which can and will be distributed under the GNU General Public License.
 
 \begin{quote}
