@@ -24,7 +24,7 @@
 <h2> Capabilities </h2>
 <ul>
 <p>
-PDDE-CONT can continue periodic solutions and their bifurcation of autonomous and periodically forced delay equations in the general form</p>
+PDDE-CONT can continue periodic solutions and limit cycle bifurcations of autonomous and periodically forced delay equations in the general form</p>
 <p align=center>
 <i>dx(t)/dt = f(t, x(t-&tau;<sub>0</sub>), x(t-&tau;<sub>1</sub>), ..., x(t-&tau;<sub>r</sub>), &lambda;).</i>
 </p>

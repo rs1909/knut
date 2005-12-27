@@ -1,0 +1,10 @@
+0. Review ncolloc.cpp, to remove the characteristic matrix part.
+
+1. Test functionals for simmetric fold bifurcations
+
+2. Binary output format to save space. Preferably a .mat file for
+   compatibility with matlab
+
+3. GUI to respect all the constants in the constants file 
+   A plotting widget to display the solution, and the branch. And also
+   plotting the content of an existing output file.
