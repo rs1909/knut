@@ -136,15 +136,15 @@ $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-fi
 
 As an example, we included one of the demo problems:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so        SYSNAME
-120                 LABEL
-40 P1 0             TYPE, CP, NPARX, PARX ....
-50 4 5 1 1          NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4           NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)
-200 -100.0 100.0    STEPS, CPMIN, CPMAX
-0.01 0.01 0.01 0.01 DS, DSMIN, DSMAX, DSSTART
-1e-4 1e-4 1e-7      EPSC, EPSR, EPSS
-12 12 12            NITC, NITR, NITS
+sys-glass.so            SYSNAME
+120                     LABEL
+40 P1 0                 TYPE, CP, NPARX, PARX ....
+50 4 5 1 1              NINT, NDEG, NMUL, STAB, NMAT
+12 12 4 4               NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)
+200 -100.0 100.0        STEPS, CPMIN, CPMAX
+0.01 0.01 0.01 0.01     DS, DSMIN, DSMAX, DSSTART
+1e-4 1e-4 1e-7          EPSC, EPSR, EPSS
+12 12 12                NITC, NITR, NITS
 \end{lstlisting} \end{quote} } \noindent
 In the first separated column are the parameter values, while the second column refers to their meaning. 
 When this file is read the program interprets only the first half of each line, that is, it moves to the next line
@@ -180,7 +180,7 @@ Algorithms for time-periodic (non-autonomous) systems:
 \item[\funp{45} -] The software first switches to the period-2 branch at a period doubling bifurcation point
 (-1 multiplier) and then follows the arising orbits (0).
 \end{description}
-In the case of autonomous systems, the bifurcation continuations and branch switching are started in the same way, the only difference is the inclusion of the phase-condition and a different defining system for fold bifurcations.
+In the case of autonomous systems the above continuations can be carried out in the same way. The important differece is that the software will use a phase condition and continue an additional free parameter (e.g., the period). When a fold bifurcation is continued a different test functional is used to account for the trivial +1 Floquet multiplier of a periodic orbit.
 \begin{description}
 \item[\funp{50} -] Continuation of periodic solutions in autonomous systems (1). The additional parameter is usually the period length \funp{P0}.
 %
@@ -276,12 +276,14 @@ Maximum number of iteration steps, when finding a bifurcation point. (\emph{Curr
 \subsection{User defined equations}
 If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants file is different. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so							SYSNAME
-0											LABEL
--1 P2 0 3 E1 E0 E24 3 S1 S0 P0	TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
+sys-glass.so						SYSNAME
+0										LABEL
+-1 P2 0 2 E1 E24 2 S1 P0		TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
 ...
 \end{lstlisting} \end{quote} } \noindent
-specifies three equations and three variables, but the second equation and variable are just placeholders. The first equation \funp{E1} is for the periodic solution \funp{S1}. The third equation \funp{E24} is the phase condition of autonomous systems while the third variable is the period \funp{P0}. The detailed descriptions of possible parameters are as follows.
+specifies two equations and two variables. The first equation and variable is always \funp{E1} and \funp{S1}, when a periodic orbit or a periodic solution bifurcation is continued. In the example, the second equation \funp{E24} is the phase condition of autonomous systems while the second variable is the period \funp{P0}. If bifurcations are continued the equations contain at least one of the test functionals. If more than one, but different test functionls are used, some codimension-two bifurcations can be continued. The other variables can be either parameters or one of the internal variables. When a quasi-periodic torus is computed there is no need to use this extended system definition since the software is only capable of continuing tori of forced or autonomous systems.
+
+The meaning of the system definition line is desribed below.
 \begin{description}
 \item[\funp{CP}] ~\\
 	The continuation parameter, same as above.
@@ -301,17 +303,17 @@ specifies three equations and three variables, but the second equation and varia
 \item[\funp{EQN}] ~\\
 	A sequence of numbers, specifying the equations.
 \begin{description}
-\item[\funp{E0} -] No equation. It is a placeholder for the second equation if there is no bifurcation continuation.
+\item[\funp{E0} -] No equation is used.
 \item[\funp{E1} -] Periodic solution. This is always the first equation and can occur only there.
 \item[\funp{E24} -] Phase condition for autonomous systems.
 \item[\funp{E25} -] Phase condition for systems with additional symmetry. (For details, see \cite{haegeman}.)
 \item[\funp{E32} -] Quasiperiodic solution on a torus.
 \item[\funp{E40} -] The first phase condition for the torus. This is applied only in the case of autonomous equations.
 \item[\funp{E41} -] The second phase condition for the torus. It is always necessary.
-\item[\funp{E64} -] Test functional for fold bifurcations in forced systems.
-\item[\funp{E65} -] Test functional for period doubling bifurcations in forced systems.
-\item[\funp{E66} -] Test functional for fold bifurcations in autonomous systems.
-\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems with symmetry. Note: It is working only if the period is not continued.
+\item[\funp{E64} -] Test functional of fold bifurcation in forced systems.
+\item[\funp{E65} -] Test functional of period doubling bifurcation.
+\item[\funp{E66} -] Test functional of fold bifurcation in autonomous systems.
+%\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems with symmetry. Note: It is working only if the period is not continued.
 \item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker bifurcation.
 \item[\funp{E69} -] Imaginary part of the complex test functional for Neimark-Sacker bifurcation. This imaginary part should directly follow the real part in the equation list, otherwise the program will not start the continuation.
 \end{description}
@@ -320,7 +322,7 @@ specifies three equations and three variables, but the second equation and varia
 \item[\funp{VAR}] ~\\
 	A sequence of numbers, specifying the free variables. A variable can be one of the three types. The starting letters are \funp{S}, \funp{P} or \funp{I}, referring to a system variable, parameter or internal variable, respectively. (For parameters and internal variables see the description of \funp{CP}.) The system variables are defined as follows.
 \begin{description}
-\item[\funp{S0} -] No variable. Similar to \funp{E0}, this is a placeholder if no kernel vector is computed.
+\item[\funp{S0} -] No variable is used.
 \item[\funp{S1} -] Periodic solution.
 \item[\funp{S32} -] Quasi-periodic solution.
 \end{description}

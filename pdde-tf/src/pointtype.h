@@ -57,7 +57,7 @@ enum PtType {
 	BifTFAUTNS   = 53,
 	SolTFAUTBRSW = 54,
 	SolTFAUTPDSW = 55,
-	SolTFAUTHBSW = 56,
+	SolTFAUTHBSW = 56
 };
 
 // internal parameters, placed after the defined parameters

@@ -211,7 +211,7 @@ static void poly_int( Matrix& out, Vector& t )
 			for( k = 0; k < poly.Size(); k++ ) out(i,j) += poly(k);
 		}
 	}
-} 
+}
 
 static void poly_diff_int( Matrix& out, Vector& t )
 {
@@ -365,7 +365,7 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 					tt( NTAU+1+k, l, idx ) = out(l)/hk;
 				}
 				// creating interpolation at the representation points
-				tMSH[k] = mesh(i) + j*h0/(double)NDEG - ttau(k) - floor(mesh(i) + j*h0/(double)NDEG - ttau(k));
+				tMSH[k] = mesh(i) + h0*meshINT(j) - ttau(k) - floor(mesh(i) + h0*meshINT(j) - ttau(k));
 				const int lowMSH = meshlookup( mesh, tMSH[k] );
 				kkMSH(k, idx) = lowMSH;
 				const double hkMSH = mesh(lowMSH+1) - mesh(lowMSH);
@@ -1106,6 +1106,9 @@ void NColloc::CharJac_x( SpMatrix& A, const Vector& par, const JagMatrix3D& solD
 
 void NColloc::CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha )
 {
+ #ifdef DEBUG
+	bool sig = false;
+ #endif
 	Vector tau(NTAU);
 	Vector dtau(NTAU);
 	Vector fx(NDIM);
@@ -1156,7 +1159,9 @@ void NColloc::CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solD
 						double d = (dtau(r)-tau(r)/par(0));
 						if( d != 0.0 )
 						{
-// 							std::cout<<"dP0"<<d;  // working for the glass and logistic eqn
+						 #ifdef DEBUG
+							if( !sig ) { std::cout<<" _P0 ";  sig = true; }
+						 #endif
 							vx[1] = r; vx[0] = k; // CHANGE THIS 0 1
 							sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx) );
 							for( int p = 0; p < NDIM; p++ )
@@ -1206,7 +1211,9 @@ void NColloc::CharJac_x_p( Vector& V, const Vector& par, const JagMatrix3D& solD
 					{
 						if( dtau(r) != 0.0 )
 						{
-// 							std::cout<<"dP"<<alpha; // NOT TESTED !!! it is working for the glass eq
+						 #ifdef DEBUG
+							if( !sig ) { std::cout<<" _Px ";  sig = true; }
+						 #endif
 							vx[1] = r; vx[0] = k; // CHANGE THIS to 0, 1
 							sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx) );
 							for( int p = 0; p < NDIM; p++ )
@@ -1709,6 +1716,9 @@ void NColloc::CharJac_mB( SpMatrix& B, const Vector& par, const JagMatrix3D& sol
 
 void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha )
 {
+ #ifdef DEBUG
+	bool sig = false;
+ #endif
 	Vector tau(NTAU);
 	Vector dtau(NTAU);
 	Vector fx(NDIM);
@@ -1765,7 +1775,9 @@ void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& sol
 						double d = (dtau(r)-tau(r)/par(0));
 						if( d != 0.0 )
 						{
-// 							std::cout<<"mP0";  // working for the glass and logistic eqn
+						 #ifdef DEBUG
+							if( !sig ) { std::cout<<" mB_P0 ";  sig = true; }// working for the glass and logistic eqn
+						 #endif
 							vx[1] = r; vx[0] = k;
 							sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx) );
 							for( int p = 0; p < NDIM; p++ )
@@ -1811,7 +1823,9 @@ void NColloc::CharJac_mB_p( Vector& V, const Vector& par, const JagMatrix3D& sol
 					{
 						if( dtau(r) != 0.0 )
 						{
-// 							std::cout<<"mP"<<alpha; // NOT TESTED !!! it is working for the glass eq
+						 #ifdef DEBUG
+							if( !sig ) { std::cout<<" mB_Px ";  sig = true; }
+						 #endif
 							vx[1] = r; vx[0] = k;
 							sys->deri( dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx) );
 							for( int p = 0; p < NDIM; p++ )
@@ -1936,20 +1950,22 @@ void NColloc::CharJac_MSHphi( Vector& V, const Vector& par, const JagMatrix3D& s
 		{
 			const int idx = j+i*NDEG;
 			
-			sys->rhs( fx, mesh(i) + j*h/(double)NDEG, solData(idx), par );
+			sys->rhs( fx, mesh(i) + h*meshINT(j), solData(idx), par );
 			for( int k = 0; k < NDIM; k++ ) V( k + NDIM*(j+NDEG*i) ) = - fx(k);
 		}
 	}
 	// make it periodic
-	sys->rhs( fx, 1.0, solData(NDEG*NINT), par );
 	for( int r = 0; r < NDIM; r++ )
 	{
-		V(NDIM*NDEG*NINT + r) = - fx(r);
+		V(NDIM*NDEG*NINT + r) = V(r);
 	}
 }
 
 void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha )
 {
+ #ifdef DEBUG
+	bool sig = false;
+ #endif
 	Vector tau(NTAU);
 	Vector dtau(NTAU);
 	Vector fx(NDIM);
@@ -1986,9 +2002,11 @@ void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D&
 					const double d = (dtau(r)-tau(r)/par(0))/par(0);
 					if( d != 0.0 )
 					{
-// 						std::cout<<"P0"; // working for the glass an logistic eqns
+					 #ifdef DEBUG
+						if( !sig ) { std::cout<<" phi_P0 ";  sig = true; }
+					 #endif
 						vx = r;
-						sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+						sys->deri( dfx, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy );
 						for( int p=0; p<NDIM; p++ )
 						{
 							for( int q=0; q<NDIM; q++ )
@@ -2001,7 +2019,7 @@ void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D&
 			}else
 			{
 				nx = 0, np = 1; vp = alpha;
-				sys->deri( dfx2, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+				sys->deri( dfx2, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy );
 				for( int k = 0; k < NDIM; k++ ) V( k + NDIM*idx ) = - dfx2(k);
 				
 				nx = 1, np = 0;
@@ -2010,9 +2028,11 @@ void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D&
 					const double d = dtau(r)/par(0);
 					if( d != 0.0 )
 					{
-// 						std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
+					 #ifdef DEBUG
+						if( !sig ) { std::cout<<" phi_P0 ";  sig = true; }
+					 #endif
 						vx = r;
-						sys->deri( dfx, mesh(i) + j*h/(double)NDEG, solData(idx), par, nx, &vx, np, &vp, dummy );
+						sys->deri( dfx, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy );
 						for( int p=0; p<NDIM; p++ )
 						{
 							for( int q=0; q<NDIM; q++ )

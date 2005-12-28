@@ -566,7 +566,7 @@ double TestFunctLPAUTROT::Funct_p( NColloc& col, const Vector& par, const Vector
 	temp += mB_p;
 	
 	double gg_p = (uu3 * A_p) + gg3(0) * (uu3 * temp) + hh3(0) * col.Integrate( DpPhi, vv3 );
-	if( alpha==0 ) gg_p = -gg3(0);
+// 	if( alpha==0 ) gg_p *= 50.0;
 	std::cout<<"\nGP "<<alpha<<":"<<gg_p;
 	return gg_p;
 }

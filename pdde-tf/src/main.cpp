@@ -77,12 +77,12 @@ struct cfile {
 
 inline void parNamePrint( Vector& /*par*/, int npar, Array1D<Var>& var )
 {
-	for( int j = 2; j < var.Size(); j++ ) std::cout<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
+	for( int j = 1; j < var.Size(); j++ ) std::cout<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
 }
 
 inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
 {
-	for( int j = 2; j < var.Size(); j++ ) std::cout<<"\t"<<par( var(j) - VarPAR0 );
+	for( int j = 1; j < var.Size(); j++ ) std::cout<<"\t"<<par( var(j) - VarPAR0 );
 }
 
 inline void pdioassert( std::istream& is )
@@ -240,7 +240,7 @@ int initEqnVar( System& sys, cfile* params,
 	{
 		eqn.Init(params->NEQN);
 		var.Init(params->NVAR);
-		for( int i=0; i<params->NEQN; i++ )
+		for( int i = 0; i < params->NEQN; i++ )
 		{
 			eqn(i) = (Eqn)(params->EQN)[i];
 			if( (params->VARType)[i] == 'S' ) var(i) = (Var)(params->VAR)[i];
@@ -284,24 +284,24 @@ int initEqnVar( System& sys, cfile* params,
 		if( phaseRot )
 		{
 			// 			std::cout<<"Phase and PhaseRot\n";
-			eqn_refine.Init(4);
-			var_refine.Init(4);
-			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase; eqn_refine(3) = EqnPhaseRot;
-			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-2); var_refine(3) = var(var.Size()-1);
+			eqn_refine.Init(3);
+			var_refine.Init(3);
+			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnPhase;          eqn_refine(2) = EqnPhaseRot;
+			var_refine(0) = VarSol; var_refine(1) = var(var.Size()-2); var_refine(2) = var(var.Size()-1);
 		}else
 		{
 			// 			std::cout<<"Phase\n";
-			eqn_refine.Init(3);
-			var_refine.Init(3);
-			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone; eqn_refine(2) = EqnPhase;
-			var_refine(0) = VarSol; var_refine(1) = VarNone; var_refine(2) = var(var.Size()-1);
+			eqn_refine.Init(2);
+			var_refine.Init(2);
+			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnPhase;
+			var_refine(0) = VarSol; var_refine(1) = var(var.Size()-1);
 		}
 	}else
 	{
-		eqn_refine.Init(2);
-		var_refine.Init(2);
-		eqn_refine(0) = EqnSol; eqn_refine(1) = EqnNone;
-		var_refine(0) = VarSol; var_refine(1) = VarNone;
+		eqn_refine.Init(1);
+		var_refine.Init(1);
+		eqn_refine(0) = EqnSol;
+		var_refine(0) = VarSol;
 	}
 	
 	if( params->SWITCH == TFHBSwitch )
@@ -323,15 +323,13 @@ int initEqnVar( System& sys, cfile* params,
 			eqn_temp = EqnTFPD;
 			goto tfskip;
 		tfskip:
-			eqn_start.Init( eqn_refine.Size() + 1 ); 
+			eqn_start.Init( eqn_refine.Size() + 1 );
 			var_start.Init( var_refine.Size() + 1 );
 			eqn_start(0) = eqn_refine(0);
 			var_start(0) = var_refine(0);
-			eqn_start(1) = EqnNone;
-			var_start(1) = VarNone;
-			eqn_start(2) = eqn_temp;
+			eqn_start(1) = eqn_temp;
 			var_start( var_refine.Size() ) = (Var)(VarPAR0 + params->CP);
-			for( int i = 2; i < eqn_refine.Size(); i++ )
+			for( int i = 1; i < eqn_refine.Size(); i++ )
 			{
 				eqn_start(i+1) = eqn_refine(i);
 				var_start(i) = var_refine(i);
@@ -344,13 +342,11 @@ int initEqnVar( System& sys, cfile* params,
 			var_start.Init( var_refine.Size() + 2 );
 			eqn_start(0) = eqn_refine(0);
 			var_start(0) = var_refine(0);
-			eqn_start(1) = EqnNone;
-			var_start(1) = VarNone;
-			eqn_start(2) = EqnTFCPLX_RE;
-			eqn_start(3) = EqnTFCPLX_IM;
-			var_start(2) = (Var)(VarPAR0 + sys.npar() + ParAngle); // CH
+			eqn_start(1) = EqnTFCPLX_RE;
+			eqn_start(2) = EqnTFCPLX_IM;
+			var_start(1) = (Var)(VarPAR0 + sys.npar() + ParAngle); // CH
 			var_start( var_refine.Size() + 1 ) = (Var)(VarPAR0 + params->CP);
-			for( int i = 2; i < eqn_refine.Size(); i++ )
+			for( int i = 1; i < eqn_refine.Size(); i++ )
 			{
 				eqn_start(i+2) = eqn_refine(i);
 				var_start(i+1) = var_refine(i);
@@ -519,7 +515,7 @@ int main( int argc, const char** argv )
 		{
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
-			for( int j=0; j<par.Size(); j++ ) par(j) = pt.getPar()(j);
+			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
 			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->CP )<<parNum( npar, params->CP )<<"\t";
 			parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
@@ -579,7 +575,7 @@ int main( int argc, const char** argv )
 				if( params->STAB != 0) pt.Stability();
 				ustabprev = ustab;
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
-				for( int j=0; j<par.Size(); j++ ) par(j) = pt.getPar()(j);
+				for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
 
 				// console output
@@ -615,7 +611,7 @@ int main( int argc, const char** argv )
 				pt.Write( out );
 				
 				// branch output
-				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
+				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
 				ff.flush();
 				int itc = it( itpos );
@@ -648,7 +644,7 @@ int main( int argc, const char** argv )
 			pt.SwitchTFTRTan( TRe, TIm, alpha, meshint, meshdeg );
 
 			// getting the parameters
-			for( int j=0; j<npar; j++ ) par(j) = pt.getPar()(j);
+			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 
 			// destroy point, construct PointTR
 			delete pt_ptr;
@@ -670,10 +666,10 @@ int main( int argc, const char** argv )
 				pttr.Continue( ds, false );
 				
 				// write out the results
-				for( int j=0; j<npar; j++ ) std::cout<<par(j)<<"\t";
+				for( int j = 0; j < npar; j++ ) std::cout<<par(j)<<"\t";
 				std::cout<<std::endl;
-				for( int j=0; j<npar; j++ ) par(j) = pttr.getPar()(j);
-				for( int j=0; j<npar; j++ ) ff<<par(j)<<"\t";
+				for( int j = 0; j < npar; j++ ) par(j) = pttr.getPar()(j);
+				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 				ff<<pttr.Norm()<<"\n";
 				ff.flush();
 				pttr.SaveSol( "sol.dat", "sol.idx" );

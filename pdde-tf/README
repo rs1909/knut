@@ -1,0 +1,53 @@
+For istallation instructions read the manual (manual.pdf),
+which can be found in the doc/ subdirectory.
+
+Known issues:
+- On Windows(TM) under MinGW32 the Neimark-Sacker bifurcation continuation 
+  fails after some steps, which might be related to gcc 4.0.2 or the 
+  ATLAS package. (It does not happen under Linux.)
+- Fold bifurcation continuation in the traffic model is a difficult problem,
+  therefore some tweaking will be necessary to make it work.
+- There are lots of fold bifurcations in the Mackey-Glass equation, some of
+  them are easy to compute, others are difficult. The software might stop at
+  certain parameter values but this can be overcome by some manual
+  intervention.
+- Equations with rotational symmetries can be analyzed only with some
+  limitations. The fold bifurcation continuation only works if the
+  period-length is not a free parameter. (If somebody knows why, let me
+  know, please!)
+
+------------------------------------------------------------------------------
+
+The program was tested on:
+
+  Linux x86, GNU gcc 3.4.2, 3.4.3, 3.4.4 (Fedora Core 3 and Debian 3.0)
+  Linux x86, GNU gcc 4.0.0, 4.0.1 (Fedora Core 4)
+  Linux x86, GNU gcc 3.3.5 (SuSE 9.3 and Debian 3.1)
+  Linux x86, Intel C,C++ v8.1, (Fedora Core 4)
+   with the following configure options:
+
+    ./configure --prefix=/home/szalai/pdde-cont/ "CC=icc" "CFLAGS=-xB -O2 -g"
+    "CXX=icpc" "CXXFLAGS=-cxxlib-icc -xB -O2 -g"
+
+   The `-cxxlib-icc' is necessary, because icc v8.1 was not compatible with
+   the installed gcc 4.0.2. This option can be safely removed when 
+   gcc v3.x.y is installed. The `-xB' is for the Pentium-M processor, 
+   so it migh not be appropriate for other processors.
+
+  Windows XP, mingw32, GNU gcc 3.4.2
+  Sun Solaris 9, UltraSparc IIIi, gcc 3.3.2
+  Sun Solaris 9, UltraSparc IIIi, Sun C, C++ 5.7 2005/01/07
+   with the following configure options:
+
+    ./configure --prefix=/home/szalai/pdde-cont/ "CC=cc" "CXX=CC"
+
+  gcc 2.x.y __CANNOT__ compile the program because it has insufficient template
+  support.
+
+------------------------------------------------------------------------------
+
+Future versions:
+  Some constants will be added to the onstants file', so that the current
+  files will not be compatible with the future versions. After the release of
+  version 1.0 the file structures will not change. Till then be cautious and
+  check the manual frequently.

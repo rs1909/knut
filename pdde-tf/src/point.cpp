@@ -129,68 +129,68 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int npar
 	switch( Pt )
 	{
 	/// TIME-PERIODIC TEST-FUNCTIONAL
-		case SolTF: // same as "case Sol:"
-			tab = (PtTab){ NOSwitch,   2, 0,
-			 {EqnSol, EqnNone },
-			 {VarSol, VarNone } }; break;
+		case SolTF:
+			tab = (PtTab){ NOSwitch,   1, 0,
+			 { EqnSol },
+			 { VarSol } }; break;
 		case SolTFBRSW:
-			tab = (PtTab){ TFBRSwitch, 2, 0,
-			 {EqnSol, EqnNone },
-			 {VarSol, VarNone } }; break;
+			tab = (PtTab){ TFBRSwitch, 1, 0,
+			 { EqnSol },
+			 { VarSol } }; break;
 		case SolTFPDSW:
-			tab = (PtTab){ TFPDSwitch, 2, 0,
-			 {EqnSol, EqnNone },
-			 {VarSol, VarNone } }; break;
+			tab = (PtTab){ TFPDSwitch, 1, 0,
+			 { EqnSol },
+			 { VarSol } }; break;
 		case BifTFLP:
-			tab = (PtTab){ NOSwitch,   3, 1,
-			 {EqnSol, EqnNone,           EqnTFLP },
-			 {VarSol, VarNone,           PX0 } }; break;
+			tab = (PtTab){ NOSwitch,   2, 1,
+			 { EqnSol, EqnTFLP },
+			 { VarSol, PX0 } }; break;
 		case BifTFPD:
-			tab = (PtTab){ NOSwitch,   3, 1,
-			 {EqnSol, EqnNone,           EqnTFPD },
-			 {VarSol, VarNone,           PX0 } }; break;
+			tab = (PtTab){ NOSwitch,   2, 1,
+			 { EqnSol, EqnTFPD },
+			 { VarSol, PX0 } }; break;
 		case BifTFNS:
-			tab = (PtTab){ NOSwitch,   4, 1,
-			 {EqnSol, EqnNone,           EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 {VarSol, VarNone,           PANGLE,        PX0 } };        break;
-	/// AUTONOMOUS TEST-FUNCTIONAL
-		case SolTFAUT: // same as "case SolAUT:"
 			tab = (PtTab){ NOSwitch,   3, 1,
-			 {EqnSol, EqnNone,           EqnPhase },
-			 {VarSol, VarNone,           PX0 } };    break;
+			 { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
+			 { VarSol, PANGLE,        PX0 } };        break;
+	/// AUTONOMOUS TEST-FUNCTIONAL
+		case SolTFAUT:
+			tab = (PtTab){ NOSwitch,   2, 1,
+			 { EqnSol, EqnPhase },
+			 { VarSol, PX0 } };    break;
 		case SolTFAUTBRSW:
-			tab = (PtTab){ TFBRSwitch, 3, 1,
-			 {EqnSol, EqnNone,           EqnPhase },
-			 {VarSol, VarNone,           PX0 } };    break;
+			tab = (PtTab){ TFBRSwitch, 2, 1,
+			 { EqnSol, EqnPhase },
+			 { VarSol, PX0 } };    break;
 		case SolTFAUTPDSW:
-			tab = (PtTab){ TFPDSwitch, 3, 1,
-			 {EqnSol, EqnNone,           EqnPhase },
-			 {VarSol, VarNone,           PX0 } };    break;
+			tab = (PtTab){ TFPDSwitch, 2, 1,
+			 { EqnSol, EqnPhase },
+			 { VarSol, PX0 } };    break;
 		case SolTFAUTHBSW:
-			tab = (PtTab){ TFHBSwitch, 3, 1,
-			 {EqnSol, EqnNone,           EqnPhase },
-			 {VarSol, VarNone,           PX0 } };    break;
+			tab = (PtTab){ TFHBSwitch, 2, 1,
+			 { EqnSol, EqnPhase },
+			 { VarSol, PX0 } };    break;
 		case BifTFAUTLP:
-			tab = (PtTab){ NOSwitch,   4, 2,
-			 {EqnSol, EqnNone,           EqnPhase,      EqnTFLP },
-			 {VarSol, VarNone,           PX0,           PX1 } };   break;
+			tab = (PtTab){ NOSwitch,   3, 2,
+			 { EqnSol, EqnPhase,      EqnTFLP },
+			 { VarSol, PX0,           PX1 } };   break;
 		case BifTFAUTPD:
-			tab = (PtTab){ NOSwitch,   4, 2,
-			 {EqnSol, EqnNone,           EqnPhase,      EqnTFPD },
-			 {VarSol, VarNone,           PX0,           PX1 } };   break;
+			tab = (PtTab){ NOSwitch,   3, 2,
+			 { EqnSol, EqnPhase,      EqnTFPD },
+			 { VarSol, PX0,           PX1 } };   break;
 		case BifTFAUTNS:
-			tab = (PtTab){ NOSwitch,   5, 2,
-			 {EqnSol, EqnNone,           EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 {VarSol, VarNone,           PANGLE,        PX0,           PX1 } };        break;
+			tab = (PtTab){ NOSwitch,   4, 2,
+			 { EqnSol, EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
+			 { VarSol, PANGLE,        PX0,           PX1 } };        break;
 	/// TORUS
 		case SolTor:
 			tab = (PtTab){ TFTRSwitch, 2, 1,
-			 {EqnTORSol, EqnTORPhase1 },
-			 {VarTORSol, PX0 } };        break;
+			 { EqnTORSol, EqnTORPhase1 },
+			 { VarTORSol, PX0 } };        break;
 		case SolAUTTor:
 			tab = (PtTab){ TFTRSwitch, 2, 2,
-			 {EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-			 {VarTORSol, PX0,          PX1 } };        break;
+			 { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
+			 { VarTORSol, PX0,          PX1 } };        break;
 		default:
 			tab = (PtTab){ NOSwitch,  0, 0, { EqnNone }, { VarNone } };
 			std::cout<<"No such pointtype\n"; PDError(-1);
@@ -213,19 +213,19 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int npar
 // xxDot, xx, rhs, jac
 void Point::Construct( )
 {	
-	if( (eqn.Size() < 2)||(var.Size() < 2)||(eqn.Size() != var.Size()) )
+	if( (eqn.Size() == 0)||(var.Size() == 0)||(eqn.Size() != var.Size()) )
 	{
-		std::cout<<" bad sizes ";
+		std::cout<<"Bad equation and variable sizes!";
 		PDError(-1);
 	}
 	else
 	{
-		dim3 = eqn.Size() - 2;
+		dim3 = eqn.Size() - 1;
 	}
 	
 	if( (eqn(0) != EqnSol)||(var(0) != VarSol) )
 	{
-		std::cout<<" bad EqnSol ";
+		std::cout<<"Wrong first equation!";
 		PDError(-1);
 	}
 	else
@@ -233,14 +233,8 @@ void Point::Construct( )
 		dim1 = NDIM*(NINT*NDEG+1);
 	}
 	
-	if( ((eqn(1) != EqnNone)||(var(1) != VarNone)) )
-	{
-		std::cout<<" bad EqnNullSpace ";
-		PDError(-1);
-	}
-	
 	testFunct = 0;
-	for( int i = 2; i < eqn.Size(); i++ )
+	for( int i = 1; i < eqn.Size(); i++ )
 	{
 		switch( eqn(i) ) 
 		{
@@ -272,15 +266,15 @@ void Point::Construct( )
 		}
 	}
 	
-	for( int i = 2; i < var.Size(); i++ )
+	for( int i = 1; i < var.Size(); i++ )
 	{
-		if( (var(i) - VarPAR0 >= 0)&&(var(i) - VarPAR0 < NPAR + ParEnd) )
+		if( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd) )
 		{
-			varMap( i ) = var(i) - VarPAR0;
+			varMap( i ) = var(i)-VarPAR0;
 		}
 		else
 		{
-			std::cout<<" bad PARAMETERS1 "<<i<<", "<<var(i)<<"\n";
+			std::cout<<"{1} Non-existing parameter P"<<var(i)-VarPAR0<<" was specified at position "<<i<<".\n";
 			PDError(-1);
 		}
 	}
@@ -308,16 +302,6 @@ void Point::Dispose()
 	delete xxDot;
 }
 
-// private
-// inline double Point::SolNorm( Vector& sol, Vector& par )
-// {
-// 	double Xnorm = colloc.Integrate( sol, sol );
-// 	
-// 	for( int i = 2; i < varMap.Size(); i++ ) Xnorm += par( varMap(i) )*par( varMap(i) );
-// 	
-// 	return sqrt( Xnorm );
-// }
-
 // **************************************************************************************************************** //
 //
 //                           THE JACOBIAN
@@ -343,33 +327,21 @@ void Point::Jacobian(
 		colloc.RHS_x( AA.getA11(), par, sol, solData );
 		colloc.RHS( RHS.getV1(), par, sol, solData );
 		
-		for( int i=2; i<varMap.Size(); i++ )
+		for( int i = 1; i < varMap.Size(); i++ )
 		{
 			if( varMap(i) < NPAR )
 			{
-				colloc.RHS_p( AA.getA13(i-2), par, sol, solData, varMap(i) );
+				colloc.RHS_p( AA.getA13(i-1), par, sol, solData, varMap(i) );
 			}
 			else if( varMap(i)-NPAR == ParAngle )
 			{
-				AA.getA13(i-2).Clear();
+				AA.getA13(i-1).Clear();
 			} else
 			{
-				std::cout<<" bad PARAMETERS2 "<<varMap(i)<<"\n";
+				std::cout<<"{2} Non-existing parameter P"<<varMap(i)<<" was specified at position "<<i<<".\n";
 				PDError(-1);
 			}
 		}
-	}
-
-// ---------------------------------------------------------------------------------------------------------------- //
-//
-//                           The Characteristic Matrix part
-//
-// ---------------------------------------------------------------------------------------------------------------- //
-	
-	switch( eqn(1) != EqnNone )
-	{
-		std::cout<<" EqnNullSpace: not supported ";
-		PDError(-1);
 	}
 
 // ---------------------------------------------------------------------------------------------------------------- //
@@ -378,94 +350,94 @@ void Point::Jacobian(
 //
 // ---------------------------------------------------------------------------------------------------------------- //
 
-	for( int i=2; i<eqn.Size(); i++ )
+	for( int i=1; i<eqn.Size(); i++ )
 	{
 		switch( eqn(i) )
 		{
-			// Phase conditions. It is already linear!
+			// Phase conditions.
 			case EqnPhase:
-				colloc.PhaseStar( AA.getA31(i-2), solPrev ); // this should be the previous solution!!!
+				colloc.PhaseStar( AA.getA31(i-1), solPrev ); // this should be the previous solution!!!
 				// other variables
-				for( int j=2; j<varMap.Size(); j++ )
+				for( int j = 1; j < varMap.Size(); j++ )
 				{
 					if( varMap(j) < NPAR )
 					{
-						AA.getA33()(i-2,j-2) = 0.0;
+						AA.getA33()(i-1,j-1) = 0.0;
 					}
 					else if( varMap(j)-NPAR == ParAngle )
 					{
-						AA.getA33(i-2,j-2) = 0.0;
+						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<" bad PARAMETERS8 "<<varMap(j)<<"\n";
+						std::cout<<"{2} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
 						PDError(-1);
 					}
 				}
-				// RHS
-				RHS.getV3()(i-2) = -( AA.getA31(i-2)*sol ); // -par(NPAR+ParNorm)*(xxRM->getV3()(i-2))
+				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
 				break;
 			case EqnPhaseRot:
-				colloc.PhaseRotStar( AA.getA31(i-2), solPrev, rotRe, rotIm ); // this should be the previous solution!!!
+				colloc.PhaseRotStar( AA.getA31(i-1), solPrev, rotRe, rotIm ); // this should be the previous solution!!!
 				// other variables
-				for( int j=2; j<varMap.Size(); j++ )
+				for( int j = 1; j<varMap.Size(); j++ )
 				{
 					if( varMap(j) < NPAR )
 					{
-						AA.getA33()(i-2,j-2) = 0.0;
+						AA.getA33()(i-1,j-1) = 0.0;
 					}
 					else if( varMap(j)-NPAR == ParAngle )
 					{
-						AA.getA33(i-2,j-2) = 0.0;
+						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<" bad PARAMETERS9 "<<varMap(j)<<"\n";
+						std::cout<<"{3} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
 						PDError(-1);
 					}
 				}
-				// RHS
-				RHS.getV3()(i-2) = -( AA.getA31(i-2)*sol ); // -par(NPAR+ParNorm)*(xxRM->getV3()(i-2))
+				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
 				break;
 			case EqnTFLP:
 			case EqnTFPD:
 			case EqnTFLPAUT:
 			case EqnTFLPAUTROT:
-				RHS.getV3()(i-2) = testFunct->Funct( colloc, par, sol, solData );
-				testFunct->Funct_x( AA.getA31(i-2), colloc, par, sol, solData );
-				for( int j=2; j<varMap.Size(); j++ )
+				RHS.getV3()(i-1) = testFunct->Funct( colloc, par, sol, solData );
+				testFunct->Funct_x( AA.getA31(i-1), colloc, par, sol, solData );
+				for( int j = 1; j<varMap.Size(); j++ )
 				{
 					if( varMap(j) < NPAR )
 					{
-						AA.getA33()(i-2,j-2) = testFunct->Funct_p( colloc, par, sol, solData, varMap(j) );
-// 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
+						AA.getA33()(i-1,j-1) = testFunct->Funct_p( colloc, par, sol, solData, varMap(j) );
 					}
 					else if( varMap(j)-NPAR == ParAngle )
 					{
-						AA.getA33(i-2,j-2) = 0.0;
+						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<" bad PARAMETERS10 "<<varMap(j)<<"\n";
+						std::cout<<"{4} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
 						PDError(-1);
 					}
 				}
 				break;
 			case EqnTFCPLX_RE:
-				if( eqn(i+1) != EqnTFCPLX_IM ) { std::cout<<"EqnTFCPLX_RE is not paired "<<varMap(i)<<"\n"; PDError(-1); }
-				testFunct->Funct( RHS.getV3()(i-2), RHS.getV3()(i-1), colloc, par, sol, solData, 
+				if( eqn(i+1) != EqnTFCPLX_IM )
+				{
+					std::cout<<"EqnTFCPLX_RE is not paired."<<varMap(i)<<"\n";
+					PDError(-1);
+				}
+				testFunct->Funct( RHS.getV3()(i-1), RHS.getV3()(i), colloc, par, sol, solData, 
 				                  cos(par(NPAR+ParAngle)), sin(par(NPAR+ParAngle)) );
-				testFunct->Funct_x( AA.getA31(i-2), AA.getA31(i-1), colloc, par, sol, solData );
-				for( int j=2; j<varMap.Size(); j++ )
+				testFunct->Funct_x( AA.getA31(i-1), AA.getA31(i), colloc, par, sol, solData );
+				for( int j = 1; j<varMap.Size(); j++ )
 				{
 					if( varMap(j) < NPAR )
 					{
-						testFunct->Funct_p( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData, varMap(j) );
-// 						if( varMap(j) == 0 ) std::cout<<"TF-T "<<AA.getA33()(i-2,j-2)<<" ";
+						testFunct->Funct_p( AA.getA33()(i-1,j-1), AA.getA33()(i,j-1), colloc, par, sol, solData, varMap(j) );
 					}
 					else if( varMap(j)-NPAR == ParAngle )
 					{
-						testFunct->Funct_z( AA.getA33()(i-2,j-2), AA.getA33()(i-1,j-2), colloc, par, sol, solData );
+						testFunct->Funct_z( AA.getA33()(i-1,j-1), AA.getA33()(i,j-1), colloc, par, sol, solData );
 					} else
 					{
-						std::cout<<" bad PARAMETERS11 "<<varMap(j)<<"\n";
+						std::cout<<"{5} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
 						PDError(-1);
 					}
 				}
@@ -473,11 +445,11 @@ void Point::Jacobian(
 			case EqnTFCPLX_IM:
 				if( eqn(i-1) != EqnTFCPLX_RE )
 				{
-					std::cout<<"EqnTFCPLX_IM is not paired "<<varMap(i)<<"\n"; PDError(-1);
+					std::cout<<"EqnTFCPLX_IM is not paired."<<varMap(i)<<"\n"; PDError(-1);
 				}
 				break;
 			default:
-				std::cout<<" EqnOther: not supported ";
+				std::cout<<"Unknown equation type encountered.";
 				PDError(-1);
 				break;
 		}
@@ -502,13 +474,13 @@ void Point::Jacobian(
 inline void Point::Update( HyperVector& X )
 {
 	sol += X.getV1();
-	for( int i = 2; i < varMap.Size(); i++ ) par( varMap(i) ) += X.getV3()(i-2);
+	for( int i = 1; i < varMap.Size(); i++ ) par( varMap(i) ) += X.getV3()(i-1);
 }
 
 inline void Point::ContUpdate( HyperVector& X )
 {
 	solNu += X.getV1();
-	for( int i = 2; i < varMapCont.Size(); i++ ) parNu( varMapCont(i) ) += X.getV3()(i-2);
+	for( int i = 1; i < varMapCont.Size(); i++ ) parNu( varMapCont(i) ) += X.getV3()(i-1);
 }
 
 /// --------------------------------------------------------------
@@ -722,8 +694,8 @@ int Point::Continue( double ds )
 	double Xnorm, Dnorm, Rnorm, Tnorm;
 	
 	parNu = par;
-	for( int i=0; i< solNu.Size(); i++ )     solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
-	for( int i = 2; i < varMap.Size(); i++ ) parNu( varMap(i) ) = par( varMap(i) ) + ds * xxDot->getV3()(i-2);
+	for( int i = 0; i < solNu.Size(); i++ )  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
+	for( int i = 1; i < varMap.Size(); i++ ) parNu( varMap(i) ) = par( varMap(i) ) + ds * xxDot->getV3()(i-1);
 	parNu(p1) = par(p1) + ds*p1Dot;
 	
 	varMapCont( varMap.Size() ) = p1;
@@ -767,21 +739,21 @@ int Point::Continue( double ds )
 		double Pnorm = sqrt(p1Dot*p1Dot);
 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-2);
+		for( int i = 1; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-1);
 		std::cout<<'\n';
 		
 		xx->getV1() = solNu;
 		xx->getV1() -= sol;
-		for( int i = 2; i < varMap.Size(); i++ ) xx->getV3()(i-2) = parNu( varMap(i) ) - par( varMap(i) );
+		for( int i = 1; i < varMap.Size(); i++ ) xx->getV3()(i-1) = parNu( varMap(i) ) - par( varMap(i) );
 		xx->getV3()(dim3) = parNu(p1) - par(p1);
 		
 		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
 		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 
 		Onorm = 0;
-		for( int i=0; i<dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
+		for( int i = 0; i < dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
 		Onorm = sqrt(Onorm)/ds;
 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-		for( int i = 2; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
+		for( int i = 1; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
 		std::cout<<'\n';
 		/// END OF CHECKING
 	#endif
@@ -801,7 +773,7 @@ int Point::Continue( double ds )
 
 void Point::Stability( )
 {
-	mRe.Clear(); 
+	mRe.Clear();
 	mIm.Clear();
 	
 	colloc.Init( par, sol );
@@ -926,7 +898,7 @@ void Point::Plot( GnuPlot& pl )
 		for( int j = 0; j < NINT*NDEG+1; j++ )
 		{
 			double t = (double)j/((double)( NINT*NDEG ));
-			pl.AddData( i, t, sol( i + NDIM*j ) ); 
+			pl.AddData( i, t, sol( i + NDIM*j ) );
 		}
 	}
 	pl.Show();
@@ -938,16 +910,16 @@ void Point::Write( std::ofstream& file )
 	colloc.getMesh( msh );
 	
 	file<<NPAR<<"\t";
-	for( int i=0; i<NPAR; i++ ) file<<par(i)<<"\t";
+	for( int i = 0; i < NPAR; i++ ) file<<par(i)<<"\t";
 	
 	file<<mRe.Size()<<"\t";
-	for( int i=0; i<mRe.Size(); i++ ) file<<mRe(i)<<"\t"<<mIm(i)<<"\t";
+	for( int i = 0; i < mRe.Size(); i++ ) file<<mRe(i)<<"\t"<<mIm(i)<<"\t";
 	
 	file<<NDIM<<"\t";
 	file<<NINT<<"\t";
 	file<<NDEG<<"\t";
-	for( int i=0; i<NDEG*NINT+1; i++ ) file<<msh(i)<<"\t";
-	for( int i=0; i<NDIM*(NINT*NDEG+1); i++ ) file<<sol(i)<<"\t";
+	for( int i = 0; i < NDEG*NINT+1; i++ ) file<<msh(i)<<"\t";
+	for( int i = 0; i < NDIM*(NINT*NDEG+1); i++ ) file<<sol(i)<<"\t";
 	file<<"\n";
 	file.flush();
 }
@@ -957,11 +929,11 @@ void Point::Read( std::ifstream& file, bool tan )
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
 	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
-	for( int i=0; i<NPAR; i++ ) file>>par(i);
+	for( int i = 0; i < NPAR; i++ ) file>>par(i);
 	
 	file>>nmul_;
 	if( mRe.Size() < nmul_ ) { std::cout<<"Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
-	for( int i=0; i<nmul_; i++ ) { file>>mRe(i); file>>mIm(i); }
+	for( int i = 0; i < nmul_; i++ ) { file>>mRe(i); file>>mIm(i); }
 	
 	file>>ndim_;
 	file>>nint_;
@@ -972,18 +944,18 @@ void Point::Read( std::ifstream& file, bool tan )
 // 	if( NDEG != ndeg_ ) { std::cout<<"Not compatible file (NDEG) "<<ndeg_<<"\n"; PDError(-1); }
 	
 	Vector msh( ndeg_*nint_ + 1 );
-	for( int i=0; i<ndeg_*nint_+1; i++ ) file>>msh(i);
+	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>msh(i);
 	
 	if( (NINT == nint_)&&(NDEG == ndeg_) )
 	{
 		colloc.setMesh( msh );
-		for( int i=0; i<NDIM*(nint_*ndeg_+1); i++ ) file>>sol(i);
+		for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>sol(i);
 	}
 	else
 	{
 		Vector in( NDIM*(nint_*ndeg_+1) );
 	
-		for( int i=0; i<NDIM*(nint_*ndeg_+1); i++ ) file>>in(i);
+		for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>in(i);
 		colloc.Import( sol, in, msh, ndeg_ );
 	}
 	if( tan )
@@ -993,7 +965,7 @@ void Point::Read( std::ifstream& file, bool tan )
 		Read( file, false );
 		xxDot->getV1() = sol;
 		xxDot->getV1() -= solNu;
-		for( int i = 2; i < varMapCont.Size(); i++ ) xxDot->getV3()(i-2) = par( varMapCont(i) ) - parNu( varMapCont(i) );
+		for( int i = 1; i < varMapCont.Size(); i++ ) xxDot->getV3()(i-1) = par( varMapCont(i) ) - parNu( varMapCont(i) );
 		
 		// renorming everything
 		p1Dot = xxDot->getV3()(dim3);
@@ -1016,11 +988,11 @@ void Point::ReadNull( std::ifstream& file )
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
 	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
-	for( int i=0; i<NPAR; i++ ) file>>tmp;
+	for( int i = 0; i < NPAR; i++ ) file>>tmp;
 	
 	file>>nmul_;
 	if( mRe.Size() < nmul_ ) { std::cout<<"RN:Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
-	for( int i=0; i<nmul_; i++ ) { file>>tmp; file>>tmp; }
+	for( int i = 0; i < nmul_; i++ ) { file>>tmp; file>>tmp; }
 	
 	file>>ndim_;
 	file>>nint_;
@@ -1028,8 +1000,8 @@ void Point::ReadNull( std::ifstream& file )
 	
 	if( NDIM != ndim_ ) { std::cout<<"RN:Not compatible file (NDIM) "<<ndim_<<"\n"; PDError(-1); }
 	
-	for( int i=0; i<ndeg_*nint_+1; i++ ) file>>tmp;
-	for( int i=0; i<NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
+	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>tmp;
+	for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
 }
 
 void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ) // starting data for tori: tangent

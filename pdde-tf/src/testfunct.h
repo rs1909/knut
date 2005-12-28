@@ -186,9 +186,16 @@ class TestFunctLPAUTROT : public baseTestFunct
 		Vector       hh3;
 		Vector       rhs3;
 		Vector       one3;  // this is ( 0.0, 1.0 )
+		Vector       uu2;   // for computing the generalized eigenvector
+		Vector       vv2;
+		Vector       gg2;
+		Vector       hh2;
+		Vector       rhs2;
+		Vector       one2;  // this is ( 0.0, 1.0 )
 		Vector       temp;
 		JagMatrix3D  phiData;
 		JagMatrix3D  vv3Data;
+		JagMatrix3D  vv2Data;
 		JagMatrix3D  solMSHData;
 };
 
