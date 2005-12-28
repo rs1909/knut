@@ -303,13 +303,6 @@ specifies three equations and three variables, but the second equation and varia
 \begin{description}
 \item[\funp{E0} -] No equation. It is a placeholder for the second equation if there is no bifurcation continuation.
 \item[\funp{E1} -] Periodic solution. This is always the first equation and can occur only there.
-\item[\funp{E8} -] Characteristic matrix for fold bifurcation. It can occur only at the second place, like all the characteristic matrices below.
-\item[\funp{E9} -] Characteristic matrix for period doubling bifurcation.
-\item[\funp{E10} -] Characteristic matrix for Neimark-Sacker bifurcation.
-\item[\funp{E11} -] Characteristic matrix for fold bifurcation in autonomous systems.
-\item[\funp{E16} -] Equation for keeping the norm of the eigenvector constant. It it necessary in fold and period doubling cases.
-\item[\funp{E17} -] Equation for keeping the real part of the norm of the eigenvector constant in case of \funp{E10}.
-\item[\funp{E18} -] Equation for keeping the imaginary part of the norm of the eigenvector constant in case of \funp{E10}. Note that both \funp{E17} and \funp{E18} are necessary to continue Neimark-Sacker bifurcations.
 \item[\funp{E24} -] Phase condition for autonomous systems.
 \item[\funp{E25} -] Phase condition for systems with additional symmetry. (For details, see \cite{haegeman}.)
 \item[\funp{E32} -] Quasiperiodic solution on a torus.
@@ -329,7 +322,6 @@ specifies three equations and three variables, but the second equation and varia
 \begin{description}
 \item[\funp{S0} -] No variable. Similar to \funp{E0}, this is a placeholder if no kernel vector is computed.
 \item[\funp{S1} -] Periodic solution.
-\item[\funp{S8} -] The kernel of the characteristic matrix.
 \item[\funp{S32} -] Quasi-periodic solution.
 \end{description}
 In the case of an equation with additional symmetry, when \funp{E25} is specified, also the symmetric components of the solution has to be declared.
