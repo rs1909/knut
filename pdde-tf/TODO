@@ -1,5 +1,3 @@
-0. Review ncolloc.cpp, to remove the characteristic matrix part.
-
 1. Test functionals for simmetric fold bifurcations
 
 2. Binary output format to save space. Preferably a .mat file for

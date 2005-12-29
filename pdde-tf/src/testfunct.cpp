@@ -21,7 +21,7 @@
 #define NTAU (col.Ntau())
 #define NPAR (col.Npar())
 
-template<bool trans> void inline rotbord( Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im )
+template<bool trans> inline void rotbord( Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im )
 {
 	V.Clear();
 	for( int idx = 0; idx < NINT*NDEG+1; idx++ )
@@ -41,7 +41,7 @@ template<bool trans> void inline rotbord( Vector& V, NColloc& col, const Vector&
 	}
 }
 
-void inline conjugate( Vector& V, NColloc& col, const Vector& IN )
+inline void conjugate( Vector& V, NColloc& col, const Vector& IN )
 {
 	for( int idx = 0; idx < NINT*NDEG+1; idx++ )
 	{

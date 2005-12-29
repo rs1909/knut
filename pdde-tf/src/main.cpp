@@ -395,7 +395,7 @@ int main( int argc, const char** argv )
 					branchFile = argv[++acnt];
 					break;
 				case 'v':
-					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<"\n";
+					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<" ("<<PKG_REV<<")\n";
 					exit(0);
 					break;
 				default:
