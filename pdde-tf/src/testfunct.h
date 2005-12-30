@@ -186,12 +186,62 @@ class TestFunctLPAUTROT : public baseTestFunct
 		Vector       hh3;
 		Vector       rhs3;
 		Vector       one3;  // this is ( 0.0, 1.0 )
+		Vector       temp;
+		JagMatrix3D  phiData;
+		JagMatrix3D  LAMData;
+		JagMatrix3D  vv3Data;
+		JagMatrix3D  solMSHData;
+};
+
+
+class TestFunctLPAUTROT_X : public baseTestFunct
+{
+	public:
+		TestFunctLPAUTROT_X( NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z );
+		~TestFunctLPAUTROT_X( );
+		void   Init( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		double Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		double Funct_p( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha );
+		void   Funct_x( Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData );
+		
+		void Init   ( NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double) {}
+		void Funct  ( double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double) {}
+		void Funct_p( double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int) {}
+		void Funct_z( double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&) {}
+		void Funct_x( Vector&, Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&) {}
+		void Switch( Vector& phi );
+	
+	private:
+		bool         first;
+		double       ZZ;
+		Array1D<int> Re, Im;
+		HyperMatrix  AHAT;
+		Vector       A_p;
+		SpMatrix     A_x;
+		SpMatrix     mB;
+		Vector       mB_p;
+		SpMatrix     mB_x;
+		Vector       phi;
+		Vector       DpPhi;
+		Vector       DxPhi;
+		Vector       LAM;
+		Vector       DxLAM;
+		Vector       uu3;   // for computing the generalized eigenvector
+		Vector       vv3;
+		Vector       gg3;
+		Vector       hh3;
+		Vector       one3;  // this is ( 0.0, 0.0, 1.0 )
+		Vector       uu1;   // for computing the generalized eigenvector
+		Vector       vv1;
+		Vector       gg1;
+		Vector       hh1;
+		Vector       one1;  // this is ( 1.0, 0.0 )
 		Vector       uu2;   // for computing the generalized eigenvector
 		Vector       vv2;
 		Vector       gg2;
 		Vector       hh2;
-		Vector       rhs2;
 		Vector       one2;  // this is ( 0.0, 1.0 )
+		Vector       rhs;   // this is always zero, so one instance is enogh
 		Vector       temp;
 		JagMatrix3D  phiData;
 		JagMatrix3D  vv3Data;

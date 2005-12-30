@@ -2,16 +2,16 @@ AC_INIT([PDDE-CONT], [1.0.0])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 
-REVISION="`cat REVISION`"
-AC_SUBST(REVISION)
-AC_DEFINE([PKG_REV],["@REVISION@"])
-
 AC_PROG_CC
 AC_C_INLINE
 AC_PROG_CXX
 AC_PROG_RANLIB
 
 AC_LANG(C++)
+
+REVISION="`cat REVISION`"
+AC_SUBST(REVISION)
+AC_DEFINE([PKG_REV],["@REVISION@"])
 
 UNSUPPORTED_OS="PDDE-CONT is currently unsupported on your platform.
 If you are interested in making it work on your platform, you are

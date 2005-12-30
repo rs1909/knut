@@ -1,2 +1,2 @@
 #!/bin/sh
-./configure --prefix=$HOME/pdde-cont/ "CC=icc" "CFLAGS=-xB -O2 -g" "CXX=icpc" "CXXFLAGS=-cxxlib-icc -xB -O2 -g"
+./configure --prefix=$HOME/pdde-cont/ 'CC=icc' 'CFLAGS=-gcc-version=340 -g -O2 -xB' 'CXX=icpc' 'CXXFLAGS=-gcc-version=340 -cxxlib-icc -g -O2 -xB'

@@ -130,69 +130,69 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int npar
 	{
 	/// TIME-PERIODIC TEST-FUNCTIONAL
 		case SolTF:
-			tab = (PtTab){ NOSwitch,   1, 0,
+			{ PtTab tmp = { NOSwitch,   1, 0,
 			 { EqnSol },
-			 { VarSol } }; break;
+			 { VarSol } }; tab = tmp; } break;
 		case SolTFBRSW:
-			tab = (PtTab){ TFBRSwitch, 1, 0,
+			{ PtTab tmp = { TFBRSwitch, 1, 0,
 			 { EqnSol },
-			 { VarSol } }; break;
+			 { VarSol } }; tab = tmp; } break;
 		case SolTFPDSW:
-			tab = (PtTab){ TFPDSwitch, 1, 0,
+			{ PtTab tmp = { TFPDSwitch, 1, 0,
 			 { EqnSol },
-			 { VarSol } }; break;
+			 { VarSol } }; tab = tmp; } break;
 		case BifTFLP:
-			tab = (PtTab){ NOSwitch,   2, 1,
+			{ PtTab tmp = { NOSwitch,   2, 1,
 			 { EqnSol, EqnTFLP },
-			 { VarSol, PX0 } }; break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case BifTFPD:
-			tab = (PtTab){ NOSwitch,   2, 1,
+			{ PtTab tmp = { NOSwitch,   2, 1,
 			 { EqnSol, EqnTFPD },
-			 { VarSol, PX0 } }; break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case BifTFNS:
-			tab = (PtTab){ NOSwitch,   3, 1,
+			{ PtTab tmp = { NOSwitch,   3, 1,
 			 { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 { VarSol, PANGLE,        PX0 } };        break;
+			 { VarSol, PANGLE,        PX0 } }; tab = tmp; } break;
 	/// AUTONOMOUS TEST-FUNCTIONAL
 		case SolTFAUT:
-			tab = (PtTab){ NOSwitch,   2, 1,
+			{ PtTab tmp = { NOSwitch,   2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } };    break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case SolTFAUTBRSW:
-			tab = (PtTab){ TFBRSwitch, 2, 1,
+			{ PtTab tmp = { TFBRSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } };    break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case SolTFAUTPDSW:
-			tab = (PtTab){ TFPDSwitch, 2, 1,
+			{ PtTab tmp = { TFPDSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } };    break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case SolTFAUTHBSW:
-			tab = (PtTab){ TFHBSwitch, 2, 1,
+			{ PtTab tmp = { TFHBSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } };    break;
+			 { VarSol, PX0 } }; tab = tmp; } break;
 		case BifTFAUTLP:
-			tab = (PtTab){ NOSwitch,   3, 2,
+			{ PtTab tmp = { NOSwitch,   3, 2,
 			 { EqnSol, EqnPhase,      EqnTFLP },
-			 { VarSol, PX0,           PX1 } };   break;
+			 { VarSol, PX0,           PX1 } }; tab = tmp; } break;
 		case BifTFAUTPD:
-			tab = (PtTab){ NOSwitch,   3, 2,
+			{ PtTab tmp = { NOSwitch,   3, 2,
 			 { EqnSol, EqnPhase,      EqnTFPD },
-			 { VarSol, PX0,           PX1 } };   break;
+			 { VarSol, PX0,           PX1 } }; tab = tmp; } break;
 		case BifTFAUTNS:
-			tab = (PtTab){ NOSwitch,   4, 2,
+			{ PtTab tmp = { NOSwitch,   4, 2,
 			 { EqnSol, EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 { VarSol, PANGLE,        PX0,           PX1 } };        break;
+			 { VarSol, PANGLE,        PX0,           PX1 } }; tab = tmp; } break;
 	/// TORUS
 		case SolTor:
-			tab = (PtTab){ TFTRSwitch, 2, 1,
+			{ PtTab tmp = { TFTRSwitch, 2, 1,
 			 { EqnTORSol, EqnTORPhase1 },
-			 { VarTORSol, PX0 } };        break;
+			 { VarTORSol, PX0 } }; tab = tmp; } break;
 		case SolAUTTor:
-			tab = (PtTab){ TFTRSwitch, 2, 2,
+			{ PtTab tmp = { TFTRSwitch, 2, 2,
 			 { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-			 { VarTORSol, PX0,          PX1 } };        break;
+			 { VarTORSol, PX0,          PX1 } }; tab = tmp; } break;
 		default:
-			tab = (PtTab){ NOSwitch,  0, 0, { EqnNone }, { VarNone } };
+			{ PtTab tmp = { NOSwitch,  0, 0, { EqnNone }, { VarNone } }; tab = tmp; }
 			std::cout<<"No such pointtype\n"; PDError(-1);
 			break;
 	}
