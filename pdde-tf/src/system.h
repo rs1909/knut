@@ -13,70 +13,12 @@
 #include "matrix.h"
 
 #ifndef _WIN32
-
 extern "C" {
 #include <dlfcn.h>
 }
-
-typedef void* tdlhand;
-
 #else
-
 #include <windows.h>
-
-typedef HMODULE tdlhand;
-
 #endif
-
-inline tdlhand tdlopen( const char* fname )
-{
- #ifndef _WIN32
-	return dlopen(fname, RTLD_NOW);
- #else
-	return LoadLibrary( fname );
- #endif
-}
-
-inline void* tdlsym( tdlhand h, const char* sname )
-{
- #ifndef _WIN32
-	return dlsym( h, sname );
- #else
-	return (void*) GetProcAddress( h, sname );
- #endif
-}
-
-inline int tdlclose( tdlhand h )
-{
- #ifndef _WIN32
-	return dlclose( h );
- #else
-	return (int) FreeLibrary( h );
- #endif
-}
-
-inline const char* tdlerror( )
-{
- #ifndef _WIN32
-	return dlerror( );
- #else
-	DWORD errcode = GetLastError( );
-	SetLastError( 0 );
-	if( errcode != 0 ) return "Windows System Error\n";
-	else return 0;
- #endif
-}
-
-typedef int  (*tp_sys_ndim)();
-typedef int  (*tp_sys_npar)();
-typedef int  (*tp_sys_ntau)();
-typedef int  (*tp_sys_nderi)();
-typedef void (*tp_sys_tau)( Vector& out, double t, const Vector& par );
-typedef void (*tp_sys_dtau)( Vector& out, double t, const Vector& par, int vp );
-typedef void (*tp_sys_rhs)( Vector& out, double t, const Matrix& x, const Vector& par );
-typedef void (*tp_sys_deri)( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v );
-typedef void (*tp_sys_stpar)( Vector& par );
-typedef void (*tp_sys_stsol)( Vector& out, double t );
 
 class System
 {
@@ -120,7 +62,36 @@ class System
 		                  int nx, const int* vx, int np, const int* vp, const Matrix& vv );
 		
 	private:
+		
+		typedef int  (*tp_sys_ndim)();
+		typedef int  (*tp_sys_npar)();
+		typedef int  (*tp_sys_ntau)();
+		typedef int  (*tp_sys_nderi)();
+		typedef void (*tp_sys_tau)( Vector& out, double t, const Vector& par );
+		typedef void (*tp_sys_dtau)( Vector& out, double t, const Vector& par, int vp );
+		typedef void (*tp_sys_rhs)( Vector& out, double t, const Matrix& x, const Vector& par );
+		typedef void (*tp_sys_deri)( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v );
+		typedef void (*tp_sys_stpar)( Vector& par );
+		typedef void (*tp_sys_stsol)( Vector& out, double t );
+		
+		typedef void (*FPTR)();
+		union punned {
+			void *obj;
+			FPTR fun;
+		};
+		FPTR fptr( void * ptr );
 	
+	#ifndef _WIN32
+		typedef void*   tdlhand;
+	#else
+		typedef HMODULE tdlhand;
+	#endif
+		
+		tdlhand     tdlopen( const char* fname );
+		void*       tdlsym( tdlhand h, const char* sname );
+		int         tdlclose( tdlhand h );
+		const char* tdlerror( );
+
 		tdlhand handle;
 		const char* error;
 		
@@ -145,5 +116,51 @@ class System
 		tp_sys_stpar  v_stpar;
 		tp_sys_stsol  v_stsol;
 };
+
+inline System::FPTR System::fptr( void * ptr )
+{
+	punned tmp;
+	tmp.obj = ptr;
+	return tmp.fun;
+}
+
+inline System::tdlhand System::tdlopen( const char* fname )
+{
+ #ifndef _WIN32
+	return dlopen(fname, RTLD_NOW);
+ #else
+	return LoadLibrary( fname );
+ #endif
+}
+
+inline void* System::tdlsym( tdlhand h, const char* sname )
+{
+ #ifndef _WIN32
+	return dlsym( h, sname );
+ #else
+	return (void*) GetProcAddress( h, sname );
+ #endif
+}
+
+inline int System::tdlclose( System::tdlhand h )
+{
+ #ifndef _WIN32
+	return dlclose( h );
+ #else
+	return (int) FreeLibrary( h );
+ #endif
+}
+
+inline const char* System::tdlerror( )
+{
+ #ifndef _WIN32
+	return dlerror( );
+ #else
+	DWORD errcode = GetLastError( );
+	SetLastError( 0 );
+	if( errcode != 0 ) return "Windows System Error\n";
+	else return 0;
+ #endif
+}
 
 #endif

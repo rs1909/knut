@@ -20,20 +20,6 @@ extern "C" {
 
 #include <string>
 
-typedef void (*_FPTR_)();
-
-union punned {
-	void *obj;
-	_FPTR_ fun;
-};
-
-inline _FPTR_ fptr( void * ptr )
-{
-	punned tmp;
-	tmp.obj = ptr;
-	return tmp.fun;
-}
-
 System::System( char* shobj )
 {
 	std::string objname(shobj);
