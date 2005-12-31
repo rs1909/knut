@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.0.0}
+\newcommand{\pddever}{1.0.1}
 \version{\pddever}
-\date{27 December 2005}
+\date{30 December 2005}
 \maketitle
 
 \begin{center}
@@ -55,30 +55,26 @@ The product names used in this manual are for identification purposes only. All 
 
 \section{Introduction}
 
-Several physical, engineering and biological problems require knowledge about dynamical structures and their dependence on parameters in delay-differential equations (see, e.g., \cite{orosz,kirk}). These systems are usually impossible to investigate analytically, so numerical techniques have to be applied. For the first attempt in analyzing the governing equations one usually conducts simulations, which can reveal some information about the invariant structures, particularly about the attractors in the system. However knowing only about the attractors is often insufficient, because unstable structures or repellors form the boundaries of basins of attraction and also can lead to complicated dynamics like chaos. Hence global methods for discovering instabilities are essential.
-
-Continuation techniques provide a tool to discover the parameter dependence of invariant structures. Generally, invariant structures are connected to each other by means of bifurcations, that is, when invariant structures change into or give birth to other structures. In this way, by keeping track of these changes a fairly complete picture can be gained about the global dynamics.
-
-This manual describes the software \pdde, which is capable of continuing periodic orbits and their
-bifurcations in delay-differential equations.
-
-\subsection{Capabilities}
-\label{capabilities}
-
-The software can handle delay-differential equation in the general form 
+The software can analyze periodic orbits of delay-differential equation in the general form 
 \begin{equation}
 	\dot{x}(t) = f (t, x(t-\tau_0), x(t - \tau_1), \dots , x(t - \tau_r), \lambda ), \label{gensys}
 \end{equation}
-where $f(t, \dots ) = f(t + T, \dots)$ is $T$-periodic, $x \in \mathbb{R}^n$ is the dependent variable defined on $I \subset \mathbb{R}$, $\lambda \in \mathbb{R}^p$ is the parameter vector and $0 \le \tau_i$ are positive delays, which can depend on the parameters $\tau_i : \mathbb{R}^p \to [0,\infty)$.
-In general $f$ need not depend on $t$, which is called the autonomous case and is handled separately by imposing a so-called phase condition.
-The software can continue periodic solutions of (\ref{gensys}), if there is an initial periodic solution available $x_0(t)$ at some parameter value $\lambda_0$. This starting periodic solution has to be specified either in the system definition (C++ source file) or it can be loaded from an input file. The periodic solutions can bifurcate in several ways. If one of the three common codimension-one bifurcations (fold, period doubling, Neimark-Sacker) are found along the branch of periodic solutions, they can be used as starting points for continuing them along two parameters.
+where $f$ can be either periodic in $t$ or independent of $T$, which latter is called the autonomous case. The system (\ref{gensys}) smoothly depends on a parameter vector $\lambda \in \mathbb{R}^p$ as well as the delays $\tau_i : \mathbb{R}^p \to [0,h)$ with $h<\infty$. The solution $x(t)$ is assumed to be an $\mathbb{R}^n$ valued continuous function satisfying the periodicity condition
+\[
+	x(t) = x(t+T),\quad t \in \mathbb{R}.
+\]
+Because of periodicity, the software is tracking a function segment $\varphi \in C([0,T],\mathbb{R}^n)$ only. The solution segment $\varphi$ is discretized using orthogonal collocation \cite{engcol,engstab}.
 
-\paragraph{Remark.} Fixed points of autonomous systems can be also handled, as periodic solutions of periodic systems by keeping the period constant. Although it is very inefficient, this capability might be useful, when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can be continued by switching to the periodic solution branch using the solution \funp{TYPE=16}. The failure or success of the switch depends on the choice of the period length for the fixed point and the starting solution amplitude \funp{DSSTART}.
-As a rule of thumb, the period should be chosen as small as possible to reliably detect the period of the arising periodic orbit. If the period is chosen to be large, the detected period will be some integer multiple of the actual period.
+The software can continue periodic orbits of (\ref{gensys}) along one scalar parameter. It can determine the stability of a periodic orbit by computing finitely many Floquet multipliers of the largest magnitude. Codimension-one bifurcations are detected using the Floquet multipliers and bifurcation points can be calculated using test-functionals. When a branching point of periodic orbits is encountered the software can be directed to continue the other branch. Similarly, when a period-doubling bifurcation point is found, the period-two branch can be selected for continuation.
+
+The three generic codimension-one bifurcations (Neimark-Sacker, period doubling and fold) can be continued along two parameters. The defining systems of these bifurcations are minimally extended and use test-functionals \cite{szalai-tf}. Moreover, a limited number of codemension-two bifurcations can be continued, when two different test-functionals are selected.
+
+Fixed points of autonomous systems can also be continued as constant periodic orbits with fixed period. In this case the Hopf bifurcation is detected as Neimark-Sacker bifurcation, and the periodic solution emanating from the Hopf point can be continued by switching to the periodic solution branch.
+Although, continuing fixed points in this way is very inefficient, it might help in avoiding the hassle of producing starting points using some other numerical package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
 
 \section{Installation}
 
-The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.2.3 and later. Also the Sun Studio 10, and the Intel C,C++ (v. 8.1 or later) compilers can build the package.
+The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.3.6 and later. Although Sun Studio 10, the Intel C,C++ (v. 8.1 or later) compilers can build the package, this method is not guaranteed to work in future versions.
 
 \subsection{Linux and Solaris}
 
@@ -87,7 +83,7 @@ The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.
 $ gzip -d pdde-cont-%\@version%.tar.gz
 $ tar xvf pdde-cont-%\@version%.tar
 \end{lstlisting} \end{quote} } \noindent
-The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases no compilation step is necessary.
+The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases the time consuming compilation can be avoided.
 
 The second step is to configure the package using the \filef{configure} script.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -99,7 +95,7 @@ This generates the platform dependent \filef{Makefile}s and instructs the instal
 $ make
 $ make install
 \end{lstlisting} \end{quote} } \noindent
-In order to make the software functioning, the \filef{PATH} environment variables has to be set up. In case of the \filef{bash} shell include the
+In order to make the software work, the \filef{PATH} environment variables has to be set up. In case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
@@ -119,7 +115,7 @@ After installing the package restart the MSys shell and the software is ready to
 
 \subsection{Unix}
 
-The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes or to avoid statically linked, large executables, what AUTO uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on other computing platforms too.
+The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes and to avoid statically linked, large executables, what AUTO \cite{auto97} uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on some other computing platforms too.
 
 \section{Command line arguments}
 
@@ -130,6 +126,12 @@ This file can be selected by the \funp{-b} option if this data is not intended t
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
 \end{lstlisting} \end{quote} } \noindent
+To display version information use the \funp{-v} command line switch.
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+$ pdde -v
+This is PDDE-CONT version 1.0.1 (r98 2005-12-30 22:37:39 +0100)
+\end{lstlisting} \end{quote} } \noindent
+
 
 \section{The constants file}
 \label{constfile}
@@ -167,35 +169,35 @@ Specifies the type of the solution to be continued. After a description the numb
 
 Algorithms for time-periodic (non-autonomous) systems:
 \begin{description}
-\item[\funp{40} -] Continuation of periodic solutions (0).
+\item[\funp{40} -] Continuation of periodic solutions. (0)
 %
 \item[\funp{41} -] Continuation of fold bifurcations in two parameters (1). The input is a periodic solution at a fold bifurcation point. The software first generates a starting point, that is, it tries to converge to the fold point using a secant method. After the fold point is found with a good accuracy (see \funp{EPSS}), the tangent of the fold curve is computed so that the continuation can start. All the bifurcations are started in this way.
 %
-\item[\funp{42} -] Continuation of period-doubling bifurcations (1).
+\item[\funp{42} -] Continuation of period-doubling bifurcations. (1)
 %
-\item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (1).
+\item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations. (1)
 %
-\item[\funp{44} -] Switches to the other solution at a branching point and follows the orbits (0). Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start.
+\item[\funp{44} -] Switches to the other solution at a branching point and follows the orbits. Similar to \funp{TYPE=1}, first the software converges to the critical solution. Then it computes the critical eigenfunction $\varphi^{cr}$, which will become the tangent of the new branch, so that the continuation can start. (0)
 %
 \item[\funp{45} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits (0).
+(-1 multiplier) and then follows the arising orbits. (0)
 \end{description}
 In the case of autonomous systems the above continuations can be carried out in the same way. The important differece is that the software will use a phase condition and continue an additional free parameter (e.g., the period). When a fold bifurcation is continued a different test functional is used to account for the trivial +1 Floquet multiplier of a periodic orbit.
 \begin{description}
-\item[\funp{50} -] Continuation of periodic solutions in autonomous systems (1). The additional parameter is usually the period length \funp{P0}.
+\item[\funp{50} -] Continuation of periodic solutions in autonomous systems. The additional parameter is usually the period length \funp{P0}. (1)
 %
-\item[\funp{51} -] Continuation of fold bifurcations in two parameters (2).
+\item[\funp{51} -] Continuation of fold bifurcations in two parameters. (2)
 %
-\item[\funp{52} -] Continuation of period-doubling bifurcations (2).
+\item[\funp{52} -] Continuation of period-doubling bifurcations. (2)
 %
-\item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations (2).
+\item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations. (2)
 %
-\item[\funp{54} -] Switches to the other solution at a branching point and follows the orbits (1).
+\item[\funp{54} -] Switches to the other solution at a branching point and follows the orbits. (1)
 %
 \item[\funp{55} -] The software first switches to the period-2 branch at a period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits (1).
+(-1 multiplier) and then follows the arising orbits. (1)
 %
-\item[\funp{56} -] Switches to a periodic solution arising in a Hopf bifurcation point. The input is a constant solution, which represents a fixed point (1).
+\item[\funp{56} -] Switches to the periodic solution branch arising at a Hopf bifurcation point. The input is a constant solution, which represents a fixed point. The failure or success of the switch depends on the choice of the period length for the fixed point and the starting solution amplitude \funp{DSSTART}. As a rule of thumb, the period of the constant solution should be chosen as small as possible to reliably detect the period of the arising periodic orbit. If the period is chosen to be large, the detected period will be some integer multiple of the actual period. (1)
 \end{description}
 The software can also continue invariant tori arising at Neimark-Sacker bifurcation points. To continue these quasi-periodic orbits use the following parameters when restarting from Neimark-Sacker points. This is an experimental feature. Since the output format was designed for periodic orbits the quasiperiodic solutions are not written there.
 \begin{description}
