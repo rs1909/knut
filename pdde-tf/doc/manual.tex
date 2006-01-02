@@ -55,26 +55,26 @@ The product names used in this manual are for identification purposes only. All 
 
 \section{Introduction}
 
-The software can analyze periodic orbits of delay-differential equation in the general form 
+The software can analyze periodic orbits of delay-differential equations in the general form 
 \begin{equation}
 	\dot{x}(t) = f (t, x(t-\tau_0), x(t - \tau_1), \dots , x(t - \tau_r), \lambda ), \label{gensys}
 \end{equation}
-where $f$ can be either periodic in $t$ or independent of $T$, which latter is called the autonomous case. The system (\ref{gensys}) smoothly depends on a parameter vector $\lambda \in \mathbb{R}^p$ as well as the delays $\tau_i : \mathbb{R}^p \to [0,h)$ with $h<\infty$. The solution $x(t)$ is assumed to be an $\mathbb{R}^n$ valued continuous function satisfying the periodicity condition
+where $f$ can be either periodic in $t$ or independent of $t$, which is called the autonomous case. The right hand side of (\ref{gensys}) and the delays ($\tau_i : \mathbb{R}^p \to [0,h)$ with $h<\infty$) smoothly depend on the parameter vector $\lambda \in \mathbb{R}^p$. The solution $x(t)$ is assumed to be an $\mathbb{R}^n$ valued continuous function satisfying the periodicity condition
 \[
 	x(t) = x(t+T),\quad t \in \mathbb{R}.
 \]
-Because of periodicity, the software is tracking a function segment $\varphi \in C([0,T],\mathbb{R}^n)$ only. The solution segment $\varphi$ is discretized using orthogonal collocation \cite{engcol,engstab}.
+Because of periodicity, the software is tracking a function segment $\varphi \in C([0,T],\mathbb{R}^n)$ only. The solution segment $\varphi$ is approximated by piecewise polynomials \cite{engcol,engstab}.
 
-The software can continue periodic orbits of (\ref{gensys}) along one scalar parameter. It can determine the stability of a periodic orbit by computing finitely many Floquet multipliers of the largest magnitude. Codimension-one bifurcations are detected using the Floquet multipliers and bifurcation points can be calculated using test-functionals. When a branching point of periodic orbits is encountered the software can be directed to continue the other branch. Similarly, when a period-doubling bifurcation point is found, the period-two branch can be selected for continuation.
+The software can continue periodic orbits of (\ref{gensys}) along one scalar parameter. It can determine the stability of a periodic orbit by computing finitely many Floquet multipliers of the largest magnitude. Codimension-one bifurcations are detected along the solution branch using the Floquet multipliers, and bifurcation points can be calculated using test-functionals. When a branching point of periodic orbits is encountered the software can be directed to continue the other branch. Similarly, when a period-doubling bifurcation point is found, the period-two branch can be selected for continuation.
 
 The three generic codimension-one bifurcations (Neimark-Sacker, period doubling and fold) can be continued along two parameters. The defining systems of these bifurcations are minimally extended and use test-functionals \cite{szalai-tf}. Moreover, a limited number of codemension-two bifurcations can be continued, when two different test-functionals are selected.
 
-Fixed points of autonomous systems can also be continued as constant periodic orbits with fixed period. In this case the Hopf bifurcation is detected as Neimark-Sacker bifurcation, and the periodic solution emanating from the Hopf point can be continued by switching to the periodic solution branch.
+Fixed points of autonomous systems can also be continued as constant periodic orbits with fixed period. In this case the Hopf bifurcation is detected as Neimark-Sacker bifurcation, and the periodic solution, emanating from the Hopf point, can be continued by switching to the periodic solution branch.
 Although, continuing fixed points in this way is very inefficient, it might help in avoiding the hassle of producing starting points using some other numerical package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
 
 \section{Installation}
 
-The recommended way of compiling the package is to use the GNU C and C++ compilers of versions 3.3.6 and later. Although Sun Studio 10, the Intel C,C++ (v. 8.1 or later) compilers can build the package, this method is not guaranteed to work in future versions.
+In order to install the software one needs a Unix like environment with a shell program. For compiling the package it is recommended to use the GNU C and C++ compilers of versions 3.3.6 and later. Although Sun Studio 10, and the Intel C,C++ (v. 8.1 or later) compilers can build the package, they are not guaranteed to work with future versions of the package. Furthermore, the \filef{sed} command is needed, when using the \filef{pcompile} script.
 
 \subsection{Linux and Solaris}
 
@@ -83,7 +83,7 @@ The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.
 $ gzip -d pdde-cont-%\@version%.tar.gz
 $ tar xvf pdde-cont-%\@version%.tar
 \end{lstlisting} \end{quote} } \noindent
-The software depends on other library packages. Most of them are distributed within the package. However the ATLAS basic linear algebraic software is not included, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases the time consuming compilation can be avoided.
+The software depends on other library packages. Most of them are distributed within the package except the ATLAS basic linear algebraic software, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases the time consuming compilation process can be avoided.
 
 The second step is to configure the package using the \filef{configure} script.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -95,7 +95,7 @@ This generates the platform dependent \filef{Makefile}s and instructs the instal
 $ make
 $ make install
 \end{lstlisting} \end{quote} } \noindent
-In order to make the software work, the \filef{PATH} environment variables has to be set up. In case of the \filef{bash} shell include the
+In order to make the software work, the \filef{PATH} environment variables has to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
@@ -112,10 +112,6 @@ In order to install the software on Windows the MinGW and MinSYS packages have t
 $ echo 'export PATH=$PATH:$HOME/pdde-cont/bin' >.profile
 \end{lstlisting} \end{quote} } \noindent
 After installing the package restart the MSys shell and the software is ready to use.
-
-\subsection{Unix}
-
-The software loads dynamically linked (shared) object files, which describe the system definition. This feature was included into the software in order to avoid recompiling the package, when the system definition changes and to avoid statically linked, large executables, what AUTO \cite{auto97} uses. However the runtime facility that supports this feature does not exists only on all computing platforms, and they are mostly incompatible with each other. Our implementation chose Linux's way of loading the system definition as shared objects. This method works also on Solaris and possibly on some other computing platforms too.
 
 \section{Command line arguments}
 
