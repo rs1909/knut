@@ -243,9 +243,9 @@ class TestFunctLPAUTROT_X : public baseTestFunct
 		Vector       one2;  // this is ( 0.0, 1.0 )
 		Vector       rhs;   // this is always zero, so one instance is enogh
 		Vector       temp;
-		JagMatrix3D  phiData;
-		JagMatrix3D  vv3Data;
+		JagMatrix3D  vv1Data;
 		JagMatrix3D  vv2Data;
+		JagMatrix3D  vv3Data;
 		JagMatrix3D  solMSHData;
 };
 
