@@ -675,7 +675,7 @@ int main( int argc, const char** argv )
 				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 				ff<<pttr.Norm()<<"\n";
 				ff.flush();
-				fdata.str() = ""; fidx.str() = "";
+				std::ostringstream fdata, fidx;
 				fdata << "sol-" << i << ".dat";
 				fidx << "sol-" << i << ".idx";
 				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
