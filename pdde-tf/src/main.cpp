@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <cmath>
 
 #define MAX_PARX 8
@@ -283,14 +285,14 @@ int initEqnVar( System& sys, cfile* params,
 	{
 		if( phaseRot )
 		{
-			// 			std::cout<<"Phase and PhaseRot\n";
+			// std::cout<<"Phase and PhaseRot\n";
 			eqn_refine.Init(3);
 			var_refine.Init(3);
 			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnPhase;          eqn_refine(2) = EqnPhaseRot;
 			var_refine(0) = VarSol; var_refine(1) = var(var.Size()-2); var_refine(2) = var(var.Size()-1);
 		}else
 		{
-			// 			std::cout<<"Phase\n";
+			// std::cout<<"Phase\n";
 			eqn_refine.Init(2);
 			var_refine.Init(2);
 			eqn_refine(0) = EqnSol; eqn_refine(1) = EqnPhase;
@@ -661,6 +663,7 @@ int main( int argc, const char** argv )
 			pttr.setCont( params->CP );
 
 			double ds = params->DS;
+			std::ostringstream fdata, fidx;
 			for( int i = 0; i < params->STEPS; i++ )
 			{
 				pttr.Continue( ds, false );
@@ -672,9 +675,11 @@ int main( int argc, const char** argv )
 				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 				ff<<pttr.Norm()<<"\n";
 				ff.flush();
-				pttr.SaveSol( "sol.dat", "sol.idx" );
+				fdata.str() = ""; fidx.str() = "";
+				fdata << "sol-" << i << ".dat";
+				fidx << "sol-" << i << ".idx";
+				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
 			}
-			pttr.SaveSol( "sol.dat", "sol.idx" );
 		}
 		// **********************************************************************************************************
 	}
