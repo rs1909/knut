@@ -904,6 +904,10 @@ void Point::Plot( GnuPlot& pl )
 	pl.Show();
 }
 
+///--------------------------------
+/// INPUT & OUTPUT
+///--------------------------------
+
 void Point::Write( std::ofstream& file )
 {
 	Vector msh( NDEG*NINT+1 );

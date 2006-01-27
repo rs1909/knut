@@ -130,6 +130,9 @@ class Point : public PointData
 		void ReadNull( std::ifstream& file );
 		void Read( std::ifstream& file, bool tan=false );
 		void Write( std::ofstream& file );
+		void ReadNullBinary( std::ifstream& file );
+		void ReadBinary( std::ifstream& file );
+		void WriteBinary( std::ofstream& file );
 
 	private:
 		
