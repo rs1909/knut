@@ -151,6 +151,7 @@ AC_CONFIG_FILES([Makefile
 	demo/tq/Makefile 
 	demo/traffic/Makefile 
 	demo/turn/Makefile 
+	demo/turntwo/Makefile 
 	demo/laser/Makefile 
 	UMFPACK/Makefile 
 	UMFPACK/AMD/Makefile 

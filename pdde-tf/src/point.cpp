@@ -172,7 +172,7 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int npar
 			 { VarSol, PX0 } }; tab = tmp; } break;
 		case BifTFAUTLP:
 			{ PtTab tmp = { NOSwitch,   3, 2,
-			 { EqnSol, EqnPhase,      EqnTFLP },
+			 { EqnSol, EqnPhase,      EqnTFLPAUT },
 			 { VarSol, PX0,           PX1 } }; tab = tmp; } break;
 		case BifTFAUTPD:
 			{ PtTab tmp = { NOSwitch,   3, 2,
