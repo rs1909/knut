@@ -165,10 +165,6 @@ AC_CONFIG_FILES([Makefile
 	UMFPACK/AMD/Source/Makefile 
 	UMFPACK/UMFPACK/Makefile
 	UMFPACK/UMFPACK/Source/Makefile
-	pdde.spec 
-	pdde-sse.spec 
-	pdde-sse2.spec 
-	pdde-3dnow.spec 
-	])
+	pdde.spec ])
 	
 AC_OUTPUT

@@ -1,7 +1,29 @@
+%define atldir /usr/lib/atlas
+%define suff gen
+%define sreq %()
+
+%if "%{atlas}" == "sse"
+%define atldir /usr/lib/sse
+%define suff sse
+%define sreq -sse
+%endif
+
+%if "%{atlas}" == "sse2"
+%define atldir /usr/lib/sse2
+%define suff sse2
+%define sreq -sse2
+%endif
+
+%if "%{atlas}" == "3dnow"
+%define atldir /usr/lib/3dnow
+%define suff 3dnow
+%define sreq -3dnow
+%endif
+
 Summary: Numerical continuation software for delay-differential equations
 Name: pdde-cont
 Version: @VERSION@
-Release: gen
+Release: _%{suff}
 License: GPL
 Group: Application/Scientific
 Source: @PACKAGE@-@VERSION@.tar.gz
@@ -9,8 +31,7 @@ URL: N/A
 Vendor: Unknown
 Packager: Robert Szalai <s z a l a i _at_ m m . b m e . h u>
 Buildroot: %{_tmppath}/%{name}-%{version}-buildroot
-
-BuildRequires: atlas-devel
+BuildRequires: atlas%{sreq}-devel
 
 %description
 Numerical continuation software for delay-differential equations
@@ -19,7 +40,7 @@ Numerical continuation software for delay-differential equations
 %setup
 
 %build
-%configure --with-atlas=/usr/lib/atlas
+%configure --with-atlas=%{atldir}
 
 %install
 cd $RPM_BUILD_DIR/%{name}-%{version}
