@@ -121,6 +121,13 @@ AC_ARG_WITH(no-optimization-flags,
 
 AC_SUBST(NOOPT_CFLAGS)
 
+dnl specfy the locatio of the ATLAS libraries
+
+AC_ARG_WITH(atlas,
+[  --with-atlas=<directory>       specify the location of the atlas libraries (default: -O0)],
+[ATLAS_DIR=$withval], [ATLAS_DIR="`pwd`/ATLAS/lib"])
+AC_SUBST(ATLAS_DIR)
+
 dnl remove "#" if the software crashes
 
 # AC_DEFINE([DEBUG])
@@ -158,6 +165,10 @@ AC_CONFIG_FILES([Makefile
 	UMFPACK/AMD/Source/Makefile 
 	UMFPACK/UMFPACK/Makefile
 	UMFPACK/UMFPACK/Source/Makefile
-	pdde.spec ])
+	pdde.spec 
+	pdde-sse.spec 
+	pdde-sse2.spec 
+	pdde-3dnow.spec 
+	])
 	
 AC_OUTPUT
