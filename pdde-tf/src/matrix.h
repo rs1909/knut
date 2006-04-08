@@ -469,8 +469,8 @@ public:
 	// obsolote
 	inline Vector& operator=( const __op_mul_vec_plus_vec_rng<SpMatrix,Vector> );
 
-	inline __scal_vec_trans<Vector>     operator-( ) { return __scal_vec_trans<Vector>( *this, -1.0 ); }
-	inline __scal_vec_trans_rng<Vector> operator[ ] ( rng r ) { return __scal_vec_trans_rng<Vector>( *this, r ); }
+	inline __scal_vec_trans<Vector>     operator-( ) const { return __scal_vec_trans<Vector>( *this, -1.0 ); }
+	inline __scal_vec_trans_rng<Vector> operator[ ] ( const rng r ) const { return __scal_vec_trans_rng<Vector>( *this, r ); }
 	
 #endif // PDDESYS_H
 	
@@ -525,17 +525,17 @@ class Matrix : public Array2D<double>
 	
 	/* operators */
 	
-	inline __op_mul_vec<Matrix,Vector>     operator*( Vector& v )
+	inline __op_mul_vec<Matrix,Vector>     operator*( const Vector& v ) const 
 		{ return __op_mul_vec<Matrix,Vector>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Vector>( v ) ); }
-	inline __op_mul_vec<Matrix,Matrix>     operator*( Matrix& v )
+	inline __op_mul_vec<Matrix,Matrix>     operator*( const Matrix& v ) const 
 		{ return __op_mul_vec<Matrix,Matrix>( __scal_vec_trans<Matrix>( *this ), __scal_vec_trans<Matrix>( v ) ); }
-	inline __op_mul_vec_rng<Matrix,Vector> operator*( __scal_vec_trans_rng<Vector> v )
+	inline __op_mul_vec_rng<Matrix,Vector> operator*( const __scal_vec_trans_rng<Vector> v ) const 
 		{ return __op_mul_vec_rng<Matrix,Vector>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
-	inline __op_mul_vec_rng<Matrix,Matrix> operator*( __scal_vec_trans_rng<Matrix> v )
+	inline __op_mul_vec_rng<Matrix,Matrix> operator*( const __scal_vec_trans_rng<Matrix> v ) const 
 		{ return __op_mul_vec_rng<Matrix,Matrix>( __scal_vec_trans_rng<Matrix>( *this ), v ); }
-	inline __scal_vec_trans<Matrix>        operator!( )
+	inline __scal_vec_trans<Matrix>        operator!( ) const 
 		{ return __scal_vec_trans<Matrix>( *this, 1.0, Trans ); }
-	inline __scal_vec_trans_rng<Matrix>    operator[ ] ( rng r_ )
+	inline __scal_vec_trans_rng<Matrix>    operator[ ] ( const rng r_ ) const 
 		{ return __scal_vec_trans_rng<Matrix>( *this, r_ ); }
 	
 #endif // PDDESYS_H
