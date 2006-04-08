@@ -6,3 +6,5 @@
 3. GUI to respect all the constants in the constants file 
    A plotting widget to display the solution, and the branch. And also
    plotting the content of an existing output file.
+
+4. in hypermatrix.h check whether it the same matrix was factorized.
