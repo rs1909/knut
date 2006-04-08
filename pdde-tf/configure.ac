@@ -1,4 +1,5 @@
 AC_INIT([PDDE-CONT], [1.0.2])
+AC_CONFIG_HEADERS([src/config.h])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 
@@ -10,8 +11,7 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 
 REVISION="`cat REVISION`"
-AC_SUBST(REVISION)
-AC_DEFINE([PKG_REV],["@REVISION@"])
+AC_DEFINE_UNQUOTED([PKG_REV],"$REVISION",["SVN REVISION"])
 
 UNSUPPORTED_OS="PDDE-CONT is currently unsupported on your platform.
 If you are interested in making it work on your platform, you are

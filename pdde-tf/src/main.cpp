@@ -7,6 +7,9 @@
 //
 // ------------------------------------------------------------------------- //
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "pderror.h"
 #include "system.h"
 #include "point.h"
@@ -397,7 +400,9 @@ int main( int argc, const char** argv )
 					branchFile = argv[++acnt];
 					break;
 				case 'v':
+				 #ifdef HAVE_CONFIG_H
 					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<" ("<<PKG_REV<<")\n";
+				 #endif
 					exit(0);
 					break;
 				default:
