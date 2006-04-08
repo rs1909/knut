@@ -241,25 +241,23 @@ inline void HyMatrix<FACT> :: __BEM( T& _A, Vector& _b, Vector& _bStar, double& 
 	double y1, y2;
 	
 	// Doolittle
-	_A.Solve( bem_vStar, _bStar, !trans );                              // Step 1.
+	_A.Solve( bem_vStar, _bStar, !trans );                            // Step 1.
 	deltaStar = _d - bem_vStar*_b;                                    // Step 2. Scalar + ddot
 	// Crout
-	_A.Solve( bem_v, _b );                                            // Step 3.
+	_A.Solve( bem_v, _b, trans );                                     // Step 3.
 	delta = _d - _bStar*bem_v;                                        // Step 4. Scalar + ddot
 	// approx Y
 	y1 = (g - bem_vStar*f)/deltaStar;                                 // Step 5. Scalar + ddot
 	// residuals
 	bem_f1 = f;
 	bem_f1 -= y1 * _b;                                                // Step 6. daxpy
-// 	for( int i=0; i<_b.Size(); i++ ) bem_f1(i) = f(i) - _b(i)*y1;
 	g1 = g - _d*y1;                                                   // Step 7. Scalar
 	
 	// residual corrections
 	_A.Solve( bem_w, bem_f1, trans );                                 // Step 8.
 	y2 = (g1 - _bStar*bem_w)/delta;                                   // Step 9. Scalar + ddot
-	x = bem_w;
 	bem_w -= y2 * bem_v;                                              // Step 10. daxpy
-// 	for( int i=0; i<_b.Size(); i++ ) x(i) = bem_w(i) - bem_v(i)*y2;
+	x = bem_w;
 	y = y1 + y2;                                                      // Step 11. Scalar
 
 }
