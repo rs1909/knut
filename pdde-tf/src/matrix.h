@@ -83,7 +83,7 @@ public:
 	
 	inline void Init( int i )
 	{
-		delete v;
+		delete[] v;
 		n = i;
 		v = new T[i];
 		Clear();
@@ -91,7 +91,7 @@ public:
 
 	inline void Init( const Array1D<T>& V_ )
 	{
-		delete v;
+		delete[] v;
 		n = V_.n;
 		v = new T[V_.n];
 		*this = V_;
@@ -159,7 +159,7 @@ class Array2D{
 
 	inline void Init( int _r, int _c )
 	{
-		delete m;
+		delete[] m;
 		r = _r;
 		c = _c;
 		m = new T[r*c+1];
@@ -242,11 +242,11 @@ class Array3D{
 		for( int i = 0; i < d1*d2*d3; i++ ) m[i] = M.m[i];
 	}
 
-	inline virtual ~Array3D(){ delete []m; }
+	inline virtual ~Array3D(){ delete[] m; }
 
 	inline void Init( int _d1, int _d2, int _d3 )
 	{
-		delete m;
+		delete[] m;
 		d1 = _d1;
 		d2 = _d2;
 		d3 = _d3;
@@ -420,7 +420,7 @@ public:
 
 	inline Vector( const Vector& V ) : Array1D<double>( V ) { }
 
-	inline ~Vector() { }
+	inline virtual ~Vector() { }
 
 	inline double *Pointer(){ return v; }
 	
@@ -598,7 +598,7 @@ class MatFact : public Matrix
 			iwork = new integer[this->r];
 		}
 		
-		inline ~MatFact(){ delete[] iwork; delete[] work; delete[] ipiv; delete[] mf; }
+		inline virtual ~MatFact(){ delete[] iwork; delete[] work; delete[] ipiv; delete[] mf; }
 
 		inline MatFact& operator=( MatFact& M )
 		{
