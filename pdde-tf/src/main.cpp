@@ -649,7 +649,7 @@ int main( int argc, const char** argv )
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 
 			// destroy point, construct PointTR
-			delete pt_ptr;
+			delete pt_ptr; pt_ptr = 0;
 			PointTR pttr( sys, eqn, var, params->NDEG1,params->NDEG2, params->NINT1, params->NINT2 );
 
 			// construct the solution tangent from the eigenvectors
@@ -682,6 +682,7 @@ int main( int argc, const char** argv )
 			}
 		}
 		// **********************************************************************************************************
+		delete pt_ptr;
 	}
 
 	delete params;
