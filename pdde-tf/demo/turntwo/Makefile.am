@@ -7,6 +7,9 @@ dist_exdata_DATA += cfile-start cfile-nssw cfile-ns-1 cfile-ns-2 cfile-lp-1 cfil
 sys-$(NAME).so: sys-$(NAME).cpp
 	$(SHELL) ../../bin/pcompile sys-$(NAME).cpp
 
+clean:
+	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so
+
 test:
 	pdde -c cfile-start -o out-start -b br-start
 test-nssw:
