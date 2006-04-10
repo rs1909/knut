@@ -1,25 +1,13 @@
-CXXFLAGS = @MOD_CXXFLAGS@
-CXX=@CXX@
+NAME = tq
 
-NAME = sys-tq
+exdatadir = $(pkgdatadir)/demo/$(NAME)
+dist_exdata_DATA = sys-$(NAME).cpp sys-$(NAME).so
+dist_exdata_DATA += cfile-lp-1-a cfile-lp-2-a  cfile-ns      cfile-pdsw-2  cfile-tr \
+		    cfile-lp-1-b cfile-lp-2-b  cfile-pdsw-1  cfile-start
 
-DSFILES = Makefile.in $(NAME).cpp \
-	cfile-lp-1-a  cfile-lp-2-a  cfile-ns      cfile-pdsw-2  cfile-tr \
-	cfile-lp-1-b  cfile-lp-2-b  cfile-pdsw-1  cfile-start
+sys-$(NAME).so: sys-$(NAME).cpp
+	$(SHELL) ../../bin/pcompile sys-$(NAME).cpp
 
-$(NAME).so: ../../src/pddesys.h
-	$(CXX) $(CXXFLAGS) -I../../src -o $(NAME).so $(NAME).cpp
-
-distdir:
-	cp -pR $(DSFILES) $(distdir)
-
-clean:
-	if { test -f *.so; } then rm *.so; fi
-
-install: $(NAME).so
-	
-all: $(NAME).so
-	
 test:
 	pdde -c cfile-start -o out-start -b br-start
 test-tr:
