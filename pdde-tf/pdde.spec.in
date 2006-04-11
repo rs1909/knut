@@ -50,6 +50,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 %files
 %{_bindir}/*
 %{_includedir}/*
+%{_datadir}/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
