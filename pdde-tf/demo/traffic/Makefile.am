@@ -1,7 +1,8 @@
 NAME = traffic
 
 exdatadir = $(pkgdatadir)/demo/$(NAME)
-dist_exdata_DATA = sys-$(NAME).cpp sys-$(NAME).so
+dist_exdata_DATA = sys-$(NAME).cpp
+nodist_exdata_DATA = sys-$(NAME).so
 dist_exdata_DATA += cfile-start-a cfile-start-b \
 	            cfile-ns-a cfile-ns-b \
 	            cfile-nssw-a cfile-nssw-b \

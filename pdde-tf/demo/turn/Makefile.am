@@ -1,7 +1,8 @@
 NAME = turn
 
 exdatadir = $(pkgdatadir)/demo/$(NAME)
-dist_exdata_DATA = sys-$(NAME).cpp sys-$(NAME).so
+dist_exdata_DATA = sys-$(NAME).cpp
+nodist_exdata_DATA = sys-$(NAME).so
 dist_exdata_DATA += cfile-start cfile-ns cfile-nssw
 
 sys-$(NAME).so: sys-$(NAME).cpp

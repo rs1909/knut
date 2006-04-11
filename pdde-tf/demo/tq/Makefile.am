@@ -1,7 +1,8 @@
 NAME = tq
 
 exdatadir = $(pkgdatadir)/demo/$(NAME)
-dist_exdata_DATA = sys-$(NAME).cpp sys-$(NAME).so
+dist_exdata_DATA = sys-$(NAME).cpp
+nodist_exdata_DATA = sys-$(NAME).so
 dist_exdata_DATA += cfile-lp-1-a cfile-lp-2-a  cfile-ns      cfile-pdsw-2  cfile-tr \
 		    cfile-lp-1-b cfile-lp-2-b  cfile-pdsw-1  cfile-start
 
