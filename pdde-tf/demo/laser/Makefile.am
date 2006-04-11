@@ -6,7 +6,7 @@ nodist_exdata_DATA = sys-$(NAME).so
 dist_exdata_DATA += cfile-start cfile-ns cfile-pd cfile-lp in-start
 
 sys-$(NAME).so: sys-$(NAME).cpp
-	$(SHELL) ../../bin/pcompile sys-$(NAME).cpp
+	$(CXX) @MOD_CXXFLAGS@ -I../../src sys-$(NAME).cpp -o sys-$(NAME).so
 
 clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so

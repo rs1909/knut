@@ -8,4 +8,4 @@ clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so
 
 sys-$(NAME).so: sys-$(NAME).cpp
-	$(SHELL) ../../bin/pcompile sys-$(NAME).cpp
+	$(CXX) @MOD_CXXFLAGS@ -I../../src sys-$(NAME).cpp -o sys-$(NAME).so
