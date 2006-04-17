@@ -1,30 +1,26 @@
 %define atldir /usr/lib/atlas
-%define suff generic
 %define sreq %()
 
 %if "%{atlas}" == "sse"
 %define atldir /usr/lib/sse
-%define suff sse
 %define sreq -sse
 %endif
 
 %if "%{atlas}" == "sse2"
 %define atldir /usr/lib/sse2
-%define suff sse2
 %define sreq -sse2
 %endif
 
 %if "%{atlas}" == "3dnow"
 %define atldir /usr/lib/3dnow
-%define suff 3dnow
 %define sreq -3dnow
 %endif
 
 Summary: Numerical continuation software for delay-differential equations
 Name: pdde-cont
 Version: @VERSION@
-Release: %{suff}
-License: GPL
+Release: 1%{?dist}
+License: GPL v2 with additions
 Group: Application/Scientific
 Source: @PACKAGE@-@VERSION@.tar.gz
 URL: N/A
