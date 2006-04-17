@@ -378,7 +378,7 @@ Column & & \\
 \label{iostruct}
 \end{table}
 
-It is possible to convert the solution profile from DDE-BIFTOOL to this format and back. For this use the matlab scripts \filef{dde2pdde.m} or \filef{pdde2pdd.m} in the \filef{matlab} subdirectory in the following way. Assume that there is branch of periodic solutions (\funp{psbr}). This branch can be exported using the command
+It is possible to convert the solution profile from DDE-BIFTOOL to this format and back. For this use the matlab scripts \filef{dde2pdde.m} or \filef{pdde2dde.m} in the \filef{matlab} subdirectory in the following way. Assume that there is branch of periodic solutions (\funp{psbr}). This branch can be exported using the command
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 >> dde2pdde( 'output-file', psbr.point, NMUL );
 \end{lstlisting} \end{quote} } \noindent
