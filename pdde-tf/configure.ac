@@ -140,6 +140,7 @@ AC_PROG_INSTALL
 
 AC_CONFIG_FILES([Makefile  
 	src/Makefile
+	cli/Makefile
 	bin/Makefile
 	bin/pcompile
 	libf2c/Makefile
