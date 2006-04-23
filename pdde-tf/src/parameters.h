@@ -11,6 +11,23 @@ template< class T > class Array1D;
 #define MAX_EQVAR 8
 #define MAX_SYM 4
 
+/*
+sys-glass.so                      SYSNAME
+0                                 LABEL
+{
+50 P2 1 P0                        TYPE, CP, NPARX, PARX[NPARX]
+or
+-1 P2 0 3 E1 E24 E25 3 S1 P0 P11  TYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]
+}
+200 4 5 1 1                       NINT, NDEG, NMUL, STAB, NMAT
+12 12 4 4                         NINT1, NINT2, NDEG1, NDEG2
+120 -100 100                      STEPS, CPMIN, CPMAX
+-0.002 0.002 0.002 -0.002         DS, DSMIN, DSMAX, DSSTART
+1e-05 1e-05 1e-06                 EPSC, EPSR, EPSS
+12 12 12                          NITC, NITR, NITS
+2 0 1 3 4                         NSYM, R0, I0, R1, I1
+*/
+
 class ConstFile
 {
   public:
