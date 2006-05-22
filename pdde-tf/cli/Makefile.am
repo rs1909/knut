@@ -3,6 +3,7 @@ bin_PROGRAMS = ../bin/pdde
 ___bin_pdde_SOURCES = main.cpp
 
 INCLUDES = -I$(top_srcdir)/src \
+	-I$(top_srcdir)/UMFPACK/AMD/Include \
 	-I$(top_srcdir)/UMFPACK/UMFPACK/Include \
 	-I$(top_srcdir)/ATLAS/include
 

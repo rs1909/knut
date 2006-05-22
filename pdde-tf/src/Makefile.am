@@ -9,4 +9,4 @@ libpdde_a_SOURCES =	plot.cpp ncolloc.cpp torcolloc.cpp point.cpp torpoint.cpp \
 			
 incdir = $(includedir)
 inc_HEADERS = pddesys.h matrix.h
-INCLUDES = -I$(top_srcdir)/UMFPACK/UMFPACK/Include -I$(top_srcdir)/ATLAS/include
+INCLUDES = -I$(top_srcdir)/UMFPACK/AMD/Include -I$(top_srcdir)/UMFPACK/UMFPACK/Include -I$(top_srcdir)/ATLAS/include
