@@ -11,7 +11,7 @@ sys-$(NAME).so: sys-$(NAME).cpp
 clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so
 
-test: $(NAME).so
+test: sys-$(NAME).so
 	pdde -c cfile-start -i in-start -o out-start -b br-start
 test-ns:
 	pdde -c cfile-ns -i out-start -o out-ns -b branch-ns
