@@ -1,0 +1,13 @@
+Commands to test the traffic model:
+
+Find a Hopf bifurcation point
+  make test1a
+  make test1b
+
+Switch to the periodic orbit branch
+  make test2a
+  make test2b
+
+Continue the fold bifurcation of the periodic orbits
+  make test3a
+  make test3b
