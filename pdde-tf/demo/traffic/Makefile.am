@@ -14,14 +14,20 @@ clean:
 sys-$(NAME).so: sys-$(NAME).cpp
 	$(CXX) @MOD_CXXFLAGS@ -I../../src sys-$(NAME).cpp -o sys-$(NAME).so
 
-test2: out-start-a
+test1a:
+	pdde -c cfile-start-a -o out-start-a -b br-start-a
+
+test1b:
+	pdde -c cfile-start-b -o out-start-b -b br-start-b
+
+test2a: out-start-a
 	pdde -c cfile-nssw-a -i out-start-a -o out-nssw-a -b br-nssw-a
 
-test3: out-start-b
+test2b: out-start-b
 	pdde -c cfile-nssw-b -i out-start-b -o out-nssw-b -b br-nssw-b
 
-test4: out-nssw-a
+test3a: out-nssw-a
 	pdde -c cfile-lp-a -i out-nssw-a -o out-lp-a -b br-lp-a
 
-test5: out-nssw-b
+test3b: out-nssw-b
 	pdde -c cfile-lp-b -i out-nssw-b -o out-lp-b -b br-lp-b
