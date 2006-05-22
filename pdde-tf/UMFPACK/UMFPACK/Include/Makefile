@@ -10,7 +10,7 @@ DSFILES = Makefile \
 	umfpack_get_symbolic.h     umfpack_report_status.h    umfpack_transpose.h \
 	umfpack.h                  umfpack_report_symbolic.h  umfpack_triplet_to_col.h \
 	umfpack_load_numeric.h     umfpack_report_triplet.h   umfpack_wsolve.h \
-	umfpack_load_symbolic.h    umfpack_report_vector.h    umppack_global.h
+	umfpack_load_symbolic.h    umfpack_report_vector.h    umfpack_global.h
 
 distdir:
 	list='$(DSDIRS)'; for subdir in $$list; do \
