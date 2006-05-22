@@ -11,7 +11,7 @@ sys-$(NAME).so: sys-$(NAME).cpp
 clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so
 
-test: $(NAME).so
+test: sys-$(NAME).so
 	pdde -c cfile-start -o out-start -b br-start
 	pdde -c cfile-ns -i out-start -o out-ns -b br-ns
 	pdde -c cfile-nssw -i out-start -o out-nssw -b br-nssw
