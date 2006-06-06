@@ -8,7 +8,8 @@ SUBDIRS = glass \
 	traffic \
 	turn \
 	turntwo \
-	laser
+	laser \
+	vanderpol
 
 AM_CXXFLAGS = -O3 -W -Wall
 CXXFLAGS = AM_CXXFLAGS

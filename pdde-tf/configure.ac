@@ -161,6 +161,7 @@ AC_CONFIG_FILES([Makefile
 	demo/turn/Makefile 
 	demo/turntwo/Makefile 
 	demo/laser/Makefile 
+	demo/vanderpol/Makefile 
 	UMFPACK/Makefile 
 	UMFPACK/AMD/Makefile 
 	UMFPACK/AMD/Source/Makefile 
