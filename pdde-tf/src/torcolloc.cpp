@@ -13,6 +13,7 @@
 #include "hypermatrix.h"
 #include "plot.h"
 #include <cmath>
+#include <fstream>
 
 // support routines
 
@@ -779,7 +780,6 @@ void CollocTR::ImportTan( Vector& out, Vector& Re, Vector& Im, double alpha )
 	out /= norm;
 }
 
-#include <fstream>
 
 void CollocTR::Save( const char* dat, const char* idx, const Vector& in )
 {
