@@ -913,8 +913,8 @@ void Point::Write( std::ofstream& file )
 	Vector msh( NDEG*NINT+1 );
 	colloc.getMesh( msh );
 	
-	file<<NPAR<<"\t";
-	for( int i = 0; i < NPAR; i++ ) file<<par(i)<<"\t";
+	file<<NPAR+ParEnd<<"\t";
+	for( int i = 0; i < NPAR+ParEnd; i++ ) file<<par(i)<<"\t";
 	
 	file<<mRe.Size()<<"\t";
 	for( int i = 0; i < mRe.Size(); i++ ) file<<mRe(i)<<"\t"<<mIm(i)<<"\t";
@@ -932,8 +932,8 @@ void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
-	for( int i = 0; i < NPAR; i++ ) file>>par(i);
+	if( NPAR+ParEnd != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
+	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>par(i);
 	
 	file>>nmul_;
 	if( mRe.Size() < nmul_ ) { std::cout<<"Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
@@ -991,8 +991,8 @@ void Point::ReadNull( std::ifstream& file )
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
-	for( int i = 0; i < NPAR; i++ ) file>>tmp;
+	if( NPAR+ParEnd != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
+	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>tmp;
 	
 	file>>nmul_;
 	if( mRe.Size() < nmul_ ) { std::cout<<"RN:Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }

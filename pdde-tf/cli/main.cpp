@@ -297,7 +297,7 @@ int main( int argc, const char** argv )
 				pt.Write( out );
 				
 				// branch output
-				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
+				for( int j = 0; j < par.Size(); j++ ) ff<<par(j)<<"\t";
 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
 				ff.flush();
 				int itc = it( itpos );
