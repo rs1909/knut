@@ -1,4 +1,4 @@
-NAME = traffic
+NAME = traffic3cars
 
 exdatadir = $(pkgdatadir)/demo/$(NAME)
 dist_exdata_DATA = sys-$(NAME).cpp
@@ -7,7 +7,7 @@ dist_exdata_DATA += cfile-start-a cfile-start-b \
 	            cfile-ns-a cfile-ns-b \
 	            cfile-nssw-a cfile-nssw-b \
 	            cfile-lp-a cfile-lp-b \
-	            README
+	            README sys-traffic50cars.cpp
 
 clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so
