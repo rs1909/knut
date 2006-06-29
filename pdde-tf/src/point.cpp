@@ -564,8 +564,6 @@ int Point::Refine( )
 	return it;
 }
 
-#define DEBUG
-
 void Point::SwitchTFHB( double ds )
 {
 	TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);

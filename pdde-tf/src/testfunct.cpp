@@ -269,8 +269,6 @@ void TestFunctCPLX::Switch( Vector& Re, Vector& Im, double& alpha )
 	}
 }
 
-#define DEBUG
-
 #ifdef DEBUG
 	#include <iomanip>
 	#include <fstream>
