@@ -7,6 +7,8 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "config.h"
+
 #include "pderror.h"
 #include "point.h"
 #include "ncolloc.h"
@@ -310,10 +312,10 @@ void Point::Dispose()
 
 void Point::Jacobian(
 		HyperMatrix& AA, HyperVector& RHS,                      // output
-		Vector& /*parPrev*/, Vector& par,                           // parameters
+		Vector& parPrev, Vector& par,                           // parameters
 		Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
 		Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
-		bool cont )                                             // cont: true if continuation
+		double ds, bool cont )                                             // cont: true if continuation
 {
 // uses also: eqn, var
 // ---------------------------------------------------------------------------------------------------------------- //
@@ -461,7 +463,14 @@ void Point::Jacobian(
 		for( int i = 0; i < dim3; i++ ) AA.getA33()(dim3,i) = xxDot->getV3()(i);
 		AA.getA33()(dim3,dim3) = p1Dot;
 		
-		RHS.getV3()(dim3) = 0.0;
+		if( ds != 0.0 )
+		{
+			RHS.getV3()(dim3) = ds - colloc.IntegrateCont( xxDot->getV1(), sol, solPrev );
+			for( int j = 1; j < varMap.Size(); ++j ) RHS.getV3()(dim3) -= xxDot->getV3()(j)*(par(varMap(j))-parPrev(varMap(j)));
+		}else
+		{
+			RHS.getV3()(dim3) = 0.0;
+		}
 	}
 }
 
@@ -539,7 +548,7 @@ int Point::Refine( )
 		colloc.Init( par, sol );
 		colloc.Interpolate( solData, sol );
 	
-		Jacobian( *jac, *rhs, parNu, par, solNu, sol, solData, varMap, false );
+		Jacobian( *jac, *rhs, parNu, par, solNu, sol, solData, varMap, 0.0, false );
 		jac->Solve( *xx, *rhs, dim3 );
 		
 		Update( *xx );
@@ -555,17 +564,25 @@ int Point::Refine( )
 	return it;
 }
 
+#define DEBUG
+
 void Point::SwitchTFHB( double ds )
 {
+	TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);
+	Vector QRE(NDIM), QIM(NDIM);
+	tf->SwitchHB( QRE, QIM, colloc, par );
+
 	if( par(NPAR+ParAngle) < 0 ) par(NPAR+ParAngle) *= -1.0;
 	if( par(NPAR+ParAngle) < M_PI ) par(0) *= 2*M_PI/par(NPAR+ParAngle);
 	else par(0) *= 2*M_PI/(par(NPAR+ParAngle) - M_PI);
 	std::cout<<"SwitchHOPF: T = "<<par(0)<<", angle/2PI = "<<par(NPAR+ParAngle)/(2*M_PI)<<"\n";
-	
-	TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);
-	Vector QRE(NDIM), QIM(NDIM);
-	tf->SwitchHB( QRE, QIM, colloc );
-	
+
+#ifdef DEBUG
+	std::ofstream file( "neweigenvec" );
+	file<<std::scientific;
+	file.precision(12);
+#endif
+
 	for( int i = 0; i < NINT; i++ )
 	{
 		for( int j = 0; j < NDEG+1; j++ )
@@ -573,15 +590,21 @@ void Point::SwitchTFHB( double ds )
 			const double t = colloc.Profile( i, j );
 			for( int p = 0; p < NDIM; p++ )
 			{
-				xxDot->getV1()( p + (j+i*NDEG)*NDIM ) = sin(2.0*M_PI*t) * QIM(p) + cos(2.0*M_PI*t) * QRE(p);
+				xxDot->getV1()( p + (j+i*NDEG)*NDIM ) = cos(2.0*M_PI*t) * QRE(p) + sin(2.0*M_PI*t) * QIM(p);
+			#ifdef DEBUG
+				file<<xxDot->getV1()( p + (j+i*NDEG)*NDIM )<<"\t";
+			#endif
 			}
+		#ifdef DEBUG
+			file<<par(0)*t<<"\n";
+		#endif
 		}
 	}
 
 	double norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) );
 	xxDot->getV1() /= norm;
 	xxDot->getV3().Clear();
-// 	std::cout<<"HOPFtanNorm "<<norm<<"\n";
+	// 	std::cout<<"HOPFtanNorm "<<norm<<"\n";
 	
 	for( int i = 0; i < NDIM*(NINT*NDEG+1); i++ )
 	{
@@ -668,7 +691,7 @@ void Point::Tangent( )
 	
 	varMapCont( varMap.Size() ) = p1; // not necessary
 	// az RHS-t feleslegesen szamolja ki && the first qq should be qq0
-	Jacobian( *jac, *rhs, par, par, sol, sol, solData, varMapCont, false );
+	Jacobian( *jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, false );
 	
 	rhs->getV1() = jac->getA13( dim3 );
 	for( int i = 0; i < dim3; i++ ) rhs->getV3()(i) = jac->getA33( i, dim3 );
@@ -689,7 +712,7 @@ void Point::Tangent( )
 // 	std::cout<<"Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm<<'\n';
 }
 
-int Point::Continue( double ds )
+int Point::Continue( double ds, bool jacstep )
 {
 	double Xnorm, Dnorm, Rnorm, Tnorm;
 	
@@ -707,7 +730,8 @@ int Point::Continue( double ds )
 		colloc.Init( parNu, solNu );
 		colloc.Interpolate( solData, solNu );
 		
-		Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, true );
+		if( jacstep ) Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, ds, true );
+		else          Jacobian( *jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, 0.0, true );
 		
 		jac->Solve( *xx, *rhs );
 		

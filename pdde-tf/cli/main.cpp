@@ -256,7 +256,7 @@ int main( int argc, const char** argv )
 				}
 				itpos = (itpos+1) % ithist;
 				//
-				it( itpos ) = pt.Continue( ds );
+				it( itpos ) = pt.Continue( ds, (i == 0) && (params->SWITCH == TFHBSwitch) );
 				//
 				if( params->STAB != 0) pt.Stability();
 				ustabprev = ustab;

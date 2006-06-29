@@ -68,7 +68,7 @@ class Point : public PointData
 		int     StartTF( Eqn FN );
 		int     Refine( );
 		void    Tangent( );
-		int     Continue( double ds );
+		int     Continue( double ds, bool jacstep );
 		void    Stability( );
 
 		// supplementary
@@ -149,7 +149,7 @@ class Point : public PointData
 			Vector& parPrev, Vector& par,                           // parameters
 			Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
 			Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
-			bool cont                                               // cont: true if continuation
+			double ds, bool cont                                    // ds stepsize, cont: true if continuation
 		);
 		
 		inline void   Update( HyperVector& X );                          // sol,   qq,   par            += X

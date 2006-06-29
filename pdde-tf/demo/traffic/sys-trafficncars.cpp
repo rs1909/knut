@@ -24,10 +24,12 @@
 // x[2N-2] = h_{N-1}
 // dim = 2N-1 
 
+#define NCARS 17
+
 extern "C"
 {
 
-int sys_ndim() { return 99; }
+int sys_ndim() { return 2*NCARS-1; }
 int sys_npar() { return 5; }
 int sys_ntau() { return 2; }
 int sys_nderi() { return 0; }
@@ -55,34 +57,34 @@ void sys_rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
 #define xx(i,j) yy(i-1,j-1)
 #define f(i,j) out(i-1)
 
-	for( int i = 1; i < 50; i++ )
+	for( int i = 1; i < NCARS; i++ )
 	{
-		if ( xx(i+50,2) > 1 )
+		if ( xx(i+NCARS,2) > 1 )
 		{
-			f(i,1) = par(3) * ( par(4) * V(xx(i+50,2)) - xx(i,1) ); 
+			f(i,1) = par(3) * ( par(4) * V(xx(i+NCARS,2)) - xx(i,1) ); 
 		}else
 		{
 			f(i,1) = -par(3) * xx(i,1);
 		}
 	}
 
-	double sumi = 50*par(1);
-	for( int i = 1; i < 50; i++ )
+	double sumi = NCARS*par(1);
+	for( int i = 1; i < NCARS; i++ )
 	{
-		sumi = sumi - xx(i+50,2);
+		sumi = sumi - xx(i+NCARS,2);
 	}
 	
 	if( sumi > 1 )
 	{
-		f(50,1) = par(3) * ( par(4) * V(sumi) - xx(50,1) );
+		f(NCARS,1) = par(3) * ( par(4) * V(sumi) - xx(NCARS,1) );
 	}else
 	{
-		f(50,1) = - par(3) * xx(50,1);
+		f(NCARS,1) = - par(3) * xx(NCARS,1);
 	}
 
-	for( int i = 1; i < 50; i++ )
+	for( int i = 1; i < NCARS; i++ )
 	{
-		f(i+50,1) = xx(i+1,1) - xx(i,1);
+		f(i+NCARS,1) = xx(i+1,1) - xx(i,1);
 	}
 	
 #undef f
@@ -98,7 +100,7 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 void sys_stpar( Vector& par )
 {
 	par(0) = 1.1; // T the period length 
-	par(1) = 2.0; // L/N
+	par(1) = 2.0; // L/NCARS
 	par(2) = 1.0; // the delay
 	par(3) = 1.0; // alpha
 	par(4) = 1.0; // v_0
@@ -107,11 +109,11 @@ void sys_stpar( Vector& par )
 void sys_stsol( Vector& out, double t )
 {
 #define f(i) out(i-1)
-	for( int i=1; i<51; i++ ){
+	for( int i=1; i<NCARS+1; i++ ){
 	    f(i) = 0.5;
 	}
-	for( int i=1; i<50; i++ ){
-	    f(i+50) = 2.0;
+	for( int i=1; i<NCARS; i++ ){
+	    f(i+NCARS) = 2.0;
     }
 #undef f
 }

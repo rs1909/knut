@@ -7,7 +7,7 @@ dist_exdata_DATA += cfile-start-a cfile-start-b \
 	            cfile-ns-a cfile-ns-b \
 	            cfile-nssw-a cfile-nssw-b \
 	            cfile-lp-a cfile-lp-b \
-	            README sys-traffic50cars.cpp
+	            README sys-trafficncars.cpp
 
 clean:
 	-test -z sys-$(NAME).so || rm -f sys-$(NAME).so

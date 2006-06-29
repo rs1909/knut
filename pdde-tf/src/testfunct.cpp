@@ -7,6 +7,8 @@
 //
 // ------------------------------------------------------------------------- //
 
+#include "config.h"
+
 #include "testfunct.h"
 #include "matrix.h"
 #include "spmatrix.h"
@@ -267,8 +269,35 @@ void TestFunctCPLX::Switch( Vector& Re, Vector& Im, double& alpha )
 	}
 }
 
-void TestFunctCPLX::SwitchHB( Vector& Re, Vector& Im, NColloc& col )
+#define DEBUG
+
+#ifdef DEBUG
+	#include <iomanip>
+	#include <fstream>
+#endif
+
+void TestFunctCPLX::SwitchHB( Vector& Re, Vector& Im, NColloc& col, const Vector& par )
 {
+// probably it is not the best point in the profile...
+#ifdef DEBUG
+	std::ofstream file( "eigenvec" );
+	file<<std::scientific;
+	file.precision(12);
+
+	for( int i = 0; i < NINT; i++ )
+	{
+		for( int j = 0; j < NDEG+1; j++ )
+		{
+			const double t = col.Profile( i, j );
+			for( int p = 0; p < NDIM; p++ )
+			{
+				file<<vv( 2*(p + (j+i*NDEG)*NDIM) )<<"\t";
+			}
+			file<<par(0)*t<<"\n";
+		}
+	}
+#endif
+
 	for( int i = 0; i < NDIM; i++ )
 	{
 		Re(i) = vv( 2*i );
