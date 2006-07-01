@@ -11,7 +11,7 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 
 REVISION="`cat REVISION`"
-AC_DEFINE_UNQUOTED([PKG_REV],"$REVISION",["SVN REVISION"])
+AC_DEFINE_UNQUOTED([PACKAGE_REVISION],"$REVISION",["SVN REVISION"])
 
 UNSUPPORTED_OS="PDDE-CONT is currently unsupported on your platform.
 If you are interested in making it work on your platform, you are

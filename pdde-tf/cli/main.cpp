@@ -80,7 +80,7 @@ int main( int argc, const char** argv )
 					break;
 				case 'v':
 				 #ifdef HAVE_CONFIG_H
-					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<" ("<<PKG_REV<<")\n";
+					std::cout<<"This is "<<PACKAGE_NAME<<" version "<<PACKAGE_VERSION<<" ("<<PACKAGE_REVISION<<")\n";
 				 #endif
 					exit(0);
 					break;
