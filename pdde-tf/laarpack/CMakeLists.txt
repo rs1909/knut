@@ -1,8 +1,9 @@
 SET( BLASINC  ${PDDE_SOURCE_DIR}/ATLAS/include )
-INCLUDE_DIRECTORIES( ${BLASINC} )
-ADD_LIBRARY( laarpack laarpack.c dlamch.o cblaswrap.h f2c.h )
+SET( F2CINC ${PDDE_SOURCE_DIR}/libf2c )
+INCLUDE_DIRECTORIES( ${BLASINC} ${F2CINC} )
+ADD_LIBRARY( laarpack laarpack.c dlamch.o cblaswrap.h )
 
 SET_SOURCE_FILES_PROPERTIES( dlamch.o PROPERTIES GENERATED TRUE )
 ADD_CUSTOM_TARGET( dlamch.o
-    COMMAND ${CMAKE_C_COMPILER} -O0 -I${BLASINC} -c dlamch.c -o dlamch.o )
+    COMMAND ${CMAKE_C_COMPILER} -O0 -I${BLASINC} -I${F2CINC} -c dlamch.c -o dlamch.o )
 ADD_DEPENDENCIES( laarpack dlamch.o )
