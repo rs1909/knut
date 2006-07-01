@@ -1,0 +1,13 @@
+LINK_DIRECTORIES( ${PDDE_BINARY_DIR}/ATLAS/lib )
+
+INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src
+	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
+	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include
+	${PDDE_SOURCE_DIR}/ATLAS/include )
+
+ADD_EXECUTABLE( pdde main.cpp )
+
+
+TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
+
+INSTALL_TARGETS( /bin pdde )

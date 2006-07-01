@@ -42,6 +42,9 @@
 /* Define to the full name of this package. */
 #undef PACKAGE_NAME
 
+/* "SVN REVISION" */
+#undef PACKAGE_REVISION
+
 /* Define to the full name and version of this package. */
 #undef PACKAGE_STRING
 
@@ -50,9 +53,6 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* "SVN REVISION" */
-#undef PKG_REV
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
