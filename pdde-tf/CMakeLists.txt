@@ -5,7 +5,7 @@ PROJECT( PDDE )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "PDDE-CONT" )
-SET( PACKAGE_VERSION "1.0.3" )
+SET( PACKAGE_VERSION "1.0.4" )
 FILE( READ REVISION REV )
 STRING( REPLACE "\\n" "" PACKAGE_REVISION ${REV} )
 CONFIGURE_FILE( src/config.h.cmake src/config.h )
@@ -26,18 +26,22 @@ IF( NOT EXISTS ${SHELL} )
 ENDIF( NOT EXISTS ${SHELL} )
 
 # finding GCC or the Intel compiler
+
+SET( C_WARNINGS "-W -Wall -Wno-unused-parameter -Wno-unknown-pragmas -Wstrict-prototypes -Wpointer-arith" )
+SET( CXX_WARNINGS "-W -Wall -Wno-unused-parameter -Wno-unknown-pragmas -Wpointer-arith" )
+
 FIND_PROGRAM( C_COMPILER NAMES gcc icc )
 IF( EXISTS ${C_COMPILER} )
 	MESSAGE( "A C compiler has been found: ${C_COMPILER}" )
 	SET( CMAKE_C_COMPILER "${C_COMPILER}" CACHE STRING "C compiler" FORCE )
-	SET( CMAKE_C_FLAGS "-O2 -W -Wall" CACHE STRING "CFLAGS" FORCE )
+	SET( CMAKE_C_FLAGS "-O2 ${C_WARNINGS}" CACHE STRING "CFLAGS" FORCE )
 ENDIF( EXISTS ${C_COMPILER} )
 
 FIND_PROGRAM( CXX_COMPILER NAMES g++ icpc )
 IF( EXISTS ${CXX_COMPILER} )
 	MESSAGE( "A C++ compiler has been found: ${CXX_COMPILER}" )
 	SET( CMAKE_CXX_COMPILER ${CXX_COMPILER} CACHE STRING "C++ compiler" FORCE )
-        SET( CMAKE_CXX_FLAGS "-O2 -W -Wall" CACHE STRING "CXX_FLAGS" FORCE )
+        SET( CMAKE_CXX_FLAGS "-O2 ${CXX_WARNINGS}" CACHE STRING "CXX_FLAGS" FORCE )
 ENDIF( EXISTS ${CXX_COMPILER} )
 
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
@@ -53,7 +57,7 @@ ADD_CUSTOM_TARGET( dist
 		svn log -r HEAD -q | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >REVISION\;
 		svn list -r HEAD -R --non-interactive | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
-		tar czf ${DIST_DIR}.tar.gz --no-recursion -h -T tmp_filelist\;
+		tar cjf ${DIST_DIR}.tar.bz2 --no-recursion -h -T tmp_filelist\;
 		rm tmp_filelist ${DIST_DIR}\; )
 
 #------------------------------------------------------------------------------
