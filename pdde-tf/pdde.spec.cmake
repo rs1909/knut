@@ -4,7 +4,7 @@ Version: @PACKAGE_VERSION@
 Release: 1%{?dist}
 License: GPL v2 with additions
 Group: Application/Scientific
-Source: @PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz
+Source: pdde-cont-@PACKAGE_VERSION@.tar.bz2
 URL: N/A
 Vendor: Unknown
 Packager: Robert Szalai <s z a l a i _at_ m m . b m e . h u>
@@ -17,12 +17,12 @@ Numerical continuation software for delay-differential equations
 %setup
 
 %build
-cmake -G "Unix Makefiles" .
+cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=/usr/ .
 
 %install
 cd $RPM_BUILD_DIR/%{name}-%{version}
 make
-make DESTDIR=${RPM_BUILD_ROOT} install
+make DESTDIR=$RPM_BUILD_ROOT install
 
 %files
 %{_bindir}/*
