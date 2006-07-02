@@ -37,34 +37,63 @@ solutions, the point can be used as a starting point for continuing the branch o
 </p>
 
 <p>
-Fixed points of autonomous systems can be also handled, as periodic solutions of periodic
+Equilibria of autonomous systems can be also handled, as periodic solutions of periodic
 systems by keeping the period constant. Although it is very inefficient, this capability might be useful,
 when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifurcations of fixed points
 are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can
-be continued by switching to the periodic solution branch.</p>
+be continued by switching to the periodic solution branch.
+</p>
 </ul>
 
 <h2> Documentation </h2> 
 <ul>
 <p>
-See the <a href="manual.pdf"> User's Manual </a> with plain cover or with a 
-<a href="manual-fancy.pdf"> fancy cover </a>.
+See the <a href="manual.pdf"> User's Manual </a>.
 </p>
 </ul>
 
 <h2> Download </h2>
 <ul>
+<!--<p>
+Download the source code of the <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> current version (@PACKAGE_VERSION@) </a>
+</p>-->
+
 <p>
-Download the <a href="pdde-cont-@VERSION@.tar.gz">current version (@VERSION@)</a>
+<table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#F6F6F6">
+<tr style="color: white"><th bgcolor="#333366">Current version (@PACKAGE_VERSION@)</th> <th bgcolor="#333366"> Package </th>
+</tr>
+<tr>
+<td> Source code </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> pdde-cont-@PACKAGE_VERSION@.tar.bz2 </td></tr>
+<tr>
+<td> Source RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.src.rpm"> pdde-cont-@PACKAGE_VERSION@-1.src.rpm </a> </td></tr>
+<tr>
+<td> Fedora Core 5 RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.i386.rpm"> pdde-cont-@PACKAGE_VERSION@-1.i386.rpm </a> </td></tr>
+</td>
+</tr>
+</table>
 </p>
-<p>
+
+<!--<p>
 Download the <a href="pdde-cont-0.9.17.tar.gz">previous version (0.9.17)</a>
-</p>
-<p>
+</p>-->
+<!--<p>
 <b>Note:</b> the two versions are incompatible. From v0.9.18 the function naming scheme in the system definition has been changed. The functions in the system definition code are defined as <tt> extern "C" </tt> to enforce "C" style linking. The namespace specifier <tt> Sys:: </tt> in front of the function name was replaced by the <tt> sys_ </tt> prefix (e.g. <tt> int Sys::ndim(); </tt> &#8594 <tt> extern "C" int sys_ndim();</tt> ).
 </p>
 <p>
 Also, the numerical methods have been changed. From version 1.0.0 test functionals are used instead of characteristic matrices, when continuing bifurcations or switching branches. Accordingly, the old solution type numbers (0-16) are not available anymore. Instead, the same functionality is available under different solution type numbers (40-56). The new method is somewhat faster than the old one.
+</p>-->
+</ul>
+
+<h2>
+Installation
+</h2>
+<ul>
+<p>
+The software can be built using the cross-platform build facility <a href="http://www.cmake.org">CMake </a>. The build also requires a C and C++ compiler, preferably <a href="http://gcc.gnu.org">GCC</a>, and the ATLAS linear algebra library.
+</p>
+<p>
+The compilers are usually present on Linux, BSD, Solaris or other Unix systems. For Windows the 
+<a href="http://www.mingw.org">MinGW</a> and MSYS environments can be used. There is a possibility that MS Visual Studio can compile the software, though it was never tried.
 </p>
 <p>
 The required ATLAS linear algebra library is available for different platforms in binary form. (The files were collected from different places across the internet.) If the binary for a particular computing platform is not found here, download the source from the 
@@ -97,20 +126,30 @@ License
 </p>
 </ul>
 
+<h2>
+Third party Licenses used in PDDE-CONT
+</h2>
+<ul>
+<p>
+<a href="http://www.cise.ufl.edu/research/sparse/umfpack">UMFPACK</a> and <a href="http://www.cise.ufl.edu/research/sparse/amd">AMD</a> 
+can be distributed under the GNU Lesser General Public License <a href="http://www.gnu.org/licenses/lgpl.html">(LGPL)</a>
+</p>
+</ul>
+
 <h2> Related publications </h2> 
 <ul>
 <p>
 <a name=man></a>[1] R. Szalai, <i> PDDE-CONT: A continuation and bifurcation software for 
 delay-differential equations </i> (2005)
 </p>
-<p>
+<!--<p>
 <a name=extsys>[2]</a> R. Szalai, <i> Extended systems for computation of periodic solution bifurcations in delay differential equations</i>, in preparation (2006)
-</p>
+</p>-->
 </ul>
 
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
-<td width="50%">Copyright &copy; 2005 <a href="http://www.mm.bme.hu/~szalai">Robert Szalai</a></td>
-<td width="50%" align="right"><div align="right">PDDE-CONT @VERSION@</div></td>
+<td width="50%">Copyright &copy; 2005, 2006 <a href="http://seis.bris.ac.uk/~rs1909">Robert Szalai</a></td>
+<td width="50%" align="right"><div align="right">PDDE-CONT @PACKAGE_VERSION@</div></td>
 </tr></table></div></address>
 </body></html>

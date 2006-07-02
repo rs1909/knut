@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.0.1}
+\newcommand{\pddever}{1.0.4}
 \version{\pddever}
-\date{30 December 2005}
+\date{02 July 2006}
 \maketitle
 
 \begin{center}
@@ -36,7 +36,8 @@
     \hline Febr.\ 2004 -- July 2004 & & University of Bristol \\
     \hline Sept.\ 2004 -- June 2005 & 0.9.2 -- 0.9.8 & Massachusetts Institute of Technology \\
     \hline July 2005 -- Sept. 2005 & 0.9.9 -- 0.9.17 & N.A. \\
-    \hline Sept. 2005 -- & 0.9.18 -- & Budapest University of Technology and Economics \\
+    \hline Sept. 2005 -- Apr. 2006 & 0.9.18 -- 1.0.3 & Budapest University of Technology and Economics \\
+    \hline May 2006 -- & 1.0.4 -- & University of Bristol \\
     \hline
   \end{tabular}
 \end{center}
@@ -74,25 +75,29 @@ Although, continuing fixed points in this way is very inefficient, it might help
 
 \section{Installation}
 
-In order to install the software one needs a Unix like environment with a shell program. For compiling the package it is recommended to use the GNU C and C++ compilers of versions 3.3.6 and later. Although Sun Studio 10, and the Intel C,C++ (v. 8.1 or later) compilers can build the package, they are not guaranteed to work with future versions of the package. Furthermore, the \filef{sed} command is needed, when using the \filef{pcompile} script.
+\subsection{Requirements}
 
-\subsection{Linux and Solaris}
+The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake can set up a build environment for various compilers and can generate project files for several Integrated Development Environments including KDevelop, Microsoft Visual Studio and XCode. It is recommended to compile the software with a recent version of GCC\footnote{http://gcc.gnu.org}. At the moment the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
 
-The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.gz}, so it has to be unzipped first into an empty directory using the following command.
+For solving linear equations the software requires the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra software, which can be tuned automatically for many processors and operating systems. To avoid the lenghty compilation it is possible to download pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and \filef{libcblas.a}).
+
+\subsection{Linux and Unix}
+
+The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be unzipped first into a convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
-$ gzip -d pdde-cont-%\@version%.tar.gz
+$ bzip2 -d pdde-cont-%\@version%.tar.bz2
 $ tar xvf pdde-cont-%\@version%.tar
 \end{lstlisting} \end{quote} } \noindent
-The software depends on other library packages. Most of them are distributed within the package except the ATLAS basic linear algebraic software, because it has to be fine tuned for every processor type. Hence, before compiling \pdde\ one has to obtain a recent stable version of ATLAS from \url{http://math-atlas.sourceforge.net}. After compiling the library the resulting archive files (\filef{libatlas.a} and \filef{libcblas.a}) should be copied into the \filef{ATLAS/lib} directory in \pdde 's source tree. These archive files are pre-compiled for various processors so in most cases the time consuming compilation process can be avoided.
+The second step is to copy the compiled ATLAS library files (\filef{libatlas.a} and \filef{libcblas.a}) into the
+\filef{pdde-cont-\@version/ATLAS/lib} subdirectory.
 
-The second step is to configure the package using the \filef{configure} script.
+Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ cd pdde-cont-%\@version%
-$ ./configure --prefix=$HOME/pdde-cont/
+$ cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=$HOME/pdde-cont/ .
 \end{lstlisting} \end{quote} } \noindent
 This generates the platform dependent \filef{Makefile}s and instructs the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ make
 $ make install
 \end{lstlisting} \end{quote} } \noindent
 In order to make the software work, the \filef{PATH} environment variables has to be set up. In the case of the \filef{bash} shell include the
@@ -101,17 +106,28 @@ export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
 line into the \filef{.bash\_profile} configuration file in your \filef{HOME} directory. For the C shell (\filef{csh}) insert the following line
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-set path=( $path $home/pdde-cont/bin )
+setenv path $PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
 into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
-In order to install the software on Windows the MinGW and MinSYS packages have to be installed first (\url{http://www.mingw.org/}). When installing MinGW, check in all the installation options except those which refer to the source packages. Copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$home$\backslash$$<$username$>$$\backslash$}. Also, the ATLAS linear algebra library is required to build the software. For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors. If all the prequisites are at hand, start the MSys shell and follow the Linux installation instructions above. The only difference that \filef{.profile} has to be created in your MSys \filef{HOME} directory:
+In order to install the software on Windows the MinGW and MSYS packages have to be installed first. Download the most recent self extracting installers from \url{http://www.mingw.org/} and install MinGW first and then MSYS. When installing MinGW select the C++ compiler and the GNU make utility, which is required by CMake. Also download and install the Windows version of CMake from \url{www.cmake.org}.
+
+To compile the software, copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$msys$\backslash$home$\backslash$$<$username$>$$\backslash$}. Similar to the Unix installation, the ATLAS linear algebra library is required to build the software. \footnote{For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors.} If all the prequisites are at hand, start the MSYS shell and follow the Linux installation instructions above, but with different configuration options:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+$ cd pdde-cont-%\@version%
+$ cmake -G "MSYS Makefiles" -D CMAKE_INSTALL_PREFIX=$HOME/pdde-cont/ .
+\end{lstlisting} \end{quote} } \noindent
+To compile and install the software run the following command:
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+$ make install
+\end{lstlisting} \end{quote} } \noindent
+Next \filef{.profile} has to be created in your MSYS \filef{HOME} directory:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ echo 'export PATH=$PATH:$HOME/pdde-cont/bin' >.profile
 \end{lstlisting} \end{quote} } \noindent
-After installing the package restart the MSys shell and the software is ready to use.
+Restart the MSYS shell and the software is ready to use.
 
 \section{Command line arguments}
 

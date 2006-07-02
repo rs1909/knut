@@ -10,6 +10,7 @@ FILE( READ REVISION REV )
 STRING( REPLACE "\\n" "" PACKAGE_REVISION ${REV} )
 CONFIGURE_FILE( src/config.h.cmake src/config.h )
 CONFIGURE_FILE( pdde.spec.cmake pdde.spec )
+CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
 
 FIND_FILE( HAVE_CONFIG config.h ${PDDE_SOURCE_DIR}/src )
 IF( EXISTS ${HAVE_CONFIG} )
