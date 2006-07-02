@@ -2,7 +2,7 @@ SET( NAME turntwo )
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- )
+SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
 	FILES sys-${NAME}.cpp
 	cfile-start cfile-nssw cfile-ns-1 cfile-ns-2 cfile-lp-1 cfile-lp-2 )

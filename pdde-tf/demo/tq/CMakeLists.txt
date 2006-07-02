@@ -2,7 +2,7 @@ SET( NAME tq )
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- )
+SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
 	FILES sys-${NAME}.cpp
 	cfile-lp-1-a cfile-lp-2-a cfile-ns cfile-pdsw-2 cfile-tr
