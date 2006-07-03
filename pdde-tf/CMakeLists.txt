@@ -6,16 +6,7 @@ PROJECT( PDDE )
 
 SET( PACKAGE_NAME "PDDE-CONT" )
 SET( PACKAGE_VERSION "1.0.4" )
-FILE( READ REVISION REV )
-STRING( REPLACE "\\n" "" PACKAGE_REVISION ${REV} )
-CONFIGURE_FILE( src/config.h.cmake src/config.h )
-CONFIGURE_FILE( pdde.spec.cmake pdde.spec )
-CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
-
-FIND_FILE( HAVE_CONFIG config.h ${PDDE_SOURCE_DIR}/src )
-IF( EXISTS ${HAVE_CONFIG} )
-        ADD_DEFINITIONS( -DHAVE_CONFIG_H )
-ENDIF( EXISTS ${HAVE_CONFIG} )
+FILE( READ REVISION PACKAGE_REVISION )
 
 FIND_PROGRAM( SED NAMES sed )
 IF( NOT EXISTS ${SED} )
@@ -29,51 +20,17 @@ ELSE( EXISTS ${SHELL} )
 	MESSAGE( SEND_ERROR "Cannot find a shell program" )
 ENDIF( EXISTS ${SHELL} )
 
+#------------------------------------------------------------------------------
+# Writing the generated files
+#------------------------------------------------------------------------------
 
-# finding GCC or the Intel compiler
-
-SET( GCC_C_WARN "-W -Wall -Wno-unused-parameter -Wno-unknown-pragmas -Wstrict-prototypes -Wpointer-arith" )
-SET( GCC_CXX_WARN "-W -Wall -Wno-unused-parameter -Wno-unknown-pragmas -Wpointer-arith" )
-SET( INTEL_C_WARN  )
-SET( INTEL_CXX_WARN  )
-
-SET( GCC_CFLAGS "-O2" )
-SET( GCC_NOOPT_CFLAGS "-O0" )
-SET( GCC_CXXFLAGS "-O2" )
-
-SET( INTEL_GCC_COMPATIBILITY "340" )
-SET( INTEL_CFLAGS "-gcc-version=${INTEL_GCC_COMPATIBILITY} -O2" )
-SET( INTEL_NOOPT_CFLAGS "-gcc-version=${INTEL_GCC_COMPATIBILITY} -O0" )
-SET( INTEL_CXXFLAGS "-gcc-version=${INTEL_GCC_COMPATIBILITY} -cxxlib-icc -xB -O2" )
-
-FIND_PROGRAM( C_COMPILER NAMES gcc icc )
-IF( EXISTS ${C_COMPILER} )
-	MESSAGE( "A C compiler has been found: ${C_COMPILER}" )
-	SET( CMAKE_C_COMPILER ${C_COMPILER} CACHE STRING "C compiler" FORCE )
-	GET_FILENAME_COMPONENT( CC_NAME ${C_COMPILER} NAME )
-	IF( ${CC_NAME} STREQUAL icc )
-		SET( CMAKE_C_FLAGS "${INTEL_CFLAGS} ${INTEL_C_WARN}" CACHE STRING "CFLAGS" FORCE )
-		SET( CMAKE_C_NOOPT_FLAGS "${INTEL_NOOPT_CFLAGS} ${INTEL_C_WARN}" )
-	ELSE( ${CC_NAME} STREQUAL icc )
-		SET( CMAKE_C_FLAGS "${GCC_CFLAGS} ${GCC_C_WARN}" CACHE STRING "CFLAGS" FORCE )
-		SET( CMAKE_C_NOOPT_FLAGS "${GCC_NOOPT_CFLAGS} ${GCC_C_WARN}" )
-	ENDIF( ${CC_NAME} STREQUAL icc )
-ENDIF( EXISTS ${C_COMPILER} )
-
-FIND_PROGRAM( CXX_COMPILER NAMES g++ icpc )
-IF( EXISTS ${CXX_COMPILER} )
-	MESSAGE( "A C++ compiler has been found: ${CXX_COMPILER}" )
-	SET( CMAKE_CXX_COMPILER ${CXX_COMPILER} CACHE STRING "C++ compiler" FORCE )
-	GET_FILENAME_COMPONENT( CXX_NAME ${CXX_COMPILER} NAME )
-	IF( ${CXX_NAME} STREQUAL icpc )
-		SET( CMAKE_CXX_FLAGS "${INTEL_CXXFLAGS} ${INTEL_CXX_WARN}" CACHE STRING "CFLAGS" FORCE )
-	ELSE( ${CXX_NAME} STREQUAL icpc )
-		SET( CMAKE_CXX_FLAGS "${GCC_CXXFLAGS} ${GCC_CXX_WARN}" CACHE STRING "CFLAGS" FORCE )
-	ENDIF( ${CXX_NAME} STREQUAL icpc )
-ENDIF( EXISTS ${CXX_COMPILER} )
-
+CONFIGURE_FILE( src/config.h.cmake src/config.h )
+CONFIGURE_FILE( pdde.spec.cmake pdde.spec )
+CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 INSTALL_PROGRAMS( /bin FILES bin/pcompile )
+
+ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 #------------------------------------------------------------------------------
 # Finding ATLAS

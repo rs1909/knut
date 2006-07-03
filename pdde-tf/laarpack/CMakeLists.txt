@@ -1,9 +1,6 @@
 SET( BLASINC  ${PDDE_SOURCE_DIR}/ATLAS/include )
 SET( F2CINC ${PDDE_SOURCE_DIR}/libf2c )
 INCLUDE_DIRECTORIES( ${BLASINC} ${F2CINC} )
-ADD_LIBRARY( laarpack laarpack.c dlamch.o cblaswrap.h dlamch.o )
 
-STRING( REGEX REPLACE "\\ " ";" NOOPT_ARGS ${CMAKE_C_NOOPT_FLAGS} )
-
-SET_SOURCE_FILES_PROPERTIES( dlamch.o PROPERTIES GENERATED TRUE )
-ADD_CUSTOM_COMMAND( OUTPUT dlamch.o COMMAND ${CMAKE_C_COMPILER} ARGS ${NOOPT_ARGS} -I${BLASINC} -I${F2CINC} -c dlamch.c -o dlamch.o )
+ADD_LIBRARY( laarpack laarpack.c dlamch.o cblaswrap.h dlamch.c )
+SET_SOURCE_FILES_PROPERTIES( dlamch.c PROPERTIES COMPILE_FLAGS -ffloat-store )
