@@ -7,19 +7,19 @@ INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
     FILES sys-${NAME}.cpp
     cfile-start cfile-ns cfile-pd cfile-lp in-start )
 
-ADD_CUSTOM_TARGET( test
+ADD_CUSTOM_TARGET( ${NAME}-test
     COMMAND pdde -c cfile-start -i in-start -o out-start -b br-start )
 	
-ADD_CUSTOM_TARGET( test-ns
+ADD_CUSTOM_TARGET( ${NAME}-test-ns
     COMMAND pdde -c cfile-ns -i out-start -o out-ns -b branch-ns )
 
-ADD_CUSTOM_TARGET( test-pd
+ADD_CUSTOM_TARGET( ${NAME}-test-pd
     COMMAND pdde -c cfile-pd -i out-start -o out-pd -b branch-pd )
 
-ADD_CUSTOM_TARGET( test-lp
+ADD_CUSTOM_TARGET( ${NAME}-test-lp
     COMMAND pdde -c cfile-lp -i out-start -o out-lp -b branch-lp )
 
-ADD_DEPENDENCIES( test ${NAME} )
-ADD_DEPENDENCIES( test-ns ${NAME} )
-ADD_DEPENDENCIES( test-pd ${NAME} )
-ADD_DEPENDENCIES( test-lp ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-ns ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-pd ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-lp ${NAME} )

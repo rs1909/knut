@@ -7,7 +7,7 @@ INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
 	FILES sys-${NAME}.cpp 
 	cfile-start )
 
-ADD_CUSTOM_TARGET( test
+ADD_CUSTOM_TARGET( ${NAME}-test
 	COMMAND pdde -c cfile-start -o out-start -b br-start )
 
-ADD_DEPENDENCIES( test ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
