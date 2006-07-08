@@ -2,6 +2,8 @@
 #define PARAMETERS_H
 
 #include "pointtype.h"
+#include <string>
+#include <iostream>
 
 // pre-declarations
 class System;
@@ -32,14 +34,15 @@ class ConstFile
 {
   public:
 	// function members
-	void     getParams( const char* filename );
-	void     printParams( );
+	void     clear() {}
+	void     getParams( const std::string& filename );
+	void     printParams( std::ostream& file = std::cout );
 	int      toEqnVar( System& sys,
                 Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
                 Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
                 Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, Eqn& testFN );
 	// data members
-	char     SYSNAME[64];   // name of the shared object file
+	std::string SYSNAME;    // name of the shared object file
 	int      LABEL;         // the restart label in the input file
 	int      TYPE;          // type of the solution
 	bool     EXTSYS;        // whether we need extended parametrization

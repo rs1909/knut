@@ -19,8 +19,20 @@ extern "C" {
 }
 
 #include <string>
+extern "C"{
+	int    internal_ndim() { return 0; }
+	int    internal_npar() { return 0; }
+	int    internal_ntau() { return 0; }
+	int    internal_nderi() { return 0; }
+	void   internal_tau( Vector& out, double t, const Vector& par ) {}
+	void   internal_dtau( Vector& out, double t, const Vector& par, int vp ) {}
+	void   internal_rhs( Vector& out, double t, const Matrix& x, const Vector& par ) {}
+	void   internal_deri( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v ) {}
+	void   internal_stpar( Vector& par ) {}
+	void   internal_stsol( Vector& out, double t ) {}
+}
 
-System::System( char* shobj )
+System::System( std::string& shobj )
 {
 	std::string objname(shobj);
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
@@ -29,7 +41,7 @@ System::System( char* shobj )
 	if (!handle)
 	{
 		std::cerr<<"Cannot open system definition file: "<<tdlerror()<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -37,7 +49,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != NULL)
 	{
 		std::cerr<<"Cannot find sys_ndim(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -46,7 +58,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != NULL)
 	{
 		std::cerr<<"Cannot find sys_npar(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -54,7 +66,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != NULL)
 	{
 		std::cerr<<"Cannot find sys_ntau(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -62,7 +74,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != NULL)
 	{
 		std::cerr<<"Cannot find sys_nderi(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -70,7 +82,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_tau(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -78,7 +90,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_dtau(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -86,7 +98,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_rhs(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -94,7 +106,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_deri(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -102,7 +114,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_stpar(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	tdlerror();    /* Clear any existing error */
@@ -110,7 +122,7 @@ System::System( char* shobj )
 	if ((error = tdlerror()) != 0 )
 	{
 		std::cerr<<"Cannot find sys_stsol(): "<<error<<"\n";
-		exit(1);
+		setupinternal(); return;
 	}
 	
 	nderi = (*v_nderi)( );
@@ -126,9 +138,22 @@ System::System( char* shobj )
 
 System::~System()
 {
-	tdlclose(handle);
+	if ( handle !=0 ) tdlclose(handle);
 }
 
+void System::setupinternal()
+{
+	v_ndim = internal_ndim;
+	v_npar = internal_npar;
+	v_ntau = internal_ntau;
+	v_nderi = internal_nderi;
+	v_tau = internal_tau;
+	v_dtau = internal_dtau;
+	v_rhs = internal_rhs;
+	v_deri = internal_deri;
+	v_stpar = internal_stpar;
+	v_stsol = internal_stsol;
+}
 
 static inline void AX( Vector & res, const Matrix& M, const Vector& v )
 {

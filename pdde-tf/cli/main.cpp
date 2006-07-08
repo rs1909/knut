@@ -121,6 +121,7 @@ int main( int argc, const char** argv )
 	// **********************************************************************************************************
 	
 	System sys( params->SYSNAME );
+	if( sys.ndim() == 0 ) PDError(-1);
 
 	Vector par(sys.npar()+ParEnd);
 	std::ofstream ff( branchFile );

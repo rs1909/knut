@@ -40,6 +40,7 @@ enum Var {
 // this applies to torpoint.h too...
 
 enum PtType {
+	SolUser      = -1,
 /// TORUS
 	SolTor       = 20,
 	SolAUTTor    = 30,

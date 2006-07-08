@@ -1,4 +1,4 @@
-#include "parameters.h"
+#include "parameters.h" // it includes <string>
 
 #include "pderror.h"
 #include "matrix.h"
@@ -28,13 +28,13 @@ static inline void pdioassert( std::istream& is )
 	}
 }
 
-void ConstFile::getParams( const char* filename )
+void ConstFile::getParams( const std::string& filename )
 {
 	std::ifstream file;
 	char pt;
 	int ival;
 	
-	file.open( filename );
+	file.open( filename.c_str() );
 	if(!file){ std::cout<<"Cannot open "<<filename<<"\n"; PDError(-1); }
 	
 	file >> SYSNAME; pdioassert(file);
@@ -118,36 +118,36 @@ void ConstFile::getParams( const char* filename )
 	// Ignore the rest of the file
 }
 
-void ConstFile::printParams( )
+void ConstFile::printParams( std::ostream& file )
 {
-	std::cout<<SYSNAME<<" \t\tSYSNAME\n";
-	std::cout<<LABEL<<" \t\t\tLABEL\n";
+	file<<SYSNAME<<" \t\tSYSNAME\n";
+	file<<LABEL<<" \t\t\tLABEL\n";
 	if( TYPE != -1 )
 	{
-		std::cout<<TYPE<<" "<<(char)(CPType)<<CP<<" "<<NPARX<<" ";
-		for( int i=0; i<NPARX; i++ ) std::cout<<(char)(PARXType)[i]<<(PARX)[i]<<" ";
-		std::cout<<"\t\tTYPE, CP, NPARX, PARX[NPARX]\n";
+		file<<TYPE<<" "<<(char)(CPType)<<CP<<" "<<NPARX<<" ";
+		for( int i=0; i<NPARX; i++ ) file<<(char)(PARXType)[i]<<(PARX)[i]<<" ";
+		file<<"\t\tTYPE, CP, NPARX, PARX[NPARX]\n";
 	}else
 	{
-		std::cout<<TYPE<<" "<<CP<<" "<<SWITCH<<" "<<NEQN<<" ";
-		for( int i=0; i<NEQN; i++ ) std::cout<<"E"<<(EQN)[i]<<" ";
-		std::cout<<NVAR<<" ";
-		for( int i=0; i<NVAR; i++ ) std::cout<<(char)(VARType)[i]<<(VAR)[i]<<" ";
-		std::cout<<"\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
+		file<<TYPE<<" "<<(char)(CPType)<<CP<<" "<<SWITCH<<" "<<NEQN<<" ";
+		for( int i=0; i<NEQN; i++ ) file<<"E"<<(EQN)[i]<<" ";
+		file<<NVAR<<" ";
+		for( int i=0; i<NVAR; i++ ) file<<(char)(VARType)[i]<<(VAR)[i]<<" ";
+		file<<"\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
 	}
-	std::cout<<NINT<<" "<<NDEG<<" "<<NMUL<<" "<<STAB<<" "<<NMAT<<" \t\tNINT, NDEG, NMUL, STAB, NMAT\n";
-	std::cout<<NINT1<<" "<<NINT2<<" "<<NDEG1<<" "<<NDEG2<<" \t\tNINT1, NINT2, NDEG1, NDEG2\n";
-	std::cout<<STEPS<<" "<<CPMIN<<" "<<CPMAX<<" \t\tSTEPS, CPMIN, CPMAX\n";
-	std::cout<<DS<<" "<<DSMIN<<" "<<DSMAX<<" "<<DSSTART<<" \tDS, DSMIN, DSMAX, DSSTART \n";
-	std::cout<<EPSC<<" "<<EPSR<<" "<<EPSS<<" \tEPSC, EPSR, EPSS\n";
-	std::cout<<NITC<<" "<<NITR<<" "<<NITS<<" \t\tNITC, NITR, NITS\n";
+	file<<NINT<<" "<<NDEG<<" "<<NMUL<<" "<<STAB<<" "<<NMAT<<" \t\tNINT, NDEG, NMUL, STAB, NMAT\n";
+	file<<NINT1<<" "<<NINT2<<" "<<NDEG1<<" "<<NDEG2<<" \t\tNINT1, NINT2, NDEG1, NDEG2\n";
+	file<<STEPS<<" "<<CPMIN<<" "<<CPMAX<<" \t\tSTEPS, CPMIN, CPMAX\n";
+	file<<DS<<" "<<DSMIN<<" "<<DSMAX<<" "<<DSSTART<<" \tDS, DSMIN, DSMAX, DSSTART \n";
+	file<<EPSC<<" "<<EPSR<<" "<<EPSS<<" \tEPSC, EPSR, EPSS\n";
+	file<<NITC<<" "<<NITR<<" "<<NITS<<" \t\tNITC, NITR, NITS\n";
 	if( NSYM != 0 )
 	{
-		std::cout<<NSYM<<" ";
-		for( int i=0; i<NSYM; i++ ) std::cout<<RESYM[i]<<" "<<IMSYM[i]<<" ";
-		std::cout<<"\t\tNSYM";
-		for( int i=0; i<NSYM; i++ ) std::cout<<", R"<<i<<", I"<<i;
-		std::cout<<"\n";
+		file<<NSYM<<" ";
+		for( int i=0; i<NSYM; i++ ) file<<RESYM[i]<<" "<<IMSYM[i]<<" ";
+		file<<"\t\tNSYM";
+		for( int i=0; i<NSYM; i++ ) file<<", R"<<i<<", I"<<i;
+		file<<"\n";
 	}
 }
 

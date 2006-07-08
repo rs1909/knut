@@ -93,3 +93,5 @@ ADD_SUBDIRECTORY(doc)
 # demo programs
 ADD_SUBDIRECTORY(demo)
 
+# graphical user interface
+ADD_SUBDIRECTORY(gui)
