@@ -24,7 +24,7 @@ class System
 {
 	public:
 	
-		System( std::string& shobj );
+		System( const std::string& shobj );
 		~System();
 		
 		int    ndim() { return (*v_ndim)( ); }

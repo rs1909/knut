@@ -83,29 +83,28 @@ inline const char* EqnToStr( Eqn eqn )
 {
 	switch( eqn )
 	{
-		case EqnNone:           return "EqnNone          "; break;
-		case EqnSol:            return "EqnSol           "; break;
-		case EqnPhase:          return "EqnPhase         "; break;
-		case EqnPhaseRot:       return "EqnPhaseRot      "; break;
-		case EqnTORSol:         return "EqnTORSol        "; break;
-		case EqnTORPhase0:      return "EqnTORPhase0     "; break;
-		case EqnTORPhase1:      return "EqnTORPhase1     "; break;
-		default:                return "Eqn ??????????   "; break;
+		case EqnNone:           return "EqnNone"; break;
+		case EqnSol:            return "EqnSol"; break;
+		case EqnPhase:          return "EqnPhase"; break;
+		case EqnPhaseRot:       return "EqnPhaseRot"; break;
+		case EqnTORSol:         return "EqnTORSol"; break;
+		case EqnTORPhase0:      return "EqnTORPhase0"; break;
+		case EqnTORPhase1:      return "EqnTORPhase1"; break;
+		default:                return "Eqn ?"; break;
 	}
 	return "EqnInvalid";
 }
 
 inline const char* VarToStr( Var var )
 {
+	if( var >= VarPAR0 ) return "VarPAR>0";
 	switch( var )
 	{
-		case VarNone:           return "VarNone          "; break;
-		case VarSol:            return "VarSol           "; break;
-		case VarTORSol:         return "VarTORSol        "; break;
-		default:                return "Var ??????????   "; break;
+		case VarNone:           return "VarNone"; break;
+		case VarSol:            return "VarSol"; break;
+		case VarTORSol:         return "VarTORSol"; break;
+		default:                return "Var ?"; break;
 	}
-	if( var >= VarPAR0 ) return "VarPAR>0         ";
-	return "VarInvalid";
 }
 
 template< class T > class Array1D;

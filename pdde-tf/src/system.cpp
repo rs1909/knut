@@ -32,7 +32,7 @@ extern "C"{
 	void   internal_stsol( Vector& out, double t ) {}
 }
 
-System::System( std::string& shobj )
+System::System( const std::string& shobj )
 {
 	std::string objname(shobj);
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
