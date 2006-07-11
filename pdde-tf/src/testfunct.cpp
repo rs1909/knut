@@ -15,7 +15,7 @@
 #include "hypermatrix.h"
 #include "ncolloc.h"
 
-#define NKERNITER 10
+#define NKERNITER 20
 #define KERNEPS 1.0e-12
 
 #define NDIM (col.Ndim())
@@ -370,17 +370,28 @@ void TestFunctLPAUT::Init( NColloc& col, const Vector& par, const Vector& sol, c
 	one2(0) = 0.0;
 	one2(1) = 1.0;
 	
-	for( int i = 0; i < NKERNITER; i++ )
-	{
+	Vector v2diff( vv2 ), u2diff( uu2 );
+	double g2diff, h2diff;
+	double diffnorm = 1.0;
+	int it = 0;
+	do {
 		AHAT.Solve  ( 2, vv2, gg2, rhs, one2 );
 		AHAT.SolveTR( 2, uu2, hh2, rhs, one2 );
+		u2diff = AHAT.getA13(1);
+		u2diff -= uu2;
+		h2diff = AHAT.getA33(0,1) - hh2(0);
+		v2diff = AHAT.getA31(1);
+		v2diff -= vv2;
+		g2diff = AHAT.getA33(1,0) - gg2(0);
+		diffnorm = std::max(sqrt(u2diff*u2diff+h2diff*h2diff),sqrt(v2diff*v2diff+g2diff*g2diff));
+		std::cout<<"std::max(u2diff, v2diff) "<<diffnorm<<"\n";
 		const double nrm_v = (1.0/sqrt(vv2*vv2+gg2(0)*gg2(0)));
 		const double nrm_u = (1.0/sqrt(uu2*uu2+hh2(0)*hh2(0)));
 		AHAT.getA31(1) = nrm_v * vv2;
 		AHAT.getA13(1) = nrm_u * uu2;
 		AHAT.getA33(1,0) = nrm_v * gg2(0);
 		AHAT.getA33(0,1) = nrm_v * hh2(0);
-	}
+	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
 }
 
 double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
@@ -529,10 +540,24 @@ void TestFunctLPAUTROT::Init( NColloc& col, const Vector& par, const Vector& sol
 	one3(2) = 1.0;
 	rhs3.Clear();
 	
-	for( int i = 0; i < NKERNITER; i++ )
-	{
+	Vector v3diff( vv3 ), u3diff( uu3 );
+	double g30diff, h30diff, g31diff, h31diff;
+	double diffnorm = 1.0;
+	int it = 0;
+	do {
 		AHAT.Solve  ( 3, vv3, gg3, rhs3, one3 );
 		AHAT.SolveTR( 3, uu3, hh3, rhs3, one3 );
+		u3diff = AHAT.getA13(2);
+		u3diff -= uu3;
+		h30diff = AHAT.getA33(0,2) - hh3(0);
+		h31diff = AHAT.getA33(1,2) - hh3(1);
+		v3diff = AHAT.getA31(2);
+		v3diff -= vv3;
+		g30diff = AHAT.getA33(2,0) - gg3(0);
+		g31diff = AHAT.getA33(2,1) - gg3(1);
+		diffnorm = std::max(sqrt(u3diff*u3diff+h30diff*h30diff+h31diff*h31diff),
+		                    sqrt(v3diff*v3diff+g30diff*g30diff+g31diff*g31diff));
+		std::cout<<"std::max(u3diff, v3diff) "<<diffnorm<<"\n";
 		const double nrm_v = (1.0/sqrt(vv3*vv3+gg3(0)*gg3(0)+gg3(1)*gg3(1)));
 		const double nrm_u = (1.0/sqrt(uu3*uu3+hh3(0)*hh3(0)+hh3(1)*hh3(1)));
 		AHAT.getA31(2)   = nrm_v * vv3;
@@ -541,7 +566,7 @@ void TestFunctLPAUTROT::Init( NColloc& col, const Vector& par, const Vector& sol
 		AHAT.getA13(2)   = nrm_u * uu3;
 		AHAT.getA33(0,2) = nrm_u * hh3(0);
 		AHAT.getA33(1,2) = nrm_u * hh3(1);
-	}
+	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
 	std::cout<<"TF: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 }
 
