@@ -16,6 +16,7 @@
 #include "ncolloc.h"
 
 #define NKERNITER 10
+#define KERNEPS 1.0e-12
 
 #define NDIM (col.Ndim())
 #define NDEG (col.Ndeg())
@@ -182,15 +183,25 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 	rhs.Clear();
 	one(0) = 1.0; one(1) = 0.0;
 	
-	for( int i = 0; i < NKERNITER; i++ )
-	{
+	Vector vdiff( vv ), udiff( uu );
+	double diffnorm = 1.0;
+	int it = 0;
+	do {
 		AHAT.Solve  ( 2, vv, gg, rhs, one );
 		AHAT.SolveTR( 2, uu, hh, rhs, one );
+		udiff = AHAT.getA13(0);
+		udiff -= uu;
+		vdiff = AHAT.getA31(0);
+		vdiff -= vv;
+		diffnorm = std::max(sqrt(udiff*udiff),sqrt(vdiff*vdiff));
+// 		std::cout<<"std::max(udiff, vdiff) "<<diffnorm<<"\n";
 		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
+		
 		conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
 		conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
-	}
+	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
+	if( diffnorm > KERNEPS ) std::cout<<"TestFunctCPLX::Init: error: No convergence in finding the singular vector.\n";
 // 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
