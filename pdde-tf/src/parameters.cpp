@@ -170,11 +170,13 @@ int ConstFile::toEqnVar( System& sys,
 		}
 	}else
 	{
-		for( int i = 0; i < NPARX; i++ )
+		Array1D<Var> L_PARX(NPARX);
+		for( int i = 0; i < NPARX; ++i )
 		{
-			if( (PARXType)[i] == 'I' ) (PARX)[i] += sys.npar();
+			if( (PARXType)[i] == 'P' ) L_PARX(i) = (Var)(VarPAR0 + PARX[i]);
+			else if( (PARXType)[i] == 'I' ) L_PARX(i) = (Var)(VarPAR0 + PARX[i]+sys.npar());
 		}
-		SWITCH = PtToEqnVar( eqn, var, (PtType)TYPE, NPARX, PARX, sys.npar() );
+		SWITCH = PtToEqnVar( eqn, var, (PtType)TYPE, L_PARX, sys.npar() );
 	}
 	// initializing CP
 	if( CPType == 'I' ) CP += sys.npar();
@@ -226,7 +228,7 @@ int ConstFile::toEqnVar( System& sys,
 	}
 	
 	if( SWITCH == TFHBSwitch )
-		PtToEqnVar( eqn_refine, var_refine, SolTF, 0, PARX, sys.npar() ); // NPARX == 0
+	  { Array1D<Var> d(0); PtToEqnVar( eqn_refine, var_refine, SolTF, d, sys.npar() ); }// NPARX == 0
 	
 	// Here, we set up the branch switching.
 	// We suppose that if there is a switch we use one parameter continuation afterwards

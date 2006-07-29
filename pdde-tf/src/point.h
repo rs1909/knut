@@ -49,6 +49,48 @@ class PointData
 		Vector mIm;
 };
 
+class mmappedPointData
+{
+	public:
+		// opens the file, determines its size, maps the memory from file, sets up variables
+		mmappedPointData( std::string fileName, bool write, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ );
+		// unmaps the memory, truncates the file if necessary, closes the file
+		~mmappedPointData( );
+		
+		void setPar( int n, const Vector& par );
+		void setMul( int n, const Vector& real, const Vector& imag );
+		void setMesh( int n, const Vector& mesh );
+		void setProfile( int n, const Vector& profile );
+		void getPar( int n, Vector& par );
+		void getMul( int n, Vector& real, Vector& imag );
+		void getMesh( int n, Vector& mesh );
+		void getProfile( int n, Vector& profile );
+		
+	private:
+		int   file;
+		bool  wrperm;
+		int   filesize;
+		void* address;
+		int   size;
+		int   linesize;
+		int   nlines;
+		int   ndim;
+		int   npar;
+		int   nint;
+		int   ndeg;
+		int   nmul;
+
+		int npar_offset;
+		int par_offset;
+		int nmul_offset;
+		int mul_offset;
+		int ndim_offset;
+		int nint_offset;
+		int ndeg_offset;
+		int mesh_offset;
+		int profile_offset;
+};
+
 class Point : public PointData
 {
 	public:
@@ -83,6 +125,12 @@ class Point : public PointData
 		{
 			rotRe.Init(n); rotIm.Init(n);
 			for( int i=0; i<n; i++ ) { rotRe(i) = sRe[i]; rotIm(i) = sIm[i]; }
+		}
+		inline void    setSym( Array1D<int>& sRe, Array1D<int>& sIm )
+		{
+			if( sRe.Size() != sIm.Size() ) PDError(-1);
+			rotRe.Init(sRe.Size()); rotIm.Init(sRe.Size());
+			for( int i=0; i<sRe.Size(); i++ ) { rotRe(i) = sRe(i); rotIm(i) = sIm(i); }
 		}
 		
 		inline void    setRefIter( int i ) { RefIter = i; }
@@ -130,9 +178,8 @@ class Point : public PointData
 		void ReadNull( std::ifstream& file );
 		void Read( std::ifstream& file, bool tan=false );
 		void Write( std::ofstream& file );
-		void ReadNullBinary( std::ifstream& file );
-		void ReadBinary( std::ifstream& file );
-		void WriteBinary( std::ofstream& file );
+		void BinaryRead( mmappedPointData& data, int n );
+		void BinaryWrite( mmappedPointData& data, int n );
 
 	private:
 		

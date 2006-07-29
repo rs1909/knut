@@ -123,12 +123,12 @@ struct PtTab
 };
 
 // not even member function public
-BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int nparx, const int* parx, int npar_ )
+BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_ )
 {
 	PtTab tab;
 	const Var PANGLE = (Var)(VarPAR0+npar_+ParAngle);
-	const Var PX0 = (Var)(VarPAR0 + parx[0]);
-	const Var PX1 = (Var)(VarPAR0 + parx[1]);
+	const Var PX0 = parx(0);
+	const Var PX1 = parx(1);
 	switch( Pt )
 	{
 	/// TIME-PERIODIC TEST-FUNCTIONAL
@@ -199,7 +199,7 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, int npar
 			std::cout<<"No such pointtype\n"; PDError(-1);
 			break;
 	}
-	if( tab.nparx != nparx ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
+	if( tab.nparx != parx.Size() ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
 	eqnr.Init( tab.neqn );
 	varr.Init( tab.neqn );
 	for( int i = 0; i < tab.neqn; i++ )
@@ -951,6 +951,27 @@ void Point::Write( std::ofstream& file )
 	file.flush();
 }
 
+void Point::BinaryWrite( mmappedPointData& data, int n )
+{
+	Vector msh( NDEG*NINT+1 );
+	colloc.getMesh( msh );
+	
+	data.setPar( n, par );
+	data.setMul( n, mRe, mIm );
+	data.setMesh( n, msh );
+	data.setProfile( n, sol );
+}
+
+void Point::BinaryRead( mmappedPointData& data, int n )
+{
+	Vector msh( NDEG*NINT+1 );
+	data.getPar( n, par );
+	data.getMul( n, mRe, mIm );
+	data.getMesh( n, msh );
+	colloc.setMesh( msh );
+	data.getProfile( n, sol );
+}
+
 void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
@@ -1044,5 +1065,204 @@ void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& 
 	{
 		std::cout<<"Not the complex test functional\n";
 		PDError(-1);
+	}
+}
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <sys/mman.h>
+
+mmappedPointData::mmappedPointData( std::string fileName, bool write_, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ )
+	: wrperm(write_)
+{
+	if( wrperm )
+	{
+		nlines = steps_;
+		ndim = ndim_;
+		npar = npar_;
+		nint = nint_;
+		ndeg = ndeg_;
+		nmul = nmul_;
+		
+		npar_offset = 0;
+		linesize = sizeof(int); // NPAR
+		
+		par_offset = linesize;
+		linesize += npar * sizeof(double); // PAR
+		
+		nmul_offset = linesize;
+		linesize += sizeof(int); // NMUL
+		
+		mul_offset = linesize;
+		linesize += 2 * (nmul) * sizeof(double);
+		
+		ndim_offset = linesize;
+		linesize += sizeof(int); // NDIM
+		
+		nint_offset = linesize;
+		linesize += sizeof(int); // NINT
+		
+		ndeg_offset = linesize;
+		linesize += sizeof(int); // NDEG
+		
+		mesh_offset = linesize;
+		linesize += (nint*ndeg+1) * sizeof(double); // mesh
+		
+		profile_offset = linesize;
+		linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
+		size = nlines * linesize;
+		
+		if( ( file = open( fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR ) ) == -1 )
+		{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
+		
+		if( lseek( file, size-1, SEEK_SET ) == -1 )
+		{ perror("mmappedPointData::mmappedPointData: unable to seek file\n"); throw(-1); }
+		
+		if( write( file, "\0", 1 ) == -1 )
+		{ perror("mmappedPointData::mmappedPointData: unable to write file\n"); throw(-1); }
+		
+		if( ( address = mmap( 0, size, PROT_WRITE, MAP_SHARED, file, 0 ) ) == MAP_FAILED )
+		{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
+		for( int i = 0; i < nlines; ++i )
+		{
+			*((int*)( (char*)address + i*linesize + npar_offset )) = npar;
+			*((int*)( (char*)address + i*linesize + nmul_offset )) = nmul;
+			*((int*)( (char*)address + i*linesize + ndim_offset )) = ndim;
+			*((int*)( (char*)address + i*linesize + nint_offset )) = nint;
+			*((int*)( (char*)address + i*linesize + ndeg_offset )) = ndeg;
+		}
+	}else
+	{
+		if( ( file = open( fileName.c_str(), O_RDONLY ) ) == -1 )
+		{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
+		
+		struct stat filestat;
+		if( fstat( file, &filestat ) != 0 )
+		{ perror("mmappedPointData::mmappedPointData: unable to stat file\n"); throw(-1); }
+		filesize = filestat.st_size;
+		
+		if( ( address = mmap( 0, filesize, PROT_READ, MAP_PRIVATE, file, 0 ) ) == MAP_FAILED )
+		{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
+		
+		npar_offset = 0;
+		npar = *((int*)address);
+		linesize = sizeof(int); // NPAR
+		
+		par_offset = linesize;
+		linesize += npar * sizeof(double); // PAR
+		
+		nmul_offset = linesize;
+		nmul = *((int*)( (char*)address+linesize ));
+		linesize += sizeof(int); // NMUL
+		
+		mul_offset = linesize;
+		linesize += 2 * (nmul) * sizeof(double);
+		
+		ndim_offset = linesize;
+		ndim = *((int*)( (char*)address+linesize ));
+		linesize += sizeof(int); // NDIM
+		
+		nint_offset = linesize;
+		nint = *((int*)( (char*)address+linesize ));
+		linesize += sizeof(int); // NINT
+		
+		ndeg_offset = linesize;
+		ndeg = *((int*)( (char*)address+linesize ));
+		linesize += sizeof(int); // NDEG
+		
+		mesh_offset = linesize;
+		linesize += (nint*ndeg+1) * sizeof(double); // mesh
+		
+		profile_offset = linesize;
+		linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
+		size = nlines * linesize;
+	}
+}
+
+mmappedPointData::~mmappedPointData()
+{
+	if( munmap( address, size ) != 0 )
+	{ perror("mmappedPointData::~mmappedPointData: unable to munmap file\n"); throw(-1); }
+	if( close( file ) != 0 )
+	{ perror("mmappedPointData::~mmappedPointData: unable to close file\n"); throw(-1); }
+}
+
+void mmappedPointData::setPar( int n, const Vector& par )
+{
+	if( par.Size() <= npar )
+	{
+		for( int i = 0; i < par.Size(); ++i)
+			((double*)( (char*)address + n*linesize + par_offset ))[i] = par(i);
+	}
+}
+
+void mmappedPointData::getPar( int n, Vector& par )
+{
+	if( par.Size() <= npar )
+	{
+		for( int i = 0; i < par.Size(); ++i)
+			par(i) = ((double*)( (char*)address + n*linesize + par_offset ))[i];
+	}
+}
+
+void mmappedPointData::setMul( int n, const Vector& real, const Vector& imag )
+{
+	if( real.Size() == imag.Size() && real.Size() <= nmul )
+	{
+		for( int i = 0; i < real.Size(); ++i)
+		{
+			((double*)( (char*)address + n*linesize + mul_offset ))[2*i] = real(i);
+			((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1] = imag(i);
+		}
+	}
+}
+
+void mmappedPointData::getMul( int n, Vector& real, Vector& imag )
+{
+	if( real.Size() == imag.Size() && real.Size() <= nmul )
+	{
+		for( int i = 0; i < real.Size(); ++i)
+		{
+			real(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i];
+			imag(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1];
+		}
+	}
+}
+
+void mmappedPointData::setMesh( int n, const Vector& mesh )
+{
+	if( mesh.Size() == ndeg*nint+1 )
+	{
+		for( int i = 0; i < mesh.Size(); ++i)
+			((double*)( (char*)address + n*linesize + mesh_offset ))[i] = mesh(i);
+	}
+}
+
+void mmappedPointData::getMesh( int n, Vector& mesh )
+{
+	if( mesh.Size() == ndeg*nint+1 )
+	{
+		for( int i = 0; i < mesh.Size(); ++i)
+			mesh(i) = ((double*)( (char*)address + n*linesize + mesh_offset ))[i];
+	}
+}
+
+void mmappedPointData::setProfile( int n, const Vector& profile )
+{
+	if( profile.Size() == ndim*(ndeg*nint+1) )
+	{
+		for( int i = 0; i < profile.Size(); ++i)
+			((double*)( (char*)address + n*linesize + profile_offset ))[i] = profile(i);
+	}
+}
+
+void mmappedPointData::getProfile( int n, Vector& profile )
+{
+	if( profile.Size() == ndim*(ndeg*nint+1) )
+	{
+		for( int i = 0; i < profile.Size(); ++i)
+			profile(i) = ((double*)( (char*)address + n*linesize + profile_offset ))[i];
 	}
 }

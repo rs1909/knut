@@ -109,7 +109,7 @@ inline const char* VarToStr( Var var )
 
 template< class T > class Array1D;
 
-// helper function
-BranchSW PtToEqnVar( Array1D<Eqn>& eqn_, Array1D<Var>& var_, PtType Pt, int nparx, const int* parx, int npar_ );
+// helper function, implemented in point.cpp
+BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_ );
 
 #endif
