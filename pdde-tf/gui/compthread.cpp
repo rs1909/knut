@@ -31,9 +31,9 @@ void MThread::run()
 	if( sys.ndim() == 0 ) PDError(-1);
 
 	Vector par( params->getNPar()+ParEnd );
-	mmappedPointData out ( params->getOutputFile(),
-								 params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
-								 params->getNInt(), params->getNDeg(), params->getNMul() );
+	mat4Data out ( params->getOutputFile(),
+					 params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+					 params->getNInt(), params->getNDeg(), params->getNMul() );
 // 	std::ofstream out( params->getOutputFile().c_str() );
 // 	out<<std::scientific;
 // 	out.precision(12);
@@ -90,7 +90,7 @@ void MThread::run()
 		// load the initial guess
 		if( params->getLabel() != 0 )
 		{
-			mmappedPointData istr( params->getInputFile() );
+			mat4Data istr( params->getInputFile() );
 			pt.BinaryRead( istr, params->getLabel() );
 		}
 		
