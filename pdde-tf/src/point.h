@@ -53,10 +53,18 @@ class mmappedPointData
 {
 	public:
 		// opens the file, determines its size, maps the memory from file, sets up variables
-		mmappedPointData( std::string fileName, bool write, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ );
+		mmappedPointData( const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ );
+		mmappedPointData( const std::string& fileName );
 		// unmaps the memory, truncates the file if necessary, closes the file
 		~mmappedPointData( );
+
+		void openReadOnly( const std::string& fileName );
 		
+		int  getNDim() { return ndim; }
+		int  getNInt() { return nint; }
+		int  getNDeg() { return ndeg; }
+		int  getNPar() { return npar; }
+		int  getNMul() { return nmul; }
 		void setPar( int n, const Vector& par );
 		void setMul( int n, const Vector& real, const Vector& imag );
 		void setMesh( int n, const Vector& mesh );
@@ -68,7 +76,7 @@ class mmappedPointData
 		
 	private:
 		int   file;
-		bool  wrperm;
+		bool  wperm;
 		int   filesize;
 		void* address;
 		int   size;

@@ -951,27 +951,6 @@ void Point::Write( std::ofstream& file )
 	file.flush();
 }
 
-void Point::BinaryWrite( mmappedPointData& data, int n )
-{
-	Vector msh( NDEG*NINT+1 );
-	colloc.getMesh( msh );
-	
-	data.setPar( n, par );
-	data.setMul( n, mRe, mIm );
-	data.setMesh( n, msh );
-	data.setProfile( n, sol );
-}
-
-void Point::BinaryRead( mmappedPointData& data, int n )
-{
-	Vector msh( NDEG*NINT+1 );
-	data.getPar( n, par );
-	data.getMul( n, mRe, mIm );
-	data.getMesh( n, msh );
-	colloc.setMesh( msh );
-	data.getProfile( n, sol );
-}
-
 void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
@@ -1074,111 +1053,122 @@ void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& 
 
 #include <sys/mman.h>
 
-mmappedPointData::mmappedPointData( std::string fileName, bool write_, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ )
-	: wrperm(write_)
+mmappedPointData::mmappedPointData( const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ )
 {
-	if( wrperm )
-	{
-		nlines = steps_;
-		ndim = ndim_;
-		npar = npar_;
-		nint = nint_;
-		ndeg = ndeg_;
-		nmul = nmul_;
-		
-		npar_offset = 0;
-		linesize = sizeof(int); // NPAR
-		
-		par_offset = linesize;
-		linesize += npar * sizeof(double); // PAR
-		
-		nmul_offset = linesize;
-		linesize += sizeof(int); // NMUL
-		
-		mul_offset = linesize;
-		linesize += 2 * (nmul) * sizeof(double);
-		
-		ndim_offset = linesize;
-		linesize += sizeof(int); // NDIM
-		
-		nint_offset = linesize;
-		linesize += sizeof(int); // NINT
-		
-		ndeg_offset = linesize;
-		linesize += sizeof(int); // NDEG
-		
-		mesh_offset = linesize;
-		linesize += (nint*ndeg+1) * sizeof(double); // mesh
-		
-		profile_offset = linesize;
-		linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
-		size = nlines * linesize;
-		
-		if( ( file = open( fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR ) ) == -1 )
-		{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
-		
-		if( lseek( file, size-1, SEEK_SET ) == -1 )
-		{ perror("mmappedPointData::mmappedPointData: unable to seek file\n"); throw(-1); }
-		
-		if( write( file, "\0", 1 ) == -1 )
-		{ perror("mmappedPointData::mmappedPointData: unable to write file\n"); throw(-1); }
-		
-		if( ( address = mmap( 0, size, PROT_WRITE, MAP_SHARED, file, 0 ) ) == MAP_FAILED )
-		{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
-		for( int i = 0; i < nlines; ++i )
-		{
-			*((int*)( (char*)address + i*linesize + npar_offset )) = npar;
-			*((int*)( (char*)address + i*linesize + nmul_offset )) = nmul;
-			*((int*)( (char*)address + i*linesize + ndim_offset )) = ndim;
-			*((int*)( (char*)address + i*linesize + nint_offset )) = nint;
-			*((int*)( (char*)address + i*linesize + ndeg_offset )) = ndeg;
-		}
-	}else
-	{
-		if( ( file = open( fileName.c_str(), O_RDONLY ) ) == -1 )
-		{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
-		
-		struct stat filestat;
-		if( fstat( file, &filestat ) != 0 )
-		{ perror("mmappedPointData::mmappedPointData: unable to stat file\n"); throw(-1); }
-		filesize = filestat.st_size;
-		
-		if( ( address = mmap( 0, filesize, PROT_READ, MAP_PRIVATE, file, 0 ) ) == MAP_FAILED )
-		{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
-		
-		npar_offset = 0;
-		npar = *((int*)address);
-		linesize = sizeof(int); // NPAR
-		
-		par_offset = linesize;
-		linesize += npar * sizeof(double); // PAR
-		
-		nmul_offset = linesize;
-		nmul = *((int*)( (char*)address+linesize ));
-		linesize += sizeof(int); // NMUL
-		
-		mul_offset = linesize;
-		linesize += 2 * (nmul) * sizeof(double);
-		
-		ndim_offset = linesize;
-		ndim = *((int*)( (char*)address+linesize ));
-		linesize += sizeof(int); // NDIM
-		
-		nint_offset = linesize;
-		nint = *((int*)( (char*)address+linesize ));
-		linesize += sizeof(int); // NINT
-		
-		ndeg_offset = linesize;
-		ndeg = *((int*)( (char*)address+linesize ));
-		linesize += sizeof(int); // NDEG
-		
-		mesh_offset = linesize;
-		linesize += (nint*ndeg+1) * sizeof(double); // mesh
-		
-		profile_offset = linesize;
-		linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
-		size = nlines * linesize;
-	}
+	wperm = true;
+	
+	nlines = steps_;
+	ndim = ndim_;
+	npar = npar_;
+	nint = nint_;
+	ndeg = ndeg_;
+	nmul = nmul_;
+	
+	npar_offset = 0;
+	linesize = sizeof(int); // NPAR
+	
+	par_offset = linesize;
+	linesize += npar * sizeof(double); // PAR
+	
+	nmul_offset = linesize;
+	linesize += sizeof(int); // NMUL
+	
+	mul_offset = linesize;
+	linesize += 2 * (nmul) * sizeof(double);
+	
+	ndim_offset = linesize;
+	linesize += sizeof(int); // NDIM
+	
+	nint_offset = linesize;
+	linesize += sizeof(int); // NINT
+	
+	ndeg_offset = linesize;
+	linesize += sizeof(int); // NDEG
+	
+	mesh_offset = linesize;
+	linesize += (nint*ndeg+1) * sizeof(double); // mesh
+	
+	profile_offset = linesize;
+	linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
+	size = nlines * linesize;
+	
+	if( ( file = open( fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR ) ) == -1 )
+	{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
+	
+	if( lseek( file, size-1, SEEK_SET ) == -1 )
+	{ perror("mmappedPointData::mmappedPointData: unable to seek file\n"); throw(-1); }
+	
+	if( write( file, "\0", 1 ) == -1 )
+	{ perror("mmappedPointData::mmappedPointData: unable to write file\n"); throw(-1); }
+	
+	if( ( address = mmap( 0, size, PROT_WRITE, MAP_SHARED, file, 0 ) ) == MAP_FAILED )
+	{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
+// 	for( int i = 0; i < nlines; ++i )
+// 	{
+// 		*((int*)( (char*)address + i*linesize + npar_offset )) = npar;
+// 		*((int*)( (char*)address + i*linesize + nmul_offset )) = nmul;
+// 		*((int*)( (char*)address + i*linesize + ndim_offset )) = ndim;
+// 		*((int*)( (char*)address + i*linesize + nint_offset )) = nint;
+// 		*((int*)( (char*)address + i*linesize + ndeg_offset )) = ndeg;
+// 	}
+	std::cout<<"NDIM "<<ndim<<" NINT "<<nint<<" NDEG "<<ndeg<<" NPAR "<<npar<<" NMUL "<<nmul<<"\n";
+	std::cout<<"prf_off "<<profile_offset<<" mesh_off "<<mesh_offset<<" linesize "<<linesize<<"\n";
+}
+
+mmappedPointData::mmappedPointData( const std::string& fileName )
+{
+	wperm = false;
+	this->openReadOnly( fileName );
+}
+
+void mmappedPointData::openReadOnly( const std::string& fileName )
+{	
+	if( ( file = open( fileName.c_str(), O_RDONLY ) ) == -1 )
+	{ perror("mmappedPointData::mmappedPointData: unable to open file\n"); throw(-1); }
+	
+	struct stat filestat;
+	if( fstat( file, &filestat ) != 0 )
+	{ perror("mmappedPointData::mmappedPointData: unable to stat file\n"); throw(-1); }
+	filesize = filestat.st_size;
+	size = filesize;
+	
+	if( ( address = mmap( 0, filesize, PROT_READ, MAP_PRIVATE, file, 0 ) ) == MAP_FAILED )
+	{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
+	
+	npar_offset = 0;
+	npar = *((int*)address);
+	linesize = sizeof(int); // NPAR
+	
+	par_offset = linesize;
+	linesize += npar * sizeof(double); // PAR
+	
+	nmul_offset = linesize;
+	nmul = *((int*)( (char*)address+linesize ));
+	linesize += sizeof(int); // NMUL
+	
+	mul_offset = linesize;
+	linesize += 2 * (nmul) * sizeof(double);
+	
+	ndim_offset = linesize;
+	ndim = *((int*)( (char*)address+linesize ));
+	linesize += sizeof(int); // NDIM
+	
+	nint_offset = linesize;
+	nint = *((int*)( (char*)address+linesize ));
+	linesize += sizeof(int); // NINT
+	
+	ndeg_offset = linesize;
+	ndeg = *((int*)( (char*)address+linesize ));
+	linesize += sizeof(int); // NDEG
+	
+	mesh_offset = linesize;
+	linesize += (nint*ndeg+1) * sizeof(double); // mesh
+	
+	profile_offset = linesize;
+	linesize += ndim * (nint*ndeg+1) * sizeof(double); // profile
+	nlines = filesize/linesize;
+	std::cout<<"NDIM "<<ndim<<" NINT "<<nint<<" NDEG "<<ndeg<<" NPAR "<<npar<<" NMUL "<<nmul<<"\n";
+	std::cout<<"prf_off "<<profile_offset<<" mesh_off "<<mesh_offset<<" linesize "<<linesize<<"\n";
 }
 
 mmappedPointData::~mmappedPointData()
@@ -1191,78 +1181,208 @@ mmappedPointData::~mmappedPointData()
 
 void mmappedPointData::setPar( int n, const Vector& par )
 {
-	if( par.Size() <= npar )
+	if( wperm && n < nlines )
 	{
-		for( int i = 0; i < par.Size(); ++i)
-			((double*)( (char*)address + n*linesize + par_offset ))[i] = par(i);
+		*((int*)( (char*)address + n*linesize + npar_offset )) = npar;
+		if( par.Size() <= npar )
+		{
+			for( int i = 0; i < par.Size(); ++i)
+				((double*)( (char*)address + n*linesize + par_offset ))[i] = par(i);
+		}else
+		{
+			std::cout<<"setPar 1";
+			PDError(-1);
+		}
+	}else
+	{
+		std::cout<<"setPar 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::getPar( int n, Vector& par )
 {
-	if( par.Size() <= npar )
+	if( *((int*)( (char*)address + n*linesize + npar_offset )) == npar )
 	{
-		for( int i = 0; i < par.Size(); ++i)
-			par(i) = ((double*)( (char*)address + n*linesize + par_offset ))[i];
+		if( par.Size() <= npar && n < nlines )
+		{
+			for( int i = 0; i < par.Size(); ++i)
+				par(i) = ((double*)( (char*)address + n*linesize + par_offset ))[i];
+		}else
+		{
+			std::cout<<"getPar 1 "<<par.Size()<<" vs. "<<npar<<"\n";
+			PDError(-1);
+		}
+	}else
+	{
+		std::cout<<"getPar 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::setMul( int n, const Vector& real, const Vector& imag )
 {
-	if( real.Size() == imag.Size() && real.Size() <= nmul )
+	if( wperm && n < nlines )
 	{
-		for( int i = 0; i < real.Size(); ++i)
+		*((int*)( (char*)address + n*linesize + nmul_offset )) = nmul;
+		if( real.Size() == imag.Size() && real.Size() <= nmul )
 		{
-			((double*)( (char*)address + n*linesize + mul_offset ))[2*i] = real(i);
-			((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1] = imag(i);
+			for( int i = 0; i < real.Size(); ++i)
+			{
+				((double*)( (char*)address + n*linesize + mul_offset ))[2*i] = real(i);
+				((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1] = imag(i);
+			}
+		}else
+		{
+			std::cout<<"setMul 1";
+			PDError(-1);
 		}
+	}else
+	{
+		std::cout<<"setMul 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::getMul( int n, Vector& real, Vector& imag )
 {
-	if( real.Size() == imag.Size() && real.Size() <= nmul )
+	if( *((int*)( (char*)address + n*linesize + nmul_offset )) == nmul )
 	{
-		for( int i = 0; i < real.Size(); ++i)
+		if( real.Size() == imag.Size() && real.Size() <= nmul && n < nlines )
 		{
-			real(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i];
-			imag(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1];
+			for( int i = 0; i < real.Size(); ++i)
+			{
+				real(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i];
+				imag(i) = ((double*)( (char*)address + n*linesize + mul_offset ))[2*i+1];
+			}
+		}else
+		{
+			std::cout<<"getMul 1";
+			PDError(-1);
 		}
+	}else
+	{
+		std::cout<<"getMul 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::setMesh( int n, const Vector& mesh )
 {
-	if( mesh.Size() == ndeg*nint+1 )
+	if( wperm && n < nlines )
 	{
-		for( int i = 0; i < mesh.Size(); ++i)
-			((double*)( (char*)address + n*linesize + mesh_offset ))[i] = mesh(i);
+		*((int*)( (char*)address + n*linesize + ndim_offset )) = ndim;
+		*((int*)( (char*)address + n*linesize + nint_offset )) = nint;
+		*((int*)( (char*)address + n*linesize + ndeg_offset )) = ndeg;
+		if( mesh.Size() == ndeg*nint+1 && n < nlines )
+		{
+			for( int i = 0; i < mesh.Size(); ++i)
+				((double*)( (char*)address + n*linesize + mesh_offset ))[i] = mesh(i);
+		}else
+		{
+			std::cout<<"setMesh 1";
+			PDError(-1);
+		}
+	}else
+	{
+		std::cout<<"setMesh 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::getMesh( int n, Vector& mesh )
 {
-	if( mesh.Size() == ndeg*nint+1 )
+	if ( *((int*)( (char*)address + n*linesize + ndim_offset )) == ndim &&
+	     *((int*)( (char*)address + n*linesize + nint_offset )) == nint &&
+	     *((int*)( (char*)address + n*linesize + ndeg_offset )) == ndeg )
 	{
-		for( int i = 0; i < mesh.Size(); ++i)
-			mesh(i) = ((double*)( (char*)address + n*linesize + mesh_offset ))[i];
+		if( mesh.Size() == ndeg*nint+1 && n < nlines )
+		{
+			for( int i = 0; i < mesh.Size(); ++i)
+				mesh(i) = ((double*)( (char*)address + n*linesize + mesh_offset ))[i];
+		}else
+		{
+			std::cout<<"getMesh 1";
+			PDError(-1);
+		}
+	}else
+	{
+		std::cout<<"getMesh 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::setProfile( int n, const Vector& profile )
 {
-	if( profile.Size() == ndim*(ndeg*nint+1) )
+	if( wperm && n < nlines )
 	{
-		for( int i = 0; i < profile.Size(); ++i)
-			((double*)( (char*)address + n*linesize + profile_offset ))[i] = profile(i);
+		if( profile.Size() == ndim*(ndeg*nint+1) )
+		{
+			for( int i = 0; i < profile.Size(); ++i)
+				((double*)( (char*)address + n*linesize + profile_offset ))[i] = profile(i);
+		}else
+		{
+			std::cout<<"setProfile 1";
+			PDError(-1);
+		}
+	}else
+	{
+		std::cout<<"setProfile 2";
+		PDError(-1);
 	}
 }
 
 void mmappedPointData::getProfile( int n, Vector& profile )
 {
-	if( profile.Size() == ndim*(ndeg*nint+1) )
+	if( profile.Size() == ndim*(ndeg*nint+1) && n < nlines )
 	{
 		for( int i = 0; i < profile.Size(); ++i)
 			profile(i) = ((double*)( (char*)address + n*linesize + profile_offset ))[i];
+	}else
+	{
+		std::cout<<"getProfile";
+		PDError(-1);
+	}
+}
+
+void Point::BinaryWrite( mmappedPointData& data, int n )
+{
+	Vector msh( NDEG*NINT+1 );
+	colloc.getMesh( msh );
+	
+	data.setPar( n, par );
+	data.setMul( n, mRe, mIm );
+	data.setMesh( n, msh );
+	data.setProfile( n, sol );
+}
+
+void Point::BinaryRead( mmappedPointData& data, int n )
+{
+	Vector msh( data.getNInt()*data.getNDeg()+1 );
+	if( data.getNPar() == (NPAR+ParEnd) )
+	{
+		data.getPar( n, par );
+	}else
+	{
+		std::cout<<"Wrong number of parameters\n";
+		PDError(-1);
+	}
+	data.getMul( n, mRe, mIm );
+	data.getMesh( n, msh );
+	if( data.getNDim() == NDIM )
+	{
+		if( data.getNInt() == NINT && data.getNDeg() == NDEG )
+		{
+			colloc.setMesh( msh );
+			data.getProfile( n, sol );
+		}else
+		{
+			Vector tmp( data.getNDim()*(data.getNDeg()*data.getNInt()+1) );
+			colloc.Import( sol, tmp, msh, data.getNDeg() );
+		}
+	}else
+	{
+		std::cout<<"binaryread failed";
+		PDError(-1);
 	}
 }
