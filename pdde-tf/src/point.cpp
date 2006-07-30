@@ -63,9 +63,10 @@ void Point::FillSol( System& sys_ )
 
 
 Point::Point( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat ) :
-	PointData( sys_.ndim()*(nint*ndeg+1), sys_.npar()+ParEnd, nmul ),  // sol, par, mRe, mIm
 	var( var_ ), eqn( eqn_ ), varMap( var_.Size() ), varMapCont( var_.Size() + 1 ),
+	sol( sys_.ndim()*(nint*ndeg+1) ), par( sys_.npar()+ParEnd ),
 	solNu( sys_.ndim()*(nint*ndeg+1) ), parNu( sys_.npar()+ParEnd ),
+	mRe(nmul), mIm(nmul),
 	rotRe( 2 ), rotIm( 2 ),              // !!!only for Hartmut's equation!!!!
 	colloc( sys_, nint, ndeg, nmat ),
 	solData( ndeg*nint, sys_.ndim(), 2*sys_.ntau()+1 ),

@@ -27,28 +27,6 @@
 
 #include "pointtype.h"
 
-class PointData
-{
-	public:
-		inline PointData( int nsol, int npar, int nev ) : sol(nsol), par(npar), mRe(nev), mIm(nev) {}
-
-		inline void Save( std::ofstream& file )
-		{
-			for( int i=0; i < sol.Size(); i++ ) file<<sol(i)<<"\n";
-		}
-		void Load( std::ifstream& file );
-
-	protected:
-
-		// solution
-		Vector sol;
-		Vector par;
-
-		// multipliers
-		Vector mRe;
-		Vector mIm;
-};
-
 class mmappedPointData
 {
 	public:
@@ -99,7 +77,7 @@ class mmappedPointData
 		int profile_offset;
 };
 
-class Point : public PointData
+class Point /*: public PointData*/
 {
 	public:
 
@@ -231,8 +209,8 @@ class Point : public PointData
 		int          p1;
 		
 		// solutions
-//		Vector       sol;
-//		Vector       par;
+		Vector       sol;
+		Vector       par;
 
 		// solution in the continuation
 		Vector       solNu;
@@ -243,8 +221,8 @@ class Point : public PointData
 		HyperVector* xxDot;  // -> solDot, qqDot, parDot
 		
 		// multipliers
-//		Vector       mRe;
-//		Vector       mIm;
+		Vector       mRe;
+		Vector       mIm;
 		
 		// for the rotation phase conditions
 		Array1D<int> rotRe;
