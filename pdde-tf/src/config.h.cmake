@@ -9,3 +9,6 @@
 
 /* DEBUG has to be turned on? */
 #cmakedefine DEBUG
+
+/* whether build the GUI */
+#cmakedefine PDDE_GUI
