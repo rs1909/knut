@@ -1,8 +1,17 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#ifndef PDDE_CLI
+#define PDDE_GUI
+#endif
+
 // Include Qt
-#include <QObject>
+#ifdef PDDE_GUI
+  #include <QObject>
+  #define QT_EMIT(func) emit func;
+#else
+  #define QT_EMIT(func) /*no operation*/
+#endif
 
 // Includes standard library
 #include <vector>
@@ -10,10 +19,9 @@
 #include <algorithm>
 #include <iostream>
 
-// includes local
+// Includes local
 #include "pointtype.h"
 #include "system.h"
-
 
 template<class KEY> class genMap
 {
@@ -163,10 +171,14 @@ class VarType : public genMap<Var>
 	bool sysvar;
 };
 
+#ifdef PDDE_GUI
 class NConstants : public QObject
 {
 	Q_OBJECT
-	
+#else
+class NConstants
+{
+#endif
 	public:
 		
 		NConstants( ) : cpMap( 0, false ), parxMap( 0, false ), varsMap( 0, true ),
@@ -192,8 +204,10 @@ class NConstants : public QObject
 		              Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
 		              Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, Eqn& testFN );
 		inline bool inputAssert( std::istream& is );
+	 #ifdef PDDE_GUI
 		void loadXmlFile(const std::string &fileName);
 		void saveXmlFile(const std::string &fileName);
+	 #endif
 		void loadFile(const std::string &fileName);
 		void saveFile(const std::string &fileName);
 
@@ -271,41 +285,36 @@ class NConstants : public QObject
 		int parxSize( ) { return parxMap.size(); }
 		int eqnsSize( ) { return eqnsMap.size(); }
 		int varsSize( ) { return varsMap.size(); }
-
+ #ifdef PDDE_GUI
 	public slots:
-		void setInputFileText( const std::string& str ) { inputFile = str; emit inputFileChanged(str); }
-		void setInputFileText( const QString& str ) { setInputFileText( str.toStdString() ); }
-		void setOutputFileText( const std::string& str ) { outputFile = str; emit outputFileChanged(str); }
-		void setOutputFileText( const QString& str ) { setOutputFileText( str.toStdString() ); }
-		void setSysNameText( const std::string& str ) ///
+ #else
+	public:
+ #endif
+		void setInputFileText( const std::string& str ) { inputFile = str; QT_EMIT( inputFileChanged(str) ) }
+		void setOutputFileText( const std::string& str ) { outputFile = str; QT_EMIT( outputFileChanged(str) ) }
+		void setSysNameText( const std::string& str )
 		{
-// 			std::cout<<"setSysNameIn "; std::cout.flush();
 			sysname = str;
 			System* sys = new System( sysname );
 			npar = sys->npar();
 			ndim = sys->ndim();
 			delete sys;
 			std::cout<<"NDIM "<<ndim<<"\n";
-// 			std::cout<<"setSysNameMid "; std::cout.flush();
 			cpMap.setPar( npar );
 			parxMap.setPar( npar );
 			varsMap.setPar( npar );
-// 			std::cout<<"setSysNameOut0 "; std::cout.flush();
-			emit sysnameChanged( str );
-// 			std::cout<<"setSysNameOut1 "; std::cout.flush();
+			QT_EMIT( sysnameChanged( str ) )
 		}
-		void setSysNameText( const QString& str ) { setSysNameText( str.toStdString() ); }
-		void setLabel( int i ) { label = i; emit labelChanged( label ); } ///
-		void setPointType( PtType p ) { pttype = p; emit pointTypeChangedIdx( getPointTypeIdx() ); }
-		void setPointTypeIdx( int p ) { pttype = pointMap.getkey( p ); ;emit pointTypeChangedIdx( getPointTypeIdx() ); } ///
-		void setCp( Var v ) { cp = v; emit cpChangedIdx( getCpIdx() ); }
-		void setCp( char tp, int n ) { cp = cpMap.fromTypeNum( tp, n ); emit cpChangedIdx( getCpIdx() ); }
-		void setCpIdx( int i ) { cp = cpMap.getkey( i ); emit cpChangedIdx( getCpIdx() ); } ///
-		void setBranchSW( BranchSW i ) { branchsw = i; emit branchswChangedIdx( getBranchSWIdx() ); } ///
-		void setBranchSWIdx( int i ) { branchsw = branchswMap.getkey( i ); emit branchswChangedIdx( getBranchSWIdx() ); } ///
-		void setNEqns( int i ) ///
+		void setLabel( int i ) { label = i; QT_EMIT( labelChanged( label ) ) }
+		void setPointType( PtType p ) { pttype = p; QT_EMIT( pointTypeChangedIdx( getPointTypeIdx() ) ) }
+		void setPointTypeIdx( int p ) { pttype = pointMap.getkey( p ); QT_EMIT( pointTypeChangedIdx( getPointTypeIdx() ) ) }
+		void setCp( Var v ) { cp = v; QT_EMIT( cpChangedIdx( getCpIdx() ) ) }
+		void setCp( char tp, int n ) { cp = cpMap.fromTypeNum( tp, n ); QT_EMIT( cpChangedIdx( getCpIdx() ) ) }
+		void setCpIdx( int i ) { cp = cpMap.getkey( i ); QT_EMIT( cpChangedIdx( getCpIdx() ) ) }
+		void setBranchSW( BranchSW i ) { branchsw = i; QT_EMIT( branchswChangedIdx( getBranchSWIdx() ) ) }
+		void setBranchSWIdx( int i ) { branchsw = branchswMap.getkey( i ); QT_EMIT( branchswChangedIdx( getBranchSWIdx() ) ) }
+		void setNEqns( int i )
 		{
-// 			std::cout<<"NEqns "; std::cout.flush();
 			parxnum.resize(i);
 			eqnsnum.resize(i);
 			varsnum.resize(i);
@@ -322,60 +331,46 @@ class NConstants : public QObject
 				varsnum[j] = VarNone;
 			}
 			neqns = i;
-			emit neqnsChanged( i );
+			QT_EMIT( neqnsChanged( i ) )
 		}
-// 		void setParX( const std::vector<Var>& p ) { parx = p; }
-// 		void setParX( int i, Var p ) { parx[i] = p; }
 		void setParX( int i, char tp, int n ) { parxtype[i] = tp; parxnum[i] = n; }
 		void setParXIdx( int i, int p ) { parxtype[i] = parxMap.getType(p); parxnum[i] = parxMap.getNum( p ); }
-// 		void setEqns( const std::vector<Eqn>& e ) { eqns = e; }
 		void setEqns( int i, char tp, int n ) { eqnstype[i] = tp; eqnsnum[i] = n; }
 		void setEqnsIdx( int i, int e ) { eqnstype[i] = eqnsMap.getType(e); eqnsnum[i] = eqnsMap.getNum( e ); }
-// 		void setVars( const std::vector<Var>& v ) { vars = v; }
-// 		void setVars( int i, Var v ) { vars[i] = v; }
 		void setVars( int i, char tp, int n ){ varstype[i] = tp; varsnum[i] = n; }
 		void setVarsIdx( int i, int v ) { varstype[i] = varsMap.getType(v); varsnum[i] = varsMap.getNum( v ); }
-		void setNInt( int i ) { nint = i; emit nintChanged(nint); }
-		void setNDeg( int i ) { ndeg = i; emit ndegChanged(ndeg); }
-		void setNMul( int i ) { nmul = i; emit nmulChanged(nmul); }
-		void setStab( bool s ) { stab = s; emit stabChanged(stab); }
+		void setNInt( int i ) { nint = i; QT_EMIT( nintChanged(nint) ) }
+		void setNDeg( int i ) { ndeg = i; QT_EMIT( ndegChanged(ndeg) ) }
+		void setNMul( int i ) { nmul = i; QT_EMIT( nmulChanged(nmul) ) }
+		void setStab( bool s ) { stab = s; QT_EMIT( stabChanged(stab) ) }
 		void setStab( int state ) { setStab(state == Qt::Checked); }
-		void setNMat( int i ) { nmat = i; emit nmatChanged(nmat); }
-		void setNInt1( int i ) { nint1 = i; emit nint1Changed(nint1); }
-		void setNInt2( int i ) { nint2 = i; emit nint2Changed(nint2); }
-		void setNDeg1( int i ) { ndeg1 = i; emit ndeg1Changed(ndeg1); }
-		void setNDeg2( int i ) { ndeg2 = i; emit ndeg2Changed(ndeg2); }
-		void setSteps( int i ) { steps = i; emit stepsChanged(steps); }
-		void setCpMin( double d ) { cpMin = d; emit cpMinChanged(cpMin); }
+		void setNMat( int i ) { nmat = i; QT_EMIT( nmatChanged(nmat) ) }
+		void setNInt1( int i ) { nint1 = i; QT_EMIT( nint1Changed(nint1) ) }
+		void setNInt2( int i ) { nint2 = i; QT_EMIT( nint2Changed(nint2) ) }
+		void setNDeg1( int i ) { ndeg1 = i; QT_EMIT( ndeg1Changed(ndeg1) ) }
+		void setNDeg2( int i ) { ndeg2 = i; QT_EMIT( ndeg2Changed(ndeg2) ) }
+		void setSteps( int i ) { steps = i; QT_EMIT( stepsChanged(steps) ) }
+		void setCpMin( double d ) { cpMin = d; QT_EMIT( cpMinChanged(cpMin) ) }
 		void setCpMin( const std::string& d ) { setCpMin(atof(d.c_str())); }
-		void setCpMin( const QString& d ) { setCpMin( d.toStdString() ); }
-		void setCpMax( double d ) { cpMax = d; emit cpMaxChanged(cpMax); }
+		void setCpMax( double d ) { cpMax = d; QT_EMIT( cpMaxChanged(cpMax) ) }
 		void setCpMax( const std::string& d ) { setCpMax(atof(d.c_str())); }
-		void setCpMax( const QString& d ) { setCpMax( d.toStdString() ); }
-		void setDs( double d ) { ds = d; emit dsChanged(ds); }
+		void setDs( double d ) { ds = d; QT_EMIT( dsChanged(ds) ) }
 		void setDs( const std::string& d ) { setDs(atof(d.c_str())); }
-		void setDs( const QString& d ) { setDs( d.toStdString()); }
-		void setDsMin( double d ) { dsMin = d; emit dsMinChanged(dsMin); }
+		void setDsMin( double d ) { dsMin = d; QT_EMIT( dsMinChanged(dsMin) ) }
 		void setDsMin( const std::string& d ) { setDsMin(atof(d.c_str())); }
-		void setDsMin( const QString& d ) { setDsMin( d.toStdString()); }
-		void setDsMax( double d ) { dsMax = d; emit dsMaxChanged(dsMax); }
+		void setDsMax( double d ) { dsMax = d; QT_EMIT( dsMaxChanged(dsMax) ) }
 		void setDsMax( const std::string& d ) { setDsMax(atof(d.c_str())); }
-		void setDsMax( const QString& d ) { setDsMax( d.toStdString()); }
-		void setDsStart( double d ) { dsStart = d; emit dsStartChanged(dsStart); }
+		void setDsStart( double d ) { dsStart = d; QT_EMIT( dsStartChanged(dsStart) ) }
 		void setDsStart( const std::string& d ) { setDsStart(atof(d.c_str())); }
-		void setDsStart( const QString& d ) { setDsStart(d.toStdString()); }
-		void setEpsC( double d ) { epsC = d; emit epsCChanged( d ); }
+		void setEpsC( double d ) { epsC = d; QT_EMIT( epsCChanged( d ) ) }
 		void setEpsC( const std::string& d  ) { setEpsC(atof(d.c_str())); }
-		void setEpsC( const QString& d ) { setEpsC(d.toStdString()); }
-		void setEpsR( double d ) { epsR = d; emit epsRChanged( d ); }
+		void setEpsR( double d ) { epsR = d; QT_EMIT( epsRChanged( d ) ) }
 		void setEpsR( const std::string& d ) { setEpsR(atof(d.c_str())); }
-		void setEpsR( const QString& d ) { setEpsR(d.toStdString()); }
-		void setEpsS( double d ) { epsS = d; emit epsSChanged( d ); }
+		void setEpsS( double d ) { epsS = d; QT_EMIT( epsSChanged( d ) ) }
 		void setEpsS( const std::string& d ) { setEpsS(atof(d.c_str())); }
-		void setEpsS( const QString& d ) { setEpsS(d.toStdString()); }
-		void setNItC( int i ) { nitC = i; emit nitCChanged( i ); }
-		void setNItR( int i ) { nitR = i; emit nitRChanged( i ); }
-		void setNItS( int i ) { nitS = i; emit nitSChanged( i ); }
+		void setNItC( int i ) { nitC = i; QT_EMIT( nitCChanged( i ) ) }
+		void setNItR( int i ) { nitR = i; QT_EMIT( nitRChanged( i ) ) }
+		void setNItS( int i ) { nitS = i; QT_EMIT( nitSChanged( i ) ) }
 		void setNSym( int i )
 		{
 			symRe.resize(i);
@@ -386,14 +381,24 @@ class NConstants : public QObject
 				symIm[j] = 0;
 			}
 			nsym = i;
-			emit nsymChanged(i);
+			QT_EMIT( nsymChanged(i) )
 		}
-// 		void setSymRe( const std::vector<int>& re ) { symRe = re; }
 		void setSymRe( int i, int v ) { symRe[i] = v; }
-// 		void setSymIm( const std::vector<int>& im ) { symIm = im; }
 		void setSymIm( int i, int v ) { symIm[i] = v; }
-		
-	private slots:
+
+	 #ifdef PDDE_GUI
+		void setInputFileText( const QString& str ) { setInputFileText( str.toStdString() ); }
+		void setOutputFileText( const QString& str ) { setOutputFileText( str.toStdString() ); }
+		void setSysNameText( const QString& str ) { setSysNameText( str.toStdString() ); }
+		void setCpMin( const QString& d ) { setCpMin( d.toStdString() ); }
+		void setCpMax( const QString& d ) { setCpMax( d.toStdString() ); }
+		void setDs( const QString& d ) { setDs( d.toStdString()); }
+		void setDsMin( const QString& d ) { setDsMin( d.toStdString()); }
+		void setDsMax( const QString& d ) { setDsMax( d.toStdString()); }
+		void setDsStart( const QString& d ) { setDsStart(d.toStdString()); }
+		void setEpsC( const QString& d ) { setEpsC(d.toStdString()); }
+		void setEpsR( const QString& d ) { setEpsR(d.toStdString()); }
+		void setEpsS( const QString& d ) { setEpsS(d.toStdString()); }
 
 	signals:
 		void inputFileChanged( const std::string& str );
@@ -427,6 +432,7 @@ class NConstants : public QObject
 		void nitRChanged( int i );
 		void nitSChanged( int i );
 		void nsymChanged( int nsym_ );
+	 #endif
 	
 	private:
 

@@ -1,11 +1,8 @@
 #ifndef MAT4DATA_H
 #define MAT4DATA_H
 
-// forward declarations
-namespace std {
-class string;
-}
-class Vector
+#include <string>
+#include "matrix.h"
 
 class mat4Data
 {

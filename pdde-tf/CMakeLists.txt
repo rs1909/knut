@@ -8,6 +8,10 @@ SET( PACKAGE_NAME "PDDE-CONT" )
 SET( PACKAGE_VERSION "1.0.4" )
 FILE( READ REVISION PACKAGE_REVISION )
 
+# uncomment the following line for debugging
+# SET( DEBUG TRUE )
+SET( PDDE_GUI TRUE )
+
 FIND_PROGRAM( SED NAMES sed )
 IF( NOT EXISTS ${SED} )
 	MESSAGE( SEND_ERROR "The sed utility is mot found" )

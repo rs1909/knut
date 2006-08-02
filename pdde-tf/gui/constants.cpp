@@ -1,6 +1,9 @@
-#include <QtXml>
 #include <fstream>
 #include "constants.h"
+
+#ifdef PDDE_GUI
+  #include <QtXml>
+#endif
 
 
 class toNumber
@@ -12,6 +15,8 @@ class toNumber
  private:
 	char num[32];
 };
+
+#ifdef PDDE_GUI
 
 void NConstants::saveXmlFile(const std::string &fileName)
 {
@@ -371,6 +376,8 @@ void NConstants::loadXmlFile(const std::string &fileName)
 	
 	file.close();
 }
+
+#endif // PDDE_GUI
 
 inline bool NConstants::inputAssert( std::istream& is )
 {

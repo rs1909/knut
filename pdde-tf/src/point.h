@@ -26,7 +26,7 @@
 #define BMATRICES 1
 
 #include "pointtype.h"
-
+#include "mat4data.h"
 
 class Point
 {
