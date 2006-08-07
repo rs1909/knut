@@ -3,10 +3,13 @@
 
 #include "mainwindow.h"
 #include "plotdata.h"
+#include "plotwindow.h"
 #include "paramview.h"
 #include <fstream>
 
-MainWindow::MainWindow() : parameters(), compThread(parameters)
+MainWindow::MainWindow() : compThread(parameters),
+	outputPlotWindow(0), outputData(0),
+	inputPlotWindow(0), inputData(0)
 {
 	QTabWidget* tabWidget = new QTabWidget();
 	// the container widgets	
@@ -35,29 +38,45 @@ MainWindow::MainWindow() : parameters(), compThread(parameters)
 	/// QTabWidget
 	/// a) files + equations b) numerics c) symmetry d) torus
 
+	QHBoxLayout *getInputFileLayout = new QHBoxLayout;
 	QLabel* inputFileLabel = new QLabel("INPUT");
 	inputFileLabel->setToolTip( QString("Input file which contains the starting point") );
+	QAction* inputFilePlotAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Plot"), this);
 	inputFile = new QLineEdit();
 	QAction* inputFileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
 	QToolButton* getInputFile = new QToolButton( );
+	QToolButton* getInputFilePlot = new QToolButton( );
 	getInputFile->setDefaultAction( inputFileAct );
+	getInputFilePlot->setDefaultAction( inputFilePlotAct );
+	getInputFileLayout->addWidget( getInputFile );
+	getInputFileLayout->addWidget( getInputFilePlot );
+	getInputFileLayout->addStretch();
 	systemGrid->addWidget( inputFileLabel, 0, 0, Qt::AlignLeft | Qt::AlignVCenter);
 	systemGrid->addWidget( inputFile, 0, 1, 1, 3 );
-	systemGrid->addWidget( getInputFile, 0, 4 );
+	systemGrid->addLayout( getInputFileLayout, 0, 4 );
 	connect( inputFileAct, SIGNAL(triggered()), this, SLOT(setInputFile()));
+	connect( inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot()));
 	connect( inputFile, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setInputFileText(const QString&)) );
 	connect( &parameters, SIGNAL(inputFileChanged(const std::string&)), this, SLOT(setInputFileText(const std::string&)) );
 
+	QHBoxLayout *getOutputFileLayout = new QHBoxLayout;
 	QLabel* outputFileLabel = new QLabel("OUTPUT");
 	outputFileLabel->setToolTip( QString("Output file, which contains the result of computation") );
 	outputFile = new QLineEdit();
 	QAction* outputFileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
+	QAction* outputFilePlotAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Plot"), this);
 	QToolButton* getOutputFile = new QToolButton( );
+	QToolButton* getOutputFilePlot = new QToolButton( );
 	getOutputFile->setDefaultAction( outputFileAct );
+	getOutputFilePlot->setDefaultAction( outputFilePlotAct );
+	getOutputFileLayout->addWidget( getOutputFile );
+	getOutputFileLayout->addWidget( getOutputFilePlot );
+	getOutputFileLayout->addStretch();
 	systemGrid->addWidget( outputFileLabel, 1, 0, Qt::AlignLeft | Qt::AlignVCenter);
 	systemGrid->addWidget( outputFile, 1, 1, 1, 3 );
-	systemGrid->addWidget( getOutputFile, 1, 4 );
+	systemGrid->addLayout( getOutputFileLayout, 1, 4 );
 	connect( outputFileAct, SIGNAL(triggered()), this, SLOT(setOutputFile()));
+	connect( outputFilePlotAct, SIGNAL(triggered()), this, SLOT(outputPlot()));
 	connect( outputFile, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setOutputFileText(const QString&)) );
 	connect( &parameters, SIGNAL(outputFileChanged(const std::string&)), this, SLOT(setOutputFileText(const std::string&)) );
 
@@ -366,6 +385,56 @@ void MainWindow::setPointType( )
 	{
 		eqnsLabel->setText(QString("NPARX"));
 		branchsw->setEnabled(false);
+	}
+}
+
+void MainWindow::inputPlotDestroyed()
+{
+	std::cout<<"plot destroyed\n";
+	delete inputPlotWindow;
+	delete inputData;
+	inputPlotWindow = 0;
+	inputData = 0;
+}
+
+void MainWindow::inputPlot()
+{
+	if( inputPlotWindow == 0 )
+	{
+		inputData = new mat4Data( inputFile->text().toStdString() );
+		inputPlotWindow = new plotWindow( inputData );
+		QDialog *inputPlotDialog = new QDialog( this );
+		QVBoxLayout *inputPlotLayout = new QVBoxLayout();
+		inputPlotLayout->addWidget( inputPlotWindow );
+		inputPlotLayout->setMargin(0);
+		inputPlotDialog->setLayout( inputPlotLayout );
+		inputPlotDialog->show();
+		connect( inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()) );
+	}
+}
+
+void MainWindow::outputPlotDestroyed()
+{
+	std::cout<<"plot destroyed\n";
+	delete outputPlotWindow;
+	delete outputData;
+	outputPlotWindow = 0;
+	outputData = 0;
+}
+
+void MainWindow::outputPlot()
+{
+	if( outputPlotWindow == 0 )
+	{
+		outputData = new mat4Data( outputFile->text().toStdString() );
+		outputPlotWindow = new plotWindow( outputData );
+		QDialog *outputPlotDialog = new QDialog( this );
+		QVBoxLayout *outputPlotLayout = new QVBoxLayout();
+		outputPlotLayout->addWidget( outputPlotWindow );
+		outputPlotLayout->setMargin(0);
+		outputPlotDialog->setLayout( outputPlotLayout );
+		outputPlotDialog->show();
+		connect( outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()) );
 	}
 }
 

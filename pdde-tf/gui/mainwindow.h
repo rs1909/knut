@@ -18,6 +18,8 @@ class QGridLayout;
 class QComboBox;
 class QPushButton;
 class QLabel;
+class mat4Data;
+class plotWindow;
 
 class EqnVarTableView;
 
@@ -110,6 +112,11 @@ private slots:
 		for( int i = 0; i < parameters.cpSize(); ++i ) cp->addItem( parameters.cpString( i ).c_str() );
 // 		std::cout<<"setupCpOut "; std::cout.flush();
 	}
+	void inputPlot();
+	void inputPlotDestroyed();
+	void outputPlot();
+	void outputPlotDestroyed();
+
 
 private:
 	inline bool inputAssert( std::istream& is );
@@ -136,7 +143,11 @@ private:
 	
 	// these contain the constants
 	QLineEdit *inputFile;
+	mat4Data  *inputData;
+	plotWindow *inputPlotWindow;
 	QLineEdit *outputFile;
+	mat4Data  *outputData;
+	plotWindow *outputPlotWindow;
 	QLineEdit *sysname;
 	QSpinBox  *label;
 	QComboBox *pttype;

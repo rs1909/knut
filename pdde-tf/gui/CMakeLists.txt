@@ -11,13 +11,14 @@ INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include 
 	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include )
 
-QT4_WRAP_CPP( MOC_SRCS mainwindow.h plotdata.h paramview.h constants.h 
-    compthread.h )
+QT4_WRAP_CPP( MOC_SRCS mainwindow.h plotdata.h plotwindow.h 
+    paramview.h constants.h compthread.h )
 
 ADD_EXECUTABLE( gui main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
     plotdata.cpp plotdata.h 
+    plotwindow.cpp plotwindow.h
     constants.cpp constants.h
     compthread.cpp compthread.h
     ${MOC_SRCS} )
