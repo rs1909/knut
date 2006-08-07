@@ -305,7 +305,7 @@ void mat4Data::setProfile( int n, const Vector& prof )
 	}
 }
 
-void mat4Data::getPar( int n, Vector& par )
+void mat4Data::getPar( int n, Vector& par ) const
 {
 	if( n < ncols )
 	{
@@ -325,7 +325,13 @@ void mat4Data::getPar( int n, Vector& par )
 	}
 }
 
-void mat4Data::getMul( int n, Vector& re, Vector& im )
+double mat4Data::getPar( int n, int j ) const
+{
+	return ((double*)( (char*)address + par_offset + par_header.col_off(n) ))[j];
+}
+
+
+void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 {
 	if( n < ncols && re.Size() == im.Size() )
 	{
@@ -348,7 +354,17 @@ void mat4Data::getMul( int n, Vector& re, Vector& im )
 	}
 }
 
-void mat4Data::getMesh( int n, Vector& mesh )
+double mat4Data::getMulRe( int n, int j ) const
+{
+	return ((double*)( (char*)address + mul_offset + mul_header.col_off(n) ))[j];
+}
+
+double mat4Data::getMulIm( int n, int j ) const
+{
+	return ((double*)( (char*)address + mul_offset + mul_header.col_off_im(n) ))[j];
+}
+
+void mat4Data::getMesh( int n, Vector& mesh ) const
 {
 	if( n < ncols )
 	{
@@ -368,7 +384,12 @@ void mat4Data::getMesh( int n, Vector& mesh )
 	}
 }
 
-void mat4Data::getProfile( int n, Vector& prof )
+double mat4Data::getMesh( int n, int j ) const
+{
+	return ((double*)( (char*)address + mesh_offset + mesh_header.col_off(n) ))[j];
+}
+
+void mat4Data::getProfile( int n, Vector& prof ) const
 {
 	if( n < ncols )
 	{
@@ -386,4 +407,9 @@ void mat4Data::getProfile( int n, Vector& prof )
 		std::cout<<"getProf 2";
 		PDError(-1);
 	}
+}
+
+double mat4Data::getProfile( int n, int d, int j ) const
+{
+	return ((double*)( (char*)address + prof_offset + prof_header.col_off(n) ))[d+j*ndim];
 }

@@ -16,10 +16,10 @@ class mat4Data
 			long imagf;
 			long namelen;
 		
-			const char* name( const void* offset ) { return (char*)offset + namelen; }
-			int size() { return sizeof(struct header) + namelen; }
-			int col_off( int i ) { return size() + i*mrows*sizeof(double); }
-			int col_off_im( int i ) { return size() + (mrows*ncols + i*mrows)*sizeof(double); }
+			const char* name( const void* offset ) const { return (char*)offset + namelen; }
+			int size() const { return sizeof(struct header) + namelen; }
+			int col_off( int i ) const { return size() + i*mrows*sizeof(double); }
+			int col_off_im( int i ) const { return size() + (mrows*ncols + i*mrows)*sizeof(double); }
 		};
 
 		// opens the file, determines its size, maps the memory from file, sets up variables
@@ -31,20 +31,28 @@ class mat4Data
 		int  findMatrix( const char* name, mat4Data::header* found, int* sz );
 		void openReadOnly( const std::string& fileName );
 		
-		void setPar( int n, const Vector& par );
-		void setMul( int n, const Vector& real, const Vector& imag );
-		void setMesh( int n, const Vector& mesh );
-		void setProfile( int n, const Vector& profile );
-		void getPar( int n, Vector& par );
-		void getMul( int n, Vector& real,Vector& imag );
-		void getMesh( int n, Vector& mesh );
-		void getProfile( int n, Vector& profile );
+		void   setPar( int n, const Vector& par );
+		void   setMul( int n, const Vector& real, const Vector& imag );
+		void   setMesh( int n, const Vector& mesh );
+		void   setProfile( int n, const Vector& profile );
+		void   getPar( int n, Vector& par ) const;
+		double getPar( int n, int j ) const;
+		void   getMul( int n, Vector& real,Vector& imag ) const;
+		double getMulRe( int n, int j ) const;
+		double getMulIm( int n, int j ) const;
+		void   getMesh( int n, Vector& mesh ) const;
+		double getMesh( int n, int j ) const;
+		void   getProfile( int n, Vector& profile ) const;
+// 		void   getProfile( int n, int i, Vector& profile ) const;
+		double getProfile( int n, int d, int j ) const;
 		
-		int  getNDim() { return ndim; }
-		int  getNInt() { return nint; }
-		int  getNDeg() { return ndeg; }
-		int  getNPar() { return npar; }
-		int  getNMul() { return nmul; }
+		int  getNDim() const { return ndim; }
+		int  getNInt() const { return nint; }
+		int  getNDeg() const { return ndeg; }
+		int  getNPar() const { return npar; }
+		int  getNMul() const { return nmul; }
+		int  getMeshLength() const { return ndeg*nint+1; }
+		int  getNCols() const { return ncols; }
 
 	private:
 
