@@ -8,8 +8,6 @@ SET( PACKAGE_NAME "PDDE-CONT" )
 SET( PACKAGE_VERSION "1.0.4" )
 FILE( READ REVISION PACKAGE_REVISION )
 
-# uncomment the following line for debugging
-# SET( DEBUG TRUE )
 SET( PDDE_GUI TRUE )
 
 FIND_PROGRAM( SED NAMES sed )
@@ -34,7 +32,8 @@ CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 INSTALL_PROGRAMS( /bin FILES bin/pcompile )
 
-ADD_DEFINITIONS( -DHAVE_CONFIG_H )
+# ADD_DEFINITIONS( -DHAVE_CONFIG_H )
+ADD_DEFINITIONS( -DHAVE_CONFIG_H -DDEBUG )
 
 #------------------------------------------------------------------------------
 # Finding ATLAS

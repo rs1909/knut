@@ -24,7 +24,7 @@ static inline void pdioassert( std::istream& is )
 			default:
 				break;
 		}
-		PDError(-1);
+		P_MESSAGE("");
 	}
 }
 
@@ -35,7 +35,7 @@ void ConstFile::getParams( const std::string& filename )
 	int ival;
 	
 	file.open( filename.c_str() );
-	if(!file){ std::cout<<"Cannot open "<<filename<<"\n"; PDError(-1); }
+	if(!file){ std::cout<<"Cannot open "<<filename<<"\n"; P_MESSAGE(""); }
 	
 	file >> SYSNAME; pdioassert(file);
 	while( file.get() != '\n' ); pdioassert(file);
@@ -44,7 +44,7 @@ void ConstFile::getParams( const std::string& filename )
 	while( file.get() != '\n' ); pdioassert(file);
 	
 	file >> TYPE >> pt >> CP; CPType = pt; pdioassert(file);
-	if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: CP: Bad parameter type."; PDError(-1); }
+	if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: CP: Bad parameter type."; P_MESSAGE(""); }
 	
 	EXTSYS = (TYPE == -1);
 	if( EXTSYS )
@@ -53,28 +53,28 @@ void ConstFile::getParams( const std::string& filename )
 		file >> ival;
 		SWITCH = (BranchSW)ival;
 		file >> NEQN; pdioassert(file);
-		if( NEQN > MAX_EQVAR ) { std::cout<<"Error: NEQN: System limit has been reached."; PDError(-1); }
+		if( NEQN > MAX_EQVAR ) { std::cout<<"Error: NEQN: System limit has been reached."; P_MESSAGE(""); }
 		for( int i = 0; i < NEQN; i++ )
 		{
 			file >> pt >> (EQN)[i]; pdioassert(file);
-			if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; PDError(-1); }
+			if( pt != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; P_MESSAGE(""); }
 		}
 		file >> NVAR; pdioassert(file);
-		if( NEQN != NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; PDError(-1); }
+		if( NEQN != NVAR ) { std::cout<<"Error: NVAR: Number of equations and variables are not the same."; P_MESSAGE(""); }
 		for( int i = 0; i < NVAR; i++ )
 		{
 			file >> pt >> (VAR)[i]; (VARType)[i] = pt; pdioassert(file);
-			if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; PDError(-1); }
+			if( (pt != 'S')&&(pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: VAR: Bad variable/parameter type."; P_MESSAGE(""); }
 		}
 		while( file.get() != '\n' ); pdioassert(file);
 	}else
 	{
 		file >> NPARX; pdioassert(file);
-		if( NPARX > MAX_PARX ) { std::cout<<"Error: NPARX: System limit has been reached."; PDError(-1); }
+		if( NPARX > MAX_PARX ) { std::cout<<"Error: NPARX: System limit has been reached."; P_MESSAGE(""); }
 		for( int i = 0; i < NPARX; i++ )
 		{
 			file >> pt >> (PARX)[i]; (PARXType)[i] = pt; pdioassert(file);
-			if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; PDError(-1); }
+			if( (pt != 'P')&&(pt != 'I') ) { std::cout<<"Error: PARX: Bad parameter type."; P_MESSAGE(""); }
 		}
 		while( file.get() != '\n' ); pdioassert(file);
 	}
@@ -109,7 +109,7 @@ void ConstFile::getParams( const std::string& filename )
 		// first go to the next line
 		while( file.get() != '\n' ); pdioassert(file);
 		file >> NSYM; pdioassert(file);
-		if( NSYM > MAX_SYM ) { std::cout<<"Error: NSYM: System limit has been reached."; PDError(-1); }
+		if( NSYM > MAX_SYM ) { std::cout<<"Error: NSYM: System limit has been reached."; P_MESSAGE(""); }
 		for( int i = 0; i < NSYM; i++ )
 		{
 			file >> (RESYM)[i] >> (IMSYM)[i]; pdioassert(file);
@@ -197,7 +197,7 @@ int ConstFile::toEqnVar( System& sys,
 		    (eqn(i) == EqnTFCPLX_RE) )
 		{
 			if( testFN_idx == -1 ) { testFN = eqn(i); testFN_idx = i; }
-			else PDError(-1);
+			else P_MESSAGE("");
 		}
 	}
 	

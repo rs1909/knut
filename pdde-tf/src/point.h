@@ -65,7 +65,7 @@ class Point
 		}
 		inline void    setSym( Array1D<int>& sRe, Array1D<int>& sIm )
 		{
-			if( sRe.Size() != sIm.Size() ) PDError(-1);
+			P_ASSERT( sRe.Size() == sIm.Size() );
 			rotRe.Init(sRe.Size()); rotIm.Init(sRe.Size());
 			for( int i=0; i<sRe.Size(); i++ ) { rotRe(i) = sRe(i); rotIm(i) = sIm(i); }
 		}

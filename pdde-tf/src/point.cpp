@@ -128,8 +128,6 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 {
 	PtTab tab;
 	const Var PANGLE = (Var)(VarPAR0+npar_+ParAngle);
-	const Var PX0 = parx(0);
-	const Var PX1 = parx(1);
 	switch( Pt )
 	{
 	/// TIME-PERIODIC TEST-FUNCTIONAL
@@ -148,59 +146,59 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 		case BifTFLP:
 			{ PtTab tmp = { BifTFLP, NOSwitch,   2, 1,
 			 { EqnSol, EqnTFLP },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case BifTFPD:
 			{ PtTab tmp = { BifTFPD, NOSwitch,   2, 1,
 			 { EqnSol, EqnTFPD },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case BifTFNS:
 			{ PtTab tmp = { BifTFNS, NOSwitch,   3, 1,
 			 { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 { VarSol, PANGLE,        PX0 } }; tab = tmp; } break;
+			 { VarSol, PANGLE,        parx(0) } }; tab = tmp; } break;
 	/// AUTONOMOUS TEST-FUNCTIONAL
 		case SolTFAUT:
 			{ PtTab tmp = { SolTFAUT, NOSwitch,   2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case SolTFAUTBRSW:
 			{ PtTab tmp = { SolTFAUTBRSW, TFBRSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case SolTFAUTPDSW:
 			{ PtTab tmp = { SolTFAUTPDSW, TFPDSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case SolTFAUTHBSW:
 			{ PtTab tmp = { SolTFAUTHBSW, TFHBSwitch, 2, 1,
 			 { EqnSol, EqnPhase },
-			 { VarSol, PX0 } }; tab = tmp; } break;
+			 { VarSol, parx(0) } }; tab = tmp; } break;
 		case BifTFAUTLP:
 			{ PtTab tmp = { BifTFAUTLP, NOSwitch,   3, 2,
 			 { EqnSol, EqnPhase,      EqnTFLPAUT },
-			 { VarSol, PX0,           PX1 } }; tab = tmp; } break;
+			 { VarSol, parx(0),       parx(1) } }; tab = tmp; } break;
 		case BifTFAUTPD:
 			{ PtTab tmp = { BifTFAUTPD, NOSwitch,   3, 2,
 			 { EqnSol, EqnPhase,      EqnTFPD },
-			 { VarSol, PX0,           PX1 } }; tab = tmp; } break;
+			 { VarSol, parx(0),       parx(1) } }; tab = tmp; } break;
 		case BifTFAUTNS:
 			{ PtTab tmp = { BifTFAUTNS, NOSwitch,   4, 2,
 			 { EqnSol, EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
-			 { VarSol, PANGLE,        PX0,           PX1 } }; tab = tmp; } break;
+			 { VarSol, PANGLE,        parx(0),       parx(1) } }; tab = tmp; } break;
 	/// TORUS
 		case SolTor:
 			{ PtTab tmp = { SolTor, TFTRSwitch, 2, 1,
 			 { EqnTORSol, EqnTORPhase1 },
-			 { VarTORSol, PX0 } }; tab = tmp; } break;
+			 { VarTORSol, parx(0) } }; tab = tmp; } break;
 		case SolAUTTor:
 			{ PtTab tmp = { SolAUTTor, TFTRSwitch, 2, 2,
 			 { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-			 { VarTORSol, PX0,          PX1 } }; tab = tmp; } break;
+			 { VarTORSol, parx(0),      parx(1) } }; tab = tmp; } break;
 		default:
 			{ PtTab tmp = { SolUser, NOSwitch,  0, 0, { EqnNone }, { VarNone } }; tab = tmp; }
-			std::cout<<"No such pointtype\n"; PDError(-1);
+			P_MESSAGE("No such pointtype\n");
 			break;
 	}
-	if( tab.nparx != parx.Size() ) { std::cout<<"Error: wrong number of parameters\n"; PDError(1); }
+	P_ERROR_X( tab.nparx == parx.Size(), "Error: wrong number of parameters\n" );
 	eqnr.Init( tab.neqn );
 	varr.Init( tab.neqn );
 	for( int i = 0; i < tab.neqn; i++ )
@@ -217,25 +215,11 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 // xxDot, xx, rhs, jac
 void Point::Construct( )
 {	
-	if( (eqn.Size() == 0)||(var.Size() == 0)||(eqn.Size() != var.Size()) )
-	{
-		std::cout<<"Bad equation and variable sizes!";
-		PDError(-1);
-	}
-	else
-	{
-		dim3 = eqn.Size() - 1;
-	}
+	P_ERROR_X( (eqn.Size() != 0)&&(var.Size() != 0)&&(eqn.Size() == var.Size()), "Bad equation and variable sizes!");
+	dim3 = eqn.Size() - 1;
 	
-	if( (eqn(0) != EqnSol)||(var(0) != VarSol) )
-	{
-		std::cout<<"Wrong first equation!";
-		PDError(-1);
-	}
-	else
-	{
-		dim1 = NDIM*(NINT*NDEG+1);
-	}
+	P_ERROR_X( (eqn(0) == EqnSol)&&(var(0) == VarSol), "Wrong first equation!");
+	dim1 = NDIM*(NINT*NDEG+1);
 	
 	testFunct = 0;
 	for( int i = 1; i < eqn.Size(); i++ )
@@ -243,28 +227,28 @@ void Point::Construct( )
 		switch( eqn(i) ) 
 		{
 			case EqnTFLP:
-				if( testFunct == 0 ) testFunct = new TestFunct( colloc, 1.0 );
-				else PDError(-1);
+				P_ERROR( testFunct == 0 );
+				testFunct = new TestFunct( colloc, 1.0 );
 				break;
 			case EqnTFPD:
-				if( testFunct == 0 ) testFunct = new TestFunct( colloc, -1.0 );
-				else PDError(-1);
+				P_ERROR( testFunct == 0 );
+				testFunct = new TestFunct( colloc, -1.0 );
 				break;
 			case EqnTFLPAUT:
-				if( testFunct == 0 ) testFunct = new TestFunctLPAUT( colloc, 1.0 );
-				else PDError(-1);
+				P_ERROR( testFunct == 0 );
+				testFunct = new TestFunctLPAUT( colloc, 1.0 );
 				break;
 			case EqnTFLPAUTROT:
-				if( testFunct == 0 ) testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
-				else PDError(-1);
+				P_ERROR( testFunct == 0 );
+				testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 				break;
 			case EqnTFCPLX_RE:
-				if( eqn(i+1) != EqnTFCPLX_IM ) { std::cout<<"EqnTFCPLX_RE is not paired\n"; PDError(-1); }
-				if( testFunct == 0 ) testFunct = new TestFunctCPLX( colloc );
-				else PDError(-1);
+				P_ERROR_X( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n" );
+				P_ERROR( testFunct == 0 );
+				testFunct = new TestFunctCPLX( colloc );
 				break;
 			case EqnTFCPLX_IM:
-				if( eqn(i-1) != EqnTFCPLX_RE ) { std::cout<<"EqnTFCPLX_IM is not paired\n"; PDError(-1); }
+				P_ERROR_X( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n" );
 			default:
 				break;
 		}
@@ -272,15 +256,8 @@ void Point::Construct( )
 	
 	for( int i = 1; i < var.Size(); i++ )
 	{
-		if( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd) )
-		{
-			varMap( i ) = var(i)-VarPAR0;
-		}
-		else
-		{
-			std::cout<<"{1} Non-existing parameter P"<<var(i)-VarPAR0<<" was specified at position "<<i<<".\n";
-			PDError(-1);
-		}
+		P_ERROR_X4( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd), "{1} Non-existing parameter P", var(i)-VarPAR0, " at position ", i );
+		varMap( i ) = var(i)-VarPAR0;
 	}
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);
 	varMapCont( varMap.Size() ) = p1;
@@ -342,8 +319,7 @@ void Point::Jacobian(
 				AA.getA13(i-1).Clear();
 			} else
 			{
-				std::cout<<"{2} Non-existing parameter P"<<varMap(i)<<" was specified at position "<<i<<".\n";
-				PDError(-1);
+				P_ERROR_X4(false, "{2} Non-existing parameter P", varMap(i), " was specified at position ", i);
 			}
 		}
 	}
@@ -373,8 +349,7 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<"{2} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
-						PDError(-1);
+						P_ERROR_X4(false, "{2} Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
@@ -393,8 +368,7 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<"{3} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
-						PDError(-1);
+						P_ERROR_X4(false, "{3} Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
@@ -416,17 +390,12 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						std::cout<<"{4} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
-						PDError(-1);
+						P_ERROR_X4(false, "{4} Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				break;
 			case EqnTFCPLX_RE:
-				if( eqn(i+1) != EqnTFCPLX_IM )
-				{
-					std::cout<<"EqnTFCPLX_RE is not paired."<<varMap(i)<<"\n";
-					PDError(-1);
-				}
+				P_ERROR_X2( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n", varMap(i) );
 				testFunct->Funct( RHS.getV3()(i-1), RHS.getV3()(i), colloc, par, sol, solData, 
 				                  cos(par(NPAR+ParAngle)), sin(par(NPAR+ParAngle)) );
 				testFunct->Funct_x( AA.getA31(i-1), AA.getA31(i), colloc, par, sol, solData );
@@ -441,20 +410,15 @@ void Point::Jacobian(
 						testFunct->Funct_z( AA.getA33()(i-1,j-1), AA.getA33()(i,j-1), colloc, par, sol, solData );
 					} else
 					{
-						std::cout<<"{5} Non-existing parameter P"<<varMap(j)<<" was specified at position "<<j<<".\n";
-						PDError(-1);
+						P_ERROR_X4(false, "{5} Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				break;
 			case EqnTFCPLX_IM:
-				if( eqn(i-1) != EqnTFCPLX_RE )
-				{
-					std::cout<<"EqnTFCPLX_IM is not paired."<<varMap(i)<<"\n"; PDError(-1);
-				}
+				P_ERROR_X2( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n", varMap(i) );
 				break;
 			default:
-				std::cout<<"Unknown equation type encountered.";
-				PDError(-1);
+				P_MESSAGE("Unknown equation type encountered.");
 				break;
 		}
 	}
@@ -468,7 +432,8 @@ void Point::Jacobian(
 		if( ds != 0.0 )
 		{
 			RHS.getV3()(dim3) = ds - colloc.IntegrateCont( xxDot->getV1(), sol, solPrev );
-			for( int j = 1; j < varMap.Size(); ++j ) RHS.getV3()(dim3) -= xxDot->getV3()(j)*(par(varMap(j))-parPrev(varMap(j)));
+			for( int j = 1; j < varMap.Size()-1; ++j ) RHS.getV3()(dim3) -= xxDot->getV3()(j)*(par(varMap(j))-parPrev(varMap(j)));
+			RHS.getV3()(dim3) -= p1Dot*(par(varMap(varMap.Size()-1))-parPrev(varMap(varMap.Size()-1)));
 		}else
 		{
 			RHS.getV3()(dim3) = 0.0;
@@ -777,7 +742,7 @@ int Point::Continue( double ds, bool jacstep )
 		for( int i = 0; i < dim3+1; i++ ) Onorm += (xx->getV3()(i))*(xx->getV3()(i));
 		Onorm = sqrt(Onorm)/ds;
 		std::cout<<"Dif Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
-		for( int i = 1; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-2)/ds;
+		for( int i = 1; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xx->getV3()(i-1)/ds;
 		std::cout<<'\n';
 		/// END OF CHECKING
 	#endif
@@ -789,7 +754,7 @@ int Point::Continue( double ds, bool jacstep )
 	}else
 	{
 		std::cout<<"\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
-		// PDError(12);
+		// P_MESSAGE("");
 	}
 	
 	return it;
@@ -956,20 +921,18 @@ void Point::Read( std::ifstream& file, bool tan )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR+ParEnd != npar_ ) { std::cout<<"Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
+	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible file (NPAR) ", npar_ );
 	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>par(i);
 	
 	file>>nmul_;
-	if( mRe.Size() < nmul_ ) { std::cout<<"Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
+	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible file (NMUL) ", nmul_ );
 	for( int i = 0; i < nmul_; i++ ) { file>>mRe(i); file>>mIm(i); }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	if( NDIM != ndim_ ) { std::cout<<"Not compatible file (NDIM) "<<ndim_<<"\n"; PDError(-1); }
-// 	if( NINT != nint_ ) { std::cout<<"Not compatible file (NINT) "<<nint_<<"\n"; PDError(-1); }
-// 	if( NDEG != ndeg_ ) { std::cout<<"Not compatible file (NDEG) "<<ndeg_<<"\n"; PDError(-1); }
+	P_ERROR_X2( NDIM == ndim_, "Not compatible file (NDIM) ", ndim_ );
 	
 	Vector msh( ndeg_*nint_ + 1 );
 	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>msh(i);
@@ -1015,18 +978,18 @@ void Point::ReadNull( std::ifstream& file )
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	if( NPAR+ParEnd != npar_ ) { std::cout<<"RN:Not compatible file (NPAR) "<<npar_<<"\n"; PDError(-1); }
+	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible file (NPAR) ", npar_ );
 	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>tmp;
 	
 	file>>nmul_;
-	if( mRe.Size() < nmul_ ) { std::cout<<"RN:Not compatible file (NMUL) "<<nmul_<<"\n"; PDError(-1); }
+	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible file (NMUL) ", nmul_ );
 	for( int i = 0; i < nmul_; i++ ) { file>>tmp; file>>tmp; }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	if( NDIM != ndim_ ) { std::cout<<"RN:Not compatible file (NDIM) "<<ndim_<<"\n"; PDError(-1); }
+	P_ERROR_X2( NDIM == ndim_, "Not compatible file (NDIM) ", ndim_ );
 	
 	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>tmp;
 	for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
@@ -1043,8 +1006,7 @@ void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& 
 		colloc.Export( Im, mshint, mshdeg, TIm );
 	}else
 	{
-		std::cout<<"Not the complex test functional\n";
-		PDError(-1);
+		P_MESSAGE("Not the complex test functional\n");
 	}
 }
 
@@ -1062,33 +1024,21 @@ void Point::BinaryWrite( mat4Data& data, int n )
 void Point::BinaryRead( mat4Data& data, int n )
 {
 	Vector msh( data.getNInt()*data.getNDeg()+1 );
-	if( data.getNPar() == (NPAR+ParEnd) )
-	{
-		data.getPar( n, par );
-	}else
-	{
-		std::cout<<"Wrong number of parameters\n";
-		PDError(-1);
-	}
+	P_ERROR_X( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters\n" );
+	data.getPar( n, par );
 	data.getMul( n, mRe, mIm );
 	data.getMesh( n, msh );
-	if( data.getNDim() == NDIM )
+	P_ERROR_X( data.getNDim() == NDIM, "binaryread failed" );
+	if( data.getNInt() == NINT && data.getNDeg() == NDEG )
 	{
-		if( data.getNInt() == NINT && data.getNDeg() == NDEG )
-		{
-			colloc.setMesh( msh );
-			data.getProfile( n, sol );
-			std::cout<<"not converted\n";
-		}else
-		{
-			Vector tmp( data.getNDim()*(data.getNDeg()*data.getNInt()+1) );
-			data.getProfile( n, tmp );
-			colloc.Import( sol, tmp, msh, data.getNDeg() );
-		}
+		colloc.setMesh( msh );
+		data.getProfile( n, sol );
+		std::cout<<"not converted\n";
 	}else
 	{
-		std::cout<<"binaryread failed";
-		PDError(-1);
+		Vector tmp( data.getNDim()*(data.getNDeg()*data.getNInt()+1) );
+		data.getProfile( n, tmp );
+		colloc.Import( sol, tmp, msh, data.getNDeg() );
 	}
 	par.Print();
 }

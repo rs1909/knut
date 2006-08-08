@@ -654,7 +654,7 @@ int NConstants::toEqnVar( System& sys,
 		    (eqn(i) == EqnTFCPLX_RE) )
 		{
 			if( testFN_idx == -1 ) { testFN = eqn(i); testFN_idx = i; }
-			else PDError(-1);
+			else P_MESSAGE("too many test functionals");
 		}
 	}
 	

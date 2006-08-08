@@ -85,14 +85,12 @@ int main( int argc, const char** argv )
 					exit(0);
 					break;
 				default:
-					std::cout<<"Unexected CL argument.\n"; 
-					PDError(-1);
+					P_MESSAGE("Unexected CL argument.\n");
 					break;
 			}
 		}else
 		{
-			std::cout<<"Unexected CL argument.\n"; 
-			PDError(-1);
+			P_MESSAGE("Unexected CL argument.\n");
 		}
 	}
 	
@@ -121,7 +119,7 @@ int main( int argc, const char** argv )
 	// **********************************************************************************************************
 	
 	System sys( params->SYSNAME );
-	if( sys.ndim() == 0 ) PDError(-1);
+	if( sys.ndim() == 0 ) P_MESSAGE("zerodimensions");
 
 	Vector par(sys.npar()+ParEnd);
 	std::ofstream ff( branchFile );
@@ -146,13 +144,6 @@ int main( int argc, const char** argv )
 	Array1D<Var> var_start;
 	Eqn          testFN;
 	
-	int trivial = params->toEqnVar( sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
-	const int npar = sys.npar();
-	
-// 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
-// 	std::cout<<'\n';
-// 	for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
-// 	std::cout<<'\n';
 	
 	//-----------------------------------------------------------------------------------------------------------
 	//
@@ -161,7 +152,16 @@ int main( int argc, const char** argv )
 	//-----------------------------------------------------------------------------------------------------------
 	
 	// just a block to contain pt, which eats too much memory
+	try
 	{
+		int trivial = params->toEqnVar( sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
+		const int npar = sys.npar();
+	
+// 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
+// 	std::cout<<'\n';
+// 	for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
+// 	std::cout<<'\n';
+
 		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->NINT, params->NDEG, params->NMUL, params->NMAT );
 		Point& pt = *pt_ptr;
 		
@@ -309,7 +309,7 @@ int main( int argc, const char** argv )
 				if( decr&&(fabs(ds)*1.414 > params->DSMIN)&&(fabs(ds)*1.414 < params->DSMAX) ) ds *= 1.414;
 				if( (itc >= params->NITC)&&(fabs(ds)/2.0 < params->DSMIN) )
 				{
-					PDError(1);
+					P_MESSAGE("reached minimum stepsize (DSMIN)");
 				}
 				std::cout.flush();
 			}
@@ -369,6 +369,11 @@ int main( int argc, const char** argv )
 		// **********************************************************************************************************
 		delete pt_ptr;
 	}
-
+	catch( pddeException ex )
+	{
+		std::cout<<ex.file<<":"<<ex.line<<" "<<ex.message.message;
+		exit(-1);
+	}
+	
 	delete params;
 }

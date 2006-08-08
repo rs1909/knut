@@ -17,8 +17,7 @@ int mat4Data::findMatrix( const char* name, mat4Data::header* found, int *sz )
 	int cur_size;
 	do{
 		memcpy( &hd, (char*)address + cur_off, sizeof(struct header) );
-		if( hd.type != 0 )
-		  { std::cout<<"not a double matrix\n"; PDError(-1); }
+		P_ERROR_X( hd.type == 0, "not a double matrix");
 		if( hd.imagf == 0 )
 		  cur_size = sizeof(struct header) + hd.namelen*sizeof(char) + hd.mrows*hd.ncols*sizeof(double);
 		else
@@ -160,46 +159,46 @@ void mat4Data::openReadOnly( const std::string& fileName )
 	if( ( address = mmap( 0, filesize, PROT_READ, MAP_PRIVATE, file, 0 ) ) == MAP_FAILED )
 	{ perror("mmappedPointData::mmappedPointData: unable to mmap file\n"); throw(-1); }
 	
-	if( (par_offset = findMatrix( "pdde_par", &par_header, &par_size )) == -1 ) { std::cout<<"err1"; PDError(-1); }
+	if( (par_offset = findMatrix( "pdde_par", &par_header, &par_size )) == -1 ) P_MESSAGE("err1");
 	npar = par_header.mrows; std::cout<<"NPAR "<<npar<<"\n";
 	ncols = par_header.ncols;
-	if( par_header.imagf != 0 ) { std::cout<<"err2"; PDError(-1); }
+	if( par_header.imagf != 0 ) P_MESSAGE("err2");
 
-	if( (mul_offset = findMatrix( "pdde_mul", &mul_header, &mul_size )) == -1 ) { std::cout<<"err3"; PDError(-1); }
+	if( (mul_offset = findMatrix( "pdde_mul", &mul_header, &mul_size )) == -1 ) P_MESSAGE("err3");
 	nmul = mul_header.mrows; std::cout<<"NMUL "<<nmul<<"\n";
-	if( mul_header.ncols != ncols ) { std::cout<<"err4"; PDError(-1); }
-	if( mul_header.imagf == 0 ) { std::cout<<"err5"; PDError(-1); }
+	if( mul_header.ncols != ncols ) P_MESSAGE("err4");
+	if( mul_header.imagf == 0 ) P_MESSAGE("err5");
 	
-	if( (ndim_offset = findMatrix( "pdde_ndim", &ndim_header, &ndim_size )) == -1 ) { std::cout<<"err6"; PDError(-1); }
-	if( ndim_header.mrows != 1 ) { std::cout<<"err7 "<<ndim_header.mrows<<"\n"; PDError(-1); }
-	if( ndim_header.ncols != ncols ) { std::cout<<"err9"; PDError(-1); }
-	if( ndim_header.imagf != 0 ) { std::cout<<"err9"; PDError(-1); }
-	ndim = *((double*)((char*)address + ndim_offset + ndim_header.col_off(0)));
+	if( (ndim_offset = findMatrix( "pdde_ndim", &ndim_header, &ndim_size )) == -1 ) P_MESSAGE("err6");
+	if( ndim_header.mrows != 1 ) P_MESSAGE("err7 ");
+	if( ndim_header.ncols != ncols ) P_MESSAGE("err9");
+	if( ndim_header.imagf != 0 ) P_MESSAGE("err9");
+	ndim = static_cast<int>(*((double*)((char*)address + ndim_offset + ndim_header.col_off(0))));
 // 	std::cout<<"NDIM "<<ndim<<"\n";
 	
-	if( (nint_offset = findMatrix( "pdde_nint", &nint_header, &nint_size )) == -1 ) { std::cout<<"err10"; PDError(-1); }
-	if( nint_header.mrows != 1 ) { std::cout<<"err11"; PDError(-1); }
-	if( nint_header.ncols != ncols ) { std::cout<<"err12"; PDError(-1); }
-	if( nint_header.imagf != 0 ) { std::cout<<"err13"; PDError(-1); }
-	nint = *((double*)((char*)address + nint_offset + nint_header.col_off(0)));
+	if( (nint_offset = findMatrix( "pdde_nint", &nint_header, &nint_size )) == -1 ) P_MESSAGE("err10");
+	if( nint_header.mrows != 1 ) P_MESSAGE("err11");
+	if( nint_header.ncols != ncols ) P_MESSAGE("err12");
+	if( nint_header.imagf != 0 ) P_MESSAGE("err13");
+	nint = static_cast<int>(*((double*)((char*)address + nint_offset + nint_header.col_off(0))));
 // 	std::cout<<"NINT "<<nint<<"\n";
 	
-	if( (ndeg_offset = findMatrix( "pdde_ndeg", &ndeg_header, &ndeg_size )) == -1 ) { std::cout<<"err14"; PDError(-1); }
-	if( ndeg_header.mrows != 1 ) { std::cout<<"err15"; PDError(-1); }
-	if( ndeg_header.ncols != ncols ) { std::cout<<"err16"; PDError(-1); }
-	if( ndeg_header.imagf != 0 ) { std::cout<<"err17"; PDError(-1); }
-	ndeg = *((double*)((char*)address + ndeg_offset + ndeg_header.col_off(0)));
+	if( (ndeg_offset = findMatrix( "pdde_ndeg", &ndeg_header, &ndeg_size )) == -1 ) P_MESSAGE("err14");
+	if( ndeg_header.mrows != 1 ) P_MESSAGE("err15");
+	if( ndeg_header.ncols != ncols ) P_MESSAGE("err16");
+	if( ndeg_header.imagf != 0 ) P_MESSAGE("err17");
+	ndeg = static_cast<int>(*((double*)((char*)address + ndeg_offset + ndeg_header.col_off(0))));
 // 	std::cout<<"NDEG "<<ndeg<<"\n";
 
-	if( (mesh_offset = findMatrix( "pdde_mesh", &mesh_header, &mesh_size )) == -1 ) { std::cout<<"err18"; PDError(-1); }
-	if( mesh_header.mrows != ndeg*nint+1 ) { std::cout<<"err19 "<<mesh_header.mrows<<"\n"; PDError(-1); }
-	if( mesh_header.ncols != ncols ) { std::cout<<"err20"; PDError(-1); }
-	if( mesh_header.imagf != 0 ) { std::cout<<"err21"; PDError(-1); }
+	if( (mesh_offset = findMatrix( "pdde_mesh", &mesh_header, &mesh_size )) == -1 ) P_MESSAGE("err18");
+	if( mesh_header.mrows != ndeg*nint+1 ) P_MESSAGE("err19");
+	if( mesh_header.ncols != ncols ) P_MESSAGE("err20");
+	if( mesh_header.imagf != 0 ) P_MESSAGE("err21");
 	
-	if( (prof_offset = findMatrix( "pdde_prof", &prof_header, &prof_size )) == -1 ) { std::cout<<"err22"; PDError(-1); }
-	if( prof_header.mrows != ndim*(ndeg*nint+1) ) { std::cout<<"err23"; PDError(-1); }
-	if( prof_header.ncols != ncols ) { std::cout<<"err24"; PDError(-1); }
-	if( prof_header.imagf != 0 ) { std::cout<<"err25"; PDError(-1); }
+	if( (prof_offset = findMatrix( "pdde_prof", &prof_header, &prof_size )) == -1 ) P_MESSAGE("err22");
+	if( prof_header.mrows != ndim*(ndeg*nint+1) ) P_MESSAGE("err23");
+	if( prof_header.ncols != ncols ) P_MESSAGE("err24");
+	if( prof_header.imagf != 0 ) P_MESSAGE("err25");
 	
 // 	std::cout<<"NDIM "<<ndim<<" NINT "<<nint<<" NDEG "<<ndeg<<" NPAR "<<npar<<" NMUL "<<nmul<<"\n";
 }
@@ -224,13 +223,11 @@ void mat4Data::setPar( int n, const Vector& par )
 				((double*)( (char*)address + par_offset + par_header.col_off(n) ))[i] = 0.0;
 		}else
 		{
-			std::cout<<"setPar 1";
-			PDError(-1);
+			P_MESSAGE("setPar 1");
 		}
 	}else
 	{
-		std::cout<<"setPar 2";
-		PDError(-1);
+		P_MESSAGE("setPar 2");
 	}
 }
 
@@ -252,13 +249,11 @@ void mat4Data::setMul( int n, const Vector& re, const Vector& im )
 			}
 		}else
 		{
-			std::cout<<"setMul 1";
-			PDError(-1);
+			P_MESSAGE("setMul 1");
 		}
 	}else
 	{
-		std::cout<<"setMul 2";
-		PDError(-1);
+		P_MESSAGE("setMul 2");
 	}
 }
 
@@ -272,13 +267,11 @@ void mat4Data::setMesh( int n, const Vector& mesh )
 				((double*)( (char*)address + mesh_offset + mesh_header.col_off(n) ))[i] = mesh(i);
 		}else
 		{
-			std::cout<<"setMesh 1";
-			PDError(-1);
+			P_MESSAGE("setMesh 1");
 		}
 	}else
 	{
-		std::cout<<"setMesh 2";
-		PDError(-1);
+		P_MESSAGE("setMesh 2");
 	}
 }
 
@@ -295,13 +288,11 @@ void mat4Data::setProfile( int n, const Vector& prof )
 				((double*)( (char*)address + prof_offset + prof_header.col_off(n) ))[i] = prof(i);
 		}else
 		{
-			std::cout<<"setProf 1";
-			PDError(-1);
+			P_MESSAGE("setProf 1");
 		}
 	}else
 	{
-		std::cout<<"setProf 2";
-		PDError(-1);
+		P_MESSAGE("setProf 2");
 	}
 }
 
@@ -315,13 +306,11 @@ void mat4Data::getPar( int n, Vector& par ) const
 				par(i) = ((double*)( (char*)address + par_offset + par_header.col_off(n) ))[i];
 		}else
 		{
-			std::cout<<"getPar 1";
-			PDError(-1);
+			P_MESSAGE("getPar 1");
 		}
 	}else
 	{
-		std::cout<<"getPar 2";
-		PDError(-1);
+		P_MESSAGE("getPar 2");
 	}
 }
 
@@ -344,13 +333,11 @@ void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 			}
 		}else
 		{
-			std::cout<<"getMul 1";
-			PDError(-1);
+			P_MESSAGE("getMul 1");
 		}
 	}else
 	{
-		std::cout<<"getMul 2";
-		PDError(-1);
+		P_MESSAGE("getMul 2");
 	}
 }
 
@@ -374,13 +361,11 @@ void mat4Data::getMesh( int n, Vector& mesh ) const
 				mesh(i) = ((double*)( (char*)address + mesh_offset + mesh_header.col_off(n) ))[i];
 		}else
 		{
-			std::cout<<"getMesh 1";
-			PDError(-1);
+			P_MESSAGE("getMesh 1");
 		}
 	}else
 	{
-		std::cout<<"getMesh 2";
-		PDError(-1);
+		P_MESSAGE("getMesh 2");
 	}
 }
 
@@ -399,13 +384,11 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 				prof(i) = ((double*)( (char*)address + prof_offset + prof_header.col_off(n) ))[i];
 		}else
 		{
-			std::cout<<"getProf 1";
-			PDError(-1);
+			P_MESSAGE("getProf 1");
 		}
 	}else
 	{
-		std::cout<<"getProf 2";
-		PDError(-1);
+		P_MESSAGE("getProf 2");
 	}
 }
 

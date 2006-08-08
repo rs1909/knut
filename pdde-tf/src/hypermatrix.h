@@ -515,62 +515,44 @@ void HyMatrix<FACT>::SolveTR( int bord, Vector& X1, Vector& X3, const Vector& F1
 template<class FACT>
 void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F )
 {
-	if( A11 != 0 )
+	P_ASSERT_X( A11 != 0, "HyMatrix::Solve Error" );
+	if( A33 != 0 )
 	{
-		if( A33 != 0 )
+		// MBEW v BEM
+		if( A33->Col() == 1 )
 		{
-			// MBEW v BEM
-			if( A33->Col() == 1 )
-			{
-				Solve( X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0) );
-			}
-			else{
-				Solve( A33->Col(), X.getV1(), X.getV3(), F.getV1(), F.getV3() );
-			}
+			Solve( X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0) );
 		}
-		else
-		{
-			// simply A11
-			A11->Solve( X.getV1(), F.getV1() );
+		else{
+			Solve( A33->Col(), X.getV1(), X.getV3(), F.getV1(), F.getV3() );
 		}
 	}
 	else
 	{
-		std::cout<<"HyMatrix::Solve Error\n";
-		PDError(-1);
-	}
-	
+		A11->Solve( X.getV1(), F.getV1() );
+	}	
 	// Check( X, F, F.getV3().Size() );
 }
 
 template<class FACT>
 void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F, int bord )
 {
-	if( A11 != 0 )
+	P_ASSERT_X( A11 != 0, "HyMatrix::Solve Error");
+	if( A33 != 0 )
 	{
-		if( A33 != 0 )
+		// MBEW v BEM
+		if( bord == 1 )
 		{
-			// MBEW v BEM
-			if( bord == 1 )
-			{
-				Solve( X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0) );
-			}
-			else{
-				Solve( bord, X.getV1(), X.getV3(), F.getV1(), F.getV3() );
-			}
+			Solve( X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0) );
 		}
-		else
-		{
-			// simply A11
-			A11->Solve( X.getV1(), F.getV1() );
+		else{
+			Solve( bord, X.getV1(), X.getV3(), F.getV1(), F.getV3() );
 		}
 	}
 	else
 	{
-		std::cout<<"HyMatrix::Solve Error\n";
-		PDError(-1);
+		A11->Solve( X.getV1(), F.getV1() );
 	}
-	
 	// Check( X, F, F.getV3().Size() );
 }
 

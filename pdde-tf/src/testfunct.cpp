@@ -259,11 +259,7 @@ void TestFunctCPLX::Funct_x( Vector& func1, Vector& func2,
 
 void TestFunctCPLX::Switch( Vector& Re, Vector& Im, double& alpha )
 {
-	if( (2*Re.Size() != vv.Size())||(2*Im.Size() != vv.Size()) )
-	{
-		std::cout<<"TestFunctCPLX::Switch: Bad sizes\n";
-		PDError(-12);
-	}
+	P_ASSERT_X( (2*Re.Size() == vv.Size())&&(2*Im.Size() == vv.Size()), "TestFunctCPLX::Switch: Bad sizes\n" );
 	std::cout<<"zRe="<<ZRe<<", zIm="<<ZIm<<"\n";
 	for( int i=0; i<Re.Size(); i++ )
 	{

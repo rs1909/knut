@@ -261,46 +261,27 @@ inline int SpMatrix::NewL( int size_ )
 inline int& SpMatrix::WrLi( int l, int e )
 {
 #ifdef DEBUG
-	if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
-	{
+	P_ASSERT_X( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size), "WrLi bound " );
 #endif
-		return Ai[Ap[l]+e];
-#ifdef DEBUG
-	}else
-	{
-		std::cout<<"WrLi bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ai[Ap[l]+e];
-	}
-#endif
+	return Ai[Ap[l]+e];
+// 	std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
 inline double& SpMatrix::WrLx( int l, int e )
 {
 #ifdef DEBUG
-	if( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size) )
-	{
+	P_ASSERT_X( (l < n)&&(Ap[l] + e < Ap[l+1])&&(e >= 0)&&(l >= 0)&&(Ap[l]+e < size), "WrLx bound " );
 #endif
-		return Ax[Ap[l]+e];
-#ifdef DEBUG
-	}else
-	{
-		std::cout<<"WrLx bound "<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n"; PDError(1); return Ax[Ap[l]+e];
-	}
-#endif
+	return Ax[Ap[l]+e];
+// 	std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
 inline int SpMatrix::GetL( int n_ )
 {
 #ifdef DEBUG
-	if( n_ < n )
-	{
+	P_ASSERT_X( n_ < n, "SpMatrix::GetL: Error\n" );
 #endif
-		return Ap[n_+1] - Ap[n_];
-#ifdef DEBUG
-	}else
-	{
-		std::cout<<"SpMatrix::GetL: Error\n"; return -1;
-	}
-#endif
+	return Ap[n_+1] - Ap[n_];
 }
 
 inline void SpMatrix::AX( double* out, const double* in, double alpha, bool trans ) const

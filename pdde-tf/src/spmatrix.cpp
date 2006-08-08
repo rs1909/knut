@@ -163,7 +163,7 @@ void SpFact::Clear( )
 	SpMatrix::Clear( ); 
 	if( Numeric != 0 )
 	{
-		if( !fact ){ std::cout<<"GEBASZ\n"; PDError(1); }
+		P_ASSERT_X( fact, "GEBASZ\n" );
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -175,7 +175,7 @@ void SpFact::Clear( char F )
 	SpMatrix::Clear( F );
 	if( Numeric != 0 )
 	{
-		if( !fact ){ std::cout<<"GEBASZ\n"; PDError(1); }
+		P_ASSERT_X( fact, "GEBASZ\n" );
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -188,19 +188,10 @@ void SpFact::Fact()
 	if( !fact )
 	{
 		void  *Symbolic = 0;
-		if( Numeric != 0 )
-		{
-			std::cout<<"SpFact::SpFact(Spmatrix& ): This is a bug. The matrix was already factorized.\n";
-			PDError(-1);
-		}
-		int   status;
+		P_ASSERT_X( Numeric == 0, "SpFact::SpFact(Spmatrix& ): This is a bug. The matrix was already factorized.\n" );
 
-		status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
-		if( status != 0 )
-		{
-			std::cout<<"SpFact::SpFact(Spmatrix& ): Symbolic "<<status<<"\n";
-			PDError(-1);
-		}
+		int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
+		P_ERROR_X2( status == 0, "SpFact::SpFact(Spmatrix& ): Symbolic ", status );
 		status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
 		fact = true;
 		if( status != 0 )
@@ -212,7 +203,7 @@ void SpFact::Fact()
 				GetDX( DX );
 				DX.Print();
 			}
-			PDError(-1);
+			P_MESSAGE("");
 		}
 		umfpack_di_free_symbolic(&Symbolic); Symbolic = 0;
 	}
@@ -352,7 +343,7 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 		}
 	}
 	while( ( IDO == 1 )||( IDO == -1 ) );
-	if( IDO != 99 ){ std::cout<<"IDO = "<<IDO<<" is not expected\n"; PDError(1); }
+	P_ERROR_X3( IDO == 99, "IDO = ", (int)IDO, " is not expected\n");
 	delete[] tvec2;
 	delete[] tvec;
 	

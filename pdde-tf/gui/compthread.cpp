@@ -15,6 +15,8 @@
 #include <string>
 #include <cmath>
 
+#include <QErrorMessage>
+
 inline void parNamePrint( Vector& /*par*/, int npar, Array1D<Var>& var )
 {
 	for( int j = 1; j < var.Size(); j++ ) std::cout<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
@@ -27,48 +29,48 @@ inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
 
 void MThread::run()
 {
-	System sys( params->getSysName() );
-	if( sys.ndim() == 0 ) PDError(-1);
-
-	Vector par( params->getNPar()+ParEnd );
-	mat4Data out ( params->getOutputFile(),
-					 params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
-					 params->getNInt(), params->getNDeg(), params->getNMul() );
-// 	std::ofstream out( params->getOutputFile().c_str() );
-// 	out<<std::scientific;
-// 	out.precision(12);
+	try
+	{
+		System sys( params->getSysName() );
+		if( sys.ndim() == 0 ) P_MESSAGE("zerodimensions");
 	
-	//-----------------------------------------------------------------------------------------------------------
-	//
-	// Initialize the system definition for the three cases of
-	// a) refinement b) branch switching c) continuation
-	//
-	//-----------------------------------------------------------------------------------------------------------
-	
-	Array1D<Eqn> eqn; // used for continuation
-	Array1D<Var> var; // used for continuation
-	Array1D<Eqn> eqn_refine;
-	Array1D<Var> var_refine;
-	Array1D<Eqn> eqn_start;
-	Array1D<Var> var_start;
-	Eqn          testFN;
-	///!!!!!!!!!!!!!!!!!!
-	int trivial = params->toEqnVar( sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
-	const int npar = params->getNPar();
+		Vector par( params->getNPar()+ParEnd );
+		mat4Data out ( params->getOutputFile(),
+						params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+						params->getNInt(), params->getNDeg(), params->getNMul() );
+	// 	std::ofstream out( params->getOutputFile().c_str() );
+	// 	out<<std::scientific;
+	// 	out.precision(12);
+		
+		//-----------------------------------------------------------------------------------------------------------
+		//
+		// Initialize the system definition for the three cases of
+		// a) refinement b) branch switching c) continuation
+		//
+		//-----------------------------------------------------------------------------------------------------------
+		
+		Array1D<Eqn> eqn; // used for continuation
+		Array1D<Var> var; // used for continuation
+		Array1D<Eqn> eqn_refine;
+		Array1D<Var> var_refine;
+		Array1D<Eqn> eqn_start;
+		Array1D<Var> var_start;
+		Eqn          testFN;
+		int trivial = params->toEqnVar( sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
+		const int npar = params->getNPar();
 	
 // 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
 // 	std::cout<<'\n';
 // 	for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
 // 	std::cout<<'\n';
-	
-	//-----------------------------------------------------------------------------------------------------------
-	//
-	// END of initialization
-	//
-	//-----------------------------------------------------------------------------------------------------------
-	
-	// just a block to contain pt, which eats too much memory
-	{
+
+		///!!!!!!!!!!!!!!!!!!
+		//-----------------------------------------------------------------------------------------------------------
+		//
+		// END of initialization
+		//
+		//-----------------------------------------------------------------------------------------------------------
+		
 		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat() );
 		Point& pt = *pt_ptr;
 		
@@ -215,7 +217,7 @@ void MThread::run()
 				if( decr&&(fabs(ds)*1.414 > params->getDsMin())&&(fabs(ds)*1.414 < params->getDsMax()) ) ds *= 1.414;
 				if( (itc >= params->getNItC())&&(fabs(ds)/2.0 < params->getDsMin()) )
 				{
-					PDError(1);
+					P_MESSAGE("reached minimum stepsize (DSMIN)");
 				}
 				std::cout.flush();
 			}
@@ -274,5 +276,13 @@ void MThread::run()
 		}
 		// **********************************************************************************************************
 		delete pt_ptr;
+	}
+	catch( pddeException ex )
+	{
+// 		QErrorMessage error;
+// 		error.exec();
+// 		error.showMessage( QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()) );
+		std::cout<<ex.file<<":"<<ex.line<<" "<<ex.message.message;
+		return;
 	}
 }
