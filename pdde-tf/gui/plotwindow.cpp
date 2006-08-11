@@ -69,7 +69,7 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	connect( addnewplot, SIGNAL(triggered()), this, SLOT(addPlot()) );
 	connect( clearallplot, SIGNAL(triggered()), this, SLOT(clearPlot()) );
 
-	plotdata.addPlot( *data, XMesh, YProfile, 0, 0, "b" );
+// 	plotdata.addPlot( *data, XMesh, YProfile, 0, 0, "b" );
 // 	plotdata.clear();
 
 // 	Vector v1(1000), v2(1000);
@@ -86,7 +86,12 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 
 void plotWindow::addPlot()
 {
-	plotdata.addPlot( *data, (PlotXVariable)xvar->currentIndex(), (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b" );
+	try{
+		plotdata.addPlot( *data, (PlotXVariable)xvar->currentIndex(), (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b" );
+	}
+	catch( pddeException ex ){
+		QMessageBox::critical( this, "plotWindow::addPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+	}
 }
 
 void plotWindow::clearPlot()

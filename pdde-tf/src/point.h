@@ -44,8 +44,8 @@ class Point
 		void    SwitchTRSol( Vector& Sol, const Vector& mshint, const Vector& mshdeg )
 			{ colloc.Export( Sol, mshint, mshdeg, sol ); } // starting data for tori: solution
 		void    SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ); // starting data for tori: tangent WITH testFunct
-		int     StartTF( Eqn FN );
-		int     Refine( );
+		int     StartTF( Eqn FN, std::ostream& out = std::cout );
+		int     Refine( std::ostream& str = std::cout );
 		void    Tangent( );
 		int     Continue( double ds, bool jacstep );
 		void    Stability( );

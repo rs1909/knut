@@ -10,11 +10,12 @@ PlotData::PlotData(QObject *parent) :
 	plotXSize  ( 540 ), plotYSize ( plotXSize / AspectRatio ),
 	FontSize ( 12 )
 {
-	const ViewBox cvb = { -HUGE, HUGE, -HUGE, HUGE, 1, 1 };
+	const ViewBox cvb = { 1.0, -1.0, 1.0, -1.0, 1, 1 };
 	ZoomHistory.append( cvb );
 	currZoom = ZoomHistory.begin();
 	this->addItem( &selection );
 	selection.setVisible(false);
+	makeBox();
 }
 
 PlotData::~PlotData( )
@@ -178,18 +179,15 @@ void PlotData::addPlotUpTriangle( const char* style )
 }
 
 // this only called by addPlot...
-void PlotData::dataToGraphics( int n )
+void PlotData::dataToGraphics( )
 {
 	if( ZoomHistory.begin() == currZoom )
 	{
-// 		std::cout<<"entered back "<<n<<"\n";
 		ViewBox cvb = { -HUGE, HUGE, -HUGE, HUGE, 1, 1 };
 		QList<Vector>::const_iterator j1;
 		QList<Vector>::const_iterator j2;
-		int i;
-		for( i = 0, j1 = DataX.end()-1, j2 = DataY.end()-1; i < n && j1 >= DataX.begin(); i++, j1--, j2-- )
+		for( j1 = DataX.begin(), j2 = DataY.begin(); j1 != DataX.end(); j1++, j2++ )
 		{
-// 			std::cout<<"it "<<i<<" "<<(*j1).Size()<<"\n";
 			for( int k = 0; k < (*j1).Size(); k++ )
 			{
 				if( (*j1)(k) > cvb.xmax ) cvb.xmax = (*j1)(k);
@@ -211,22 +209,21 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	int xadded = 0;
 	int yadded = 0;
 	// mindig az Y utan kovetkezik csak addPlot...()
-	if( x == XNone || y == YNone ) return;
 	if( x >= XParameter0 )
 	{
 		DataX.push_back( Vector() );
-		DataX.last().Init( data.getNCols() );
-		for( int i = 0; i < data.getNCols(); i++ )
+		DataX.last().Init( data.getNPoints() );
+		for( int i = 0; i < data.getNPoints(); i++ )
 		{
 			DataX.last()(i) = data.getPar( i, x-XParameter0 );
 		}
 		++xadded;
 	}
-	if( x == XLabel && y != YAbsMultiplier )
+	if( x == XLabel && y != YAbsMultiplier && y != YProfile )
 	{
 		DataX.push_back( Vector() );
-		DataX.last().Init( data.getNCols() );
-		for( int i = 0; i < data.getNCols(); i++ )
+		DataX.last().Init( data.getNPoints() );
+		for( int i = 0; i < data.getNPoints(); i++ )
 		{
 			DataX.last()(i) = i;
 		}
@@ -250,8 +247,8 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	if( y >= YParameter0 && (x != XMesh && x != XRealMultiplier) )
 	{
 		DataY.push_back( Vector() );
-		DataY.last().Init( data.getNCols() );
-		for( int i = 0; i < data.getNCols(); i++ )
+		DataY.last().Init( data.getNPoints() );
+		for( int i = 0; i < data.getNPoints(); i++ )
 		{
 			DataY.last()(i) = data.getPar( i, y-YParameter0 );
 		}
@@ -261,8 +258,8 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	if( y == YAmplitude && (x != XMesh && x != XRealMultiplier) )
 	{
 		DataY.push_back( Vector() );
-		DataY.last().Init( data.getNCols() );
-		for( int i = 0; i < data.getNCols(); i++ )
+		DataY.last().Init( data.getNPoints() );
+		for( int i = 0; i < data.getNPoints(); i++ )
 		{
 			double min = HUGE;
 			double max = -HUGE;
@@ -305,7 +302,7 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		++xadded; ++yadded;
 		addPlotCircle( style );
-		dataToGraphics( 2 );
+		dataToGraphics();
 	}
 	if( x == XLabel && y == YAbsMultiplier )
 	{
@@ -313,16 +310,21 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		{
 			DataX.push_back( Vector() );
 			DataY.push_back( Vector() );
-			DataX.last().Init( data.getNCols() );
-			DataY.last().Init( data.getNCols() );
-			for( int i = 0; i < data.getNCols(); i++ )
+			DataX.last().Init( data.getNPoints() );
+			DataY.last().Init( data.getNPoints() );
+			for( int i = 0; i < data.getNPoints(); i++ )
 			{
 				DataX.last()(i) = i;
 				DataY.last()(i) = sqrt(data.getMulRe(i,r)*data.getMulRe(i,r)+data.getMulIm(i,r)*data.getMulIm(i,r));
 			}
 			addPlotCircle( style );
 		}
-		dataToGraphics( data.getNMul() );
+		dataToGraphics();
+	}
+	if( xadded != yadded )
+	{
+		for( int i = 0; i < xadded; ++i ) DataX.erase( DataX.end()-1 );
+		for( int i = 0; i < yadded; ++i ) DataY.erase( DataY.end()-1 );
 	}
 }
 
@@ -448,6 +450,11 @@ void PlotData::rescaleData()
 			(*i).data.line->line = QPainterPath();
 			int x = 0, y = 0, prx = 0, pry = 0;
 			bool pr = true;
+			if( (*j1).Size() != (*j2).Size() )
+			{
+				std::cout<<"DataX DataY Sizes differ\n";
+				return;
+			}
 			for( int k = 0; k < (*j1).Size(); k++ )
 			{
 				x = intpos( (*j1)(k), cvb.xmin, cvb.xmax );
@@ -472,22 +479,25 @@ void PlotData::rescaleData()
 						pr = true;
 					}else
 					{
-						if( pr && k != 0 )
+						if( k != 0 )
 						{
-							(*i).data.line->line.lineTo( intersect( QPointF( xscale*((*j1)(k-1)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k-1)) ), 
-																QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) ) ) );
-						}else
-						{
-							QPointF pt1, pt2;
-							if( crossbox( QPointF( xscale*((*j1)(k-1)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k-1)) ),
-											QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) ),
-											pt1, pt2 ) )
+							if( pr )
 							{
-								(*i).data.line->line.moveTo( pt1 );
-								(*i).data.line->line.lineTo( pt2 );
+								(*i).data.line->line.lineTo( intersect( QPointF( xscale*((*j1)(k-1)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k-1)) ), 
+																	QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) ) ) );
+							}else
+							{
+								QPointF pt1, pt2;
+								if( crossbox( QPointF( xscale*((*j1)(k-1)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k-1)) ),
+												QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) ),
+												pt1, pt2 ) )
+								{
+									(*i).data.line->line.moveTo( pt1 );
+									(*i).data.line->line.lineTo( pt2 );
+								}
 							}
+							pr = false;
 						}
-						pr = false;
 					}
 				}
 				prx = x; pry = y;
@@ -566,8 +576,7 @@ bool PlotData::event( QEvent* ev )
 				// add the new level
 				ZoomHistory.append( newvb );
 				currZoom = ZoomHistory.end()-1;
-				rescaleData();
-				PlotPaint();
+				dataToGraphics();
 				selection.setVisible(false);
 				update( selection.boundingRect().normalized() );
 				event->accept();
@@ -582,17 +591,21 @@ bool PlotData::event( QEvent* ev )
 		{
 			if( key->key() == Qt::Key_P )
 			{
-				if( ZoomHistory.constBegin() != currZoom ) --currZoom;
-				rescaleData();
-				PlotPaint();
+				if( ZoomHistory.constBegin() != currZoom )
+				{
+					--currZoom;
+					dataToGraphics();
+				}
 				key->accept();
 				return true;
 			}
 			if( key->key() == Qt::Key_N )
 			{
-				if( ZoomHistory.constEnd()-1 != currZoom ) ++currZoom;
-				rescaleData();
-				PlotPaint();
+				if( ZoomHistory.constEnd()-1 != currZoom )
+				{
+					++currZoom;
+					dataToGraphics();
+				}
 				key->accept();
 				return true;
 			}

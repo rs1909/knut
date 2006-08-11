@@ -17,14 +17,14 @@
 
 #include <QErrorMessage>
 
-inline void parNamePrint( Vector& /*par*/, int npar, Array1D<Var>& var )
+inline void parNamePrint( std::ostream& out, Vector& /*par*/, int npar, Array1D<Var>& var )
 {
-	for( int j = 1; j < var.Size(); j++ ) std::cout<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
+	for( int j = 1; j < var.Size(); j++ ) out<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
 }
 
-inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
+inline void parValuePrint( std::ostream& out, Vector& par, int /*npar*/, Array1D<Var>& var )
 {
-	for( int j = 1; j < var.Size(); j++ ) std::cout<<"\t"<<par( var(j) - VarPAR0 );
+	for( int j = 1; j < var.Size(); j++ ) out<<"\t"<<par( var(j) - VarPAR0 );
 }
 
 void MThread::run()
@@ -38,9 +38,6 @@ void MThread::run()
 		mat4Data out ( params->getOutputFile(),
 						params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
 						params->getNInt(), params->getNDeg(), params->getNMul() );
-	// 	std::ofstream out( params->getOutputFile().c_str() );
-	// 	out<<std::scientific;
-	// 	out.precision(12);
 		
 		//-----------------------------------------------------------------------------------------------------------
 		//
@@ -58,20 +55,14 @@ void MThread::run()
 		Eqn          testFN;
 		int trivial = params->toEqnVar( sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN );
 		const int npar = params->getNPar();
-	
-// 	for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
-// 	std::cout<<'\n';
-// 	for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
-// 	std::cout<<'\n';
-
-		///!!!!!!!!!!!!!!!!!!
-		//-----------------------------------------------------------------------------------------------------------
-		//
-		// END of initialization
-		//
-		//-----------------------------------------------------------------------------------------------------------
-		
-		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat() );
+		Point* pt_ptr;
+		try {
+			pt_ptr = new Point( sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat() );
+		}
+		catch( pddeException ex ) {
+			emit exceptionOccured(ex);
+			return;
+		}
 		Point& pt = *pt_ptr;
 		
 		pt.setContIter( params->getNItC() );
@@ -81,13 +72,15 @@ void MThread::run()
 		pt.setContEps( params->getEpsC() );
 		pt.setStartEps( params->getEpsS() );
 		pt.setCont( params->getCp()-VarPAR0 );
-		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		// setting the symmetric components
 		Array1D<int> sre(params->getNSym()), sim(params->getNSym());
 		for( int i=0; i<sre.Size(); ++i ) { sre(i) = params->getSymRe(i); sim(i) = params->getSymIm(i); }
 		if( params->getNSym() != 0 ) pt.setSym( sre, sim );
 		
-		std::cout<<std::scientific;
-		std::cout.precision(6);
+		std::ostringstream screenout;
+		screenout<<std::scientific;
+		screenout.precision(6);
 		
 		// load the initial guess
 		if( params->getLabel() != 0 )
@@ -96,58 +89,67 @@ void MThread::run()
 			pt.BinaryRead( istr, params->getLabel() );
 		}
 		
-		pt.Refine();
+		pt.Refine( screenout );
 		if( testFN != EqnNone )
 		{
-			std::cout<<"\n--- Finding the bifurcation point (TF) ---\n";
+			screenout<<"\n--- Finding the bifurcation point (TF) ---\n";
 			pt.Reset( eqn_start, var_start );
 			pt.setCont( params->getCp()-VarPAR0 );
-			pt.StartTF( testFN ); // it only computes the characteristic multiplier refines the solution
+			pt.StartTF( testFN, screenout ); // it only computes the characteristic multiplier refines the solution
 		}
-		
+	 #ifdef DEBUG
+			std::cout<<screenout<<"\n";
+	 #endif
+		emit printToScreen( screenout.str() ); screenout.str("");
 		// start the continuation!
 		if( params->getBranchSW() != TFTRSwitch )
 		{
-			std::cout<<"\n--- Starting the continuation ---\n";
+			screenout<<"\n--- Starting the continuation ---\n";
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
-			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->getCp()-VarPAR0 )<<parNum( npar, params->getCp()-VarPAR0 )<<"\t";
-			parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
-			std::cout<<"\n";
+			screenout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->getCp()-VarPAR0 )<<parNum( npar, params->getCp()-VarPAR0 )<<"\t";
+			parNamePrint( screenout, par, npar, var );
+			screenout<<"\n";
 			//
-			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->getCp()-VarPAR0);
-			parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
-			std::cout<<"\n";
+			screenout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->getCp()-VarPAR0);
+			parValuePrint( screenout, par, npar, var );
+		 #ifdef DEBUG
+			std::cout<<screenout<<"\n";
+		 #endif
+			emit printToScreen( screenout.str() ); screenout.str("");
 			
 			// making tangents
 			if( params->getBranchSW() == TFPDSwitch )
 			{
-				std::cout<<"\nSwitching to the period two branch (TF).\n";
+				screenout<<"\nSwitching to the period two branch (TF).\n";
 				pt.SwitchTFPD( params->getDsStart() );
 				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else if( params->getBranchSW() == TFBRSwitch )
 			{
-				std::cout<<"\nSwitching to the other branch (TF).\n";
+				screenout<<"\nSwitching to the other branch (TF).\n";
 				pt.SwitchTFLP( params->getDsStart() );
 				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else if( params->getBranchSW() == TFHBSwitch )
 			{
-				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
+				screenout<<"\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
 				pt.SwitchTFHB( params->getDsStart() );
 				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else
 			{
-				std::cout<<"\nFinding the tangent.\n";
+				screenout<<"\nFinding the tangent.\n";
 				pt.setCont( params->getCp()-VarPAR0 );
 				pt.Tangent();
 			}
 			pt.Reset( eqn, var );
+		 #ifdef DEBUG
+			std::cout<<screenout<<"\n";
+		 #endif
+			emit printToScreen( screenout.str() ); screenout.str("");
 			
-			std::cout<<'\n';
 			int ustab = 0, ustabprev = 0;
 			double norm = 0.0;
 			const int ithist = 5;
@@ -157,11 +159,16 @@ void MThread::run()
 			double ds = params->getDs();
 			for( int i = 0; i < params->getSteps(); i++ ) // 35
 			{
+				if( stopFlag )
+				{
+					delete pt_ptr;
+					return;
+				}
 				if( i % 24 == 0 )
 				{
-					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->getCpType()<<params->getCpNum()<<"\t";
-					parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
-					std::cout<<"\tUSTAB\tIT\n";
+					screenout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->getCpType()<<params->getCpNum()<<"\t";
+					parNamePrint( screenout, par, npar, var );
+					screenout<<"\tUSTAB\tIT\n";
 				}
 				itpos = (itpos+1) % ithist;
 				//
@@ -172,11 +179,11 @@ void MThread::run()
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
 				for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
-
+				
 				// console output
-				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->getCp()-VarPAR0);
-				parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
-				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
+				screenout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->getCp()-VarPAR0);
+				parValuePrint( screenout, par, npar, var );
+				screenout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
 				if( i != 0  && ustab != ustabprev )
 				{
 					PtType bif = SolTF;
@@ -185,22 +192,25 @@ void MThread::run()
 					{
 						case BifTFLP:
 						case BifTFAUTLP:
-							std::cout<<"  LP";
+							screenout<<"  LP";
 							break;
 						case BifTFPD:
 						case BifTFAUTPD:
-							std::cout<<"  PD";
+							screenout<<"  PD";
 							break;
 						case BifTFNS:
 						case BifTFAUTNS:
-							std::cout<<"  NS";
+							screenout<<"  NS";
 							break;
 						default:
-							std::cout<<"  ??";
+							screenout<<"  ??";
 							break;
 					}
 				}
-				std::cout<<"\n";
+			 #ifdef DEBUG
+				std::cout<<screenout<<"\n";
+			 #endif
+				emit printToScreen( screenout.str() ); screenout.str("");
 				
 				// file output
 				pt.BinaryWrite( out, i );
@@ -259,6 +269,10 @@ void MThread::run()
 			std::ostringstream fdata, fidx;
 			for( int i = 0; i < params->getSteps(); i++ )
 			{
+				if( stopFlag )
+				{
+					return;
+				}
 				pttr.Continue( ds, false );
 				
 				// write out the results
@@ -279,10 +293,7 @@ void MThread::run()
 	}
 	catch( pddeException ex )
 	{
-// 		QErrorMessage error;
-// 		error.exec();
-// 		error.showMessage( QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()) );
-		std::cout<<ex.file<<":"<<ex.line<<" "<<ex.message.message;
+		emit exceptionOccured(ex);
 		return;
 	}
 }

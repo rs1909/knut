@@ -12,7 +12,7 @@
 #include <QGraphicsRectItem>
 #include <QFocusEvent>
 #include <QGraphicsSceneMouseEvent>
-#define PDDESYS_H
+
 #include "matrix.h"
 #include "mat4data.h"
 
@@ -117,7 +117,7 @@ private:
 	void addPlotCircle( const char* style );
 	void addPlotSquare( const char* style );
 	void addPlotUpTriangle( const char* style );
-	void dataToGraphics( int n = 1 );
+	void dataToGraphics( );
 	void getScale( qreal& transx, qreal& transy, qreal& scale );
 	void plotStyle( QPen& pen, const char* style );
 	QPointF intersect( QPointF p1, QPointF p2 );

@@ -7,6 +7,7 @@
 #include "system.h"
 #include "paramview.h"
 #include "compthread.h"
+#include "screendialog.h"
 
 class QAction;
 class QMenu;
@@ -85,11 +86,17 @@ public slots:
 	void setNItS( int i ) { nitS->blockSignals(true); nitS->setValue(i); nitS->blockSignals(false); }
 	void setNSym( int i ) { nsym->blockSignals(true); nsym->setValue(i); nsym->blockSignals(false); }
 
+	void externalException( const pddeException& ex )
+	{
+		QMessageBox::critical( this, "MainWindow::externalException()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+	}
+	
 protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
 	void run();
+	void stop();
 	void newFile();
 	void open();
 	bool save();
@@ -116,7 +123,8 @@ private slots:
 	void inputPlotDestroyed();
 	void outputPlot();
 	void outputPlotDestroyed();
-
+	void terminalView();
+	void terminalViewDestroyed();
 
 private:
 	inline bool inputAssert( std::istream& is );
@@ -148,6 +156,7 @@ private:
 	QLineEdit *outputFile;
 	mat4Data  *outputData;
 	plotWindow *outputPlotWindow;
+	screenDialog* terminalDialog;
 	QLineEdit *sysname;
 	QSpinBox  *label;
 	QComboBox *pttype;
@@ -188,7 +197,8 @@ private:
 	QMenu    *helpMenu;
 	QToolBar *fileToolBar;
 	QAction *runAct;
-// 	QAction *newAct;
+	QAction *stopAct;
+	QAction *terminalAct;
 	QAction *openAct;
 	QAction *saveAct;
 	QAction *saveAsAct;

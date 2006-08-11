@@ -27,6 +27,7 @@ class pddeMessage
 class pddeException
 {
  public:
+	pddeException() : file(""), line(0), message("") { }
 	pddeException( const std::string& f, int l, const pddeMessage& m ) :
 		file(f), line(l), message(m) { }
 	std::string file;
@@ -38,13 +39,13 @@ class pddeException
 
 #ifdef DEBUG
 #  define P_ASSERT(cond) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond) )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: " )); }while(0)
 #  define P_ASSERT_X(cond, arg1) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1 )); }while(0)
 #  define P_ASSERT_X2(cond, arg1, arg2) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1<<arg2 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1<<arg2 )); }while(0)
 #  define P_ASSERT_X3(cond, arg1, arg2) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1<<arg2<<arg3 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1<<arg2<<arg3 )); }while(0)
 #else
 #  define P_ASSERT(cond) do{ }while(0)
 #  define P_ASSERT_X(cond, arg1) do{ }while(0)
@@ -53,13 +54,13 @@ class pddeException
 #endif
 
 #define P_ERROR(cond) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond) )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: " )); }while(0)
 #define P_ERROR_X(cond, arg1) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<"\n\t"<<arg1 )); }while(0)
 #define P_ERROR_X2(cond, arg1, arg2) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1<<arg2 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<arg1<<arg2 )); }while(0)
 #define P_ERROR_X3(cond, arg1, arg2, arg3) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1<<arg2<<arg3 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<arg1<<arg2<<arg3 )); }while(0)
 #define P_ERROR_X4(cond, arg1, arg2, arg3, arg4) do{ if(!(cond) ) \
-		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage(#cond)<<arg1<<arg2<<arg3<<arg4 )); }while(0)
+		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<arg1<<arg2<<arg3<<arg4 )); }while(0)
 #endif

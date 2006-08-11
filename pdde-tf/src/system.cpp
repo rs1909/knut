@@ -8,29 +8,13 @@
 // ------------------------------------------------------------------------- //
 
 #include <cmath>
-#include "system.h"
+#include <cstdlib>
+#include <cstdio>
+#include <string>
 
+#include "system.h"
 #include "matrix.h"
 #include "pointtype.h"
-
-extern "C" {
-#include <stdlib.h>
-#include <stdio.h>
-}
-
-#include <string>
-extern "C"{
-	int    internal_ndim() { return 0; }
-	int    internal_npar() { return 0; }
-	int    internal_ntau() { return 0; }
-	int    internal_nderi() { return 0; }
-	void   internal_tau( Vector& out, double t, const Vector& par ) {}
-	void   internal_dtau( Vector& out, double t, const Vector& par, int vp ) {}
-	void   internal_rhs( Vector& out, double t, const Matrix& x, const Vector& par ) {}
-	void   internal_deri( Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v ) {}
-	void   internal_stpar( Vector& par ) {}
-	void   internal_stsol( Vector& out, double t ) {}
-}
 
 System::System( const std::string& shobj )
 {
@@ -38,92 +22,47 @@ System::System( const std::string& shobj )
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
 	
 	handle = tdlopen ( objname.c_str() );
-	if (!handle)
-	{
-		std::cerr<<"Cannot open system definition file: "<<tdlerror()<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( handle != 0, "Cannot open system definition file: ", tdlerror() );
 	
 	tdlerror();    /* Clear any existing error */
 	v_ndim = (tp_sys_ndim) fptr( tdlsym(handle, "sys_ndim" ) );
-	if ((error = tdlerror()) != NULL)
-	{
-		std::cerr<<"Cannot find sys_ndim(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_npar = (tp_sys_npar) fptr( tdlsym(handle, "sys_npar" ) );
-	punned tmp; tmp.obj = tdlsym(handle, "sys_ndim" ); v_ndim = (int (*)())tmp.fun;
-	if ((error = tdlerror()) != NULL)
-	{
-		std::cerr<<"Cannot find sys_npar(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_npar(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_ntau = (tp_sys_ntau) fptr( tdlsym(handle, "sys_ntau" ) );
-	if ((error = tdlerror()) != NULL)
-	{
-		std::cerr<<"Cannot find sys_ntau(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_nderi = (tp_sys_nderi) fptr( tdlsym(handle, "sys_nderi" ) );
-	if ((error = tdlerror()) != NULL)
-	{
-		std::cerr<<"Cannot find sys_nderi(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_tau = (tp_sys_tau) fptr( tdlsym(handle, "sys_tau" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_tau(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_tau(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_dtau = (tp_sys_dtau) fptr( tdlsym(handle, "sys_dtau" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_dtau(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_dtau(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_rhs = (tp_sys_rhs) fptr( tdlsym(handle, "sys_rhs" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_rhs(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_rhs(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_deri = (tp_sys_deri) fptr( tdlsym(handle, "sys_deri" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_deri(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_deri(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_stpar = (tp_sys_stpar) fptr( tdlsym(handle, "sys_stpar" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_stpar(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error );
 	
 	tdlerror();    /* Clear any existing error */
 	v_stsol = (tp_sys_stsol) fptr( tdlsym(handle, "sys_stsol" ) );
-	if ((error = tdlerror()) != 0 )
-	{
-		std::cerr<<"Cannot find sys_stsol(): "<<error<<"\n";
-		setupinternal(); return;
-	}
+	P_ERROR_X2( (error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error );
 	
 	nderi = (*v_nderi)( );
 // 	std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
@@ -139,20 +78,6 @@ System::System( const std::string& shobj )
 System::~System()
 {
 	if ( handle !=0 ) tdlclose(handle);
-}
-
-void System::setupinternal()
-{
-	v_ndim = internal_ndim;
-	v_npar = internal_npar;
-	v_ntau = internal_ntau;
-	v_nderi = internal_nderi;
-	v_tau = internal_tau;
-	v_dtau = internal_dtau;
-	v_rhs = internal_rhs;
-	v_deri = internal_deri;
-	v_stpar = internal_stpar;
-	v_stsol = internal_stsol;
 }
 
 static inline void AX( Vector & res, const Matrix& M, const Vector& v )

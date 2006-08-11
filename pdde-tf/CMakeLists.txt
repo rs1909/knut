@@ -10,17 +10,19 @@ FILE( READ REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )
 
-FIND_PROGRAM( SED NAMES sed )
-IF( NOT EXISTS ${SED} )
-	MESSAGE( SEND_ERROR "The sed utility is mot found" )
-ENDIF( NOT EXISTS ${SED} )
+IF( NOT WIN32 )
+  FIND_PROGRAM( SED NAMES sed )
+  IF( NOT EXISTS ${SED} )
+    MESSAGE( SEND_ERROR "The sed utility is not found" )
+  ENDIF( NOT EXISTS ${SED} )
 
-FIND_PROGRAM( SHELL NAMES sh bash )
-IF( EXISTS ${SHELL} )
-	MESSAGE( "The shell is found: ${SHELL}" )
-ELSE( EXISTS ${SHELL} )
-	MESSAGE( SEND_ERROR "Cannot find a shell program" )
-ENDIF( EXISTS ${SHELL} )
+  FIND_PROGRAM( SHELL NAMES sh bash )
+  IF( EXISTS ${SHELL} )
+    MESSAGE( "The shell is found: ${SHELL}" )
+  ELSE( EXISTS ${SHELL} )
+    MESSAGE( SEND_ERROR "Cannot find a shell program" )
+  ENDIF( EXISTS ${SHELL} )
+ENDIF( NOT WIN32 )
 
 #------------------------------------------------------------------------------
 # Writing the generated files

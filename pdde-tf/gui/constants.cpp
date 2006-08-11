@@ -386,22 +386,19 @@ inline bool NConstants::inputAssert( std::istream& is )
 		switch( is.rdstate() )
 		{
 			case std::istream::eofbit:
-				std::cout<<"Unexpected end of file\n";
-// 				QMessageBox::critical( this, std::string("IO Error"), std::string("Unexpected end of file"), QMessageBox::Ok, QMessageBox::NoButton );
+				P_MESSAGE("Unexpected end of file");
 				return true;
 				break;
 			case std::istream::failbit:
-				std::cout<<"Input failed\n";
-// 				QMessageBox::critical( this, std::string("IO Error"), std::string("Input failed"), QMessageBox::Ok, QMessageBox::NoButton );
+				P_MESSAGE("Input failed\n");
 				return true;
 				break;
 			case std::istream::badbit:
-				std::cout<<"Bad input\n";
-// 				QMessageBox::critical( this, std::string("IO Error"), std::string("Bad input"), QMessageBox::Ok, QMessageBox::NoButton );
+				P_MESSAGE("Bad input\n");
 				return true;
 				break;
 			default:
-// 				QMessageBox::critical( this, std::string("IO Error"), std::string("Unexpected error"), QMessageBox::Ok, QMessageBox::NoButton );
+				P_MESSAGE("Unexpected error");
 				return true;
 				break;
 		}
@@ -414,11 +411,11 @@ void NConstants::loadFile(const std::string &fileName)
 	std::ifstream file;
 	
 	file.open( fileName.c_str() );
-	if(!file){ std::cout<<"Cannot open "<<fileName<<"\n"; return; }
+	P_ERROR_X2( file, "Cannot open ", fileName );
 	
 	std::string __sysname__;
-	file >> __sysname__; if( inputAssert( file ) ) return;
-	while( file.get() != '\n' ); if( inputAssert( file ) ) return;
+	file >> __sysname__; inputAssert( file );
+	while( file.get() != '\n' ); inputAssert( file );
 
 	if( __sysname__.find('/') == std::string::npos )
 	{
@@ -427,15 +424,15 @@ void NConstants::loadFile(const std::string &fileName)
 	setSysNameText( std::string( __sysname__.c_str() ) );
 
 	int __ptlabel__;
-	file >> __ptlabel__; if( inputAssert( file ) ) return;
+	file >> __ptlabel__; inputAssert( file );
 	setLabel( __ptlabel__ );
-	while( file.get() != '\n' ); if( inputAssert( file ) ) return;
+	while( file.get() != '\n' ); inputAssert( file );
 	
 	int __pttype__;
 	char __cptype__;
 	int __cp__;
-	file >> __pttype__ >> __cptype__ >> __cp__; if( inputAssert( file ) ) return;
-	if( ( __cptype__ != 'P' ) && ( __cptype__ != 'I' ) ) { std::cout<<"Error: CP: Bad parameter type."; }
+	file >> __pttype__ >> __cptype__ >> __cp__; inputAssert( file );
+	P_ERROR_X( (__cptype__ == 'P' ) || ( __cptype__ == 'I' ), "Error: CP: Bad parameter type." );
 	setPointType( (PtType)__pttype__ );
 	setCp( __cptype__, __cp__ );
 	
@@ -444,53 +441,48 @@ void NConstants::loadFile(const std::string &fileName)
 	{
 		int __brswitch__;
 		int __neqn__;
-		file >> __brswitch__; if( inputAssert( file ) ) return;
-		file >> __neqn__; if( inputAssert( file ) ) return;
+		file >> __brswitch__; inputAssert( file );
+		file >> __neqn__; inputAssert( file );
 		setNEqns( __neqn__ );
 		for( int i = 0; i < __neqn__; i++ )
 		{
 			char __eqntype__;
 			int  __eqnnum__;
-			file >> __eqntype__ >> __eqnnum__; if( inputAssert( file ) ) return;
-			if( __eqntype__ != 'E' ) { std::cout<<"Error: EQN: Bad equation type."; }
+			file >> __eqntype__ >> __eqnnum__; inputAssert( file );
+			P_ERROR_X( __eqntype__ == 'E', "Error: EQN: Bad equation type." );
 			setEqns( i, 'E', __eqnnum__ );
 			if( __eqnnum__ == EqnPhaseRot ) loadsym = true;
 		}
 		int __nvar__;
-		file >> __nvar__; if( inputAssert( file ) ) return;
-		if( __nvar__ != __neqn__ ) { std::cout << "Error: NVAR: Number of equations and variables are not the same."; }
+		file >> __nvar__; inputAssert( file );
+		P_ERROR_X( __nvar__ == __neqn__, "Error: NVAR: Number of equations and variables are not the same." );
 		for( int i = 0; i < __neqn__; i++ )
 		{
 			char __vartype__;
 			int  __varnum__;
-			file >> __vartype__ >> __varnum__; if( inputAssert( file ) ) return;
-			if( ( __vartype__ != 'S' ) && 
-			    ( __vartype__ != 'P' ) && 
-			    ( __vartype__ != 'I' ) )
-				{ std::cout<<"Error: VAR: Bad variable/parameter type."; return; }
+			file >> __vartype__ >> __varnum__; inputAssert( file );
+			P_ERROR_X( ( __vartype__ == 'S' )||( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: VAR: Bad variable/parameter type." );
 			setVars( i, __vartype__, __varnum__ );
 		}
 		while( file.get() != '\n' );
 	}else
 	{
 		int __nvarx__;
-		file >> __nvarx__; if( inputAssert( file ) ) return;
+		file >> __nvarx__; inputAssert( file );
 		setNEqns( __nvarx__ );
 		for( int i = 0; i < __nvarx__; i++ )
 		{
 			char __vartype__;
 			int  __varnum__;
-			file >> __vartype__ >> __varnum__; if( inputAssert( file ) ) return;
-			if( ( __vartype__ != 'P' ) && 
-			    ( __vartype__ != 'I' ) )
-				{ std::cout<<"Error: PARX: Bad parameter type."; }
+			file >> __vartype__ >> __varnum__; inputAssert( file );
+			P_ERROR_X( ( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: PARX: Bad parameter type." );
 			setParX( i, __vartype__, __varnum__ );
 		}
 		while( file.get() != '\n' );
 	}
 	
 	int __nint__, __ndeg__, __nmul__, __stab__, __nmat__;
-	file >> __nint__ >> __ndeg__ >> __nmul__ >> __stab__ >> __nmat__; if( inputAssert( file ) ) return;
+	file >> __nint__ >> __ndeg__ >> __nmul__ >> __stab__ >> __nmat__; inputAssert( file );
 	while( file.get() != '\n' );
 	setNInt( __nint__ );
 	setNDeg( __ndeg__ );
@@ -499,7 +491,7 @@ void NConstants::loadFile(const std::string &fileName)
 	setStab( __stab__ != 0 );
 	setNMat( __nmat__ );
 	
-	int __nint1__, __nint2__, __ndeg1__, __ndeg2__; if( inputAssert( file ) ) return;
+	int __nint1__, __nint2__, __ndeg1__, __ndeg2__; inputAssert( file );
 	file >> __nint1__ >> __nint2__ >> __ndeg1__ >> __ndeg2__;
 	while( file.get() != '\n' );
 	setNInt1( __nint1__ );
@@ -509,14 +501,14 @@ void NConstants::loadFile(const std::string &fileName)
 	
 	int __steps__;
 	double __cpmin__, __cpmax__;
-	file >> __steps__ >> __cpmin__ >> __cpmax__; if( inputAssert( file ) ) return;
+	file >> __steps__ >> __cpmin__ >> __cpmax__; inputAssert( file );
 	while( file.get() != '\n' );
 	setSteps( __steps__ );
 	setCpMin( __cpmin__ );
 	setCpMax( __cpmax__ );
 	
 	double __ds__, __dsmin__, __dsmax__, __dsstart__;
-	file >> __ds__ >> __dsmin__ >> __dsmax__ >> __dsstart__; if( inputAssert( file ) ) return;
+	file >> __ds__ >> __dsmin__ >> __dsmax__ >> __dsstart__; inputAssert( file );
 	while( file.get() != '\n' );
 	setDs( __ds__ );
 	setDsMin( __dsmin__ );
@@ -524,14 +516,14 @@ void NConstants::loadFile(const std::string &fileName)
 	setDsStart( __dsstart__ );
 	
 	double __epsc__, __epsr__, __epss__;
-	file >> __epsc__ >> __epsr__ >> __epss__; if( inputAssert( file ) ) return;
+	file >> __epsc__ >> __epsr__ >> __epss__; inputAssert( file );
 	while( file.get() != '\n' );
 	setEpsC( __epsc__ );
 	setEpsR( __epsr__ );
 	setEpsS( __epss__ );
 	
 	int __nitc__, __nitr__, __nits__;
-	file >> __nitc__ >> __nitr__ >> __nits__; if( inputAssert( file ) ) return;
+	file >> __nitc__ >> __nitr__ >> __nits__; inputAssert( file );
 	setNItC( __nitc__ );
 	setNItR( __nitr__ );
 	setNItS( __nits__ );
@@ -540,12 +532,12 @@ void NConstants::loadFile(const std::string &fileName)
 	{
 		while( file.get() != '\n' );
 		int __nsym__;
-		file >> __nsym__; if( inputAssert( file ) ) return;
+		file >> __nsym__; inputAssert( file );
 		setNSym( __nsym__ );
 		int __re__, __im__;
 		for( int i = 0; i < __nsym__; ++i )
 		{
-			file >> __re__ >> __im__; if( inputAssert( file ) ) return;
+			file >> __re__ >> __im__; inputAssert( file );
 			setSymRe( i, __re__ );
 			setSymIm( i, __im__ );
 		}

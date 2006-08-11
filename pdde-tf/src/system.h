@@ -62,8 +62,6 @@ class System
 		                  int nx, const int* vx, int np, const int* vp, const Matrix& vv );
 		
 	private:
-		// sets up empty functions
-		void setupinternal();
 		
 		typedef int  (*tp_sys_ndim)();
 		typedef int  (*tp_sys_npar)();

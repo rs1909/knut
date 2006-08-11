@@ -1,15 +1,17 @@
 #include <QtGui>
 #include <QtXml>
 
+#include "config.h"
 #include "mainwindow.h"
 #include "plotdata.h"
 #include "plotwindow.h"
 #include "paramview.h"
+
 #include <fstream>
 
 MainWindow::MainWindow() : compThread(parameters),
 	outputPlotWindow(0), outputData(0),
-	inputPlotWindow(0), inputData(0)
+	inputPlotWindow(0), inputData(0), terminalDialog(0)
 {
 	QTabWidget* tabWidget = new QTabWidget();
 	// the container widgets	
@@ -331,6 +333,10 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( &parameters, SIGNAL(nitCChanged(int)), this, SLOT(setNItC(int)) );
 	connect( &parameters, SIGNAL(nitRChanged(int)), this, SLOT(setNItR(int)) );
 	connect( &parameters, SIGNAL(nitSChanged(int)), this, SLOT(setNItS(int)) );
+	
+	// connecting exceptions
+	connect( &compThread, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)) );
+	connect( &parameters, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)) );
 
 	createActions();
 	createMenus();
@@ -344,8 +350,17 @@ MainWindow::MainWindow() : compThread(parameters),
 
 void MainWindow::run()
 {
-	compThread.setConstants(parameters);
-	compThread.start();
+	if( !compThread.isRunning() )
+	{
+		compThread.setConstants(parameters);
+		compThread.setStopFlag(false);
+		compThread.start();
+	}
+}
+
+void MainWindow::stop()
+{
+	compThread.setStopFlag(true);
 }
 
 void MainWindow::setSysName()
@@ -390,7 +405,7 @@ void MainWindow::setPointType( )
 
 void MainWindow::inputPlotDestroyed()
 {
-	std::cout<<"plot destroyed\n";
+// 	std::cout<<"plot destroyed\n";
 	delete inputPlotWindow;
 	delete inputData;
 	inputPlotWindow = 0;
@@ -401,7 +416,13 @@ void MainWindow::inputPlot()
 {
 	if( inputPlotWindow == 0 )
 	{
-		inputData = new mat4Data( inputFile->text().toStdString() );
+		try{ inputData = new mat4Data( inputFile->text().toStdString() ); }
+		catch( pddeException ex )
+		{
+			delete inputData;
+			QMessageBox::critical( this, "MainWindow::inputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+			return;
+		}
 		inputPlotWindow = new plotWindow( inputData );
 		QDialog *inputPlotDialog = new QDialog( this );
 		QVBoxLayout *inputPlotLayout = new QVBoxLayout();
@@ -409,13 +430,15 @@ void MainWindow::inputPlot()
 		inputPlotLayout->setMargin(0);
 		inputPlotDialog->setLayout( inputPlotLayout );
 		inputPlotDialog->show();
+		inputPlotDialog->raise();
+		inputPlotDialog->activateWindow();
 		connect( inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()) );
 	}
 }
 
 void MainWindow::outputPlotDestroyed()
 {
-	std::cout<<"plot destroyed\n";
+// 	std::cout<<"plot destroyed\n";
 	delete outputPlotWindow;
 	delete outputData;
 	outputPlotWindow = 0;
@@ -426,7 +449,16 @@ void MainWindow::outputPlot()
 {
 	if( outputPlotWindow == 0 )
 	{
-		outputData = new mat4Data( outputFile->text().toStdString() );
+		try
+		{
+			outputData = new mat4Data( outputFile->text().toStdString() );
+		}
+		catch( pddeException ex )
+		{
+			delete outputData;
+			QMessageBox::critical( this, "MainWindow::outputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+			return;
+		}
 		outputPlotWindow = new plotWindow( outputData );
 		QDialog *outputPlotDialog = new QDialog( this );
 		QVBoxLayout *outputPlotLayout = new QVBoxLayout();
@@ -434,7 +466,30 @@ void MainWindow::outputPlot()
 		outputPlotLayout->setMargin(0);
 		outputPlotDialog->setLayout( outputPlotLayout );
 		outputPlotDialog->show();
+		outputPlotDialog->raise();
+		outputPlotDialog->activateWindow();
 		connect( outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()) );
+	}
+}
+
+void MainWindow::terminalViewDestroyed()
+{
+// 	std::cout<<"TERM DESTROYED\n";
+// 	delete terminalDialog;
+	terminalDialog = 0;
+}
+
+void MainWindow::terminalView()
+{
+	if( terminalDialog == 0 )
+	{
+		terminalDialog = new screenDialog( this );
+		terminalDialog->setWindowTitle("terminal view");
+		terminalDialog->show();
+		terminalDialog->raise();
+		terminalDialog->activateWindow();
+		connect( &compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)) );
+		connect( terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()) );
 	}
 }
 
@@ -485,7 +540,7 @@ bool MainWindow::saveAs()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About PDDE-CONT"),
-				tr("A continuation software for delay-differential equations")) ;
+				QString(tr("%1: A continuation software for delay-differential equations\nVersion %2 (%3)")).arg(PACKAGE_NAME).arg(PACKAGE_VERSION).arg(PACKAGE_REVISION) );
 }
 
 void MainWindow::createActions()
@@ -494,6 +549,16 @@ void MainWindow::createActions()
 	runAct->setShortcut(tr("Ctrl+R"));
 	runAct->setStatusTip(tr("Start the computation"));
 	connect(runAct, SIGNAL(triggered()), this, SLOT(run()));
+
+	stopAct = new QAction(/*QIcon(":/images/new.png"),*/ tr("&Stop"), this);
+	stopAct->setShortcut(tr("Ctrl+T"));
+	stopAct->setStatusTip(tr("Stop the computation"));
+	connect(stopAct, SIGNAL(triggered()), this, SLOT(stop()));
+
+	terminalAct = new QAction(/*QIcon(":/images/new.png"),*/ tr("&Text"), this);
+	terminalAct->setShortcut(tr("Ctrl+V"));
+	terminalAct->setStatusTip(tr("View textual output"));
+	connect(terminalAct, SIGNAL(triggered()), this, SLOT(terminalView()));
 
 	openAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Open..."), this);
 	openAct->setShortcut(tr("Ctrl+O"));
@@ -547,6 +612,8 @@ void MainWindow::createToolBars()
 	fileToolBar->addAction(openAct);
 	fileToolBar->addAction(saveAct);
 	fileToolBar->addAction(runAct);
+	fileToolBar->addAction(stopAct);
+	fileToolBar->addAction(terminalAct);
 }
 
 void MainWindow::createStatusBar()
@@ -573,7 +640,8 @@ void MainWindow::writeSettings()
 
 void MainWindow::loadFile(const QString &fileName)
 {
-	parameters.loadFile( fileName.toStdString() );
+	try{ parameters.loadFile( fileName.toStdString() ); }
+	catch( pddeException ex ){ externalException( ex ); }
 	setCurrentFile(fileName);
 	statusBar()->showMessage(tr("File loaded"), 2000);
 }

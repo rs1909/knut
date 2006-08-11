@@ -295,11 +295,22 @@ class NConstants
 		void setSysNameText( const std::string& str )
 		{
 			sysname = str;
-			System* sys = new System( sysname );
+			System* sys = 0;
+			try{ sys = new System( sysname ); }
+			catch( pddeException ex )
+			{
+				npar = 0; ndim = 0;
+				delete sys;
+				QT_EMIT( exceptionOccured( ex ) )
+			 #ifndef PDDE_GUI
+				throw( ex );
+			 #endif
+				return;
+			}
 			npar = sys->npar();
 			ndim = sys->ndim();
 			delete sys;
-			std::cout<<"NDIM "<<ndim<<"\n";
+// 			std::cout<<"NDIM "<<ndim<<"\n";
 			cpMap.setPar( npar );
 			parxMap.setPar( npar );
 			varsMap.setPar( npar );
@@ -432,6 +443,7 @@ class NConstants
 		void nitRChanged( int i );
 		void nitSChanged( int i );
 		void nsymChanged( int nsym_ );
+		void exceptionOccured( const pddeException& ex );
 	 #endif
 	
 	private:

@@ -28,7 +28,7 @@ class mat4Data
 		// unmaps the memory, truncates the file if necessary, closes the file
 		~mat4Data( );
 
-		int  findMatrix( const char* name, mat4Data::header* found, int* sz );
+		int  findMatrix( const char* name, mat4Data::header* found );
 		void openReadOnly( const std::string& fileName );
 		
 		void   setPar( int n, const Vector& par );
@@ -53,6 +53,25 @@ class mat4Data
 		int  getNMul() const { return nmul; }
 		int  getMeshLength() const { return ndeg*nint+1; }
 		int  getNCols() const { return ncols; }
+		int  getNPoints() const { return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]); }
+		struct header *getHeader( int offset ) { return (struct header*)((char*)address + offset); }
+		const struct header *getHeader( int offset ) const { return (struct header*)((char*)address + offset); }
+		double& elem( int offset, int row, int col )
+		{
+			return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
+		}
+		const double& elem( int offset, int row, int col ) const
+		{
+			return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
+		}
+		double& elem_im( int offset, int row, int col )
+		{
+			return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
+		}
+		const double& elem_im( int offset, int row, int col ) const
+		{
+			return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
+		}
 
 	private:
 
@@ -68,40 +87,34 @@ class mat4Data
 	int    ndeg;
 	int    nmul;
 	
+	int    nint1;
+	int    nint2;
+	int    ndeg1;
+	int    ndeg2;
+	
+	int    npoints_offset;
+	header npoints_header;
+	
 	int    par_offset;
-	char   par_name[20];
 	header par_header;
-	int    par_size;
 
 	int    mul_offset;
-	char   mul_name[20];
 	header mul_header;
-	int    mul_size;
 
 	int    ndim_offset;
-	char   ndim_name[20];
 	header ndim_header;
-	int    ndim_size;
 
 	int    nint_offset;
-	char   nint_name[20];
 	header nint_header;
-	int    nint_size;
 
 	int    ndeg_offset;
-	char   ndeg_name[20];
 	header ndeg_header;
-	int    ndeg_size;
 	
 	int    mesh_offset;
-	char   mesh_name[20];
 	header mesh_header;
-	int    mesh_size;
 
 	int    prof_offset;
-	char   prof_name[20];
 	header prof_header;
-	int    prof_size;
 };
 
 #endif

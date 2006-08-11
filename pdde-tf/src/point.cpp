@@ -465,7 +465,7 @@ inline void Point::ContUpdate( HyperVector& X )
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-int Point::StartTF( Eqn FN )
+int Point::StartTF( Eqn FN, std::ostream& out )
 {
 	if( (FN == EqnTFCPLX_RE) || (FN == EqnTFCPLX_IM) )
 	{
@@ -486,7 +486,7 @@ int Point::StartTF( Eqn FN )
 		double zRe = mRe(imin);
 		double zIm = fabs(mIm(imin));
 		double nrm = sqrt( zRe*zRe + zIm*zIm );
-		std::cout<<"mRe(imin) "<<zRe<<" mIm(imin) "<<zIm<<" nrm: "<<nrm<<"\n";
+		out<<"mRe(imin) "<<zRe<<" mIm(imin) "<<zIm<<" nrm: "<<nrm<<"\n";
 
 		if( zRe > 0 )
 		{
@@ -497,10 +497,10 @@ int Point::StartTF( Eqn FN )
 			par(NPAR+ParAngle) = atan( fabs(zRe/zIm) ) + M_PI/2.0;
 		}
 	}
-	return Refine();
+	return Refine( out );
 }
 
-int Point::Refine( )
+int Point::Refine( std::ostream& out )
 {
 	int it=0;
 	double Xnorm, Dnorm;
@@ -508,7 +508,7 @@ int Point::Refine( )
 	solNu = sol; // here solNu is the previous solution
 	parNu = par; // here parNu is the previous parameter
 
-	std::cout<<"\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
+	out<<"\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
 	
 	do
 	{
@@ -523,8 +523,8 @@ int Point::Refine( )
 		// computing norms to determine convergence
 		Xnorm = sqrt( colloc.Integrate( sol, sol ) );
 		Dnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + (xx->getV3())*(xx->getV3()) );
-		std::cout<<" "<<it<<"\t"<<Dnorm/(1.0+Xnorm)<<"\t"<<Xnorm<<"\t"<<Dnorm<<'\n';
-		std::cout.flush();
+		out<<" "<<it<<"\t"<<Dnorm/(1.0+Xnorm)<<"\t"<<Xnorm<<"\t"<<Dnorm<<'\n';
+		out.flush();
 	}
 	while( (Dnorm/(1.0+Xnorm) >= RefEps)&&(it++ < RefIter) );
 	
