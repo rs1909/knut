@@ -37,19 +37,25 @@ public slots:
 	void setOutputFileText( const std::string& st )
 	{
 		outputFile->blockSignals(true);
+		int cpos = outputFile->cursorPosition();
 		outputFile->setText(st.c_str());
+		outputFile->setCursorPosition(cpos);
 		outputFile->blockSignals(false);
 	}
 	void setInputFileText( const std::string& st )
 	{
 		inputFile->blockSignals(true);
+		int cpos = inputFile->cursorPosition();
 		inputFile->setText(st.c_str());
+		inputFile->setCursorPosition(cpos);
 		inputFile->blockSignals(false);
 	}
 	void setSysNameText( const std::string& st )
 	{
 		sysname->blockSignals(true);
+		int cpos = sysname->cursorPosition();
 		sysname->setText(st.c_str());
+		sysname->setCursorPosition(cpos);
 		sysname->blockSignals(false);
 	}
 	void setLabel( int i ) { label->blockSignals(true); label->setValue(i); label->blockSignals(false); }
@@ -72,15 +78,6 @@ public slots:
 	void setNDeg1( int i ) { ndeg1->blockSignals(true); ndeg1->setValue(i); ndeg1->blockSignals(false); }
 	void setNDeg2( int i ) { ndeg2->blockSignals(true); ndeg2->setValue(i); ndeg2->blockSignals(false); }
 	void setSteps( int i ) { steps->blockSignals(true); steps->setValue(i); steps->blockSignals(false); }
-	void setCpMin( double d ) { cpMin->blockSignals(true); cpMin->setText(QString::number(d)); cpMin->blockSignals(false); }
-	void setCpMax( double d ) { cpMax->blockSignals(true); cpMax->setText(QString::number(d)); cpMax->blockSignals(false); }
-	void setDs( double d ) { ds->blockSignals(true); ds->setText(QString::number(d)); ds->blockSignals(false); }
-	void setDsMin( double d ) { dsMin->blockSignals(true); dsMin->setText(QString::number(d)); dsMin->blockSignals(false); }
-	void setDsMax( double d ) { dsMax->blockSignals(true); dsMax->setText(QString::number(d)); dsMax->blockSignals(false); }
-	void setDsStart( double d ) { dsStart->blockSignals(true); dsStart->setText(QString::number(d)); dsStart->blockSignals(false); }
-	void setEpsC( double d ) { epsC->blockSignals(true); epsC->setText(QString::number(d)); epsC->blockSignals(false); }
-	void setEpsR( double d ) { epsR->blockSignals(true); epsR->setText(QString::number(d)); epsR->blockSignals(false); }
-	void setEpsS( double d ) { epsS->blockSignals(true); epsS->setText(QString::number(d)); epsS->blockSignals(false); }
 	void setNItC( int i ) { nitC->blockSignals(true); nitC->setValue(i); nitC->blockSignals(false); }
 	void setNItR( int i ) { nitR->blockSignals(true); nitR->setValue(i); nitR->blockSignals(false); }
 	void setNItS( int i ) { nitS->blockSignals(true); nitS->setValue(i); nitS->blockSignals(false); }
@@ -102,7 +99,6 @@ private slots:
 	bool save();
 	bool saveAs();
 	void about();
-// 	void documentWasModified();
 	
 	void setSysName();
 	void setInputFile();
@@ -110,14 +106,10 @@ private slots:
 	void setPointType();
 	void setupCp()
 	{
-// 		std::cout<<"setupCpIn count: "<<cp->count()<<" currentindex "<<cp->currentIndex()<<"\n"; std::cout.flush();
 		cp->blockSignals(true);
 		cp->clear();
 		cp->blockSignals(false);
-
-// 		std::cout<<"setupCpMid "; std::cout.flush();
 		for( int i = 0; i < parameters.cpSize(); ++i ) cp->addItem( parameters.cpString( i ).c_str() );
-// 		std::cout<<"setupCpOut "; std::cout.flush();
 	}
 	void inputPlot();
 	void inputPlotDestroyed();

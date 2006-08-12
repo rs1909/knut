@@ -5,7 +5,7 @@
 #include "system.h"
 #include "point.h"
 #include "torpoint.h"
-#include "parameters.h"
+// #include "parameters.h"
 #include "compthread.h"
 
 #include <iostream>
@@ -215,10 +215,6 @@ void MThread::run()
 				// file output
 				pt.BinaryWrite( out, i );
 				
-				// branch output
-// 				for( int j = 0; j < par.Size(); j++ ) ff<<par(j)<<"\t";
-// 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
-// 				ff.flush();
 				int itc = it( itpos );
 				if( (itc > 3)&&(fabs(ds)/1.414 > params->getDsMin())&&(fabs(ds)/1.414 < params->getDsMax()) ) ds /= 1.414;
 				if( (itc > 5)&&(fabs(ds)/2.0 > params->getDsMin())&&(fabs(ds)/2.0 < params->getDsMax()) ) ds /= 2.0;

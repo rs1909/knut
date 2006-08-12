@@ -1,9 +1,9 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-ns.mat</output>
  <sysname>sys-tq.so</sysname>
- <label>193</label>
+ <label>191</label>
  <pointtype>43</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
@@ -29,6 +29,7 @@
  <cpmax>100.000000</cpmax>
  <ds>-0.000200</ds>
  <dsmin>0.000010</dsmin>
+ <dsmax>0.01</dsmax>
  <dsstart>-0.000200</dsstart>
  <epsc>0.000100</epsc>
  <epsr>0.000010</epsr>

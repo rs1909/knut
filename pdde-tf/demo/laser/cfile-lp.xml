@@ -59,6 +59,7 @@
  <cpmax>100.000000</cpmax>
  <ds>0.000100</ds>
  <dsmin>0.000001</dsmin>
+ <dsmax>0.01</dsmax>
  <dsstart>0.000100</dsstart>
  <epsc>0.000010</epsc>
  <epsr>0.000010</epsr>

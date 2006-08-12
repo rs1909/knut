@@ -1,12 +1,12 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-ns-1.mat</output>
  <sysname>sys-turntwo.so</sysname>
  <label>16</label>
  <pointtype>43</pointtype>
  <cptype>P</cptype>
- <cpnum>2</cpnum>
+ <cpnum>0</cpnum>
  <switch>0</switch>
  <nparx>1</nparx>
  <parx>
@@ -29,6 +29,7 @@
  <cpmax>100.000000</cpmax>
  <ds>-0.000100</ds>
  <dsmin>0.000100</dsmin>
+ <dsmax>0.01</dsmax>
  <dsstart>-0.001000</dsstart>
  <epsc>0.000100</epsc>
  <epsr>0.000010</epsr>

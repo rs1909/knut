@@ -1,9 +1,9 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-nssw.mat</output>
  <sysname>sys-turntwo.so</sysname>
- <label>17</label>
+ <label>15</label>
  <pointtype>56</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
@@ -29,6 +29,7 @@
  <cpmax>100.000000</cpmax>
  <ds>-0.001000</ds>
  <dsmin>0.000100</dsmin>
+ <dsmax>0.010000</dsmax>
  <dsstart>-0.001000</dsstart>
  <epsc>0.000100</epsc>
  <epsr>0.000010</epsr>

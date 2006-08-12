@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-pdsw-2.mat</input>
+ <output>out-lp-2-a.mat</output>
  <sysname>sys-tq.so</sysname>
  <label>66</label>
  <pointtype>41</pointtype>
@@ -29,6 +29,7 @@
  <cpmax>100.000000</cpmax>
  <ds>0.005000</ds>
  <dsmin>0.001000</dsmin>
+ <dsmax>0.005</dsmax>
  <dsstart>0.002000</dsstart>
  <epsc>0.000010</epsc>
  <epsr>0.000010</epsr>

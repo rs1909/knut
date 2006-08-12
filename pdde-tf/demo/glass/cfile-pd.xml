@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-pd.mat</output>
  <sysname>sys-glass.so</sysname>
  <label>112</label>
  <pointtype>52</pointtype>
@@ -33,6 +33,7 @@
  <cpmax>100.000000</cpmax>
  <ds>-0.005000</ds>
  <dsmin>0.005000</dsmin>
+ <dsmax>0.005</dsmax>
  <dsstart>-0.005000</dsstart>
  <epsc>0.000010</epsc>
  <epsr>0.000010</epsr>

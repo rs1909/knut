@@ -9,6 +9,8 @@
 
 #include <fstream>
 
+#define MAXDOUBLE 1.79769313486232e308
+
 MainWindow::MainWindow() : compThread(parameters),
 	outputPlotWindow(0), outputData(0),
 	inputPlotWindow(0), inputData(0), terminalDialog(0)
@@ -226,7 +228,7 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( &parameters, SIGNAL(ndeg1Changed(int)), this, SLOT(setNDeg1(int)) );
 	connect( &parameters, SIGNAL(ndeg2Changed(int)), this, SLOT(setNDeg2(int)) );
 
-	QDoubleValidator* dbValid = new QDoubleValidator( this );
+	QDoubleValidator* dbValid = new QDoubleValidator( -MAXDOUBLE, MAXDOUBLE, 16, this );
 
 	QLabel* stepsLabel = new QLabel("STEPS");
 	QLabel* dsLabel = new QLabel("DS");
@@ -258,11 +260,15 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( dsMin, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsMin(const QString &)) );
 	connect( dsMax, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsMax(const QString &)) );
 	connect( dsStart, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsStart(const QString &)) );
+	connect( ds, SIGNAL(editingFinished()), &parameters, SLOT(editedDs()) );
+	connect( dsMin, SIGNAL(editingFinished()), &parameters, SLOT(editedDsMin()) );
+	connect( dsMax, SIGNAL(editingFinished()), &parameters, SLOT(editedDsMax()) );
+	connect( dsStart, SIGNAL(editingFinished()), &parameters, SLOT(editedDsStart()) );
 	connect( &parameters, SIGNAL(stepsChanged(int)), this, SLOT(setSteps(int)) );
-	connect( &parameters, SIGNAL(dsChanged(double)), this, SLOT(setDs(double)) );
-	connect( &parameters, SIGNAL(dsMinChanged(double)), this, SLOT(setDsMin(double)) );
-	connect( &parameters, SIGNAL(dsMaxChanged(double)), this, SLOT(setDsMax(double)) );
-	connect( &parameters, SIGNAL(dsStartChanged(double)), this, SLOT(setDsStart(double)) );
+	connect( &parameters, SIGNAL(dsChanged(const QString&)), ds, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(dsMinChanged(const QString&)), dsMin, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(dsMaxChanged(const QString&)), dsMax, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(dsStartChanged(const QString&)), dsStart, SLOT(setText(const QString&)) );
 
 	QLabel* epsCLabel = new QLabel("EPSC");
 	QLabel* epsRLabel = new QLabel("EPSR");
@@ -294,11 +300,16 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( epsS, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setEpsS(const QString &)) );
 	connect( cpMin, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setCpMin(const QString &)) );
 	connect( cpMax, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setCpMax(const QString &)) );
-	connect( &parameters, SIGNAL(epsCChanged(double)), this, SLOT(setEpsC(double)) );
-	connect( &parameters, SIGNAL(epsRChanged(double)), this, SLOT(setEpsR(double)) );
-	connect( &parameters, SIGNAL(epsSChanged(double)), this, SLOT(setEpsS(double)) );
-	connect( &parameters, SIGNAL(cpMinChanged(double)), this, SLOT(setCpMin(double)) );
-	connect( &parameters, SIGNAL(cpMaxChanged(double)), this, SLOT(setCpMax(double)) );
+	connect( epsC, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsC()) );
+	connect( epsR, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsR()) );
+	connect( epsS, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsS()) );
+	connect( cpMin, SIGNAL(editingFinished()), &parameters, SLOT(editedCpMin()) );
+	connect( cpMax, SIGNAL(editingFinished()), &parameters, SLOT(editedCpMax()) );
+	connect( &parameters, SIGNAL(epsCChanged(const QString&)), epsC, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(epsRChanged(const QString&)), epsR, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(epsSChanged(const QString&)), epsS, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(cpMinChanged(const QString&)), cpMin, SLOT(setText(const QString&)) );
+	connect( &parameters, SIGNAL(cpMaxChanged(const QString&)), cpMax, SLOT(setText(const QString&)) );
 
 	QLabel* nitCLabel = new QLabel("NITC");
 	QLabel* nitRLabel = new QLabel("NITR");
@@ -377,7 +388,7 @@ void MainWindow::setInputFile()
 	QString fileName = QFileDialog::getOpenFileName(this, "Open input file");
 	if (!fileName.isEmpty())
 	{
-		inputFile->setText( fileName );
+		inputFile->setText( QDir::current().relativeFilePath(fileName) );
 	}
 }
 
@@ -386,7 +397,7 @@ void MainWindow::setOutputFile()
 	QString fileName = QFileDialog::getSaveFileName(this, "Save output file as");
 	if (!fileName.isEmpty())
 	{
-		outputFile->setText( fileName );
+		outputFile->setText( QDir::current().relativeFilePath(fileName) );
 	}
 }
 
@@ -495,28 +506,23 @@ void MainWindow::terminalView()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-// 	if (maybeSave()) {
 		writeSettings();
 		event->accept();
-// 	} else {
-// 		event->ignore();
-// 	}
 }
 
 void MainWindow::newFile()
 {
-// 	if (maybeSave()) {
 		setCurrentFile("");
-// 	}
 }
 
 void MainWindow::open()
 {
-// 	if (maybeSave()) {
 		QString fileName = QFileDialog::getOpenFileName(this);
 		if (!fileName.isEmpty())
-				loadFile(fileName);
-// 	}
+		{
+			QDir::setCurrent( QFileInfo(fileName).absolutePath() );
+			loadFile(fileName);
+		}
 }
 
 bool MainWindow::save()
@@ -592,7 +598,6 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
 	fileMenu = menuBar()->addMenu(tr("&File"));
-// 	fileMenu->addAction(newAct);
 	fileMenu->addAction(openAct);
 	fileMenu->addAction(saveAct);
 	fileMenu->addAction(saveAsAct);
@@ -640,7 +645,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::loadFile(const QString &fileName)
 {
-	try{ parameters.loadFile( fileName.toStdString() ); }
+	try{ parameters.loadXmlFile( fileName.toStdString() ); }
 	catch( pddeException ex ){ externalException( ex ); }
 	setCurrentFile(fileName);
 	statusBar()->showMessage(tr("File loaded"), 2000);
@@ -648,7 +653,7 @@ void MainWindow::loadFile(const QString &fileName)
 
 bool MainWindow::saveFile(const QString &fileName)
 {
-	parameters.saveFile( fileName.toStdString() );
+	parameters.saveXmlFile( fileName.toStdString() );
 	setCurrentFile(fileName);
 	statusBar()->showMessage(tr("File saved"), 2000);
 

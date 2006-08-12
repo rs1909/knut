@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
  <input></input>
- <output></output>
+ <output>out-start-b.mat</output>
  <sysname>sys-traffic3cars.so</sysname>
  <label>0</label>
  <pointtype>40</pointtype>
@@ -23,6 +23,7 @@
  <cpmax>100.000000</cpmax>
  <ds>-0.020000</ds>
  <dsmin>0.020000</dsmin>
+ <dsmax>0.02</dsmax>
  <dsstart>0.020000</dsstart>
  <epsc>0.000010</epsc>
  <epsr>0.000010</epsr>
