@@ -3,6 +3,9 @@
 
 #include <string>
 #include "matrix.h"
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 class mat4Data
 {
@@ -75,7 +78,12 @@ class mat4Data
 
 	private:
 
+#ifdef WIN32
+    HANDLE file;
+    HANDLE mapHandle;
+#else
 	int    file;
+#endif
 	int    filesize;
 	void  *address;
 	int    size;

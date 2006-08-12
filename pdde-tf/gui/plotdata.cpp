@@ -2,7 +2,8 @@
 
 #include "plotdata.h"
 #include <cmath>
-#include <climits>
+
+#define MAXDOUBLE 1.79769313486232e308
 
 PlotData::PlotData(QObject *parent) :
 	QGraphicsScene(parent),
@@ -183,7 +184,7 @@ void PlotData::dataToGraphics( )
 {
 	if( ZoomHistory.begin() == currZoom )
 	{
-		ViewBox cvb = { -HUGE, HUGE, -HUGE, HUGE, 1, 1 };
+		ViewBox cvb = { -MAXDOUBLE, MAXDOUBLE, -MAXDOUBLE, MAXDOUBLE, 1, 1 };
 		QList<Vector>::const_iterator j1;
 		QList<Vector>::const_iterator j2;
 		for( j1 = DataX.begin(), j2 = DataY.begin(); j1 != DataX.end(); j1++, j2++ )
@@ -261,8 +262,8 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		DataY.last().Init( data.getNPoints() );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
-			double min = HUGE;
-			double max = -HUGE;
+			double min = MAXDOUBLE;
+			double max = -MAXDOUBLE;
 			for( int j = 0; j < data.getMeshLength(); ++j )
 			{
 				for( int k = 0; k < data.getNDim(); ++k )
