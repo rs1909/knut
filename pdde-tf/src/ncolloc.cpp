@@ -329,8 +329,8 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 			for( int k = 0; k < NTAU; k++ )
 			{
 				ttau(k) /= par(0);
-				if( ttau(k) > NMAT ){ std::cout<<"\n NColloc::Init: DELAY > NMAT*PERIOD  "<<k<<"\n\n"; P_MESSAGE(""); }
-				if( ttau(k) < 0.0 ){ std::cout<<"\n NColloc::Init: Negative DELAY "<<k<<"\n\n"; P_MESSAGE(""); }
+				P_ERROR_X2( ttau(k) <= NMAT, "\n NColloc::Init: DELAY > NMAT*PERIOD ", k );
+				P_ERROR_X2( ttau(k) >= 0.0, "\n NColloc::Init: Negative DELAY ",k );
 				t[1+k] = (t[0] - ttau(k)) - floor(t[0] - ttau(k));  // nem szetvalasztott
 				
 				// binary search for in which interval is t-tau(k)
