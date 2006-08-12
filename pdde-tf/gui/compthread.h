@@ -1,16 +1,16 @@
 #include <QThread>
-#include "constants.h"
+#include "constqtgui.h"
 
 class MThread : public QThread
 {
 	Q_OBJECT
  public:
-	MThread( const NConstants& constants, QObject* parent = 0 ) : QThread(parent), stopFlag(false)
-	   { params = new NConstants( constants ); }
+	MThread( const NConstantsQtGui& constants, QObject* parent = 0 ) : QThread(parent), stopFlag(false)
+	   { params = new NConstantsQtGui( constants, this ); }
 	~MThread()
 	   { delete params; }
-	void setConstants( const NConstants& constants )
-	   { delete params; params = new NConstants( constants ); }
+	void setConstants( const NConstantsQtGui& constants )
+	   { delete params; params = new NConstantsQtGui( constants, this ); }
 	void run();
 	void setStopFlag( bool flag ) { stopFlag = flag; }
  public slots:
@@ -20,7 +20,7 @@ class MThread : public QThread
 	void printToScreen( const std::string& str );
  private:
 	
-	NConstants* params;
-	bool        stopFlag;
+	NConstantsQtGui* params;
+	bool             stopFlag;
 
 };

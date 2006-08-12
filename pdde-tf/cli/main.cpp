@@ -14,7 +14,8 @@
 #include "system.h"
 #include "point.h"
 #include "torpoint.h"
-#include "parameters.h"
+//#include "parameters.h"
+#include "constants.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -50,7 +51,7 @@ inline void parValuePrint( Vector& par, int /*npar*/, Array1D<Var>& var )
 int main( int argc, const char** argv )
 {
 	// parameters
-	ConstFile*   params = 0;
+	NConstants*  params = 0;
 	const char*  constFile = 0;
 	const char*  outFile = 0;
 	const char*  inFile = 0;
@@ -65,9 +66,9 @@ int main( int argc, const char** argv )
 			{
 				case 'c':
 					constFile = argv[++acnt];
-					params = new ConstFile;
-					params->getParams( constFile );
-					params->printParams( );
+					params = new NConstants;
+					params->loadFile( constFile );
+					params->printFile( std::cout );
 					break;
 				case 'i':
 					inFile = argv[++acnt];
@@ -100,7 +101,7 @@ int main( int argc, const char** argv )
 		std::cout<<"Error: Missing constants file.\n";
 		exit(1);
 	}
-	if( (inFile == 0) && (params->LABEL != 0) )
+	if( (inFile == 0) && (params->getLabel() != 0) )
 	{
 		std::cout<<"Error: Missing input file.\n";
 		exit(1);
@@ -118,7 +119,7 @@ int main( int argc, const char** argv )
 	
 	// **********************************************************************************************************
 	
-	System sys( params->SYSNAME );
+	System sys( params->getSysName() );
 	if( sys.ndim() == 0 ) P_MESSAGE("zerodimensions");
 
 	Vector par(sys.npar()+ParEnd);
@@ -162,26 +163,30 @@ int main( int argc, const char** argv )
 // 	for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
 // 	std::cout<<'\n';
 
-		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->NINT, params->NDEG, params->NMUL, params->NMAT );
+		Point* pt_ptr = new Point( sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat() );
 		Point& pt = *pt_ptr;
 		
-		pt.setContIter( params->NITC );
-		pt.setRefIter( params->NITR );
-		pt.setStartIter( params->NITS );
-		pt.setRefEps( params->EPSR );
-		pt.setContEps( params->EPSC );
-		pt.setStartEps( params->EPSS );
-		pt.setCont( params->CP );
-		if( params->NSYM != 0 ) pt.setSym( params->NSYM, params->RESYM, params->IMSYM );
+		pt.setContIter( params->getNItC() );
+		pt.setRefIter( params->getNItR() );
+		pt.setStartIter( params->getNItS() );
+		pt.setRefEps( params->getEpsR() );
+		pt.setContEps( params->getEpsC() );
+		pt.setStartEps( params->getEpsS() );
+		pt.setCont( params->getCp()-VarPAR0 );
+		
+		// setting the symmetric components
+		Array1D<int> sre(params->getNSym()), sim(params->getNSym());
+		for( int i=0; i<sre.Size(); ++i ) { sre(i) = params->getSymRe(i); sim(i) = params->getSymIm(i); }
+		if( params->getNSym() != 0 ) pt.setSym( sre, sim );
 		
 		std::cout<<std::scientific;
 		std::cout.precision(6);
 		
 		// load the initial guess
-		if( params->LABEL != 0 )
+		if( params->getLabel() != 0 )
 		{
 			std::ifstream istr( inFile );
-			for( int i=0; i<params->LABEL-1; i++ )
+			for( int i=0; i<params->getLabel()-1; i++ )
 			{
 				pt.ReadNull( istr );
 			}
@@ -193,48 +198,48 @@ int main( int argc, const char** argv )
 		{
 			std::cout<<"\n--- Finding the bifurcation point (TF) ---\n";
 			pt.Reset( eqn_start, var_start );
-			pt.setCont( params->CP );
+			pt.setCont( params->getCp()-VarPAR0 );
 			pt.StartTF( testFN ); // it only computes the characteristic multiplier refines the solution
 		}
 		
 		// start the continuation!
-		if( params->SWITCH != TFTRSwitch )
+		if( params->getBranchSW() != TFTRSwitch )
 		{
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
-			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->CP )<<parNum( npar, params->CP )<<"\t";
-			parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
+			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->getCp()-VarPAR0 )<<parNum( npar, params->getCp()-VarPAR0 )<<"\t";
+			parNamePrint( par, npar, var );
 			std::cout<<"\n";
 			//
-			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->CP);
-			parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
+			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->getCp()-VarPAR0);
+			parValuePrint( par, npar, var );
 			std::cout<<"\n";
 			
 			// making tangents
-			if( params->SWITCH == TFPDSwitch )
+			if( params->getBranchSW() == TFPDSwitch )
 			{
 				std::cout<<"\nSwitching to the period two branch (TF).\n";
-				pt.SwitchTFPD( params->DSSTART );
-				pt.setCont( params->CP );
+				pt.SwitchTFPD( params->getDsStart() );
+				pt.setCont( params->getCp()-VarPAR0 );
 			}
-			else if( params->SWITCH == TFBRSwitch )
+			else if( params->getBranchSW() == TFBRSwitch )
 			{
 				std::cout<<"\nSwitching to the other branch (TF).\n";
-				pt.SwitchTFLP( params->DSSTART );
-				pt.setCont( params->CP );
+				pt.SwitchTFLP( params->getDsStart());
+				pt.setCont( params->getCp()-VarPAR0 );
 			}
-			else if( params->SWITCH == TFHBSwitch )
+			else if( params->getBranchSW() == TFHBSwitch )
 			{
 				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
-				pt.SwitchTFHB( params->DSSTART );
-				pt.setCont( params->CP );
+				pt.SwitchTFHB( params->getDsStart() );
+				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else
 			{
 				std::cout<<"\nFinding the tangent.\n";
-				pt.setCont( params->CP );
+				pt.setCont( params->getCp()-VarPAR0 );
 				pt.Tangent();
 			}
 			pt.Reset( eqn, var );
@@ -246,28 +251,28 @@ int main( int argc, const char** argv )
 			Array1D<int> it( ithist );
 			for( int i=0; i < it.Size(); i++ ) it(i) = 3;
 			int itpos = 0;
-			double ds = params->DS;
-			for( int i = 0; i < params->STEPS; i++ ) // 35
+			double ds = params->getDs();
+			for( int i = 0; i < params->getSteps(); i++ ) // 35
 			{
 				if( i % 24 == 0 )
 				{
-					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->CPType<<params->CP<<"\t";
-					parNamePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<parType( npar, (params->PARX)[j] )<<parNum( npar, (params->PARX)[j] )<<"\t";
+					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->getCpType()<<params->getCpNum()<<"\t";
+					parNamePrint( par, npar, var );
 					std::cout<<"\tUSTAB\tIT\n";
 				}
 				itpos = (itpos+1) % ithist;
 				//
-				it( itpos ) = pt.Continue( ds, (i == 0) && (params->SWITCH == TFHBSwitch) );
+				it( itpos ) = pt.Continue( ds, (i == 0) && (params->getBranchSW() == TFHBSwitch) );
 				//
-				if( params->STAB != 0) pt.Stability();
+				if( params->getStab() ) pt.Stability();
 				ustabprev = ustab;
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
 				for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
 
 				// console output
-				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->CP);
-				parValuePrint( par, npar, var ); // for( int j = 0; j < params->NPARX; j++ ) std::cout<<"\t"<<par((params->PARX)[j]);
+				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->getCp()-VarPAR0);
+				parValuePrint( par, npar, var );
 				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
 				if( i != 0  && ustab != ustabprev )
 				{
@@ -302,12 +307,12 @@ int main( int argc, const char** argv )
 				ff<<"\t"<<norm<<"\t"<<pt.NormMX()<<"\t"<<ustab<<"\n";
 				ff.flush();
 				int itc = it( itpos );
-				if( (itc > 3)&&(fabs(ds)/1.414 > params->DSMIN)&&(fabs(ds)/1.414 < params->DSMAX) ) ds /= 1.414;
-				if( (itc > 5)&&(fabs(ds)/2.0 > params->DSMIN)&&(fabs(ds)/2.0 < params->DSMAX) ) ds /= 2.0;
+				if( (itc > 3)&&(fabs(ds)/1.414 > params->getDsMin())&&(fabs(ds)/1.414 < params->getDsMax()) ) ds /= 1.414;
+				if( (itc > 5)&&(fabs(ds)/2.0 > params->getDsMin())&&(fabs(ds)/2.0 < params->getDsMax()) ) ds /= 2.0;
 				bool decr = true;
 				for( int l=0; l < it.Size(); l++ ) if( it(l) > 3 ) decr = false;
-				if( decr&&(fabs(ds)*1.414 > params->DSMIN)&&(fabs(ds)*1.414 < params->DSMAX) ) ds *= 1.414;
-				if( (itc >= params->NITC)&&(fabs(ds)/2.0 < params->DSMIN) )
+				if( decr&&(fabs(ds)*1.414 > params->getDsMin())&&(fabs(ds)*1.414 < params->getDsMax()) ) ds *= 1.414;
+				if( (itc >= params->getNItC())&&(fabs(ds)/2.0 < params->getDsMin()) )
 				{
 					P_MESSAGE("reached minimum stepsize (DSMIN)");
 				}
@@ -322,9 +327,9 @@ int main( int argc, const char** argv )
 			Vector TRe(pt.getSol().Size()), TIm(pt.getSol().Size());
 
 			// making the mesh for the conversion
-			Vector meshint(params->NINT1 + 1), meshdeg( params->NDEG1 + 1 );
-			for( int i=0; i<meshint.Size(); i++ ) meshint(i) = (double)i/(params->NINT1);
-			for( int i=0; i<meshdeg.Size(); i++ ) meshdeg(i) = (double)i/(params->NDEG1);
+			Vector meshint(params->getNInt1() + 1), meshdeg( params->getNDeg1() + 1 );
+			for( int i=0; i<meshint.Size(); i++ ) meshint(i) = (double)i/(params->getNInt1());
+			for( int i=0; i<meshdeg.Size(); i++ ) meshdeg(i) = (double)i/(params->getNDeg1());
 
 			// getting the sol and tangents
 			pt.SwitchTRSol( Sol, meshint, meshdeg );
@@ -335,21 +340,21 @@ int main( int argc, const char** argv )
 
 			// destroy point, construct PointTR
 			delete pt_ptr; pt_ptr = 0;
-			PointTR pttr( sys, eqn, var, params->NDEG1,params->NDEG2, params->NINT1, params->NINT2 );
+			PointTR pttr( sys, eqn, var, params->getNDeg1(),params->getNDeg2(), params->getNInt1(), params->getNInt2() );
 
 			// construct the solution tangent from the eigenvectors
 			// these next three functions could be only one
 			pttr.ImportSol( Sol );
 			pttr.ImportTan( TRe, TIm, alpha );
-			pttr.Start( params->DSSTART );
+			pttr.Start( params->getDsStart() );
 			pttr.setPar( par );
 			
 			pttr.setRho( alpha/(2.0*M_PI) );
-			pttr.setCont( params->CP );
+			pttr.setCont( params->getCp()-VarPAR0 );
 
-			double ds = params->DS;
+			double ds = params->getDs();
 			std::ostringstream fdata, fidx;
-			for( int i = 0; i < params->STEPS; i++ )
+			for( int i = 0; i < params->getSteps(); i++ )
 			{
 				pttr.Continue( ds, false );
 				

@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "pointtype.h"
-#include "constants.h"
+#include "constqtgui.h"
 
 class QTableView;
 
@@ -21,7 +21,7 @@ class ParamsModel : public QAbstractTableModel
 	Q_OBJECT
 
  public:
-	ParamsModel( NConstants* params, QObject *parent_ = 0 )
+	ParamsModel( NConstantsQtGui* params, QObject *parent_ = 0 )
 	 : QAbstractTableModel(parent_), parameters(params) { }
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const 
@@ -37,7 +37,7 @@ class ParamsModel : public QAbstractTableModel
  public slots:
 	void dataUpdated() { reset(); }
  private:
-	NConstants* parameters;
+	NConstantsQtGui* parameters;
 };
 
 
@@ -46,7 +46,7 @@ class BoxDelegate : public QItemDelegate
 	Q_OBJECT
 
  public:
-	BoxDelegate( NConstants* params, QObject *parent = 0 ) 
+	BoxDelegate( NConstantsQtGui* params, QObject *parent = 0 ) 
 	 : QItemDelegate(parent), parameters(params) { }
 
 	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -58,7 +58,7 @@ class BoxDelegate : public QItemDelegate
 
  private:
 
-	NConstants* parameters;
+	NConstantsQtGui* parameters;
 };
 
 class EqnVarTableView : public QTableView
@@ -66,7 +66,7 @@ class EqnVarTableView : public QTableView
 	Q_OBJECT
 
  public:
-	EqnVarTableView( NConstants* params, QWidget* parent_ = 0 ) : QTableView( parent_ )
+	EqnVarTableView( NConstantsQtGui* params, QWidget* parent_ = 0 ) : QTableView( parent_ )
 	{
 		parameters = params;
 		model = new ParamsModel( params );
@@ -111,7 +111,7 @@ class EqnVarTableView : public QTableView
 
  private:
 	
-	NConstants*  parameters;
+	NConstantsQtGui*  parameters;
 	ParamsModel* model;
 	BoxDelegate* delegate;
 
@@ -127,7 +127,7 @@ class SYMModel : public QAbstractTableModel
 	Q_OBJECT
 
  public:
-	SYMModel( NConstants* params, QObject *parent_ = 0 )
+	SYMModel( NConstantsQtGui* params, QObject *parent_ = 0 )
 	 : QAbstractTableModel(parent_), parameters(params) { }
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const { return 2; }
@@ -147,7 +147,7 @@ class SYMModel : public QAbstractTableModel
 	}
 	
  private:
-	NConstants* parameters;
+	NConstantsQtGui* parameters;
 };
 
 class SYMDelegate : public QItemDelegate
@@ -155,7 +155,7 @@ class SYMDelegate : public QItemDelegate
 	Q_OBJECT
 
  public:
-	SYMDelegate( NConstants* params, QObject *parent_ = 0 ) 
+	SYMDelegate( NConstantsQtGui* params, QObject *parent_ = 0 ) 
 	 : QItemDelegate(parent_), parameters(params) { }
 
 	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -167,7 +167,7 @@ class SYMDelegate : public QItemDelegate
 
  private:
 
-	NConstants* parameters;
+	NConstantsQtGui* parameters;
 
 };
 
@@ -177,7 +177,7 @@ class SYMTableView : public QTableView
 	Q_OBJECT
 
  public:
-	SYMTableView( NConstants* params, QWidget* parent_ = 0 ) : QTableView( parent_ ), parameters(params)
+	SYMTableView( NConstantsQtGui* params, QWidget* parent_ = 0 ) : QTableView( parent_ ), parameters(params)
 	{
 		model = new SYMModel( parameters );
 		delegate = new SYMDelegate( parameters );
@@ -209,7 +209,7 @@ class SYMTableView : public QTableView
 
 	SYMModel*    model;
 	SYMDelegate* delegate;
-	NConstants*  parameters;
+	NConstantsQtGui*  parameters;
 };
 
 

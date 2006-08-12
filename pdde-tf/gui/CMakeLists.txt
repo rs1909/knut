@@ -10,14 +10,14 @@ INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include )
 
 QT4_WRAP_CPP( MOC_SRCS mainwindow.h plotdata.h plotwindow.h 
-    paramview.h constants.h compthread.h screendialog.h )
+    paramview.h constqtgui.h compthread.h screendialog.h )
 
 ADD_EXECUTABLE( pdde-gui main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
-    constants.cpp constants.h
+    constqtgui.cpp constqtgui.h
     compthread.cpp compthread.h
     screendialog.h
     ${MOC_SRCS} )

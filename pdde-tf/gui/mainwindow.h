@@ -142,7 +142,7 @@ private:
 	QString strippedName(const QString &fullFileName);
 
 	// all the parameters
-	NConstants parameters;
+	NConstantsQtGui parameters;
 	MThread    compThread;
 
 	QWidget     *paramsWidget;

@@ -374,7 +374,7 @@ void MainWindow::setSysName()
 
 void MainWindow::setInputFile()
 {
-	QString fileName = QFileDialog::getOpenFileName(this);
+	QString fileName = QFileDialog::getOpenFileName(this, "Open input file");
 	if (!fileName.isEmpty())
 	{
 		inputFile->setText( fileName );
@@ -383,7 +383,7 @@ void MainWindow::setInputFile()
 
 void MainWindow::setOutputFile()
 {
-	QString fileName = QFileDialog::getSaveFileName(this);
+	QString fileName = QFileDialog::getSaveFileName(this, "Save output file as");
 	if (!fileName.isEmpty())
 	{
 		outputFile->setText( fileName );
