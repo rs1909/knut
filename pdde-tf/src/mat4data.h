@@ -63,6 +63,7 @@ class mat4Data
 		int  getNPoints() const { return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]); }
 		int  getNextBifurcation( int n, int aut ) const;
 		int  getBifurcationType( int n, int aut ) const;
+		bool isTorus() const { return torus; }
 		
 		struct header *getHeader( int offset ) { return (struct header*)((char*)address + offset); }
 		const struct header *getHeader( int offset ) const { return (struct header*)((char*)address + offset); }
@@ -108,6 +109,8 @@ class mat4Data
 	int    nint2;
 	int    ndeg1;
 	int    ndeg2;
+	
+	bool   torus;
 	
 	int    npoints_offset;  //T
 	header npoints_header;

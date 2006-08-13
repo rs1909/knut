@@ -8,8 +8,7 @@
 #include "paramview.h"
 
 #include <fstream>
-
-#define MAXDOUBLE 1.79769313486232e308
+#include <cfloat>
 
 MainWindow::MainWindow() : compThread(parameters),
 	outputPlotWindow(0), outputData(0),
@@ -228,7 +227,7 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( &parameters, SIGNAL(ndeg1Changed(int)), this, SLOT(setNDeg1(int)) );
 	connect( &parameters, SIGNAL(ndeg2Changed(int)), this, SLOT(setNDeg2(int)) );
 
-	QDoubleValidator* dbValid = new QDoubleValidator( -MAXDOUBLE, MAXDOUBLE, 16, this );
+	QDoubleValidator* dbValid = new QDoubleValidator( -DBL_MAX, DBL_MAX, 16, this );
 
 	QLabel* stepsLabel = new QLabel("STEPS");
 	QLabel* dsLabel = new QLabel("DS");
@@ -437,6 +436,7 @@ void MainWindow::inputPlot()
 			QMessageBox::critical( this, "MainWindow::inputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 			return;
 		}
+		if( inputData->isTorus() ) { delete inputData; return; }
 		inputPlotWindow = new plotWindow( inputData );
 		QDialog *inputPlotDialog = new QDialog( this );
 		QVBoxLayout *inputPlotLayout = new QVBoxLayout();
@@ -473,6 +473,7 @@ void MainWindow::outputPlot()
 			QMessageBox::critical( this, "MainWindow::outputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 			return;
 		}
+		if( outputData->isTorus() ) { delete outputData; return; }
 		outputPlotWindow = new plotWindow( outputData );
 		QDialog *outputPlotDialog = new QDialog( this );
 		QVBoxLayout *outputPlotLayout = new QVBoxLayout();

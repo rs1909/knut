@@ -156,6 +156,7 @@ static inline int createComplexMatrixHeader( void* address, int offset, mat4Data
 mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ )
 {
 	wperm = true;
+	torus = false;
 	
 	ncols = steps_;
 	ndim = ndim_;
@@ -206,6 +207,7 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_ )
 {
 	wperm = true;
+	torus = true;
 	
 	ncols = steps_;
 	ndim = ndim_;
@@ -287,6 +289,7 @@ void mat4Data::openReadOnly( const std::string& fileName )
 
 	if( (mul_offset = findMatrix( "pdde_mul", &mul_header )) != -1 )
 	{
+		torus = false;
 		// periodic solutions
 		nmul = mul_header.mrows;
 		if( mul_header.ncols != ncols ) P_MESSAGE("err4");
@@ -315,6 +318,8 @@ void mat4Data::openReadOnly( const std::string& fileName )
 		if( prof_header.imagf != 0 ) P_MESSAGE("err25");
 	}else
 	{
+		torus = true;
+		// quasiperiodic solutions
 		if( (nint1_offset = findMatrix( "pdde_nint1", &nint1_header )) == -1 ) P_MESSAGE("err26");
 		if( nint1_header.mrows != 1 ) P_MESSAGE("err27");
 		if( nint1_header.ncols != ncols ) P_MESSAGE("err28");

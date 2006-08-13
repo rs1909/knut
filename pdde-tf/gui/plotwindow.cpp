@@ -1,4 +1,5 @@
 #include "plotwindow.h"
+#include <vector>
 #include <cmath>
 
 plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(parent), data(d)
@@ -43,7 +44,7 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	topLayout->addWidget( ptlabel, 1, 2 );
 	topLayout->addWidget( dim, 1, 3 );
 
-	QVector<QString> xvarMap( XParameter0 + data->getNPar() );
+	std::vector<QString> xvarMap( XParameter0 + data->getNPar() );
 	xvarMap[XNone] = "None";
 	xvarMap[XLabel] = "Label";
 	xvarMap[XMesh] = "Mesh";
@@ -51,7 +52,7 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	for( int i = XParameter0; i < xvarMap.size(); ++i ) xvarMap[i] = QString("P ") + QString::number( i - XParameter0 );
 	for( int i = 0; i < xvarMap.size(); ++i ) xvar->insertItem( i, xvarMap.at(i) );
 	
-	QVector<QString> yvarMap( XParameter0 + data->getNPar() );
+	std::vector<QString> yvarMap( XParameter0 + data->getNPar() );
 	yvarMap[YNone] = "None";
 	yvarMap[YL2Norm] = "L2Norm";
 	yvarMap[YAmplitude] = "Amplitude";
@@ -86,11 +87,14 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 
 void plotWindow::addPlot()
 {
-	try{
-		plotdata.addPlot( *data, (PlotXVariable)xvar->currentIndex(), (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b" );
-	}
-	catch( pddeException ex ){
-		QMessageBox::critical( this, "plotWindow::addPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+	if( !data->isTorus() )
+	{
+		try{
+			plotdata.addPlot( *data, (PlotXVariable)xvar->currentIndex(), (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b" );
+		}
+		catch( pddeException ex ){
+			QMessageBox::critical( this, "plotWindow::addPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+		}
 	}
 }
 

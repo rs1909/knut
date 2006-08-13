@@ -6,12 +6,14 @@
 #include <QWidget>
 #include <QPen>
 #include <QPolygon>
-#include <QList>
 #include <QPainterPath>
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
 #include <QFocusEvent>
 #include <QGraphicsSceneMouseEvent>
+
+#include <vector>
+#include <list>
 
 #include "matrix.h"
 #include "mat4data.h"
@@ -43,27 +45,30 @@ enum PlotType
 	PlotPolygonType
 };
 
-struct PlotLine
+class PlotLine
 {
+ public:
 	PlotLine( const QPen& p ) : pen(p) { }
 	QPen         pen;
 	QPainterPath line;
 };
 
-struct PlotCircle
+class PlotCircle
 {
+ public:
 	PlotCircle( const QPen& pen_, const QRectF& point_ ) : pen(pen_), point(point_) { }
-	QPen             pen;
-	QRectF           point;
-	QVector<QPointF> pos;
+	QPen                 pen;
+	QRectF               point;
+	std::vector<QPointF> pos;
 };
 
-struct PlotPolygon
+class PlotPolygon
 {
+ public:
 	PlotPolygon( const QPen& pen_, const QPolygonF& point_ ) : pen(pen_), point(point_) { }
-	QPen               pen;
-	QPolygonF          point;
-	QVector<QPointF>   pos;
+	QPen                   pen;
+	QPolygonF              point;
+	std::vector<QPointF>   pos;
 };
 
 union PlotItemUnion
@@ -73,8 +78,9 @@ union PlotItemUnion
 	PlotPolygon* polygon;
 };
 
-struct PlotItem
+class PlotItem
 {
+ public:
 	PlotItemUnion data;
 	PlotType      type;
 };
@@ -114,9 +120,7 @@ protected:
 
 private:
 	void addPlotLine( const char* style );
-	void addPlotCircle( const char* style );
-	void addPlotSquare( const char* style );
-	void addPlotUpTriangle( const char* style );
+	void addPlotPoint( const char* style, int type );
 	void dataToGraphics( );
 	void getScale( qreal& transx, qreal& transy, qreal& scale );
 	void plotStyle( QPen& pen, const char* style );
@@ -128,8 +132,8 @@ private:
 
 	QGraphicsScene* PlotScene;
 	// geometry
-	QList<ViewBox> ZoomHistory;
-	QList<ViewBox>::iterator currZoom;
+	std::list<ViewBox> ZoomHistory;
+	std::list<ViewBox>::iterator currZoom;
 	// relative geometry
 	const qreal AspectRatio;
 	const qreal plotXSize, plotYSize;
@@ -140,21 +144,21 @@ private:
 	QPointF           mouseMove;
 	QGraphicsRectItem selection;
 	// data
-	QList<Vector>   DataX;
-	QList<Vector>   DataY;
-	QList<PlotType> DataType;
+	std::list<Vector>   DataX;
+	std::list<Vector>   DataY;
+	std::list<PlotType> DataType;
 	
-	QList<PlotItem> Graph;
+	std::list<PlotItem> Graph;
 	
-	QVector<QGraphicsTextItem*>    HText;
-	QVector<QGraphicsTextItem*>    VText;
-	QVector<QGraphicsLineItem*>    TopTicks;
-	QVector<QGraphicsLineItem*>    BottomTicks;
-	QVector<QGraphicsLineItem*>    LeftTicks;
-	QVector<QGraphicsLineItem*>    RightTicks;
-	QVector<QGraphicsPathItem*>    PathItems;
-	QVector<QGraphicsEllipseItem*> CircleItems;
-	QVector<QGraphicsPolygonItem*> PolygonItems;
+	std::vector<QGraphicsTextItem*>    HText;
+	std::vector<QGraphicsTextItem*>    VText;
+	std::vector<QGraphicsLineItem*>    TopTicks;
+	std::vector<QGraphicsLineItem*>    BottomTicks;
+	std::vector<QGraphicsLineItem*>    LeftTicks;
+	std::vector<QGraphicsLineItem*>    RightTicks;
+	std::vector<QGraphicsPathItem*>    PathItems;
+	std::vector<QGraphicsEllipseItem*> CircleItems;
+	std::vector<QGraphicsPolygonItem*> PolygonItems;
 };
 
 #endif

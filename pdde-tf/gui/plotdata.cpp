@@ -11,7 +11,7 @@ PlotData::PlotData(QObject *parent) :
 	FontSize ( 12 )
 {
 	const ViewBox cvb = { 1.0, -1.0, 1.0, -1.0, 1, 1 };
-	ZoomHistory.append( cvb );
+	ZoomHistory.push_back( cvb );
 	currZoom = ZoomHistory.begin();
 	this->addItem( &selection );
 	selection.setVisible(false);
@@ -25,9 +25,9 @@ PlotData::~PlotData( )
 
 void PlotData::clear()
 {
-	QList<PlotItem>::iterator i;
-	QList<Vector>::iterator j1;
-	QList<Vector>::iterator j2;
+	std::list<PlotItem>::iterator i;
+	std::list<Vector>::iterator j1;
+	std::list<Vector>::iterator j2;
 	for( i = Graph.begin(), j1 = DataX.begin(), j2=DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
 		if( (*i).type == PlotLineType )
@@ -52,7 +52,7 @@ void PlotData::clear()
 	Graph.clear();
 	const ViewBox cvb = *currZoom;
 	ZoomHistory.clear();
-	ZoomHistory.append( cvb );
+	ZoomHistory.push_back( cvb );
 	currZoom = ZoomHistory.begin();
 }
 
@@ -122,13 +122,13 @@ void PlotData::addPlot( const Vector& v1, const Vector& v2, const char* style )
 	
 	DataX.push_back( Vector() );
 	DataY.push_back( Vector() );
-	if( v1.Size() != 0 ) DataX.last().Init(v1);
+	if( v1.Size() != 0 ) DataX.rbegin()->Init(v1);
 	else
 	{
-		DataX.last().Init( v2.Size() );
-		for( int r=0; r < v2.Size(); r++ ) DataX.last()(r) = r;
+		DataX.rbegin()->Init( v2.Size() );
+		for( int r=0; r < v2.Size(); r++ ) (*DataX.rbegin())(r) = r;
 	}
-	DataY.last().Init(v2);
+	DataY.rbegin()->Init(v2);
 	addPlotLine( style );
 	dataToGraphics();
 }
@@ -137,45 +137,71 @@ void PlotData::addPlotLine( const char* style )
 {
 	PlotItem t_pl = { {0}, PlotLineType };
 	Graph.push_back( t_pl );
-	Graph.last().data.line = new PlotLine( QPen( QColor( "blue" ) ) );
-	Graph.last().data.line->pen.setWidthF( 1 );
-	plotStyle( Graph.last().data.line->pen, style );
+	Graph.rbegin()->data.line = new PlotLine( QPen( QColor( "blue" ) ) );
+	Graph.rbegin()->data.line->pen.setWidthF( 1 );
+	plotStyle( Graph.rbegin()->data.line->pen, style );
 }
 
-void PlotData::addPlotCircle( const char* style )
+void PlotData::addPlotPoint( const char* style, int type )
 {
-	PlotItem t_pl = { {0}, PlotCircleType };
-	Graph.push_back( t_pl );
-	Graph.last().data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -3.0, -3.0, 6.0 ,6.0 ) );
-	Graph.last().data.circle->pen.setWidthF( 1 );
-	plotStyle( Graph.last().data.circle->pen, style );
-}
-
-void PlotData::addPlotSquare( const char* style )
-{
-	PlotItem t_pl = { {0}, PlotPolygonType };
-	Graph.push_back( t_pl );
-	QPolygonF pl(4);
-	pl[0] = QPointF( -3.0, -3.0 );
-	pl[1] = QPointF( -3.0, 3.0 );
-	pl[2] = QPointF( 3.0, 3.0 );
-	pl[3] = QPointF( 3.0, -3.0 );
-	Graph.last().data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
-	Graph.last().data.polygon->pen.setWidthF( 1 );
-	plotStyle( Graph.last().data.polygon->pen, style );
-}
-
-void PlotData::addPlotUpTriangle( const char* style )
-{
-	PlotItem t_pl = { {0}, PlotPolygonType };
-	Graph.push_back( t_pl );
-	QPolygonF pl(3);
-	pl[0] = QPointF( -3.0, -3.0 );
-	pl[1] = QPointF( 0.0, 3.0 );
-	pl[2] = QPointF( 3.0, -3.0 );
-	Graph.last().data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
-	Graph.last().data.polygon->pen.setWidthF( 1 );
-	plotStyle( Graph.last().data.polygon->pen, style );
+	switch( type % 4 )
+	{
+		case 0:  // CIRCLE
+			{
+				PlotItem t_pl = { {0}, PlotCircleType };
+				Graph.push_back( t_pl );
+				Graph.rbegin()->data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -3.0, -3.0, 6.0 ,6.0 ) );
+				Graph.rbegin()->data.circle->pen.setWidthF( 1 );
+				plotStyle( Graph.rbegin()->data.circle->pen, style );
+			}
+			break;
+		case 1:  // SQUARE
+			{
+				PlotItem t_pl = { {0}, PlotPolygonType };
+				Graph.push_back( t_pl );
+				QPolygonF pl(4);
+				pl[0] = QPointF( -3.0, -3.0 );
+				pl[1] = QPointF( -3.0, 3.0 );
+				pl[2] = QPointF( 3.0, 3.0 );
+				pl[3] = QPointF( 3.0, -3.0 );
+				Graph.rbegin()->data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
+				Graph.rbegin()->data.polygon->pen.setWidthF( 1 );
+				plotStyle( Graph.rbegin()->data.polygon->pen, style );
+			}
+			break;
+		case 2: // TRIANGLE
+			{
+				PlotItem t_pl = { {0}, PlotPolygonType };
+				Graph.push_back( t_pl );
+				QPolygonF pl(3);
+				pl[0] = QPointF( -3.0, -3.0 );
+				pl[1] = QPointF( 0.0, 3.0 );
+				pl[2] = QPointF( 3.0, -3.0 );
+				Graph.rbegin()->data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
+				Graph.rbegin()->data.polygon->pen.setWidthF( 1 );
+				plotStyle( Graph.rbegin()->data.polygon->pen, style );
+			}
+			break;
+		case 3: // CROSS
+			{
+				PlotItem t_pl = { {0}, PlotPolygonType };
+				Graph.push_back( t_pl );
+				QPolygonF pl(5);
+				pl[0] = QPointF( -3.0, 0.0 );
+				pl[1] = QPointF( 3.0, 0.0 );
+				pl[2] = QPointF( 0.0, 0.0 );
+				pl[3] = QPointF( 0.0, -3.0 );
+				pl[4] = QPointF( 0.0, 3.0 );
+				Graph.rbegin()->data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
+				Graph.rbegin()->data.polygon->pen.setWidthF( 1 );
+				plotStyle( Graph.rbegin()->data.polygon->pen, style );
+			}
+			break;
+		default:
+			std::cout<<"Another Serious BUG\n";
+			abort();
+			break;
+	}
 }
 
 // this only called by addPlot...
@@ -184,8 +210,8 @@ void PlotData::dataToGraphics( )
 	if( ZoomHistory.begin() == currZoom )
 	{
 		ViewBox cvb = { -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
-		QList<Vector>::const_iterator j1;
-		QList<Vector>::const_iterator j2;
+		std::list<Vector>::const_iterator j1;
+		std::list<Vector>::const_iterator j2;
 		for( j1 = DataX.begin(), j2 = DataY.begin(); j1 != DataX.end(); j1++, j2++ )
 		{
 			for( int k = 0; k < (*j1).Size(); k++ )
@@ -211,53 +237,47 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	// mindig az Y utan kovetkezik csak addPlot...()
 	if( x >= XParameter0 )
 	{
-		DataX.push_back( Vector() );
-		DataX.last().Init( data.getNPoints() );
+		DataX.push_back( Vector(data.getNPoints()) );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
-			DataX.last()(i) = data.getPar( i, x-XParameter0 );
+			(*DataX.rbegin())(i) = data.getPar( i, x-XParameter0 );
 		}
 		++xadded;
 	}
 	if( x == XLabel && y != YAbsMultiplier && y != YProfile )
 	{
-		DataX.push_back( Vector() );
-		DataX.last().Init( data.getNPoints() );
+		DataX.push_back( Vector(data.getNPoints()) );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
-			DataX.last()(i) = i;
+			(*DataX.rbegin())(i) = i;
 		}
 		++xadded;
 	}
 	if( x == XMesh && y == YProfile )
 	{
-		DataX.push_back( Vector() );
-		DataY.push_back( Vector() );
-		DataX.last().Init( data.getMeshLength() );
-		DataY.last().Init( data.getMeshLength() );
+		DataX.push_back( Vector(data.getMeshLength()) );
+		DataY.push_back( Vector(data.getMeshLength()) );
 		for( int i = 0; i < data.getMeshLength(); i++ )
 		{
-			DataX.last()(i) = data.getMesh( pt, i );
-			DataY.last()(i) = data.getProfile( pt, dim, i );
+			(*DataX.rbegin())(i) = data.getMesh( pt, i );
+			(*DataY.rbegin())(i) = data.getProfile( pt, dim, i );
 		}
 		++xadded; ++yadded;
 		addPlotLine( style );
 	}
 	if( y >= YParameter0 && (x != XMesh && x != XRealMultiplier) )
 	{
-		DataY.push_back( Vector() );
-		DataY.last().Init( data.getNPoints() );
+		DataY.push_back( Vector(data.getNPoints()) );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
-			DataY.last()(i) = data.getPar( i, y-YParameter0 );
+			(*DataY.rbegin())(i) = data.getPar( i, y-YParameter0 );
 		}
 		++yadded;
 		addPlotLine( style );
 	}
 	if( y == YAmplitude && (x != XMesh && x != XRealMultiplier) )
 	{
-		DataY.push_back( Vector() );
-		DataY.last().Init( data.getNPoints() );
+		DataY.push_back( Vector(data.getNPoints()) );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
 			double min = DBL_MAX;
@@ -270,7 +290,7 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 					if( max < data.getProfile( i, k, j ) ) max = data.getProfile( i, k, j );
 				}
 			}
-			DataY.last()(i) = max - min;
+			(*DataY.rbegin())(i) = max - min;
 		}
 		++yadded;
 		addPlotLine( style );
@@ -279,50 +299,44 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	{
 		// plot the unit circel!!!
 		const int segments = 100;
-		DataX.push_back( Vector() );
-		DataY.push_back( Vector() );
-		DataX.last().Init( segments );
-		DataY.last().Init( segments );
+		DataX.push_back( Vector(segments) );
+		DataY.push_back( Vector(segments) );
 		for( int i = 0; i < segments; ++i )
 		{
-			DataX.last()(i) = sin( i*2.0*M_PI/(segments-1) );
-			DataY.last()(i) = cos( i*2.0*M_PI/(segments-1) );
+			(*DataX.rbegin())(i) = sin( i*2.0*M_PI/(segments-1) );
+			(*DataY.rbegin())(i) = cos( i*2.0*M_PI/(segments-1) );
 		}
 		addPlotLine( "k" );
 		// plotting the multipliers
-		DataX.push_back( Vector() );
-		DataY.push_back( Vector() );
-		DataX.last().Init( data.getNMul() );
-		DataY.last().Init( data.getNMul() );
+		DataX.push_back( Vector(data.getNMul()) );
+		DataY.push_back( Vector(data.getNMul()) );
 		for( int i = 0; i < data.getNMul(); i++ )
 		{
-			DataX.last()(i) = data.getMulRe( pt, i );
-			DataY.last()(i) = data.getMulIm( pt, i );
+			(*DataX.rbegin())(i) = data.getMulRe( pt, i );
+			(*DataY.rbegin())(i) = data.getMulIm( pt, i );
 		}
 		++xadded; ++yadded;
-		addPlotCircle( style );
+		addPlotPoint( style, 1 );
 	}
 	if( x == XLabel && y == YAbsMultiplier )
 	{
 		for( int r = 0; r < data.getNMul(); r++ )
 		{
-			DataX.push_back( Vector() );
-			DataY.push_back( Vector() );
-			DataX.last().Init( data.getNPoints() );
-			DataY.last().Init( data.getNPoints() );
+			DataX.push_back( Vector(data.getNPoints()) );
+			DataY.push_back( Vector(data.getNPoints()) );
 			for( int i = 0; i < data.getNPoints(); i++ )
 			{
-				DataX.last()(i) = i;
-				DataY.last()(i) = sqrt(data.getMulRe(i,r)*data.getMulRe(i,r)+data.getMulIm(i,r)*data.getMulIm(i,r));
+				(*DataX.rbegin())(i) = i;
+				(*DataY.rbegin())(i) = sqrt(data.getMulRe(i,r)*data.getMulRe(i,r)+data.getMulIm(i,r)*data.getMulIm(i,r));
 			}
 			++xadded; ++yadded;
-			addPlotCircle( style );
+			addPlotPoint( style, 1 );
 		}
 	}
 	// add stability
-	QVector<int> bifidx;
-	QVector<int> biftype;
-	if( x == XLabel || x >= XParameter0 )
+	std::vector<int> bifidx;
+	std::vector<int> biftype;
+	if( (x == XLabel || x >= XParameter0) && xadded != 0 && xadded ==yadded )
 	{
 		int k, k_p = 0;
 		do{
@@ -334,27 +348,27 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 				k_p = k;
 			}
 		}while( k != -1 );
-		QList<Vector>::iterator j1 = DataX.end()-1;
-		QList<Vector>::iterator j2 = DataY.end()-1;
+		std::list<Vector>::const_iterator j1 = DataX.end();
+		std::list<Vector>::const_iterator j2 = DataY.end();
+		j1--; j2--;
 		if( (*j1).Size() == data.getNPoints() )
 		{
 			for( int i = 0; i < bifidx.size(); i++ )
 			{
-				DataX.push_back( Vector() );
-				DataY.push_back( Vector() );
-				DataX.last().Init( 1 );
-				DataY.last().Init( 1 );
-				DataX.last()(0) = ((*j1)(bifidx[i]-1) + (*j1)(bifidx[i]))/2.0;
-				DataY.last()(0) = ((*j2)(bifidx[i]-1) + (*j2)(bifidx[i]))/2.0;
+				DataX.push_back( Vector(1) );
+				DataY.push_back( Vector(1) );
+				(*DataX.rbegin())(0) = ((*j1)(bifidx[i]-1) + (*j1)(bifidx[i]))/2.0;
+				(*DataY.rbegin())(0) = ((*j2)(bifidx[i]-1) + (*j2)(bifidx[i]))/2.0;
 				++xadded; ++yadded;
-				addPlotCircle( style );
+				addPlotPoint( style, biftype[i] );
 			}
 		}
 	}
 	if( xadded != yadded )
 	{
-		for( int i = 0; i < xadded; ++i ) DataX.erase( DataX.end()-1 );
-		for( int i = 0; i < yadded; ++i ) DataY.erase( DataY.end()-1 );
+		std::cout<<"bad number of X and Y coordinates\n";
+		for( int i = 0; i < xadded; ++i ) DataX.pop_back();
+		for( int i = 0; i < yadded; ++i ) DataY.pop_back();
 	}else
 	{
 		if( xadded != 0 ) dataToGraphics();
@@ -473,11 +487,12 @@ void PlotData::rescaleData()
 	const double yscale = plotYSize/(cvb.ymax-cvb.ymin);
 	
 	// rescaling all the data
-	QList<PlotItem>::iterator i;
-	QList<Vector>::iterator j1;
-	QList<Vector>::iterator j2;
-	for( i = Graph.begin(), j1 = DataX.begin(), j2=DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
+	std::list<PlotItem>::iterator i;
+	std::list<Vector>::const_iterator j1;
+	std::list<Vector>::const_iterator j2;
+	for( i = Graph.begin(), j1 = DataX.begin(), j2 = DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
+		if( j1 == DataX.end() || j2 == DataY.end() ) { std::cout<<"serious BUG!\n"; abort(); }
 		if( (*i).type == PlotLineType )
 		{
 			(*i).data.line->line = QPainterPath();
@@ -550,7 +565,7 @@ void PlotData::rescaleData()
 			(*i).data.polygon->pos.clear();
 			for( int k = 0; k < (*j1).Size(); k++ )
 			{
-				const QPointF pt = QPointF(  );
+				const QPointF pt = QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) );
 				if( contains( pt.x(), pt.y() ) ) (*i).data.polygon->pos.push_back( pt );
 			}
 		}
@@ -605,10 +620,11 @@ bool PlotData::event( QEvent* ev )
 				adjustAxis( newvb.xmin, newvb.xmax, newvb.xticks );
 				adjustAxis( newvb.ymin, newvb.ymax, newvb.yticks );
 				// remove the next zoom levels
-				if( currZoom != ZoomHistory.end() ) ZoomHistory.erase(currZoom+1,ZoomHistory.end());
+				ZoomHistory.erase( ++currZoom, ZoomHistory.end());
+				--currZoom;
 				// add the new level
-				ZoomHistory.append( newvb );
-				currZoom = ZoomHistory.end()-1;
+				ZoomHistory.push_back( newvb );
+				currZoom = --ZoomHistory.end();
 				dataToGraphics();
 				selection.setVisible(false);
 				update( selection.boundingRect().normalized() );
@@ -624,7 +640,7 @@ bool PlotData::event( QEvent* ev )
 		{
 			if( key->key() == Qt::Key_P )
 			{
-				if( ZoomHistory.constBegin() != currZoom )
+				if( ZoomHistory.begin() != currZoom )
 				{
 					--currZoom;
 					dataToGraphics();
@@ -634,7 +650,7 @@ bool PlotData::event( QEvent* ev )
 			}
 			if( key->key() == Qt::Key_N )
 			{
-				if( ZoomHistory.constEnd()-1 != currZoom )
+				if( --ZoomHistory.end() != currZoom )
 				{
 					++currZoom;
 					dataToGraphics();
@@ -738,7 +754,7 @@ void PlotData::PlotPaint( )
 		delete PolygonItems[i];
 	}
 	PolygonItems.clear();
-	for( QList<PlotItem>::const_iterator i = Graph.constBegin(); i != Graph.constEnd(); i++ )
+	for( std::list<PlotItem>::const_iterator i = Graph.begin(); i != Graph.end(); i++ )
 	{
 		if( (*i).type == PlotLineType )
 		{
