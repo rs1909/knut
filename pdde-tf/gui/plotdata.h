@@ -121,7 +121,7 @@ private:
 	void getScale( qreal& transx, qreal& transy, qreal& scale );
 	void plotStyle( QPen& pen, const char* style );
 	QPointF intersect( QPointF p1, QPointF p2 );
-	bool contains( QPointF p );
+	inline bool contains( double x, double y );
 	bool crossbox( QPointF p1, QPointF p2, QPointF& i1, QPointF& i2 );
 	void rescaleData();
 	void replot();

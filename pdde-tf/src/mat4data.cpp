@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <cmath>
+#include <cfloat>
 
 #ifndef WIN32
 #  include <sys/types.h>
@@ -455,4 +457,83 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 double mat4Data::getProfile( int n, int d, int j ) const
 {
 	return elem( prof_offset, j, n );
+}
+
+inline void mat4Data::findTrivialIndices( int n, int aut, int *imin, double* dmin ) const
+{
+	for( int i = 0; i < aut; ++i )
+	{
+		imin[i] = -1;
+		dmin[i] = DBL_MAX;
+	}
+	for( int i = 0; i < getNMul(); ++i )
+	{
+		const double mabs = fabs(sqrt((getMulRe(n,i)-1.0)*(getMulRe(n,i)-1.0) + getMulIm(n,i)*getMulIm(n,i)));
+		for( int j = 0; j < aut; ++j )
+		{
+			if( dmin[j] > mabs )
+			{
+				dmin[j] = mabs;
+				imin[j] = i;
+				break;
+			}
+		}
+	}
+}
+
+inline int mat4Data::countUnstable( int n, int aut ) const
+{
+	int imin[aut];
+	double dmin[aut];
+	findTrivialIndices( n, aut, imin, dmin );
+	int ustab = 0;
+	for( int i = 0; i < getNMul(); ++i )
+	{
+		const double mabs = (getMulRe(n,i)*getMulRe(n,i) + getMulIm(n,i)*getMulIm(n,i));
+		bool ok = true;
+		for( int j = 0; j < aut; ++j ) if( i == imin[j] ) ok = false;
+		if( ok && mabs >= 1.0 )  ++ustab;
+	}
+	return ustab;
+}
+
+int mat4Data::getNextBifurcation( int n, int aut ) const
+{
+	int p_ustab = countUnstable( n, aut );
+	for( int i = n+1; i < getNPoints(); ++i )
+	{
+		int ustab = countUnstable( i, aut );
+		if( ustab != p_ustab ) return i;
+		p_ustab = ustab;
+	}
+	return -1;
+}
+
+int mat4Data::getBifurcationType( int n, int aut ) const
+{
+	int imin[aut];
+	double dmin[aut];
+	findTrivialIndices( n, aut, imin, dmin );
+	double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
+	int iminLP = -1, iminPD = -1, iminNS = -1;
+	for( int i = 0; i < getNMul(); ++i )
+	{
+		const double mre = getMulRe(n,i);
+		const double mim = getMulIm(n,i);
+		bool ok = true;
+		for( int j = 0; j < aut; ++j ) if( i == imin[j] ) ok = false;
+		if( ok )
+		{
+			const double LPabs = fabs(sqrt((mre-1.0)*(mre-1.0)+mim*mim));
+			const double PDabs = fabs(sqrt((mre+1.0)*(mre+1.0)+mim*mim));
+			const double NSabs = fabs(sqrt(mre*mre+mim*mim)-1.0);
+			if( (dminLP > LPabs) && (mim == 0.0) ) { dminLP = LPabs; iminLP = i; }
+			if( (dminPD > PDabs) && (mim == 0.0) ) { dminPD = PDabs; iminPD = i; }
+			if( (dminNS > NSabs) && (mim != 0.0) ) { dminNS = NSabs; iminNS = i; }
+		}
+	}
+	if( (dminLP < dminPD) && (dminLP < dminNS) ) return 1; // BifTFLP;
+	else if( (dminPD < dminLP) && (dminPD < dminNS) ) return 2; // BifTFPD;
+	else if( (dminNS < dminPD) && (dminNS < dminLP) ) return 3; // BifTFNS;
+	else return 0; //SolTF;
 }

@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
  <input></input>
- <output></output>
+ <output>out-start.mat</output>
  <sysname>sys-vanderpol.so</sysname>
  <label>0</label>
  <pointtype>50</pointtype>
@@ -29,7 +29,7 @@
  <cpmax>100.000000</cpmax>
  <ds>0.020000</ds>
  <dsmin>0.050000</dsmin>
- <dsmax>0.05</dsmax>
+ <dsmax>0.050000</dsmax>
  <dsstart>0.002000</dsstart>
  <epsc>0.000010</epsc>
  <epsr>0.000010</epsr>

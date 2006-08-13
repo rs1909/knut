@@ -2,8 +2,7 @@
 
 #include "plotdata.h"
 #include <cmath>
-
-#define MAXDOUBLE 1.79769313486232e308
+#include <cfloat>
 
 PlotData::PlotData(QObject *parent) :
 	QGraphicsScene(parent),
@@ -147,7 +146,7 @@ void PlotData::addPlotCircle( const char* style )
 {
 	PlotItem t_pl = { {0}, PlotCircleType };
 	Graph.push_back( t_pl );
-	Graph.last().data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -1.5, -1.5, 3.0 ,3.0 ) );
+	Graph.last().data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -3.0, -3.0, 6.0 ,6.0 ) );
 	Graph.last().data.circle->pen.setWidthF( 1 );
 	plotStyle( Graph.last().data.circle->pen, style );
 }
@@ -157,10 +156,10 @@ void PlotData::addPlotSquare( const char* style )
 	PlotItem t_pl = { {0}, PlotPolygonType };
 	Graph.push_back( t_pl );
 	QPolygonF pl(4);
-	pl[0] = QPointF( -1.5, -1.5 );
-	pl[1] = QPointF( -1.5, 1.5 );
-	pl[2] = QPointF( 1.5, 1.5 );
-	pl[3] = QPointF( 1.5, -1.5 );
+	pl[0] = QPointF( -3.0, -3.0 );
+	pl[1] = QPointF( -3.0, 3.0 );
+	pl[2] = QPointF( 3.0, 3.0 );
+	pl[3] = QPointF( 3.0, -3.0 );
 	Graph.last().data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
 	Graph.last().data.polygon->pen.setWidthF( 1 );
 	plotStyle( Graph.last().data.polygon->pen, style );
@@ -171,9 +170,9 @@ void PlotData::addPlotUpTriangle( const char* style )
 	PlotItem t_pl = { {0}, PlotPolygonType };
 	Graph.push_back( t_pl );
 	QPolygonF pl(3);
-	pl[0] = QPointF( -1.5, -1.5 );
-	pl[1] = QPointF( 0.0, 1.5 );
-	pl[2] = QPointF( 1.5, -1.5 );
+	pl[0] = QPointF( -3.0, -3.0 );
+	pl[1] = QPointF( 0.0, 3.0 );
+	pl[2] = QPointF( 3.0, -3.0 );
 	Graph.last().data.polygon = new PlotPolygon( QPen( QColor( "blue" ) ), pl );
 	Graph.last().data.polygon->pen.setWidthF( 1 );
 	plotStyle( Graph.last().data.polygon->pen, style );
@@ -184,7 +183,7 @@ void PlotData::dataToGraphics( )
 {
 	if( ZoomHistory.begin() == currZoom )
 	{
-		ViewBox cvb = { -MAXDOUBLE, MAXDOUBLE, -MAXDOUBLE, MAXDOUBLE, 1, 1 };
+		ViewBox cvb = { -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
 		QList<Vector>::const_iterator j1;
 		QList<Vector>::const_iterator j2;
 		for( j1 = DataX.begin(), j2 = DataY.begin(); j1 != DataX.end(); j1++, j2++ )
@@ -209,6 +208,22 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 {
 	int xadded = 0;
 	int yadded = 0;
+	// add stability
+	QVector<int> bifidx;
+	QVector<int> biftype;
+	if( x == XLabel || x >= XParameter0 )
+	{
+		int k, k_p = 0;
+		do{
+			k = data.getNextBifurcation( k_p, 1 );
+			if( k != -1 )
+			{
+				bifidx.push_back(k);
+				biftype.push_back( data.getBifurcationType( k, 1 ) );
+				k_p = k;
+			}
+		}while( k != -1 );
+	}
 	// mindig az Y utan kovetkezik csak addPlot...()
 	if( x >= XParameter0 )
 	{
@@ -219,6 +234,13 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataX.last()(i) = data.getPar( i, x-XParameter0 );
 		}
 		++xadded;
+		for( int i = 0; i < bifidx.size(); i++ )
+		{
+			DataX.push_back( Vector() );
+			DataX.last().Init( 1 );
+			DataX.last()(0) = data.getPar( bifidx[i], x-XParameter0 );
+			++xadded;
+		}
 	}
 	if( x == XLabel && y != YAbsMultiplier && y != YProfile )
 	{
@@ -229,6 +251,13 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataX.last()(i) = i;
 		}
 		++xadded;
+		for( int i = 0; i < bifidx.size(); i++ )
+		{
+			DataX.push_back( Vector() );
+			DataX.last().Init( 1 );
+			DataX.last()(0) = bifidx[i];
+			++xadded;
+		}
 	}
 	if( x == XMesh && y == YProfile )
 	{
@@ -242,7 +271,7 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataY.last()(i) = data.getProfile( pt, dim, i );
 		}
 		++xadded; ++yadded;
-		addPlotUpTriangle( style );
+		addPlotLine( style );
 		dataToGraphics();
 	}
 	if( y >= YParameter0 && (x != XMesh && x != XRealMultiplier) )
@@ -254,7 +283,16 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataY.last()(i) = data.getPar( i, y-YParameter0 );
 		}
 		++yadded;
-		if( xadded == yadded && xadded == 1 ) { addPlotLine( style ); dataToGraphics(); }
+		addPlotLine( style );
+		for( int i = 0; i < bifidx.size(); i++ )
+		{
+			DataY.push_back( Vector() );
+			DataY.last().Init( 1 );
+			DataY.last()(0) = data.getPar( bifidx[i], y-YParameter0 );
+			++yadded;
+			addPlotCircle( style );
+		}
+		dataToGraphics();
 	}
 	if( y == YAmplitude && (x != XMesh && x != XRealMultiplier) )
 	{
@@ -262,8 +300,8 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		DataY.last().Init( data.getNPoints() );
 		for( int i = 0; i < data.getNPoints(); i++ )
 		{
-			double min = MAXDOUBLE;
-			double max = -MAXDOUBLE;
+			double min = DBL_MAX;
+			double max = -DBL_MAX;
 			for( int j = 0; j < data.getMeshLength(); ++j )
 			{
 				for( int k = 0; k < data.getNDim(); ++k )
@@ -275,7 +313,26 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataY.last()(i) = max - min;
 		}
 		++yadded;
-		if( xadded == yadded && xadded == 1 ) { addPlotLine( style ); dataToGraphics(); }
+		addPlotLine( style );
+		for( int i = 0; i < bifidx.size(); i++ )
+		{
+			DataY.push_back( Vector() );
+			DataY.last().Init( 1 );
+			double min = DBL_MAX;
+			double max = -DBL_MAX;
+			for( int j = 0; j < data.getMeshLength(); ++j )
+			{
+				for( int k = 0; k < data.getNDim(); ++k )
+				{
+					if( min > data.getProfile( bifidx[i], k, j ) ) min = data.getProfile( bifidx[i], k, j );
+					if( max < data.getProfile( bifidx[i], k, j ) ) max = data.getProfile( bifidx[i], k, j );
+				}
+			}
+			DataY.last()(0) = max - min;
+			++yadded;
+			addPlotCircle( style );
+		}
+		dataToGraphics();
 	}
 	if( x == XRealMultiplier && y == YImagMultiplier )
 	{
@@ -393,9 +450,9 @@ QPointF PlotData::intersect( QPointF p1, QPointF p2 )
 	return QPointF( xcr, ycr );
 }
 
-bool PlotData::contains( QPointF p )
+inline bool PlotData::contains( double x, double y )
 {
-	return p.x() >= 0.0 && p.y() >= 0.0 && p.x() <= plotXSize && p.y() <= plotYSize;
+	return (x >= 0.0) && (y >= 0.0) && (x <= plotXSize) && (y <= plotYSize);
 }
 
 bool PlotData::crossbox( QPointF p1, QPointF p2, QPointF& i1, QPointF& i2 )
@@ -497,8 +554,8 @@ void PlotData::rescaleData()
 									(*i).data.line->line.lineTo( pt2 );
 								}
 							}
-							pr = false;
 						}
+						pr = false;
 					}
 				}
 				prx = x; pry = y;
@@ -510,7 +567,7 @@ void PlotData::rescaleData()
 			for( int k = 0; k < (*j1).Size(); k++ )
 			{
 				const QPointF pt = QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) );
-				if( contains( pt ) ) (*i).data.circle->pos.push_back( pt );
+				if( contains( pt.x(), pt.y() ) ) (*i).data.circle->pos.push_back( pt );
 			}
 		}
 		if( (*i).type == PlotPolygonType )
@@ -518,8 +575,8 @@ void PlotData::rescaleData()
 			(*i).data.polygon->pos.clear();
 			for( int k = 0; k < (*j1).Size(); k++ )
 			{
-				const QPointF pt = QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) );
-				if( contains( pt ) ) (*i).data.polygon->pos.push_back( pt );
+				const QPointF pt = QPointF(  );
+				if( contains( pt.x(), pt.y() ) ) (*i).data.polygon->pos.push_back( pt );
 			}
 		}
 	}

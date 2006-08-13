@@ -35,7 +35,6 @@
 #define NPAR colloc.Npar()
 #define NINT colloc.Nint()
 #define NDEG colloc.Ndeg()
-// #define CARS 9
 
 // private
 void Point::FillSol( System& sys_ )

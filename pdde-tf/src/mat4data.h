@@ -57,6 +57,9 @@ class mat4Data
 		int  getMeshLength() const { return ndeg*nint+1; }
 		int  getNCols() const { return ncols; }
 		int  getNPoints() const { return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]); }
+		int  getNextBifurcation( int n, int aut ) const;
+		int  getBifurcationType( int n, int aut ) const;
+		
 		struct header *getHeader( int offset ) { return (struct header*)((char*)address + offset); }
 		const struct header *getHeader( int offset ) const { return (struct header*)((char*)address + offset); }
 		double& elem( int offset, int row, int col )
@@ -77,6 +80,8 @@ class mat4Data
 		}
 
 	private:
+		inline int countUnstable( int n, int aut ) const;
+		inline void findTrivialIndices( int n, int aut, int *imin, double* dmin ) const;
 
 #ifdef WIN32
     HANDLE file;
