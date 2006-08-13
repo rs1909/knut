@@ -35,9 +35,6 @@ void MThread::run()
 		if( sys.ndim() == 0 ) P_MESSAGE("zerodimensions");
 	
 		Vector par( params->getNPar()+ParEnd );
-		mat4Data out ( params->getOutputFile(),
-						params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
-						params->getNInt(), params->getNDeg(), params->getNMul() );
 		
 		//-----------------------------------------------------------------------------------------------------------
 		//
@@ -104,6 +101,10 @@ void MThread::run()
 		// start the continuation!
 		if( params->getBranchSW() != TFTRSwitch )
 		{
+			mat4Data out( params->getOutputFile(),
+				params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+				params->getNInt(), params->getNDeg(), params->getNMul() );
+			
 			screenout<<"\n--- Starting the continuation ---\n";
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
@@ -229,6 +230,10 @@ void MThread::run()
 			}
 		}else
 		{
+			mat4Data out( params->getOutputFile(),
+				params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+				params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2() );
+			
 			std::cout<<"ENTERING THE TORUS CODE!\n";
 			// construct the initial torus
 			double alpha;
@@ -278,10 +283,11 @@ void MThread::run()
 // 				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 // 				ff<<pttr.Norm()<<"\n";
 // 				ff.flush();
-				std::ostringstream fdata, fidx;
-				fdata << "sol-" << i << ".dat";
-				fidx << "sol-" << i << ".idx";
-				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
+				pttr.WriteBinary( out, i );
+// 				std::ostringstream fdata, fidx;
+// 				fdata << "sol-" << i << ".dat";
+// 				fidx << "sol-" << i << ".idx";
+// 				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
 			}
 		}
 		// **********************************************************************************************************

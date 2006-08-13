@@ -11,6 +11,7 @@
 #define TORPOINT_H
 
 class System;
+class mat4Data;
 
 #include "matrix.h"
 #include "hypermatrix.h"
@@ -46,6 +47,8 @@ class PointTR
 		inline void    setStartEps( double d ) { StartEps = d; }
 
 		inline int     idxmap( int j1, int j2, int i1, int i2 ) { return colloc.idxmap( j1, j2, i1, i2 ); }
+		inline const   Vector& getMesh1() const { return colloc.getMesh1(); }
+		inline const   Vector& getMesh2() const { return colloc.getMesh2(); }
 
 		inline void    ImportSol( Vector& Sol ) { colloc.ImportSol( xx->getV1(), Sol ); }
 		inline void    ImportTan( Vector& Re, Vector& Im, double alpha )
@@ -69,6 +72,7 @@ class PointTR
 			colloc.Save( dat, idx, tmp );
 		}
 		inline int     npar() { return colloc.Sys().npar(); }
+		void           WriteBinary( mat4Data& data, int n );
 
 	private:
 		void Construct();

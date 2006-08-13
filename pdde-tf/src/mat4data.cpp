@@ -200,7 +200,59 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	prof_offset = mesh_offset + mesh_size;
 	int prof_size = createMatrixHeader( address, prof_offset, &prof_header, "pdde_prof", ndim*(ndeg*nint+1), ncols );
 	size = prof_offset + prof_size;
-	if( size > approxSize ) P_ERROR_X2(false,"BAd size approxiamion",size-approxSize);
+	if( size > approxSize ) P_ERROR_X2(false,"Bad size approxiamion",size-approxSize);
+}
+
+mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_ )
+{
+	wperm = true;
+	
+	ncols = steps_;
+	ndim = ndim_;
+	npar = npar_;
+	nint1 = nint1_;
+	nint2 = nint2_;
+	ndeg1 = ndeg1_;
+	ndeg2 = ndeg2_;
+	
+	const int approxSize = 10*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+1+1+1+1+1+ndeg1*nint1+ndeg2*nint2+ndim*ndeg1*nint1*ndeg2*nint2));
+ #ifndef WIN32
+	address = mmapFileWrite( file, fileName, approxSize );
+ #else
+    address = mmapFileWrite( file, mapHandle, fileName, approxSize );
+ #endif	
+	// creating the matrices
+	npoints_offset = 0;
+	int npoints_size = createMatrixHeader( address, npoints_offset, &npoints_header, "pdde_npoints", 1, 1 );
+	
+	par_offset = npoints_offset + npoints_size;
+	int par_size = createMatrixHeader( address, par_offset, &par_header, "pdde_par", npar, ncols );
+	
+	ndim_offset = par_offset + par_size;
+	int ndim_size = createMatrixHeader( address, ndim_offset, &ndim_header, "pdde_ndim", 1, ncols );
+	
+	nint1_offset = ndim_offset + ndim_size;
+	int nint1_size = createMatrixHeader( address, nint1_offset, &nint1_header, "pdde_nint1", 1, ncols );
+	
+	nint2_offset = nint1_offset + nint1_size;
+	int nint2_size = createMatrixHeader( address, nint2_offset, &nint2_header, "pdde_nint2", 1, ncols );
+	
+	ndeg1_offset = nint2_offset + nint2_size;
+	int ndeg1_size = createMatrixHeader( address, ndeg1_offset, &ndeg1_header, "pdde_ndeg1", 1, ncols );
+
+	ndeg2_offset = ndeg1_offset + ndeg1_size;
+	int ndeg2_size = createMatrixHeader( address, ndeg2_offset, &ndeg2_header, "pdde_ndeg2", 1, ncols );
+
+	mesh1_offset = ndeg2_offset + ndeg2_size;
+	int mesh1_size = createMatrixHeader( address, mesh1_offset, &mesh1_header, "pdde_mesh1", nint1*ndeg1, ncols );
+
+	mesh2_offset = mesh1_offset + mesh1_size;
+	int mesh2_size = createMatrixHeader( address, mesh2_offset, &mesh2_header, "pdde_mesh2", nint2*ndeg2, ncols );
+
+	blanket_offset = mesh2_offset + mesh2_size;
+	int blanket_size = createMatrixHeader( address, blanket_offset, &blanket_header, "pdde_blanket", ndim*nint1*ndeg1*nint2*ndeg2, ncols );
+	size = blanket_offset + blanket_size;
+	P_ERROR_X2( size <= approxSize, "Bad size approxiamion",size-approxSize);
 }
 
 mat4Data::mat4Data( const std::string& fileName )
@@ -227,38 +279,81 @@ void mat4Data::openReadOnly( const std::string& fileName )
 	ncols = par_header.ncols;
 	if( par_header.imagf != 0 ) P_MESSAGE("err2");
 
-	if( (mul_offset = findMatrix( "pdde_mul", &mul_header )) == -1 ) P_MESSAGE("err3");
-	nmul = mul_header.mrows;
-	if( mul_header.ncols != ncols ) P_MESSAGE("err4");
-	if( mul_header.imagf == 0 ) P_MESSAGE("err5");
-	
 	if( (ndim_offset = findMatrix( "pdde_ndim", &ndim_header )) == -1 ) P_MESSAGE("err6");
 	if( ndim_header.mrows != 1 ) P_MESSAGE("err7 ");
 	if( ndim_header.ncols != ncols ) P_MESSAGE("err9");
 	if( ndim_header.imagf != 0 ) P_MESSAGE("err9");
 	ndim = static_cast<int>(*((double*)((char*)address + ndim_offset + ndim_header.col_off(0))));
-	
-	if( (nint_offset = findMatrix( "pdde_nint", &nint_header )) == -1 ) P_MESSAGE("err10");
-	if( nint_header.mrows != 1 ) P_MESSAGE("err11");
-	if( nint_header.ncols != ncols ) P_MESSAGE("err12");
-	if( nint_header.imagf != 0 ) P_MESSAGE("err13");
-	nint = static_cast<int>(*((double*)((char*)address + nint_offset + nint_header.col_off(0))));
-	
-	if( (ndeg_offset = findMatrix( "pdde_ndeg", &ndeg_header )) == -1 ) P_MESSAGE("err14");
-	if( ndeg_header.mrows != 1 ) P_MESSAGE("err15");
-	if( ndeg_header.ncols != ncols ) P_MESSAGE("err16");
-	if( ndeg_header.imagf != 0 ) P_MESSAGE("err17");
-	ndeg = static_cast<int>(*((double*)((char*)address + ndeg_offset + ndeg_header.col_off(0))));
 
-	if( (mesh_offset = findMatrix( "pdde_mesh", &mesh_header )) == -1 ) P_MESSAGE("err18");
-	if( mesh_header.mrows != ndeg*nint+1 ) P_MESSAGE("err19");
-	if( mesh_header.ncols != ncols ) P_MESSAGE("err20");
-	if( mesh_header.imagf != 0 ) P_MESSAGE("err21");
+	if( (mul_offset = findMatrix( "pdde_mul", &mul_header )) != -1 )
+	{
+		// periodic solutions
+		nmul = mul_header.mrows;
+		if( mul_header.ncols != ncols ) P_MESSAGE("err4");
+		if( mul_header.imagf == 0 ) P_MESSAGE("err5");
+		
+		if( (nint_offset = findMatrix( "pdde_nint", &nint_header )) == -1 ) P_MESSAGE("err10");
+		if( nint_header.mrows != 1 ) P_MESSAGE("err11");
+		if( nint_header.ncols != ncols ) P_MESSAGE("err12");
+		if( nint_header.imagf != 0 ) P_MESSAGE("err13");
+		nint = static_cast<int>(*((double*)((char*)address + nint_offset + nint_header.col_off(0))));
+		
+		if( (ndeg_offset = findMatrix( "pdde_ndeg", &ndeg_header )) == -1 ) P_MESSAGE("err14");
+		if( ndeg_header.mrows != 1 ) P_MESSAGE("err15");
+		if( ndeg_header.ncols != ncols ) P_MESSAGE("err16");
+		if( ndeg_header.imagf != 0 ) P_MESSAGE("err17");
+		ndeg = static_cast<int>(*((double*)((char*)address + ndeg_offset + ndeg_header.col_off(0))));
 	
-	if( (prof_offset = findMatrix( "pdde_prof", &prof_header )) == -1 ) P_MESSAGE("err22");
-	if( prof_header.mrows != ndim*(ndeg*nint+1) ) P_MESSAGE("err23");
-	if( prof_header.ncols != ncols ) P_MESSAGE("err24");
-	if( prof_header.imagf != 0 ) P_MESSAGE("err25");
+		if( (mesh_offset = findMatrix( "pdde_mesh", &mesh_header )) == -1 ) P_MESSAGE("err18");
+		if( mesh_header.mrows != ndeg*nint+1 ) P_MESSAGE("err19");
+		if( mesh_header.ncols != ncols ) P_MESSAGE("err20");
+		if( mesh_header.imagf != 0 ) P_MESSAGE("err21");
+		
+		if( (prof_offset = findMatrix( "pdde_prof", &prof_header )) == -1 ) P_MESSAGE("err22");
+		if( prof_header.mrows != ndim*(ndeg*nint+1) ) P_MESSAGE("err23");
+		if( prof_header.ncols != ncols ) P_MESSAGE("err24");
+		if( prof_header.imagf != 0 ) P_MESSAGE("err25");
+	}else
+	{
+		if( (nint1_offset = findMatrix( "pdde_nint1", &nint1_header )) == -1 ) P_MESSAGE("err26");
+		if( nint1_header.mrows != 1 ) P_MESSAGE("err27");
+		if( nint1_header.ncols != ncols ) P_MESSAGE("err28");
+		if( nint1_header.imagf != 0 ) P_MESSAGE("err29");
+		nint1 = static_cast<int>(*((double*)((char*)address + nint1_offset + nint1_header.col_off(0))));
+		
+		if( (nint2_offset = findMatrix( "pdde_nint2", &nint2_header )) == -1 ) P_MESSAGE("err30");
+		if( nint2_header.mrows != 1 ) P_MESSAGE("err31");
+		if( nint2_header.ncols != ncols ) P_MESSAGE("err32");
+		if( nint2_header.imagf != 0 ) P_MESSAGE("err33");
+		nint2 = static_cast<int>(*((double*)((char*)address + nint2_offset + nint2_header.col_off(0))));
+		
+		if( (ndeg1_offset = findMatrix( "pdde_ndeg2", &ndeg1_header )) == -1 ) P_MESSAGE("err34");
+		if( ndeg1_header.mrows != 1 ) P_MESSAGE("err35");
+		if( ndeg1_header.ncols != ncols ) P_MESSAGE("err36");
+		if( ndeg1_header.imagf != 0 ) P_MESSAGE("err37");
+		ndeg1 = static_cast<int>(*((double*)((char*)address + ndeg1_offset + ndeg1_header.col_off(0))));
+		
+		if( (ndeg2_offset = findMatrix( "pdde_ndeg2", &ndeg2_header )) == -1 ) P_MESSAGE("err38");
+		if( ndeg2_header.mrows != 1 ) P_MESSAGE("err39");
+		if( ndeg2_header.ncols != ncols ) P_MESSAGE("err40");
+		if( ndeg2_header.imagf != 0 ) P_MESSAGE("err41");
+		ndeg2 = static_cast<int>(*((double*)((char*)address + ndeg2_offset + ndeg2_header.col_off(0))));
+
+		if( (mesh1_offset = findMatrix( "pdde_mesh1", &mesh1_header )) == -1 ) P_MESSAGE("err42");
+		if( mesh1_header.mrows != nint1*ndeg1 ) P_MESSAGE("err43");
+		if( mesh1_header.ncols != ncols ) P_MESSAGE("err44");
+		if( mesh1_header.imagf != 0 ) P_MESSAGE("err45");
+		
+		if( (mesh2_offset = findMatrix( "pdde_mesh2", &mesh2_header )) == -1 ) P_MESSAGE("err46");
+		if( mesh2_header.mrows != nint2*ndeg2 ) P_MESSAGE("err47");
+		if( mesh2_header.ncols != ncols ) P_MESSAGE("err48");
+		if( mesh2_header.imagf != 0 ) P_MESSAGE("err49");
+		
+		if( (blanket_offset = findMatrix( "pdde_blanket", &blanket_header )) == -1 ) P_MESSAGE("err50");
+		if( blanket_header.mrows != ndim*nint1*ndeg1*nint2*ndeg2 ) P_MESSAGE("err51");
+		if( blanket_header.ncols != ncols ) P_MESSAGE("err52");
+		if( blanket_header.imagf != 0 ) P_MESSAGE("err53");
+	}
 }
 
 mat4Data::~mat4Data()
@@ -372,6 +467,43 @@ void mat4Data::setProfile( int n, const Vector& prof )
 	}else
 	{
 		P_MESSAGE("setProf 2");
+	}
+}
+
+// write in order size() = [ ndeg1*nint1, ndeg2*nint2, ndim ]
+void mat4Data::setBlanket( int n, const Vector& blanket )
+{
+	if( wperm && n < ncols )
+	{
+		if( blanket.Size() == ndim*(ndeg1*nint1*ndeg2*nint2) )
+		{
+			const int curr_npoints = static_cast<int>( elem( npoints_offset, 0, 0 ) );
+			if( n > curr_npoints ) elem(npoints_offset,0,0) = n;
+			elem( ndim_offset, 0, n ) = ndim;
+			elem( nint1_offset, 0, n ) = nint1;
+			elem( nint2_offset, 0, n ) = nint2;
+			elem( ndeg1_offset, 0, n ) = ndeg1;
+			elem( ndeg2_offset, 0, n ) = ndeg2;
+// 			for( int i1 = 0; i1 < nint1; ++i1 ) {
+// 				for( int i2 = 0; i2 < nint2; ++i2 ) {
+// 					for( int j1 = 0; j1 < ndeg1; ++j1 ) {
+// 						for( int j2 = 0; j2 < ndeg2; ++j2 ) {
+// 							for( int p = 0; p < ndim; ++p ) {
+// 								elem( blanket_offset, j1 + ndeg1*(i1 + nint1*(j2 + ndeg2*(i2 + nint2*p))), n )
+// 									= blanket(p + ndim*(j1 + ndeg1*(j2 + ndeg2*(i1 + nint1*i2))));
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+			for( int i = 0; i < ndim*(ndeg1*nint1*ndeg2*nint2); ++i ) elem( blanket_offset, i, n ) = blanket(i);
+		}else
+		{
+			P_MESSAGE("setBlanket 1");
+		}
+	}else
+	{
+		P_MESSAGE("setBlanket 2");
 	}
 }
 

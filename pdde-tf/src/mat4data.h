@@ -27,6 +27,7 @@ class mat4Data
 
 		// opens the file, determines its size, maps the memory from file, sets up variables
 		mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ );
+		mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_ );
 		mat4Data( const std::string& fileName );
 		// unmaps the memory, truncates the file if necessary, closes the file
 		~mat4Data( );
@@ -38,6 +39,10 @@ class mat4Data
 		void   setMul( int n, const Vector& real, const Vector& imag );
 		void   setMesh( int n, const Vector& mesh );
 		void   setProfile( int n, const Vector& profile );
+		void   setMesh1( int n, int j, double d ) { elem( mesh1_offset, j, n ) = d; }
+		void   setMesh2( int n, int j, double d ) { elem( mesh2_offset, j, n ) = d; }
+		void   setBlanket( int n, const Vector& blanket );
+		
 		void   getPar( int n, Vector& par ) const;
 		double getPar( int n, int j ) const;
 		void   getMul( int n, Vector& real,Vector& imag ) const;
@@ -46,7 +51,6 @@ class mat4Data
 		void   getMesh( int n, Vector& mesh ) const;
 		double getMesh( int n, int j ) const;
 		void   getProfile( int n, Vector& profile ) const;
-// 		void   getProfile( int n, int i, Vector& profile ) const;
 		double getProfile( int n, int d, int j ) const;
 		
 		int  getNDim() const { return ndim; }
@@ -105,16 +109,16 @@ class mat4Data
 	int    ndeg1;
 	int    ndeg2;
 	
-	int    npoints_offset;
+	int    npoints_offset;  //T
 	header npoints_header;
 	
-	int    par_offset;
+	int    par_offset;      //T
 	header par_header;
 
 	int    mul_offset;
 	header mul_header;
 
-	int    ndim_offset;
+	int    ndim_offset;     //T
 	header ndim_header;
 
 	int    nint_offset;
@@ -128,6 +132,28 @@ class mat4Data
 
 	int    prof_offset;
 	header prof_header;
+
+	// for the torus
+	int    nint1_offset;     //T
+	header nint1_header;
+	
+	int    nint2_offset;     //T
+	header nint2_header;
+	
+	int    ndeg1_offset;     //T
+	header ndeg1_header;
+
+	int    ndeg2_offset;     //T
+	header ndeg2_header;
+
+	int    mesh1_offset;     //T
+	header mesh1_header;
+	
+	int    mesh2_offset;     //T
+	header mesh2_header;
+
+	int    blanket_offset;   //T
+	header blanket_header;
 };
 
 #endif

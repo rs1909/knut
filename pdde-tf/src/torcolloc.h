@@ -33,6 +33,9 @@ class CollocTR
 		void ImportSol( Vector& out, Vector& in );
 		void ImportTan( Vector& out, Vector& Re, Vector& Im, double alpha );
 		void Save( const char* dat, const char* idx, const Vector& in );
+		
+		inline const Vector& getMesh1() const { return mesh1; }
+		inline const Vector& getMesh2() const { return mesh2; }
 
 		inline int Ndeg1( ) { return ndeg1; }
 		inline int Ndeg2( ) { return ndeg2; }

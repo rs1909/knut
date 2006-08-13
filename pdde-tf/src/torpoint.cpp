@@ -9,9 +9,10 @@
 
 #include <cmath>
 
+#include "pderror.h"
 #include "system.h"
 #include "torpoint.h"
-#include "pderror.h"
+#include "mat4data.h"
 
 PointTR::PointTR( System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_ ) :
 	var(var_), eqn(eqn_),
@@ -228,4 +229,24 @@ int PointTR::Continue( double ds, bool /*first*/ )
 	xx->getV3() = xxNu->getV3();
 	par = parNu;
 	return it;
+}
+
+void PointTR::WriteBinary( mat4Data& data, int n )
+{
+	data.setPar( n, par );
+	for( int i = 0; i < NINT1; ++i )
+	{
+		for( int j = 0; j < NDEG1; ++j )
+		{
+			data.setMesh1( n, i*NDEG1 + j, (getMesh1()(j) + i)/((double)NINT1) );
+		}
+	}
+	for( int i = 0; i < NINT2; ++i )
+	{
+		for( int j = 0; j < NDEG2; ++j )
+		{
+			data.setMesh2( n, i*NDEG2 + j, (getMesh2()(j) + i)/((double)NINT2) );
+		}
+	}
+	data.setBlanket( n, xx->getV1() );
 }
