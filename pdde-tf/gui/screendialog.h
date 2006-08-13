@@ -19,7 +19,7 @@ class screenDialog : public QDialog
  public slots:
 	void setTitle( const std::string& str ) { display->setDocumentTitle( QString( str.c_str() )); }
 	void append( const std::string& str ) { display->append( QString( str.c_str() )); }
-	void setText( const std::string& str ) { display->setPlainText( QString( str.c_str() )); }
+	void setText( const QString& str ) { display->setPlainText( str ); }
  private:
 	QTextEdit *display;
 };

@@ -117,6 +117,7 @@ private slots:
 	void outputPlotDestroyed();
 	void terminalView();
 	void terminalViewDestroyed();
+	void terminalTextAppend(const std::string& str) { terminalText.append(QString(str.c_str()).append("\n")); }
 
 private:
 	inline bool inputAssert( std::istream& is );
@@ -135,11 +136,13 @@ private:
 
 	// all the parameters
 	NConstantsQtGui parameters;
-	MThread    compThread;
-
+	MThread      compThread;
 	QWidget     *paramsWidget;
 	QGridLayout *paramsGrid;
 	QLabel      *eqnsLabel;
+	
+	//the textual output
+	QString      terminalText;
 	
 	// these contain the constants
 	QLineEdit *inputFile;

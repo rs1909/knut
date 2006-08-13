@@ -348,6 +348,8 @@ MainWindow::MainWindow() : compThread(parameters),
 	// connecting exceptions
 	connect( &compThread, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)) );
 	connect( &parameters, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)) );
+	// text output
+	connect( &compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)) );
 
 	createActions();
 	createMenus();
@@ -363,6 +365,7 @@ void MainWindow::run()
 {
 	if( !compThread.isRunning() )
 	{
+		terminalText.clear();
 		compThread.setConstants(parameters);
 		compThread.setStopFlag(false);
 		compThread.start();
@@ -496,6 +499,7 @@ void MainWindow::terminalView()
 	{
 		terminalDialog = new screenDialog( this );
 		terminalDialog->setWindowTitle("terminal view");
+		terminalDialog->setText( terminalText );
 		terminalDialog->show();
 		terminalDialog->raise();
 		terminalDialog->activateWindow();
