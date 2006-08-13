@@ -208,22 +208,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 {
 	int xadded = 0;
 	int yadded = 0;
-	// add stability
-	QVector<int> bifidx;
-	QVector<int> biftype;
-	if( x == XLabel || x >= XParameter0 )
-	{
-		int k, k_p = 0;
-		do{
-			k = data.getNextBifurcation( k_p, 1 );
-			if( k != -1 )
-			{
-				bifidx.push_back(k);
-				biftype.push_back( data.getBifurcationType( k, 1 ) );
-				k_p = k;
-			}
-		}while( k != -1 );
-	}
 	// mindig az Y utan kovetkezik csak addPlot...()
 	if( x >= XParameter0 )
 	{
@@ -234,13 +218,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataX.last()(i) = data.getPar( i, x-XParameter0 );
 		}
 		++xadded;
-		for( int i = 0; i < bifidx.size(); i++ )
-		{
-			DataX.push_back( Vector() );
-			DataX.last().Init( 1 );
-			DataX.last()(0) = data.getPar( bifidx[i], x-XParameter0 );
-			++xadded;
-		}
 	}
 	if( x == XLabel && y != YAbsMultiplier && y != YProfile )
 	{
@@ -251,13 +228,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 			DataX.last()(i) = i;
 		}
 		++xadded;
-		for( int i = 0; i < bifidx.size(); i++ )
-		{
-			DataX.push_back( Vector() );
-			DataX.last().Init( 1 );
-			DataX.last()(0) = bifidx[i];
-			++xadded;
-		}
 	}
 	if( x == XMesh && y == YProfile )
 	{
@@ -272,7 +242,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		++xadded; ++yadded;
 		addPlotLine( style );
-		dataToGraphics();
 	}
 	if( y >= YParameter0 && (x != XMesh && x != XRealMultiplier) )
 	{
@@ -284,15 +253,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		++yadded;
 		addPlotLine( style );
-		for( int i = 0; i < bifidx.size(); i++ )
-		{
-			DataY.push_back( Vector() );
-			DataY.last().Init( 1 );
-			DataY.last()(0) = data.getPar( bifidx[i], y-YParameter0 );
-			++yadded;
-			addPlotCircle( style );
-		}
-		dataToGraphics();
 	}
 	if( y == YAmplitude && (x != XMesh && x != XRealMultiplier) )
 	{
@@ -314,25 +274,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		++yadded;
 		addPlotLine( style );
-		for( int i = 0; i < bifidx.size(); i++ )
-		{
-			DataY.push_back( Vector() );
-			DataY.last().Init( 1 );
-			double min = DBL_MAX;
-			double max = -DBL_MAX;
-			for( int j = 0; j < data.getMeshLength(); ++j )
-			{
-				for( int k = 0; k < data.getNDim(); ++k )
-				{
-					if( min > data.getProfile( bifidx[i], k, j ) ) min = data.getProfile( bifidx[i], k, j );
-					if( max < data.getProfile( bifidx[i], k, j ) ) max = data.getProfile( bifidx[i], k, j );
-				}
-			}
-			DataY.last()(0) = max - min;
-			++yadded;
-			addPlotCircle( style );
-		}
-		dataToGraphics();
 	}
 	if( x == XRealMultiplier && y == YImagMultiplier )
 	{
@@ -360,7 +301,6 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		++xadded; ++yadded;
 		addPlotCircle( style );
-		dataToGraphics();
 	}
 	if( x == XLabel && y == YAbsMultiplier )
 	{
@@ -375,14 +315,49 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 				DataX.last()(i) = i;
 				DataY.last()(i) = sqrt(data.getMulRe(i,r)*data.getMulRe(i,r)+data.getMulIm(i,r)*data.getMulIm(i,r));
 			}
+			++xadded; ++yadded;
 			addPlotCircle( style );
 		}
-		dataToGraphics();
+	}
+	// add stability
+	QVector<int> bifidx;
+	QVector<int> biftype;
+	if( x == XLabel || x >= XParameter0 )
+	{
+		int k, k_p = 0;
+		do{
+			k = data.getNextBifurcation( k_p, 1 );
+			if( k != -1 )
+			{
+				bifidx.push_back(k);
+				biftype.push_back( data.getBifurcationType( k, 1 ) );
+				k_p = k;
+			}
+		}while( k != -1 );
+		QList<Vector>::iterator j1 = DataX.end()-1;
+		QList<Vector>::iterator j2 = DataY.end()-1;
+		if( (*j1).Size() == data.getNPoints() )
+		{
+			for( int i = 0; i < bifidx.size(); i++ )
+			{
+				DataX.push_back( Vector() );
+				DataY.push_back( Vector() );
+				DataX.last().Init( 1 );
+				DataY.last().Init( 1 );
+				DataX.last()(0) = ((*j1)(bifidx[i]-1) + (*j1)(bifidx[i]))/2.0;
+				DataY.last()(0) = ((*j2)(bifidx[i]-1) + (*j2)(bifidx[i]))/2.0;
+				++xadded; ++yadded;
+				addPlotCircle( style );
+			}
+		}
 	}
 	if( xadded != yadded )
 	{
 		for( int i = 0; i < xadded; ++i ) DataX.erase( DataX.end()-1 );
 		for( int i = 0; i < yadded; ++i ) DataY.erase( DataY.end()-1 );
+	}else
+	{
+		if( xadded != 0 ) dataToGraphics();
 	}
 }
 
