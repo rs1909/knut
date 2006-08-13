@@ -44,17 +44,22 @@ static inline void *mmapFileWrite( int& file, const std::string& fileName, int s
 	if( ( file = open( fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR ) ) == -1 )
 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to open file\n", strerror( errno ) ); }
 	
-	if( lseek( file, size-1, SEEK_SET ) == -1 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek file\n", strerror( errno ) ); }
+	if( ftruncate( file, size ) != 0 )
+	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to truncate file\n", strerror( errno ) ); }
 	
-	if( write( file, "\0", 1 ) == -1 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to write file\n", strerror( errno ) ); }
-
 	void *address;
 	if( ( address = mmap( 0, size, PROT_WRITE, MAP_SHARED, file, 0 ) ) == MAP_FAILED )
 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to mmap file\n", strerror( errno ) ); }
 	return address;
 }
+
+// static inline void shrinkMap( void* address, int old_size, int new_size )
+// {
+// 	P_ERROR_X( old_size <= new_size, "mmappedPointData::mmappedPointData: larger new_size" );
+// 	void* new_address;
+// 	if( ( new_address = mremap( address, old_size, new_size, 0 ) ) != address )
+// 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable remap file\n", strerror( errno ) ); }
+// }
 
 static inline void *mmapFileRead( int& file, const std::string& fileName, int& size )
 {
@@ -77,47 +82,47 @@ static inline void *mmapFileRead( int& file, const std::string& fileName, int& s
 
 static inline void *mmapFileWrite( HANDLE& file, HANDLE& mapHandle, const std::string& fileName, int size )
 {
-    if( ( file = CreateFile( fileName.c_str(), 
-                FILE_WRITE_DATA | FILE_READ_DATA,
-                FILE_SHARE_READ, 
-                NULL, 
-                CREATE_ALWAYS, 
-                FILE_ATTRIBUTE_NORMAL, 
-                NULL ) ) == NULL )
-    { P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
-    
-    if( SetFilePointer( file, size-1, NULL, FILE_BEGIN ) == 0 )
-    { P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek\n", static_cast<int>(GetLastError()) ); }
+	if( ( file = CreateFile( fileName.c_str(),
+		FILE_WRITE_DATA | FILE_READ_DATA,
+		FILE_SHARE_READ,
+		NULL,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL ) ) == NULL )
+	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
 
-    P_ERROR_X2( SetEndOfFile( file ), "mmappedPointData::mmappedPointData: unable to SetEndOfFile\n", static_cast<int>(GetLastError()) );
+	if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
+	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek\n", static_cast<int>(GetLastError()) ); }
+	P_ERROR_X2( SetEndOfFile( file ), "mmappedPointData::mmappedPointData: unable to SetEndOfFile\n", static_cast<int>(GetLastError()) );
+
 	if( (mapHandle = CreateFileMapping( file, NULL, PAGE_READWRITE, 0, size, fileName.c_str() ) ) == 0 )
 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) ); }
 	
-    void *address = MapViewOfFile( mapHandle, FILE_MAP_WRITE, 0, 0, 0 );
-    if( address != NULL ) return address;
-    else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
-    return 0;
+	void *address = MapViewOfFile( mapHandle, FILE_MAP_WRITE, 0, 0, 0 );
+	if( address != NULL ) return address;
+	else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
+	return 0;
 }
 
 static inline void *mmapFileRead( HANDLE& file, HANDLE& mapHandle, const std::string& fileName, int& size )
 {
-    if( ( file = CreateFile( fileName.c_str(), 
-                FILE_READ_DATA,
-                FILE_SHARE_READ, 
-                NULL, 
-                OPEN_EXISTING, 
-                FILE_ATTRIBUTE_NORMAL, 
-                NULL ) ) == NULL )
-    { P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
+	if( ( file = CreateFile( fileName.c_str(), 
+		FILE_READ_DATA,
+		FILE_SHARE_READ, 
+		NULL, 
+		OPEN_EXISTING, 
+		FILE_ATTRIBUTE_NORMAL, 
+		NULL ) ) == NULL )
+	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
 
-    size = GetFileSize( file, NULL );
+	size = GetFileSize( file, NULL );
 	if( (mapHandle = CreateFileMapping( file, NULL, PAGE_READONLY, 0, 0, fileName.c_str() ) ) == 0 )
 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) ); }
 	
-    void *address = MapViewOfFile( mapHandle, FILE_MAP_READ, 0, 0, 0 );
-    if( address != NULL ) return address;
-    else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
-    return 0;
+	void *address = MapViewOfFile( mapHandle, FILE_MAP_READ, 0, 0, 0 );
+	if( address != NULL ) return address;
+	else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
+	return 0;
 }
 
 #endif
@@ -261,15 +266,26 @@ mat4Data::~mat4Data()
 #ifndef WIN32
 	if( munmap( address, size ) != 0 )
 	{ P_ERROR_X2( false, "mmappedPointData::~mmappedPointData: unable to munmap file\n", strerror( errno ) ); }
+	if( wperm )
+	{
+		if( ftruncate( file, size) != 0 )
+		{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to truncate file\n", strerror( errno ) ); }
+	}
 	if( close( file ) != 0 )
 	{ P_ERROR_X2( false, "mmappedPointData::~mmappedPointData: unable to close file\n", strerror( errno ) ); }
 #else
-     if( address != 0 )
-     {
-         UnmapViewOfFile(address);
-         CloseHandle(file);
-         CloseHandle(mapHandle);
-     }
+	if( address != 0 )
+	{
+		UnmapViewOfFile(address);
+		CloseHandle(mapHandle);
+		if( wperm )
+		{
+			if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
+			{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek\n", static_cast<int>(GetLastError()) ); }
+			P_ERROR_X2( SetEndOfFile( file ), "mmappedPointData::mmappedPointData: unable to SetEndOfFile\n", static_cast<int>(GetLastError()) );
+		}
+		CloseHandle(file);
+	}
 #endif
 }
 
