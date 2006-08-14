@@ -609,7 +609,7 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 
 double mat4Data::getProfile( int n, int d, int j ) const
 {
-	return elem( prof_offset, j, n );
+	return elem( prof_offset, d + ndim*j, n );
 }
 
 inline void mat4Data::findTrivialIndices( int n, int aut, int *imin, double* dmin ) const

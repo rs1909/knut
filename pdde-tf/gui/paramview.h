@@ -24,9 +24,9 @@ class ParamsModel : public QAbstractTableModel
 	ParamsModel( NConstantsQtGui* params, QObject *parent_ = 0 )
 	 : QAbstractTableModel(parent_), parameters(params) { }
 
-	int rowCount(const QModelIndex &parent = QModelIndex()) const 
+	int rowCount(const QModelIndex &/*parent = QModelIndex()*/ ) const 
 	 { if( parameters->getPointType() == SolUser ) return 2; else return 1; }
-	int columnCount(const QModelIndex &parent = QModelIndex()) const { return parameters->getNEqns(); };
+	int columnCount(const QModelIndex &/*parent = QModelIndex()*/ ) const { return parameters->getNEqns(); };
 
 	QVariant data(const QModelIndex &index, int role) const;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
@@ -130,8 +130,8 @@ class SYMModel : public QAbstractTableModel
 	SYMModel( NConstantsQtGui* params, QObject *parent_ = 0 )
 	 : QAbstractTableModel(parent_), parameters(params) { }
 
-	int rowCount(const QModelIndex &parent = QModelIndex()) const { return 2; }
-	int columnCount(const QModelIndex &parent = QModelIndex()) const { return parameters->getNSym(); };
+	int rowCount(const QModelIndex &/*parent = QModelIndex()*/ ) const { return 2; }
+	int columnCount(const QModelIndex &/*parent = QModelIndex()*/ ) const { return parameters->getNSym(); };
 
 	QVariant data(const QModelIndex &index, int role) const;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;

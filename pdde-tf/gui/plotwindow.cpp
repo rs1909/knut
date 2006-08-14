@@ -49,8 +49,8 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	xvarMap[XLabel] = "Label";
 	xvarMap[XMesh] = "Mesh";
 	xvarMap[XRealMultiplier] = "RealMultiplier";
-	for( int i = XParameter0; i < xvarMap.size(); ++i ) xvarMap[i] = QString("P ") + QString::number( i - XParameter0 );
-	for( int i = 0; i < xvarMap.size(); ++i ) xvar->insertItem( i, xvarMap.at(i) );
+	for( unsigned int i = XParameter0; i < xvarMap.size(); ++i ) xvarMap[i] = QString("P ") + QString::number( i - XParameter0 );
+	for( unsigned int i = 0; i < xvarMap.size(); ++i ) xvar->insertItem( i, xvarMap.at(i) );
 	
 	std::vector<QString> yvarMap( XParameter0 + data->getNPar() );
 	yvarMap[YNone] = "None";
@@ -59,8 +59,8 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	yvarMap[YImagMultiplier] = "ImagMultiplier";
 	yvarMap[YAbsMultiplier] = "AbsMultiplier";
 	yvarMap[YProfile] = "Profile";
-	for( int i = YParameter0; i < xvarMap.size(); ++i ) yvarMap[i] = QString("P ") + QString::number( i - YParameter0 );
-	for( int i = 0; i < yvarMap.size(); ++i ) yvar->insertItem( i, yvarMap.at(i) );
+	for( unsigned int i = YParameter0; i < xvarMap.size(); ++i ) yvarMap[i] = QString("P ") + QString::number( i - YParameter0 );
+	for( unsigned int i = 0; i < yvarMap.size(); ++i ) yvar->insertItem( i, yvarMap.at(i) );
 
 	ptlabel->setRange( 0, data->getNCols()-1 );
 	dim->setRange( 0, data->getNDim()-1 );

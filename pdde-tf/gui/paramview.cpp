@@ -18,14 +18,11 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
 		}
 		if( index.row() == 1 )
 		{
-			if( parameters->getPointType() == SolUser ) 
+			if( parameters->getPointType() == SolUser )
 				return QVariant( parameters->findVarsString( parameters->getVars( index.column() ) ).c_str() );
-			else return QVariant();
 		}
-	}else
-	{
-		return QVariant();
 	}
+	return QVariant();
 }
 
 Qt::ItemFlags ParamsModel::flags(const QModelIndex &index) const
@@ -115,17 +112,14 @@ void BoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
 {
 	QComboBox *cbox = static_cast<QComboBox*>(editor);
 	
-	int value;
 	if( parameters->getPointType() == SolUser )
 	{
-		if( index.row() == 0 )  value = cbox->currentIndex();
-		if( index.row() == 1 )  value = cbox->currentIndex();
+		if( index.row() == 0 )  model->setData(index, cbox->currentIndex() );
+		if( index.row() == 1 )  model->setData(index, cbox->currentIndex() );
 	}else
 	{
-		if( index.row() == 0 )  value = cbox->currentIndex();
+		if( index.row() == 0 )  model->setData(index, cbox->currentIndex() );
 	}
-
-	model->setData(index, value);
 }
 
 void BoxDelegate::updateEditorGeometry(QWidget *editor,
@@ -133,17 +127,6 @@ void BoxDelegate::updateEditorGeometry(QWidget *editor,
 {
 	editor->setGeometry(option.rect);
 }
-
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
 
 
 QVariant SYMModel::data(const QModelIndex &index, int role) const
@@ -163,10 +146,8 @@ QVariant SYMModel::data(const QModelIndex &index, int role) const
 		{
 			return QVariant( parameters->getSymIm( index.column() ) );
 		}
-	}else
-	{
-		return QVariant();
 	}
+	return QVariant();
 }
 
 Qt::ItemFlags SYMModel::flags(const QModelIndex &index) const
@@ -205,8 +186,8 @@ QVariant SYMModel::headerData( int section, Qt::Orientation orientation, int rol
 //-----------------------------
 
 QWidget *SYMDelegate::createEditor(QWidget *parent,
-	const QStyleOptionViewItem &/* option */,
-	const QModelIndex& index ) const
+	const QStyleOptionViewItem & /*option*/,
+	const QModelIndex& /*index*/ ) const
 {
 	QSpinBox *editor = new QSpinBox(parent);
 	editor -> setRange(0,parameters->getNDim()-1);
@@ -227,10 +208,11 @@ void SYMDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
 {
 	QSpinBox *sbox = static_cast<QSpinBox*>(editor);
 	
-	int value;
-	if( index.row() < 2 )  value = sbox->value();
-	
-	model->setData(index, value);
+	if( index.row() < 2 )
+	{
+		int value = sbox->value();
+		model->setData(index, value);
+	}
 }
 
 void SYMDelegate::updateEditorGeometry(QWidget *editor,

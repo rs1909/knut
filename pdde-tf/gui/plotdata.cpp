@@ -353,7 +353,7 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		j1--; j2--;
 		if( (*j1).Size() == data.getNPoints() )
 		{
-			for( int i = 0; i < bifidx.size(); i++ )
+			for( unsigned int i = 0; i < bifidx.size(); i++ )
 			{
 				DataX.push_back( Vector(1) );
 				DataY.push_back( Vector(1) );
@@ -671,7 +671,7 @@ void PlotData::makeBox( )
 	this->addRect( QRectF( 0.0, 0.0, plotXSize, plotYSize ), QPen( QBrush(Qt::SolidPattern), 2.0 ) );
 	
 	// drawing the ticks and tickmarks
-	for( int i=0; i < HText.size(); i++ )
+	for( unsigned int i=0; i < HText.size(); i++ )
 	{
 		this->removeItem( BottomTicks[i] );
 		this->removeItem( TopTicks[i] );
@@ -683,7 +683,7 @@ void PlotData::makeBox( )
 	BottomTicks.clear();
 	TopTicks.clear();
 	HText.clear();
-	for( int i=0; i < cvb.xticks+1; i++ )
+	for( int i = 0; i < cvb.xticks+1; i++ )
 	{
 		BottomTicks.push_back( new QGraphicsLineItem );
 		BottomTicks[i]->setLine( plotXSize * i / cvb.xticks, 0.0, plotXSize * i/cvb.xticks, 5.0 );
@@ -700,7 +700,7 @@ void PlotData::makeBox( )
 		this->addItem( BottomTicks[i] );
 		this->addItem( HText[i] );
 	}
-	for( int i=0; i < VText.size(); i++ )
+	for( unsigned int i = 0; i < VText.size(); i++ )
 	{
 		this->removeItem( LeftTicks[i] );
 		this->removeItem( RightTicks[i] );
@@ -712,7 +712,7 @@ void PlotData::makeBox( )
 	LeftTicks.clear();
 	RightTicks.clear();
 	VText.clear();
-	for( int i=0; i < cvb.yticks+1; i++ )
+	for( int i = 0; i < cvb.yticks+1; i++ )
 	{
 		LeftTicks.push_back( new QGraphicsLineItem );
 		LeftTicks[i]->setLine( 0.0, plotYSize * i/cvb.yticks, 5.0, plotYSize * i/cvb.yticks );
@@ -736,19 +736,19 @@ void PlotData::PlotPaint( )
 	// drawing the box
 	makeBox( );
 	// drawing the lines
-	for( int i = 0; i < PathItems.size(); ++i )
+	for( unsigned int i = 0; i < PathItems.size(); ++i )
 	{
 		this->removeItem( PathItems[i] );
 		delete PathItems[i];
 	}
 	PathItems.clear();
-	for( int i = 0; i < CircleItems.size(); ++i )
+	for( unsigned int i = 0; i < CircleItems.size(); ++i )
 	{
 		this->removeItem( CircleItems[i] );
 		delete CircleItems[i];
 	}
 	CircleItems.clear();
-	for( int i = 0; i < PolygonItems.size(); ++i )
+	for( unsigned int i = 0; i < PolygonItems.size(); ++i )
 	{
 		this->removeItem( PolygonItems[i] );
 		delete PolygonItems[i];
@@ -764,7 +764,7 @@ void PlotData::PlotPaint( )
 		if( (*i).type == PlotCircleType )
 		{
 // 			std::cout<<"circles "<<(*i).data.circle->pos.size()<<"\n";
-			for( int j = 0; j < (*i).data.circle->pos.size(); ++j )
+			for( unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j )
 			{
 				QGraphicsEllipseItem *pt = this->addEllipse( (*i).data.circle->point, (*i).data.circle->pen );
 				pt->setPos( (*i).data.circle->pos[j] );
@@ -774,7 +774,7 @@ void PlotData::PlotPaint( )
 		if( (*i).type == PlotPolygonType )
 		{
 // 			std::cout<<"polygons "<<(*i).data.polygon->pos.size()<<"\n";
-			for( int j = 0; j < (*i).data.polygon->pos.size(); ++j )
+			for( unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j )
 			{
 				QGraphicsPolygonItem *pt = this->addPolygon( (*i).data.polygon->point, (*i).data.polygon->pen );
 				pt->setPos( (*i).data.polygon->pos[j] );

@@ -15,8 +15,8 @@
 class toNumber
 {
  public:
-	toNumber( int i ) { int n=snprintf(num,31,"%d", i); }
-	toNumber( double d ) { int n=snprintf(num,31,"%lf", d); }
+	toNumber( int i ) { num[31]='\0'; snprintf(num,31,"%d", i); }
+	toNumber( double d ) { num[31]='\0'; snprintf(num,31,"%lf", d); }
 	const char* c_str() const { return num; }
  private:
 	char num[32];
@@ -26,14 +26,14 @@ template<class KEY> class genMap
 {
  public:
 	genMap() : invalid("Invalid") { }
-	int indexof( const KEY& v ) const
-	  { for( int i = 0; i < key.size(); ++i ) if( key[i] == v ) return i; return -1; }
-	const std::string& string( int i ) const
-	  { if( i >= 0 && i < key.size() ) return dsc[i]; else return invalid; }
-	const KEY& getkey( int i ) const
-	  { if( i >= 0 && i < key.size() ) return key[i]; else return key.at(0); }
+	unsigned int indexof( const KEY& v ) const
+	  { for( unsigned int i = 0; i < key.size(); ++i ) if( key[i] == v ) return i; return 0; }
+	const std::string& string( unsigned int i ) const
+	  { if( i < key.size() ) return dsc[i]; else return invalid; }
+	const KEY& getkey( unsigned int i ) const
+	  { if( i < key.size() ) return key[i]; else return key.at(0); }
 	const std::string& map( const KEY& v ) const { return string( indexof(v) ); }
-	int size() const { return key.size(); }
+	unsigned int size() const { return key.size(); }
  protected:
 	std::vector<KEY>         key;
 	std::vector<std::string> dsc;
@@ -98,7 +98,7 @@ class EqnType : public genMap<Eqn>
 		dsc.push_back( "NS TF (real)" ); key.push_back( EqnTFCPLX_RE );
 		dsc.push_back( "NS TF (imag)" ); key.push_back( EqnTFCPLX_IM );
 	}
-	char getType( int i ) const
+	char getType( int ) const
 	{
 		return 'E';
 	}
@@ -131,7 +131,8 @@ class VarType : public genMap<Var>
 		for( int i = 0; i < npar; ++i )
 		{
 			char _buf[7+1];
-			int n = snprintf( _buf, 7, "%d", i );
+			_buf[7]='\0';
+			snprintf( _buf, 7, "%d", i );
 			dsc.push_back( "P "+std::string(_buf) );
 			key.push_back( (Var)(VarPAR0 + i) );
 		}
@@ -164,6 +165,7 @@ class VarType : public genMap<Var>
 		if( type == 'S' ) return (Var)num;
 		else if( type == 'P' ) return (Var)(num+VarPAR0);
 		else if( type == 'I' ) return (Var)(num+VarPAR0+npar);
+		return VarNone;
 	}
  private:
 	int npar;
@@ -174,23 +176,24 @@ class NConstants
 {
 	public:
 		
-		NConstants( ) : cpMap( 0, false ), parxMap( 0, false ), varsMap( 0, true ),
-			label(0), pttype(SolUser), cp(VarPAR0), branchsw(NOSwitch), neqns(0), nint(0), ndeg(0), nmul(0),
+		NConstants( ) : label(0), pttype(SolUser), cp(VarPAR0), cpMap( 0, false ), branchsw(NOSwitch),
+			neqns(0), parxMap( 0, false ), varsMap( 0, true ), nint(0), ndeg(0), nmul(0),
 			stab(0), nmat(0), nint1(0), nint2(0), ndeg1(0), ndeg2(0), steps(0), cpMin(0.0),
 			cpMax(0.0), ds(0.0), dsMin(0.0), dsMax(0.0), dsStart(0.0),
 			epsC(0.0), epsR(0.0), epsS(0.0), nitC(0), nitR(0), nitS(0),
 			nsym(0), npar(0), ndim(0) {  }
 		
 		NConstants( const NConstants& ct ) : inputFile(ct.inputFile), outputFile(ct.outputFile), sysname(ct.sysname),
-			cpMap( ct.npar, false ), parxMap( ct.npar, false ), varsMap( ct.npar, true ),
-			label(ct.label), pttype(ct.pttype), cp(ct.cp), branchsw(ct.branchsw), neqns(ct.neqns), nint(ct.nint), ndeg(ct.ndeg),
-			nmul(ct.nmul), stab(ct.stab), nmat(ct.nmat),
+			label(ct.label), pttype(ct.pttype), cp(ct.cp), cpMap( ct.npar, false ),
+			branchsw(ct.branchsw), neqns(ct.neqns), parxtype(ct.parxtype), parxnum(ct.parxnum), parxMap( ct.npar, false ),
+			eqnstype(ct.eqnstype), eqnsnum(ct.eqnsnum), varstype(ct.varstype), varsnum(ct.varsnum), varsMap( ct.npar, true ),
+			nint(ct.nint), ndeg(ct.ndeg), nmul(ct.nmul), stab(ct.stab), nmat(ct.nmat),
 			nint1(ct.nint1), nint2(ct.nint2), ndeg1(ct.ndeg1), ndeg2(ct.ndeg2), steps(ct.steps),
 			cpMin(ct.cpMin), cpMax(ct.cpMax), ds(ct.ds), dsMin(ct.dsMin), dsMax(ct.dsMax), dsStart(ct.dsStart),
 			epsC(ct.epsC), epsR(ct.epsR), epsS(ct.epsS), nitC(ct.nitC), nitR(ct.nitR), nitS(ct.nitS),
-			nsym(ct.nsym), npar(ct.npar), ndim(ct.ndim),
-			parxtype(ct.parxtype), parxnum(ct.parxnum), eqnstype(ct.eqnstype), eqnsnum(ct.eqnsnum), varstype(ct.varstype), varsnum(ct.varsnum),
-			symRe(ct.symRe), symIm(ct.symIm) {  }
+			nsym(ct.nsym), symRe(ct.symRe), symIm(ct.symIm), npar(ct.npar), ndim(ct.ndim) {  }
+		
+		virtual ~NConstants() { }
 
 		int toEqnVar( System& sys,
 		              Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input

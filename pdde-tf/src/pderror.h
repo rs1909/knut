@@ -19,8 +19,8 @@ class pddeMessage
 	pddeMessage( const std::string& str ) : message(str) { }
 	pddeMessage( const pddeMessage& m ) : message(m.message) { }
 	pddeMessage& operator<<( const std::string& str ) { message += std::string(" ") + str; return *this; }
-	pddeMessage& operator<<( int i ) { char buf[12+1]; int n = snprintf( buf, 12, " %d", i ); message += std::string(buf); return *this; }
-	pddeMessage& operator<<( double i ) { char buf[12+1]; int n = snprintf( buf, 12, " %lf", i ); message += std::string(buf); return *this; }
+	pddeMessage& operator<<( int i ) { char buf[12+1]; buf[12]='\0'; snprintf( buf, 12, " %d", i ); message += std::string(buf); return *this; }
+	pddeMessage& operator<<( double i ) { char buf[12+1]; buf[12]='\0'; snprintf( buf, 12, " %lf", i ); message += std::string(buf); return *this; }
 	std::string message;
 };
 

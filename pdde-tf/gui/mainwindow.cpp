@@ -11,8 +11,9 @@
 #include <cfloat>
 
 MainWindow::MainWindow() : compThread(parameters),
-	outputPlotWindow(0), outputData(0),
-	inputPlotWindow(0), inputData(0), terminalDialog(0)
+	inputData(0), inputPlotWindow(0),
+	outputData(0), outputPlotWindow(0),
+	terminalDialog(0)
 {
 	QTabWidget* tabWidget = new QTabWidget();
 	// the container widgets	
