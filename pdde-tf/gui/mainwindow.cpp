@@ -388,7 +388,7 @@ void MainWindow::setSysName()
 
 void MainWindow::setInputFile()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Open input file");
+	QString fileName = QFileDialog::getOpenFileName(this, "Open input file", QString(), "v4 MAT files (*.mat);;All files (*)");
 	if (!fileName.isEmpty())
 	{
 		inputFile->setText( QDir::current().relativeFilePath(fileName) );
@@ -397,7 +397,7 @@ void MainWindow::setInputFile()
 
 void MainWindow::setOutputFile()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save output file as");
+	QString fileName = QFileDialog::getSaveFileName(this, "Save output file as", QString(), "v4 MAT files (*.mat);;All files (*)");
 	if (!fileName.isEmpty())
 	{
 		outputFile->setText( QDir::current().relativeFilePath(fileName) );
@@ -444,9 +444,10 @@ void MainWindow::inputPlot()
 		inputPlotLayout->addWidget( inputPlotWindow );
 		inputPlotLayout->setMargin(0);
 		inputPlotDialog->setLayout( inputPlotLayout );
+		inputPlotDialog->setWindowTitle("Plot - input data");
+		inputPlotDialog->setWindowFlags( Qt::Window );
 		inputPlotDialog->show();
 		inputPlotDialog->raise();
-		inputPlotDialog->activateWindow();
 		connect( inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()) );
 	}
 }
@@ -481,9 +482,10 @@ void MainWindow::outputPlot()
 		outputPlotLayout->addWidget( outputPlotWindow );
 		outputPlotLayout->setMargin(0);
 		outputPlotDialog->setLayout( outputPlotLayout );
+		outputPlotDialog->setWindowTitle("Plot - output data");
+		outputPlotDialog->setWindowFlags( Qt::Window );
 		outputPlotDialog->show();
 		outputPlotDialog->raise();
-		outputPlotDialog->activateWindow();
 		connect( outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()) );
 	}
 }
@@ -502,9 +504,9 @@ void MainWindow::terminalView()
 		terminalDialog = new screenDialog( this );
 		terminalDialog->setWindowTitle("terminal view");
 		terminalDialog->setText( terminalText );
+		terminalDialog->setWindowFlags( Qt::Window );
 		terminalDialog->show();
 		terminalDialog->raise();
-		terminalDialog->activateWindow();
 		connect( &compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)) );
 		connect( terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()) );
 	}
@@ -512,23 +514,23 @@ void MainWindow::terminalView()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-		writeSettings();
-		event->accept();
+	writeSettings();
+	event->accept();
 }
 
 void MainWindow::newFile()
 {
-		setCurrentFile("");
+	setCurrentFile("");
 }
 
 void MainWindow::open()
 {
-		QString fileName = QFileDialog::getOpenFileName(this);
-		if (!fileName.isEmpty())
-		{
-			QDir::setCurrent( QFileInfo(fileName).absolutePath() );
-			loadFile(fileName);
-		}
+	QString fileName = QFileDialog::getOpenFileName(this, "Open constants file", QString(), "Constants files (*.xml);;All files (*)");
+	if (!fileName.isEmpty())
+	{
+		QDir::setCurrent( QFileInfo(fileName).absolutePath() );
+		loadFile(fileName);
+	}
 }
 
 bool MainWindow::save()
@@ -552,7 +554,24 @@ bool MainWindow::saveAs()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About PDDE-CONT"),
-				QString(tr("%1: A continuation software for delay-differential equations\nVersion %2 (%3)")).arg(PACKAGE_NAME).arg(PACKAGE_VERSION).arg(PACKAGE_REVISION) );
+		QString(tr(
+			"<h3>%1: A continuation software for delay-differential equations</h3>"
+			"<p>Version %2 (%3), Copyright (c) 2002-2006 Robert Szalai</p>"
+			"<p>Available at <a href=http://www.mm.bme.hu/~szalai/pdde>"
+			"http://www.mm.bme.hu/~szalai/pdde</a></p>"
+			"<p>This program is free software; you can redistribute it and/or "
+			"modify it under the terms of the "
+			"<a href=http://www.gnu.org/copyleft/gpl.html>GNU General Public License</a> "
+			"as published by the Free Software Foundation; version 2 "
+			"of the License.</p>"
+			"<p>This program is distributed in the hope that it will be useful, "
+			"but WITHOUT ANY WARRANTY; without even the implied warranty of "
+			"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
+			"GNU General Public License for more details.</p>"
+			"<p>You should have received a copy of the GNU General Public License "
+			"along with this program; if not, write to the Free Software "
+			"Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</p>"
+		)).arg(PACKAGE_NAME).arg(PACKAGE_VERSION).arg(PACKAGE_REVISION) );
 }
 
 void MainWindow::createActions()

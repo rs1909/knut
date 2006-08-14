@@ -15,11 +15,14 @@ class screenDialog : public QDialog
 		layout->addWidget( display );
 		layout->setMargin(0);
 		this->setLayout( layout );
+		display->setLineWrapMode( QTextEdit::NoWrap );
+		display->setReadOnly( true );
+		display->setFontFamily( "Courier" );
 	}
  public slots:
 	void setTitle( const std::string& str ) { display->setDocumentTitle( QString( str.c_str() )); }
 	void append( const std::string& str ) { display->append( QString( str.c_str() )); }
-	void setText( const QString& str ) { display->setPlainText( str ); }
+	void setText( const QString& str ) { display->setPlainText( str ); display->setFontFamily( "Courier" ); }
  private:
 	QTextEdit *display;
 };
