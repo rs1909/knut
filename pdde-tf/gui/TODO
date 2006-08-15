@@ -1,7 +1,5 @@
-1. make windows modeless in order not to cover the main window
+1. torus screen output formatting
 2. investigate neimark-sacker continuation under Windows
-3. make the terminal view as wide as necessary to contain the output.
-4. do not wrap the lines at all, make it scrollable
 6. investigate the bifurcation detection
 7. L2norm plotting has to be solved
 8. color (and line type) chooser for plotting

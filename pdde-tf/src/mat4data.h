@@ -13,11 +13,11 @@ class mat4Data
 		
 		struct header
 		{
-			long type;
-			long mrows;
-			long ncols;
-			long imagf;
-			long namelen;
+			__int32_t type;
+			__int32_t mrows;
+			__int32_t ncols;
+			__int32_t imagf;
+			__int32_t namelen;
 		
 			const char* name( const void* offset ) const { return (char*)offset + namelen; }
 			int size() const { return sizeof(struct header) + namelen; }

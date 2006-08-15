@@ -118,6 +118,7 @@ private slots:
 	void terminalView();
 	void terminalViewDestroyed();
 	void terminalTextAppend(const std::string& str) { terminalText.append(QString(str.c_str()).append("\n")); }
+	void compileSystem();
 
 private:
 	inline bool inputAssert( std::istream& is );
@@ -186,7 +187,8 @@ private:
 
 	EqnVarTableView* table;
 
-	QString curFile;
+	QString  curFile;
+	QProcess *compilerProcess;
 
 	QMenu    *fileMenu;
 	QMenu    *helpMenu;

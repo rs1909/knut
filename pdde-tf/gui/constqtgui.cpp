@@ -25,12 +25,12 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 	
 	QDomElement __ptlabel_tag__ = doc.createElement("label");
 	root.appendChild( __ptlabel_tag__ );
-	QDomText __ptlabel__ = doc.createTextNode( toNumber(getLabel()).c_str() );
+	QDomText __ptlabel__ = doc.createTextNode( QString::number(getLabel()) );
 	__ptlabel_tag__.appendChild( __ptlabel__ );
 	
 	QDomElement __pointtype_tag__ = doc.createElement("pointtype");
 	root.appendChild( __pointtype_tag__ );
-	QDomText __pointtype__ = doc.createTextNode( toNumber(getPointType()).c_str() );
+	QDomText __pointtype__ = doc.createTextNode( QString::number(getPointType()) );
 	__pointtype_tag__.appendChild( __pointtype__ );
 	
 	QDomElement __cptype_tag__ = doc.createElement("cptype");
@@ -40,19 +40,19 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 	
 	QDomElement __cpnum_tag__ = doc.createElement("cpnum");
 	root.appendChild( __cpnum_tag__ );
-	QDomText __cpnum__ = doc.createTextNode( toNumber(getCpNum()).c_str() );
+	QDomText __cpnum__ = doc.createTextNode( QString::number(getCpNum()) );
 	__cpnum_tag__.appendChild( __cpnum__ );
 
 	QDomElement __brsw_tag__ = doc.createElement("switch");
 	root.appendChild( __brsw_tag__ );
-	QDomText __brsw__ = doc.createTextNode( toNumber(getBranchSW()).c_str() );
+	QDomText __brsw__ = doc.createTextNode( QString::number(getBranchSW()) );
 	__brsw_tag__.appendChild( __brsw__ );
 	
 	if( getPointType() != SolUser )
 	{
 		QDomElement __nparx_tag__ = doc.createElement("nparx");
 		root.appendChild( __nparx_tag__ );
-		QDomText __nparx__ = doc.createTextNode( toNumber(getNEqns()).c_str() );
+		QDomText __nparx__ = doc.createTextNode( QString::number(getNEqns()) );
 		__nparx_tag__.appendChild( __nparx__ );
 		
 		if( getNEqns() != 0 )
@@ -69,7 +69,7 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 				__parxelemtype_tag__.appendChild( __parxelemtype__ );
 				QDomElement __parxelemnum_tag__ = doc.createElement("num");
 				__parxelem_tag__.appendChild( __parxelemnum_tag__ );
-				QDomText __parxelemnum__ = doc.createTextNode( toNumber(getParXNum(i)).c_str() );
+				QDomText __parxelemnum__ = doc.createTextNode( QString::number(getParXNum(i)) );
 				__parxelemnum_tag__.appendChild( __parxelemnum__ );
 			}
 		}
@@ -77,7 +77,7 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 	{
 		QDomElement __neqns_tag__ = doc.createElement("neqns");
 		root.appendChild( __neqns_tag__ );
-		QDomText __neqns__ = doc.createTextNode( toNumber(getNEqns()).c_str() );
+		QDomText __neqns__ = doc.createTextNode( QString::number(getNEqns()) );
 		__neqns_tag__.appendChild( __neqns__ );
 		
 		if( getNEqns() != 0 )
@@ -98,7 +98,7 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 				__eqnelemtype_tag__.appendChild( __eqnelemtype__ );
 				QDomElement __eqnelemnum_tag__ = doc.createElement("num");
 				__eqnelem_tag__.appendChild( __eqnelemnum_tag__ );
-				QDomText __eqnelemnum__ = doc.createTextNode( toNumber(getEqnsNum(i)).c_str() );
+				QDomText __eqnelemnum__ = doc.createTextNode( QString::number(getEqnsNum(i)) );
 				__eqnelemnum_tag__.appendChild( __eqnelemnum__ );
 	
 				QDomElement __varelem_tag__ = doc.createElement( "var" );
@@ -109,7 +109,7 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 				__varelemtype_tag__.appendChild( __varelemtype__ );
 				QDomElement __varelemnum_tag__ = doc.createElement("num");
 				__varelem_tag__.appendChild( __varelemnum_tag__ );
-				QDomText __varelemnum__ = doc.createTextNode( toNumber(getVarsNum(i)).c_str() );
+				QDomText __varelemnum__ = doc.createTextNode( QString::number(getVarsNum(i)) );
 				__varelemnum_tag__.appendChild( __varelemnum__ );
 			}
 		}
@@ -117,117 +117,117 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 	
 	QDomElement __nint_tag__ = doc.createElement("nint");
 	root.appendChild( __nint_tag__ );
-	QDomText __nint__ = doc.createTextNode( toNumber(getNInt()).c_str() );
+	QDomText __nint__ = doc.createTextNode( QString::number(getNInt()) );
 	__nint_tag__.appendChild( __nint__ );
 
 	QDomElement __ndeg_tag__ = doc.createElement("ndeg");
 	root.appendChild( __ndeg_tag__ );
-	QDomText __ndeg__ = doc.createTextNode( toNumber(getNDeg()).c_str() );
+	QDomText __ndeg__ = doc.createTextNode( QString::number(getNDeg()) );
 	__ndeg_tag__.appendChild( __ndeg__ );
 
 	QDomElement __nmul_tag__ = doc.createElement("nmul");
 	root.appendChild( __nmul_tag__ );
-	QDomText __nmul__ = doc.createTextNode( toNumber(getNMul()).c_str() );
+	QDomText __nmul__ = doc.createTextNode( QString::number(getNMul()) );
 	__nmul_tag__.appendChild( __nmul__ );
 
 	QDomElement __stab_tag__ = doc.createElement("stab");
 	root.appendChild( __stab_tag__ );
-	QDomText __stab__ = doc.createTextNode( toNumber(getStab()).c_str() );
+	QDomText __stab__ = doc.createTextNode( QString::number(getStab()) );
 	__stab_tag__.appendChild( __stab__ );
 	
 	QDomElement __nmat_tag__ = doc.createElement("nmat");
 	root.appendChild( __nmat_tag__ );
-	QDomText __nmat__ = doc.createTextNode( toNumber(getNMat()).c_str() );
+	QDomText __nmat__ = doc.createTextNode( QString::number(getNMat()) );
 	__nmat_tag__.appendChild( __nmat__ );
 	
 	QDomElement __nint1_tag__ = doc.createElement("nint1");
 	root.appendChild( __nint1_tag__ );
-	QDomText __nint1__ = doc.createTextNode( toNumber(getNInt1()).c_str() );
+	QDomText __nint1__ = doc.createTextNode( QString::number(getNInt1()) );
 	__nint1_tag__.appendChild( __nint1__ );
 	
 	QDomElement __nint2_tag__ = doc.createElement("nint2");
 	root.appendChild( __nint2_tag__ );
-	QDomText __nint2__ = doc.createTextNode( toNumber(getNInt2()).c_str() );
+	QDomText __nint2__ = doc.createTextNode( QString::number(getNInt2()) );
 	__nint2_tag__.appendChild( __nint2__ );
 	
 	QDomElement __ndeg1_tag__ = doc.createElement("ndeg1");
 	root.appendChild( __ndeg1_tag__ );
-	QDomText __ndeg1__ = doc.createTextNode( toNumber(getNDeg1()).c_str() );
+	QDomText __ndeg1__ = doc.createTextNode( QString::number(getNDeg1()) );
 	__ndeg1_tag__.appendChild( __ndeg1__ );
 	
 	QDomElement __ndeg2_tag__ = doc.createElement("ndeg2");
 	root.appendChild( __ndeg2_tag__ );
-	QDomText __ndeg2__ = doc.createTextNode( toNumber(getNDeg2()).c_str() );
+	QDomText __ndeg2__ = doc.createTextNode( QString::number(getNDeg2()) );
 	__ndeg2_tag__.appendChild( __ndeg2__ );
 	
 	QDomElement __steps_tag__ = doc.createElement("steps");
 	root.appendChild( __steps_tag__ );
-	QDomText __steps__ = doc.createTextNode( toNumber(getSteps()).c_str() );
+	QDomText __steps__ = doc.createTextNode( QString::number(getSteps()) );
 	__steps_tag__.appendChild( __steps__ );
 	
 	QDomElement __cpmin_tag__ = doc.createElement("cpmin");
 	root.appendChild( __cpmin_tag__ );
-	QDomText __cpmin__ = doc.createTextNode( toNumber(getCpMin()).c_str() );
+	QDomText __cpmin__ = doc.createTextNode( QString::number(getCpMin()) );
 	__cpmin_tag__.appendChild( __cpmin__ );
 
 	QDomElement __cpmax_tag__ = doc.createElement("cpmax");
 	root.appendChild( __cpmax_tag__ );
-	QDomText __cpmax__ = doc.createTextNode( toNumber(getCpMax()).c_str() );
+	QDomText __cpmax__ = doc.createTextNode( QString::number(getCpMax()) );
 	__cpmax_tag__.appendChild( __cpmax__ );
 
 	QDomElement __ds_tag__ = doc.createElement("ds");
 	root.appendChild( __ds_tag__ );
-	QDomText __ds__ = doc.createTextNode( toNumber(getDs()).c_str() );
+	QDomText __ds__ = doc.createTextNode( QString::number(getDs()) );
 	__ds_tag__.appendChild( __ds__ );
 
 	QDomElement __dsmin_tag__ = doc.createElement("dsmin");
 	root.appendChild( __dsmin_tag__ );
-	QDomText __dsmin__ = doc.createTextNode( toNumber(getDsMin()).c_str() );
+	QDomText __dsmin__ = doc.createTextNode( QString::number(getDsMin()) );
 	__dsmin_tag__.appendChild( __dsmin__ );
 
 	QDomElement __dsmax_tag__ = doc.createElement("dsmax");
 	root.appendChild( __dsmax_tag__ );
-	QDomText __dsmax__ = doc.createTextNode( toNumber(getDsMax()).c_str() );
+	QDomText __dsmax__ = doc.createTextNode( QString::number(getDsMax()) );
 	__dsmax_tag__.appendChild( __dsmax__ );
 
 	QDomElement __dsstart_tag__ = doc.createElement("dsstart");
 	root.appendChild( __dsstart_tag__ );
-	QDomText __dsstart__ = doc.createTextNode( toNumber(getDsStart()).c_str() );
+	QDomText __dsstart__ = doc.createTextNode( QString::number(getDsStart()) );
 	__dsstart_tag__.appendChild( __dsstart__ );
 	
 	QDomElement __epsc_tag__ = doc.createElement("epsc");
 	root.appendChild( __epsc_tag__ );
-	QDomText __epsc__ = doc.createTextNode( toNumber(getEpsC()).c_str() );
+	QDomText __epsc__ = doc.createTextNode( QString::number(getEpsC()) );
 	__epsc_tag__.appendChild( __epsc__ );
 	
 	QDomElement __epsr_tag__ = doc.createElement("epsr");
 	root.appendChild( __epsr_tag__ );
-	QDomText __epsr__ = doc.createTextNode( toNumber(getEpsR()).c_str() );
+	QDomText __epsr__ = doc.createTextNode( QString::number(getEpsR()) );
 	__epsr_tag__.appendChild( __epsr__ );
 	
 	QDomElement __epss_tag__ = doc.createElement("epss");
 	root.appendChild( __epss_tag__ );
-	QDomText __epss__ = doc.createTextNode( toNumber(getEpsS()).c_str() );
+	QDomText __epss__ = doc.createTextNode( QString::number(getEpsS()) );
 	__epss_tag__.appendChild( __epss__ );
 	
 	QDomElement __nitc_tag__ = doc.createElement("nitc");
 	root.appendChild( __nitc_tag__ );
-	QDomText __nitc__ = doc.createTextNode( toNumber(getNItC()).c_str() );
+	QDomText __nitc__ = doc.createTextNode( QString::number(getNItC()) );
 	__nitc_tag__.appendChild( __nitc__ );
 
 	QDomElement __nitr_tag__ = doc.createElement("nitr");
 	root.appendChild( __nitr_tag__ );
-	QDomText __nitr__ = doc.createTextNode( toNumber(getNItR()).c_str() );
+	QDomText __nitr__ = doc.createTextNode( QString::number(getNItR()) );
 	__nitr_tag__.appendChild( __nitr__ );
 	
 	QDomElement __nits_tag__ = doc.createElement("nits");
 	root.appendChild( __nits_tag__ );
-	QDomText __nits__ = doc.createTextNode( toNumber(getNItS()).c_str() );
+	QDomText __nits__ = doc.createTextNode( QString::number(getNItS()) );
 	__nits_tag__.appendChild( __nits__ );
 
 	QDomElement __nsym_tag__ = doc.createElement("nsym");
 	root.appendChild( __nsym_tag__ );
-	QDomText __nsym__ = doc.createTextNode( toNumber(getNSym()).c_str() );
+	QDomText __nsym__ = doc.createTextNode( QString::number(getNSym()) );
 	__nsym_tag__.appendChild( __nsym__ );
 	
 	QDomElement __sym_tag__ = doc.createElement("sym");
@@ -238,11 +238,11 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 		__sym_tag__.appendChild( __symelem_tag__ );
 		QDomElement __symelemreal_tag__ = doc.createElement( "real" );
 		__symelem_tag__.appendChild( __symelemreal_tag__ );
-		QDomText __symelemreal__ = doc.createTextNode( toNumber(getSymRe(i)).c_str() );
+		QDomText __symelemreal__ = doc.createTextNode( QString::number(getSymRe(i)) );
 		__symelemreal_tag__.appendChild( __symelemreal__ );
 		QDomElement __symelemimag_tag__ = doc.createElement( "imag" );
 		__symelem_tag__.appendChild( __symelemimag_tag__ );
-		QDomText __symelemimag__ = doc.createTextNode( toNumber(getSymIm(i)).c_str() );
+		QDomText __symelemimag__ = doc.createTextNode( QString::number(getSymIm(i)) );
 		__symelemimag_tag__.appendChild( __symelemimag__ );
 
 	}

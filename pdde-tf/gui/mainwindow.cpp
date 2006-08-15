@@ -13,7 +13,7 @@
 MainWindow::MainWindow() : compThread(parameters),
 	inputData(0), inputPlotWindow(0),
 	outputData(0), outputPlotWindow(0),
-	terminalDialog(0)
+	terminalDialog(0), compilerProcess(0)
 {
 	QTabWidget* tabWidget = new QTabWidget();
 	// the container widgets	
@@ -85,21 +85,27 @@ MainWindow::MainWindow() : compThread(parameters),
 	connect( &parameters, SIGNAL(outputFileChanged(const std::string&)), this, SLOT(setOutputFileText(const std::string&)) );
 
 	// this only for setting SYSNAME
+	QHBoxLayout *sysnameLayout = new QHBoxLayout;
 	QLabel* sysnameLabel = new QLabel("SYSNAME");
 	sysnameLabel->setToolTip( QString("The compiled system definition, e.g., \"sys-problem.so\"") );
 	sysname = new QLineEdit();
-// 	sysname->setReadOnly(true);
-	// this raises a file dialog
 	QAction* sysdefAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
+	QAction* compileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Compile..."), this);
 	QToolButton* getSysdef = new QToolButton( );
+	QToolButton* compile = new QToolButton( );
 	getSysdef->setDefaultAction( sysdefAct );
+	compile->setDefaultAction( compileAct );
+	sysnameLayout->addWidget( getSysdef );
+	sysnameLayout->addWidget( compile );
+	sysnameLayout->addStretch();
+	systemGrid->addWidget( sysnameLabel, 2, 0, Qt::AlignLeft | Qt::AlignVCenter);
+	systemGrid->addWidget( sysname, 2, 1, 1, 3 );
+	systemGrid->addLayout( sysnameLayout, 2, 4 );
 	connect( sysdefAct, SIGNAL(triggered()), this, SLOT(setSysName()));
+	connect( compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
 	// sets up a bidirectional connection
 	connect( sysname, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setSysNameText(const QString&)) );
 	connect( &parameters, SIGNAL(sysnameChanged(const std::string&)), this, SLOT(setSysNameText(const std::string&)) );
-	systemGrid->addWidget( sysnameLabel, 2, 0, Qt::AlignLeft | Qt::AlignVCenter);
-	systemGrid->addWidget( sysname, 2, 1, 1, 3 );
-	systemGrid->addWidget( getSysdef, 2, 4 );
 
 	// setting LABEL
 	QLabel* labelLabel = new QLabel("LABEL");
@@ -509,6 +515,39 @@ void MainWindow::terminalView()
 		terminalDialog->raise();
 		connect( &compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)) );
 		connect( terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()) );
+	}
+}
+
+void MainWindow::compileSystem()
+{
+	QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "C++ source (*.cpp)");
+	if ( !fileName.isEmpty() && compilerProcess == 0 )
+	{
+		QString newfile( fileName );
+		newfile.replace( QString(".cpp"), QString(".so") );
+		QFileInfo compiler( CMAKE_CXX_COMPILER );
+		compilerProcess = new QProcess();
+		compilerProcess->setProcessChannelMode( QProcess::MergedChannels );
+		compilerProcess->start(
+			QString("%1 %2 %3 %4 -I%5 %6 -o %7")
+			.arg(compiler.fileName())
+			.arg(CMAKE_CXX_FLAGS)
+			.arg(CMAKE_SHARED_LIBRARY_C_FLAGS)
+			.arg(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS)
+			.arg(CMAKE_INSTALL_PREFIX"/include")
+			.arg(fileName).arg(newfile)
+		);
+		bool finished = compilerProcess->waitForFinished();
+		if ( finished )
+		{
+			if( compilerProcess->exitCode() == 0 ) sysname->setText( newfile );
+			else QMessageBox::warning( this, "Compilation finished", QString(compilerProcess->readAll().constData()), QMessageBox::Ok, 0, 0 );
+		} else
+		{
+			QMessageBox::critical( this, "Compilation timed out", compilerProcess->errorString(), QMessageBox::Ok, 0, 0 );
+		}
+		delete compilerProcess;
+		compilerProcess = 0;
 	}
 }
 

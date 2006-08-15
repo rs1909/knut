@@ -209,12 +209,9 @@ int main( int argc, const char** argv )
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
-			std::cout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->getCp()-VarPAR0 )<<parNum( npar, params->getCp()-VarPAR0 )<<"\t";
-			parNamePrint( par, npar, var );
+			parNamePrint( std::cout, npar, params->getCp(), var );
 			std::cout<<"\n";
-			//
-			std::cout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->getCp()-VarPAR0);
-			parValuePrint( par, npar, var );
+			parValuePrint( std::cout, par, params->getCp(), var, 0, pt.Norm(), 0, 0 );
 			std::cout<<"\n";
 			
 			// making tangents
@@ -256,9 +253,8 @@ int main( int argc, const char** argv )
 			{
 				if( i % 24 == 0 )
 				{
-					std::cout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->getCpType()<<params->getCpNum()<<"\t";
-					parNamePrint( par, npar, var );
-					std::cout<<"\tUSTAB\tIT\n";
+					parNamePrint( std::cout, npar, params->getCp(), var );
+					std::cout<<"\n";
 				}
 				itpos = (itpos+1) % ithist;
 				//
@@ -269,11 +265,8 @@ int main( int argc, const char** argv )
 				if( trivial == 0 ) ustab = pt.UStab(); else if( trivial == 1 ) ustab = pt.UStabAUT(); else ustab = pt.UStabAUTRot();
 				for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 				norm = pt.Norm();
-
 				// console output
-				std::cout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->getCp()-VarPAR0);
-				parValuePrint( par, npar, var );
-				std::cout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
+				parValuePrint( std::cout, par, params->getCp(), var, i, norm, ustab, it( itpos ) );
 				if( i != 0  && ustab != ustabprev )
 				{
 					PtType bif = SolTF;

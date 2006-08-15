@@ -199,4 +199,39 @@ class Point
 		baseTestFunct* testFunct;
 };
 
+//-------------------------------------------------------//
+// 5R   2 13R         2 13R         2 13R         1 2R 1 2R
+//
+// LABEL  NORM          CP            P0             U   IT
+//     0  0.000000e+00  0.000000e+00  0.000000e+00   0    0
+//-------------------------------------------------------//
+
+inline void parNamePrint( std::ostream& out, int npar, Var cp, const Array1D<Var>& var )
+{
+	out.fill(' ');
+	out.unsetf(std::ios::adjustfield);
+	out.setf(std::ios::left);
+	
+	out<<"LABEL   NORM          ";
+	out<<' '; out<<parType( npar, cp - VarPAR0 ); out.width(11); out<<parNum( npar, cp - VarPAR0 )<<"  ";
+	for( int j = 1; j < var.Size(); j++ )
+		{ out<<' '; out<<parType( npar, var(j) - VarPAR0 ); out.width(11); out<<parNum( npar, var(j) - VarPAR0 )<<"  "; }
+	out<<" U IT";
+}
+
+inline void parValuePrint( std::ostream& out, const Vector& par, Var cp, const Array1D<Var>& var, int lb, double norm, int ustab, int it )
+{
+	out.fill(' ');
+	out.unsetf(std::ios::adjustfield);
+	out.precision(6);
+	out.setf(std::ios::uppercase|std::ios::scientific|std::ios::right);
+	
+	out.width(5);  out.setf(std::ios::right); out<<lb<<"  ";
+	out.width(13); out.setf(std::ios::right); out<<norm<<"  ";
+	out.width(13); out.setf(std::ios::right); out<<par(cp-VarPAR0)<<"  ";
+	for( int j = 1; j < var.Size(); j++ ) { out.width(13);  out<<par(var(j)-VarPAR0)<<"  "; }
+	out.width(2); out<<ustab<<" ";
+	out.width(2); out<<it;
+}
+
 #endif

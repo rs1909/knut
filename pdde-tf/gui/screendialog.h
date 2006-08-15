@@ -18,6 +18,9 @@ class screenDialog : public QDialog
 		display->setLineWrapMode( QTextEdit::NoWrap );
 		display->setReadOnly( true );
 		display->setFontFamily( "Courier" );
+//		QFontMetricsF metrics( display->document()->defaultFont() );
+//		display->document()->rootFrame()->setWidth( 60*metrics.maxWidth()+2*display->frameWidth() );
+//		display->document()->rootFrame()->setHeight( 20*metrics.lineSpacing()+2*display->frameWidth() );
 	}
  public slots:
 	void setTitle( const std::string& str ) { display->setDocumentTitle( QString( str.c_str() )); }

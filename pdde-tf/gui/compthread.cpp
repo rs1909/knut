@@ -17,16 +17,6 @@
 
 #include <QErrorMessage>
 
-inline void parNamePrint( std::ostream& out, Vector& /*par*/, int npar, Array1D<Var>& var )
-{
-	for( int j = 1; j < var.Size(); j++ ) out<<"\t"<<parType( npar, var(j) - VarPAR0 )<<parNum( npar, var(j) - VarPAR0 )<<"\t";
-}
-
-inline void parValuePrint( std::ostream& out, Vector& par, int /*npar*/, Array1D<Var>& var )
-{
-	for( int j = 1; j < var.Size(); j++ ) out<<"\t"<<par( var(j) - VarPAR0 );
-}
-
 void MThread::run()
 {
 	try
@@ -109,12 +99,9 @@ void MThread::run()
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
 			//
-			screenout<<"\nLABEL\t"<<"   NORM\t\t"<<parType( npar, params->getCp()-VarPAR0 )<<parNum( npar, params->getCp()-VarPAR0 )<<"\t";
-			parNamePrint( screenout, par, npar, var );
+			parNamePrint( screenout, npar, params->getCp(), var );
 			screenout<<"\n";
-			//
-			screenout<<"  "<<0<<"\t"<<pt.Norm()<<"\t"<<par(params->getCp()-VarPAR0);
-			parValuePrint( screenout, par, npar, var );
+			parValuePrint( screenout, par, params->getCp(), var, 0, pt.Norm(), 0, 0 );
 		 #ifdef DEBUG
 			std::cout<<screenout<<"\n";
 		 #endif
@@ -167,9 +154,8 @@ void MThread::run()
 				}
 				if( i % 24 == 0 )
 				{
-					screenout<<"LABEL\t"<<"   NORM\t\t"<<(char)params->getCpType()<<params->getCpNum()<<"\t";
-					parNamePrint( screenout, par, npar, var );
-					screenout<<"\tUSTAB\tIT\n";
+					parNamePrint( screenout, npar, params->getCp(), var );
+					screenout<<"\n";
 				}
 				itpos = (itpos+1) % ithist;
 				//
@@ -182,9 +168,7 @@ void MThread::run()
 				norm = pt.Norm();
 				
 				// console output
-				screenout<<"  "<<i+1<<"\t"<<norm<<"\t"<<par(params->getCp()-VarPAR0);
-				parValuePrint( screenout, par, npar, var );
-				screenout<<"\t  "<<ustab<<"\t"<<it(itpos)+1;
+				parValuePrint( screenout, par, params->getCp(), var, i, norm, ustab, it( itpos ) );
 				if( i != 0  && ustab != ustabprev )
 				{
 					PtType bif = SolTF;
