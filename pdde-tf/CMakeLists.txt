@@ -26,7 +26,7 @@ IF( NOT WIN32 )
   SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
 ELSE( NOT WIN32 )
   SET( PDDE_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
-  SET( PDDE_BIN_DIR "" CACHE INTERNAL "demo dir" )
+  SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
 ENDIF( NOT WIN32 )
 
 #------------------------------------------------------------------------------
@@ -37,10 +37,13 @@ CONFIGURE_FILE( src/config.h.cmake src/config.h )
 CONFIGURE_FILE( pdde.spec.cmake pdde.spec )
 CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
-INSTALL_PROGRAMS( /bin FILES bin/pcompile )
 
-# ADD_DEFINITIONS( -DHAVE_CONFIG_H )
-ADD_DEFINITIONS( -DHAVE_CONFIG_H -DDEBUG )
+IF( NOT WIN32 )
+  INSTALL( PROGRAMS bin/pcompile DESTINATION ${PDDE_BIN_DIR} )
+ENDIF( NOT WIN32 )
+
+ADD_DEFINITIONS( -DHAVE_CONFIG_H )
+# ADD_DEFINITIONS( -DHAVE_CONFIG_H -DDEBUG )
 
 #------------------------------------------------------------------------------
 # Finding ATLAS
@@ -100,8 +103,8 @@ ADD_SUBDIRECTORY(cli)
 # Documentation
 ADD_SUBDIRECTORY(doc)
 
-# demo programs
-ADD_SUBDIRECTORY(demo)
-
 # graphical user interface
 ADD_SUBDIRECTORY(gui)
+
+# demo programs
+ADD_SUBDIRECTORY(demo)

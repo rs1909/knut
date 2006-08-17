@@ -3,6 +3,11 @@ LINK_DIRECTORIES( ${CBLAS_PATH} ${ATLAS_PATH} )
 FIND_PACKAGE( Qt4 REQUIRED )
 INCLUDE( ${QT_USE_FILE} )
 
+IF(WIN32)
+  FIND_LIBRARY( PDDE_QTMAIN qtmain ${QT_LIBRARY_DIR} )
+  MESSAGE( "${PDDE_QTMAIN}" )
+ENDIF(WIN32)
+
 INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 	${PDDE_SOURCE_DIR}/src
 	${PDDE_SOURCE_DIR}/ATLAS/include
@@ -23,9 +28,14 @@ ADD_EXECUTABLE( pdde-gui main.cpp
     ${MOC_SRCS} )
 
 TARGET_LINK_LIBRARIES( pdde-gui
+	${PDDE_QTMAIN}
 	${QT_QTCORE_LIBRARY}
 	${QT_QTGUI_LIBRARY}
 	${QT_QTXML_LIBRARY}
 	pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
+
+IF(WIN32)
+  SET_TARGET_PROPERTIES( pdde-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows" )
+ENDIF(WIN32)
 
 INSTALL( TARGETS pdde-gui DESTINATION ${PDDE_BIN_DIR} )
