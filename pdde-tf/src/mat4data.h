@@ -1,6 +1,7 @@
 #ifndef MAT4DATA_H
 #define MAT4DATA_H
 
+#include <stdint.h>
 #include <string>
 #include "matrix.h"
 #ifdef WIN32
@@ -13,11 +14,11 @@ class mat4Data
 		
 		struct header
 		{
-			__int32_t type;
-			__int32_t mrows;
-			__int32_t ncols;
-			__int32_t imagf;
-			__int32_t namelen;
+			int32_t type;
+			int32_t mrows;
+			int32_t ncols;
+			int32_t imagf;
+			int32_t namelen;
 		
 			const char* name( const void* offset ) const { return (char*)offset + namelen; }
 			int size() const { return sizeof(struct header) + namelen; }

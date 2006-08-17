@@ -22,6 +22,11 @@ IF( NOT WIN32 )
   ELSE( EXISTS ${SHELL} )
     MESSAGE( SEND_ERROR "Cannot find a shell program" )
   ENDIF( EXISTS ${SHELL} )
+  SET( PDDE_DEMO_DIR share/${PACKAGE_NAME}/demo/ CACHE INTERNAL "demo dir" )
+  SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
+ELSE( NOT WIN32 )
+  SET( PDDE_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
+  SET( PDDE_BIN_DIR "" CACHE INTERNAL "demo dir" )
 ENDIF( NOT WIN32 )
 
 #------------------------------------------------------------------------------

@@ -30,7 +30,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	MainWindow();
+	MainWindow( const QString& appDir );
 
 public slots:
 
@@ -107,9 +107,11 @@ private slots:
 	void setupCp()
 	{
 		cp->blockSignals(true);
+		Var cp_tmp = parameters.getCp();
 		cp->clear();
-		cp->blockSignals(false);
 		for( int i = 0; i < parameters.cpSize(); ++i ) cp->addItem( parameters.cpString( i ).c_str() );
+		parameters.setCp( cp_tmp );
+		cp->blockSignals(false);
 	}
 	void inputPlot();
 	void inputPlotDestroyed();
@@ -134,6 +136,9 @@ private:
 	bool saveFile(const QString &fileName);
 	void setCurrentFile(const QString &fileName);
 	QString strippedName(const QString &fullFileName);
+
+	// path of the executable
+	QString     executableDir;
 
 	// all the parameters
 	NConstantsQtGui parameters;

@@ -28,4 +28,4 @@ TARGET_LINK_LIBRARIES( pdde-gui
 	${QT_QTXML_LIBRARY}
 	pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
 
-INSTALL_TARGETS( /bin pdde-gui )
+INSTALL( TARGETS pdde-gui DESTINATION ${PDDE_BIN_DIR} )

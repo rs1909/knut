@@ -3,8 +3,7 @@ SET( NAME traffic3cars )
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
-	FILES sys-${NAME}.cpp
+INSTALL( FILES sys-${NAME}.cpp
 	cfile-start-a cfile-start-b
 	cfile-ns-a cfile-ns-b
 	cfile-nssw-a cfile-nssw-b
@@ -13,7 +12,7 @@ INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
 	cfile-ns-a.xml cfile-ns-b.xml
 	cfile-nssw-a.xml cfile-nssw-b.xml
 	cfile-lp-a.xml cfile-lp-b.xml
-	README sys-trafficncars.cpp )
+	README sys-trafficncars.cpp DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test1a
     COMMAND pdde -c cfile-start-a -o out-start-a -b br-start-a )

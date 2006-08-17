@@ -10,4 +10,4 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 	${PDDE_SOURCE_DIR}/ATLAS/include
 	${PDDE_SOURCE_DIR}/src )
 
-INSTALL_FILES( /include FILES matrix.h pddesys.h )
+INSTALL( FILES matrix.h pddesys.h DESTINATION include/ )

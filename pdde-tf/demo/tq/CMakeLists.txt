@@ -3,12 +3,11 @@ SET( NAME tq )
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
-	FILES sys-${NAME}.cpp
+INSTALL( FILES sys-${NAME}.cpp
 	cfile-lp-1-a cfile-lp-2-a cfile-ns cfile-pdsw-2 cfile-tr
 	cfile-lp-1-b cfile-lp-2-b cfile-pdsw-1 cfile-start
         cfile-lp-1-a.xml cfile-lp-2-a.xml cfile-ns.xml cfile-pdsw-2.xml cfile-tr.xml
-        cfile-lp-1-b.xml cfile-lp-2-b.xml cfile-pdsw-1.xml cfile-start.xml )
+        cfile-lp-1-b.xml cfile-lp-2-b.xml cfile-pdsw-1.xml cfile-start.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
     COMMAND pdde -c cfile-start -o out-start -b br-start )

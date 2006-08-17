@@ -9,4 +9,4 @@ ADD_EXECUTABLE( pdde main.cpp )
 
 TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
 
-INSTALL_TARGETS( /bin pdde )
+INSTALL( TARGETS pdde DESTINATION ${PDDE_BIN_DIR} )

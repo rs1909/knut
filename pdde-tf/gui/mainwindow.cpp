@@ -10,7 +10,8 @@
 #include <fstream>
 #include <cfloat>
 
-MainWindow::MainWindow() : compThread(parameters),
+MainWindow::MainWindow( const QString& appDir ) :
+	executableDir(appDir), compThread(parameters),
 	inputData(0), inputPlotWindow(0),
 	outputData(0), outputPlotWindow(0),
 	terminalDialog(0), compilerProcess(0)
@@ -528,23 +529,42 @@ void MainWindow::compileSystem()
 		QFileInfo compiler( CMAKE_CXX_COMPILER );
 		compilerProcess = new QProcess();
 		compilerProcess->setProcessChannelMode( QProcess::MergedChannels );
-		compilerProcess->start(
-			QString("%1 %2 %3 %4 -I%5 %6 -o %7")
+		QString cmdLine( QString( "%1 %2 %3 %4 -I%5 %6 -o %7" )
 			.arg(compiler.fileName())
 			.arg(CMAKE_CXX_FLAGS)
 			.arg(CMAKE_SHARED_LIBRARY_C_FLAGS)
 			.arg(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS)
-			.arg(CMAKE_INSTALL_PREFIX"/include")
-			.arg(fileName).arg(newfile)
-		);
+			.arg("\""+QDir::cleanPath(executableDir+"/../include/")+"\"")
+			.arg("\""+fileName+"\"").arg("\""+newfile+"\"") );
+		std::cout<<"The command line:\n\t"<<cmdLine.toStdString()<<"\n";
+		compilerProcess->start( cmdLine );
 		bool finished = compilerProcess->waitForFinished();
+		QErrorMessage *errorPopup = new QErrorMessage( this );
 		if ( finished )
 		{
-			if( compilerProcess->exitCode() == 0 ) sysname->setText( newfile );
-			else QMessageBox::warning( this, "Compilation finished", QString(compilerProcess->readAll().constData()), QMessageBox::Ok, 0, 0 );
+			if( compilerProcess->exitCode() == 0 )
+			{
+				if( !compilerProcess->readAll().isEmpty() )
+				{
+					errorPopup->setWindowTitle( "Successful compilation" );
+					errorPopup->showMessage( QString( compilerProcess->readAll().constData() ) );
+					errorPopup->show();
+					errorPopup->raise();
+				}
+				sysname->setText(newfile);
+			} else
+			{
+				errorPopup->setWindowTitle( "Compilation failed" );
+				errorPopup->showMessage( QString( compilerProcess->readAll().constData() ) );
+				errorPopup->show();
+				errorPopup->raise();
+			}
 		} else
 		{
-			QMessageBox::critical( this, "Compilation timed out", compilerProcess->errorString(), QMessageBox::Ok, 0, 0 );
+			errorPopup->setWindowTitle( "Compilation timed out" );
+			errorPopup->showMessage( compilerProcess->errorString() );
+			errorPopup->show();
+			errorPopup->raise();
 		}
 		delete compilerProcess;
 		compilerProcess = 0;
