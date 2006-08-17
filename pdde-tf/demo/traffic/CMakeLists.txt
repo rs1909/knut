@@ -9,6 +9,10 @@ INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
 	cfile-ns-a cfile-ns-b
 	cfile-nssw-a cfile-nssw-b
 	cfile-lp-a cfile-lp-b
+	cfile-start-a.xml cfile-start-b.xml
+	cfile-ns-a.xml cfile-ns-b.xml
+	cfile-nssw-a.xml cfile-nssw-b.xml
+	cfile-lp-a.xml cfile-lp-b.xml
 	README sys-trafficncars.cpp )
 
 ADD_CUSTOM_TARGET( ${NAME}-test1a

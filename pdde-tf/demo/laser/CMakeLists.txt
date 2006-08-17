@@ -5,7 +5,8 @@ ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL_FILES( /share/${PACKAGE_NAME}/demo/${NAME}
     FILES sys-${NAME}.cpp
-    cfile-start cfile-ns cfile-pd cfile-lp in-start )
+    cfile-start cfile-ns cfile-pd cfile-lp in-start
+    cfile-start.xml cfile-ns.xml cfile-pd.xml cfile-lp.xml )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
     COMMAND pdde -c cfile-start -i in-start -o out-start -b br-start )
