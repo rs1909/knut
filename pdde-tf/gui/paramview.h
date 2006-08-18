@@ -1,20 +1,22 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifndef PARAMVIEW_H
 #define PARAMVIEW_H
-
-#include <QAbstractTableModel>
-#include <QItemDelegate>
-#include <QVector>
-#include <QtGui>
-#include <iostream>
 
 #include "pointtype.h"
 #include "constqtgui.h"
 
-class QTableView;
-
-//---------------------------------------------------------------
-// this is the model for the table
-//---------------------------------------------------------------
+#include <QAbstractTableModel>
+#include <QTableView>
+#include <QItemDelegate>
+#include <QVector>
 
 class ParamsModel : public QAbstractTableModel
 {
@@ -66,48 +68,11 @@ class EqnVarTableView : public QTableView
 	Q_OBJECT
 
  public:
-	EqnVarTableView( NConstantsQtGui* params, QWidget* parent_ = 0 ) : QTableView( parent_ )
-	{
-		parameters = params;
-		model = new ParamsModel( params );
-		delegate = new BoxDelegate( params );
-		setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
-		setModel( model );
-		resetSize( );
-		connect( parameters, SIGNAL(sysnameChanged(const std::string&)), model, SLOT(dataUpdated()) );
-		connect( parameters, SIGNAL(neqnsChanged(int)), model, SLOT(dataUpdated()) );
-		connect( parameters, SIGNAL(pointTypeChangedIdx(int)), model, SLOT(dataUpdated()) );
-		connect( parameters, SIGNAL(pointTypeChangedIdx(int)), this, SLOT(resetSize()) );
-		connect( parameters, SIGNAL(neqnsChanged(int)), this, SLOT(resetSize()) );
-	}
+	EqnVarTableView( NConstantsQtGui* params, QWidget* parent_ = 0 );
 
  private slots:
 
-	void resetSize( )
-	{
-		resizeRowToContents(0);
-		if( parameters->getPointType() == SolUser ) resizeRowToContents(1);
-		horizontalHeader()->setDefaultAlignment( Qt::AlignLeft );
-		setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-		setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-		if( parameters->getPointType() == SolUser )
-		{
-			setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
-			                rowHeight(0)+rowHeight(1)+2*frameWidth() +
-			                horizontalHeader()->frameRect().height() );
-			setMinimumSize( columnWidth(0)+2*frameWidth(),
-			                rowHeight(0)+rowHeight(1)+2*frameWidth() +
-			                horizontalHeader()->frameRect().height() );
-		}else
-		{
-			setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
-			                rowHeight(0)+2*frameWidth() +
-			                horizontalHeader()->frameRect().height() );
-			setMinimumSize( columnWidth(0)+2*frameWidth(),
-			                rowHeight(0)+2*frameWidth() +
-			                horizontalHeader()->frameRect().height() );
-		}
-	}
+	void resetSize( );
 
  private:
 	
@@ -177,33 +142,11 @@ class SYMTableView : public QTableView
 	Q_OBJECT
 
  public:
-	SYMTableView( NConstantsQtGui* params, QWidget* parent_ = 0 ) : QTableView( parent_ ), parameters(params)
-	{
-		model = new SYMModel( parameters );
-		delegate = new SYMDelegate( parameters );
-		setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
-		setModel( model );
-		resetSize();
-		connect( parameters, SIGNAL(nsymChanged(int)), model, SLOT(dataUpdated()) );
-		connect( parameters, SIGNAL(nsymChanged(int)), this, SLOT(resetSize()) );
-	}
+	SYMTableView( NConstantsQtGui* params, QWidget* parent_ = 0 );
 
  public slots:
 	
-	void resetSize()
-	{
-		resizeRowToContents(0);
-		resizeRowToContents(1);
-		horizontalHeader()->setDefaultAlignment( Qt::AlignLeft );
-		setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-		setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-		setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
-								rowHeight(0)+rowHeight(1)+2*frameWidth() +
-								horizontalHeader()->frameRect().height() );
-		setMinimumSize( columnWidth(0)+2*frameWidth(),
-								rowHeight(0)+rowHeight(1)+2*frameWidth() +
-								horizontalHeader()->frameRect().height() );
-	}
+	void resetSize();
 
  private:
 

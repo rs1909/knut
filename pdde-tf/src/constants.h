@@ -1,16 +1,24 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
-
-// Includes standard library
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <fstream>
 
 // Includes local
 #include "pointtype.h"
 #include "system.h"
+
+// Includes standard library
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdio>
 
 class toNumber
 {

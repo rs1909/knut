@@ -1,8 +1,24 @@
-#include <QtGui>
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
 
 #include "plotdata.h"
+
 #include <cmath>
 #include <cfloat>
+
+#include <QPen>
+#include <QPolygon>
+#include <QPainterPath>
+#include <QGraphicsScene>
+#include <QGraphicsRectItem>
+#include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
 
 PlotData::PlotData(QObject *parent) :
 	QGraphicsScene(parent),
@@ -97,40 +113,6 @@ void PlotData::plotStyle( QPen& pen, const char* style )
 		}
 		style++;
 	}
-}
-
-void PlotData::addPlot( const Vector& v1 )
-{
-	const Vector v0;
-	addPlot( v0, v1, "b" );
-}
-
-void PlotData::addPlot( const Vector& v1, const char* style )
-{
-	const Vector v0;
-	addPlot( v0, v1, style );
-}
-
-void PlotData::addPlot( const Vector& v1, const Vector& v2 )
-{
-	addPlot( v1, v2, "b" );
-}
-
-void PlotData::addPlot( const Vector& v1, const Vector& v2, const char* style )
-{
-	if( ( v1.Size() != 0 )&&( v1.Size() != v2.Size() ) ) { std::cout<<"error\n"; exit(-1); }
-	
-	DataX.push_back( Vector() );
-	DataY.push_back( Vector() );
-	if( v1.Size() != 0 ) DataX.rbegin()->Init(v1);
-	else
-	{
-		DataX.rbegin()->Init( v2.Size() );
-		for( int r=0; r < v2.Size(); r++ ) (*DataX.rbegin())(r) = r;
-	}
-	DataY.rbegin()->Init(v2);
-	addPlotLine( style );
-	dataToGraphics();
 }
 
 void PlotData::addPlotLine( const char* style )

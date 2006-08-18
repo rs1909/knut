@@ -25,7 +25,7 @@
 \author{R\'obert Szalai}
 \newcommand{\pddever}{1.0.4}
 \version{\pddever}
-\date{02 July 2006}
+\date{18 August 2006}
 \maketitle
 
 \begin{center}
@@ -77,13 +77,13 @@ Although, continuing fixed points in this way is very inefficient, it might help
 
 \subsection{Requirements}
 
-The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake can set up a build environment for various compilers and can generate project files for several Integrated Development Environments including KDevelop, Microsoft Visual Studio and XCode. It is recommended to compile the software with a recent version of GCC\footnote{http://gcc.gnu.org}. At the moment the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
+The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake is a utility that will configure the package so that it can be built for a specific operating system. The Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for building the graphical user interface. On unix platforms the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
 
 For solving linear equations the software requires the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra software, which can be tuned automatically for many processors and operating systems. To avoid the lenghty compilation it is possible to download pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and \filef{libcblas.a}).
 
 \subsection{Linux and Unix}
 
-The software comes in a compressed archive form \filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be unzipped first into a convenient directory using the following command:
+The software comes in a compressed source archive form \filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be unzipped first into a convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
 $ bzip2 -d pdde-cont-%\@version%.tar.bz2
 $ tar xvf pdde-cont-%\@version%.tar
@@ -94,12 +94,9 @@ The second step is to copy the compiled ATLAS library files (\filef{libatlas.a} 
 Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ cd pdde-cont-%\@version%
-$ cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=$HOME/pdde-cont/ .
+$ ./buil-unix.sh
 \end{lstlisting} \end{quote} } \noindent
-This generates the platform dependent \filef{Makefile}s and instructs the installer to use \filef{pdde-cont/} as the installation target in the user's home directory. If everything went fine install the software.
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ make install
-\end{lstlisting} \end{quote} } \noindent
+This configures and builds software after which it install into the \filef{pdde-cont/} folder in the user's home directory.
 In order to make the software work, the \filef{PATH} environment variables has to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
@@ -112,22 +109,17 @@ into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
-In order to install the software on Windows the MinGW and MSYS packages have to be installed first. Download the most recent self extracting installers from \url{http://www.mingw.org/} and install MinGW first and then MSYS. When installing MinGW select the C++ compiler and the GNU make utility, which is required by CMake. Also download and install the Windows version of CMake from \url{www.cmake.org}.
+If you install the binary version of the software, the only requirement is to install MinGW, which is necessary to compile system definition files. In this case just uncompress the \filef{pdde-windows-{\pddever}.zip} and it is ready to use.
 
-To compile the software, copy the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.gz} to \filef{c:$\backslash$msys$\backslash$home$\backslash$$<$username$>$$\backslash$}. Similar to the Unix installation, the ATLAS linear algebra library is required to build the software. \footnote{For instructions how to build ATLAS on Windows refer to \url{http://cens.ioc.ee/~pearu/scipy/BUILD_WIN32.html}. Alternatively, there is a compiled ATLAS package at the same web page for Pention 4 processors.} If all the prequisites are at hand, start the MSYS shell and follow the Linux installation instructions above, but with different configuration options:
+However instaling from source requires a bit more work. You need to download several other pices of software. First download 
+the most recent self extracting installer of MinGW from \url{http://www.mingw.org/} (at the time of writing 5.0.3) and install it. The installer will ask for you to select options. Tick the boxes of the C,C++ compiler and the GNU make utility, the other components are not required. Download and install the Windows version of CMake from \url{www.cmake.org} and a very recent version of Qt (4.2.0 and later) from \url{http://www.trolltech.com/developer/downloads/qt/windows}.
+
+To compile the software, first uncompress the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
+Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and \filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory. Then start a command prompt (Start Menu $\rightarrow$ Run type ``cmd'' into the box) and enter the directory \filef{pdde-cont-\@version} into which the package was extracted. If all the requirements are installed and the ATLAS files are in place, issue the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ cd pdde-cont-%\@version%
-$ cmake -G "MSYS Makefiles" -D CMAKE_INSTALL_PREFIX=$HOME/pdde-cont/ .
+ > build-windows
 \end{lstlisting} \end{quote} } \noindent
-To compile and install the software run the following command:
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ make install
-\end{lstlisting} \end{quote} } \noindent
-Next \filef{.profile} has to be created in your MSYS \filef{HOME} directory:
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ echo 'export PATH=$PATH:$HOME/pdde-cont/bin' >.profile
-\end{lstlisting} \end{quote} } \noindent
-Restart the MSYS shell and the software is ready to use.
+command, which will build and install the software into \filef{Program Files$\backslash$PDDE}. The program then can be started from the \filef{bin} subdirectory. Note that no ``Start menu'' entries, no shortcuts are made to the software, so these steps have to be performed manually if required. To uninstall, simply delete the PDDE directory.
 
 \section{Command line arguments}
 
@@ -145,7 +137,7 @@ This is PDDE-CONT version 1.0.1 (r98 2005-12-30 22:37:39 +0100)
 \end{lstlisting} \end{quote} } \noindent
 
 
-\section{The constants file}
+\subsection{The constants file}
 \label{constfile}
 
 As an example, we included one of the demo problems:
@@ -287,7 +279,7 @@ Maximum number of iteration steps, when finding a bifurcation point. (\emph{Curr
 %
 \end{description}
 
-\subsection{User defined equations}
+\subsubsection{User defined equations}
 If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants file is different. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so						SYSNAME
@@ -352,7 +344,7 @@ Similarly the second rotational symmetric complex solution component has its rea
 \end{description}
 
 
-\section{Structure of the output file}
+\subsection{Structure of the output file}
 
 The output file contains all the computed information of a periodic solution 
 branch. Also, this file can be used to restart the continuation from a point 
@@ -365,7 +357,7 @@ in Table \ref{iostruct}.
 Starting & Length & Content\\
 Column & & \\
 \hline
-1             & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NPAR}, the number of parameters. It may include internal parameters. \end{minipage}\\
+1             & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NPAR}, the number of parameters plus the number of internal parameters, which is 3. \end{minipage}\\
 \hline
 2             & \funp{NPAR} & Values of parameters\\
 \hline
@@ -404,7 +396,7 @@ Similarly, the results can be converted back into DDE-BIFTOOL using the command
 >> psbr.point = pdde2dde( 'output-file' );
 \end{lstlisting} \end{quote} } \noindent
 
-\section{Defining an equation}
+\subsection{Defining an equation}
 
 The software uses custom C++ data types to represent matrices and vectors,
 which are called \fun{Matrix} and \fun{Vector}, respectively. For indexing
@@ -415,7 +407,7 @@ the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}-th element in the
 \fun{(i-1)}-th row of the matrix. The number of columns and rows of \fun{m} can be
 can be queried by calling \fun{m.Col()} and \fun{m.Row()}, respectively.
 
-\subsection{System definition}\label{sysdef}
+\subsubsection{System definition}\label{sysdef}
 
 The system definition file is a C++ source file, which is compiled by the user
 and then loaded by the main program \filef{pdde} as a shared object. The compilation is
@@ -493,7 +485,7 @@ The required functions are
   This function returns the value of the known periodic solution at time \fun{t}.
 \end{itemize}
 
-\section{Running the software}
+\subsection{Running the software}
 
 After invoking the software \filef{pdde}, it either loads a solution profile from the input file (see Sect.\ \ref{constfile}) or uses the 
 \fun{sys_stpar} and \fun{sys_stsol} functions (see Sect.\ \ref{sysdef}) depending on the value of \funp{LABEL} to obtain an approximate solution at a given value of parameters. There are three steps of initializations before the continuation starts:
@@ -505,7 +497,7 @@ After invoking the software \filef{pdde}, it either loads a solution profile fro
 If any of the above tasks fail, or the convergence is not reached within the specified number of steps and accuracy, the program stops.
 After all this initializations, the program starts the continuation and writes the data into the output and branch files.
 
-\subsection{The console output}
+\subsubsection{The console output}
 
 First, the software writes the content of the constants file (see Sect.\ \ref{constfile}) to the standard output (console). Then it starts the Newton iteration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -540,7 +532,7 @@ LABEL      NORM         P2              P0              USTAB   IT
 \end{lstlisting} \end{quote} } \noindent
 The first column, \funp{LABEL} is the solution label in the output file, while the second column is the $L^2$ norm of the solution. From the third column on, the free parameters are displayed. The column denoted by \funp{USTAB} refers to the number of unstable characteristic roots, if stability computation is turned on (see \funp{STAB} below), otherwise it is meaningless. The last column is the number of the Newton iterations, within each continuation step.
 
-\section{Example: Mackey-Glass equation}
+\subsection{Example: Mackey-Glass equation}
 
 Here we discuss the continuation steps in the case of a simple one dimensional
 delay-differential equation. Although the equation is simple, it shows quite
@@ -793,6 +785,8 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 \caption{Fold bifurcations of the period-2 orbits. Black curves are periodic solutions continued along $b=$ constant lines. Red curves refer to fold bifurcations, while the blue line is the period doubling curve, where the period-2 orbits arise. }
 \label{pdfold}
 \end{figure}
+
+\section{The graphical user interface (GUI)}
 
 \section{Algorithms used in the software}
 

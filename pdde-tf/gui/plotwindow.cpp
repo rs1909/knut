@@ -1,15 +1,29 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #include "plotwindow.h"
 #include <vector>
 #include <cmath>
 
+#include <QGraphicsView>
+#include <QLabel>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QMessageBox>
+#include <QLayout>
+#include <QToolBar>
+#include <QAction>
+
 plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(parent), data(d)
 {
 	QGraphicsView *plot = new QGraphicsView;
-// 	plot->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-// 	plot->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-// 	plot->setFrameRect
-// 	PlotData *plotdata = new PlotData;
-
+	
 	plot->setScene( &plotdata );
 	QToolBar *toolbar = addToolBar("default");
 	QWidget *centralWidget = new QWidget;
@@ -70,17 +84,6 @@ plotWindow::plotWindow( const mat4Data* d, QWidget *parent ) : QMainWindow(paren
 	connect( addnewplot, SIGNAL(triggered()), this, SLOT(addPlot()) );
 	connect( clearallplot, SIGNAL(triggered()), this, SLOT(clearPlot()) );
 
-// 	plotdata.addPlot( *data, XMesh, YProfile, 0, 0, "b" );
-// 	plotdata.clear();
-
-// 	Vector v1(1000), v2(1000);
-// 	for( int i=0; i < 1000; i++ ){ v1(i) = i*2*M_PI/1000.0; v2(i) = sin(v1(i)); }
-// 	plotdata->addPlot( v1, v2, "r--" );
-// 	for( int i=0; i < 1000; i++ ){ v1(i) = i*2*M_PI/1000.0; v2(i) = 1.1*sin(v1(i)+1); }
-// 	plotdata->addPlot( v1, v2, "g--" );
-// 	for( int i=0; i < 1000; i++ ){ v1(i) = i*2*M_PI/1000.0; v2(i) = 1.2*sin(v1(i)+2); }
-// 	plotdata->addPlot( v1, v2, "c:" );
-// 	plotdata->addPlot( v2, "y-." );
 	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()+
 	   QSize(2*plot->frameWidth(),2*plot->frameWidth()) );
 }

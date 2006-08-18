@@ -1,5 +1,17 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #include "plotdata.h"
-#include <QtGui>
+
+#include <QMainWindow>
+class QComboBox;
+class QSpinBox;
 
 class plotWindow : public QMainWindow
 {

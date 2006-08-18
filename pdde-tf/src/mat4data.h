@@ -1,11 +1,22 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifndef MAT4DATA_H
 #define MAT4DATA_H
 
-#include <stdint.h>
-#include <string>
 #include "matrix.h"
+#include <string>
+// for the correct integer size
+#include <stdint.h>
+// HANDLE is defined here
 #ifdef WIN32
-#include <windows.h>
+#  include <windows.h>
 #endif
 
 class mat4Data

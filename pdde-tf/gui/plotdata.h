@@ -1,16 +1,21 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
 
 #ifndef PLOTDATA_H
 #define PLOTDATA_H
 
-#include <QObject>
-#include <QWidget>
 #include <QPen>
 #include <QPolygon>
 #include <QPainterPath>
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
-#include <QFocusEvent>
-#include <QGraphicsSceneMouseEvent>
+class QGraphicsSceneMouseEvent;
 
 #include <vector>
 #include <list>
@@ -100,10 +105,6 @@ public:
 	~PlotData( );
 	void makeBox( );
 	void PlotPaint( );
-	void addPlot( const Vector& v );
-	void addPlot( const Vector& v, const char* style );
-	void addPlot( const Vector& v1, const Vector& v2 );
-	void addPlot( const Vector& v1, const Vector& v2, const char* style );
 	void addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
 	void clear();
 
@@ -130,7 +131,6 @@ private:
 	void rescaleData();
 	void replot();
 
-	QGraphicsScene* PlotScene;
 	// geometry
 	std::list<ViewBox> ZoomHistory;
 	std::list<ViewBox>::iterator currZoom;

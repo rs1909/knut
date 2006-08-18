@@ -1,5 +1,11 @@
-#include <QtGui>
-#include <QtXml>
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
 
 #include "config.h"
 #include "mainwindow.h"
@@ -9,6 +15,8 @@
 
 #include <fstream>
 #include <cfloat>
+
+#include <QtGui>
 
 MainWindow::MainWindow( const QString& appDir ) :
 	executableDir(appDir), compThread(parameters),

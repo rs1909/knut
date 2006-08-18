@@ -1,12 +1,21 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#  include "config.h"
 #endif
-#include "pderror.h"
-#include "system.h"
-#include "point.h"
-#include "torpoint.h"
-// #include "parameters.h"
+
 #include "compthread.h"
+#include "pderror.h"
+#include "point.h"
+#include "system.h"
+#include "torpoint.h"
 
 #include <iostream>
 #include <iomanip>
@@ -261,17 +270,14 @@ void MThread::run()
 				pttr.Continue( ds, false );
 				
 				// write out the results
-				for( int j = 0; j < npar; j++ ) std::cout<<par(j)<<"\t";
-				std::cout<<std::endl;
 				for( int j = 0; j < npar; j++ ) par(j) = pttr.getPar()(j);
-// 				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
-// 				ff<<pttr.Norm()<<"\n";
-// 				ff.flush();
+				screenout<<i;
+				for( int j = 0; j < npar; j++ ) screenout<<"\t"<<par(j);
+			 #ifdef DEBUG
+				std::cout<<screenout<<"\n";
+			 #endif
+				emit printToScreen( screenout.str() ); screenout.str("");
 				pttr.WriteBinary( out, i );
-// 				std::ostringstream fdata, fidx;
-// 				fdata << "sol-" << i << ".dat";
-// 				fidx << "sol-" << i << ".idx";
-// 				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
 			}
 		}
 		// **********************************************************************************************************

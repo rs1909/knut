@@ -1,24 +1,35 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "compthread.h"
+#include "paramview.h"
+#include "screendialog.h"
+#include "system.h"
+
 #include <QMainWindow>
 #include <QCheckBox>
-
-#include "system.h"
-#include "paramview.h"
-#include "compthread.h"
-#include "screendialog.h"
+#include <QLineEdit>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QMessageBox>
 
 class QAction;
 class QMenu;
 class QTextEdit;
 class QVBoxLayout;
-class QLineEdit;
-class QSpinBox;
 class QGridLayout;
-class QComboBox;
 class QPushButton;
 class QLabel;
+class QProcess;
 class mat4Data;
 class plotWindow;
 

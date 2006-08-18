@@ -1,5 +1,16 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #include "paramview.h"
 #include <QComboBox>
+#include <QSpinBox>
+#include <QHeaderView>
 
 QVariant ParamsModel::data(const QModelIndex &index, int role) const
 {
@@ -221,5 +232,69 @@ void SYMDelegate::updateEditorGeometry(QWidget *editor,
 	editor->setGeometry(option.rect);
 }
 
+EqnVarTableView::EqnVarTableView( NConstantsQtGui* params, QWidget* parent_ ) : QTableView( parent_ )
+{
+	parameters = params;
+	model = new ParamsModel( params );
+	delegate = new BoxDelegate( params );
+	setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
+	setModel( model );
+	resetSize( );
+	connect( parameters, SIGNAL(sysnameChanged(const std::string&)), model, SLOT(dataUpdated()) );
+	connect( parameters, SIGNAL(neqnsChanged(int)), model, SLOT(dataUpdated()) );
+	connect( parameters, SIGNAL(pointTypeChangedIdx(int)), model, SLOT(dataUpdated()) );
+	connect( parameters, SIGNAL(pointTypeChangedIdx(int)), this, SLOT(resetSize()) );
+	connect( parameters, SIGNAL(neqnsChanged(int)), this, SLOT(resetSize()) );
+}
 
+void EqnVarTableView::resetSize( )
+{
+	resizeRowToContents(0);
+	if( parameters->getPointType() == SolUser ) resizeRowToContents(1);
+	horizontalHeader()->setDefaultAlignment( Qt::AlignLeft );
+	setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+	setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+	if( parameters->getPointType() == SolUser )
+	{
+		setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
+								rowHeight(0)+rowHeight(1)+2*frameWidth() +
+								horizontalHeader()->frameRect().height() );
+		setMinimumSize( columnWidth(0)+2*frameWidth(),
+								rowHeight(0)+rowHeight(1)+2*frameWidth() +
+								horizontalHeader()->frameRect().height() );
+	}else
+	{
+		setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
+								rowHeight(0)+2*frameWidth() +
+								horizontalHeader()->frameRect().height() );
+		setMinimumSize( columnWidth(0)+2*frameWidth(),
+								rowHeight(0)+2*frameWidth() +
+								horizontalHeader()->frameRect().height() );
+	}
+}
 
+SYMTableView::SYMTableView( NConstantsQtGui* params, QWidget* parent_ ) : QTableView( parent_ ), parameters(params)
+{
+	model = new SYMModel( parameters );
+	delegate = new SYMDelegate( parameters );
+	setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
+	setModel( model );
+	resetSize();
+	connect( parameters, SIGNAL(nsymChanged(int)), model, SLOT(dataUpdated()) );
+	connect( parameters, SIGNAL(nsymChanged(int)), this, SLOT(resetSize()) );
+}
+
+void SYMTableView::resetSize()
+{
+	resizeRowToContents(0);
+	resizeRowToContents(1);
+	horizontalHeader()->setDefaultAlignment( Qt::AlignLeft );
+	setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+	setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+	setMaximumSize( columnWidth(0)+2*frameWidth()+2000,
+							rowHeight(0)+rowHeight(1)+2*frameWidth() +
+							horizontalHeader()->frameRect().height() );
+	setMinimumSize( columnWidth(0)+2*frameWidth(),
+							rowHeight(0)+rowHeight(1)+2*frameWidth() +
+							horizontalHeader()->frameRect().height() );
+}

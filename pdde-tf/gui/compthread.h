@@ -1,5 +1,15 @@
-#include <QThread>
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #include "constqtgui.h"
+#include <string>
+#include <QThread>
 
 class MThread : public QThread
 {

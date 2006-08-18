@@ -1,8 +1,15 @@
-#include <QApplication>
-#include <string>
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
 
 #include "mainwindow.h"
-#include "point.h"
+#include <string>
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {

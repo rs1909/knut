@@ -3,7 +3,7 @@
 // This is part of PDDE-CONT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
-// For license, see the file COPYING in the packages packages root directory
+// For license, see the file COPYING in the root directory of the package
 //
 // ------------------------------------------------------------------------- */
 

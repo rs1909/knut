@@ -1,7 +1,17 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of PDDE-CONT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
 #ifndef CONSTQTGUI_H
 #define CONSTQTGUI_H
 
 #include "constants.h"
+#include <string>
 #include <QObject>
 
 class NConstantsQtGui : public QObject, public NConstants
