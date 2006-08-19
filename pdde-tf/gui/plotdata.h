@@ -109,14 +109,10 @@ public:
 	void clear();
 
 protected:
-// 	void paintEvent( QPaintEvent *event );
-// 	void resizeEvent ( QResizeEvent * event );
-// 	void mousePressEvent ( QGraphicsSceneMouseEvent * event );
-// 	void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
-// 	void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
-// 	void keyPressEvent ( QKeyEvent * event );
-// 	void focusInEvent ( QFocusEvent * focusEvent ) { std::cout<<"FocusIn\n"; std::cout.flush(); }
-// 	void focusOutEvent ( QFocusEvent * focusEvent ) { std::cout<<"FocusOut\n"; std::cout.flush(); }
+	void mousePressEvent ( QGraphicsSceneMouseEvent * event );
+	void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
+	void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
+	void keyPressEvent ( QKeyEvent * event );
 	bool event( QEvent* event );
 
 private:

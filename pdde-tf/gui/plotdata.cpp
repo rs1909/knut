@@ -559,60 +559,17 @@ bool PlotData::event( QEvent* ev )
 	QGraphicsSceneMouseEvent *event;
 	if( (event=dynamic_cast<QGraphicsSceneMouseEvent*>(ev)) != 0)
 	{
-		if( event->type() == QEvent::GraphicsSceneMouseMove )
-		{
-			if( event->buttons() == Qt::RightButton )
-			{
-				mouseMove = QPointF( event->scenePos() );
-				if( sceneRect().contains( mouseMove ) )
-				{
-					selection.setRect( QRectF(mouseBegin.x(), mouseBegin.y(), mouseMove.x() - mouseBegin.x() , mouseMove.y() - mouseBegin.y() ).normalized() );
-					selection.setVisible(true);
-					selection.update();
-				}
-				event->accept();
-				return true;
-			}
-		}
 		if( event->type() == QEvent::GraphicsSceneMousePress )
 		{
-			if( event->button() == Qt::RightButton )
-			{
-				mouseBegin = QPointF( event->scenePos() );
-				mouseMove = mouseBegin;
-				event->accept();
-				return true;
-			}
+			mousePressEvent( event );
 		}
 		if( event->type() == QEvent::GraphicsSceneMouseRelease )
 		{
-			if( event->button() == Qt::RightButton )
-			{
-				mouseEnd = QPointF( event->scenePos() );
-				if ( mouseEnd == mouseBegin ) return true;
-				
-				ViewBox cvb = *currZoom, newvb;
-				const double xscale = plotXSize/(cvb.xmax-cvb.xmin);
-				const double yscale = plotYSize/(cvb.ymax-cvb.ymin);
-		
-				newvb.xmin = qMin( mouseBegin.x(), mouseEnd.x() )/xscale + cvb.xmin;
-				newvb.xmax = qMax( mouseBegin.x(), mouseEnd.x() )/xscale + cvb.xmin;
-				newvb.ymin = cvb.ymax - qMax( mouseBegin.y(), mouseEnd.y() )/yscale;
-				newvb.ymax = cvb.ymax - qMin( mouseBegin.y(), mouseEnd.y() )/yscale;
-				adjustAxis( newvb.xmin, newvb.xmax, newvb.xticks );
-				adjustAxis( newvb.ymin, newvb.ymax, newvb.yticks );
-				// remove the next zoom levels
-				ZoomHistory.erase( ++currZoom, ZoomHistory.end());
-				--currZoom;
-				// add the new level
-				ZoomHistory.push_back( newvb );
-				currZoom = --ZoomHistory.end();
-				dataToGraphics();
-				selection.setVisible(false);
-				update( selection.boundingRect().normalized() );
-				event->accept();
-				return true;
-			}
+			mouseReleaseEvent( event );
+		}
+		if( event->type() == QEvent::GraphicsSceneMouseMove )
+		{
+			mouseMoveEvent( event );
 		}
 	}
 	QKeyEvent *key;
@@ -620,30 +577,88 @@ bool PlotData::event( QEvent* ev )
 	{
 		if( key->type() == QEvent::KeyPress )
 		{
-			if( key->key() == Qt::Key_P )
-			{
-				if( ZoomHistory.begin() != currZoom )
-				{
-					--currZoom;
-					dataToGraphics();
-				}
-				key->accept();
-				return true;
-			}
-			if( key->key() == Qt::Key_N )
-			{
-				if( --ZoomHistory.end() != currZoom )
-				{
-					++currZoom;
-					dataToGraphics();
-				}
-				key->accept();
-				return true;
-			}
+			keyPressEvent( key );
 		}
 	}
-	std::cout.flush();
-	return false;
+	if( ev->isAccepted() ) return true;
+	else return false;
+}
+
+void PlotData::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+{
+	if( event->button() == Qt::RightButton )
+	{
+		mouseBegin = QPointF( event->scenePos() );
+		mouseMove = mouseBegin;
+		event->accept();
+	}
+}
+
+void PlotData::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
+{
+	if( event->button() == Qt::RightButton )
+	{
+		mouseEnd = QPointF( event->scenePos() );
+		if ( mouseEnd == mouseBegin ) { event->accept(); return; }
+		
+		ViewBox cvb = *currZoom, newvb;
+		const double xscale = plotXSize/(cvb.xmax-cvb.xmin);
+		const double yscale = plotYSize/(cvb.ymax-cvb.ymin);
+
+		newvb.xmin = qMin( mouseBegin.x(), mouseEnd.x() )/xscale + cvb.xmin;
+		newvb.xmax = qMax( mouseBegin.x(), mouseEnd.x() )/xscale + cvb.xmin;
+		newvb.ymin = cvb.ymax - qMax( mouseBegin.y(), mouseEnd.y() )/yscale;
+		newvb.ymax = cvb.ymax - qMin( mouseBegin.y(), mouseEnd.y() )/yscale;
+		adjustAxis( newvb.xmin, newvb.xmax, newvb.xticks );
+		adjustAxis( newvb.ymin, newvb.ymax, newvb.yticks );
+		// remove the next zoom levels
+		ZoomHistory.erase( ++currZoom, ZoomHistory.end());
+		--currZoom;
+		// add the new level
+		ZoomHistory.push_back( newvb );
+		currZoom = --ZoomHistory.end();
+		dataToGraphics();
+		selection.setVisible(false);
+		update( selection.boundingRect().normalized() );
+		event->accept();
+	}
+}
+
+void PlotData::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
+{
+	if( event->buttons() == Qt::RightButton )
+	{
+		mouseMove = QPointF( event->scenePos() );
+		if( sceneRect().contains( mouseMove ) )
+		{
+			selection.setRect( QRectF(mouseBegin.x(), mouseBegin.y(), mouseMove.x() - mouseBegin.x() , mouseMove.y() - mouseBegin.y() ).normalized() );
+			selection.setVisible(true);
+			selection.update();
+		}
+		event->accept();
+	}
+}
+
+void PlotData::keyPressEvent ( QKeyEvent * key )
+{
+	if( key->key() == Qt::Key_P )
+	{
+		if( ZoomHistory.begin() != currZoom )
+		{
+			--currZoom;
+			dataToGraphics();
+		}
+		key->accept();
+	}
+	if( key->key() == Qt::Key_N )
+	{
+		if( --ZoomHistory.end() != currZoom )
+		{
+			++currZoom;
+			dataToGraphics();
+		}
+		key->accept();
+	}
 }
 
 void PlotData::makeBox( )
