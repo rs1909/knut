@@ -143,11 +143,11 @@ private:
 	// data
 	std::list<Vector>   DataX;
 	std::list<Vector>   DataY;
-	std::list<PlotType> DataType;
 	
 	std::list<PlotItem> Graph;
 	
 	// the plot box
+	QGraphicsRectItem                 *Box;
 	std::vector<QGraphicsTextItem*>    HText;
 	std::vector<QGraphicsTextItem*>    VText;
 	std::vector<QGraphicsLineItem*>    TopTicks;

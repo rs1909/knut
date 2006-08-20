@@ -18,7 +18,7 @@ IF( NOT WIN32 )
 
   FIND_PROGRAM( SHELL NAMES sh bash )
   IF( EXISTS ${SHELL} )
-    MESSAGE( "The shell is found: ${SHELL}" )
+    MESSAGE( STATUS "The shell is found: ${SHELL}" )
   ELSE( EXISTS ${SHELL} )
     MESSAGE( SEND_ERROR "Cannot find a shell program" )
   ENDIF( EXISTS ${SHELL} )

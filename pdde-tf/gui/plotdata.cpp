@@ -25,7 +25,7 @@ PlotData::PlotData(QObject *parent) :
 	QGraphicsScene(parent),
 	AspectRatio( 4.0/3.0 ),
 	plotXSize  ( 540 ), plotYSize ( plotXSize / AspectRatio ),
-	FontSize ( 12 )
+	FontSize ( 12 ), Box(0)
 {
 	const ViewBox cvb = { 1.0, -1.0, 1.0, -1.0, 1, 1 };
 	ZoomHistory.push_back( cvb );
@@ -697,7 +697,7 @@ void PlotData::makeBox( )
 {
 	ViewBox cvb = *currZoom;
 	// drawing the box
-	this->addRect( QRectF( 0.0, 0.0, plotXSize, plotYSize ), QPen( QBrush(Qt::SolidPattern), 2.0 ) );
+	if( Box == 0 ) Box = addRect( QRectF( 0.0, 0.0, plotXSize, plotYSize ), QPen( QBrush(Qt::SolidPattern), 2.0 ) );
 	
 	// drawing the ticks and tickmarks
 	for( unsigned int i=0; i < HText.size(); i++ )
