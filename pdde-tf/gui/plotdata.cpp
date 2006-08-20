@@ -8,6 +8,7 @@
 // ------------------------------------------------------------------------- //
 
 #include "plotdata.h"
+#include "ncolloc.h"
 
 #include <cmath>
 #include <cfloat>
@@ -46,6 +47,7 @@ void PlotData::clear()
 	std::list<Vector>::iterator j2;
 	for( i = Graph.begin(), j1 = DataX.begin(), j2=DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
+		delete (*i).item;
 		if( (*i).type == PlotLineType )
 		{
 			delete (*i).data.line;
@@ -117,7 +119,7 @@ void PlotData::plotStyle( QPen& pen, const char* style )
 
 void PlotData::addPlotLine( const char* style )
 {
-	PlotItem t_pl = { {0}, PlotLineType };
+	PlotItem t_pl = { {0}, PlotLineType, 0 };
 	Graph.push_back( t_pl );
 	Graph.rbegin()->data.line = new PlotLine( QPen( QColor( "blue" ) ) );
 	Graph.rbegin()->data.line->pen.setWidthF( 1 );
@@ -130,7 +132,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 	{
 		case 0:  // CIRCLE
 			{
-				PlotItem t_pl = { {0}, PlotCircleType };
+				PlotItem t_pl = { {0}, PlotCircleType, 0 };
 				Graph.push_back( t_pl );
 				Graph.rbegin()->data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -3.0, -3.0, 6.0 ,6.0 ) );
 				Graph.rbegin()->data.circle->pen.setWidthF( 1 );
@@ -139,7 +141,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 1:  // SQUARE
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType };
+				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
 				Graph.push_back( t_pl );
 				QPolygonF pl(4);
 				pl[0] = QPointF( -3.0, -3.0 );
@@ -153,7 +155,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 2: // TRIANGLE
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType };
+				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
 				Graph.push_back( t_pl );
 				QPolygonF pl(3);
 				pl[0] = QPointF( -3.0, -3.0 );
@@ -166,7 +168,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 3: // CROSS
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType };
+				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
 				Graph.push_back( t_pl );
 				QPolygonF pl(5);
 				pl[0] = QPointF( -3.0, 0.0 );
@@ -212,24 +214,24 @@ void PlotData::dataToGraphics( )
 	PlotPaint( );
 }
 
-void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, int pt, int dim, const char* style )
+void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int dim, const char* style )
 {
 	int xadded = 0;
 	int yadded = 0;
 	// mindig az Y utan kovetkezik csak addPlot...()
 	if( x >= XParameter0 )
 	{
-		DataX.push_back( Vector(data.getNPoints()) );
-		for( int i = 0; i < data.getNPoints(); i++ )
+		DataX.push_back( Vector(data->getNPoints()) );
+		for( int i = 0; i < data->getNPoints(); i++ )
 		{
-			(*DataX.rbegin())(i) = data.getPar( i, x-XParameter0 );
+			(*DataX.rbegin())(i) = data->getPar( i, x-XParameter0 );
 		}
 		++xadded;
 	}
 	if( x == XLabel && y != YAbsMultiplier && y != YProfile )
 	{
-		DataX.push_back( Vector(data.getNPoints()) );
-		for( int i = 0; i < data.getNPoints(); i++ )
+		DataX.push_back( Vector(data->getNPoints()) );
+		for( int i = 0; i < data->getNPoints(); i++ )
 		{
 			(*DataX.rbegin())(i) = i;
 		}
@@ -237,49 +239,71 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	}
 	if( x == XMesh && y == YProfile )
 	{
-		const int ndeg = data.getNDeg();
-		const int nint = data.getNInt();
+		const int ndeg = data->getNDeg();
+		const int nint = data->getNInt();
 		DataX.push_back( ndeg*nint+1 );
 		DataY.push_back( ndeg*nint+1 );
 		for( int i = 0; i < nint; i++ )
 		{
 			for( int j = 0; j < ndeg; j++ )
 			{
-				(*DataX.rbegin())(j + ndeg*i) = data.getMesh( pt, i ) + data.getElem( pt, j )*(data.getMesh( pt, i+1 )-data.getMesh( pt, i ));
-				(*DataY.rbegin())(j + ndeg*i) = data.getProfile( pt, dim, j + ndeg*i );
+				(*DataX.rbegin())(j + ndeg*i) = data->getMesh( pt, i ) + data->getElem( pt, j )*(data->getMesh( pt, i+1 )-data->getMesh( pt, i ));
+				(*DataY.rbegin())(j + ndeg*i) = data->getProfile( pt, dim, j + ndeg*i );
 			}
 		}
-		(*DataX.rbegin())(ndeg*nint) = data.getMesh( pt, nint );
-		(*DataY.rbegin())(ndeg*nint) = data.getProfile( pt, dim, ndeg*nint );
+		(*DataX.rbegin())(ndeg*nint) = data->getMesh( pt, nint );
+		(*DataY.rbegin())(ndeg*nint) = data->getProfile( pt, dim, ndeg*nint );
 		++xadded; ++yadded;
 		addPlotLine( style );
 	}
 	if( y >= YParameter0 && (x != XMesh && x != XRealMultiplier) )
 	{
-		DataY.push_back( Vector(data.getNPoints()) );
-		for( int i = 0; i < data.getNPoints(); i++ )
+		DataY.push_back( Vector(data->getNPoints()) );
+		for( int i = 0; i < data->getNPoints(); i++ )
 		{
-			(*DataY.rbegin())(i) = data.getPar( i, y-YParameter0 );
+			(*DataY.rbegin())(i) = data->getPar( i, y-YParameter0 );
 		}
 		++yadded;
 		addPlotLine( style );
 	}
 	if( y == YAmplitude && (x != XMesh && x != XRealMultiplier) )
 	{
-		DataY.push_back( Vector(data.getNPoints()) );
-		for( int i = 0; i < data.getNPoints(); i++ )
+		DataY.push_back( Vector(data->getNPoints()) );
+		for( int i = 0; i < data->getNPoints(); i++ )
 		{
+			const int ndeg = data->getNDeg();
+			const int nint = data->getNInt();
 			double min = DBL_MAX;
 			double max = -DBL_MAX;
-			for( int j = 0; j < data.getMeshLength(); ++j )
+			for( int j = 0; j < nint; ++j )
 			{
-				for( int k = 0; k < data.getNDim(); ++k )
+				for( int k = 0; k < ndeg; ++k )
 				{
-					if( min > data.getProfile( i, k, j ) ) min = data.getProfile( i, k, j );
-					if( max < data.getProfile( i, k, j ) ) max = data.getProfile( i, k, j );
+					for( int p = 0; p < data->getNDim(); ++p )
+					{
+						if( min > data->getProfile( i, p, k + ndeg*j ) ) min = data->getProfile( i, p, k + ndeg*j );
+						if( max < data->getProfile( i, p, k + ndeg*j ) ) max = data->getProfile( i, p, k + ndeg*j );
+					}
 				}
 			}
 			(*DataY.rbegin())(i) = max - min;
+		}
+		++yadded;
+		addPlotLine( style );
+	}
+	if( y == YL2Norm && (x != XMesh && x != XRealMultiplier) )
+	{
+		Vector elem;
+		const_cast<mat4Data*>(data)->getElemRef(0,elem);
+		Matrix metric(elem.Size(),elem.Size());
+		NColloc::getMetric(metric,elem);
+		DataY.push_back( Vector(data->getNPoints()) );
+		Vector prof, msh;
+		for( int i = 0; i < data->getNPoints(); i++ )
+		{
+			const_cast<mat4Data*>(data)->getMeshRef(i,msh);
+			const_cast<mat4Data*>(data)->getProfileRef(i,prof);
+			(*DataY.rbegin())(i) = NColloc::integrate( prof, prof, metric, msh, data->getNDim() );
 		}
 		++yadded;
 		addPlotLine( style );
@@ -297,26 +321,26 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 		}
 		addPlotLine( "k" );
 		// plotting the multipliers
-		DataX.push_back( Vector(data.getNMul()) );
-		DataY.push_back( Vector(data.getNMul()) );
-		for( int i = 0; i < data.getNMul(); i++ )
+		DataX.push_back( Vector(data->getNMul()) );
+		DataY.push_back( Vector(data->getNMul()) );
+		for( int i = 0; i < data->getNMul(); i++ )
 		{
-			(*DataX.rbegin())(i) = data.getMulRe( pt, i );
-			(*DataY.rbegin())(i) = data.getMulIm( pt, i );
+			(*DataX.rbegin())(i) = data->getMulRe( pt, i );
+			(*DataY.rbegin())(i) = data->getMulIm( pt, i );
 		}
 		++xadded; ++yadded;
 		addPlotPoint( style, 1 );
 	}
 	if( x == XLabel && y == YAbsMultiplier )
 	{
-		for( int r = 0; r < data.getNMul(); r++ )
+		for( int r = 0; r < data->getNMul(); r++ )
 		{
-			DataX.push_back( Vector(data.getNPoints()) );
-			DataY.push_back( Vector(data.getNPoints()) );
-			for( int i = 0; i < data.getNPoints(); i++ )
+			DataX.push_back( Vector(data->getNPoints()) );
+			DataY.push_back( Vector(data->getNPoints()) );
+			for( int i = 0; i < data->getNPoints(); i++ )
 			{
 				(*DataX.rbegin())(i) = i;
-				(*DataY.rbegin())(i) = sqrt(data.getMulRe(i,r)*data.getMulRe(i,r)+data.getMulIm(i,r)*data.getMulIm(i,r));
+				(*DataY.rbegin())(i) = sqrt(data->getMulRe(i,r)*data->getMulRe(i,r)+data->getMulIm(i,r)*data->getMulIm(i,r));
 			}
 			++xadded; ++yadded;
 			addPlotPoint( style, 1 );
@@ -329,18 +353,18 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	{
 		int k, k_p = 0;
 		do{
-			k = data.getNextBifurcation( k_p, 1 );
+			k = data->getNextBifurcation( k_p, 1 );
 			if( k != -1 )
 			{
 				bifidx.push_back(k);
-				biftype.push_back( data.getBifurcationType( k, 1 ) );
+				biftype.push_back( data->getBifurcationType( k, 1 ) );
 				k_p = k;
 			}
 		}while( k != -1 );
 		std::list<Vector>::const_iterator j1 = DataX.end();
 		std::list<Vector>::const_iterator j2 = DataY.end();
 		j1--; j2--;
-		if( (*j1).Size() == data.getNPoints() )
+		if( (*j1).Size() == data->getNPoints() )
 		{
 			for( unsigned int i = 0; i < bifidx.size(); i++ )
 			{
@@ -481,6 +505,7 @@ void PlotData::rescaleData()
 	std::list<Vector>::const_iterator j2;
 	for( i = Graph.begin(), j1 = DataX.begin(), j2 = DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
+		delete (*i).item; (*i).item = 0;
 		if( j1 == DataX.end() || j2 == DataY.end() ) { std::cout<<"serious BUG!\n"; abort(); }
 		if( (*i).type == PlotLineType )
 		{
@@ -740,49 +765,31 @@ void PlotData::PlotPaint( )
 	// drawing the box
 	makeBox( );
 	// drawing the lines
-	for( unsigned int i = 0; i < PathItems.size(); ++i )
-	{
-		this->removeItem( PathItems[i] );
-		delete PathItems[i];
-	}
-	PathItems.clear();
-	for( unsigned int i = 0; i < CircleItems.size(); ++i )
-	{
-		this->removeItem( CircleItems[i] );
-		delete CircleItems[i];
-	}
-	CircleItems.clear();
-	for( unsigned int i = 0; i < PolygonItems.size(); ++i )
-	{
-		this->removeItem( PolygonItems[i] );
-		delete PolygonItems[i];
-	}
-	PolygonItems.clear();
-	for( std::list<PlotItem>::const_iterator i = Graph.begin(); i != Graph.end(); i++ )
+	for( std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++ )
 	{
 		if( (*i).type == PlotLineType )
 		{
-			QGraphicsPathItem *pt = this->addPath( (*i).data.line->line, (*i).data.line->pen );
-			PathItems.push_back( pt );
+			delete (*i).item;
+			(*i).item = this->addPath( (*i).data.line->line, (*i).data.line->pen );
 		}
 		if( (*i).type == PlotCircleType )
 		{
-// 			std::cout<<"circles "<<(*i).data.circle->pos.size()<<"\n";
 			for( unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j )
 			{
+				delete (*i).item;
 				QGraphicsEllipseItem *pt = this->addEllipse( (*i).data.circle->point, (*i).data.circle->pen );
 				pt->setPos( (*i).data.circle->pos[j] );
-				CircleItems.push_back( pt );
+				(*i).item = pt;
 			}
 		}
 		if( (*i).type == PlotPolygonType )
 		{
-// 			std::cout<<"polygons "<<(*i).data.polygon->pos.size()<<"\n";
 			for( unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j )
 			{
+				delete (*i).item;
 				QGraphicsPolygonItem *pt = this->addPolygon( (*i).data.polygon->point, (*i).data.polygon->pen );
 				pt->setPos( (*i).data.polygon->pos[j] );
-				PolygonItems.push_back( pt );
+				(*i).item = pt;
 			}
 		}
 	}

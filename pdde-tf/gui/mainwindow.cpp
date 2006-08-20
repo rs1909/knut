@@ -20,8 +20,7 @@
 
 MainWindow::MainWindow( const QString& appDir ) :
 	executableDir(appDir), compThread(parameters),
-	inputData(0), inputPlotWindow(0),
-	outputData(0), outputPlotWindow(0),
+	inputPlotWindow(0), outputPlotWindow(0),
 	terminalDialog(0), compilerProcess(0)
 {
 	QTabWidget* tabWidget = new QTabWidget();
@@ -436,24 +435,15 @@ void MainWindow::inputPlotDestroyed()
 {
 // 	std::cout<<"plot destroyed\n";
 	delete inputPlotWindow;
-	delete inputData;
 	inputPlotWindow = 0;
-	inputData = 0;
 }
 
 void MainWindow::inputPlot()
 {
 	if( inputPlotWindow == 0 )
 	{
-		try{ inputData = new mat4Data( inputFile->text().toStdString() ); }
-		catch( pddeException ex )
-		{
-			delete inputData;
-			QMessageBox::critical( this, "MainWindow::inputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
-			return;
-		}
-		if( inputData->isTorus() ) { delete inputData; return; }
-		inputPlotWindow = new plotWindow( inputData );
+		inputPlotWindow = new plotWindow( inputFile->text() );
+// 		if( inputData->isTorus() ) { return; }
 		QDialog *inputPlotDialog = new QDialog( this );
 		QVBoxLayout *inputPlotLayout = new QVBoxLayout();
 		inputPlotLayout->addWidget( inputPlotWindow );
@@ -471,27 +461,15 @@ void MainWindow::outputPlotDestroyed()
 {
 // 	std::cout<<"plot destroyed\n";
 	delete outputPlotWindow;
-	delete outputData;
 	outputPlotWindow = 0;
-	outputData = 0;
 }
 
 void MainWindow::outputPlot()
 {
 	if( outputPlotWindow == 0 )
 	{
-		try
-		{
-			outputData = new mat4Data( outputFile->text().toStdString() );
-		}
-		catch( pddeException ex )
-		{
-			delete outputData;
-			QMessageBox::critical( this, "MainWindow::outputPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
-			return;
-		}
-		if( outputData->isTorus() ) { delete outputData; return; }
-		outputPlotWindow = new plotWindow( outputData );
+		outputPlotWindow = new plotWindow( outputFile->text() );
+// 		if( outputData->isTorus() ) { return; }
 		QDialog *outputPlotDialog = new QDialog( this );
 		QVBoxLayout *outputPlotLayout = new QVBoxLayout();
 		outputPlotLayout->addWidget( outputPlotWindow );

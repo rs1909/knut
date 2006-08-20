@@ -50,48 +50,40 @@ class Array1D{
 
 protected:
 
-  int n;
-  T* v;
-
+	int n;
+	T  *v;
+private:
+	bool destructable;
 public:
 
-	inline Array1D() { n = 0; v = 0; }
+	inline Array1D() : n(0), v(0), destructable(true) { }
 
-	inline Array1D( int i )
-	{
-		n = i;
-		v = new T[i];
-		Clear();
-	}
+	inline Array1D( int i ) : n(i), v(new T[i]), destructable(true) { Clear(); }
 	
 	// specially for JagMatrix2D i.e. Array1D< Vector >, which is indexed as (i)(j)
-	inline Array1D( int i, int j )
+	inline Array1D( int i, int j ) : n(i), v(new T[i]), destructable(true)
 	{
-		n = i;
-		v = new T[i];
 		for( int r=0; r<i; r++ ) v[r].Init(j);
 	}
 	
 	// specially for JagMatrix3D i.e. Array1D< Matrix >, which is indexed as (i)(j,k)
-	inline Array1D( int i, int j, int k )
+	inline Array1D( int i, int j, int k ) : n(i), v(new T[i]), destructable(true)
 	{
-		n = i;
-		v = new T[i+1];
 		for( int r=0; r<i; r++ ) v[r].Init(j,k);
 	}
 
-	inline Array1D( const Array1D<T>& V_ )
+	inline Array1D( const Array1D<T>& V_ ) : n(V_.n), v(new T[V_.n]), destructable(true)
 	{
-		n = V_.n;
-		v = new T[V_.n];
 		*this = V_;
 	}
 	
-	inline virtual ~Array1D() { delete[] v; }
+	inline Array1D( T *data, int i ) : n(i), v(data), destructable(false) { }
+	
+	inline virtual ~Array1D() { if(destructable) delete[] v; }
 	
 	inline void Init( int i )
 	{
-		delete[] v;
+		if( destructable ) delete[] v;
 		n = i;
 		v = new T[i];
 		Clear();
@@ -99,10 +91,18 @@ public:
 
 	inline void Init( const Array1D<T>& V_ )
 	{
-		delete[] v;
+		if( destructable ) delete[] v;
 		n = V_.n;
 		v = new T[V_.n];
 		*this = V_;
+	}
+
+	inline void Init( T *data, int i )
+	{
+		if( destructable ) delete[] v;
+		n = i;
+		v = data;
+		destructable = false;
 	}
 
 	inline void Clear( ) { for(int j=0; j<n; j++) v[j]=T(); } // it was T(0), but for built in types it must be the same

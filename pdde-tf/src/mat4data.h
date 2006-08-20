@@ -58,15 +58,18 @@ class mat4Data
 		
 		void   getPar( int n, Vector& par ) const;
 		double getPar( int n, int j ) const { return elem( par_offset, j, n ); }
-		void   getMul( int n, Vector& real,Vector& imag ) const;
+		void   getMul( int n, Vector& real, Vector& imag ) const;
 		double getMulRe( int n, int j ) const { return elem( mul_offset, j, n ); }
 		double getMulIm( int n, int j ) const { return elem_im( mul_offset, j, n ); }
 		void   getElem( int n, Vector& el ) const;
 		double getElem( int n, int j ) const { return elem( elem_offset, j, n ); }
+		void   getElemRef( int n, Vector& el ) { el.Init( &elem( elem_offset, 0, n ), ndeg+1 ); }
 		void   getMesh( int n, Vector& mesh ) const;
 		double getMesh( int n, int j ) const { return elem( mesh_offset, j, n ); }
+		void   getMeshRef( int n, Vector& mesh ) { mesh.Init( &elem( mesh_offset, 0, n ), nint+1 ); }
 		void   getProfile( int n, Vector& profile ) const;
 		double getProfile( int n, int d, int j ) const { return elem( prof_offset, d + ndim*j, n ); }
+		void   getProfileRef( int n, Vector& profile ) { profile.Init( &elem( prof_offset, 0, n ), ndim*(ndeg*nint+1) ); }
 		
 		int  getNDim() const { return ndim; }
 		int  getNInt() const { return nint; }

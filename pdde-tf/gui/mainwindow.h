@@ -163,10 +163,8 @@ private:
 	
 	// these contain the constants
 	QLineEdit *inputFile;
-	mat4Data  *inputData;
 	plotWindow *inputPlotWindow;
 	QLineEdit *outputFile;
-	mat4Data  *outputData;
 	plotWindow *outputPlotWindow;
 	screenDialog* terminalDialog;
 	QLineEdit *sysname;

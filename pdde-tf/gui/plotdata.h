@@ -86,8 +86,9 @@ union PlotItemUnion
 class PlotItem
 {
  public:
-	PlotItemUnion data;
-	PlotType      type;
+	PlotItemUnion  data;
+	PlotType       type;
+	QGraphicsItem *item;
 };
 
 struct ViewBox
@@ -105,7 +106,7 @@ public:
 	~PlotData( );
 	void makeBox( );
 	void PlotPaint( );
-	void addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
+	void addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
 	void clear();
 
 protected:
@@ -146,15 +147,13 @@ private:
 	
 	std::list<PlotItem> Graph;
 	
+	// the plot box
 	std::vector<QGraphicsTextItem*>    HText;
 	std::vector<QGraphicsTextItem*>    VText;
 	std::vector<QGraphicsLineItem*>    TopTicks;
 	std::vector<QGraphicsLineItem*>    BottomTicks;
 	std::vector<QGraphicsLineItem*>    LeftTicks;
 	std::vector<QGraphicsLineItem*>    RightTicks;
-	std::vector<QGraphicsPathItem*>    PathItems;
-	std::vector<QGraphicsEllipseItem*> CircleItems;
-	std::vector<QGraphicsPolygonItem*> PolygonItems;
 };
 
 #endif

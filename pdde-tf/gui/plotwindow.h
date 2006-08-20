@@ -10,6 +10,7 @@
 #include "plotdata.h"
 
 #include <QMainWindow>
+class QLineEdit;
 class QComboBox;
 class QSpinBox;
 
@@ -17,12 +18,13 @@ class plotWindow : public QMainWindow
 {
 	Q_OBJECT
  public:
-	plotWindow( const mat4Data* d, QWidget *parent = 0 );
-	~plotWindow() {}
+	plotWindow( const QString& fname, QWidget *parent = 0 );
+	~plotWindow();
  private:
 	const mat4Data *data;
 	PlotData plotdata;
 	// gui elements
+	QLineEdit *matfile;
 	QComboBox *xvar;
 	QComboBox *yvar;
 	QSpinBox  *ptlabel;
@@ -30,4 +32,5 @@ class plotWindow : public QMainWindow
  private slots:
 	void addPlot();
 	void clearPlot();
+	void open();
 };
