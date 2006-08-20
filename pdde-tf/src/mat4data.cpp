@@ -178,7 +178,7 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 // 	ndeg1 = params.getNDeg1();
 // 	ndeg2 = params.getNDeg2();
 
-	const int approxSize = 8*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+2*nmul+1+1+1+(ndim+1)*(ndeg*nint+1)));
+	const int approxSize = 8*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+2*nmul+1+(ndeg+1)+(ndim+1)*(ndeg*nint+1)));
  #ifndef WIN32
 	address = mmapFileWrite( file, fileName, approxSize );
  #else
@@ -197,14 +197,11 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	ndim_offset = mul_offset + mul_size;
 	int ndim_size = createMatrixHeader( address, ndim_offset, &ndim_header, "pdde_ndim", 1, ncols );
 	
-	nint_offset = ndim_offset + ndim_size;
-	int nint_size = createMatrixHeader( address, nint_offset, &nint_header, "pdde_nint", 1, ncols );
-	
-	ndeg_offset = nint_offset + nint_size;
-	int ndeg_size = createMatrixHeader( address, ndeg_offset, &ndeg_header, "pdde_ndeg", 1, ncols );
+	elem_offset = ndim_offset + ndim_size;
+	int elem_size = createMatrixHeader( address, elem_offset, &elem_header, "pdde_elem", ndeg+1, ncols );
 
-	mesh_offset = ndeg_offset + ndeg_size;
-	int mesh_size = createMatrixHeader( address, mesh_offset, &mesh_header, "pdde_mesh", ndeg*nint+1, ncols );
+	mesh_offset = elem_offset + elem_size;
+	int mesh_size = createMatrixHeader( address, mesh_offset, &mesh_header, "pdde_mesh", nint+1, ncols );
 	
 	prof_offset = mesh_offset + mesh_size;
 	int prof_size = createMatrixHeader( address, prof_offset, &prof_header, "pdde_prof", ndim*(ndeg*nint+1), ncols );
@@ -303,22 +300,15 @@ void mat4Data::openReadOnly( const std::string& fileName )
 		if( mul_header.ncols != ncols ) P_MESSAGE("err4");
 		if( mul_header.imagf == 0 ) P_MESSAGE("err5");
 		
-		if( (nint_offset = findMatrix( "pdde_nint", &nint_header )) == -1 ) P_MESSAGE("err10");
-		if( nint_header.mrows != 1 ) P_MESSAGE("err11");
-		if( nint_header.ncols != ncols ) P_MESSAGE("err12");
-		if( nint_header.imagf != 0 ) P_MESSAGE("err13");
-		nint = static_cast<int>(*((double*)((char*)address + nint_offset + nint_header.col_off(0))));
+		if( (elem_offset = findMatrix( "pdde_elem", &elem_header )) == -1 ) P_MESSAGE("err18.1");
+		if( elem_header.ncols != ncols ) P_MESSAGE("err20.1");
+		if( elem_header.imagf != 0 ) P_MESSAGE("err21.1");
+		ndeg = elem_header.mrows - 1;
 		
-		if( (ndeg_offset = findMatrix( "pdde_ndeg", &ndeg_header )) == -1 ) P_MESSAGE("err14");
-		if( ndeg_header.mrows != 1 ) P_MESSAGE("err15");
-		if( ndeg_header.ncols != ncols ) P_MESSAGE("err16");
-		if( ndeg_header.imagf != 0 ) P_MESSAGE("err17");
-		ndeg = static_cast<int>(*((double*)((char*)address + ndeg_offset + ndeg_header.col_off(0))));
-	
 		if( (mesh_offset = findMatrix( "pdde_mesh", &mesh_header )) == -1 ) P_MESSAGE("err18");
-		if( mesh_header.mrows != ndeg*nint+1 ) P_MESSAGE("err19");
 		if( mesh_header.ncols != ncols ) P_MESSAGE("err20");
 		if( mesh_header.imagf != 0 ) P_MESSAGE("err21");
+		nint = mesh_header.mrows - 1;
 		
 		if( (prof_offset = findMatrix( "pdde_prof", &prof_header )) == -1 ) P_MESSAGE("err22");
 		if( prof_header.mrows != ndim*(ndeg*nint+1) ) P_MESSAGE("err23");
@@ -443,13 +433,31 @@ void mat4Data::setMul( int n, const Vector& re, const Vector& im )
 	}
 }
 
+void mat4Data::setElem( int n, const Vector& el )
+{
+	if( wperm && n < ncols )
+	{
+		if( el.Size() == ndeg+1 )
+		{
+			for( int i = 0; i < ndeg+1; ++i)
+				elem( elem_offset, i, n ) = el(i);
+		}else
+		{
+			P_MESSAGE("setElem 1");
+		}
+	}else
+	{
+		P_MESSAGE("setElem 2");
+	}
+}
+
 void mat4Data::setMesh( int n, const Vector& mesh )
 {
 	if( wperm && n < ncols )
 	{
-		if( mesh.Size() == ndeg*nint+1 )
+		if( mesh.Size() == nint+1 )
 		{
-			for( int i = 0; i < ndeg*nint+1; ++i)
+			for( int i = 0; i < nint+1; ++i)
 				elem( mesh_offset, i, n ) = mesh(i);
 		}else
 		{
@@ -470,8 +478,6 @@ void mat4Data::setProfile( int n, const Vector& prof )
 			const int curr_npoints = static_cast<int>( elem( npoints_offset, 0, 0 ) );
 			if( n > curr_npoints ) elem(npoints_offset,0,0) = n;
 			elem( ndim_offset, 0, n ) = ndim;
-			elem( nint_offset, 0, n ) = nint;
-			elem( ndeg_offset, 0, n ) = ndeg;
 			for( int i = 0; i < ndim*(ndeg*nint+1); ++i ) elem( prof_offset, i, n ) = prof(i);
 		}else
 		{
@@ -538,11 +544,6 @@ void mat4Data::getPar( int n, Vector& par ) const
 	}
 }
 
-double mat4Data::getPar( int n, int j ) const
-{
-	return elem( par_offset, j, n );
-}
-
 void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 {
 	if( n < ncols && re.Size() == im.Size() )
@@ -564,23 +565,31 @@ void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 	}
 }
 
-double mat4Data::getMulRe( int n, int j ) const
+void mat4Data::getElem( int n, Vector& el ) const
 {
-	return elem( mul_offset, j, n );;
-}
-
-double mat4Data::getMulIm( int n, int j ) const
-{
-	return elem_im( mul_offset, j, n );
+	if( n < ncols )
+	{
+		if( el.Size() == ndeg+1 )
+		{
+			for( int i = 0; i < ndeg+1; ++i)
+				el(i) = elem( elem_offset, i, n );
+		}else
+		{
+			P_MESSAGE("getElem 1");
+		}
+	}else
+	{
+		P_MESSAGE("getElem 2");
+	}
 }
 
 void mat4Data::getMesh( int n, Vector& mesh ) const
 {
 	if( n < ncols )
 	{
-		if( mesh.Size() == ndeg*nint+1 )
+		if( mesh.Size() == nint+1 )
 		{
-			for( int i = 0; i < ndeg*nint+1; ++i)
+			for( int i = 0; i < nint+1; ++i)
 				mesh(i) = elem( mesh_offset, i, n );
 		}else
 		{
@@ -590,11 +599,6 @@ void mat4Data::getMesh( int n, Vector& mesh ) const
 	{
 		P_MESSAGE("getMesh 2");
 	}
-}
-
-double mat4Data::getMesh( int n, int j ) const
-{
-	return elem( mesh_offset, j, n );
 }
 
 void mat4Data::getProfile( int n, Vector& prof ) const
@@ -613,11 +617,6 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 	{
 		P_MESSAGE("getProf 2");
 	}
-}
-
-double mat4Data::getProfile( int n, int d, int j ) const
-{
-	return elem( prof_offset, d + ndim*j, n );
 }
 
 inline void mat4Data::findTrivialIndices( int n, int aut, int *imin, double* dmin ) const

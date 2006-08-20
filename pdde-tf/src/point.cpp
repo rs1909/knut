@@ -898,8 +898,7 @@ void Point::Plot( GnuPlot& pl )
 
 void Point::Write( std::ofstream& file )
 {
-	Vector msh( NDEG*NINT+1 );
-	colloc.getMesh( msh );
+	Vector msh( colloc.getMesh() );
 	
 	file<<NPAR+ParEnd<<"\t";
 	for( int i = 0; i < NPAR+ParEnd; i++ ) file<<par(i)<<"\t";
@@ -910,7 +909,14 @@ void Point::Write( std::ofstream& file )
 	file<<NDIM<<"\t";
 	file<<NINT<<"\t";
 	file<<NDEG<<"\t";
-	for( int i = 0; i < NDEG*NINT+1; i++ ) file<<msh(i)<<"\t";
+	for( int i = 0; i < NINT; i++ )
+	{
+		for( int j = 0; j < NDEG; j++ )
+		{
+			file<<colloc.Profile(i,j)<<"\t";
+		}
+	}
+	file<<colloc.getMesh()(NINT)<<"\t";
 	for( int i = 0; i < NDIM*(NINT*NDEG+1); i++ ) file<<sol(i)<<"\t";
 	file<<"\n";
 	file.flush();
@@ -933,8 +939,9 @@ void Point::Read( std::ifstream& file, bool tan )
 	
 	P_ERROR_X2( NDIM == ndim_, "Not compatible file (NDIM) ", ndim_ );
 	
-	Vector msh( ndeg_*nint_ + 1 );
-	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>msh(i);
+	Vector msh( nint_ + 1 );
+	double t;
+	for( int i = 0; i < ndeg_*nint_+1; i++ ) { file>>t; if( i%ndeg_ == 0 ) msh(i/ndeg_) = t; }
 	
 	if( (NINT == nint_)&&(NDEG == ndeg_) )
 	{
@@ -1011,23 +1018,21 @@ void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& 
 
 void Point::BinaryWrite( mat4Data& data, int n )
 {
-	Vector msh( NDEG*NINT+1 );
-	colloc.getMesh( msh );
-	
 	data.setPar( n, par );
 	data.setMul( n, mRe, mIm );
-	data.setMesh( n, msh );
+	data.setElem( n, colloc.getElem() );
+	data.setMesh( n, colloc.getMesh() );
 	data.setProfile( n, sol );
 }
 
 void Point::BinaryRead( mat4Data& data, int n )
 {
-	Vector msh( data.getNInt()*data.getNDeg()+1 );
+	Vector msh( data.getNInt()+1 );
 	P_ERROR_X( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters\n" );
 	data.getPar( n, par );
 	data.getMul( n, mRe, mIm );
 	data.getMesh( n, msh );
-	P_ERROR_X( data.getNDim() == NDIM, "binaryread failed" );
+	P_ERROR_X( data.getNDim() == NDIM, "BinaryRead failed" );
 	if( data.getNInt() == NINT && data.getNDeg() == NDEG )
 	{
 		colloc.setMesh( msh );

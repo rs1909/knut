@@ -237,13 +237,20 @@ void PlotData::addPlot( const mat4Data& data, PlotXVariable x, PlotYVariable y, 
 	}
 	if( x == XMesh && y == YProfile )
 	{
-		DataX.push_back( Vector(data.getMeshLength()) );
-		DataY.push_back( Vector(data.getMeshLength()) );
-		for( int i = 0; i < data.getMeshLength(); i++ )
+		const int ndeg = data.getNDeg();
+		const int nint = data.getNInt();
+		DataX.push_back( ndeg*nint+1 );
+		DataY.push_back( ndeg*nint+1 );
+		for( int i = 0; i < nint; i++ )
 		{
-			(*DataX.rbegin())(i) = data.getMesh( pt, i );
-			(*DataY.rbegin())(i) = data.getProfile( pt, dim, i );
+			for( int j = 0; j < ndeg; j++ )
+			{
+				(*DataX.rbegin())(j + ndeg*i) = data.getMesh( pt, i ) + data.getElem( pt, j )*(data.getMesh( pt, i+1 )-data.getMesh( pt, i ));
+				(*DataY.rbegin())(j + ndeg*i) = data.getProfile( pt, dim, j + ndeg*i );
+			}
 		}
+		(*DataX.rbegin())(ndeg*nint) = data.getMesh( pt, nint );
+		(*DataY.rbegin())(ndeg*nint) = data.getProfile( pt, dim, ndeg*nint );
 		++xadded; ++yadded;
 		addPlotLine( style );
 	}

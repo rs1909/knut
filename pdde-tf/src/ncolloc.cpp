@@ -117,7 +117,7 @@ inline static void col_mesh( Vector& V )
 	poly_gau( V );
 }
 
-static void poly_lgr( Vector& t, Vector &out, double c )
+static void poly_lgr( const Vector& t, Vector &out, double c )
 {
 
 	P_ASSERT_X( t.Size() == out.Size(), "poly_lgr: wrong dimensions" );
@@ -134,7 +134,7 @@ static void poly_lgr( Vector& t, Vector &out, double c )
 	}
 }
 
-static void poly_dlg( Vector& t, Vector& out, double c)
+static void poly_dlg( const Vector& t, Vector& out, double c)
 {
 	int j,k,l;
 	double f;
@@ -171,7 +171,7 @@ static inline void poly_mul( Vector& pp, double bb, double aa )
 	for( int i = 1; i < pp.Size(); i++ ) pp(i) += tmp(i-1);
 }
 
-static void poly_int( Matrix& out, Vector& t )
+static void poly_int( Matrix& out, const Vector& t )
 {
 	int i,j,k;
 	Vector poly(2*t.Size());
@@ -204,7 +204,7 @@ static void poly_int( Matrix& out, Vector& t )
 	}
 }
 
-static void poly_diff_int( Matrix& out, Vector& t )
+static void poly_diff_int( Matrix& out, const Vector& t )
 {
 	Vector poly(2*t.Size());
 	Vector poly_fin(2*t.Size());
@@ -487,22 +487,6 @@ void NColloc::Init( const Vector& par, const Vector& /*sol*/ )
 	}
 	delete[] tMSH;
 	delete[] t;
-}
-
-void NColloc::getMesh( Vector& msh )
-{
-	P_ASSERT_X( msh.Size() == NDEG*NINT+1, "Error in NColloc::getMesh : Bad dimensions\n" );
-	for( int i = 0; i < NINT; i++ )
-		for( int j = 0; j < NDEG; j++ )
-			msh( j + i*NDEG ) = mesh(i) + meshINT(j)*(mesh(i+1)-mesh(i));
-	msh( NDEG*NINT ) = 1.0;
-}
-
-void NColloc::setMesh( const Vector& msh )
-{
-	P_ASSERT_X( msh.Size() == NDEG*NINT+1, "Error in NColloc::setMesh : Bad dimensions\n" );
-	for( int i = 0; i < NINT; i++ ) mesh(i) = msh( i*NDEG );
-	mesh( NINT ) = 1.0;
 }
 
 void NColloc::Interpolate( JagMatrix3D& jag, const Vector& sol )
@@ -2053,7 +2037,79 @@ void NColloc::CharJac_MSHphi_p( Vector& V, const Vector& par, const JagMatrix3D&
 //
 //----------------------------------------------------------------------------
 
-void NColloc::Star( Vector& V1, Vector& V2 )
+void NColloc::getMetric( Matrix& mt, const Vector& t )
+{
+	poly_int( mt, t );
+}
+
+void NColloc::getDiffMetric( Matrix& mt, const Vector& t )
+{
+	poly_int( mt, t );
+}
+
+void NColloc::star( Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim )
+{
+	const int t_deg = mt.Col()-1;
+	const int t_int = (out.Size()-1)/t_deg;
+	P_ERROR( in.Size() == out.Size() );
+	P_ERROR( out.Size() == t_deg*t_int+1 );
+	P_ERROR( msh.Size() == t_int+1 );
+	out.Clear();
+	for( int i = 0; i < t_int; ++i )
+	{
+		const double dx = msh(i+1) - msh(i);
+		// ez itt a matrixszorzas
+		for( int k = 0; k < t_deg+1; ++k )
+		{
+			for( int l = 0; l < t_deg+1; ++l )
+			{
+				for( int j = 0; j < dim; ++j )
+				{
+					out( j+dim*(k+i*t_deg) ) += dx * mt(k,l) * in( j+dim*(l+i*t_deg) );
+				}
+			}
+		}
+	}
+ #ifdef MADD // whether we need to add the headpoint ?
+	for( int j = 0; j < dim; j++ )
+	{
+		out( t_int*t_deg*dim + j ) += in( t_int*t_deg*dim + j );
+	}
+ #endif
+}
+
+double NColloc::integrate( const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim )
+{
+	double res = 0.0;
+	const int t_deg = mt.Col()-1;
+	const int t_int = (v1.Size()-1)/t_deg;
+	P_ERROR( v1.Size() == v2.Size() );
+	P_ERROR( v1.Size() == t_deg*t_int+1 );
+	P_ERROR( msh.Size() == t_int+1 );
+	for( int i = 0; i < t_int; ++i )
+	{
+		const double dx = msh(i+1) - msh(i);
+		// ez itt a matrixszorzas
+		for( int k = 0; k < t_deg; ++k )
+		{
+			for( int l = 0; l < t_deg; ++l )
+			{
+				for( int j = 0; j < dim; ++j )
+				{
+					res += v1( j+dim*(k+i*t_deg) ) * dx * mt(k,l) * v2( j+dim*(l+i*t_deg) );
+				}
+			}
+		}
+	}
+#ifdef MADD // whether we need to add the headpoint ?
+	for( int j = 0; j < dim; j++ ) {
+		res += v1( t_int*t_deg*dim + j ) * v2( t_int*t_deg*dim + j );
+	}
+#endif
+	return res;
+}
+
+void NColloc::Star( Vector& V1, const Vector& V2 )
 {
 	V1.Clear();
 	for( int i=0; i < NINT; i++ )
@@ -2082,7 +2138,7 @@ void NColloc::Star( Vector& V1, Vector& V2 )
 #endif
 }
 
-double NColloc::Integrate( Vector& V1, Vector& V2 )
+double NColloc::Integrate( const Vector& V1, const Vector& V2 )
 {
 	double res=0.0,head=0.0;
 	for( int i=0; i < NINT; i++ )
@@ -2110,14 +2166,14 @@ double NColloc::Integrate( Vector& V1, Vector& V2 )
 	return res + head;
 }
 
-double NColloc::IntegrateCont( Vector& V1, Vector& V2, Vector& V3 )
+double NColloc::IntegrateCont( const Vector& V1, const Vector& V2, const Vector& V3 )
 {
 	double res=0.0,head=0.0;
 	for( int i=0; i < NINT; i++ )
 	{
 		const double dx = mesh(i+1) - mesh(i);
 		for( int j=0; j < NDIM; j++ ){
-		// ez itt a matrixszorzas
+			// ez itt a matrixszorzas
 			for( int k=0; k < NDEG+1; k++ ){
 				for( int l=0; l < NDEG+1; l++ ){
 					res += dx*V1( j+NDIM*(k+i*NDEG) )*metric(k,l)*( V2( j+NDIM*(l+i*NDEG) ) - V3( j+NDIM*(l+i*NDEG) ) );
@@ -2133,7 +2189,7 @@ double NColloc::IntegrateCont( Vector& V1, Vector& V2, Vector& V3 )
 	return res + head;
 }
 
-void NColloc::PhaseStar( Vector& V1, Vector& V2 )
+void NColloc::PhaseStar( Vector& V1, const Vector& V2 )
 {
 	V1.Clear();
 	for( int i=0; i < NINT; i++ )
@@ -2152,7 +2208,7 @@ void NColloc::PhaseStar( Vector& V1, Vector& V2 )
 	}
 }
 
-void NColloc::PhaseRotStar( Vector& V1, Vector& V2, Array1D<int>& Re, Array1D<int>& Im )
+void NColloc::PhaseRotStar( Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im )
 {
 	V1.Clear();
 	for( int i=0; i < NINT; i++ )
@@ -2175,25 +2231,21 @@ void NColloc::PhaseRotStar( Vector& V1, Vector& V2, Array1D<int>& Re, Array1D<in
 
 void NColloc::Import( Vector& outs, const Vector& in, const Vector& msh_, int deg_ )
 {
-	P_ASSERT_X( (msh_.Size()-1) % deg_ == 0, "NColloc::Import: bad mesh" );
-	int int_ = (msh_.Size()-1)/deg_;
-	Vector msh( int_+1 );
+	const int int_ = msh_.Size()-1;
 	Vector in_mesh(deg_+1);
 	Vector in_lgr(deg_+1);
 	
 	std::cout<<"Import\n";
 	repr_mesh( in_mesh ); /// now we can use chebyshev
-	for( int i = 0; i < int_; i++ ) msh(i) = msh_( deg_*i );
-	msh( int_ ) = 1.0;
 	
 	for( int i = 0; i < NINT; i++ )
 	{
 		for( int j = 0; j < NDEG; j++ )
 		{
 			double t = mesh(i) + meshINT(j)*(mesh(i+1)-mesh(i));
-			int k = meshlookup( msh, t );
+			int k = meshlookup( msh_, t );
 			// std::cout<<"int "<<i<<" "<<k<<"\n";
-			double c = (t-msh(k))/(msh(k+1)-msh(k));
+			double c = (t-msh_(k))/(msh_(k+1)-msh_(k));
 			P_ASSERT_X( c >= 0.0 && c <= 1.0, "NColloc::Import: FATAL ERROR" );
 			
 			poly_lgr( in_mesh, in_lgr, c );

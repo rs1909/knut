@@ -29,13 +29,18 @@ class NColloc
 		void InterpolateCPLX( JagMatrix3D& out, const Vector& sol );
 		void InterpolateMSH( JagMatrix3D& out, const Vector& sol );
 		
-		void   Star( Vector& out, Vector& sol );
-		double Integrate( Vector& v1, Vector& v2 );
-		double IntegrateDerivative( Vector& v1, Vector& v2 );
-		double IntegrateCont( Vector& v1, Vector& v2, Vector& v3 );
+		static void   getMetric( Matrix& mt, const Vector& t );
+		static void   getDiffMetric( Matrix& mt, const Vector& t );
+		static void   star( Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim );
+		static double integrate( const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim );
 		
-		void   PhaseStar( Vector& V1, Vector& V2 );
-		void   PhaseRotStar( Vector& V1, Vector& V2, Array1D<int>& Re, Array1D<int>& Im );
+		void   Star( Vector& out, const Vector& sol );
+		double Integrate( const Vector& v1, const Vector& v2 );
+		double IntegrateDerivative( const Vector& v1, const Vector& v2 );
+		double IntegrateCont( const Vector& v1, const Vector& v2, const Vector& v3 );
+		
+		void   PhaseStar( Vector& V1, const Vector& V2 );
+		void   PhaseRotStar( Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im );
 		
 		void   Import( Vector& out, const Vector& in, const Vector& mesh, int deg_ );
 		void   Export( Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in );
@@ -84,8 +89,9 @@ class NColloc
 		inline int Nint() const { return nint; }
 		inline int Ndeg() const { return ndeg; }
 		
-		void setMesh( const Vector& msh );
-		void getMesh( Vector& msh );
+		inline const Vector& getElem( ) { return meshINT; }
+		void setMesh( const Vector& msh ) { P_ASSERT_X( msh.Size() == nint+1, "Error in NColloc::setMesh : Bad dimensions\n" ); mesh = msh; }
+		inline const Vector& getMesh( ) { return mesh; }
 		inline double Profile( int i, int d ) { return mesh(i) + meshINT(d)*(mesh(i+1)-mesh(i)); }
 
 	private:

@@ -49,6 +49,7 @@ class mat4Data
 		
 		void   setPar( int n, const Vector& par );
 		void   setMul( int n, const Vector& real, const Vector& imag );
+		void   setElem( int n, const Vector& el );
 		void   setMesh( int n, const Vector& mesh );
 		void   setProfile( int n, const Vector& profile );
 		void   setMesh1( int n, int j, double d ) { elem( mesh1_offset, j, n ) = d; }
@@ -56,21 +57,24 @@ class mat4Data
 		void   setBlanket( int n, const Vector& blanket );
 		
 		void   getPar( int n, Vector& par ) const;
-		double getPar( int n, int j ) const;
+		double getPar( int n, int j ) const { return elem( par_offset, j, n ); }
 		void   getMul( int n, Vector& real,Vector& imag ) const;
-		double getMulRe( int n, int j ) const;
-		double getMulIm( int n, int j ) const;
+		double getMulRe( int n, int j ) const { return elem( mul_offset, j, n ); }
+		double getMulIm( int n, int j ) const { return elem_im( mul_offset, j, n ); }
+		void   getElem( int n, Vector& el ) const;
+		double getElem( int n, int j ) const { return elem( elem_offset, j, n ); }
 		void   getMesh( int n, Vector& mesh ) const;
-		double getMesh( int n, int j ) const;
+		double getMesh( int n, int j ) const { return elem( mesh_offset, j, n ); }
 		void   getProfile( int n, Vector& profile ) const;
-		double getProfile( int n, int d, int j ) const;
+		double getProfile( int n, int d, int j ) const { return elem( prof_offset, d + ndim*j, n ); }
 		
 		int  getNDim() const { return ndim; }
 		int  getNInt() const { return nint; }
 		int  getNDeg() const { return ndeg; }
 		int  getNPar() const { return npar; }
 		int  getNMul() const { return nmul; }
-		int  getMeshLength() const { return ndeg*nint+1; }
+		int  getMeshLength() const { return nint+1; }
+		int  getElemLength() const { return ndeg+1; }
 		int  getNCols() const { return ncols; }
 		int  getNPoints() const { return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]); }
 		int  getNextBifurcation( int n, int aut ) const;
@@ -136,11 +140,8 @@ class mat4Data
 	int    ndim_offset;     //T
 	header ndim_header;
 
-	int    nint_offset;
-	header nint_header;
-
-	int    ndeg_offset;
-	header ndeg_header;
+	int    elem_offset;
+	header elem_header;
 	
 	int    mesh_offset;
 	header mesh_header;
