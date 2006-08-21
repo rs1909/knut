@@ -47,17 +47,19 @@ void PlotData::clear()
 	std::list<Vector>::iterator j2;
 	for( i = Graph.begin(), j1 = DataX.begin(), j2=DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
-		delete (*i).item;
 		if( (*i).type == PlotLineType )
 		{
+			delete (*i).data.line->item;
 			delete (*i).data.line;
 		}
 		else if( (*i).type == PlotCircleType )
 		{
+			for( int j = 0; j < (*i).data.circle->item.size(); ++j ) delete (*i).data.circle->item[j];
 			delete (*i).data.circle;
 		}
 		else if( (*i).type == PlotPolygonType )
 		{
+			for( int j = 0; j < (*i).data.polygon->item.size(); ++j ) delete (*i).data.polygon->item[j];
 			delete (*i).data.polygon;
 		}
 		else
@@ -119,9 +121,10 @@ void PlotData::plotStyle( QPen& pen, const char* style )
 
 void PlotData::addPlotLine( const char* style )
 {
-	PlotItem t_pl = { {0}, PlotLineType, 0 };
+	PlotItem t_pl = { {0}, PlotLineType };
 	Graph.push_back( t_pl );
 	Graph.rbegin()->data.line = new PlotLine( QPen( QColor( "blue" ) ) );
+	Graph.rbegin()->data.line->item = 0;
 	Graph.rbegin()->data.line->pen.setWidthF( 1 );
 	plotStyle( Graph.rbegin()->data.line->pen, style );
 }
@@ -132,7 +135,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 	{
 		case 0:  // CIRCLE
 			{
-				PlotItem t_pl = { {0}, PlotCircleType, 0 };
+				PlotItem t_pl = { {0}, PlotCircleType };
 				Graph.push_back( t_pl );
 				Graph.rbegin()->data.circle = new PlotCircle( QPen( QColor( "blue" ) ), QRectF( -3.0, -3.0, 6.0 ,6.0 ) );
 				Graph.rbegin()->data.circle->pen.setWidthF( 1 );
@@ -141,7 +144,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 1:  // SQUARE
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
+				PlotItem t_pl = { {0}, PlotPolygonType };
 				Graph.push_back( t_pl );
 				QPolygonF pl(4);
 				pl[0] = QPointF( -3.0, -3.0 );
@@ -155,7 +158,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 2: // TRIANGLE
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
+				PlotItem t_pl = { {0}, PlotPolygonType };
 				Graph.push_back( t_pl );
 				QPolygonF pl(3);
 				pl[0] = QPointF( -3.0, -3.0 );
@@ -168,7 +171,7 @@ void PlotData::addPlotPoint( const char* style, int type )
 			break;
 		case 3: // CROSS
 			{
-				PlotItem t_pl = { {0}, PlotPolygonType, 0 };
+				PlotItem t_pl = { {0}, PlotPolygonType };
 				Graph.push_back( t_pl );
 				QPolygonF pl(5);
 				pl[0] = QPointF( -3.0, 0.0 );
@@ -505,10 +508,10 @@ void PlotData::rescaleData()
 	std::list<Vector>::const_iterator j2;
 	for( i = Graph.begin(), j1 = DataX.begin(), j2 = DataY.begin(); i != Graph.end(); i++, j1++, j2++ )
 	{
-		delete (*i).item; (*i).item = 0;
 		if( j1 == DataX.end() || j2 == DataY.end() ) { std::cout<<"serious BUG!\n"; abort(); }
 		if( (*i).type == PlotLineType )
 		{
+			delete (*i).data.line->item; (*i).data.line->item = 0;
 			(*i).data.line->line = QPainterPath();
 			int x = 0, y = 0, prx = 0, pry = 0;
 			bool pr = true;
@@ -573,6 +576,8 @@ void PlotData::rescaleData()
 				const QPointF pt = QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) );
 				if( contains( pt.x(), pt.y() ) ) (*i).data.circle->pos.push_back( pt );
 			}
+			for( int p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p ) delete (*i).data.circle->item[p];
+			(*i).data.circle->item.resize((*i).data.circle->pos.size(),0);
 		}
 		if( (*i).type == PlotPolygonType )
 		{
@@ -582,6 +587,8 @@ void PlotData::rescaleData()
 				const QPointF pt = QPointF( xscale*((*j1)(k)-cvb.xmin), yscale*(cvb.ymax-(*j2)(k)) );
 				if( contains( pt.x(), pt.y() ) ) (*i).data.polygon->pos.push_back( pt );
 			}
+			for( int p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p ) delete (*i).data.polygon->item[p];
+			(*i).data.polygon->item.resize((*i).data.polygon->pos.size(),0);
 		}
 	}
 }
@@ -769,27 +776,27 @@ void PlotData::PlotPaint( )
 	{
 		if( (*i).type == PlotLineType )
 		{
-			delete (*i).item;
-			(*i).item = this->addPath( (*i).data.line->line, (*i).data.line->pen );
+			delete (*i).data.line->item;
+			(*i).data.line->item = this->addPath( (*i).data.line->line, (*i).data.line->pen );
 		}
 		if( (*i).type == PlotCircleType )
 		{
 			for( unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j )
 			{
-				delete (*i).item;
+				delete (*i).data.circle->item[j];
 				QGraphicsEllipseItem *pt = this->addEllipse( (*i).data.circle->point, (*i).data.circle->pen );
 				pt->setPos( (*i).data.circle->pos[j] );
-				(*i).item = pt;
+				(*i).data.circle->item[j] = pt;
 			}
 		}
 		if( (*i).type == PlotPolygonType )
 		{
 			for( unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j )
 			{
-				delete (*i).item;
+				delete (*i).data.polygon->item[j];
 				QGraphicsPolygonItem *pt = this->addPolygon( (*i).data.polygon->point, (*i).data.polygon->pen );
 				pt->setPos( (*i).data.polygon->pos[j] );
-				(*i).item = pt;
+				(*i).data.polygon->item[j] = pt;
 			}
 		}
 	}

@@ -54,8 +54,9 @@ class PlotLine
 {
  public:
 	PlotLine( const QPen& p ) : pen(p) { }
-	QPen         pen;
-	QPainterPath line;
+	QPen           pen;
+	QPainterPath   line;
+	QGraphicsItem *item;
 };
 
 class PlotCircle
@@ -65,6 +66,7 @@ class PlotCircle
 	QPen                 pen;
 	QRectF               point;
 	std::vector<QPointF> pos;
+	std::vector<QGraphicsItem*> item;
 };
 
 class PlotPolygon
@@ -74,6 +76,7 @@ class PlotPolygon
 	QPen                   pen;
 	QPolygonF              point;
 	std::vector<QPointF>   pos;
+	std::vector<QGraphicsItem*> item;
 };
 
 union PlotItemUnion
@@ -86,9 +89,8 @@ union PlotItemUnion
 class PlotItem
 {
  public:
-	PlotItemUnion  data;
-	PlotType       type;
-	QGraphicsItem *item;
+	PlotItemUnion               data;
+	PlotType                    type;
 };
 
 struct ViewBox
