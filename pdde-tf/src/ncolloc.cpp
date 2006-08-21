@@ -2050,9 +2050,9 @@ void NColloc::getDiffMetric( Matrix& mt, const Vector& t )
 void NColloc::star( Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim )
 {
 	const int t_deg = mt.Col()-1;
-	const int t_int = (out.Size()-1)/t_deg;
+	const int t_int = (out.Size()/dim-1)/t_deg;
 	P_ERROR( in.Size() == out.Size() );
-	P_ERROR( out.Size() == t_deg*t_int+1 );
+	P_ERROR( out.Size() == dim*(t_deg*t_int+1) );
 	P_ERROR( msh.Size() == t_int+1 );
 	out.Clear();
 	for( int i = 0; i < t_int; ++i )
@@ -2082,9 +2082,9 @@ double NColloc::integrate( const Vector& v1, const Vector& v2, const Matrix& mt,
 {
 	double res = 0.0;
 	const int t_deg = mt.Col()-1;
-	const int t_int = (v1.Size()-1)/t_deg;
+	const int t_int = (v1.Size()/dim-1)/t_deg;
 	P_ERROR( v1.Size() == v2.Size() );
-	P_ERROR( v1.Size() == t_deg*t_int+1 );
+	P_ERROR( v1.Size() == dim*(t_deg*t_int+1) );
 	P_ERROR( msh.Size() == t_int+1 );
 	for( int i = 0; i < t_int; ++i )
 	{
