@@ -560,6 +560,7 @@ void MainWindow::compileSystem()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	writeSettings();
+	qApp->quit();
 	event->accept();
 }
 
