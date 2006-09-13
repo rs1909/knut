@@ -23,9 +23,9 @@
 \title{\pdde}
 \subtitle{A continuation and bifurcation software for delay-differential equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.0.4}
+\newcommand{\pddever}{1.1.0}
 \version{\pddever}
-\date{18 August 2006}
+\date{12 September 2006}
 \maketitle
 
 \begin{center}
@@ -56,7 +56,7 @@ The product names used in this manual are for identification purposes only. All 
 
 \section{Introduction}
 
-The software can analyze periodic orbits of delay-differential equations in the general form 
+The software can analyze periodic orbits of delay-differential equations in the general form
 \begin{equation}
 	\dot{x}(t) = f (t, x(t-\tau_0), x(t - \tau_1), \dots , x(t - \tau_r), \lambda ), \label{gensys}
 \end{equation}
@@ -77,9 +77,9 @@ Although, continuing fixed points in this way is very inefficient, it might help
 
 \subsection{Requirements}
 
-The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake is a utility that will configure the package so that it can be built for a specific operating system. The Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for building the graphical user interface. On unix platforms the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
+The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake is a utility that will configure the package so that it can be built for a specific operating system. The Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for building the graphical user interface. On Unix platforms the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
 
-For solving linear equations the software requires the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra software, which can be tuned automatically for many processors and operating systems. To avoid the lenghty compilation it is possible to download pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and \filef{libcblas.a}).
+For solving linear equations the software requires the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra software, which can be tuned automatically for many processors and operating systems. To avoid the lengthy compilation it is possible to download pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and \filef{libcblas.a}).
 
 \subsection{Linux and Unix}
 
@@ -94,7 +94,7 @@ The second step is to copy the compiled ATLAS library files (\filef{libatlas.a} 
 Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ cd pdde-cont-%\@version%
-$ ./buil-unix.sh
+$ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
 This configures and builds software after which it install into the \filef{pdde-cont/} folder in the user's home directory.
 In order to make the software work, the \filef{PATH} environment variables has to be set up. In the case of the \filef{bash} shell include the
@@ -103,7 +103,7 @@ export PATH=$PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
 line into the \filef{.bash\_profile} configuration file in your \filef{HOME} directory. For the C shell (\filef{csh}) insert the following line
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-setenv path $PATH:$HOME/pdde-cont/bin
+setenv PATH $PATH:$HOME/pdde-cont/bin
 \end{lstlisting} \end{quote} } \noindent
 into \filef{.cshrc}. To activate the changes log out and log in again.
 
@@ -111,11 +111,11 @@ into \filef{.cshrc}. To activate the changes log out and log in again.
 
 If you install the binary version of the software, the only requirement is to install MinGW, which is necessary to compile system definition files. In this case just uncompress the \filef{pdde-windows-{\pddever}.zip} and it is ready to use.
 
-However instaling from source requires a bit more work. You need to download several other pices of software. First download 
-the most recent self extracting installer of MinGW from \url{http://www.mingw.org/} (at the time of writing 5.0.3) and install it. The installer will ask for you to select options. Tick the boxes of the C,C++ compiler and the GNU make utility, the other components are not required. Download and install the Windows version of CMake from \url{www.cmake.org} and a very recent version of Qt (4.2.0 and later) from \url{http://www.trolltech.com/developer/downloads/qt/windows}.
+Installing from source requires a bit more work. First download 
+the most recent self extracting installer of MinGW from \url{http://www.mingw.org/} (at the time of writing 5.0.3) and install it. The installer will ask you to select options. Tick the boxes of the C,C++ compiler and the GNU make utility, the other components are not required. Download and install the Windows version of CMake from \url{www.cmake.org} and a very recent version of Qt (4.2.0 and later) from \url{http://www.trolltech.com/developer/downloads/qt/windows}.
 
 To compile the software, first uncompress the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
-Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and \filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory. Then start a command prompt (Start Menu $\rightarrow$ Run type ``cmd'' into the box) and enter the directory \filef{pdde-cont-\@version} into which the package was extracted. If all the requirements are installed and the ATLAS files are in place, issue the
+Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and \filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory. Then start a command prompt (Start Menu $\rightarrow$ Run type ``cmd'' into the box) and enter the directory \filef{pdde-cont-\@version} where the package was extracted. If all the requirements are installed and the ATLAS files are in place, issue the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
  > build-windows
 \end{lstlisting} \end{quote} } \noindent
@@ -186,7 +186,7 @@ Algorithms for time-periodic (non-autonomous) systems:
 \item[\funp{45} -] The software first switches to the period-2 branch at a period doubling bifurcation point
 (-1 multiplier) and then follows the arising orbits. (0)
 \end{description}
-In the case of autonomous systems the above continuations can be carried out in the same way. The important differece is that the software will use a phase condition and continue an additional free parameter (e.g., the period). When a fold bifurcation is continued a different test functional is used to account for the trivial +1 Floquet multiplier of a periodic orbit.
+In the case of autonomous systems the above continuations can be carried out in the same way. The important difference is that the software will use a phase condition and continue an additional free parameter (e.g., the period). When a fold bifurcation is continued a different test functional is used to account for the trivial +1 Floquet multiplier of a periodic orbit.
 \begin{description}
 \item[\funp{50} -] Continuation of periodic solutions in autonomous systems. The additional parameter is usually the period length \funp{P0}. (1)
 %
@@ -260,7 +260,7 @@ The minimum and maximum value of \funp{DS}.
 Used when branch switching is specified from fixed points to periodic solutions or from periodic solutions to quasi-periodic tori. The initial solution is approximated linearly, by adding the unit norm tangent of the new branch multiplied by \funp{DSSTART} to the fixed point or periodic solution.
 %
 \item[\funp{EPSC}] ~\\
-Telerance of convergence to a periodic solution during continuation. For periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of bifurcations it can be a bit larger about $10^{-4} - 10^{-5}$ to achieve reasonable stepsizes (\funp{DS}).
+Tolerance of convergence to a periodic solution during continuation. For periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of bifurcations it can be a bit larger about $10^{-4} - 10^{-5}$ to achieve reasonable stepsizes (\funp{DS}).
 %
 \item[\funp{EPSR}] ~\\
 Tolerance in the refinement of periodic solutions. (Solution refinement is used only before continuation starts.) It should be less than or equal to \funp{EPSC}.
@@ -289,7 +289,7 @@ sys-glass.so						SYSNAME
 \end{lstlisting} \end{quote} } \noindent
 specifies two equations and two variables. The first equation and variable is always \funp{E1} and \funp{S1}, when a periodic orbit or a periodic solution bifurcation is continued. In the example, the second equation \funp{E24} is the phase condition of autonomous systems while the second variable is the period \funp{P0}. If bifurcations are continued the equations contain at least one of the test functionals. If more than one, but different test functionls are used, some codimension-two bifurcations can be continued. The other variables can be either parameters or one of the internal variables. When a quasi-periodic torus is computed there is no need to use this extended system definition since the software is only capable of continuing tori of forced or autonomous systems.
 
-The meaning of the system definition line is desribed below.
+The meaning of the system definition line is described below.
 \begin{description}
 \item[\funp{CP}] ~\\
 	The continuation parameter, same as above.
@@ -790,7 +790,7 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 
 \section{Algorithms used in the software}
 
-The software uses orthogonal collocation to discretize periodic orbits \cite{engstab,engcol}. It is also possible to use staggared grid Chebyshev collocation \cite{kopriva} by changing the collocation and representation points in \filef{src/ncolloc.cpp}. For continuation, the pseudo arclength method is used (see, e.g., \cite{handbook, tutorial1, tutorial2}). Codimension-one bifurcations are computed using the newly proposed test functionals \cite{szalai-tf}. The arising bordered sparse linear systems are solved using the BEMW method developed by Govaerts and Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral method mentioned above \cite{kopriva}.
+The software uses orthogonal collocation to discretize periodic orbits \cite{engstab,engcol}. It is also possible to use staggered grid Chebyshev collocation \cite{kopriva} by changing the collocation and representation points in \filef{src/ncolloc.cpp}. For continuation, the pseudo arclength method is used (see, e.g., \cite{handbook, tutorial1, tutorial2}). Codimension-one bifurcations are computed using the newly proposed test functionals \cite{szalai-tf}. The arising bordered sparse linear systems are solved using the BEMW method developed by Govaerts and Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral method mentioned above \cite{kopriva}.
 
 \subsection*{Acknowledgments}
 
@@ -820,9 +820,8 @@ PDDE-CONT. A continuation and bifurcation software for delay-differential equati
 Copyright (C) 2005 by Robert Szalai \\
 
 This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+it under the terms of the GNU General Public License version 2 as published by
+the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -859,8 +858,7 @@ UMFPACK License:
     and is provided to you free of charge.
 \end{quote}
 Availability: \url{http://www.cise.ufl.edu/research/sparse/umfpack} \\[0.5em]
-Note: The code of UMFPACK was \emph{not} modified, only its build system was rewritten to use 
-the GNU automake.
+Note: The code of UMFPACK was \emph{not} modified, only its build system was rewritten to use CMake.
 
 \subsection{AMD}
 
@@ -888,8 +886,7 @@ and is provided to you free of charge.
 \end{quote}
 \noindent
 Availability: \url{http://www.cise.ufl.edu/research/sparse/amd}\\[0.5em]
-Note: The code of AMD was \emph{not} modified, only its build system was rewritten to use 
-the GNU automake.
+Note: The code of AMD was \emph{not} modified, only its build system was rewritten to use CMake.
 
 \bibliographystyle{plain}
 \bibliography{manual-bibl.bib} \label{sec:bibliography}
