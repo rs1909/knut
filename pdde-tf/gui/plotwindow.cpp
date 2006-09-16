@@ -26,6 +26,7 @@
 plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(parent), data(0)
 {
 	QGraphicsView *plot = new QGraphicsView;
+	plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	// open data file
 	try{ data = new mat4Data( fname.toStdString() ); }
 	catch( pddeException ex )

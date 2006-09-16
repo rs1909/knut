@@ -34,7 +34,6 @@ ENDIF( NOT WIN32 )
 #------------------------------------------------------------------------------
 
 FIND_PACKAGE( Qt4 )
-INCLUDE( ${QT_USE_FILE} )
 
 IF(WIN32)
   FIND_LIBRARY( PDDE_QTMAIN qtmain ${QT_LIBRARY_DIR} )
@@ -118,9 +117,12 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(cli)
 
 # graphical user interface
-IF(Qt4_FOUND)
+IF(QT4_QMAKE_FOUND)
   ADD_SUBDIRECTORY(gui)
-ENDIF(Qt4_FOUND)
+  MESSAGE( STATUS "GUI will be built" )
+ELSE(QT4_QMAKE_FOUND)
+  MESSAGE( STATUS "GUI will not be built" )
+ENDIF(QT4_QMAKE_FOUND)
 
 # demo programs
 ADD_SUBDIRECTORY(demo)
