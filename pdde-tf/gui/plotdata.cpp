@@ -346,7 +346,7 @@ void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 				(*DataY.rbegin())(i) = sqrt(data->getMulRe(i,r)*data->getMulRe(i,r)+data->getMulIm(i,r)*data->getMulIm(i,r));
 			}
 			++xadded; ++yadded;
-			addPlotPoint( style, 1 );
+			addPlotPoint( style, 0 );
 		}
 	}
 	// add stability

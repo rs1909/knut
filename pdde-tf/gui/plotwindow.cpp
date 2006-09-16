@@ -25,18 +25,17 @@
 
 plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(parent), data(0)
 {
-	QGraphicsView *plot = new QGraphicsView;
-	plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	// open data file
 	try{ data = new mat4Data( fname.toStdString() ); }
 	catch( pddeException ex )
 	{
-		delete data; data = 0;
 		QMessageBox::critical( this, "PlotWindow::PlotWindow()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 		return;
 	}
 	if( data->isTorus() ) return;
 	//
+	QGraphicsView *plot = new QGraphicsView;
+	plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	plot->setScene( &plotdata );
 	QToolBar *toolbar = addToolBar("default");
 	QWidget *centralWidget = new QWidget;
@@ -108,7 +107,7 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(pa
 	connect( addnewplot, SIGNAL(triggered()), this, SLOT(addPlot()) );
 	connect( clearallplot, SIGNAL(triggered()), this, SLOT(clearPlot()) );
 
-	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()+
+	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1+
 	   QSize(2*plot->frameWidth(),2*plot->frameWidth()) );
 }
 
@@ -126,7 +125,6 @@ void plotWindow::open()
 		try{ t_data = new mat4Data( fileName.toStdString() ); }
 		catch( pddeException ex )
 		{
-			delete t_data; t_data = 0;
 			QMessageBox::critical( this, "PlotWindow::open()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 			return;
 		}

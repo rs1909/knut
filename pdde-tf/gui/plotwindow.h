@@ -20,6 +20,7 @@ class plotWindow : public QMainWindow
  public:
 	plotWindow( const QString& fname, QWidget *parent = 0 );
 	~plotWindow();
+	bool isPlotting() { return data != 0; }
  private:
 	const mat4Data *data;
 	PlotData plotdata;

@@ -443,17 +443,23 @@ void MainWindow::inputPlot()
 	if( inputPlotWindow == 0 )
 	{
 		inputPlotWindow = new plotWindow( inputFile->text() );
-// 		if( inputData->isTorus() ) { return; }
-		QDialog *inputPlotDialog = new QDialog( this );
-		QVBoxLayout *inputPlotLayout = new QVBoxLayout();
-		inputPlotLayout->addWidget( inputPlotWindow );
-		inputPlotLayout->setMargin(0);
-		inputPlotDialog->setLayout( inputPlotLayout );
-		inputPlotDialog->setWindowTitle("Plot - input data");
-		inputPlotDialog->setWindowFlags( Qt::Window );
-		inputPlotDialog->show();
-		inputPlotDialog->raise();
-		connect( inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()) );
+		if( inputPlotWindow->isPlotting() )
+		{
+			QDialog *inputPlotDialog = new QDialog( this );
+			QVBoxLayout *inputPlotLayout = new QVBoxLayout();
+			inputPlotLayout->addWidget( inputPlotWindow );
+			inputPlotLayout->setMargin(0);
+			inputPlotDialog->setLayout( inputPlotLayout );
+			inputPlotDialog->setWindowTitle("Plot - input data");
+			inputPlotDialog->setWindowFlags( Qt::Window );
+			inputPlotDialog->show();
+			inputPlotDialog->raise();
+			connect( inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()) );
+		} else
+		{
+			delete inputPlotWindow;
+			inputPlotWindow = 0;
+		}
 	}
 }
 
@@ -469,17 +475,23 @@ void MainWindow::outputPlot()
 	if( outputPlotWindow == 0 )
 	{
 		outputPlotWindow = new plotWindow( outputFile->text() );
-// 		if( outputData->isTorus() ) { return; }
-		QDialog *outputPlotDialog = new QDialog( this );
-		QVBoxLayout *outputPlotLayout = new QVBoxLayout();
-		outputPlotLayout->addWidget( outputPlotWindow );
-		outputPlotLayout->setMargin(0);
-		outputPlotDialog->setLayout( outputPlotLayout );
-		outputPlotDialog->setWindowTitle("Plot - output data");
-		outputPlotDialog->setWindowFlags( Qt::Window );
-		outputPlotDialog->show();
-		outputPlotDialog->raise();
-		connect( outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()) );
+		if( outputPlotWindow->isPlotting() )
+		{
+			QDialog *outputPlotDialog = new QDialog( this );
+			QVBoxLayout *outputPlotLayout = new QVBoxLayout();
+			outputPlotLayout->addWidget( outputPlotWindow );
+			outputPlotLayout->setMargin(0);
+			outputPlotDialog->setLayout( outputPlotLayout );
+			outputPlotDialog->setWindowTitle("Plot - output data");
+			outputPlotDialog->setWindowFlags( Qt::Window );
+			outputPlotDialog->show();
+			outputPlotDialog->raise();
+			connect( outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()) );
+		} else
+		{
+			delete outputPlotWindow;
+			outputPlotWindow = 0;
+		}
 	}
 }
 
