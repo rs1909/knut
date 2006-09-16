@@ -30,6 +30,18 @@ ELSE( NOT WIN32 )
 ENDIF( NOT WIN32 )
 
 #------------------------------------------------------------------------------
+# finding Qt4
+#------------------------------------------------------------------------------
+
+FIND_PACKAGE( Qt4 )
+INCLUDE( ${QT_USE_FILE} )
+
+IF(WIN32)
+  FIND_LIBRARY( PDDE_QTMAIN qtmain ${QT_LIBRARY_DIR} )
+  MESSAGE( STATUS "QtMain as ${PDDE_QTMAIN} was found" )
+ENDIF(WIN32)
+
+#------------------------------------------------------------------------------
 # Writing the generated files
 #------------------------------------------------------------------------------
 
@@ -105,11 +117,10 @@ ADD_SUBDIRECTORY(src)
 # The command line interface
 ADD_SUBDIRECTORY(cli)
 
-# Documentation
-ADD_SUBDIRECTORY(doc)
-
 # graphical user interface
-ADD_SUBDIRECTORY(gui)
+IF(Qt4_FOUND)
+  ADD_SUBDIRECTORY(gui)
+ENDIF(Qt4_FOUND)
 
 # demo programs
 ADD_SUBDIRECTORY(demo)
