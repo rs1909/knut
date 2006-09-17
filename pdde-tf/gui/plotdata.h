@@ -56,7 +56,7 @@ class PlotLine
 	PlotLine( const QPen& p ) : pen(p) { }
 	QPen           pen;
 	QPainterPath   line;
-	QGraphicsItem *item;
+	QGraphicsPathItem *item;
 };
 
 class PlotCircle
@@ -66,7 +66,7 @@ class PlotCircle
 	QPen                 pen;
 	QRectF               point;
 	std::vector<QPointF> pos;
-	std::vector<QGraphicsItem*> item;
+	std::vector<QGraphicsEllipseItem*> item;
 };
 
 class PlotPolygon
@@ -76,7 +76,7 @@ class PlotPolygon
 	QPen                   pen;
 	QPolygonF              point;
 	std::vector<QPointF>   pos;
-	std::vector<QGraphicsItem*> item;
+	std::vector<QGraphicsPolygonItem*> item;
 };
 
 union PlotItemUnion
@@ -93,6 +93,7 @@ class PlotItem
 	PlotType      type;
 	Vector        x;
 	Vector        y;
+	int           number;
 };
 
 struct ViewBox
@@ -111,7 +112,9 @@ public:
 	void makeBox( );
 	void PlotPaint( );
 	void addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
-	void clear();
+	void clearAll();
+	void clear( int n );
+	int  nplots();
 
 protected:
 	void mousePressEvent ( QGraphicsSceneMouseEvent * event );

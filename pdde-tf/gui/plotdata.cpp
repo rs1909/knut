@@ -37,10 +37,65 @@ PlotData::PlotData(QObject *parent) :
 
 PlotData::~PlotData( )
 {
-	clear();
+	clearAll();
 }
 
-void PlotData::clear()
+int PlotData::nplots()
+{
+	int number = 0, it = 0;
+	for( std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i )
+	{
+		if( i->number != number )
+		{
+			number = i->number;
+			++it;
+		}
+	}
+	return it;
+}
+
+void PlotData::clear( int n )
+{
+	int number = 0, it = 0;
+	std::list<PlotItem>::iterator i = Graph.begin();
+	while( i != Graph.end() )
+	{
+		if( i->number != number )
+		{
+			number = i->number;
+			++it;
+		}
+		if( it == n )
+		{
+			if( (*i).type == PlotLineType )
+			{
+				delete (*i).data.line->item;
+				delete (*i).data.line;
+			}
+			else if( (*i).type == PlotCircleType )
+			{
+				for( int j = 0; j < (*i).data.circle->item.size(); ++j ) delete (*i).data.circle->item[j];
+				delete (*i).data.circle;
+			}
+			else if( (*i).type == PlotPolygonType )
+			{
+				for( int j = 0; j < (*i).data.polygon->item.size(); ++j ) delete (*i).data.polygon->item[j];
+				delete (*i).data.polygon;
+			}
+			else
+			{
+				std::cout<<"Something wrong\n";
+			}
+			i = Graph.erase( i );
+		}else
+		{
+			++i;
+		}
+	}
+	this->update();
+}
+
+void PlotData::clearAll()
 {
 	std::list<PlotItem>::iterator i;
 	for( i = Graph.begin(); i != Graph.end(); i++ )
@@ -70,6 +125,7 @@ void PlotData::clear()
 	ZoomHistory.clear();
 	ZoomHistory.push_back( cvb );
 	currZoom = ZoomHistory.begin();
+	this->update();
 }
 
 /// this computes the minimum and maximum value of an axis
@@ -211,6 +267,9 @@ void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 {
 	int xadded = 0;
 	int yadded = 0;
+	std::list<PlotItem>::iterator start = --Graph.end();
+	int startnumber = 0;
+	if( Graph.begin() != Graph.end() ) startnumber = Graph.rbegin()->number;
 	// mindig az Y utan kovetkezik csak addPlot...()
 	if( x >= XParameter0 )
 	{
@@ -373,6 +432,10 @@ void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 				addPlotPoint( --Graph.end(), style, biftype[i] );
 			}
 		}
+	}
+	for( std::list<PlotItem>::iterator it = ++start; it != Graph.end(); ++it )
+	{
+		it->number = startnumber + 1;
 	}
 	if( xadded != yadded )
 	{
@@ -773,9 +836,8 @@ void PlotData::PlotPaint( )
 			for( unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j )
 			{
 				delete (*i).data.circle->item[j];
-				QGraphicsEllipseItem *pt = this->addEllipse( (*i).data.circle->point, (*i).data.circle->pen );
-				pt->setPos( (*i).data.circle->pos[j] );
-				(*i).data.circle->item[j] = pt;
+				(*i).data.circle->item[j] = this->addEllipse( (*i).data.circle->point, (*i).data.circle->pen );
+				(*i).data.circle->item[j]->setPos( (*i).data.circle->pos[j] );
 			}
 		}
 		if( (*i).type == PlotPolygonType )
@@ -783,11 +845,10 @@ void PlotData::PlotPaint( )
 			for( unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j )
 			{
 				delete (*i).data.polygon->item[j];
-				QGraphicsPolygonItem *pt = this->addPolygon( (*i).data.polygon->point, (*i).data.polygon->pen );
-				pt->setPos( (*i).data.polygon->pos[j] );
-				(*i).data.polygon->item[j] = pt;
+				(*i).data.polygon->item[j] = this->addPolygon( (*i).data.polygon->point, (*i).data.polygon->pen );
+				(*i).data.polygon->item[j]->setPos( (*i).data.polygon->pos[j] );
 			}
 		}
 	}
-	this->clearFocus();
+// 	this->clearFocus();
 }

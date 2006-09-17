@@ -9,5 +9,8 @@
    <file>images/cr22-action-pencil.png</file>
    <file>images/cr22-action-rebuild.png</file>
    <file>images/cr22-action-exit.png</file>
+   <file>images/cr22-action-remove.png</file>
+   <file>images/cr22-action-eraser.png</file>
+   <file>images/cr22-action-add.png</file>
 </qresource>
 </RCC>

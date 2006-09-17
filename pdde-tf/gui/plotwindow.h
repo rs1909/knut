@@ -13,6 +13,7 @@
 class QLineEdit;
 class QComboBox;
 class QSpinBox;
+class QListWidget;
 
 class plotWindow : public QMainWindow
 {
@@ -22,16 +23,24 @@ class plotWindow : public QMainWindow
 	~plotWindow();
 	bool isPlotting() { return data != 0; }
  private:
+	void openFile( const QString& fname );
+	// variables
 	const mat4Data *data;
 	PlotData plotdata;
 	// gui elements
 	QLineEdit *matfile;
 	QComboBox *xvar;
 	QComboBox *yvar;
+	std::vector<QString> xvarMap;
+	std::vector<QString> yvarMap;
 	QSpinBox  *ptlabel;
 	QSpinBox  *dim;
+	QListWidget *plotSelect;
+	std::list<QString> plotList;
+	QString   shortFileName;
  private slots:
 	void addPlot();
 	void clearPlot();
 	void open();
+	void removePlot( );
 };

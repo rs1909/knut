@@ -22,22 +22,21 @@
 #include <QAction>
 #include <QToolButton>
 #include <QFileDialog>
+#include <QDockWidget>
+#include <QListWidget>
 
-plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(parent), data(0)
+plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
+	QMainWindow(parent), data(0)
 {
 	// open data file
-	try{ data = new mat4Data( fname.toStdString() ); }
-	catch( pddeException ex )
-	{
-		QMessageBox::critical( this, "PlotWindow::PlotWindow()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
-		return;
-	}
+	openFile( fname );
+	if( !data ) return;
 	if( data->isTorus() ) return;
 	//
 	QGraphicsView *plot = new QGraphicsView;
 	plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	plot->setScene( &plotdata );
-	QToolBar *toolbar = addToolBar("default");
+// 	QToolBar *toolbar = addToolBar("default");
 	QWidget *centralWidget = new QWidget;
 	QVBoxLayout *centralLayout = new QVBoxLayout;
 	QHBoxLayout *topContainerLayout = new QHBoxLayout;
@@ -61,13 +60,65 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(pa
 	matfile = new QLineEdit;
 	matfile->setReadOnly(true);
 	matfile->setText( fname );
-	QAction *matfileAct = new QAction( tr("&Open"), this );
+	QAction *matfileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Open"), this);
 	QToolButton *matfileButton = new QToolButton();
 	matfileButton->setDefaultAction( matfileAct );
+	connect( matfileAct, SIGNAL(triggered()), this, SLOT(open()));
+	
 	xvar = new QComboBox;
 	yvar = new QComboBox;
 	ptlabel = new QSpinBox;
 	dim = new QSpinBox;
+	
+	plotSelect = new QListWidget;
+	plotSelect->setSelectionMode(QAbstractItemView::SingleSelection);
+	QDockWidget *plotDock = new QDockWidget;
+	QVBoxLayout *dockLayout = new QVBoxLayout;
+	QWidget     *dockWidget = new QWidget;
+	QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr22-action-eraser.png"), "Remove Selected", this);
+	QToolButton *removePlot = new QToolButton;
+	dockLayout->setMargin(0);
+	removePlot->setDefaultAction( removePlotAct );
+	connect( removePlotAct, SIGNAL(triggered()), this, SLOT(removePlot()) );
+	plotDock->setWidget( dockWidget );
+	dockWidget->setLayout( dockLayout );
+	dockLayout->addWidget( removePlot );
+	dockLayout->addWidget( plotSelect );
+	addDockWidget( Qt::LeftDockWidgetArea, plotDock );
+
+	xvarMap.push_back("None");
+	xvarMap.push_back("Label");
+	xvarMap.push_back("Mesh");
+	xvarMap.push_back("RealMultiplier");
+	for( unsigned int i = XParameter0; i < XParameter0 + data->getNPar(); ++i ) {
+		xvarMap.push_back(QString("P ") + QString::number( i - XParameter0 ));
+	}
+	for( unsigned int i = 0; i < xvarMap.size(); ++i ) xvar->insertItem( i, xvarMap.at(i) );
+	
+	yvarMap.push_back("None");
+	yvarMap.push_back("L2Norm");
+	yvarMap.push_back("Amplitude");
+	yvarMap.push_back("ImagMultiplier");
+	yvarMap.push_back("AbsMultiplier");
+	yvarMap.push_back("Profile");
+	for( unsigned int i = YParameter0; i < YParameter0 + data->getNPar(); ++i ) {
+		yvarMap.push_back(QString("P ") + QString::number( i - YParameter0 ));
+	}
+	for( unsigned int i = 0; i < yvarMap.size(); ++i ) yvar->insertItem( i, yvarMap.at(i) );
+
+	ptlabel->setRange( 0, data->getNCols()-1 );
+	dim->setRange( 0, data->getNDim()-1 );
+	
+	QAction *addPlotAct = new QAction(QIcon(":/res/images/cr22-action-add.png"), tr("Add Plot"), this);
+	QToolButton *addPlotButton = new QToolButton();
+	addPlotButton->setDefaultAction( addPlotAct );
+	connect( addPlotAct, SIGNAL(triggered()), this, SLOT(addPlot()) );
+	
+	QAction *clearAllPlotAct = new QAction(QIcon(":/res/images/cr22-action-remove.png"), tr("Clear All"), this);
+	QToolButton *clearAllPlotButton = new QToolButton();
+	clearAllPlotButton->setDefaultAction( clearAllPlotAct );
+	connect( clearAllPlotAct, SIGNAL(triggered()), this, SLOT(clearPlot()) );
+	
 	topLayout->addWidget( matfileLabel, 0, 0 );
 	topLayout->addWidget( xvarLabel, 0, 2 );
 	topLayout->addWidget( yvarLabel, 0, 3 );
@@ -79,36 +130,12 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) : QMainWindow(pa
 	topLayout->addWidget( yvar, 1, 3 );
 	topLayout->addWidget( ptlabel, 1, 4 );
 	topLayout->addWidget( dim, 1, 5 );
-	connect( matfileAct, SIGNAL(triggered()), this, SLOT(open()));
-
-	std::vector<QString> xvarMap( XParameter0 + data->getNPar() );
-	xvarMap[XNone] = "None";
-	xvarMap[XLabel] = "Label";
-	xvarMap[XMesh] = "Mesh";
-	xvarMap[XRealMultiplier] = "RealMultiplier";
-	for( unsigned int i = XParameter0; i < xvarMap.size(); ++i ) xvarMap[i] = QString("P ") + QString::number( i - XParameter0 );
-	for( unsigned int i = 0; i < xvarMap.size(); ++i ) xvar->insertItem( i, xvarMap.at(i) );
+	topLayout->addWidget( addPlotButton, 1, 6 );
+	topLayout->addWidget( clearAllPlotButton, 1, 7 );
 	
-	std::vector<QString> yvarMap( XParameter0 + data->getNPar() );
-	yvarMap[YNone] = "None";
-	yvarMap[YL2Norm] = "L2Norm";
-	yvarMap[YAmplitude] = "Amplitude";
-	yvarMap[YImagMultiplier] = "ImagMultiplier";
-	yvarMap[YAbsMultiplier] = "AbsMultiplier";
-	yvarMap[YProfile] = "Profile";
-	for( unsigned int i = YParameter0; i < xvarMap.size(); ++i ) yvarMap[i] = QString("P ") + QString::number( i - YParameter0 );
-	for( unsigned int i = 0; i < yvarMap.size(); ++i ) yvar->insertItem( i, yvarMap.at(i) );
-
-	ptlabel->setRange( 0, data->getNCols()-1 );
-	dim->setRange( 0, data->getNDim()-1 );
-	
-	QAction *addnewplot = toolbar->addAction("Add Plot");
-	QAction *clearallplot = toolbar->addAction("Clear All");
-	connect( addnewplot, SIGNAL(triggered()), this, SLOT(addPlot()) );
-	connect( clearallplot, SIGNAL(triggered()), this, SLOT(clearPlot()) );
-
 	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1+
 	   QSize(2*plot->frameWidth(),2*plot->frameWidth()) );
+	resize(minimumSizeHint());
 }
 
 plotWindow::~plotWindow()
@@ -116,23 +143,31 @@ plotWindow::~plotWindow()
 	delete data;
 }
 
-void plotWindow::open()
+void plotWindow::openFile( const QString& fileName )
+{
+	const mat4Data *t_data = 0;
+	try{ t_data = new mat4Data( fileName.toStdString() ); }
+	catch( pddeException ex )
+	{
+		QMessageBox::critical( this, "PlotWindow::openFile()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
+		return;
+	}
+	if( t_data )
+	{
+		delete data;
+		data = t_data;
+	}
+	QFileInfo fi( fileName );
+	shortFileName = fi.fileName();
+}
+
+void plotWindow::open( )
 {
 	QString fileName = QFileDialog::getOpenFileName(this, "Open data", QString(), "v4 MAT files (*.mat);;All files (*)");
 	if( !fileName.isEmpty() )
 	{
-		const mat4Data *t_data;
-		try{ t_data = new mat4Data( fileName.toStdString() ); }
-		catch( pddeException ex )
-		{
-			QMessageBox::critical( this, "PlotWindow::open()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
-			return;
-		}
-		if( t_data )
-		{
-			delete data; data = t_data;
-			matfile->setText( QDir::current().relativeFilePath(fileName) );
-		}
+		openFile( fileName );
+		matfile->setText( QDir::current().relativeFilePath(fileName) );
 	}
 }
 
@@ -148,12 +183,25 @@ void plotWindow::addPlot()
 			catch( pddeException ex ){
 				QMessageBox::critical( this, "plotWindow::addPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 			}
+			plotSelect->addItem(QString( "%1 : (%2, %3, L%4, D%5)")
+				.arg(shortFileName).arg(xvarMap.at(xvar->currentIndex()))
+				.arg(yvarMap.at(yvar->currentIndex()))
+				.arg(ptlabel->value()).arg(dim->value()));
 		}
+	}
+}
+
+void plotWindow::removePlot()
+{
+	if(plotSelect->currentRow() != -1)
+	{
+		plotdata.clear(plotSelect->currentRow()+1);
+		delete plotSelect->takeItem(plotSelect->currentRow());
 	}
 }
 
 void plotWindow::clearPlot()
 {
-	plotdata.clear();
-	plotdata.PlotPaint();
+	plotdata.clearAll();
+	plotSelect->clear();
 }
