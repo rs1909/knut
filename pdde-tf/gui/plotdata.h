@@ -89,8 +89,10 @@ union PlotItemUnion
 class PlotItem
 {
  public:
-	PlotItemUnion               data;
-	PlotType                    type;
+	PlotItemUnion data;
+	PlotType      type;
+	Vector        x;
+	Vector        y;
 };
 
 struct ViewBox
@@ -119,8 +121,8 @@ protected:
 	bool event( QEvent* event );
 
 private:
-	void addPlotLine( const char* style );
-	void addPlotPoint( const char* style, int type );
+	void addPlotLine( std::list<PlotItem>::iterator& it, const char* style );
+	void addPlotPoint( std::list<PlotItem>::iterator& it, const char* style, int type );
 	void dataToGraphics( );
 	void getScale( qreal& transx, qreal& transy, qreal& scale );
 	void plotStyle( QPen& pen, const char* style );
@@ -143,19 +145,16 @@ private:
 	QPointF           mouseMove;
 	QGraphicsRectItem selection;
 	// data
-	std::list<Vector>   DataX;
-	std::list<Vector>   DataY;
-	
 	std::list<PlotItem> Graph;
 	
 	// the plot box
-	QGraphicsRectItem                 *Box;
-	std::vector<QGraphicsTextItem*>    HText;
-	std::vector<QGraphicsTextItem*>    VText;
-	std::vector<QGraphicsLineItem*>    TopTicks;
-	std::vector<QGraphicsLineItem*>    BottomTicks;
-	std::vector<QGraphicsLineItem*>    LeftTicks;
-	std::vector<QGraphicsLineItem*>    RightTicks;
+	QGraphicsRectItem               *Box;
+	std::vector<QGraphicsTextItem*>  HText;
+	std::vector<QGraphicsTextItem*>  VText;
+	std::vector<QGraphicsLineItem*>  TopTicks;
+	std::vector<QGraphicsLineItem*>  BottomTicks;
+	std::vector<QGraphicsLineItem*>  LeftTicks;
+	std::vector<QGraphicsLineItem*>  RightTicks;
 };
 
 #endif
