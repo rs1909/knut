@@ -263,7 +263,7 @@ void PlotData::dataToGraphics( )
 	PlotPaint();
 }
 
-void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int dim, const char* style )
+bool PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int dim, const char* style )
 {
 	int xadded = 0;
 	int yadded = 0;
@@ -440,9 +440,17 @@ void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 	if( xadded != yadded )
 	{
 		std::cout<<"bad number of X and Y coordinates\n";
+		return false;
 	}else
 	{
-		if( xadded != 0 ) dataToGraphics();
+		if( xadded != 0 )
+		{
+			dataToGraphics();
+			return true;
+		}else
+		{
+			return false;
+		}
 	}
 }
 

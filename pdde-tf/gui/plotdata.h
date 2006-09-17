@@ -111,7 +111,7 @@ public:
 	~PlotData( );
 	void makeBox( );
 	void PlotPaint( );
-	void addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
+	bool addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style );
 	void clearAll();
 	void clear( int n );
 	int  nplots();

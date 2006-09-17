@@ -177,16 +177,21 @@ void plotWindow::addPlot()
 	{
 		if( !data->isTorus() )
 		{
+			bool added;
 			try{
-				plotdata.addPlot( data, (PlotXVariable)xvar->currentIndex(), (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "r" );
+				added = plotdata.addPlot( data, (PlotXVariable)xvar->currentIndex(),
+					(PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "r" );
 			}
 			catch( pddeException ex ){
 				QMessageBox::critical( this, "plotWindow::addPlot()", QString( "%1:%2 %3" ).arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0 );
 			}
-			plotSelect->addItem(QString( "%1 : (%2, %3, L%4, D%5)")
-				.arg(shortFileName).arg(xvarMap.at(xvar->currentIndex()))
-				.arg(yvarMap.at(yvar->currentIndex()))
-				.arg(ptlabel->value()).arg(dim->value()));
+			if( added )
+			{
+				plotSelect->addItem(QString( "%1 : (%2, %3, L%4, D%5)")
+					.arg(shortFileName).arg(xvarMap.at(xvar->currentIndex()))
+					.arg(yvarMap.at(yvar->currentIndex()))
+					.arg(ptlabel->value()).arg(dim->value()));
+			}
 		}
 	}
 }
