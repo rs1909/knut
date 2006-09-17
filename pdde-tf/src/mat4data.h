@@ -61,6 +61,8 @@ class mat4Data
 		void   getMul( int n, Vector& real, Vector& imag ) const;
 		double getMulRe( int n, int j ) const { return elem( mul_offset, j, n ); }
 		double getMulIm( int n, int j ) const { return elem_im( mul_offset, j, n ); }
+		int  getNTrivMul() const { return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0]); }
+		int  setNTrivMul( int i ) { ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0] = i; }
 		void   getElem( int n, Vector& el ) const;
 		double getElem( int n, int j ) const { return elem( elem_offset, j, n ); }
 		void   getElemRef( int n, Vector& el ) { el.Init( &elem( elem_offset, 0, n ), ndeg+1 ); }
@@ -80,8 +82,9 @@ class mat4Data
 		int  getElemLength() const { return ndeg+1; }
 		int  getNCols() const { return ncols; }
 		int  getNPoints() const { return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]); }
-		int  getNextBifurcation( int n, int aut ) const;
-		int  getBifurcationType( int n, int aut ) const;
+		int  countUnstable( int n ) const;
+		int  getNextBifurcation( int n ) const;
+		int  getBifurcationType( int n ) const;
 		bool isTorus() const { return torus; }
 		
 		struct header *getHeader( int offset ) { return (struct header*)((char*)address + offset); }
@@ -104,7 +107,6 @@ class mat4Data
 		}
 
 	private:
-		inline int countUnstable( int n, int aut ) const;
 		inline void findTrivialIndices( int n, int aut, int *imin, double* dmin ) const;
 
 #ifdef WIN32
@@ -139,6 +141,9 @@ class mat4Data
 
 	int    mul_offset;
 	header mul_header;
+
+	int    ntrivmul_offset;
+	header ntrivmul_header;
 
 	int    ndim_offset;     //T
 	header ndim_header;

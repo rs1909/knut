@@ -174,6 +174,8 @@ class Point
 		// multipliers
 		Vector       mRe;
 		Vector       mIm;
+		// number of trivial multipliers
+		int   nTrivMul;
 		
 		// for the rotation phase conditions
 		Array1D<int> rotRe;

@@ -356,11 +356,11 @@ void PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 	{
 		int k, k_p = 0;
 		do{
-			k = data->getNextBifurcation( k_p, 1 );
+			k = data->getNextBifurcation( k_p );
 			if( k != -1 )
 			{
 				bifidx.push_back(k);
-				biftype.push_back( data->getBifurcationType( k, 1 ) );
+				biftype.push_back( data->getBifurcationType( k ) );
 				k_p = k;
 			}
 		}while( k != -1 );

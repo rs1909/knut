@@ -172,12 +172,7 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	nint = nint_;
 	ndeg = ndeg_;
 	nmul = nmul_;
-	// for tori
-// 	nint1 = params.getNInt1();
-// 	nint2 = params.getNInt2();
-// 	ndeg1 = params.getNDeg1();
-// 	ndeg2 = params.getNDeg2();
-
+	
 	const int approxSize = 8*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+2*nmul+1+(ndeg+1)+(ndim+1)*(ndeg*nint+1)));
  #ifndef WIN32
 	address = mmapFileWrite( file, fileName, approxSize );
@@ -193,8 +188,11 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	
 	mul_offset = par_offset + par_size;
 	int mul_size = createComplexMatrixHeader( address, mul_offset, &mul_header, "pdde_mul", nmul, ncols );
+
+	ntrivmul_offset = mul_offset + mul_size;
+	int ntrivmul_size = createMatrixHeader( address, ntrivmul_offset, &ntrivmul_header, "pdde_ntrivmul", 1, 1 );
 	
-	ndim_offset = mul_offset + mul_size;
+	ndim_offset = ntrivmul_offset + ntrivmul_size;
 	int ndim_size = createMatrixHeader( address, ndim_offset, &ndim_header, "pdde_ndim", 1, ncols );
 	
 	elem_offset = ndim_offset + ndim_size;
@@ -298,7 +296,12 @@ void mat4Data::openReadOnly( const std::string& fileName )
 		// periodic solutions
 		nmul = mul_header.mrows;
 		if( mul_header.ncols != ncols ) P_MESSAGE("err4");
-		if( mul_header.imagf == 0 ) P_MESSAGE("err5");
+		if( mul_header.imagf != 1 ) P_MESSAGE("err5");
+		
+		if( (ntrivmul_offset = findMatrix( "pdde_ntrivmul", &ntrivmul_header )) == -1 ) P_MESSAGE("err6");
+		P_ERROR_X( ntrivmul_header.mrows == 1, "err7" );
+		P_ERROR_X( ntrivmul_header.ncols == 1, "err8" );
+		P_ERROR_X( ntrivmul_header.imagf == 0, "err9" );
 		
 		if( (elem_offset = findMatrix( "pdde_elem", &elem_header )) == -1 ) P_MESSAGE("err18.1");
 		if( elem_header.ncols != ncols ) P_MESSAGE("err20.1");
@@ -641,8 +644,9 @@ inline void mat4Data::findTrivialIndices( int n, int aut, int *imin, double* dmi
 	}
 }
 
-inline int mat4Data::countUnstable( int n, int aut ) const
+int mat4Data::countUnstable( int n ) const
 {
+	const int aut = getNTrivMul();
 	int imin[aut];
 	double dmin[aut];
 	findTrivialIndices( n, aut, imin, dmin );
@@ -657,20 +661,21 @@ inline int mat4Data::countUnstable( int n, int aut ) const
 	return ustab;
 }
 
-int mat4Data::getNextBifurcation( int n, int aut ) const
+int mat4Data::getNextBifurcation( int n ) const
 {
-	int p_ustab = countUnstable( n, aut );
+	int p_ustab = countUnstable( n );
 	for( int i = n+1; i < getNPoints(); ++i )
 	{
-		int ustab = countUnstable( i, aut );
+		int ustab = countUnstable( i );
 		if( ustab != p_ustab ) return i;
 		p_ustab = ustab;
 	}
 	return -1;
 }
 
-int mat4Data::getBifurcationType( int n, int aut ) const
+int mat4Data::getBifurcationType( int n ) const
 {
+	const int aut = getNTrivMul();
 	int imin[aut];
 	double dmin[aut];
 	findTrivialIndices( n, aut, imin, dmin );

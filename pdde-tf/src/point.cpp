@@ -220,7 +220,10 @@ void Point::Construct( )
 	P_ERROR_X( (eqn(0) == EqnSol)&&(var(0) == VarSol), "Wrong first equation!");
 	dim1 = NDIM*(NINT*NDEG+1);
 	
+	// a) setting th etest functional b) determining the number of trivial multipliers
 	testFunct = 0;
+	bool phaut = false;
+	bool phrot = false;
 	for( int i = 1; i < eqn.Size(); i++ )
 	{
 		switch( eqn(i) ) 
@@ -248,11 +251,21 @@ void Point::Construct( )
 				break;
 			case EqnTFCPLX_IM:
 				P_ERROR_X( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n" );
+				break;
+			case EqnPhase:
+				phaut = true;
+				break;
+			case EqnPhaseRot:
+				phrot = true;
+				break;
 			default:
 				break;
 		}
 	}
-	
+	nTrivMul = 0;
+	if( phaut ) ++nTrivMul;
+	if( phrot ) ++nTrivMul;
+
 	for( int i = 1; i < var.Size(); i++ )
 	{
 		P_ERROR_X4( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd), "{1} Non-existing parameter P", var(i)-VarPAR0, " at position ", i );
@@ -1020,6 +1033,7 @@ void Point::BinaryWrite( mat4Data& data, int n )
 {
 	data.setPar( n, par );
 	data.setMul( n, mRe, mIm );
+	data.setNTrivMul( nTrivMul );
 	data.setElem( n, colloc.getElem() );
 	data.setMesh( n, colloc.getMesh() );
 	data.setProfile( n, sol );
