@@ -10,6 +10,7 @@ INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 
 QT4_WRAP_CPP( MOC_SRCS mainwindow.h plotdata.h plotwindow.h 
     paramview.h constqtgui.h compthread.h screendialog.h )
+QT4_ADD_RESOURCES( ICONS mainwindow.qrc )
 
 ADD_EXECUTABLE( pdde-gui main.cpp
     mainwindow.cpp mainwindow.h 
@@ -19,7 +20,7 @@ ADD_EXECUTABLE( pdde-gui main.cpp
     constqtgui.cpp constqtgui.h
     compthread.cpp compthread.h
     screendialog.h
-    ${MOC_SRCS} )
+    ${MOC_SRCS} ${ICONS} )
 
 TARGET_LINK_LIBRARIES( pdde-gui
 	${PDDE_QTMAIN}

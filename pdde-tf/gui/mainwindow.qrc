@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res">
+   <file>images/cr22-action-fileopen.png</file>
+   <file>images/cr22-action-filesave.png</file>
+   <file>images/cr22-action-filesaveas.png</file>
+   <file>images/cr22-action-launch.png</file>
+   <file>images/cr22-action-stop.png</file>
+   <file>images/cr22-action-view_text.png</file>
+   <file>images/cr22-action-pencil.png</file>
+   <file>images/cr22-action-rebuild.png</file>
+   <file>images/cr22-action-exit.png</file>
+</qresource>
+</RCC>

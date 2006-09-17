@@ -53,9 +53,9 @@ MainWindow::MainWindow( const QString& appDir ) :
 	QHBoxLayout *getInputFileLayout = new QHBoxLayout;
 	QLabel* inputFileLabel = new QLabel("INPUT");
 	inputFileLabel->setToolTip( QString("Input file which contains the starting point") );
-	QAction* inputFilePlotAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Plot"), this);
+	QAction* inputFilePlotAct = new QAction(QIcon(":/res/images/cr22-action-pencil.png"), tr("&Plot"), this);
 	inputFile = new QLineEdit();
-	QAction* inputFileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
+	QAction* inputFileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
 	QToolButton* getInputFile = new QToolButton( );
 	QToolButton* getInputFilePlot = new QToolButton( );
 	getInputFile->setDefaultAction( inputFileAct );
@@ -75,8 +75,8 @@ MainWindow::MainWindow( const QString& appDir ) :
 	QLabel* outputFileLabel = new QLabel("OUTPUT");
 	outputFileLabel->setToolTip( QString("Output file, which contains the result of computation") );
 	outputFile = new QLineEdit();
-	QAction* outputFileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
-	QAction* outputFilePlotAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Plot"), this);
+	QAction* outputFileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
+	QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr22-action-pencil.png"), tr("&Plot"), this);
 	QToolButton* getOutputFile = new QToolButton( );
 	QToolButton* getOutputFilePlot = new QToolButton( );
 	getOutputFile->setDefaultAction( outputFileAct );
@@ -97,8 +97,8 @@ MainWindow::MainWindow( const QString& appDir ) :
 	QLabel* sysnameLabel = new QLabel("SYSNAME");
 	sysnameLabel->setToolTip( QString("The compiled system definition, e.g., \"sys-problem.so\"") );
 	sysname = new QLineEdit();
-	QAction* sysdefAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Browse..."), this);
-	QAction* compileAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Compile..."), this);
+	QAction* sysdefAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
+	QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-rebuild.png"), tr("&Compile..."), this);
 	QToolButton* getSysdef = new QToolButton( );
 	QToolButton* compile = new QToolButton( );
 	getSysdef->setDefaultAction( sysdefAct );
@@ -634,36 +634,36 @@ void MainWindow::about()
 
 void MainWindow::createActions()
 {
-	runAct = new QAction(/*QIcon(":/images/new.png"),*/ tr("&Run"), this);
+	runAct = new QAction(QIcon(":/res/images/cr22-action-launch.png"), tr("&Run"), this);
 	runAct->setShortcut(tr("Ctrl+R"));
 	runAct->setStatusTip(tr("Start the computation"));
 	connect(runAct, SIGNAL(triggered()), this, SLOT(run()));
 
-	stopAct = new QAction(/*QIcon(":/images/new.png"),*/ tr("&Stop"), this);
+	stopAct = new QAction(QIcon(":/res/images/cr22-action-stop.png"), tr("&Stop"), this);
 	stopAct->setShortcut(tr("Ctrl+T"));
 	stopAct->setStatusTip(tr("Stop the computation"));
 	connect(stopAct, SIGNAL(triggered()), this, SLOT(stop()));
 
-	terminalAct = new QAction(/*QIcon(":/images/new.png"),*/ tr("&Text"), this);
+	terminalAct = new QAction(QIcon(":/res/images/cr22-action-view_text.png"), tr("&Text"), this);
 	terminalAct->setShortcut(tr("Ctrl+V"));
 	terminalAct->setStatusTip(tr("View textual output"));
 	connect(terminalAct, SIGNAL(triggered()), this, SLOT(terminalView()));
 
-	openAct = new QAction(/*QIcon(":/images/open.png"),*/ tr("&Open..."), this);
+	openAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Open..."), this);
 	openAct->setShortcut(tr("Ctrl+O"));
 	openAct->setStatusTip(tr("Open an existing file"));
 	connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-	saveAct = new QAction(/*QIcon(":/images/save.png"),*/ tr("&Save"), this);
+	saveAct = new QAction(QIcon(":/res/images/cr22-action-filesave.png"), tr("&Save"), this);
 	saveAct->setShortcut(tr("Ctrl+S"));
 	saveAct->setStatusTip(tr("Save the document to disk"));
 	connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-	saveAsAct = new QAction(tr("Save &As..."), this);
+	saveAsAct = new QAction(QIcon(":/res/images/cr22-action-filesaveas.png"), tr("Save &As..."), this);
 	saveAsAct->setStatusTip(tr("Save the document under a new name"));
 	connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-	exitAct = new QAction(tr("E&xit"), this);
+	exitAct = new QAction(QIcon(":/res/images/cr22-action-exit.png"), tr("E&xit"), this);
 	exitAct->setShortcut(tr("Ctrl+Q"));
 	exitAct->setStatusTip(tr("Exit the application"));
 	connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
