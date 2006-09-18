@@ -115,6 +115,7 @@ public:
 	void clearAll();
 	void clear( int n );
 	int  nplots();
+	void setColor( int n, QColor& Color );
 
 protected:
 	void mousePressEvent ( QGraphicsSceneMouseEvent * event );

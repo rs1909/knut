@@ -95,6 +95,52 @@ void PlotData::clear( int n )
 	this->update();
 }
 
+void PlotData::setColor( int n, QColor& color )
+{
+	int number = 0, it = 0;
+	for( std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i )
+	{
+		if( i->number != number )
+		{
+			number = i->number;
+			++it;
+		}
+		if( it == n )
+		{
+			if( (*i).type == PlotLineType )
+			{
+				QPen pen = (*i).data.line->item->pen();
+				pen.setColor(color);
+				(*i).data.line->pen = pen;
+				(*i).data.line->item->setPen( pen );
+			}
+			else if( (*i).type == PlotCircleType )
+			{
+				for( int j = 0; j < (*i).data.circle->item.size(); ++j ) {
+					QPen pen = (*i).data.circle->item[j]->pen();
+					pen.setColor(color);
+					(*i).data.circle->pen = pen;
+					(*i).data.circle->item[j]->setPen( pen );
+				}
+			}
+			else if( (*i).type == PlotPolygonType )
+			{
+				for( int j = 0; j < (*i).data.polygon->item.size(); ++j ) {
+					QPen pen = (*i).data.polygon->item[j]->pen();
+					pen.setColor(color);
+					(*i).data.polygon->pen = pen;
+					(*i).data.polygon->item[j]->setPen( pen );
+				}
+			}
+			else
+			{
+				std::cout<<"Something wrong\n";
+			}
+		}
+	}
+	this->update();
+}
+
 void PlotData::clearAll()
 {
 	std::list<PlotItem>::iterator i;

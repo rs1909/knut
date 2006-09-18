@@ -42,5 +42,6 @@ class plotWindow : public QMainWindow
 	void addPlot();
 	void clearPlot();
 	void open();
-	void removePlot( );
+	void removePlot();
+	void colorizePlot();
 };

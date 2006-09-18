@@ -24,6 +24,7 @@
 #include <QFileDialog>
 #include <QDockWidget>
 #include <QListWidget>
+#include <QColorDialog>
 
 plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	QMainWindow(parent), data(0)
@@ -74,17 +75,26 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	plotSelect->setSelectionMode(QAbstractItemView::SingleSelection);
 	QDockWidget *plotDock = new QDockWidget;
 	QVBoxLayout *dockLayout = new QVBoxLayout;
+	QHBoxLayout *buttonsLayout = new QHBoxLayout;
+	dockLayout->setMargin(0);
 	QWidget     *dockWidget = new QWidget;
 	QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr22-action-eraser.png"), "Remove Selected", this);
-	QToolButton *removePlot = new QToolButton;
-	dockLayout->setMargin(0);
-	removePlot->setDefaultAction( removePlotAct );
+	QToolButton *removePlotButton = new QToolButton;
+	removePlotButton->setDefaultAction( removePlotAct );
 	connect( removePlotAct, SIGNAL(triggered()), this, SLOT(removePlot()) );
-	plotDock->setWidget( dockWidget );
-	dockWidget->setLayout( dockLayout );
-	dockLayout->addWidget( removePlot );
-	dockLayout->addWidget( plotSelect );
-	addDockWidget( Qt::LeftDockWidgetArea, plotDock );
+
+	QAction     *colorizePlotAct = new QAction(QIcon(":/res/images/cr22-action-colorize.png"), "Change Color", this);
+	QToolButton *colorizePlotButton = new QToolButton;
+	colorizePlotButton->setDefaultAction(colorizePlotAct);
+	connect(colorizePlotAct, SIGNAL(triggered()), this, SLOT(colorizePlot()));
+	
+	plotDock->setWidget(dockWidget);
+	dockWidget->setLayout(dockLayout);
+	dockLayout->addLayout(buttonsLayout);
+	dockLayout->addWidget(plotSelect);
+	buttonsLayout->addWidget(removePlotButton);
+	buttonsLayout->addWidget(colorizePlotButton);
+	addDockWidget(Qt::LeftDockWidgetArea, plotDock);
 
 	xvarMap.push_back("None");
 	xvarMap.push_back("Label");
@@ -202,6 +212,15 @@ void plotWindow::removePlot()
 	{
 		plotdata.clear(plotSelect->currentRow()+1);
 		delete plotSelect->takeItem(plotSelect->currentRow());
+	}
+}
+
+void plotWindow::colorizePlot()
+{
+	if(plotSelect->currentRow() != -1)
+	{
+		QColor newcolor = QColorDialog::getColor();
+		plotdata.setColor(plotSelect->currentRow()+1, newcolor);
 	}
 }
 
