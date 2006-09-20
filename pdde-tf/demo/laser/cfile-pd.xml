@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-pd.mat</output>
  <sysname>sys-laser.so</sysname>
  <label>101</label>
  <pointtype>-1</pointtype>
@@ -47,7 +47,7 @@
  </vars>
  <nint>20</nint>
  <ndeg>4</ndeg>
- <nmul>20</nmul>
+ <nmul>8</nmul>
  <stab>0</stab>
  <nmat>22</nmat>
  <nint1>12</nint1>
@@ -55,15 +55,15 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>500</steps>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.000100</ds>
- <dsmin>0.000001</dsmin>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.0001</ds>
+ <dsmin>1e-06</dsmin>
  <dsmax>0.02</dsmax>
- <dsstart>0.000100</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epss>0.000000</epss>
+ <dsstart>0.0001</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epss>0</epss>
  <nitc>24</nitc>
  <nitr>24</nitr>
  <nits>24</nits>
