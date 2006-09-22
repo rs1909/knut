@@ -4,7 +4,7 @@ PROJECT( PDDE )
 # SETTING UP THE VARIABLES
 #------------------------------------------------------------------------------
 
-SET( PACKAGE_NAME "PDDE-CONT" )
+SET( PACKAGE_NAME "pdde-cont" )
 SET( PACKAGE_VERSION "1.1.0" )
 FILE( READ REVISION PACKAGE_REVISION )
 
@@ -23,9 +23,11 @@ IF( NOT WIN32 )
     MESSAGE( SEND_ERROR "Cannot find a shell program" )
   ENDIF( EXISTS ${SHELL} )
   SET( PDDE_DEMO_DIR share/${PACKAGE_NAME}/demo/ CACHE INTERNAL "demo dir" )
+  SET( PDDE_MATLAB_DIR share/${PACKAGE_NAME}/matlab/ CACHE INTERNAL "matlab dir" )
   SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
 ELSE( NOT WIN32 )
   SET( PDDE_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
+  SET( PDDE_MATLAB_DIR matlab/ CACHE INTERNAL "matlab dir" )
   SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
 ENDIF( NOT WIN32 )
 
@@ -84,7 +86,7 @@ ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 # DISTRIBUTING WITH SVN
 #------------------------------------------------------------------------------
 
-SET( DIST_DIR pdde-cont-${PACKAGE_VERSION} )
+SET( DIST_DIR ${PACKAGE_NAME}-${PACKAGE_VERSION} )
 ADD_CUSTOM_TARGET( dist 
 	COMMAND ln -s . ${DIST_DIR}\; 
 		svn log -r HEAD -q | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >REVISION\;
@@ -126,3 +128,6 @@ ENDIF(QT4_QMAKE_FOUND)
 
 # demo programs
 ADD_SUBDIRECTORY(demo)
+
+# MATLAB scripts
+ADD_SUBDIRECTORY(matlab)
