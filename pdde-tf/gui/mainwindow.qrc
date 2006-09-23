@@ -13,5 +13,7 @@
    <file>images/cr22-action-eraser.png</file>
    <file>images/cr22-action-add.png</file>
    <file>images/cr22-action-colorize.png</file>
+   <file>images/cr22-action-fileprint.png</file>
+   <file>images/cr22-mime-pdf.png</file>
 </qresource>
 </RCC>

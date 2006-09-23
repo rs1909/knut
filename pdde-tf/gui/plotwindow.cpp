@@ -25,6 +25,8 @@
 #include <QDockWidget>
 #include <QListWidget>
 #include <QColorDialog>
+#include <QPrintDialog>
+#include <QPrinter>
 
 plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	QMainWindow(parent), data(0)
@@ -128,6 +130,16 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	QToolButton *clearAllPlotButton = new QToolButton();
 	clearAllPlotButton->setDefaultAction( clearAllPlotAct );
 	connect( clearAllPlotAct, SIGNAL(triggered()), this, SLOT(clearPlot()) );
+
+	QAction *printAct = new QAction(QIcon(":/res/images/cr22-action-fileprint.png"), tr("Print"), this);
+	QToolButton *printButton = new QToolButton();
+	printButton->setDefaultAction( printAct );
+	connect( printAct, SIGNAL(triggered()), this, SLOT(print()) );
+	
+// 	QAction *printPdfAct = new QAction(QIcon(":/res/images/cr22-mime-pdf.png"), tr("Print to Pdf"), this);
+// 	QToolButton *printPdfButton = new QToolButton();
+// 	printPdfButton->setDefaultAction( printPdfAct );
+// 	connect( printPdfAct, SIGNAL(triggered()), this, SLOT(printPdf()) );
 	
 	topLayout->addWidget( matfileLabel, 0, 0 );
 	topLayout->addWidget( xvarLabel, 0, 2 );
@@ -142,6 +154,8 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	topLayout->addWidget( dim, 1, 5 );
 	topLayout->addWidget( addPlotButton, 1, 6 );
 	topLayout->addWidget( clearAllPlotButton, 1, 7 );
+	topLayout->addWidget( printButton, 1, 8 );
+// 	topLayout->addWidget( printPdfButton, 1, 9 );
 	
 	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1+
 	   QSize(2*plot->frameWidth(),2*plot->frameWidth()) );
@@ -229,3 +243,29 @@ void plotWindow::clearPlot()
 	plotdata.clearAll();
 	plotSelect->clear();
 }
+
+void plotWindow::print()
+{
+	QPrinter printer;
+	if (QPrintDialog(&printer).exec() == QDialog::Accepted)
+	{
+		QPainter painter(&printer);
+		painter.setRenderHint(QPainter::Antialiasing);
+		plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
+	}
+}
+
+// void plotWindow::printPdf()
+// {
+// 	QString fileName = QFileDialog::getSaveFileName(this, "Print to Pdf", "print.pdf", "Pdf files (*.pdf);;All files (*)");
+// 	if( !fileName.isEmpty() )
+// 	{
+// 		QPrinter printer;
+// 		printer.setOutputFileName(fileName);
+// 		printer.setOutputFormat(QPrinter::PdfFormat);
+// 		printer.setFullPage(true);
+// 		QPainter painter(&printer);
+// 		painter.setRenderHint(QPainter::Antialiasing);
+// 		plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
+// 	}
+// }

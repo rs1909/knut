@@ -44,4 +44,6 @@ class plotWindow : public QMainWindow
 	void open();
 	void removePlot();
 	void colorizePlot();
+	void print();
+// 	void printPdf();
 };
