@@ -15,5 +15,6 @@
    <file>images/cr22-action-colorize.png</file>
    <file>images/cr22-action-fileprint.png</file>
    <file>images/cr22-mime-pdf.png</file>
+   <file>images/icon-pdde-cont.png</file>
 </qresource>
 </RCC>

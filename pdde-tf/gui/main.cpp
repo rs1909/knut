@@ -14,6 +14,7 @@
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
+	app.setWindowIcon(QIcon(":/res/images/icon-pdde-cont.png"));
 	MainWindow mainWin( app.applicationDirPath() );
 	qRegisterMetaType<pddeException>("pddeException");
 	qRegisterMetaType<std::string>("std::string");
