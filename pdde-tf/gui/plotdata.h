@@ -115,6 +115,7 @@ public:
 	void clearAll();
 	void clear( int n );
 	int  nplots();
+	QColor getColor( int n );
 	void setColor( int n, QColor& Color );
 
 protected:

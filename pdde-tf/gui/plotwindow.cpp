@@ -233,8 +233,8 @@ void plotWindow::colorizePlot()
 {
 	if(plotSelect->currentRow() != -1)
 	{
-		QColor newcolor = QColorDialog::getColor();
-		plotdata.setColor(plotSelect->currentRow()+1, newcolor);
+		QColor newcolor = QColorDialog::getColor(plotdata.getColor(plotSelect->currentRow()+1));
+		if( newcolor.isValid() ) plotdata.setColor(plotSelect->currentRow()+1, newcolor);
 	}
 }
 
