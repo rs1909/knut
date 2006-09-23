@@ -98,7 +98,7 @@ MainWindow::MainWindow( const QString& appDir ) :
 	sysnameLabel->setToolTip( QString("The compiled system definition, e.g., \"sys-problem.so\"") );
 	sysname = new QLineEdit();
 	QAction* sysdefAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
-	QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-rebuild.png"), tr("&Compile..."), this);
+	QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-build.png"), tr("&Compile..."), this);
 	QToolButton* getSysdef = new QToolButton( );
 	QToolButton* compile = new QToolButton( );
 	getSysdef->setDefaultAction( sysdefAct );
