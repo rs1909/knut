@@ -4,7 +4,7 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL( FILES sys-${NAME}.cpp
-    cfile-start cfile-ns cfile-pd cfile-lp in-start
+    cfile-start cfile-ns cfile-pd cfile-lp in-start from_biftool.mat
     cfile-start.xml cfile-ns.xml cfile-pd.xml cfile-lp.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
