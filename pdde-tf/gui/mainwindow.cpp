@@ -668,7 +668,7 @@ void MainWindow::createActions()
 	exitAct->setStatusTip(tr("Exit the application"));
 	connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-	aboutAct = new QAction(tr("&About"), this);
+	aboutAct = new QAction(QIcon(":/res/images/icon-pdde-cont.png"), tr("&About"), this);
 	aboutAct->setStatusTip(tr("Show the application's About box"));
 	connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
