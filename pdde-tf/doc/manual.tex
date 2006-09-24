@@ -25,7 +25,7 @@
 \author{R\'obert Szalai}
 \newcommand{\pddever}{1.1.0}
 \version{\pddever}
-\date{12 September 2006}
+\date{24 September 2006}
 \maketitle
 
 \begin{center}
@@ -68,7 +68,7 @@ Because of periodicity, the software is tracking a function segment $\varphi \in
 
 The software can continue periodic orbits of (\ref{gensys}) along one scalar parameter. It can determine the stability of a periodic orbit by computing finitely many Floquet multipliers of the largest magnitude. Codimension-one bifurcations are detected along the solution branch using the Floquet multipliers, and bifurcation points can be calculated using test-functionals. When a branching point of periodic orbits is encountered the software can be directed to continue the other branch. Similarly, when a period-doubling bifurcation point is found, the period-two branch can be selected for continuation.
 
-The three generic codimension-one bifurcations (Neimark-Sacker, period doubling and fold) can be continued along two parameters. The defining systems of these bifurcations are minimally extended and use test-functionals \cite{szalai-tf}. Moreover, a limited number of codimension-two bifurcations can be continued, when two different test-functionals are selected.
+The three generic codimension-one bifurcations (Neimark-Sacker, period doubling and fold) can be continued along two parameters. The defining systems of these bifurcations are minimally extended and use test-functionals. Moreover, a limited number of codimension-two bifurcations can be continued, when two different test-functionals are selected.
 
 Fixed points of autonomous systems can also be continued as constant periodic orbits with fixed period. In this case the Hopf bifurcation is detected as Neimark-Sacker bifurcation, and the periodic solution, emanating from the Hopf point, can be continued by switching to the periodic solution branch.
 Although, continuing fixed points in this way is very inefficient, it might help in avoiding the hassle of producing starting points using some other numerical package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
@@ -77,7 +77,7 @@ Although, continuing fixed points in this way is very inefficient, it might help
 
 \subsection{Requirements}
 
-The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake is a utility that will configure the package so that it can be built for a specific operating system. The Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for building the graphical user interface. On Unix platforms the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
+The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it has to be installed first. CMake is a utility that will configure the package so that it can be built for a specific operating system. The Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for building the graphical user interface. Without Qt being present only the command line interface can be used. On Unix platforms the \filef{pcompile} script uses the \filef{sed} command, which is necessary to compile system definition files.
 
 For solving linear equations the software requires the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra software, which can be tuned automatically for many processors and operating systems. To avoid the lengthy compilation it is possible to download pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and \filef{libcblas.a}).
 
@@ -96,7 +96,7 @@ Now the package is ready for the automatic configuration:
 $ cd pdde-cont-%\@version%
 $ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
-This configures and builds software after which it install into the \filef{pdde-cont/} folder in the user's home directory.
+This configures and builds software after which it installs into the \filef{pdde-cont/} folder in the user's home directory.
 In order to make the software work, the \filef{PATH} environment variables has to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
@@ -109,19 +109,23 @@ into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
-If you install the binary version of the software, the only requirement is to install MinGW, which is necessary to compile system definition files. In this case just uncompress the \filef{pdde-windows-{\pddever}.zip} and it is ready to use.
+The simplest way of instaling the software is to run the \filef{pdde-cont-{\pddever}.exe}, which will extract the package into a preferred directory and set up a \filef{Start Menu} shortcut. In order to be able to compile system definition files a recent version of MinGW (at the time of writing 5.0.3) should be installed from \url{http://www.mingw.org/} first. The MinGW installer will ask you to select options. Tick the boxes of the C, C++ compiler and the GNU make utility, the other components are not required.
 
-Installing from source requires a bit more work. First download 
-the most recent self extracting installer of MinGW from \url{http://www.mingw.org/} (at the time of writing 5.0.3) and install it. The installer will ask you to select options. Tick the boxes of the C,C++ compiler and the GNU make utility, the other components are not required. Download and install the Windows version of CMake from \url{www.cmake.org} and a very recent version of Qt (4.2.0 and later) from \url{http://www.trolltech.com/developer/downloads/qt/windows}.
-
+Installing from source requires more effort. Four other pieces of software has to be downloaded and installed.
+\begin{itemize}
+\item[-] MinGW v.\ 5.0.3 or newer as desribed above,
+\item[-] CMake v.\ 2.4.3 or newer from \url{http://www.cmake.org},
+\item[-] Qt v.\ 4.2.0 or newer from \url{http://www.trolltech.com/developer/downloads/qt/windows},
+\item[-] and the ATLAS library.
+\end{itemize}
 To compile the software, first uncompress the \pdde\ package file \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
 Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and \filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory. Then start a command prompt (Start Menu $\rightarrow$ Run type ``cmd'' into the box) and enter the directory \filef{pdde-cont-\@version} where the package was extracted. If all the requirements are installed and the ATLAS files are in place, issue the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
  > build-windows
 \end{lstlisting} \end{quote} } \noindent
-command, which will build and install the software into \filef{Program Files$\backslash$PDDE}. The program then can be started from the \filef{bin} subdirectory. Note that no ``Start menu'' entries, no shortcuts are made to the software, so these steps have to be performed manually if required. To uninstall, simply delete the PDDE directory.
+command, which will build and install the software into \filef{Program Files$\backslash$PDDE}. The program then can be started from the \filef{bin} subdirectory. Note that no \filef{Start Menu} entries, no shortcuts are made to the software, so these steps have to be performed manually if required. To uninstall, simply delete the PDDE directory.
 
-\section{Command line arguments}
+\section{Command line inferface (CLI)}
 
 The software is controlled by the so-called constants file. This file contains
 instructions about all the operations done by the software and also specifies the parameters of the numerical methods.
@@ -755,7 +759,7 @@ The continuation starts with the following command
 $ pdde -c cfile-pdbif -i in-start
 \end{lstlisting} \end{quote} } \noindent
 The period doubling curve can be seen in Fig.\ \ref{pdbif}.
-\begin{figure}
+\begin{figure}[bth!]
 \begin{center}
 \includegraphics[scale=0.6]{fig/pdbif2.eps}
 \end{center}
@@ -770,7 +774,7 @@ sys-glass.so            SYSNAME
 ...
 \end{lstlisting} \end{quote} } \noindent
 %
-\begin{figure}
+\begin{figure}[bth!]
 \begin{center}
 \includegraphics[scale=0.6]{fig/pdsw.eps}
 \end{center}
@@ -778,7 +782,7 @@ sys-glass.so            SYSNAME
 \label{pdsw}
 \end{figure}
 Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the previous methods we continue the bifurcations on this period-2 branch, which gives a more detailed information about the solutions. A three dimensional bifurcation diagram can be seen in Fig.\ \ref{pdfold}, which shows the complicated orbit structure.
-\begin{figure}
+\begin{figure}[bth!]
 \begin{center}
 \includegraphics[scale=0.6,angle=270]{fig/fold3d-2.eps}
 \end{center}
@@ -788,9 +792,64 @@ Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
 
 \section{The graphical user interface (GUI)}
 
+The graphical user interface of the software is a front-end to the computation library of \pdde{}. The main differences from the command line interface is that the format of the input/output and the constants file is different. The MATLAB version 4 file format is used for output, which contains several matrices that describe a branch of solutions. The elements are defined in Table \ref{matstruct}.
+\begin{table}[bth!]
+\begin{tabular}{|c|c|c|l|}
+\hline
+Matrix name & Rows & Columns & Content\\
+\hline 
+\fun{pdde_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points computed in the branch of solutions. \end{minipage}\\
+\hline
+\fun{pdde_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
+\hline
+\fun{pdde_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
+\hline
+\fun{pdde_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
+\hline
+\fun{pdde_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth} \funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
+\hline
+\fun{pdde_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation interval. \\
+\hline
+\fun{pdde_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution profile. \\
+\hline
+\fun{pdde_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) & \funp{STEPS} & The solution profile. \\
+\hline
+\end{tabular}
+\caption{The contents of the MAT files.}
+\label{matstruct}
+\end{table}
+If the computation stops for some reason, \fun{pdde_npoints} will be less than \funp{STEPS}, but the size of the MAT file will not be smaller, so only first \fun{pdde_npoints} columns will contain valid data.
+
+To convert the input and output MAT files to the format of DDE-BIFTOOL use the \funp{pmat2branch.m} and \filef{branch2pmat.m} MATLAB scripts.
+
+The constants file is an XML-file, which contains the same parameters as the plain constants file of the CLI, for details see section \ref{constfile}. This file can be edited in the main window of the software (see Fig.\ \ref{mainwindow}). The main window also shows a button for compiling the system definition if it is not already done.
+\begin{figure}[bth!]
+\begin{center}
+\includegraphics[scale=0.5]{fig/mainwindow.eps}
+\caption{The main window of the software.}
+\label{mainwindow}
+\end{center}
+\end{figure}
+
+The result of the computation can be viewed in a textual form (see Fig.\ \ref{textwindow}) that is the same as the terminal output of the CLI. The solutions branch can also be visualized in a plotting window (Fig.\ \ref{plotwindow}). If a solution branch is plotted the bifurcation points are denoted by sqare, triangle and cross signs in the case of fold, period doubling and Neimark-Sacker bifurcations, respectively. Note that on Windows it is not possible to plot the results in the middle of a computation. On Linux it is not a restriction.
+\begin{figure}[bth!]
+\begin{center}
+\includegraphics[scale=0.5]{fig/textwindow.eps}
+\caption{Textual output view.}
+\label{textwindow}
+\end{center}
+\end{figure}
+\begin{figure}[bth!]
+\begin{center}
+\includegraphics[scale=0.5]{fig/plotwindow.eps}
+\caption{Plotting window.}
+\label{plotwindow}
+\end{center}
+\end{figure}
+
 \section{Algorithms used in the software}
 
-The software uses orthogonal collocation to discretize periodic orbits \cite{engstab,engcol}. It is also possible to use staggered grid Chebyshev collocation \cite{kopriva} by changing the collocation and representation points in \filef{src/ncolloc.cpp}. For continuation, the pseudo arclength method is used (see, e.g., \cite{handbook, tutorial1, tutorial2}). Codimension-one bifurcations are computed using the newly proposed test functionals \cite{szalai-tf}. The arising bordered sparse linear systems are solved using the BEMW method developed by Govaerts and Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral method mentioned above \cite{kopriva}.
+The software uses orthogonal collocation to discretize periodic orbits \cite{engstab,engcol}. It is also possible to use staggered grid Chebyshev collocation \cite{kopriva} by changing the collocation and representation points in \filef{src/ncolloc.cpp}. For continuation, the pseudo arclength method is used (see, e.g., \cite{handbook, tutorial1, tutorial2}). Codimension-one bifurcations are computed using the test functionals. The arising bordered sparse linear systems are solved using the BEMW method developed by Govaerts and Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral method mentioned above \cite{kopriva}.
 
 \subsection*{Acknowledgments}
 
@@ -833,60 +892,50 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 \end{quote}
 
-\subsection{UMFPACK}
+\subsection{UMFPACK and AMD}
 
 \noindent
-UMFPACK Version 4.4 (Jan. 28, 2005), \\
-Copyright (c) 2005 by Timothy A. Davis.  All Rights Reserved.\\[0.5em]
-UMFPACK License:
-\begin{quote}
-    Your use or distribution of UMFPACK or any modified version of
-    UMFPACK implies that you agree to this License.
-
-    THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-    EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
-
-    Permission is hereby granted to use or copy this program, provided
-    that the Copyright, this License, and the Availability of the original
-    version is retained on all copies.  User documentation of any code that
-    uses UMFPACK or any modified version of UMFPACK code must cite the
-    Copyright, this License, the Availability note, and "Used by permission."
-    Permission to modify the code and to distribute modified code is granted,
-    provided the Copyright, this License, and the Availability note are
-    retained, and a notice that the code was modified is included.  This
-    software was developed with support from the National Science Foundation,
-    and is provided to you free of charge.
-\end{quote}
-Availability: \url{http://www.cise.ufl.edu/research/sparse/umfpack} \\[0.5em]
-Note: The code of UMFPACK was \emph{not} modified, only its build system was rewritten to use CMake.
-
-\subsection{AMD}
+UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.
+All Rights Reserved.
+UMFPACK is available under alternate licenses, contact T. Davis for details.\\
+\url{http://www.cise.ufl.edu/research/sparse/umfpack}\\
+Your use or distribution of UMFPACK or any modified version of
+UMFPACK implies that you agree to this License.
 
 \noindent
-AMD Version 1.1 (Jan. 10, 2004), \\
-Copyright (c) 2004 by Timothy A.~Davis, Patrick R.~Amestoy, and Iain S.~Duff. All Rights Reserved. \\[0.5em]
-AMD License:
-\begin{quote}
+AMD Version 1.1 (Jan. 10, 2004),
+Copyright (c) 2004 by Timothy A.~Davis, Patrick R.~Amestoy, and Iain S.~Duff. All Rights Reserved.\\
+\url{http://www.cise.ufl.edu/research/sparse/amd}\\
 Your use or distribution of AMD or any modified version of
 AMD implies that you agree to this License.
 
-THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY
-EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
+UMFPACK and AMD License:
+\begin{quote}
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-Permission is hereby granted to use or copy this program, provided
-that the Copyright, this License, and the Availability of the original
-version is retained on all copies.  User documentation of any code that
-uses AMD or any modified version of AMD code must cite the
-Copyright, this License, the Availability note, and "Used by permission."
-Permission to modify the code and to distribute modified code is granted,
-provided the Copyright, this License, and the Availability note are
-retained, and a notice that the code was modified is included.  This
-software was developed with support from the National Science Foundation,
-and is provided to you free of charge.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+    USA
+
+    Permission is hereby granted to use or copy this program under the
+    terms of the GNU LGPL, provided that the Copyright, this License,
+    and the Availability of the original version is retained on all copies.
+    User documentation of any code that uses this code or any modified
+    version of this code must cite the Copyright, this License, the
+    Availability note, and "Used by permission." Permission to modify
+    the code and to distribute modified code is granted, provided the
+    Copyright, this License, and the Availability note are retained,
+    and a notice that the code was modified is included.
 \end{quote}
-\noindent
-Availability: \url{http://www.cise.ufl.edu/research/sparse/amd}\\[0.5em]
-Note: The code of AMD was \emph{not} modified, only its build system was rewritten to use CMake.
 
 \bibliographystyle{plain}
 \bibliography{manual-bibl.bib} \label{sec:bibliography}
