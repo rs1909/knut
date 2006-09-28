@@ -55,7 +55,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 IF( NOT WIN32 )
-  INSTALL( PROGRAMS bin/pcompile DESTINATION ${PDDE_BIN_DIR} )
+  INSTALL( PROGRAMS ${PDDE_BINARY_DIR}/bin/pcompile DESTINATION ${PDDE_BIN_DIR} )
 ENDIF( NOT WIN32 )
 
 # no debugging with release version
