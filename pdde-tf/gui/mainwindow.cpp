@@ -382,13 +382,21 @@ void MainWindow::run()
 		terminalText.clear();
 		compThread.setConstants(parameters);
 		compThread.setStopFlag(false);
+		connect(&compThread, SIGNAL(finished()), this, SLOT(stopped()));
 		compThread.start();
+		stopAct->setEnabled(true);
 	}
+}
+
+void MainWindow::stopped()
+{
+	stopAct->setEnabled(false);
 }
 
 void MainWindow::stop()
 {
 	compThread.setStopFlag(true);
+	stopAct->setEnabled(false);
 }
 
 void MainWindow::setSysName()
@@ -642,6 +650,7 @@ void MainWindow::createActions()
 	stopAct = new QAction(QIcon(":/res/images/cr22-action-stop.png"), tr("&Stop"), this);
 	stopAct->setShortcut(tr("Ctrl+T"));
 	stopAct->setStatusTip(tr("Stop the computation"));
+	stopAct->setEnabled(false);
 	connect(stopAct, SIGNAL(triggered()), this, SLOT(stop()));
 
 	terminalAct = new QAction(QIcon(":/res/images/cr22-action-view_text.png"), tr("&Text"), this);

@@ -104,6 +104,7 @@ protected:
 
 private slots:
 	void run();
+	void stopped();
 	void stop();
 	void newFile();
 	void open();
