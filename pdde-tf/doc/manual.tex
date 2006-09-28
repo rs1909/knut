@@ -14,8 +14,7 @@
 
 \input{macros}
 
-\def\pdde{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}
-C\kern-.1emO\kern-.1emN\kern-.05emT}}
+\def\pdde{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
 
 
 \def\iconAdd{\includegraphics[scale=0.5]{fig/r22-action-add.eps}}
@@ -125,27 +124,37 @@ package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
 
 \section{Installation}
 
-\subsection{Requirements}
+It is recommended to install the software from the source. This requires several freely
+available developement tools. For Microsoft Windows there is a self-extracting installer
+available as well.
 
-The software uses CMake\footnote{\url{www.cmake.org}} as its build system, so it
-has to be installed first. CMake is a utility that will configure the package so
-that it can be built for a specific operating system. The
-Qt\footnote{\url{www.trolltech.com}} toolkit (version 4.2) is required for
-building the graphical user interface. Without Qt being present only the command
-line interface can be used. On Unix platforms the \filef{pcompile} script uses
-the \filef{sed} command, which is necessary to compile system definition files.
+\subsection{Requirements of compiling the software}
 
-For solving linear equations the software requires the
-ATLAS\footnote{\url{http://math-atlas.sourceforge.net}} basic linear algebra
-software, which can be tuned automatically for many processors and operating
-systems. To avoid the lengthy compilation it is possible to download
+For building and configuring the software the CMake\footnote{\url{http://www.cmake.org}}
+utility is used. It is available for various operating systems. For compiling 
+the software the GNU GCC C++ compiler\footnote{\url{http://gcc.gnu.org}} starting with 
+version 3.3.6 is recommended.
+
+The package uses the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}}
+basic linear algebra software library for matrix-vector operations. This library can be
+tuned for the target processor, which takes a substantional amount of time.
+To avoid the lengthy compilation it is possible to download
 pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and
-\filef{libcblas.a}).
+\filef{libcblas.a}). When configuring the software CMake looks for these two files
+in the \filef{ATLAS/lib} subdirectory of the source tree, \filef{/usr/lib}, \filef{/usr/lib/atlas} 
+and some additional directories in this order.
+
+The (optional) graphical user interface requires the Qt\footnote{\url{www.trolltech.com}} 
+toolkit (version 4.2). CMake looks for the \filef{qmake} utility to find the Qt
+installation, so make sure that \filef{qmake} is in your \filef{\$PATH}.
+
+On Unix and Linux systems the \filef{pcompile} script uses
+the \filef{sed} command, which is necessary to compile system definition files.
 
 \subsection{Linux and Unix}
 
 The software comes in a compressed source archive form
-\filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be unzipped first into a
+\filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be uncompressed first into a
 convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
 $ bzip2 -d pdde-cont-%\@version%.tar.bz2
@@ -176,7 +185,7 @@ into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
-The simplest way of instaling the software is to run the
+The simplest way of installing the software is to run the
 \filef{pdde-cont-{\pddever}.exe}, which will extract the package into a
 preferred directory and set up a \filef{Start Menu} shortcut. In order to be
 able to compile system definition files a recent version of MinGW (at the time
@@ -185,19 +194,19 @@ The MinGW installer will ask you to select options. Tick the boxes of the C, C++
 compiler and the GNU make utility, the other components are not required.
 
 Installing from source requires more effort. Four other pieces of software has
-to be downloaded and installed.
+to be downloaded and installed:
 \begin{itemize}
 \item[-] MinGW v.\ 5.0.3 or newer as described above,
 \item[-] CMake v.\ 2.4.3 or newer from \url{http://www.cmake.org},
 \item[-] Qt v.\ 4.2.0 or newer from
-\url{http://www.trolltech.com/developer/downloads/qt/windows},
+\url{http://www.trolltech.com/developer/downloads/qt/windows} (optional, but strongly recommended),
 \item[-] and the ATLAS library.
 \end{itemize}
 To compile the software, first uncompress the \pdde{} package file
 \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
 Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and
 \filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory.
-Then start a command prompt (Start Menu $\rightarrow$ Run type ``cmd'' into the
+Then start a command prompt (Start Menu $\rightarrow$ Run, type ``cmd'' into the
 box) and enter the directory \filef{pdde-cont-\@version} where the package was
 extracted. If all the requirements are installed and the ATLAS files are in
 place, issue the
@@ -212,14 +221,14 @@ uninstall, simply delete the PDDE directory.
 
 \section{Command line inferface (CLI)}
 
-The software is controlled by the so-called constants file. This file contains
-instructions about all the operations done by the software and also specifies
-the parameters of the numerical methods.
-This file can be specified after the \funp{-c} option. If a previous run is
-continued, an input file should be given using the \funp{-i} option. The output
-- as a default choice - is written into \filef{out.pdde} if it is not specified
-otherwise by the \funp{-o} option. The format of the input and output files will
-be described later in the manual. Also, the program generates an auxiliary file,
+The software is controlled by the so-called \emph{constants file}. It is a text file
+that contains instructions about all the operations done by the software and
+also specifies the parameters of the numerical methods.
+The name of a constants file can be given to the softwrare using the \funp{-c} option.
+If a previous run is continued, an input file should be specified using the \funp{-i} option. 
+The output - as a default choice - is written into \filef{out.pdde} unless it is specified
+by the \funp{-o} option. The format of the input and output files will
+be described later in this manual. The software also generates an auxiliary file,
 which contains the parameter values and the solution norms along the computed
 solution branch.
 This file can be selected by the \funp{-b} option if this data is not intended
@@ -239,7 +248,7 @@ This is PDDE-CONT version 1.0.1 (r98 2005-12-30 22:37:39 +0100)
 \subsection{The constants file}
 \label{constfile}
 
-As an example, we included one of the demo problems:
+As an example, we included one of the example problems:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
 120                     LABEL
@@ -251,15 +260,13 @@ sys-glass.so            SYSNAME
 1e-4 1e-4 1e-7          EPSC, EPSR, EPSS
 12 12 12                NITC, NITR, NITS
 \end{lstlisting} \end{quote} } \noindent
-In the first separated column are the parameter values, while the second column
-refers to their meaning. 
+In the first separated column are the mostly numerical parameter values, 
+while the second column refers to their meaning. 
 When this file is read the program interprets only the first half of each line,
-that is, it moves to the next line
-after all the necessary parameters are read. Although the rest of the line is
-simply ignored, 
+that is, it moves to the next line after all the necessary parameters are read.
+Although the rest of the line is simply ignored, 
 it is useful to keep the mnemonics of the parameters there. The meaning of the
-parameters are as
-follows.
+parameters are as follows.
 \begin{description}
 \item[\funp{SYSNAME}] ~\\
 The name of the shared object file,
@@ -620,15 +627,14 @@ these arrays, parentheses are used, that is, the first element of a
 element is \fun{v(v.Size()-1)}. A \fun{Matrix} is indexed similarly, e.g., in
 the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}-th element in the
 \fun{(i-1)}-th row of the matrix. The number of columns and rows of \fun{m} can
-be
-can be queried by calling \fun{m.Col()} and \fun{m.Row()}, respectively.
+be can be queried by calling \fun{m.Col()} and \fun{m.Row()}, respectively.
 
 \subsubsection{System definition}\label{sysdef}
 
 The system definition file is a C++ source file, which is compiled by the user
 and then loaded by the main program \filef{pdde} as a shared object. The
-compilation is
-done typically by issuing the command
+compilation is done typically by issuing the command%
+\footnote{Note that \filef{pcompile} is not available on Microsoft Windows.}
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pcompile sys-<problem>.cpp
 \end{lstlisting} \end{quote} } \noindent
@@ -1091,14 +1097,23 @@ period-2 orbits arise. }
 \section{The graphical user interface (GUI)}
 
 The graphical user interface of the software is a front-end to the computation
-library of \pdde{}. The main window in Fig.\ \ref{mainwindow} appears
-when the program \filef{pdde-gui} is started. It has a menu and toolbar which 
+library of \pdde{}. It can do the same opeartions as the CLI, however many things are
+hidden from the user, so it might appeal to non-expert users. It includes a plotting
+facility which can be used to preview the results.
+
+The main window in Fig.\ \ref{mainwindow} appears
+when the program \filef{pdde-gui} is started.
+It has a menu and toolbar which 
 contains the \filef{Open} \iconOpen{}, \filef{Save} \iconSave{},
 \filef{Run} \iconRun{}, \filef{Stop} \iconStop{} and
 \filef{Text} \iconText{} buttons. The \filef{Open} \iconOpen{} button pops up a
 file chooser so that an XML-formatted constants file can be chosen. This
 XML-file contains the same parameters as the plain constants file (see section
-\ref{constfile}). The parameters can be changed in the four tabs \filef{System},
+\ref{constfile}). Note that, when opening a constants file an error message will pop up if
+the system definition is not compiled yet. To resolve the problem compile the C++ source
+of the system definition using the \filef{Compile} \iconBuild{} button.
+
+The continuation parameters can be changed in the four tabs \filef{System},
 \filef{Numerics}, \filef{Symmetry} and \filef{Torus} and then can be saved
 either using the \filef{Save} \iconSave{} button or the \filef{Save As...}
 \iconSaveAs{} menu item in the \filef{File} menu.
@@ -1127,7 +1142,7 @@ The \filef{POINT TYPE} can be selected from the following choices
 \item[-] User - user defined equations (not recommended, use
 it with symmetric equations only). The equations (\filef{Eqn}) and the
 variables (\filef{Var}) have to be selected in the table;
-\item[-] Limit cycle - a periodic solution of a forced system, \filef{NPARX}=0;
+\item[-] Limit cycle - a periodic solution of a forced system, \filef{NPARX}=0. Note that the solution type also can be used to continue equilibria of autonomous systems by keeping the period constant.
 \item[-] Limit point - fold bifurcation of a periodic solution in a forced
 system, \filef{NPARX}=1;
 \item[-] Period doubling - period doubling (flip) bifurcation of a periodic
@@ -1199,7 +1214,7 @@ the same output as the terminal output of the CLI.
 The solutions branch can also be visualized in a graph in the plotting window (Fig.\
 \ref{plotwindow}). If a solution branch is plotted the bifurcation points are
 denoted by square, triangle and cross signs in the case of fold, period doubling
-and Neimark-Sacker bifurcations, respectively. Note that on Windows it is not
+and Neimark-Sacker bifurcations, respectively. Note that on Microsoft Windows it is not
 possible to plot the results in the middle of a computation. On Linux it is not
 a restriction.
 \begin{figure}[bth!]
@@ -1212,7 +1227,7 @@ a restriction.
 
 \subsection{Input/output file format}
 
-In the GUI version 4 MATLAB files are used to output the results. Each MAT file contains
+In the GUI, version 4 MATLAB files are used to output the results. Each MAT file contains
 several matrices, describing a branch of solutions. The structure of these
 matrices are defined in Table \ref{matstruct}.
 \begin{table}[bth!]
