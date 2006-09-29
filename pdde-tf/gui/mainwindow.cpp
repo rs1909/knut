@@ -396,7 +396,6 @@ void MainWindow::stopped()
 void MainWindow::stop()
 {
 	compThread.setStopFlag(true);
-	stopAct->setEnabled(false);
 }
 
 void MainWindow::setSysName()
