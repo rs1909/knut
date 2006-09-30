@@ -10,6 +10,11 @@
 #ifndef PLOT_H
 #define PLOT_H
 
+#ifdef _MSC_VER
+#define popen _popen
+#define pclose _pclose
+#endif
+
 #include <string>
 #include <vector>
 #include <sstream>

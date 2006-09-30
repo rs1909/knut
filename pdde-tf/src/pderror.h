@@ -10,6 +10,10 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#ifdef _MSC_VER
+# define snprintf sprintf_s
+#endif
+
 #include <string>
 
 class pddeMessage

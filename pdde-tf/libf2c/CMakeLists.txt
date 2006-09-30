@@ -5,3 +5,7 @@ ADD_LIBRARY( pddef2c
 	s_cat.c   s_stop.c wsfe.c    d_log.c    etime_.c fmt.c
 	i_len.c   s_cmp.c  sysdep1.h d_sign.c   exit_.c  fmt.h
 	open.c    s_copy.c util.c )
+
+IF( MSVC )
+	ADD_DEFINITIONS( -DNON_UNIX_STDIO -DNON_POSIX_STDIO -DNO_TRUNCATE )
+ENDIF( MSVC )

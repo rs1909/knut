@@ -19,7 +19,11 @@
 System::System( const std::string& shobj )
 {
 	std::string objname(shobj);
+	#ifndef WIN32
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
+	#else
+	if( objname.find('\\') == std::string::npos ) objname.insert(0, ".\\");
+	#endif
 	
 	handle = tdlopen ( objname.c_str() );
 	P_ERROR_X2( handle != 0, "Cannot open system definition file: ", tdlerror() );

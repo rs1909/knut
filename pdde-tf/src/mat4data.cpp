@@ -647,8 +647,9 @@ inline void mat4Data::findTrivialIndices( int n, int aut, int *imin, double* dmi
 int mat4Data::countUnstable( int n ) const
 {
 	const int aut = getNTrivMul();
-	int imin[aut];
-	double dmin[aut];
+	P_ERROR( aut < 4 );
+	int imin[4];
+	double dmin[4];
 	findTrivialIndices( n, aut, imin, dmin );
 	int ustab = 0;
 	for( int i = 0; i < getNMul(); ++i )
@@ -676,8 +677,9 @@ int mat4Data::getNextBifurcation( int n ) const
 int mat4Data::getBifurcationType( int n ) const
 {
 	const int aut = getNTrivMul();
-	int imin[aut];
-	double dmin[aut];
+	P_ERROR( aut < 4 );
+	int imin[4];
+	double dmin[4];
 	findTrivialIndices( n, aut, imin, dmin );
 	double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
 	int iminLP = -1, iminPD = -1, iminNS = -1;

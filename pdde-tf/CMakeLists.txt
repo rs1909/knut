@@ -31,6 +31,10 @@ ELSE( NOT WIN32 )
   SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
 ENDIF( NOT WIN32 )
 
+IF( MSVC )
+  ADD_DEFINITIONS(-Dinline=_inline -D_USE_MATH_DEFINES)
+ENDIF( MSVC )
+
 #------------------------------------------------------------------------------
 # finding Qt4
 #------------------------------------------------------------------------------
@@ -123,11 +127,17 @@ ADD_SUBDIRECTORY(cli)
 
 # graphical user interface
 IF(QT4_QMAKE_FOUND)
+  IF(PDDE_QTMAIN)
+    SET(BUILDGUI)
+  ENDIF(PDDE_QTMAIN)
+ENDIF(QT4_QMAKE_FOUND)
+
+IF(BUILDGUI)
   ADD_SUBDIRECTORY(gui)
   MESSAGE( STATUS "GUI will be built" )
-ELSE(QT4_QMAKE_FOUND)
+ELSE(BUILDGUI)  
   MESSAGE( STATUS "GUI will not be built" )
-ENDIF(QT4_QMAKE_FOUND)
+ENDIF(BUILDGUI)
 
 # demo programs
 ADD_SUBDIRECTORY(demo)

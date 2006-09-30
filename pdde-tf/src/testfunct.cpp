@@ -193,8 +193,8 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 		udiff -= uu;
 		vdiff = AHAT.getA31(0);
 		vdiff -= vv;
-		diffnorm = std::max(sqrt(udiff*udiff),sqrt(vdiff*vdiff));
-// 		std::cout<<"std::max(udiff, vdiff) "<<diffnorm<<"\n";
+		diffnorm = std::max<double>(sqrt(udiff*udiff),sqrt(vdiff*vdiff));
+// 		std::cout<<"std::max<double>(udiff, vdiff) "<<diffnorm<<"\n";
 		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
 		
@@ -379,7 +379,7 @@ void TestFunctLPAUT::Init( NColloc& col, const Vector& par, const Vector& sol, c
 		v2diff = AHAT.getA31(1);
 		v2diff -= vv2;
 		g2diff = AHAT.getA33(1,0) - gg2(0);
-		diffnorm = std::max(sqrt(u2diff*u2diff+h2diff*h2diff),sqrt(v2diff*v2diff+g2diff*g2diff));
+		diffnorm = std::max<double>(sqrt(u2diff*u2diff+h2diff*h2diff),sqrt(v2diff*v2diff+g2diff*g2diff));
 		std::cout<<"std::max(u2diff, v2diff) "<<diffnorm<<"\n";
 		const double nrm_v = (1.0/sqrt(vv2*vv2+gg2(0)*gg2(0)));
 		const double nrm_u = (1.0/sqrt(uu2*uu2+hh2(0)*hh2(0)));
@@ -551,7 +551,7 @@ void TestFunctLPAUTROT::Init( NColloc& col, const Vector& par, const Vector& sol
 		v3diff -= vv3;
 		g30diff = AHAT.getA33(2,0) - gg3(0);
 		g31diff = AHAT.getA33(2,1) - gg3(1);
-		diffnorm = std::max(sqrt(u3diff*u3diff+h30diff*h30diff+h31diff*h31diff),
+		diffnorm = std::max<double>(sqrt(u3diff*u3diff+h30diff*h30diff+h31diff*h31diff),
 		                    sqrt(v3diff*v3diff+g30diff*g30diff+g31diff*g31diff));
 		std::cout<<"std::max(u3diff, v3diff) "<<diffnorm<<"\n";
 		const double nrm_v = (1.0/sqrt(vv3*vv3+gg3(0)*gg3(0)+gg3(1)*gg3(1)));

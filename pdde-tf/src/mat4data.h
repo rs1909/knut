@@ -13,7 +13,11 @@
 #include "matrix.h"
 #include <string>
 // for the correct integer size
-#include <stdint.h>
+#ifndef _MSC_VER
+# include <stdint.h>
+#else
+# define int32_t INT32
+#endif
 // HANDLE is defined here
 #ifdef WIN32
 #  include <windows.h>
@@ -61,8 +65,8 @@ class mat4Data
 		void   getMul( int n, Vector& real, Vector& imag ) const;
 		double getMulRe( int n, int j ) const { return elem( mul_offset, j, n ); }
 		double getMulIm( int n, int j ) const { return elem_im( mul_offset, j, n ); }
-		int  getNTrivMul() const { return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0]); }
-		int  setNTrivMul( int i ) { ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0] = i; }
+		int    getNTrivMul() const { return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0]); }
+		void   setNTrivMul( int i ) { ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0] = i; }
 		void   getElem( int n, Vector& el ) const;
 		double getElem( int n, int j ) const { return elem( elem_offset, j, n ); }
 		void   getElemRef( int n, Vector& el ) { el.Init( &elem( elem_offset, 0, n ), ndeg+1 ); }
