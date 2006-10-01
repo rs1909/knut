@@ -19,10 +19,10 @@
 System::System( const std::string& shobj )
 {
 	std::string objname(shobj);
-	#ifndef WIN32
 	if( objname.find('/') == std::string::npos ) objname.insert(0, "./");
-	#else
-	if( objname.find('\\') == std::string::npos ) objname.insert(0, ".\\");
+	#ifdef WIN32
+	std::string::size_type index = 0;
+	while( (index = objname.find('/', index)) != std::string::npos ) objname.at(index) = '\\';
 	#endif
 	
 	handle = tdlopen ( objname.c_str() );
@@ -103,8 +103,8 @@ void System::discrderi( Matrix &out, double t, const Matrix& xx, const Vector& p
 	const double rel_eps_x1=1e-6;
 	const double abs_eps_p1=1e-6;
 	const double rel_eps_p1=1e-6;
-	const double abs_eps_x2=2e-6;
-	const double rel_eps_x2=2e-6;
+	const double abs_eps_x2=1e-6;
+	const double rel_eps_x2=1e-6;
 	
 	const int n = ndim();
 	const int m = 2 * ntau() + 1;

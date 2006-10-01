@@ -400,7 +400,8 @@ void MainWindow::stop()
 
 void MainWindow::setSysName()
 {
-	QString fileName = QFileDialog::getOpenFileName(this);
+	QString fileName = QFileDialog::getOpenFileName(this, "Open system definition file",
+		QString(), "Shared object (*.so);;All files (*)");
 	if (!fileName.isEmpty())
 	{
 		sysname->setText( fileName );
