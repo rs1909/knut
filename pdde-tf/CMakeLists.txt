@@ -5,7 +5,7 @@ PROJECT( PDDE )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "pdde-cont" )
-SET( PACKAGE_VERSION "1.1.0" )
+SET( PACKAGE_VERSION "1.1.1" )
 FILE( READ REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )
@@ -63,12 +63,13 @@ IF( NOT WIN32 )
 ENDIF( NOT WIN32 )
 
 # no debugging with release version
-STRING( TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE )
-IF( ${BUILD_TYPE} STREQUAL "RELEASE" )
+IF( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
   ADD_DEFINITIONS( -DHAVE_CONFIG_H )
-ELSE( ${BUILD_TYPE} STREQUAL "RELEASE" )
+  SET(PDDE_RELEASE TRUE)
+ELSE( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
   ADD_DEFINITIONS( -DHAVE_CONFIG_H -DDEBUG )
-ENDIF( ${BUILD_TYPE} STREQUAL "RELEASE" )
+  SET(PDDE_RELEASE FALSE)
+ENDIF( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
 
 #------------------------------------------------------------------------------
 # Finding ATLAS

@@ -1,3 +1,9 @@
+In 1.1.1
+ - Windows bugfix. The Neimark-Sacker continuation is fixed. Some function
+   argument had the same name as a Windows macro, so it led to a silent 
+   miscalculation of complex conjugate vectors.
+In 1.1.0
+ - A new shiny graphical user interface
 In 1.0.1 - 1.0.2
  - fixed memory leak
 In 1.0.0
