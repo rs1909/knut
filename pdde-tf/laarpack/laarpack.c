@@ -6302,7 +6302,7 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 		/*        Solve T11*X - X*T22 = scale*T12 for X. */
 
 		dlasy2_ (&c_false, &c_false, &c_n1, n1, n2, d__, &c__4, &d__[*n1 + 1 +
-																						 (*n1 + 1 << 2) - 5], &c__4, &d__[(*n1 + 1 << 2) - 4], &c__4, &scale, x, &c__2, &xnorm,
+			(*n1 + (1 << 2)) - 5], &c__4, &d__[(*n1 + (1 << 2)) - 4], &c__4, &scale, x, &c__2, &xnorm,
 					&ierr);
 
 		/*        Swap the adjacent diagonal blocks. */
@@ -18677,7 +18677,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 						/* L40: */
 					}
 					n2 = 2;
-					nn = *n - 1 << 1;
+					nn = *n - (1 << 1);
 				}
 
 				/*              Estimate norm(inv(C')) */
@@ -29197,7 +29197,7 @@ second_ (real * t)
 	/*     .. */
 	/*     .. Executable Statements .. */
 
-	t1 = etime_ (tarray);
+	t1 = (real)etime_ (tarray);
 	*t = tarray[0];
 	return 0;
 
