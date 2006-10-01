@@ -16,7 +16,7 @@
 #include <fstream>
 #include <cfloat>
 
-#include <QtGui>
+#include <QtGui/QtGui>
 
 MainWindow::MainWindow( const QString& appDir ) :
 	executableDir(appDir), compThread(parameters),

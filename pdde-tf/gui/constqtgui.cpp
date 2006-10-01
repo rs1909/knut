@@ -9,7 +9,7 @@
 
 #include "constqtgui.h"
 #include <fstream>
-#include <QtXml>
+#include <QtXml/QtXml>
 
 void NConstantsQtGui::saveXmlFile(const std::string &fileName)
 {
