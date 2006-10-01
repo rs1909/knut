@@ -44,16 +44,13 @@ template<bool trans> inline void rotbord( Vector& V, NColloc& col, const Vector&
 	}
 }
 
-inline void conjugate( Vector& V, NColloc& col, const Vector& IN )
+inline void conjugate( Vector& out, const Vector& inp )
 {
-	for( int idx = 0; idx < NINT*NDEG+1; idx++ )
+	for( int i = 0; i < out.Size()/2; ++i )
 	{
-		for( int k = 0; k < NDIM; k++ )
-		{
-			V( 2*(k+NDIM*idx) )   = -IN( 2*(k+NDIM*idx)+1 );
-			V( 2*(k+NDIM*idx)+1 ) =  IN( 2*(k+NDIM*idx) );
-		}
-	}
+		out( 2*i )   = -inp( 2*i+1 );
+		out( 2*i+1 ) =  inp( 2*i );
+    }
 }
 
 TestFunct::TestFunct( NColloc& col, double Z ) :
@@ -177,8 +174,8 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 	AHAT.getA31(0) /= sqrt( AHAT.getA31(0) * AHAT.getA31(0) );
 	AHAT.getA13(0) /= sqrt( AHAT.getA13(0) * AHAT.getA13(0) );
 	// conjugate
-	conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
-	conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
+	conjugate( AHAT.getA31(1), AHAT.getA31(0) );
+	conjugate( AHAT.getA13(1), AHAT.getA13(0) );
 	
 	rhs.Clear();
 	one(0) = 1.0; one(1) = 0.0;
@@ -198,8 +195,8 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
 		
-		conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
-		conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
+		conjugate( AHAT.getA13(1), AHAT.getA13(0) );
+		conjugate( AHAT.getA31(1), AHAT.getA31(0) );
 	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
 	if( diffnorm > KERNEPS ) std::cout<<"TestFunctCPLX::Init: error: No convergence in finding the singular vector.\n";
 // 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
@@ -216,8 +213,8 @@ void TestFunctCPLX::Funct  ( double& f1, double& f2,
 	AHAT.SolveTR( 2, uu, hh, rhs, one );
 	AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 	AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
-	conjugate( AHAT.getA13(1), col, AHAT.getA13(0) );
-	conjugate( AHAT.getA31(1), col, AHAT.getA31(0) );
+	conjugate( AHAT.getA13(1), AHAT.getA13(0) );
+	conjugate( AHAT.getA31(1), AHAT.getA31(0) );
 	// for later use
 	col.InterpolateCPLX( vvData, AHAT.getA31(0)/*vv*/ );
 	
