@@ -39,8 +39,9 @@ SET( UMFPACK_C umfpack_col_to_triplet.c umfpack_defaults.c umfpack_free_numeric.
 	umfpack_report_status.c umfpack_report_symbolic.c umfpack_report_triplet.c
 	umfpack_report_vector.c umfpack_solve.c umfpack_symbolic.c
 	umfpack_transpose.c umfpack_triplet_to_col.c umfpack_scale.c
-	umfpack_load_numeric.c umfpack_save_numeric.c
-	umfpack_load_symbolic.c umfpack_save_symbolic.c )
+#	umfpack_load_numeric.c umfpack_save_numeric.c
+#	umfpack_load_symbolic.c umfpack_save_symbolic.c
+)
 
 SET( GENERIC_C umfpack_timer.c umfpack_tictoc.c umfpack_global.c )
 
@@ -62,6 +63,8 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 set( BLAS CBLAS )
 
 SET( FLT DINT ) # form DINT DLONG ZINT ZLONG 
+
+ADD_DEFINITIONS( -DNO_TIMER )
 
 ADD_LIBRARY( umfpack
 	${UMFINT_C} ${UMFINT_H}

@@ -90,7 +90,7 @@ GLOBAL Int UMF_analyze
     /* ==== initializations ================================================= */
     /* ====================================================================== */
 
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (j = 0 ; j < n_col ; j++)
     {
 	Link [j] = EMPTY ;
@@ -577,7 +577,7 @@ GLOBAL Int UMF_analyze
 	k = 0 ;
 	/* Pragma added May 14, 2003.  The Intel compiler icl 6.0 (an old
 	 * version) incorrectly vectorizes this loop. */
-#pragma novector
+/* #pragma novector // Robi */
 	for (j = 0 ; j < n_col ; j++)
 	{
 	    if (Front_npivcol [j] > 0)

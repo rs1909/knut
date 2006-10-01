@@ -30,7 +30,7 @@
 PRIVATE void shift_pivot_row (Entry *Fd, Entry *Fs, Entry *Fe, Int len, Int d)
 {
     Int j ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (j = 0 ; j < len ; j++)
     {
 	Fd [j]   = Fs [j*d] ;
@@ -157,7 +157,7 @@ GLOBAL void UMF_scale_column
 	    Entry *Fs, *Fe ;
 	    Fs = Fcblock + fspos ;
 	    Fe = Fcblock + fncols * fnr_curr ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (i = 0 ; i < fnrows ; i++)
 	    {
 		Fs [i] = Fe [i] ;
@@ -172,7 +172,7 @@ GLOBAL void UMF_scale_column
 	    Entry *Fs, *Fe ;
 	    Fs = Fublock + fs ;
 	    Fe = Fublock + fncols ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (i = 0 ; i < fnpiv ; i++)
 	    {
 		Fs [i * fnc_curr] = Fe [i * fnc_curr] ;
@@ -232,7 +232,7 @@ GLOBAL void UMF_scale_column
 	    Entry *Fd, *Fs ;
 	    Fd = Fublock + fnpiv * fnc_curr ;
 	    Fs = Fcblock + fspos ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (j = 0 ; j < fncols ; j++)
 	    {
 		Fd [j] = Fs [j * fnr_curr] ;
@@ -246,7 +246,7 @@ GLOBAL void UMF_scale_column
 	    Entry *Fd, *Fs ;
 	    Fd = Flublock + fnpiv ;
 	    Fs = Flblock  + fspos ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (j = 0 ; j <= fnpiv ; j++)
 	    {
 		Fd [j * nb] = Fs [j * fnr_curr] ;
@@ -258,7 +258,7 @@ GLOBAL void UMF_scale_column
 	    Entry *Fd, *Fs ;
 	    Fd = Flublock + fnpiv ;
 	    Fs = Flblock  + fspos ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (j = 0 ; j < fnpiv ; j++)
 	    {
 		ASSERT (IS_ZERO (Fs [j * fnr_curr])) ;
@@ -301,7 +301,7 @@ GLOBAL void UMF_scale_column
 	    Fd = Flublock + fnpiv ;
 	    Fs = Flblock  + fspos ;
 	    Fe = Flblock  + fnrows ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (j = 0 ; j <= fnpiv ; j++)
 	    {
 		Fd [j * nb]       = Fs [j * fnr_curr] ;
@@ -315,7 +315,7 @@ GLOBAL void UMF_scale_column
 	    Fd = Flublock + fnpiv ;
 	    Fs = Flblock  + fspos ;
 	    Fe = Flblock  + fnrows ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (j = 0 ; j < fnpiv ; j++)
 	    {
 		ASSERT (IS_ZERO (Fs [j * fnr_curr])) ;

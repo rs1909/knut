@@ -27,7 +27,7 @@
 PRIVATE void copy_column (Int len, Entry *X, Entry *Y)
 {
     Int i ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (i = 0 ; i < len ; i++)
     {
 	Y [i] = X [i] ;
@@ -96,7 +96,7 @@ GLOBAL Int UMF_create_element
     if (!Symbolic->fixQ)
     {
 	/* but only if the column ordering is not fixed */
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	for (j = 0 ; j < fncols ; j++)
 	{
 	    /* add the current frontal matrix to the degree */
@@ -109,7 +109,7 @@ GLOBAL Int UMF_create_element
     /* add the current frontal matrix to the degrees of each row */
     /* ---------------------------------------------------------------------- */
 
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (i = 0 ; i < fnrows ; i++)
     {
 	/* add the current frontal matrix to the degree */
@@ -133,7 +133,7 @@ GLOBAL Int UMF_create_element
 	    /* guard against integer overflow.  This is very rare */
 	    DEBUG1 (("Integer overflow, cdeg\n")) ;
 	    Work->cdeg0 = 1 ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (e = 1 ; e <= Work->nel ; e++)
 	    {
 		if (E [e])
@@ -154,7 +154,7 @@ GLOBAL Int UMF_create_element
 	    /* guard against integer overflow.  This is very rare */
 	    DEBUG1 (("Integer overflow, rdeg\n")) ;
 	    Work->rdeg0 = 1 ;
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	    for (e = 1 ; e <= Work->nel ; e++)
 	    {
 		if (E [e])
@@ -172,7 +172,7 @@ GLOBAL Int UMF_create_element
 
     if (!Work->pivrow_in_front)
     {
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	for (j = 0 ; j < fncols ; j++)
 	{
 	    Fcpos [Fcols [j]] = EMPTY ;
@@ -181,7 +181,7 @@ GLOBAL Int UMF_create_element
 
     if (!Work->pivcol_in_front)
     {
-#pragma ivdep
+/* #pragma ivdep // Robi */
 	for (i = 0 ; i < fnrows ; i++)
 	{
 	    Frpos [Frows [i]] = EMPTY ;
@@ -283,12 +283,12 @@ GLOBAL Int UMF_create_element
     /* copy frontal matrix into the new element */
     /* ---------------------------------------------------------------------- */
 
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (i = 0 ; i < fnrows ; i++)
     {
 	Rows [i] = Frows [i] ;
     }
-#pragma ivdep
+/* #pragma ivdep // Robi */
     for (i = 0 ; i < fncols ; i++)
     {
 	Cols [i] = Fcols [i] ;
