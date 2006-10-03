@@ -197,7 +197,7 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 			P_MESSAGE("No such pointtype\n");
 			break;
 	}
-	P_ERROR_X( tab.nparx == parx.Size(), "Error: wrong number of parameters\n" );
+	P_ERROR_X1( tab.nparx == parx.Size(), "Error: wrong number of parameters\n" );
 	eqnr.Init( tab.neqn );
 	varr.Init( tab.neqn );
 	for( int i = 0; i < tab.neqn; i++ )
@@ -214,10 +214,10 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 // xxDot, xx, rhs, jac
 void Point::Construct( )
 {	
-	P_ERROR_X( (eqn.Size() != 0)&&(var.Size() != 0)&&(eqn.Size() == var.Size()), "Bad equation and variable sizes!");
+	P_ERROR_X1( (eqn.Size() != 0)&&(var.Size() != 0)&&(eqn.Size() == var.Size()), "Bad equation and variable sizes!");
 	dim3 = eqn.Size() - 1;
 	
-	P_ERROR_X( (eqn(0) == EqnSol)&&(var(0) == VarSol), "Wrong first equation!");
+	P_ERROR_X1( (eqn(0) == EqnSol)&&(var(0) == VarSol), "Wrong first equation!");
 	dim1 = NDIM*(NINT*NDEG+1);
 	
 	// a) setting th etest functional b) determining the number of trivial multipliers
@@ -245,12 +245,12 @@ void Point::Construct( )
 				testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 				break;
 			case EqnTFCPLX_RE:
-				P_ERROR_X( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n" );
+				P_ERROR_X1( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n" );
 				P_ERROR( testFunct == 0 );
 				testFunct = new TestFunctCPLX( colloc );
 				break;
 			case EqnTFCPLX_IM:
-				P_ERROR_X( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n" );
+				P_ERROR_X1( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n" );
 				break;
 			case EqnPhase:
 				phaut = true;
@@ -1042,11 +1042,11 @@ void Point::BinaryWrite( mat4Data& data, int n )
 void Point::BinaryRead( mat4Data& data, int n )
 {
 	Vector msh( data.getNInt()+1 );
-	P_ERROR_X( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters\n" );
+	P_ERROR_X1( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters\n" );
 	data.getPar( n, par );
 	data.getMul( n, mRe, mIm );
 	data.getMesh( n, msh );
-	P_ERROR_X( data.getNDim() == NDIM, "BinaryRead failed" );
+	P_ERROR_X1( data.getNDim() == NDIM, "BinaryRead failed" );
 	if( data.getNInt() == NINT && data.getNDeg() == NDEG )
 	{
 		colloc.setMesh( msh );

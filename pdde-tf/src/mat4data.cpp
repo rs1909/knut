@@ -30,7 +30,7 @@ int mat4Data::findMatrix( const char* name, mat4Data::header* found )
 	int cur_size;
 	do{
 		memcpy( &hd, (char*)address + cur_off, sizeof(struct header) );
-		P_ERROR_X( hd.type == 0, "not a double matrix");
+		P_ERROR_X1( hd.type == 0, "not a double matrix");
 		if( hd.imagf == 0 )
 		  cur_size = sizeof(struct header) + hd.namelen*sizeof(char) + hd.mrows*hd.ncols*sizeof(double);
 		else
@@ -63,7 +63,7 @@ static inline void *mmapFileWrite( int& file, const std::string& fileName, int s
 
 // static inline void shrinkMap( void* address, int old_size, int new_size )
 // {
-// 	P_ERROR_X( old_size <= new_size, "mmappedPointData::mmappedPointData: larger new_size" );
+// 	P_ERROR_X1( old_size <= new_size, "mmappedPointData::mmappedPointData: larger new_size" );
 // 	void* new_address;
 // 	if( ( new_address = mremap( address, old_size, new_size, 0 ) ) != address )
 // 	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable remap file\n", strerror( errno ) ); }
@@ -275,9 +275,9 @@ void mat4Data::openReadOnly( const std::string& fileName )
  #endif
 	
 	if( (npoints_offset = findMatrix( "pdde_npoints", &npoints_header )) == -1 ) P_MESSAGE("err-4");
-	P_ERROR_X( npoints_header.mrows == 1, "err-3" );
-	P_ERROR_X( npoints_header.ncols == 1, "err-2" );
-	P_ERROR_X( npoints_header.imagf == 0, "err-1" );
+	P_ERROR_X1( npoints_header.mrows == 1, "err-3" );
+	P_ERROR_X1( npoints_header.ncols == 1, "err-2" );
+	P_ERROR_X1( npoints_header.imagf == 0, "err-1" );
 
 	if( (par_offset = findMatrix( "pdde_par", &par_header )) == -1 ) P_MESSAGE("err1");
 	npar = par_header.mrows;
@@ -299,9 +299,9 @@ void mat4Data::openReadOnly( const std::string& fileName )
 		if( mul_header.imagf != 1 ) P_MESSAGE("err5");
 		
 		if( (ntrivmul_offset = findMatrix( "pdde_ntrivmul", &ntrivmul_header )) == -1 ) P_MESSAGE("err6");
-		P_ERROR_X( ntrivmul_header.mrows == 1, "err7" );
-		P_ERROR_X( ntrivmul_header.ncols == 1, "err8" );
-		P_ERROR_X( ntrivmul_header.imagf == 0, "err9" );
+		P_ERROR_X1( ntrivmul_header.mrows == 1, "err7" );
+		P_ERROR_X1( ntrivmul_header.ncols == 1, "err8" );
+		P_ERROR_X1( ntrivmul_header.imagf == 0, "err9" );
 		
 		if( (elem_offset = findMatrix( "pdde_elem", &elem_header )) == -1 ) P_MESSAGE("err18.1");
 		if( elem_header.ncols != ncols ) P_MESSAGE("err20.1");

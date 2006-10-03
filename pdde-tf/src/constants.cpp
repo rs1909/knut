@@ -64,7 +64,7 @@ void NConstants::loadFile(const std::string &fileName)
 	char __cptype__;
 	int __cp__;
 	file >> __pttype__ >> __cptype__ >> __cp__; inputAssert( file );
-	P_ERROR_X( (__cptype__ == 'P' ) || ( __cptype__ == 'I' ), "Error: CP: Bad parameter type." );
+	P_ERROR_X1( (__cptype__ == 'P' ) || ( __cptype__ == 'I' ), "Error: CP: Bad parameter type." );
 	setPointType( (PtType)__pttype__ );
 	setCp( __cptype__, __cp__ );
 	
@@ -81,19 +81,19 @@ void NConstants::loadFile(const std::string &fileName)
 			char __eqntype__;
 			int  __eqnnum__;
 			file >> __eqntype__ >> __eqnnum__; inputAssert( file );
-			P_ERROR_X( __eqntype__ == 'E', "Error: EQN: Bad equation type." );
+			P_ERROR_X1( __eqntype__ == 'E', "Error: EQN: Bad equation type." );
 			setEqns( i, 'E', __eqnnum__ );
 			if( __eqnnum__ == EqnPhaseRot ) loadsym = true;
 		}
 		int __nvar__;
 		file >> __nvar__; inputAssert( file );
-		P_ERROR_X( __nvar__ == __neqn__, "Error: NVAR: Number of equations and variables are not the same." );
+		P_ERROR_X1( __nvar__ == __neqn__, "Error: NVAR: Number of equations and variables are not the same." );
 		for( int i = 0; i < __neqn__; i++ )
 		{
 			char __vartype__;
 			int  __varnum__;
 			file >> __vartype__ >> __varnum__; inputAssert( file );
-			P_ERROR_X( ( __vartype__ == 'S' )||( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: VAR: Bad variable/parameter type." );
+			P_ERROR_X1( ( __vartype__ == 'S' )||( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: VAR: Bad variable/parameter type." );
 			setVars( i, __vartype__, __varnum__ );
 		}
 		while( file.get() != '\n' );
@@ -107,7 +107,7 @@ void NConstants::loadFile(const std::string &fileName)
 			char __vartype__;
 			int  __varnum__;
 			file >> __vartype__ >> __varnum__; inputAssert( file );
-			P_ERROR_X( ( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: PARX: Bad parameter type." );
+			P_ERROR_X1( ( __vartype__ == 'P' )||( __vartype__ == 'I' ), "Error: PARX: Bad parameter type." );
 			setParX( i, __vartype__, __varnum__ );
 		}
 		while( file.get() != '\n' );

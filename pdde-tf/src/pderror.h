@@ -44,7 +44,7 @@ class pddeException
 #ifdef DEBUG
 #  define P_ASSERT(cond) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: " )); }while(0)
-#  define P_ASSERT_X(cond, arg1) do{ if(!(cond) ) \
+#  define P_ASSERT_X1(cond, arg1) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1 )); }while(0)
 #  define P_ASSERT_X2(cond, arg1, arg2) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1<<arg2 )); }while(0)
@@ -52,14 +52,14 @@ class pddeException
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\ninternal error: "<<"\n\t"<<arg1<<arg2<<arg3 )); }while(0)
 #else
 #  define P_ASSERT(cond) do{ }while(0)
-#  define P_ASSERT_X(cond, arg1) do{ }while(0)
+#  define P_ASSERT_X1(cond, arg1) do{ }while(0)
 #  define P_ASSERT_X2(cond, arg1, arg2) do{ }while(0)
 #  define P_ASSERT_X3(cond, arg1, arg2, arg3) do{ }while(0)
 #endif
 
 #define P_ERROR(cond) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: " )); }while(0)
-#define P_ERROR_X(cond, arg1) do{ if(!(cond) ) \
+#define P_ERROR_X1(cond, arg1) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<"\n\t"<<arg1 )); }while(0)
 #define P_ERROR_X2(cond, arg1, arg2) do{ if(!(cond) ) \
 		throw(pddeException( std::string(__FILE__), __LINE__, pddeMessage("(")<<#cond<<")"<<"\nerror: "<<arg1<<arg2 )); }while(0)
