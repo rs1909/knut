@@ -197,7 +197,7 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 			P_MESSAGE("No such pointtype\n");
 			break;
 	}
-	P_ERROR_X1( tab.nparx == parx.Size(), "Error: wrong number of parameters\n" );
+	P_ERROR_X1( tab.nparx == parx.Size(), "Wrong number of additional continuation parameters (NPARX)." );
 	eqnr.Init( tab.neqn );
 	varr.Init( tab.neqn );
 	for( int i = 0; i < tab.neqn; i++ )
@@ -214,10 +214,10 @@ BranchSW PtToEqnVar( Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<
 // xxDot, xx, rhs, jac
 void Point::Construct( )
 {	
-	P_ERROR_X1( (eqn.Size() != 0)&&(var.Size() != 0)&&(eqn.Size() == var.Size()), "Bad equation and variable sizes!");
+	P_ERROR_X1( (eqn.Size() != 0)&&(var.Size() != 0)&&(eqn.Size() == var.Size()), "Number of equations and variables do not agree.");
 	dim3 = eqn.Size() - 1;
 	
-	P_ERROR_X1( (eqn(0) == EqnSol)&&(var(0) == VarSol), "Wrong first equation!");
+	P_ERROR_X1( (eqn(0) == EqnSol)&&(var(0) == VarSol), "The first equation must the boundary value problem of the periodic solution.");
 	dim1 = NDIM*(NINT*NDEG+1);
 	
 	// a) setting th etest functional b) determining the number of trivial multipliers
@@ -245,12 +245,14 @@ void Point::Construct( )
 				testFunct = new TestFunctLPAUTROT( colloc, rotRe, rotIm, 1.0 );
 				break;
 			case EqnTFCPLX_RE:
-				P_ERROR_X1( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n" );
+				P_ERROR_X1( eqn(i+1) == EqnTFCPLX_IM,
+					"The real and imaginary parts of the complex test funtional are not paired." );
 				P_ERROR( testFunct == 0 );
 				testFunct = new TestFunctCPLX( colloc );
 				break;
 			case EqnTFCPLX_IM:
-				P_ERROR_X1( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n" );
+				P_ERROR_X1( eqn(i-1) == EqnTFCPLX_RE,
+					"The real and imaginary parts of the complex test funtional are not paired." );
 				break;
 			case EqnPhase:
 				phaut = true;
@@ -268,7 +270,7 @@ void Point::Construct( )
 
 	for( int i = 1; i < var.Size(); i++ )
 	{
-		P_ERROR_X4( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd), "{1} Non-existing parameter P", var(i)-VarPAR0, " at position ", i );
+		P_ERROR_X4( (var(i)-VarPAR0 >= 0)&&(var(i)-VarPAR0 < NPAR+ParEnd), "Non-existing parameter P", var(i)-VarPAR0, " at position ", i );
 		varMap( i ) = var(i)-VarPAR0;
 	}
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);
@@ -331,7 +333,7 @@ void Point::Jacobian(
 				AA.getA13(i-1).Clear();
 			} else
 			{
-				P_ERROR_X4(false, "{2} Non-existing parameter P", varMap(i), " was specified at position ", i);
+				P_ERROR_X4(false, "Non-existing parameter P", varMap(i), " was specified at position ", i);
 			}
 		}
 	}
@@ -361,7 +363,7 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						P_ERROR_X4(false, "{2} Non-existing parameter P", varMap(j), " was specified at position ", j);
+						P_ERROR_X4(false, "Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
@@ -380,7 +382,7 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						P_ERROR_X4(false, "{3} Non-existing parameter P", varMap(j), " was specified at position ", j);
+						P_ERROR_X4(false, "Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				RHS.getV3()(i-1) = -( AA.getA31(i-1)*sol );
@@ -402,12 +404,13 @@ void Point::Jacobian(
 						AA.getA33(i-1,j-1) = 0.0;
 					} else
 					{
-						P_ERROR_X4(false, "{4} Non-existing parameter P", varMap(j), " was specified at position ", j);
+						P_ERROR_X4(false, "Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				break;
 			case EqnTFCPLX_RE:
-				P_ERROR_X2( eqn(i+1) == EqnTFCPLX_IM, "EqnTFCPLX_RE is not paired\n", varMap(i) );
+				P_ERROR_X1( eqn(i+1) == EqnTFCPLX_IM,
+					"The real and imaginary parts of the complex test funtional are not paired." );
 				testFunct->Funct( RHS.getV3()(i-1), RHS.getV3()(i), colloc, par, sol, solData, 
 				                  cos(par(NPAR+ParAngle)), sin(par(NPAR+ParAngle)) );
 				testFunct->Funct_x( AA.getA31(i-1), AA.getA31(i), colloc, par, sol, solData );
@@ -422,15 +425,16 @@ void Point::Jacobian(
 						testFunct->Funct_z( AA.getA33()(i-1,j-1), AA.getA33()(i,j-1), colloc, par, sol, solData );
 					} else
 					{
-						P_ERROR_X4(false, "{5} Non-existing parameter P", varMap(j), " was specified at position ", j);
+						P_ERROR_X4(false, "Non-existing parameter P", varMap(j), " was specified at position ", j);
 					}
 				}
 				break;
 			case EqnTFCPLX_IM:
-				P_ERROR_X2( eqn(i-1) == EqnTFCPLX_RE, "EqnTFCPLX_IM is not paired\n", varMap(i) );
+				P_ERROR_X2( eqn(i-1) == EqnTFCPLX_RE,
+					"The real and imaginary parts of the complex test funtional are not paired.", varMap(i) );
 				break;
 			default:
-				P_MESSAGE("Unknown equation type encountered.");
+				P_MESSAGE("An unknown type of equation is encountered.");
 				break;
 		}
 	}
@@ -498,8 +502,7 @@ int Point::StartTF( Eqn FN, std::ostream& out )
 		double zRe = mRe(imin);
 		double zIm = fabs(mIm(imin));
 		double nrm = sqrt( zRe*zRe + zIm*zIm );
-		out<<"mRe(imin) "<<zRe<<" mIm(imin) "<<zIm<<" nrm: "<<nrm<<"\n";
-
+		
 		if( zRe > 0 )
 		{
 			par(NPAR+ParAngle) = atan( zIm/zRe );
@@ -598,7 +601,6 @@ void Point::SwitchTFLP( double ds )
 	Vector wr( NDIM ), wi( NDIM );
 	Matrix vr( NDIM, NDIM ), vl( NDIM, NDIM );
 
-	std::cout<<"Point::SwitchTF_LP\n";
 	xxDot->getV1().Clear();
 	xxDot->getV3().Clear();
 	p1Dot = 0.0;
@@ -618,7 +620,6 @@ void Point::SwitchTFPD( double ds )
 	Vector wr( NDIM ), wi( NDIM );
 	Matrix vr( NDIM, NDIM ), vl( NDIM, NDIM );
 
-	std::cout<<"Point::SwitchTF_PD\n";
 	xxDot->getV1().Clear();
 	xxDot->getV3().Clear();
 	p1Dot = 0.0;
@@ -935,22 +936,22 @@ void Point::Write( std::ofstream& file )
 	file.flush();
 }
 
-void Point::Read( std::ifstream& file, bool tan )
+void Point::Read( std::ifstream& file )
 {
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible file (NPAR) ", npar_ );
+	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible input file (NPAR) ", npar_ );
 	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>par(i);
 	
 	file>>nmul_;
-	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible file (NMUL) ", nmul_ );
+	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible input file (NMUL) ", nmul_ );
 	for( int i = 0; i < nmul_; i++ ) { file>>mRe(i); file>>mIm(i); }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	P_ERROR_X2( NDIM == ndim_, "Not compatible file (NDIM) ", ndim_ );
+	P_ERROR_X2( NDIM == ndim_, "Not compatible input file (NDIM) ", ndim_ );
 	
 	Vector msh( nint_ + 1 );
 	double t;
@@ -968,28 +969,6 @@ void Point::Read( std::ifstream& file, bool tan )
 		for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>in(i);
 		colloc.Import( sol, in, msh, ndeg_ );
 	}
-	if( tan )
-	{
-		solNu = sol;
-		parNu = par;
-		Read( file, false );
-		xxDot->getV1() = sol;
-		xxDot->getV1() -= solNu;
-		for( int i = 1; i < varMapCont.Size(); i++ ) xxDot->getV3()(i-1) = par( varMapCont(i) ) - parNu( varMapCont(i) );
-		
-		// renorming everything
-		p1Dot = xxDot->getV3()(dim3);
-		
-		double norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
-		
-		xxDot->getV1() /= norm;
-		xxDot->getV3() /= norm;
-		p1Dot /= norm;
-		std::cout<<"norm "<<norm<<" P!DOT :: "<<p1Dot<<"\n";
-		
-		sol = solNu;
-		par = parNu;
-	}
 }
 
 void Point::ReadNull( std::ifstream& file )
@@ -997,18 +976,18 @@ void Point::ReadNull( std::ifstream& file )
 	double tmp;
 	int npar_, nmul_, ndim_, nint_, ndeg_;
 	file>>npar_;
-	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible file (NPAR) ", npar_ );
+	P_ERROR_X2( NPAR+ParEnd == npar_, "Not compatible input file (NPAR) ", npar_ );
 	for( int i = 0; i < NPAR+ParEnd; i++ ) file>>tmp;
 	
 	file>>nmul_;
-	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible file (NMUL) ", nmul_ );
+	P_ERROR_X2( mRe.Size() >= nmul_, "Not compatible input file (NMUL) ", nmul_ );
 	for( int i = 0; i < nmul_; i++ ) { file>>tmp; file>>tmp; }
 	
 	file>>ndim_;
 	file>>nint_;
 	file>>ndeg_;
 	
-	P_ERROR_X2( NDIM == ndim_, "Not compatible file (NDIM) ", ndim_ );
+	P_ERROR_X2( NDIM == ndim_, "Not compatible input file (NDIM) ", ndim_ );
 	
 	for( int i = 0; i < ndeg_*nint_+1; i++ ) file>>tmp;
 	for( int i = 0; i < NDIM*(nint_*ndeg_+1); i++ ) file>>tmp;
@@ -1017,7 +996,7 @@ void Point::ReadNull( std::ifstream& file )
 void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg ) // starting data for tori: tangent
 {
 	Vector TRe(sol.Size()), TIm(sol.Size());
-	TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct);
+	TestFunctCPLX* tf = dynamic_cast< TestFunctCPLX* >(testFunct);
 	if( tf )
 	{
 		tf->Switch( TRe, TIm, alpha );
@@ -1025,7 +1004,7 @@ void Point::SwitchTFTRTan( Vector& Re, Vector& Im, double& alpha, const Vector& 
 		colloc.Export( Im, mshint, mshdeg, TIm );
 	}else
 	{
-		P_MESSAGE("Not the complex test functional\n");
+		P_MESSAGE("Cannot compute the initial tangent to the torus branch, because no complex test functional was defined.");
 	}
 }
 
@@ -1042,21 +1021,19 @@ void Point::BinaryWrite( mat4Data& data, int n )
 void Point::BinaryRead( mat4Data& data, int n )
 {
 	Vector msh( data.getNInt()+1 );
-	P_ERROR_X1( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters\n" );
+	P_ERROR_X1( data.getNPar() == (NPAR+ParEnd), "Wrong number of parameters in the input MAT file." );
 	data.getPar( n, par );
 	data.getMul( n, mRe, mIm );
 	data.getMesh( n, msh );
-	P_ERROR_X1( data.getNDim() == NDIM, "BinaryRead failed" );
+	P_ERROR_X1( data.getNDim() == NDIM, "Wrong number of dimensions in the input MAT file." );
 	if( data.getNInt() == NINT && data.getNDeg() == NDEG )
 	{
 		colloc.setMesh( msh );
 		data.getProfile( n, sol );
-		std::cout<<"not converted\n";
 	}else
 	{
 		Vector tmp( data.getNDim()*(data.getNDeg()*data.getNInt()+1) );
 		data.getProfile( n, tmp );
 		colloc.Import( sol, tmp, msh, data.getNDeg() );
 	}
-	par.Print();
 }

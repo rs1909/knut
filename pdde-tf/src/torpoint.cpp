@@ -44,7 +44,7 @@ PointTR::~PointTR()
 
 void PointTR::Construct()
 {
-	P_ERROR_X1( eqn(0) == EqnTORSol, "Bad variables\n" );
+	P_ERROR_X1( eqn(0) == EqnTORSol, "The first equation must be the 2D boundary problem of the torus." );
 
 	RefEps = ERRTOL;
 	ContEps = ERRTOLCONT;
@@ -96,8 +96,8 @@ void PointTR::JacobianFixed( Vector& /*sol*/, Vector& presol, Vector& /*par*/, V
 	int ph0 = -1, ph1 = -1;
 	for( int i = 1; i < eqn.Size(); i++ )
 	{
-		if( eqn(i) == EqnTORPhase0 ){ P_ERROR_X1( ph0 == -1, "Too many phase conditions" ); ph0 = i-1; }
-		if( eqn(i) == EqnTORPhase1 ){ P_ERROR_X1( ph1 == -1, "Too many phase conditions" ); ph1 = i-1; }
+		if( eqn(i) == EqnTORPhase0 ){ P_ERROR_X1( ph0 == -1, "Too many phase conditions." ); ph0 = i-1; }
+		if( eqn(i) == EqnTORPhase1 ){ P_ERROR_X1( ph1 == -1, "Too many phase conditions." ); ph1 = i-1; }
 	}
 	if( ph0!=(-1) && ph1!=(-1) )
 	{
@@ -107,7 +107,7 @@ void PointTR::JacobianFixed( Vector& /*sol*/, Vector& presol, Vector& /*par*/, V
 	}
 	else
 	{
-		P_ERROR_X1( ph0 == -1, "There is a first phase condition, but no second" );
+		P_ERROR_X1( ph0 == -1, "There is a first phase condition, but no second." );
 		if( ph1 != (-1) ){ colloc.PhaseONE( jac->getA31(ph1), presol ); rhs->getV3()(ph1) = 0.0; }
 	}
 	
@@ -142,7 +142,7 @@ void PointTR::JacobianVarying( Array1D<Vector*> A13, Array1D<int>& JacVar,
 				// nothing happens
 				break;
 			default:
-				std::cout<<"Torpoint: No such equation."<<eqn(i)<<"\n";
+				P_ERROR_X2(false, "An unknown type of equation is encountered:", eqn(i));
 				break;
 		}
 	}

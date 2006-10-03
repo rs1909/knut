@@ -113,7 +113,7 @@ class Point
 			}
 		}
 		void ReadNull( std::ifstream& file );
-		void Read( std::ifstream& file, bool tan=false );
+		void Read( std::ifstream& file );
 		void Write( std::ofstream& file );
 		void BinaryRead( mat4Data& data, int n );
 		void BinaryWrite( mat4Data& data, int n );

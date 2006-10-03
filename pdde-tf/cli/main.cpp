@@ -86,41 +86,41 @@ int main( int argc, const char** argv )
 					exit(0);
 					break;
 				default:
-					P_MESSAGE("Unexected CL argument.\n");
+					P_MESSAGE("Unexpected command line argument.\n");
 					break;
 			}
 		}else
 		{
-			P_MESSAGE("Unexected CL argument.\n");
+			P_MESSAGE("Unexpected command line argument.\n");
 		}
 	}
 	
 
 	if( params == 0 )
 	{
-		std::cout<<"Error: Missing constants file.\n";
+		std::cout<<"Error: missing constants file.\n";
 		exit(1);
 	}
 	if( (inFile == 0) && (params->getLabel() != 0) )
 	{
-		std::cout<<"Error: Missing input file.\n";
+		std::cout<<"Error: missing input file.\n";
 		exit(1);
 	}
 	if( outFile == 0)
 	{
 		outFile ="out.pdde";
-		std::cout<<"Warning: Missing output file, using \""<<outFile<<"\" instead.\n";
+		std::cout<<"Warning: missing output file, using \""<<outFile<<"\" instead.\n";
 	}
 	if( branchFile == 0)
 	{
 		branchFile ="branch";
-		std::cout<<"Warning: Missing branch file, using \""<<branchFile<<"\" instead.\n";
+		std::cout<<"Warning: missing branch file, using \""<<branchFile<<"\" instead.\n";
 	}
 	
 	// **********************************************************************************************************
 	
 	System sys( params->getSysName() );
-	if( sys.ndim() == 0 ) P_MESSAGE("zerodimensions");
+	if( sys.ndim() == 0 ) P_MESSAGE("Number of dimensions are set to zero.");
 
 	Vector par(sys.npar()+ParEnd);
 	std::ofstream ff( branchFile );
@@ -190,7 +190,7 @@ int main( int argc, const char** argv )
 			{
 				pt.ReadNull( istr );
 			}
-			pt.Read( istr, false );
+			pt.Read( istr );
 		}
 		
 		pt.Refine();
@@ -307,7 +307,7 @@ int main( int argc, const char** argv )
 				if( decr&&(fabs(ds)*1.414 > params->getDsMin())&&(fabs(ds)*1.414 < params->getDsMax()) ) ds *= 1.414;
 				if( (itc >= params->getNItC())&&(fabs(ds)/2.0 < params->getDsMin()) )
 				{
-					P_MESSAGE("reached minimum stepsize (DSMIN)");
+					P_MESSAGE("No convergence. The minimum arclength step size (DSMIN) has been reached.");
 				}
 				std::cout.flush();
 			}

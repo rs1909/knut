@@ -56,7 +56,7 @@ static void poly_gau( Vector& roots )
 			a(0,4) = 0.0; a(0,5) = -21.0/13; a(0,6) = 0;
 			break;
 		default:
-			P_MESSAGE("Something wrong! \n");
+			P_MESSAGE("Unsupported degree of collocation polinomial is selected.");
 			return;
 			break;
 	}
@@ -2235,7 +2235,6 @@ void NColloc::Import( Vector& outs, const Vector& in, const Vector& msh_, int de
 	Vector in_mesh(deg_+1);
 	Vector in_lgr(deg_+1);
 	
-	std::cout<<"Import\n";
 	repr_mesh( in_mesh ); /// now we can use chebyshev
 	
 	for( int i = 0; i < NINT; i++ )
@@ -2246,7 +2245,7 @@ void NColloc::Import( Vector& outs, const Vector& in, const Vector& msh_, int de
 			int k = meshlookup( msh_, t );
 			// std::cout<<"int "<<i<<" "<<k<<"\n";
 			double c = (t-msh_(k))/(msh_(k+1)-msh_(k));
-			P_ASSERT_X( c >= 0.0 && c <= 1.0, "NColloc::Import: FATAL ERROR" );
+			P_ASSERT_X( c >= 0.0 && c <= 1.0, "Fatal error while importing a periodic solution." );
 			
 			poly_lgr( in_mesh, in_lgr, c );
 			// in_lgr.Print();

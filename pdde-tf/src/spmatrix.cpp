@@ -188,22 +188,24 @@ void SpFact::Fact()
 	if( !fact )
 	{
 		void  *Symbolic = 0;
-		P_ASSERT_X( Numeric == 0, "SpFact::SpFact(Spmatrix& ): This is a bug. The matrix was already factorized.\n" );
+		P_ASSERT_X( Numeric == 0, "This is a bug. The sparse matrix was already factorized." );
 
 		int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
-		P_ERROR_X2( status == 0, "SpFact::SpFact(Spmatrix& ): Symbolic ", status );
+		P_ERROR_X2( status == 0, "Error report from \"umfpack_di_symbolic()\":", status );
 		status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
 		fact = true;
 		if( status != 0 )
 		{
-			std::cout<<"SpFact::SpFact(Spmatrix& ): Numeric "<<status<<"\n";
 			if( status == 1 )
 			{
+				std::cout<<"The matrix is singular. "
+					<<"The diagonal of the factorized matrix is being dumped: "
+					<<status<<"\n";
 				Vector DX(n);
 				GetDX( DX );
 				DX.Print();
 			}
-			P_MESSAGE("");
+			P_ERROR_X2( status == 0, "Error report from \"umfpack_di_numeric()\":", status );
 		}
 		umfpack_di_free_symbolic(&Symbolic); Symbolic = 0;
 	}
@@ -220,11 +222,7 @@ void SpFact::Solve( double* x, double* b, bool trans )
 	}else
 	{
 		if( trans ) sys = UMFPACK_A; else sys = UMFPACK_At;
-		if( format != 'R' )
-		{
-			cout<<"SpFact::Solve(Vector& , Vector& ): Wrong format";
-			return; 
-		}
+		P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
 	}
 	status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x, b, Numeric, Control, 0, Wi, W );
 }
@@ -240,11 +238,7 @@ void SpFact::Solve( Vector& x, const Vector& b, bool trans )
 	}else
 	{
 		if( trans ) sys = UMFPACK_A; else sys = UMFPACK_At;
-		if( format != 'R' )
-		{
-			cout<<"SpFact::Solve(Vector& , Vector& ): Wrong format";
-			return; 
-		}
+		P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
 	}
   
 	status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x.Pointer(), b.v, Numeric, Control, 0, Wi, W );
@@ -255,16 +249,12 @@ void SpFact::Solve( Matrix& x, const Matrix &b, bool trans )
 	if( !fact ) Fact();
 	int status,sys;
 	if( format == 'C' )
-	{ 
+	{
 		if( trans ) sys = UMFPACK_At; else sys = UMFPACK_A; 
 	}else
 	{
 		if( trans ) sys = UMFPACK_A; else sys = UMFPACK_At;
-		if( format != 'R' )
-		{
-			cout<<"SpFact::Solve(Vector& , Vector& ): Wrong format";
-			return;
-		}
+		P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
 	}
 	
 	for( int i = 0; i < b.c; i++ )
@@ -275,11 +265,8 @@ void SpFact::Solve( Matrix& x, const Matrix &b, bool trans )
 
 void StabMatrix::Eigval( Vector& wr, Vector& wi )
 {
-	if( ( wr.Size() != wi.Size() )||( wr.Size() < 2 ) )
-	{
-		cout<<"Bad sizes of wr or wi\n";
-		return;
-	}
+	P_ERROR_X1( ( wr.Size() == wi.Size() )&&( wr.Size() > 1 ), "Real and imaginary vectors are not of the same size.");
+	
 	integer IDO      = 0;
 	char    BMAT     = 'I';
 	integer N        = AI.Size() * A0.Col();
@@ -372,7 +359,7 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 		wr.Clear(); wi.Clear();
 		if( IPARAM[4] > wr.Size() )
 		{
-			std::cout<<" more eigenvalues than expected: N="<<IPARAM[4]<<"\n"; std::cout.flush();
+			std::cout<<"More eigenvalues were calculated than expected: N="<<IPARAM[4]<<"\n"; std::cout.flush();
 			IPARAM[4]=wr.Size();
 		}
 		for( int i = 0; i < IPARAM[4]; i++ )

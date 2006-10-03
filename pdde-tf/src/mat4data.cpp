@@ -30,7 +30,7 @@ int mat4Data::findMatrix( const char* name, mat4Data::header* found )
 	int cur_size;
 	do{
 		memcpy( &hd, (char*)address + cur_off, sizeof(struct header) );
-		P_ERROR_X1( hd.type == 0, "not a double matrix");
+		P_ERROR_X1( hd.type == 0, "Not a matrix of double precision elements.");
 		if( hd.imagf == 0 )
 		  cur_size = sizeof(struct header) + hd.namelen*sizeof(char) + hd.mrows*hd.ncols*sizeof(double);
 		else
@@ -50,14 +50,14 @@ int mat4Data::findMatrix( const char* name, mat4Data::header* found )
 static inline void *mmapFileWrite( int& file, const std::string& fileName, int size )
 {
 	if( ( file = open( fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR ) ) == -1 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to open file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to create the MAT file.", strerror( errno ) ); }
 	
 	if( ftruncate( file, size ) != 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to truncate file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to resize the MAT file.", strerror( errno ) ); }
 	
 	void *address;
 	if( ( address = mmap( 0, size, PROT_WRITE, MAP_SHARED, file, 0 ) ) == MAP_FAILED )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to mmap file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to map the MAT file to a memory location.", strerror( errno ) ); }
 	return address;
 }
 
@@ -72,17 +72,17 @@ static inline void *mmapFileWrite( int& file, const std::string& fileName, int s
 static inline void *mmapFileRead( int& file, const std::string& fileName, int& size )
 {
 	if( ( file = open( fileName.c_str(), O_RDONLY ) ) == -1 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to open file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to open the MAT file for reading.", strerror( errno ) ); }
 	
 	struct stat filestat;
 	if( fstat( file, &filestat ) != 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to stat file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to stat the MAT file.", strerror( errno ) ); }
 	int filesize = filestat.st_size;
 	size = filesize;
 	
 	void *address;
 	if( ( address = mmap( 0, filesize, PROT_READ, MAP_PRIVATE, file, 0 ) ) == MAP_FAILED )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to mmap file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to map the MAT file to a memory location.", strerror( errno ) ); }
 	return address;
 }
 
@@ -97,18 +97,18 @@ static inline void *mmapFileWrite( HANDLE& file, HANDLE& mapHandle, const std::s
 		CREATE_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL ) ) == NULL )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
+	{ P_ERROR_X2( false, "Unable to create the MAT file.", static_cast<int>(GetLastError()) ); }
 
 	if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek\n", static_cast<int>(GetLastError()) ); }
-	P_ERROR_X2( SetEndOfFile( file ), "mmappedPointData::mmappedPointData: unable to SetEndOfFile\n", static_cast<int>(GetLastError()) );
+	{ P_ERROR_X2( false, "Unable to seek in the MAT file.", static_cast<int>(GetLastError()) ); }
+	P_ERROR_X2( SetEndOfFile( file ), "Unable to truncate the MAT.", static_cast<int>(GetLastError()) );
 
 	if( (mapHandle = CreateFileMapping( file, NULL, PAGE_READWRITE, 0, size, fileName.c_str() ) ) == 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) ); }
+	{ P_ERROR_X2( false, "Unable to map the MAT file to a memory location.", static_cast<int>(GetLastError()) ); }
 	
 	void *address = MapViewOfFile( mapHandle, FILE_MAP_WRITE, 0, 0, 0 );
 	if( address != NULL ) return address;
-	else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
+	else P_ERROR_X2( false, "Unable to view the file map.", static_cast<int>(GetLastError()) );
 	return 0;
 }
 
@@ -121,15 +121,15 @@ static inline void *mmapFileRead( HANDLE& file, HANDLE& mapHandle, const std::st
 		OPEN_EXISTING, 
 		FILE_ATTRIBUTE_NORMAL, 
 		NULL ) ) == NULL )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable open file\n", static_cast<int>(GetLastError()) ); }
+	{ P_ERROR_X2( false, "Unable to create the MAT file.", static_cast<int>(GetLastError()) ); }
 
 	size = GetFileSize( file, NULL );
 	if( (mapHandle = CreateFileMapping( file, NULL, PAGE_READONLY, 0, 0, fileName.c_str() ) ) == 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) ); }
+	{ P_ERROR_X2( false, "Unable to map the MAT file to a memory location.", static_cast<int>(GetLastError()) ); }
 	
 	void *address = MapViewOfFile( mapHandle, FILE_MAP_READ, 0, 0, 0 );
 	if( address != NULL ) return address;
-	else P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to map file\n", static_cast<int>(GetLastError()) );
+	else P_ERROR_X2( false, "Unable to view the file map.", static_cast<int>(GetLastError()) );
 	return 0;
 }
 
@@ -204,7 +204,7 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	prof_offset = mesh_offset + mesh_size;
 	int prof_size = createMatrixHeader( address, prof_offset, &prof_header, "pdde_prof", ndim*(ndeg*nint+1), ncols );
 	size = prof_offset + prof_size;
-	if( size > approxSize ) P_ERROR_X2(false,"Bad size approxiamion",size-approxSize);
+	if( size > approxSize ) P_ERROR_X2(false, "Bad size approximation of the MAT file", size-approxSize);
 }
 
 mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_ )
@@ -257,7 +257,7 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	blanket_offset = mesh2_offset + mesh2_size;
 	int blanket_size = createMatrixHeader( address, blanket_offset, &blanket_header, "pdde_blanket", ndim*nint1*ndeg1*nint2*ndeg2, ncols );
 	size = blanket_offset + blanket_size;
-	P_ERROR_X2( size <= approxSize, "Bad size approxiamion",size-approxSize);
+	P_ERROR_X2( size <= approxSize, "Bad size approximation of the MAT file", size-approxSize);
 }
 
 mat4Data::mat4Data( const std::string& fileName )
@@ -366,14 +366,14 @@ mat4Data::~mat4Data()
 {
 #ifndef WIN32
 	if( munmap( address, size ) != 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::~mmappedPointData: unable to munmap file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to munmap the MAT file.", strerror( errno ) ); }
 	if( wperm )
 	{
 		if( ftruncate( file, size) != 0 )
-		{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to truncate file\n", strerror( errno ) ); }
+		{ P_ERROR_X2( false, "Unable to truncate the MAT file.", strerror( errno ) ); }
 	}
 	if( close( file ) != 0 )
-	{ P_ERROR_X2( false, "mmappedPointData::~mmappedPointData: unable to close file\n", strerror( errno ) ); }
+	{ P_ERROR_X2( false, "Unable to close the MAT file.", strerror( errno ) ); }
 #else
 	if( address != 0 )
 	{
@@ -382,8 +382,8 @@ mat4Data::~mat4Data()
 		if( wperm )
 		{
 			if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
-			{ P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable to seek\n", static_cast<int>(GetLastError()) ); }
-			P_ERROR_X2( SetEndOfFile( file ), "mmappedPointData::mmappedPointData: unable to SetEndOfFile\n", static_cast<int>(GetLastError()) );
+			{ P_ERROR_X2( false, "Unable to seek in the MAT file.", static_cast<int>(GetLastError()) ); }
+			P_ERROR_X2( SetEndOfFile( file ), "Unable to truncate the MAT file.", static_cast<int>(GetLastError()) );
 		}
 		CloseHandle(file);
 	}
@@ -402,11 +402,11 @@ void mat4Data::setPar( int n, const Vector& par )
 				elem( par_offset, i, n ) = 0.0;
 		}else
 		{
-			P_MESSAGE("setPar 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setPar 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -428,11 +428,11 @@ void mat4Data::setMul( int n, const Vector& re, const Vector& im )
 			}
 		}else
 		{
-			P_MESSAGE("setMul 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setMul 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -446,11 +446,11 @@ void mat4Data::setElem( int n, const Vector& el )
 				elem( elem_offset, i, n ) = el(i);
 		}else
 		{
-			P_MESSAGE("setElem 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setElem 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -464,11 +464,11 @@ void mat4Data::setMesh( int n, const Vector& mesh )
 				elem( mesh_offset, i, n ) = mesh(i);
 		}else
 		{
-			P_MESSAGE("setMesh 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setMesh 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -484,11 +484,11 @@ void mat4Data::setProfile( int n, const Vector& prof )
 			for( int i = 0; i < ndim*(ndeg*nint+1); ++i ) elem( prof_offset, i, n ) = prof(i);
 		}else
 		{
-			P_MESSAGE("setProf 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setProf 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -521,11 +521,11 @@ void mat4Data::setBlanket( int n, const Vector& blanket )
 			for( int i = 0; i < ndim*(ndeg1*nint1*ndeg2*nint2); ++i ) elem( blanket_offset, i, n ) = blanket(i);
 		}else
 		{
-			P_MESSAGE("setBlanket 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("setBlanket 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -539,11 +539,11 @@ void mat4Data::getPar( int n, Vector& par ) const
 				par(i) = elem( par_offset, i, n );
 		}else
 		{
-			P_MESSAGE("getPar 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("getPar 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -560,11 +560,11 @@ void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 			}
 		}else
 		{
-			P_MESSAGE("getMul 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("getMul 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -578,11 +578,11 @@ void mat4Data::getElem( int n, Vector& el ) const
 				el(i) = elem( elem_offset, i, n );
 		}else
 		{
-			P_MESSAGE("getElem 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("getElem 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -596,11 +596,11 @@ void mat4Data::getMesh( int n, Vector& mesh ) const
 				mesh(i) = elem( mesh_offset, i, n );
 		}else
 		{
-			P_MESSAGE("getMesh 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("getMesh 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
@@ -614,11 +614,11 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 				prof(i) = elem( prof_offset, i, n );
 		}else
 		{
-			P_MESSAGE("getProf 1");
+			P_MESSAGE("Error while writing the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("getProf 2");
+		P_MESSAGE("Error while writing the MAT file.");
 	}
 }
 
