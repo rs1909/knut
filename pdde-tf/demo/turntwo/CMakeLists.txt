@@ -9,15 +9,15 @@ INSTALL( FILES sys-${NAME}.cpp
 	cfile-ns-2.xml cfile-lp-1.xml cfile-lp-2.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
-	COMMAND pdde -c cfile-start -o out-start -b br-start )
+	COMMAND pdde -c cfile-start -o out-start.mat -b br-start )
 ADD_CUSTOM_TARGET( ${NAME}-test-nssw
-	COMMAND pdde -c cfile-nssw -i out-start -o out-nssw -b br-nssw )
+	COMMAND pdde -c cfile-nssw -i out-start.mat -o out-nssw.mat -b br-nssw )
 ADD_CUSTOM_TARGET( ${NAME}-test-ns
-	COMMAND pdde -c cfile-ns-1 -i out-start -o out-ns-1 -b br-ns-1 \;
-	pdde -c cfile-ns-2 -i out-start -o out-ns-2 -b br-ns-2 )
+	COMMAND pdde -c cfile-ns-1 -i out-start.mat -o out-ns-1.mat -b br-ns-1 \;
+	pdde -c cfile-ns-2 -i out-start.mat -o out-ns-2.mat -b br-ns-2 )
 ADD_CUSTOM_TARGET( ${NAME}-test-lp
-	COMMAND pdde -c cfile-lp-1 -i out-nssw -o out-lp-1 -b br-lp-1 \;
-	pdde -c cfile-lp-2 -i out-nssw -o out-lp-2 -b br-lp-2 )
+	COMMAND pdde -c cfile-lp-1 -i out-nssw.mat -o out-lp-1.mat -b br-lp-1 \;
+	pdde -c cfile-lp-2 -i out-nssw.mat -o out-lp-2.mat -b br-lp-2 )
 
 ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
 ADD_DEPENDENCIES( ${NAME}-test-nssw ${NAME} )

@@ -8,16 +8,16 @@ INSTALL( FILES sys-${NAME}.cpp
     cfile-start.xml cfile-ns.xml cfile-pd.xml cfile-lp.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
-    COMMAND pdde -c cfile-start -i in-start -o out-start -b br-start )
+    COMMAND pdde -c cfile-start -i from_biftool.mat -o out-start.mat -b br-start )
 	
 ADD_CUSTOM_TARGET( ${NAME}-test-ns
-    COMMAND pdde -c cfile-ns -i out-start -o out-ns -b branch-ns )
+    COMMAND pdde -c cfile-ns -i out-start.mat -o out-ns.mat -b branch-ns )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-pd
-    COMMAND pdde -c cfile-pd -i out-start -o out-pd -b branch-pd )
+    COMMAND pdde -c cfile-pd -i out-start.mat -o out-pd.mat -b branch-pd )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-lp
-    COMMAND pdde -c cfile-lp -i out-start -o out-lp -b branch-lp )
+    COMMAND pdde -c cfile-lp -i out-start.mat -o out-lp.mat -b branch-lp )
 
 ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
 ADD_DEPENDENCIES( ${NAME}-test-ns ${NAME} )

@@ -7,6 +7,6 @@ INSTALL( FILES sys-${NAME}.cpp
 	cfile-start cfile-start.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
-	COMMAND pdde -c cfile-start -o out-start -b br-start )
+	COMMAND pdde -c cfile-start -o out-start.mat -b br-start )
 
 ADD_DEPENDENCIES( ${NAME}-test ${NAME} )

@@ -8,11 +8,11 @@ INSTALL( FILES sys-${NAME}.cpp
     cfile-start.xml cfile-pdsw.xml cfile-pd.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test
-    COMMAND pdde -c cfile-start -o in-start -b br-start\;
-	pdde -c cfile-pdsw -i in-start -o in-pdsw -b br-pdsw )
+    COMMAND pdde -c cfile-start -o in-start.mat -b br-start\;
+	pdde -c cfile-pdsw -i in-start.mat -o in-pdsw.mat -b br-pdsw )
 	
 ADD_CUSTOM_TARGET( ${NAME}-test-pd 
-    COMMAND pdde -c cfile-pd -i in-start -o in-pd -b br-pd )
+    COMMAND pdde -c cfile-pd -i in-start.mat -o in-pd.mat -b br-pd )
 
 ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
 ADD_DEPENDENCIES( ${NAME}-test-pd ${NAME} )
