@@ -124,9 +124,9 @@ int main( int argc, const char** argv )
 
 	Vector par(sys.npar()+ParEnd);
 	std::ofstream ff( branchFile );
-	std::ofstream out( outFile );
-	out<<std::scientific;
-	out.precision(12);
+// 	std::ofstream out( outFile );
+// 	out<<std::scientific;
+// 	out.precision(12);
 	ff<<std::scientific;
 	ff.precision(12);
 	
@@ -185,12 +185,8 @@ int main( int argc, const char** argv )
 		// load the initial guess
 		if( params->getLabel() != 0 )
 		{
-			std::ifstream istr( inFile );
-			for( int i=0; i<params->getLabel()-1; i++ )
-			{
-				pt.ReadNull( istr );
-			}
-			pt.Read( istr );
+			mat4Data istr( inFile );
+			pt.BinaryRead( istr, params->getLabel() );
 		}
 		
 		pt.Refine();
@@ -205,6 +201,10 @@ int main( int argc, const char** argv )
 		// start the continuation!
 		if( params->getBranchSW() != TFTRSwitch )
 		{
+			mat4Data out( outFile,
+				params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+				params->getNInt(), params->getNDeg(), params->getNMul() );
+			
 			std::cout<<"\n--- Starting the continuation ---\n";
 			
 			for( int j = 0; j < par.Size(); j++ ) par(j) = pt.getPar()(j);
@@ -293,7 +293,7 @@ int main( int argc, const char** argv )
 				std::cout<<"\n";
 				
 				// file output
-				pt.Write( out );
+				pt.BinaryWrite( out, i );
 				
 				// branch output
 				for( int j = 0; j < par.Size(); j++ ) ff<<par(j)<<"\t";
@@ -313,6 +313,10 @@ int main( int argc, const char** argv )
 			}
 		}else
 		{
+			mat4Data out( outFile,
+				params->getSteps(), sys.ndim(), sys.npar()+ParEnd,
+				params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2() );
+			
 			std::cout<<"ENTERING THE TORUS CODE!\n";
 			// construct the initial torus
 			double alpha;
@@ -358,10 +362,11 @@ int main( int argc, const char** argv )
 				for( int j = 0; j < npar; j++ ) ff<<par(j)<<"\t";
 				ff<<pttr.Norm()<<"\n";
 				ff.flush();
-				std::ostringstream fdata, fidx;
-				fdata << "sol-" << i << ".dat";
-				fidx << "sol-" << i << ".idx";
+// 				std::ostringstream fdata, fidx;
+// 				fdata << "sol-" << i << ".dat";
+// 				fidx << "sol-" << i << ".idx";
 				pttr.SaveSol( fdata.str().c_str(), fidx.str().c_str() );
+				pttr.WriteBinary( out, i );
 			}
 		}
 		// **********************************************************************************************************
