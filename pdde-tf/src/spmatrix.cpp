@@ -104,49 +104,32 @@ void SpMatrix::Print()
 //                                                                           //
 // **************************************************************************//
 
-SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz )
+void SpFact::Init( int nn_ )
 {
 	fact = false;
-
 	Numeric = 0;
-
 	Wi = new int[5*nn_+1];
 	W  = new double[10*nn_+1];
-  
+	
 	umfpack_di_defaults(Control);
 	Control[UMFPACK_IRSTEP] = 0;
 	Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC;
 // 	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
+}
+
+SpFact::SpFact( char F, int nn_, int mm_, int nz ) : SpMatrix( F, nn_, mm_, nz )
+{
+	Init( nn_ );
 }
 
 SpFact::SpFact( char F, int nn_, int nz ) : SpMatrix( F, nn_, nn_, nz )
 {
-	fact = false;
-
-	Numeric = 0;
-
-	Wi = new int[5*nn_+1];
-	W  = new double[10*nn_+1];
-  
-	umfpack_di_defaults(Control);
-	Control[UMFPACK_IRSTEP] = 0;
-	Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC;
-// 	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
+	Init( nn_ );
 }
 
 SpFact::SpFact( SpMatrix& M ) : SpMatrix( M )
 {
-	fact = false;
-	
-	Numeric = 0;
-
-	Wi = new int[5*n+1];
-	W  = new double[10*n+1];
-	
-	umfpack_di_defaults(Control);
-	Control[UMFPACK_IRSTEP] = 0;
-	Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_UNSYMMETRIC;
-//	Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
+	Init(n);
 }
 
 SpFact::~SpFact()

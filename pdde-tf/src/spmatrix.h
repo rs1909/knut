@@ -141,7 +141,7 @@ class SpFact : public SpMatrix
 		double *W;
 		
 	public:
-	
+		void Init( int nn_ );
 		SpFact( char F, int n_, int m_, int nz );
 		SpFact( char F, int n_, int nz );
 		SpFact( SpMatrix& M );

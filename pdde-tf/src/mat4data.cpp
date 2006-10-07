@@ -136,29 +136,31 @@ static inline void *mmapFileRead( HANDLE& file, HANDLE& mapHandle, const std::st
 #endif
 
 // returns the size of the whole data
-static inline int createMatrixHeader( void* address, int offset, mat4Data::header* hd, const char* name, int rows, int cols )
+static inline int createMatrixHeader( mat4Data::header* hd, const char* name, int rows, int cols )
 {
-	strncpy( (char*)address + offset + sizeof(mat4Data::header), name, 20 );
 	hd->type = 0;
 	hd->mrows = rows;
 	hd->ncols = cols;
 	hd->imagf = 0;
 	hd->namelen = ((strlen(name)+sizeof(mat4Data::header)+1)/sizeof(double) + 1)*sizeof(double) - sizeof(mat4Data::header);
-	*((mat4Data::header*)( (char*)address + offset) ) = *hd;
 	return sizeof(mat4Data::header) + hd->namelen + rows * cols * sizeof(double);
 }
 
 // returns the size of the whole data
-static inline int createComplexMatrixHeader( void* address, int offset, mat4Data::header* hd, const char* name, int rows, int cols )
+static inline int createComplexMatrixHeader( mat4Data::header* hd, const char* name, int rows, int cols )
 {
-	strncpy( (char*)address + offset + sizeof(mat4Data::header), name, 20 );
 	hd->type = 0;
 	hd->mrows = rows;
 	hd->ncols = cols;
 	hd->imagf = 1;
 	hd->namelen = ((strlen(name)+sizeof(mat4Data::header)+1)/sizeof(double) + 1)*sizeof(double) - sizeof(mat4Data::header);
-	*((mat4Data::header*)( (char*)address + offset) ) = *hd;
 	return sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * sizeof(double);
+}
+
+static inline int writeMatrixHeader( void* address, int offset, mat4Data::header* hd, const char* name )
+{
+	strncpy( (char*)address + offset + sizeof(mat4Data::header), name, 20 );
+	*((mat4Data::header*)( (char*)address + offset) ) = *hd;
 }
 
 mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_ )
@@ -173,38 +175,55 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	ndeg = ndeg_;
 	nmul = nmul_;
 	
-	const int approxSize = 8*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+2*nmul+1+(ndeg+1)+(ndim+1)*(ndeg*nint+1)));
- #ifndef WIN32
-	address = mmapFileWrite( file, fileName, approxSize );
- #else
-    address = mmapFileWrite( file, mapHandle, fileName, approxSize );
- #endif	
 	// creating the matrices
+	char npoints_string[] = "pdde_npoints";
 	npoints_offset = 0;
-	int npoints_size = createMatrixHeader( address, npoints_offset, &npoints_header, "pdde_npoints", 1, 1 );
-
+	int npoints_size = createMatrixHeader( &npoints_header, npoints_string, 1, 1 );
+	
+	char par_string[] = "pdde_par";
 	par_offset = npoints_offset + npoints_size;
-	int par_size = createMatrixHeader( address, par_offset, &par_header, "pdde_par", npar, ncols );
+	int par_size = createMatrixHeader( &par_header, par_string, npar, ncols );
 	
+	char mul_string[] = "pdde_mul";
 	mul_offset = par_offset + par_size;
-	int mul_size = createComplexMatrixHeader( address, mul_offset, &mul_header, "pdde_mul", nmul, ncols );
-
+	int mul_size = createComplexMatrixHeader( &mul_header, mul_string, nmul, ncols );
+	
+	char ntrivmul_string[] = "pdde_ntrivmul";
 	ntrivmul_offset = mul_offset + mul_size;
-	int ntrivmul_size = createMatrixHeader( address, ntrivmul_offset, &ntrivmul_header, "pdde_ntrivmul", 1, 1 );
+	int ntrivmul_size = createMatrixHeader( &ntrivmul_header, ntrivmul_string, 1, 1 );
 	
+	char ndim_string[] = "pdde_ndim";
 	ndim_offset = ntrivmul_offset + ntrivmul_size;
-	int ndim_size = createMatrixHeader( address, ndim_offset, &ndim_header, "pdde_ndim", 1, ncols );
+	int ndim_size = createMatrixHeader( &ndim_header, ndim_string, 1, ncols );
 	
+	char elem_string[] = "pdde_elem";
 	elem_offset = ndim_offset + ndim_size;
-	int elem_size = createMatrixHeader( address, elem_offset, &elem_header, "pdde_elem", ndeg+1, ncols );
+	int elem_size = createMatrixHeader( &elem_header, elem_string, ndeg+1, ncols );
 
+	char mesh_string[] = "pdde_mesh";
 	mesh_offset = elem_offset + elem_size;
-	int mesh_size = createMatrixHeader( address, mesh_offset, &mesh_header, "pdde_mesh", nint+1, ncols );
+	int mesh_size = createMatrixHeader( &mesh_header, mesh_string, nint+1, ncols );
 	
+	char prof_string[] = "pdde_prof";
 	prof_offset = mesh_offset + mesh_size;
-	int prof_size = createMatrixHeader( address, prof_offset, &prof_header, "pdde_prof", ndim*(ndeg*nint+1), ncols );
+	int prof_size = createMatrixHeader( &prof_header, prof_string, ndim*(ndeg*nint+1), ncols );
 	size = prof_offset + prof_size;
-	if( size > approxSize ) P_ERROR_X2(false, "Bad size approximation of the MAT file", size-approxSize);
+	
+	const int approxSize = 8*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+2*nmul+1+(ndeg+1)+(ndim+1)*(ndeg*nint+1)));
+#ifndef WIN32
+	address = mmapFileWrite( file, fileName, size );
+#else
+	address = mmapFileWrite( file, mapHandle, fileName, size );
+#endif	
+
+	writeMatrixHeader( address, npoints_offset, &npoints_header, npoints_string );
+	writeMatrixHeader( address, par_offset, &par_header, par_string );
+	writeMatrixHeader( address, mul_offset, &mul_header, mul_string );
+	writeMatrixHeader( address, ntrivmul_offset, &ntrivmul_header, ntrivmul_string );
+	writeMatrixHeader( address, ndim_offset, &ndim_header, ndim_string );
+	writeMatrixHeader( address, elem_offset, &elem_header, elem_string );
+	writeMatrixHeader( address, mesh_offset, &mesh_header, mesh_string );
+	writeMatrixHeader( address, prof_offset, &prof_header, prof_string );
 }
 
 mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_ )
@@ -220,44 +239,63 @@ mat4Data::mat4Data( const std::string& fileName, int steps_, int ndim_, int npar
 	ndeg1 = ndeg1_;
 	ndeg2 = ndeg2_;
 	
-	const int approxSize = 10*(sizeof(header) + 20) + sizeof(double)*(1+ncols*(npar+1+1+1+1+1+ndeg1*nint1+ndeg2*nint2+ndim*ndeg1*nint1*ndeg2*nint2));
- #ifndef WIN32
-	address = mmapFileWrite( file, fileName, approxSize );
- #else
-    address = mmapFileWrite( file, mapHandle, fileName, approxSize );
- #endif	
-	// creating the matrices
+ 	// creating the matrices
+	char npoints_string[] = "pdde_npoints";
 	npoints_offset = 0;
-	int npoints_size = createMatrixHeader( address, npoints_offset, &npoints_header, "pdde_npoints", 1, 1 );
+	int npoints_size = createMatrixHeader( &npoints_header, npoints_string, 1, 1 );
 	
+	char par_string[] = "pdde_par";
 	par_offset = npoints_offset + npoints_size;
-	int par_size = createMatrixHeader( address, par_offset, &par_header, "pdde_par", npar, ncols );
+	int par_size = createMatrixHeader( &par_header, par_string, npar, ncols );
 	
+	char ndim_string[] = "pdde_ndim";
 	ndim_offset = par_offset + par_size;
-	int ndim_size = createMatrixHeader( address, ndim_offset, &ndim_header, "pdde_ndim", 1, ncols );
+	int ndim_size = createMatrixHeader( &ndim_header, ndim_string, 1, ncols );
 	
+	char nint1_string[] = "pdde_nint1";
 	nint1_offset = ndim_offset + ndim_size;
-	int nint1_size = createMatrixHeader( address, nint1_offset, &nint1_header, "pdde_nint1", 1, ncols );
+	int nint1_size = createMatrixHeader( &nint1_header, nint1_string, 1, ncols );
 	
+	char nint2_string[] = "pdde_nint2";
 	nint2_offset = nint1_offset + nint1_size;
-	int nint2_size = createMatrixHeader( address, nint2_offset, &nint2_header, "pdde_nint2", 1, ncols );
+	int nint2_size = createMatrixHeader( &nint2_header, nint2_string, 1, ncols );
 	
+	char ndeg1_string[] = "pdde_ndeg1";
 	ndeg1_offset = nint2_offset + nint2_size;
-	int ndeg1_size = createMatrixHeader( address, ndeg1_offset, &ndeg1_header, "pdde_ndeg1", 1, ncols );
+	int ndeg1_size = createMatrixHeader( &ndeg1_header, ndeg1_string, 1, ncols );
 
+	char ndeg2_string[] = "pdde_ndeg2";
 	ndeg2_offset = ndeg1_offset + ndeg1_size;
-	int ndeg2_size = createMatrixHeader( address, ndeg2_offset, &ndeg2_header, "pdde_ndeg2", 1, ncols );
+	int ndeg2_size = createMatrixHeader( &ndeg2_header, ndeg2_string, 1, ncols );
 
+	char mesh1_string[] = "pdde_mesh1";
 	mesh1_offset = ndeg2_offset + ndeg2_size;
-	int mesh1_size = createMatrixHeader( address, mesh1_offset, &mesh1_header, "pdde_mesh1", nint1*ndeg1, ncols );
+	int mesh1_size = createMatrixHeader( &mesh1_header, mesh1_string, nint1*ndeg1, ncols );
 
+	char mesh2_string[] = "pdde_mesh2";
 	mesh2_offset = mesh1_offset + mesh1_size;
-	int mesh2_size = createMatrixHeader( address, mesh2_offset, &mesh2_header, "pdde_mesh2", nint2*ndeg2, ncols );
+	int mesh2_size = createMatrixHeader( &mesh2_header, mesh2_string, nint2*ndeg2, ncols );
 
+	char blanket_string[] = "pdde_blanket";
 	blanket_offset = mesh2_offset + mesh2_size;
-	int blanket_size = createMatrixHeader( address, blanket_offset, &blanket_header, "pdde_blanket", ndim*nint1*ndeg1*nint2*ndeg2, ncols );
+	int blanket_size = createMatrixHeader( &blanket_header, blanket_string, ndim*nint1*ndeg1*nint2*ndeg2, ncols );
 	size = blanket_offset + blanket_size;
-	P_ERROR_X2( size <= approxSize, "Bad size approximation of the MAT file", size-approxSize);
+
+#ifndef WIN32
+	address = mmapFileWrite( file, fileName, size );
+#else
+	address = mmapFileWrite( file, mapHandle, fileName, size );
+#endif
+	writeMatrixHeader( address, npoints_offset, &npoints_header, npoints_string );
+	writeMatrixHeader( address, par_offset, &par_header, par_string );
+	writeMatrixHeader( address, ndim_offset, &ndim_header, ndim_string );
+	writeMatrixHeader( address, nint1_offset, &nint1_header, nint1_string );
+	writeMatrixHeader( address, nint2_offset, &nint2_header, nint2_string );
+	writeMatrixHeader( address, ndeg1_offset, &ndeg1_header, ndeg1_string );
+	writeMatrixHeader( address, ndeg2_offset, &ndeg2_header, ndeg2_string );
+	writeMatrixHeader( address, mesh1_offset, &mesh1_header, mesh1_string );
+	writeMatrixHeader( address, mesh2_offset, &mesh2_header, mesh2_string );
+	writeMatrixHeader( address, blanket_offset, &blanket_header, blanket_string );
 }
 
 mat4Data::mat4Data( const std::string& fileName )
@@ -367,11 +405,12 @@ mat4Data::~mat4Data()
 #ifndef WIN32
 	if( munmap( address, size ) != 0 )
 	{ P_ERROR_X2( false, "Unable to munmap the MAT file.", strerror( errno ) ); }
-	if( wperm )
-	{
-		if( ftruncate( file, size) != 0 )
-		{ P_ERROR_X2( false, "Unable to truncate the MAT file.", strerror( errno ) ); }
-	}
+// at the moment it won't be truncated
+// 	if( wperm )
+// 	{
+// 		if( ftruncate( file, size) != 0 )
+// 		{ P_ERROR_X2( false, "Unable to truncate the MAT file.", strerror( errno ) ); }
+// 	}
 	if( close( file ) != 0 )
 	{ P_ERROR_X2( false, "Unable to close the MAT file.", strerror( errno ) ); }
 #else
@@ -379,12 +418,13 @@ mat4Data::~mat4Data()
 	{
 		UnmapViewOfFile(address);
 		CloseHandle(mapHandle);
-		if( wperm )
-		{
-			if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
-			{ P_ERROR_X2( false, "Unable to seek in the MAT file.", static_cast<int>(GetLastError()) ); }
-			P_ERROR_X2( SetEndOfFile( file ), "Unable to truncate the MAT file.", static_cast<int>(GetLastError()) );
-		}
+// at the moment it won't be truncated
+// 		if( wperm )
+// 		{
+// 			if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
+// 			{ P_ERROR_X2( false, "Unable to seek in the MAT file.", static_cast<int>(GetLastError()) ); }
+// 			P_ERROR_X2( SetEndOfFile( file ), "Unable to truncate the MAT file.", static_cast<int>(GetLastError()) );
+// 		}
 		CloseHandle(file);
 	}
 #endif

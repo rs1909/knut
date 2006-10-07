@@ -12,15 +12,15 @@
 
 #include "matrix.h"
 #include <string>
+// HANDLE is defined here
+#ifdef WIN32
+#  include <windows.h>
+#endif
 // for the correct integer size
 #ifndef _MSC_VER
 # include <stdint.h>
 #else
 # define int32_t INT32
-#endif
-// HANDLE is defined here
-#ifdef WIN32
-#  include <windows.h>
 #endif
 
 class mat4Data
