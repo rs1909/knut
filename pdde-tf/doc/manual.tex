@@ -41,9 +41,9 @@
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.1.0}
+\newcommand{\pddever}{1.1.1}
 \version{\pddever}
-\date{24 September 2006}
+\date{9 October 2006}
 \maketitle
 
 \begin{center}
@@ -125,7 +125,7 @@ package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
 \section{Installation}
 
 It is recommended to install the software from the source. This requires several freely
-available developement tools. For Microsoft Windows there is a self-extracting installer
+available development tools. For Microsoft Windows there is a self-extracting installer
 available as well.
 
 \subsection{Requirements of compiling the software}
@@ -137,7 +137,7 @@ version 3.3.6 is recommended.
 
 The package uses the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}}
 basic linear algebra software library for matrix-vector operations. This library can be
-tuned for the target processor, which takes a substantional amount of time.
+tuned for the target processor, which takes a substantial amount of time.
 To avoid the lengthy compilation it is possible to download
 pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and
 \filef{libcblas.a}). When configuring the software CMake looks for these two files
@@ -171,7 +171,7 @@ $ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
 This configures and builds software after which it installs into the
 \filef{pdde-cont/} folder in the user's home directory.
-In order to make the software work, the \filef{PATH} environment variables has
+In order to make the software work, the \filef{PATH} environment variable has
 to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 export PATH=$PATH:$HOME/pdde-cont/bin
@@ -205,9 +205,9 @@ to be downloaded and installed:
 To compile the software, first uncompress the \pdde{} package file
 \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
 Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and
-\filef{libcblas.a}) into the \filef{pdde-cont-\@version/ATLAS/lib} subdirectory.
+\filef{libcblas.a}) into the \filef{pdde-cont-{\pddever}/ATLAS/lib} subdirectory.
 Then start a command prompt (Start Menu $\rightarrow$ Run, type ``cmd'' into the
-box) and enter the directory \filef{pdde-cont-\@version} where the package was
+box) and enter the directory \filef{pdde-cont-{\pddever}} where the package was
 extracted. If all the requirements are installed and the ATLAS files are in
 place, issue the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -223,16 +223,16 @@ uninstall, simply delete the PDDE directory.
 
 The software is controlled by the so-called \emph{constants file}. It is a text file
 that contains instructions about all the operations done by the software and
-also specifies the parameters of the numerical methods.
-The name of a constants file can be given to the softwrare using the \funp{-c} option.
+also specifies the parameters of the numerical method.
+The name of a constants file can be given to the software using the \funp{-c} option.
 If a previous run is continued, an input file should be specified using the \funp{-i} option. 
-The output - as a default choice - is written into \filef{out.pdde} unless it is specified
+The output - as a default choice - is written into \filef{pdde.mat} unless it is specified
 by the \funp{-o} option. The format of the input and output files will
 be described later in this manual. The software also generates an auxiliary file,
 which contains the parameter values and the solution norms along the computed
 solution branch.
 This file can be selected by the \funp{-b} option if this data is not intended
-to be written into the \filef{branch} file. The syntax of the command line
+to be written into the \filef{pdde.br} file. The syntax of the command line
 arguments is illustrated as
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b
@@ -241,7 +241,7 @@ $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -v
-This is PDDE-CONT version 1.0.1 (r98 2005-12-30 22:37:39 +0100)
+This is pdde-cont version 1.1.1 (r262 2006-10-03 03:08:22 +0100)
 \end{lstlisting} \end{quote} } \noindent
 
 
@@ -260,7 +260,7 @@ sys-glass.so            SYSNAME
 1e-4 1e-4 1e-7          EPSC, EPSR, EPSS
 12 12 12                NITC, NITR, NITS
 \end{lstlisting} \end{quote} } \noindent
-In the first separated column are the mostly numerical parameter values, 
+In the first separated column are the parameter values, 
 while the second column refers to their meaning. 
 When this file is read the program interprets only the first half of each line,
 that is, it moves to the next line after all the necessary parameters are read.
@@ -275,13 +275,13 @@ code. For details see section \ref{sysdef}.
 %
 \item[\funp{LABEL}] ~\\
 The solution label in the input file. The program continues this
-solution. If \funp{LABEL}=0 it uses the default solution given in the system
-definition file.
+solution. If \funp{LABEL}=0 it uses the starting solution specified 
+in the system definition file.
 %
 \item[\funp{TYPE}] ~\\
-Specifies the type of the solution to be continued. After a description the
-number in parentheses refer to the required number of additional free
-parameters.
+Specifies the type of the solution to be continued. It can be one of the following numbers.
+The number surronded by parantheses refers to how many additional free
+parameters are required.
 
 Algorithms for time-periodic (non-autonomous) systems:
 \begin{description}
@@ -508,7 +508,7 @@ necessary.
 \item[\funp{E65} -] Test functional of period doubling bifurcation.
 \item[\funp{E66} -] Test functional of fold bifurcation in autonomous systems.
 %\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
-with symmetry. Note: It is working only if the period is not continued.
+%with symmetry. Note: It is working only if the period is not continued.
 \item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker
 bifurcation.
 \item[\funp{E69} -] Imaginary part of the complex test functional for
@@ -550,8 +550,64 @@ real and imaginary part in the third and fourth component of the solution
 vector.
 \end{description}
 
+\subsection{Input/output file format}
 
-\subsection{Structure of the output file}
+The software uses MAT files to store the results of continuation.
+The inner structure of these files are documented in \cite{matfile}. 
+These files can be read also by the GNU octave \cite{octave}.
+A \pdde{} MAT file contains several matrices, describing a branch of solutions.
+The structure of these matrices are defined in Table \ref{matstruct}.
+\begin{table}[bth!]
+\begin{tabular}{|c|c|c|l|}
+\hline
+Matrix name & Rows & Columns & Content\\
+\hline 
+\fun{pdde_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
+computed in the branch of solutions. \end{minipage}\\
+\hline
+\fun{pdde_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
+\hline
+\fun{pdde_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
+\hline
+\fun{pdde_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
+\hline
+\fun{pdde_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
+\funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
+\hline
+\fun{pdde_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
+interval. \\
+\hline
+\fun{pdde_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
+profile. \\
+\hline
+\fun{pdde_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
+\funp{STEPS} & The solution profile. \\
+\hline
+\end{tabular}
+\caption{The contents of the MAT files.}
+\label{matstruct}
+\end{table}
+If the computation stops for some reason, \fun{pdde_npoints} will be less than
+\funp{STEPS}, but the size of the MAT file will not be smaller, so only the first
+\fun{pdde_npoints} columns will contain valid data.
+
+To convert the input and output MAT files to the format of DDE-BIFTOOL use the
+\funp{pmat2branch.m} and \filef{branch2pmat.m} MATLAB scripts found in the \filef{matlab}
+subdirectory of the package. The function \funp{pmat2branch.m} takes only one 
+input argument, which is the name of a Level 4 MAT file, and returns a periodic 
+solution branch structure of DDE-BIFTOOL:
+{ \small \begin{quote} \begin{lstlisting}[frame=single]
+>> psbr = pmat2branch( 'input-file' );
+\end{lstlisting} \end{quote} } \noindent
+To export results out of DDE-BIFTOOL and produce a \pdde{} MAT file, issue the command
+{ \small \begin{quote} \begin{lstlisting}[frame=single]
+>> branch2pmat( 'output-file', psbr, NMUL );
+\end{lstlisting} \end{quote} } \noindent
+where \funp{NMUL} is the same number as in the constants file where the exported data 
+will be used as a starting solution.
+
+\subsection{Structure of the ASCII input/output file}
+[Note: This section is no longer valid, because ASCII output files are not used anymore.]
 
 The output file contains all the computed information of a periodic solution 
 branch. Also, this file can be used to restart the continuation from a point 
@@ -598,7 +654,7 @@ the $[0,1]$ interval. \\
 \funp{NDIM}-tuples \end{minipage} \\
 \hline
 \end{tabular}
-\caption{The structure of a line of the input/output files.}
+\caption{The structure of a line in the ASCII input/output files.}
 \label{iostruct}
 \end{table}
 
@@ -852,8 +908,8 @@ manifold of this periodic orbit.
 The system definition file can be found in the directory
 \filef{demo/glass/sys-glass.cpp}. The first few functions are trivial:
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-#include <cmath>
 #include "pddesys.h"
+#include <cmath>
 
 extern "C" {
 int sys_ndim(){ return 1; }
@@ -1097,7 +1153,7 @@ period-2 orbits arise. }
 \section{The graphical user interface (GUI)}
 
 The graphical user interface of the software is a front-end to the computation
-library of \pdde{}. It can do the same opeartions as the CLI, however many things are
+library of \pdde{}. It can do the same operations as the CLI, however many things are
 hidden from the user, so it might appeal to non-expert users. It includes a plotting
 facility which can be used to preview the results.
 
@@ -1113,7 +1169,9 @@ XML-file contains the same parameters as the plain constants file (see section
 the system definition is not compiled yet. To resolve the problem compile the C++ source
 of the system definition using the \filef{Compile} \iconBuild{} button.
 
-The continuation parameters can be changed in the four tabs \filef{System},
+The constants file is an XML-file, which contains the same parameters as the
+plain constants file of the CLI, for details see section \ref{constfile}. 
+The contents of this XML file can be edited in the four tabs \filef{System},
 \filef{Numerics}, \filef{Symmetry} and \filef{Torus} and then can be saved
 either using the \filef{Save} \iconSave{} button or the \filef{Save As...}
 \iconSaveAs{} menu item in the \filef{File} menu.
@@ -1224,54 +1282,6 @@ a restriction.
 \label{plotwindow}
 \end{center}
 \end{figure}
-
-\subsection{Input/output file format}
-
-In the GUI, version 4 MATLAB files are used to output the results. Each MAT file contains
-several matrices, describing a branch of solutions. The structure of these
-matrices are defined in Table \ref{matstruct}.
-\begin{table}[bth!]
-\begin{tabular}{|c|c|c|l|}
-\hline
-Matrix name & Rows & Columns & Content\\
-\hline 
-\fun{pdde_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
-computed in the branch of solutions. \end{minipage}\\
-\hline
-\fun{pdde_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
-\hline
-\fun{pdde_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
-\hline
-\fun{pdde_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
-\hline
-\fun{pdde_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
-\funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
-\hline
-\fun{pdde_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
-interval. \\
-\hline
-\fun{pdde_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
-profile. \\
-\hline
-\fun{pdde_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
-\funp{STEPS} & The solution profile. \\
-\hline
-\end{tabular}
-\caption{The contents of the MAT files.}
-\label{matstruct}
-\end{table}
-If the computation stops for some reason, \fun{pdde_npoints} will be less than
-\funp{STEPS}, but the size of the MAT file will not be smaller, so only first
-\fun{pdde_npoints} columns will contain valid data.
-
-To convert the input and output MAT files to the format of DDE-BIFTOOL use the
-\funp{pmat2branch.m} and \filef{branch2pmat.m} MATLAB scripts.
-
-The constants file is an XML-file, which contains the same parameters as the
-plain constants file of the CLI, for details see section \ref{constfile}. This
-file can be edited in the main window of the software (see Fig.\
-\ref{mainwindow}). The main window also shows a button for compiling the system
-definition if it is not already done.
 
 \section{Algorithms used in the software}
 

@@ -108,12 +108,12 @@ int main( int argc, const char** argv )
 	}
 	if( outFile == 0)
 	{
-		outFile ="out.pdde";
+		outFile ="pdde.mat";
 		std::cout<<"Warning: missing output file, using \""<<outFile<<"\" instead.\n";
 	}
 	if( branchFile == 0)
 	{
-		branchFile ="branch";
+		branchFile ="pdde.br";
 		std::cout<<"Warning: missing branch file, using \""<<branchFile<<"\" instead.\n";
 	}
 	
