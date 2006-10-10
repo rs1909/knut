@@ -406,20 +406,22 @@ bool PlotData::addPlot( const mat4Data* data, PlotXVariable x, PlotYVariable y, 
 		{
 			const int ndeg = data->getNDeg();
 			const int nint = data->getNInt();
-			double min = DBL_MAX;
-			double max = -DBL_MAX;
-			for( int j = 0; j < nint; ++j )
+			double nrm = 0.0;
+			for( int p = 0; p < data->getNDim(); ++p )
 			{
-				for( int k = 0; k < ndeg; ++k )
+				double min = DBL_MAX;
+				double max = -DBL_MAX;
+				for( int j = 0; j < nint; ++j )
 				{
-					for( int p = 0; p < data->getNDim(); ++p )
+					for( int k = 0; k < ndeg; ++k )
 					{
 						if( min > data->getProfile( i, p, k + ndeg*j ) ) min = data->getProfile( i, p, k + ndeg*j );
 						if( max < data->getProfile( i, p, k + ndeg*j ) ) max = data->getProfile( i, p, k + ndeg*j );
 					}
 				}
+				nrm += (max - min)*(max - min);
 			}
-			Graph.rbegin()->y(i) = max - min;
+			Graph.rbegin()->y(i) = sqrt(nrm);
 		}
 		++yadded;
 		addPlotLine( --Graph.end(), style );
