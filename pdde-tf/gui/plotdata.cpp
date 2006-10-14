@@ -938,5 +938,5 @@ void PlotData::PlotPaint( )
 			}
 		}
 	}
-// 	this->clearFocus();
+	this->update();
 }
