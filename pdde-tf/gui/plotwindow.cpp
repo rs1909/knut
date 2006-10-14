@@ -27,6 +27,7 @@
 #include <QColorDialog>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QSplitter>
 
 plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	QMainWindow(parent), data(0)
@@ -39,7 +40,6 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	QGraphicsView *plot = new QGraphicsView;
 	plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 	plot->setScene( &plotdata );
-// 	QToolBar *toolbar = addToolBar("default");
 	QWidget *centralWidget = new QWidget;
 	QVBoxLayout *centralLayout = new QVBoxLayout;
 	QHBoxLayout *topContainerLayout = new QHBoxLayout;
@@ -52,7 +52,6 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	topContainerLayout->setMargin(margin);
 	topContainerLayout->addLayout( topLayout );
 	topContainerLayout->addStretch();
-	this->setCentralWidget( centralWidget );
 	
 	QLabel *matfileLabel = new QLabel( "MAT file" );
 	QLabel *xvarLabel = new QLabel( "X Coordinate" );
@@ -75,10 +74,8 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	
 	plotSelect = new QListWidget;
 	plotSelect->setSelectionMode(QAbstractItemView::SingleSelection);
-	QDockWidget *plotDock = new QDockWidget;
 	QVBoxLayout *dockLayout = new QVBoxLayout;
 	QHBoxLayout *buttonsLayout = new QHBoxLayout;
-	dockLayout->setMargin(0);
 	QWidget     *dockWidget = new QWidget;
 	QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr22-action-eraser.png"), "Remove Selected", this);
 	QToolButton *removePlotButton = new QToolButton;
@@ -90,13 +87,13 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	colorizePlotButton->setDefaultAction(colorizePlotAct);
 	connect(colorizePlotAct, SIGNAL(triggered()), this, SLOT(colorizePlot()));
 	
-	plotDock->setWidget(dockWidget);
 	dockWidget->setLayout(dockLayout);
+	dockLayout->setMargin(0);
+	dockLayout->addSpacing(margin);
 	dockLayout->addLayout(buttonsLayout);
 	dockLayout->addWidget(plotSelect);
 	buttonsLayout->addWidget(removePlotButton);
 	buttonsLayout->addWidget(colorizePlotButton);
-	addDockWidget(Qt::LeftDockWidgetArea, plotDock);
 
 	xvarMap.push_back("None");
 	xvarMap.push_back("Label");
@@ -140,7 +137,12 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 // 	QToolButton *printPdfButton = new QToolButton();
 // 	printPdfButton->setDefaultAction( printPdfAct );
 // 	connect( printPdfAct, SIGNAL(triggered()), this, SLOT(printPdf()) );
-	
+
+	QSplitter *splitter = new QSplitter;
+	splitter->addWidget(dockWidget);
+	splitter->addWidget(centralWidget);
+	this->setCentralWidget(splitter);
+
 	topLayout->addWidget( matfileLabel, 0, 0 );
 	topLayout->addWidget( xvarLabel, 0, 2 );
 	topLayout->addWidget( yvarLabel, 0, 3 );
@@ -159,7 +161,6 @@ plotWindow::plotWindow( const QString& fname, QWidget *parent ) :
 	
 	plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1+
 	   QSize(2*plot->frameWidth(),2*plot->frameWidth()) );
-	resize(minimumSizeHint());
 }
 
 plotWindow::~plotWindow()
