@@ -87,13 +87,21 @@ void TestFunct::Init( NColloc& col, const Vector& par, const Vector& /*sol*/, co
 	
 	rhs.Clear();
 	
-	for( int i = 0; i < NKERNITER; i++ )
-	{
+	Vector vdiff( vv ), udiff( uu );
+	double diffnorm = 1.0;
+	int it = 0;
+	do {
 		AHAT.Solve  ( vv, gg, rhs, one );
 		AHAT.SolveTR( uu, hh, rhs, one );
+		udiff = AHAT.getA13(0);
+		udiff -= uu;
+		vdiff = AHAT.getA31(0);
+		vdiff -= vv;
+		diffnorm = std::max<double>(sqrt(udiff*udiff),sqrt(vdiff*vdiff));
 		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
-	}
+	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
+	if( diffnorm > KERNEPS ) std::cout<<"TestFunct::Init: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<"\n";
 // 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
@@ -198,7 +206,7 @@ void TestFunctCPLX::Init( NColloc& col, const Vector& par, const Vector& /*sol*/
 		conjugate( AHAT.getA13(1), AHAT.getA13(0) );
 		conjugate( AHAT.getA31(1), AHAT.getA31(0) );
 	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
-	if( diffnorm > KERNEPS ) std::cout<<"TestFunctCPLX::Init: error: No convergence in finding the singular vector.\n";
+	if( diffnorm > KERNEPS ) std::cout<<"TestFunctCPLX::Init: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<"\n";
 // 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
@@ -377,7 +385,7 @@ void TestFunctLPAUT::Init( NColloc& col, const Vector& par, const Vector& sol, c
 		v2diff -= vv2;
 		g2diff = AHAT.getA33(1,0) - gg2(0);
 		diffnorm = std::max<double>(sqrt(u2diff*u2diff+h2diff*h2diff),sqrt(v2diff*v2diff+g2diff*g2diff));
-		std::cout<<"std::max(u2diff, v2diff) "<<diffnorm<<"\n";
+// 		std::cout<<"std::max(u2diff, v2diff) "<<diffnorm<<"\n";
 		const double nrm_v = (1.0/sqrt(vv2*vv2+gg2(0)*gg2(0)));
 		const double nrm_u = (1.0/sqrt(uu2*uu2+hh2(0)*hh2(0)));
 		AHAT.getA31(1) = nrm_v * vv2;
@@ -385,6 +393,7 @@ void TestFunctLPAUT::Init( NColloc& col, const Vector& par, const Vector& sol, c
 		AHAT.getA33(1,0) = nrm_v * gg2(0);
 		AHAT.getA33(0,1) = nrm_v * hh2(0);
 	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
+	if( diffnorm > KERNEPS ) std::cout<<"TestFunctLPAUT::Init: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<"\n";
 }
 
 double TestFunctLPAUT::Funct( NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData )
