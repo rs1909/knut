@@ -660,6 +660,9 @@ void Point::SwitchTFPD( double ds )
 	sol += ds * xxDot->getV1();
 }
 
+#define NKERNITER 20
+#define KERNEPS 1.0e-12
+
 void Point::Tangent( )
 {
 	double norm;
@@ -668,26 +671,41 @@ void Point::Tangent( )
 	colloc.Interpolate( solData, sol );
 	
 	varMapCont( varMap.Size() ) = p1; // not necessary
-	// az RHS-t feleslegesen szamolja ki && the first qq should be qq0
-	Jacobian( *jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, false );
-	
-	rhs->getV1() = jac->getA13( dim3 );
-	for( int i = 0; i < dim3; i++ ) rhs->getV3()(i) = jac->getA33( i, dim3 );
-	
-	jac->Solve( *xxDot, *rhs, dim3 );
-	xxDot->getV3()(dim3) = -1.0;
-	
+	// setting up a random tangent
+	xxDot->getV1().Rand();
+	xxDot->getV3().Rand();
 	norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
+	xxDot->getV1() /= norm;
+	xxDot->getV3() /= norm;
+	p1Dot = xxDot->getV3()(dim3);
+	// az RHS-t feleslegesen szamolja ki && the first qq should be qq0
+	Jacobian( *jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, true );
 	
-	xxDot->getV1() /= -norm;
-	xxDot->getV3() /= -norm;
-	p1Dot = 1.0/norm;
-	xxDot->getV3()(dim3) = p1Dot;
-	
-// 	std::cout<<"Tangent Cnorm: "<<norm<<'\n';
-// 	double Pnorm = sqrt(p1Dot*p1Dot), Qnorm = sqrt( (xxDot->getV2())*(xxDot->getV2()) ); 
-// 	double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
-// 	std::cout<<"Pnorm: "<<Pnorm<<" Qnorm: "<<Qnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm<<'\n';
+	double diffnorm = 1.0;
+	int it = 0;
+	do {
+		jac->Multiply<false>( *rhs, *xxDot, dim3+1 );
+		rhs->getV3()(dim3) -= 1.0;
+		jac->Solve( *xx, *rhs );
+		xxDot->getV1() -= xx->getV1();
+		xxDot->getV3() -= xx->getV3();
+		diffnorm = sqrt( colloc.Integrate( xx->getV1(), xx->getV1() ) + (xx->getV3())*(xx->getV3()) );
+		norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
+		xxDot->getV1() /= norm;
+		xxDot->getV3() /= norm;
+		// remove p1Dot from everywhere, it is not needed!!!
+		p1Dot = xxDot->getV3()(dim3);
+		// putting back the tangent...
+		if( dim1 != 0 ) colloc.Star( jac->getA31(dim3), xxDot->getV1() );
+		for( int i = 0; i < dim3+1; i++ ) jac->getA33()(dim3,i) = xxDot->getV3()(i);
+	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
+	if( diffnorm > KERNEPS ) std::cout<<"Point::Tangent: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<", steps"<<it<<"\n";
+	if( p1Dot < 0.0 )
+	{
+		xxDot->getV1() *= -1.0;
+		xxDot->getV3() *= -1.0;
+		p1Dot = xxDot->getV3()(dim3);
+	}
 }
 
 int Point::Continue( double ds, bool jacstep )
@@ -721,8 +739,8 @@ int Point::Continue( double ds, bool jacstep )
 		conv = (Dnorm/(1.0+Xnorm) >= ContEps) || (Rnorm/(1.0+Xnorm) >= ContEps);
 		
 		// updating the tangent
-		jac->AX( *rhs, *xxDot );
-		rhs->getV3()(dim3) = 0.0;
+		jac->Multiply<false>( *rhs, *xxDot, dim3+1 );
+		rhs->getV3()(dim3) -= 1.0;
 		jac->Solve( *xx, *rhs );
 		xxDot->getV1() -= xx->getV1();
 		xxDot->getV3() -= xx->getV3();
