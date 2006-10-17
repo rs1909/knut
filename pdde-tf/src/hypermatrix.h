@@ -78,24 +78,26 @@ template< class FACT > class HyMatrix
 				Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
 			);
 
-		void AX( HyperVector& X, HyperVector& F, bool tan=true );
+		void Solve( HyperVector& X, const HyperVector& F );
 		
-		void Solve( HyperVector& X, HyperVector& F );
+		void Solve( HyperVector& X, const HyperVector& F, int bord );
 		
-		void Solve( HyperVector& X, HyperVector& F, int bord );
+		template<bool trans> void Multiply( HyperVector& X, const HyperVector& F, int bord );
 		
 		void Check( const HyperVector& X, const HyperVector& F, int bord );
 		
-		void SolveDIRECT( HyperVector& X, HyperVector& F );
+		void SolveDIRECT( HyperVector& X, const HyperVector& F );
 		
-		void Solve( Vector& x, Vector& f ) { A11->Solve( x, f ); }
+		void Solve( Vector& x, const Vector& f ) { A11->Solve( x, f ); }
 
 		template<bool trans> void Check( const Vector& x, const double& z, const Vector& f, const double& h );
 		
 		void Solve( Vector& x, double& z, const Vector& f, const double& h ); // BEM
 		
 		void SolveTR( Vector& x, double& z, const Vector& f, const double& h ); // BEM
-
+		
+		template<bool trans> void Multiply( int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3 );
+		
 		template<bool trans> void Check( int bord, const Vector& x, const Vector& z, const Vector& f, const Vector& h );
 		
 		void Solve( int bord, Vector& x, Vector& z, const Vector& f, const Vector& h ); // BEMW
@@ -421,20 +423,13 @@ void HyMatrix<FACT>::Check( const Vector& x, const double& z, const Vector& f, c
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Check( int bord, const Vector& X1, const Vector& X3, const Vector& F1, const Vector& F3 )
+void HyMatrix<FACT>::Multiply( int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3 )
 {
-	// this may be buggy with some compilers
-	
 	const FACT&         _A11 = *A11;
 	const JagVector2D&  _A13 = *A13;
 	const JagVector2D&  _A31 = *A31;
 	const Matrix&       _A33 = *A33;
-	
-	//multiply back...
-	Vector R1( X1.Size() );
-	Vector R3( X3.Size() );
-	Vector R3_t( X3.Size() );
-	
+
 	if( A11 )
 	{
 		if( !trans ) R1 = _A11 * X1;
@@ -448,33 +443,60 @@ void HyMatrix<FACT>::Check( int bord, const Vector& X1, const Vector& X3, const 
 					if( !trans ) R1(i) += _A13(j)(i) * X3(j);
 					else         R1(i) += _A31(j)(i) * X3(j);
 				}
-				R1(i) -= F1(i);
 			}
 		}
-		std::cout<<"F1: "<<sqrt(F1*F1)<<" R1:\t"<<sqrt(R1*R1)<<"\n";
+	}else
+	{
+		R1.Clear();
 	}
-	
 	for( int i=0; i<bord; i++)
 	{
-		R3(i) = - F3(i);
 		if( A11 )
 		{
-			if( !trans ) R3(i) += _A31(i)*X1;
-			else         R3(i) += _A13(i)*X1;
+			if( !trans ) R3(i) = _A31(i)*X1;
+			else         R3(i) = _A13(i)*X1;
+		}else
+		{
+			R3(i) = 0.0;
 		}
 	}
 	if( A33 )
 	{
 		for( int i=0; i<bord; i++)
 		{
-			R3_t(i) = 0.0;
 			for( int j=0; j<bord; j++)
 			{
-				if( !trans ) R3_t(i) += _A33(i,j)*X3(j);
-				else         R3_t(i) += _A33(j,i)*X3(j);
+				if( !trans ) R3(i) += _A33(i,j)*X3(j);
+				else         R3(i) += _A33(j,i)*X3(j);
 			}
-			R3(i) += R3_t(i);
 		}
+	}
+}
+
+template<class FACT> template<bool trans>
+void HyMatrix<FACT>::Multiply( HyperVector& X, const HyperVector& F, int bord )
+{
+	Multiply<trans> (bord, X.getV1(), X.getV3(), F.getV1(), F.getV3() );
+}
+
+template<class FACT> template<bool trans>
+void HyMatrix<FACT>::Check( int bord, const Vector& X1, const Vector& X3, const Vector& F1, const Vector& F3 )
+{
+	// this may be buggy with some compilers
+	const FACT&         _A11 = *A11;
+	const Matrix&       _A33 = *A33;
+	//multiply back...
+	Vector R1( X1.Size() );
+	Vector R3( X3.Size() );
+	Multiply<trans>( bord, R1, R3, X1, X3 );
+	if (A11)
+	{
+		R1 -= F1;
+		std::cout<<"F1: "<<sqrt(F1*F1)<<" R1:\t"<<sqrt(R1*R1)<<"\n";
+	}
+	if (A33)
+	{
+		R3 -= F3;
 		std::cout<<"F3: "<<sqrt(F3*F3)<<" R3("<<bord<<")\t"<<sqrt(R3*R3)<<"\n";
 	}
 }
@@ -513,7 +535,7 @@ void HyMatrix<FACT>::SolveTR( int bord, Vector& X1, Vector& X3, const Vector& F1
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F )
+void HyMatrix<FACT>::Solve( HyperVector& X, const HyperVector& F )
 {
 	P_ASSERT_X( A11 != 0, "HyMatrix::Solve Error" );
 	if( A33 != 0 )
@@ -535,7 +557,7 @@ void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F )
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F, int bord )
+void HyMatrix<FACT>::Solve( HyperVector& X, const HyperVector& F, int bord )
 {
 	P_ASSERT_X( A11 != 0, "HyMatrix::Solve Error");
 	if( A33 != 0 )
@@ -557,7 +579,7 @@ void HyMatrix<FACT>::Solve( HyperVector& X, HyperVector& F, int bord )
 }
 
 template<class FACT>
-void HyMatrix<FACT>::SolveDIRECT( HyperVector& X, HyperVector& F )
+void HyMatrix<FACT>::SolveDIRECT( HyperVector& X, const HyperVector& F )
 {	
 	int dim1, dim3;
 	if( A11 ) dim1 = A11->Col(); else dim1 = 0;
@@ -607,52 +629,6 @@ void HyMatrix<FACT>::SolveDIRECT( HyperVector& X, HyperVector& F )
 //		Check( X, F );
 	std::cout<<"DR ";
 	
-}
-
-// currently tan is not implemented: it is assumed to be false
-// tan == false -> the last line not multiplied
-// tan == true  -> normal multiplication
-template<class FACT>
-void HyMatrix<FACT>::AX( HyperVector& out, HyperVector& in, bool /*tan*/ )
-{
-	FACT&        _A11 = *A11;
-	JagVector2D& _A13 = *A13;
-	JagVector2D& _A31 = *A31;
-	Matrix&      _A33 = *A33;
-	Vector&      in1   = in.getV1();
-	Vector&      in3   = in.getV3();
-	Vector&      out1  = out.getV1();
-	Vector&      out3  = out.getV3();
-	
-	//multiply back...
-	Vector R3_t( in3.Size() );
-	
-	// first line: no A12!
-	if( A11 )
-	{
-		out1 = _A11 * in1; //_A11.AX( out1, in1 );
-		if( A33 )
-		{
-			for( int i=0; i<in1.Size(); i++ )
-			{
-				for( int j=0; j<in3.Size(); j++ )
-				{
-					out1(i) += _A13(j)(i) * in3(j);
-				}
-			}
-		}
-	}
-	// third line
-	for( int i=0; i<in3.Size(); i++)
-	{
-		out3(i) = 0.0;
-		if( A11 ) out3(i) += _A31(i)*in1;
-	}
-	if( A33 )
-	{
-		R3_t = _A33 * in3; // _A33.AX( R3_t, in3, 1.0, false );
-		out3 += R3_t;
-	}
 }
 
 #endif
