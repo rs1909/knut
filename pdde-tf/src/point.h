@@ -57,7 +57,7 @@ class Point
 		inline void    setPar( Vector& p ) { for( int i=0; (i<p.Size())&&(i<par.Size()); i++ ) par(i) = p(i); }
 		inline Vector& getPar() { return par; }
 		
-		inline void    setCont( int p ) { p1 = p; varMapCont( varMap.Size() ) = p1; }
+		inline void    setCont( int p ) { varMapCont( varMap.Size() ) = p; }
 		inline void    setSym( int n, int* sRe, int* sIm )
 		{
 			rotRe.Init(n); rotIm.Init(n);
@@ -137,7 +137,7 @@ class Point
 		);
 		
 		inline void   Update( HyperVector& X );                          // sol,   qq,   par            += X
-		inline void   ContUpdate( HyperVector& X );                      // solNu, qqNu, parNu, par(p1) += X
+		inline void   ContUpdate( HyperVector& X );                      // solNu, qqNu, parNu, par(cp) += X
 
 		// convergence parameters
 		double       RefEps;
@@ -156,9 +156,6 @@ class Point
 		int          dim1;
 		int          dim3;
 		
-		// parameter to continue
-		int          p1;
-		
 		// solutions
 		Vector       sol;
 		Vector       par;
@@ -168,7 +165,6 @@ class Point
 		Vector       parNu;
 		
 		// tangents
-		double       p1Dot;
 		HyperVector* xxDot;  // -> solDot, qqDot, parDot
 		
 		// multipliers

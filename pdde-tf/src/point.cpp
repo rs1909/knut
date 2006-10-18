@@ -108,7 +108,9 @@ void Point::Reset( Array1D<Eqn>& eqn_, Array1D<Var>& var_ )
 	varMap.Init( var_.Size() );
 	varMapCont.Init( var_.Size() + 1 );
 	Construct( );
-	if( xxDot_temp && xxDot ) xxDot->getV1() = xxDot_temp->getV1();
+	xxDot->getV1() = xxDot_temp->getV1();
+	for( int i=0; i < std::min<int>(xxDot_temp->getV3().Size(),xxDot->getV3().Size()); ++i )
+		xxDot->getV3()(i) = xxDot_temp->getV3()(i);
 	delete xxDot_temp;
 }
 
@@ -274,7 +276,6 @@ void Point::Construct( )
 		varMap( i ) = var(i)-VarPAR0;
 	}
 	for( int i = 0; i < var.Size(); i++ ) varMapCont(i) = varMap(i);
-	varMapCont( varMap.Size() ) = p1;
 	
 	xxDot   = new HyperVector( dim1, 0, dim3+1 );
 	
@@ -442,14 +443,11 @@ void Point::Jacobian(
 	{
 		// copying the tangent
 		if( dim1 != 0 ) colloc.Star( AA.getA31(dim3), xxDot->getV1() );
-		for( int i = 0; i < dim3; i++ ) AA.getA33()(dim3,i) = xxDot->getV3()(i);
-		AA.getA33()(dim3,dim3) = p1Dot;
-		
+		for( int i = 0; i < xxDot->getV3().Size(); i++ ) AA.getA33()(dim3,i) = xxDot->getV3()(i);
 		if( ds != 0.0 )
 		{
 			RHS.getV3()(dim3) = ds - colloc.IntegrateCont( xxDot->getV1(), sol, solPrev );
-			for( int j = 1; j < varMap.Size()-1; ++j ) RHS.getV3()(dim3) -= xxDot->getV3()(j)*(par(varMap(j))-parPrev(varMap(j)));
-			RHS.getV3()(dim3) -= p1Dot*(par(varMap(varMap.Size()-1))-parPrev(varMap(varMap.Size()-1)));
+			for( int j = 1; j < varMapCont.Size(); ++j ) RHS.getV3()(dim3) -= xxDot->getV3()(j-1)*(par(varMap(j))-parPrev(varMap(j)));
 		}else
 		{
 			RHS.getV3()(dim3) = 0.0;
@@ -603,7 +601,6 @@ void Point::SwitchTFLP( double ds )
 
 	xxDot->getV1().Clear();
 	xxDot->getV3().Clear();
-	p1Dot = 0.0;
 	
 	TestFunct* tf = new TestFunct( colloc, 1.0 );
 	tf->Funct( colloc, par, sol, solData );
@@ -622,7 +619,6 @@ void Point::SwitchTFPD( double ds )
 
 	xxDot->getV1().Clear();
 	xxDot->getV3().Clear();
-	p1Dot = 0.0;
 	
 	Vector tan(xxDot->getV1().Size());
 	TestFunct* tf = new TestFunct( colloc, -1.0 );
@@ -670,14 +666,12 @@ void Point::Tangent( )
 	colloc.Init( par, sol );
 	colloc.Interpolate( solData, sol );
 	
-	varMapCont( varMap.Size() ) = p1; // not necessary
 	// setting up a random tangent
 	xxDot->getV1().Rand();
 	xxDot->getV3().Rand();
 	norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
 	xxDot->getV1() /= norm;
 	xxDot->getV3() /= norm;
-	p1Dot = xxDot->getV3()(dim3);
 	// az RHS-t feleslegesen szamolja ki && the first qq should be qq0
 	Jacobian( *jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, true );
 	
@@ -693,18 +687,15 @@ void Point::Tangent( )
 		norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
 		xxDot->getV1() /= norm;
 		xxDot->getV3() /= norm;
-		// remove p1Dot from everywhere, it is not needed!!!
-		p1Dot = xxDot->getV3()(dim3);
 		// putting back the tangent...
 		if( dim1 != 0 ) colloc.Star( jac->getA31(dim3), xxDot->getV1() );
 		for( int i = 0; i < dim3+1; i++ ) jac->getA33()(dim3,i) = xxDot->getV3()(i);
 	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
-	if( diffnorm > KERNEPS ) std::cout<<"Point::Tangent: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<", steps"<<it<<"\n";
-	if( p1Dot < 0.0 )
+	if( diffnorm > KERNEPS ) std::cout<<"Point::Tangent: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<", steps "<<it<<"\n";
+	if( xxDot->getV3()(dim3) < 0.0 )
 	{
 		xxDot->getV1() *= -1.0;
 		xxDot->getV3() *= -1.0;
-		p1Dot = xxDot->getV3()(dim3);
 	}
 }
 
@@ -714,11 +705,8 @@ int Point::Continue( double ds, bool jacstep )
 	
 	parNu = par;
 	for( int i = 0; i < solNu.Size(); i++ )  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
-	for( int i = 1; i < varMap.Size(); i++ ) parNu( varMap(i) ) = par( varMap(i) ) + ds * xxDot->getV3()(i-1);
-	parNu(p1) = par(p1) + ds*p1Dot;
+	for( int i = 1; i < varMapCont.Size(); i++ ) parNu( varMapCont(i) ) = par( varMapCont(i) ) + ds * xxDot->getV3()(i-1);
 	
-	varMapCont( varMap.Size() ) = p1;
-
 	int  it=0;
 	bool conv;
 	do
@@ -747,7 +735,6 @@ int Point::Continue( double ds, bool jacstep )
 		Tnorm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) + (xxDot->getV3())*(xxDot->getV3()) );
 		xxDot->getV1() /= Tnorm;
 		xxDot->getV3() /= Tnorm;
-		p1Dot = xxDot->getV3()(dim3);
 		// end updating tangent
 
 	}
@@ -756,7 +743,7 @@ int Point::Continue( double ds, bool jacstep )
 	{
 	#ifdef DEBUG
 		/// checking the tangent and the secant
-		double Pnorm = sqrt(p1Dot*p1Dot);
+		double Pnorm = sqrt(xxDot->getV3()(dim3)*xxDot->getV3()(dim3));
 		double Xnorm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() )), Onorm = sqrt( (xxDot->getV3())*(xxDot->getV3()) );
 		std::cout<<"Cnorm: "<<Tnorm<<"\nDot Pnorm: "<<Pnorm<<" Xnorm: "<<Xnorm<<" Onorm: "<<Onorm;
 		for( int i = 1; i < varMap.Size(); i++ ) std::cout<<" O"<<varMap(i)<<": "<<xxDot->getV3()(i-1);
@@ -764,8 +751,7 @@ int Point::Continue( double ds, bool jacstep )
 		
 		xx->getV1() = solNu;
 		xx->getV1() -= sol;
-		for( int i = 1; i < varMap.Size(); i++ ) xx->getV3()(i-1) = parNu( varMap(i) ) - par( varMap(i) );
-		xx->getV3()(dim3) = parNu(p1) - par(p1);
+		for( int i = 1; i < varMapCont.Size(); i++ ) xx->getV3()(i-1) = parNu( varMapCont(i) ) - par( varMapCont(i) );
 		
 		Pnorm = sqrt( xx->getV3()(dim3)*xx->getV3()(dim3) )/ds;
 		Xnorm = sqrt(colloc.Integrate( xx->getV1(), xx->getV1() ))/ds; 

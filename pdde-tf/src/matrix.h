@@ -38,11 +38,11 @@ int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
 #endif
 
 #ifndef P_ASSERT
-#  define P_ASSERT(cond) do{ if(!(cond)) std::cout<<#cond; }while(0)
+#  define P_ASSERT(cond) do{ if(!(cond)) { std::cout<<#cond; std::cout.flush(); abort(); } }while(0)
 #endif
 
 #ifndef P_ASSERT_X
-#  define P_ASSERT_X(cond,msg) do{ if(!(cond)) std::cout<<#cond<<msg; }while(0)
+#  define P_ASSERT_X(cond,msg) do{ if(!(cond)) { std::cout<<#cond<<msg; std::cout.flush(); abort(); } }while(0)
 #endif
 
 template<class T>

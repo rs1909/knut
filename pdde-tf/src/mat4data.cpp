@@ -579,11 +579,11 @@ void mat4Data::getPar( int n, Vector& par ) const
 				par(i) = elem( par_offset, i, n );
 		}else
 		{
-			P_MESSAGE("Error while writing the MAT file.");
+			P_MESSAGE("Error while reading the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("Error while writing the MAT file.");
+		P_MESSAGE("Error while reading the MAT file.");
 	}
 }
 
@@ -591,20 +591,15 @@ void mat4Data::getMul( int n, Vector& re, Vector& im ) const
 {
 	if( n < ncols && re.Size() == im.Size() )
 	{
-		if( re.Size() <= nmul )
+		const int sz = std::min<int>( re.Size(), nmul );
+		for( int i = 0; i < sz; ++i )
 		{
-			for( int i = 0; i < re.Size(); ++i )
-			{
-				re(i) = elem( mul_offset, i, n );
-				im(i) = elem_im( mul_offset, i, n );
-			}
-		}else
-		{
-			P_MESSAGE("Error while writing the MAT file.");
+			re(i) = elem( mul_offset, i, n );
+			im(i) = elem_im( mul_offset, i, n );
 		}
 	}else
 	{
-		P_MESSAGE("Error while writing the MAT file.");
+		P_MESSAGE("Error while reading the MAT file.");
 	}
 }
 
@@ -618,11 +613,11 @@ void mat4Data::getElem( int n, Vector& el ) const
 				el(i) = elem( elem_offset, i, n );
 		}else
 		{
-			P_MESSAGE("Error while writing the MAT file.");
+			P_MESSAGE("Error while reading the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("Error while writing the MAT file.");
+		P_MESSAGE("Error while reading the MAT file.");
 	}
 }
 
@@ -636,11 +631,11 @@ void mat4Data::getMesh( int n, Vector& mesh ) const
 				mesh(i) = elem( mesh_offset, i, n );
 		}else
 		{
-			P_MESSAGE("Error while writing the MAT file.");
+			P_MESSAGE("Error while reading the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("Error while writing the MAT file.");
+		P_MESSAGE("Error while reading the MAT file.");
 	}
 }
 
@@ -654,11 +649,11 @@ void mat4Data::getProfile( int n, Vector& prof ) const
 				prof(i) = elem( prof_offset, i, n );
 		}else
 		{
-			P_MESSAGE("Error while writing the MAT file.");
+			P_MESSAGE("Error while reading the MAT file.");
 		}
 	}else
 	{
-		P_MESSAGE("Error while writing the MAT file.");
+		P_MESSAGE("Error while reading the MAT file.");
 	}
 }
 

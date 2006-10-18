@@ -20,6 +20,7 @@ class HyperVector
 	public:
 	
 		inline HyperVector( int i, int, int k ) : V1(i), V3(k) { }
+		inline HyperVector( const HyperVector& hv ) : V1(hv.V1), V3(hv.V3) { }
 		inline ~HyperVector() { }
 		
 		inline Vector& getV1() { return V1; }
@@ -89,7 +90,9 @@ template< class FACT > class HyMatrix
 		void SolveDIRECT( HyperVector& X, const HyperVector& F );
 		
 		void Solve( Vector& x, const Vector& f ) { A11->Solve( x, f ); }
-
+		
+		template<bool trans> void Multiply( Vector& R1, double& R3, const Vector& X1, const double& X3 );
+		
 		template<bool trans> void Check( const Vector& x, const double& z, const Vector& f, const double& h );
 		
 		void Solve( Vector& x, double& z, const Vector& f, const double& h ); // BEM
@@ -393,6 +396,31 @@ inline void HyMatrix<FACT> :: __BEMW
 }
 
 template<class FACT> template<bool trans>
+void HyMatrix<FACT>::Multiply( Vector& R1, double& R3, const Vector& X1, const double& X3 )
+{
+	const FACT&         _A11 = *A11;
+	const JagVector2D&  _A13 = *A13;
+	const JagVector2D&  _A31 = *A31;
+	const Matrix&       _A33 = *A33;
+
+	if( A11 )
+	{
+		if( !trans ) R1 = _A11 * X1;
+		else         R1 = !_A11 * X1;
+		if( A33 )
+		{
+			if( !trans ) R1 += X3*_A13(0);
+			else         R1 += X3*_A31(0);
+		}
+	}
+	if( A33 )
+	{
+		if( !trans ) R3 = _A31(0)*X1 + _A33(0,0)*X3;
+		else         R3 = _A13(0)*X1 + _A33(0,0)*X3;
+	}
+}
+
+template<class FACT> template<bool trans>
 void HyMatrix<FACT>::Check( const Vector& x, const double& z, const Vector& f, const double& h )
 {
 	const FACT&         _A11 = *A11;
@@ -401,23 +429,15 @@ void HyMatrix<FACT>::Check( const Vector& x, const double& z, const Vector& f, c
 	const Matrix&       _A33 = *A33;
 	Vector              R1( x.Size() );
 	double              R3;
-
+	Multiply<trans>( R1, R3, x, z );
 	if( A11 )
 	{
-		if( !trans ) R1 = _A11 * x;
-		else         R1 = !_A11 * x;
-		if( A33 )
-		{
-			if( !trans ) R1 += z*_A13(0);
-			else         R1 += z*_A31(0);
-			R1 -= f;
-		}
+		R1 -= f;
 		std::cout<<"F1: "<<sqrt(f*f)<<"R1: "<<sqrt(R1*R1)<<"\n";
 	}
 	if( A33 )
 	{
-		if( !trans ) R3 = _A31(0)*x + _A33(0,0)*z - h;
-		else         R3 = _A13(0)*x + _A33(0,0)*z - h;
+		R3 -= h;
 		std::cout<<"F3: "<<sqrt(h*h)<<"R3: "<<sqrt(R3*R3)<<"\n";
 	}
 }

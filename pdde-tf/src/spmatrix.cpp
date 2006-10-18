@@ -14,7 +14,8 @@
 using namespace std;
 
 extern "C" {
-
+  // LAPACK
+  double dlamch_ (char *cmach, ftnlen cmach_len);
   /* ARPACK */
   int dnaupd_(integer *ido, char *bmat, integer *n, char *
       which, integer *nev, double *tol, double *resid, integer *ncv,
@@ -255,7 +256,7 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 	integer N        = AI.Size() * A0.Col();
 	char    WHICH[]  = {'L','M'};
 	integer NEV      = wr.Size()-1;
-	double  TOL      = 0.0;
+	double  TOL      = dlamch_("EPS",3);
 //	 RESID is defined in the class
 	integer NCV      = 2*NEV + 1;
 	double* V        = new double[(N+1)*(NCV+1)];
@@ -281,8 +282,8 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 	if( isINIT ) INFO = 1;
 	else INFO = 0;
 
-	double* tvec = new double[N+1];
-	double* tvec2 = new double[N+1];
+	double* tvec = new double[A0.Col()+1];
+	double* tvec2 = new double[A0.Col()+1];
 	
 	// int it=0;
 	do
@@ -299,17 +300,21 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 				for( int j=0; j<A0.Col(); j++ ) out[j + i*A0.Col()] = in[j + (i+1)*A0.Col()];
 			}
 			// the last row: multiplication and solution
-			for( int j = 0; j < A0.Col(); j++ ) out[j+(AI.Size()-1)*A0.Col()] = 0.0;
 			for( int i = 0; i < AI.Size(); i++ )
 			{
-				if( AI(AI.Size()-1-i).GetNZ() != 0 )
+				if( i == 0 )
 				{
-					AI(AI.Size()-1-i).AX( tvec+i*A0.Col(), in+i*A0.Col(), 1.0, false );
-					A0.Solve( tvec2+i*A0.Col(), tvec+i*A0.Col() );
-					// summing up the last row
-					for( int j=0; j<A0.Col(); j++ ) out[j+(AI.Size()-1)*A0.Col()] += tvec2[j+i*A0.Col()];
+					AI(AI.Size()-1).AX( tvec, in, 1.0, false );
+				}else
+				{
+					if( AI(AI.Size()-1-i).GetNZ() != 0 )
+					{
+						AI(AI.Size()-1-i).AX( tvec2, in+i*A0.Col(), 1.0, false );
+						for( int j = 0; j < A0.Col(); j++ ) tvec[j] += tvec2[j];
+					}
 				}
 			}
+			A0.Solve( out+(AI.Size()-1)*A0.Col(), tvec );
 		}
 	}
 	while( ( IDO == 1 )||( IDO == -1 ) );
