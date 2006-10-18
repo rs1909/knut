@@ -59,8 +59,8 @@ TestFunct::TestFunct( NColloc& col, double Z ) :
 	A_p( NDIM*(NDEG*NINT+1) ),
 	A_x( 'R', NDIM*(NDEG*NINT+1), NDIM*(NDEG*NINT+1)*NTAU*NDIM*(NDEG+1) ),
 	rhs( NDIM*(NDEG*NINT+1) ),
-	uu( NDIM*(NDEG*NINT+1) ),
-	vv( NDIM*(NDEG*NINT+1) ),
+	uu( NDIM*(NDEG*NINT+1) ), vv( NDIM*(NDEG*NINT+1) ),
+	uudiff( NDIM*(NDEG*NINT+1) ), vvdiff( NDIM*(NDEG*NINT+1) ),
 	vvData( NDEG*NINT, NDIM, 2*NTAU+1 )
 {
 	first = true;
@@ -80,26 +80,35 @@ void TestFunct::Init( NColloc& col, const Vector& par, const Vector& /*sol*/, co
 	// norming the borders
 	AHAT.getA31(0) /= sqrt( AHAT.getA31(0) * AHAT.getA31(0) );
 	AHAT.getA13(0) /= sqrt( AHAT.getA13(0) * AHAT.getA13(0) );
-	
+	vv = AHAT.getA31(0);
+	uu = AHAT.getA13(0);
 	double one = 1.0;
-	double gg;
-	double hh;
+	double gg = 0.0;
+	double hh = 0.0;
 	
 	rhs.Clear();
 	
-	Vector vdiff( vv ), udiff( uu );
+	double ggdiff, hhdiff;
 	double diffnorm = 1.0;
 	int it = 0;
 	do {
-		AHAT.Solve  ( vv, gg, rhs, one );
-		AHAT.SolveTR( uu, hh, rhs, one );
-		udiff = AHAT.getA13(0);
-		udiff -= uu;
-		vdiff = AHAT.getA31(0);
-		vdiff -= vv;
-		diffnorm = std::max<double>(sqrt(udiff*udiff),sqrt(vdiff*vdiff));
-		AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
-		AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
+		AHAT.Multiply<false>( rhs, one, vv, gg );
+		one -= 1.0;
+		AHAT.Solve  ( vvdiff, ggdiff, rhs, one );
+		AHAT.Multiply<true>( rhs, one, uu, hh );
+		one -= 1.0;
+		AHAT.SolveTR( uudiff, hhdiff, rhs, one );
+		vv -= vvdiff;
+		gg -= ggdiff;
+		uu -= uudiff;
+		hh -= hhdiff;
+		vv /= sqrt( vv * vv );
+		uu /= sqrt( uu * uu );
+		AHAT.getA31(0) = vv;
+		AHAT.getA13(0) = uu;
+		diffnorm = std::max<double>(sqrt(vvdiff*vvdiff+ggdiff*ggdiff),sqrt(uudiff*uudiff+hhdiff*hhdiff));
+		std::cout<<"dnor "<<diffnorm<<"\n";
+		std::cout<<"vv "<<sqrt(AHAT.getA31(0)*AHAT.getA31(0))<<", uu "<<sqrt(AHAT.getA13(0)*AHAT.getA13(0))<<"\n";
 	} while( (++it < NKERNITER)&&(diffnorm > KERNEPS) );
 	if( diffnorm > KERNEPS ) std::cout<<"TestFunct::Init: warning: No convergence in finding the singular vector. Residual = "<<diffnorm<<"\n";
 // 	std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
@@ -110,13 +119,22 @@ double TestFunct::Funct( NColloc& col, const Vector& par, const Vector& sol, con
 	double one = 1.0;
 	double gg;
 	double hh;
+	double ggdiff, hhdiff;
 	
 	if( first ){ Init( col, par, sol, solData ); first = false; }
 	
 	col.CharJac_x( AHAT.getA11(), par, solData, ZZ );
 	
-	AHAT.Solve  ( vv, gg, rhs, one );
-	AHAT.SolveTR( uu, hh, rhs, one );
+	AHAT.Multiply<false>( rhs, one, vv, gg );
+	one -= 1.0;
+	AHAT.Solve  ( vvdiff, ggdiff, rhs, one );
+	AHAT.Multiply<true>( rhs, one, uu, hh );
+	one -= 1.0;
+	AHAT.SolveTR( uudiff, hhdiff, rhs, one );
+	vv -= vvdiff;
+	gg -= ggdiff;
+	uu -= uudiff;
+	hh -= hhdiff;
 	AHAT.getA13(0) = (1.0/sqrt(uu*uu))*uu;
 	AHAT.getA31(0) = (1.0/sqrt(vv*vv))*vv;
 // 	std::cout<<"TF: "<<gg<<", "<<hh;

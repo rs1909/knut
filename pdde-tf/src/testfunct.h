@@ -64,6 +64,8 @@ class TestFunct : public baseTestFunct
 		Vector      rhs;
 		Vector      uu;
 		Vector      vv;
+		Vector      uudiff;
+		Vector      vvdiff;
 		JagMatrix3D vvData;
 };
 
