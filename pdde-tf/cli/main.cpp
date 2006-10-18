@@ -219,19 +219,16 @@ int main( int argc, const char** argv )
 			{
 				std::cout<<"\nSwitching to the period two branch (TF).\n";
 				pt.SwitchTFPD( params->getDsStart() );
-				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else if( params->getBranchSW() == TFBRSwitch )
 			{
 				std::cout<<"\nSwitching to the other branch (TF).\n";
 				pt.SwitchTFLP( params->getDsStart());
-				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else if( params->getBranchSW() == TFHBSwitch )
 			{
 				std::cout<<"\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
 				pt.SwitchTFHB( params->getDsStart() );
-				pt.setCont( params->getCp()-VarPAR0 );
 			}
 			else
 			{
@@ -240,6 +237,7 @@ int main( int argc, const char** argv )
 				pt.Tangent();
 			}
 			pt.Reset( eqn, var );
+			pt.setCont( params->getCp()-VarPAR0 );
 			
 			std::cout<<'\n';
 			int ustab = 0, ustabprev = 0;
