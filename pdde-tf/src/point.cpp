@@ -568,7 +568,7 @@ void Point::SwitchTFHB( double ds )
 			const double t = colloc.Profile( i, j );
 			for( int p = 0; p < NDIM; p++ )
 			{
-				xxDot->getV1()( p + (j+i*NDEG)*NDIM ) = cos(2.0*M_PI*t) * QRE(p) + sin(2.0*M_PI*t) * QIM(p);
+				xxDot->getV1()(p + (j+i*NDEG)*NDIM) = cos(2.0*M_PI*t)*QRE(p)+sin(2.0*M_PI*t)*QIM(p);
 			#ifdef DEBUG
 				file<<xxDot->getV1()( p + (j+i*NDEG)*NDIM )<<"\t";
 			#endif
@@ -578,15 +578,17 @@ void Point::SwitchTFHB( double ds )
 		#endif
 		}
 	}
-
-	double norm = sqrt( colloc.Integrate( xxDot->getV1(), xxDot->getV1() ) );
+	const double norm = sqrt(colloc.Integrate( xxDot->getV1(), xxDot->getV1() ));
 	xxDot->getV1() /= norm;
 	xxDot->getV3().Clear();
-	// 	std::cout<<"HOPFtanNorm "<<norm<<"\n";
-	
-	for( int i = 0; i < NDIM*(NINT*NDEG+1); i++ )
+	Vector eql(NDIM);
+	for( int p = 0; p < NDIM; ++p ) eql(p) = sol(p);
+	for( int i = 0; i < NDEG*NINT+1; ++i )
 	{
-		sol( i ) += ds*xxDot->getV1()(i);
+		for( int p = 0; p < NDIM; ++p )
+		{
+			sol( p+i*NDIM ) = eql(p) + ds*xxDot->getV1()(p+i*NDIM);
+		}
 	}
 }
 
