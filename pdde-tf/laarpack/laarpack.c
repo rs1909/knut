@@ -10,222 +10,232 @@
    http://www.netlib.org/f2c/libf2c.zip
  */
 
-#include "f2c.h"
+/*
+doublereal -> double
+real -> float
+integer -> int
+ftnlen -> int
+logical -> bool
+TRUE_ -> true
+FALSE_ -> false
+address -> char *
+s_cmp -> strncmp
+Remove all IO routines
+*/
+
 #include "cblaswrap.h"
 
-int dneupd_ (logical * rvec, char *howmny, logical * select, doublereal * dr, doublereal * di, doublereal * z__, integer * ldz, doublereal * sigmar,
-				 doublereal * sigmai, doublereal * workev, char *bmat, integer * n, char *which, integer * nev, doublereal * tol, doublereal * resid, integer * ncv,
-				 doublereal * v, integer * ldv, integer * iparam, integer * ipntr, doublereal * workd, doublereal * workl, integer * lworkl, integer * info,
-				 ftnlen howmny_len, ftnlen bmat_len, ftnlen which_len);
+int dneupd_ (bool * rvec, char *howmny, bool * select, double * dr, double * di, double * z__, int * ldz, double * sigmar,
+				 double * sigmai, double * workev, char *bmat, int * n, char *which, int * nev, double * tol, double * resid, int * ncv,
+				 double * v, int * ldv, int * iparam, int * ipntr, double * workd, double * workl, int * lworkl, int * info,
+				 int howmny_len, int bmat_len, int which_len);
 
-int dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, doublereal * tol, doublereal * resid, integer * ncv, doublereal * v,
-				 integer * ldv, integer * iparam, integer * ipntr, doublereal * workd, doublereal * workl, integer * lworkl, integer * info, ftnlen bmat_len,
-				 ftnlen which_len);
+int dnaupd_ (int * ido, char *bmat, int * n, char *which, int * nev, double * tol, double * resid, int * ncv, double * v,
+				 int * ldv, int * iparam, int * ipntr, double * workd, double * workl, int * lworkl, int * info, int bmat_len,
+				 int which_len);
 
-int dgesvx_ (char *fact, char *trans, integer * n, integer * nrhs, doublereal * a, integer * lda, doublereal * af, integer * ldaf, integer * ipiv, char *equed,
-				 doublereal * r__, doublereal * c__, doublereal * b, integer * ldb, doublereal * x, integer * ldx, doublereal * rcond, doublereal * ferr,
-				 doublereal * berr, doublereal * work, integer * iwork, integer * info, ftnlen fact_len, ftnlen trans_len, ftnlen equed_len);
+int dgesvx_ (char *fact, char *trans, int * n, int * nrhs, double * a, int * lda, double * af, int * ldaf, int * ipiv, char *equed,
+				 double * r__, double * c__, double * b, int * ldb, double * x, int * ldx, double * rcond, double * ferr,
+				 double * berr, double * work, int * iwork, int * info, int fact_len, int trans_len, int equed_len);
 
-int dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ipiv, doublereal * b, integer * ldb, integer * info);
+int dgesv_ (int * n, int * nrhs, double * a, int * lda, int * ipiv, double * b, int * ldb, int * info);
 
-int dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doublereal * a, integer * lda, doublereal * wr, doublereal * wi, doublereal * vl,
-				 integer * ldvl, doublereal * vr, integer * ldvr, integer * ilo, integer * ihi, doublereal * scale, doublereal * abnrm, doublereal * rconde,
-				 doublereal * rcondv, doublereal * work, integer * lwork, integer * iwork, integer * info, ftnlen balanc_len, ftnlen jobvl_len, ftnlen jobvr_len,
-				 ftnlen sense_len);
+int dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, int * n, double * a, int * lda, double * wr, double * wi, double * vl,
+				 int * ldvl, double * vr, int * ldvr, int * ilo, int * ihi, double * scale, double * abnrm, double * rconde,
+				 double * rcondv, double * work, int * lwork, int * iwork, int * info, int balanc_len, int jobvl_len, int jobvr_len,
+				 int sense_len);
 
-int dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal * a, integer * lda, doublereal * wr, doublereal * wi, doublereal * vl, integer * ldvl,
-				doublereal * vr, integer * ldvr, doublereal * work, integer * lwork, integer * info, ftnlen jobvl_len, ftnlen jobvr_len);
+int dgeev_ (char *jobvl, char *jobvr, int * n, double * a, int * lda, double * wr, double * wi, double * vl, int * ldvl,
+				double * vr, int * ldvr, double * work, int * lwork, int * info, int jobvl_len, int jobvr_len);
 
-int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
+int dlarnv_ (int * idist, int * iseed, int * n, double * x);
 
 /* from dlamch.c */
-doublereal dlamch_ (char *cmach, ftnlen cmach_len);
+double dlamch_ (char *cmach, int cmach_len);
 
 /* static */
 static int dstatn_ (void);
 
-static int dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublereal * ximag, doublereal * y, ftnlen which_len);
+static int dsortc_ (char *which, bool * apply, int * n, double * xfloat, double * ximag, double * y, int which_len);
 
-static int dngets_ (integer * ishift, char *which, integer * kev, integer * np, doublereal * ritzr, doublereal * ritzi, doublereal * bounds,
-						  doublereal * shiftr, doublereal * shifti, ftnlen which_len);
+static int dngets_ (int * ishift, char *which, int * kev, int * np, double * ritzr, double * ritzi, double * bounds,
+						  double * shiftr, double * shifti, int which_len);
 
-static int dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bounds, doublereal * tol, integer * nconv);
+static int dnconv_ (int * n, double * ritzr, double * ritzi, double * bounds, double * tol, int * nconv);
 
-static int dneigh_ (doublereal * rnorm, integer * n, doublereal * h__, integer * ldh, doublereal * ritzr, doublereal * ritzi, doublereal * bounds,
-						  doublereal * q, integer * ldq, doublereal * workl, integer * ierr);
+static int dneigh_ (double * rnorm, int * n, double * h__, int * ldh, double * ritzr, double * ritzi, double * bounds,
+						  double * q, int * ldq, double * workl, int * ierr);
 
-static int dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, integer * np, doublereal * tol, doublereal * resid, integer * mode,
-						  integer * iupd, integer * ishift, integer * mxiter, doublereal * v, integer * ldv, doublereal * h__, integer * ldh, doublereal * ritzr,
-						  doublereal * ritzi, doublereal * bounds, doublereal * q, integer * ldq, doublereal * workl, integer * ipntr, doublereal * workd,
-						  integer * info, ftnlen bmat_len, ftnlen which_len);
+static int dnaup2_ (int * ido, char *bmat, int * n, char *which, int * nev, int * np, double * tol, double * resid, int * mode,
+						  int * iupd, int * ishift, int * mxiter, double * v, int * ldv, double * h__, int * ldh, double * ritzr,
+						  double * ritzi, double * bounds, double * q, int * ldq, double * workl, int * ipntr, double * workd,
+						  int * info, int bmat_len, int which_len);
 
-static int dnapps_ (integer * n, integer * kev, integer * np, doublereal * shiftr, doublereal * shifti, doublereal * v, integer * ldv, doublereal * h__,
-						  integer * ldh, doublereal * resid, doublereal * q, integer * ldq, doublereal * workl, doublereal * workd);
+static int dnapps_ (int * n, int * kev, int * np, double * shiftr, double * shifti, double * v, int * ldv, double * h__,
+						  int * ldh, double * resid, double * q, int * ldq, double * workl, double * workd);
 
-static int ivout_ (integer * lout, integer * n, integer * ix, integer * idigit, char *ifmt, ftnlen ifmt_len);
+static int ivout_ (int * lout, int * n, int * ix, int * idigit, char *ifmt, int ifmt_len);
 
-static int dnaitr_ (integer * ido, char *bmat, integer * n, integer * k, integer * np, integer * nb, doublereal * resid, doublereal * rnorm, doublereal * v,
-						  integer * ldv, doublereal * h__, integer * ldh, integer * ipntr, doublereal * workd, integer * info, ftnlen bmat_len);
+static int dnaitr_ (int * ido, char *bmat, int * n, int * k, int * np, int * nb, double * resid, double * rnorm, double * v,
+						  int * ldv, double * h__, int * ldh, int * ipntr, double * workd, int * info, int bmat_len);
 
-static int dmout_ (integer * lout, integer * m, integer * n, doublereal * a, integer * lda, integer * idigit, char *ifmt, ftnlen ifmt_len);
+static int dmout_ (int * lout, int * m, int * n, double * a, int * lda, int * idigit, char *ifmt, int ifmt_len);
 
-static int dlaqrb_ (logical * wantt, integer * n, integer * ilo, integer * ihi, doublereal * h__, integer * ldh, doublereal * wr, doublereal * wi,
-						  doublereal * z__, integer * info);
+static int dlaqrb_ (bool * wantt, int * n, int * ilo, int * ihi, double * h__, int * ldh, double * wr, double * wi,
+						  double * z__, int * info);
 
-static int second_ (real * t);
+static int second_ (float * t);
 
-static int dvout_ (integer * lout, integer * n, doublereal * sx, integer * idigit, char *ifmt, ftnlen ifmt_len);
+static int dvout_ (int * lout, int * n, double * sx, int * idigit, char *ifmt, int ifmt_len);
 
-static int dgetv0_ (integer * ido, char *bmat, integer * itry, logical * initv, integer * n, integer * j, doublereal * v, integer * ldv, doublereal * resid,
-						  doublereal * rnorm, integer * ipntr, doublereal * workd, integer * ierr, ftnlen bmat_len);
+static int dgetv0_ (int * ido, char *bmat, int * itry, bool * initv, int * n, int * j, double * v, int * ldv, double * resid,
+						  double * rnorm, int * ipntr, double * workd, int * ierr, int bmat_len);
 
-static integer ieeeck_ (integer * ispec, real * zero, real * one);
+static int ieeeck_ (int * ispec, float * zero, float * one);
 
-static int dtrsyl_ (char *trana, char *tranb, integer * isgn, integer * m, integer * n, doublereal * a, integer * lda, doublereal * b, integer * ldb,
-						  doublereal * c__, integer * ldc, doublereal * scale, integer * info, ftnlen trana_len, ftnlen tranb_len);
+static int dtrsyl_ (char *trana, char *tranb, int * isgn, int * m, int * n, double * a, int * lda, double * b, int * ldb,
+						  double * c__, int * ldc, double * scale, int * info, int trana_len, int tranb_len);
 
-static int dtrsen_ (char *job, char *compq, logical * select, integer * n, doublereal * t, integer * ldt, doublereal * q, integer * ldq, doublereal * wr,
-						  doublereal * wi, integer * m, doublereal * s, doublereal * sep, doublereal * work, integer * lwork, integer * iwork, integer * liwork,
-						  integer * info, ftnlen job_len, ftnlen compq_len);
+static int dtrsen_ (char *job, char *compq, bool * select, int * n, double * t, int * ldt, double * q, int * ldq, double * wr,
+						  double * wi, int * m, double * s, double * sep, double * work, int * lwork, int * iwork, int * liwork,
+						  int * info, int job_len, int compq_len);
 
-static int dtrexc_ (char *compq, integer * n, doublereal * t, integer * ldt, doublereal * q, integer * ldq, integer * ifst, integer * ilst, doublereal * work,
-						  integer * info, ftnlen compq_len);
+static int dtrexc_ (char *compq, int * n, double * t, int * ldt, double * q, int * ldq, int * ifst, int * ilst, double * work,
+						  int * info, int compq_len);
 
-static int dorm2r_ (char *side, char *trans, integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * c__,
-						  integer * ldc, doublereal * work, integer * info, ftnlen side_len, ftnlen trans_len);
+static int dorm2r_ (char *side, char *trans, int * m, int * n, int * k, double * a, int * lda, double * tau, double * c__,
+						  int * ldc, double * work, int * info, int side_len, int trans_len);
 
-static int dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork, integer * info);
+static int dorgqr_ (int * m, int * n, int * k, double * a, int * lda, double * tau, double * work, int * lwork, int * info);
 
-static int dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info);
+static int dorg2r_ (int * m, int * n, int * k, double * a, int * lda, double * tau, double * work, int * info);
 
-static int dlaruv_ (integer * iseed, integer * n, doublereal * x);
+static int dlaruv_ (int * iseed, int * n, double * x);
 
-static int dlarft_ (char *direct, char *storev, integer * n, integer * k, doublereal * v, integer * ldv, doublereal * tau, doublereal * t, integer * ldt,
-						  ftnlen direct_len, ftnlen storev_len);
+static int dlarft_ (char *direct, char *storev, int * n, int * k, double * v, int * ldv, double * tau, double * t, int * ldt,
+						  int direct_len, int storev_len);
 
-static int dlaqtr_ (logical * ltran, logical * lreal, integer * n, doublereal * t, integer * ldt, doublereal * b, doublereal * w, doublereal * scale,
-						  doublereal * x, doublereal * work, integer * info);
+static int dlaqtr_ (bool * ltran, bool * lfloat, int * n, double * t, int * ldt, double * b, double * w, double * scale,
+						  double * x, double * work, int * info);
 
-static int dlassq_ (integer * n, doublereal * x, integer * incx, doublereal * scale, doublereal * sumsq);
+static int dlassq_ (int * n, double * x, int * incx, double * scale, double * sumsq);
 
-static int dlaln2_ (logical * ltrans, integer * na, integer * nw, doublereal * smin, doublereal * ca, doublereal * a, integer * lda, doublereal * d1,
-						  doublereal * d2, doublereal * b, integer * ldb, doublereal * wr, doublereal * wi, doublereal * x, integer * ldx, doublereal * scale,
-						  doublereal * xnorm, integer * info);
+static int dlaln2_ (bool * ltrans, int * na, int * nw, double * smin, double * ca, double * a, int * lda, double * d1,
+						  double * d2, double * b, int * ldb, double * wr, double * wi, double * x, int * ldx, double * scale,
+						  double * xnorm, int * info);
 
-static int dlasy2_ (logical * ltranl, logical * ltranr, integer * isgn, integer * n1, integer * n2, doublereal * tl, integer * ldtl, doublereal * tr,
-						  integer * ldtr, doublereal * b, integer * ldb, doublereal * scale, doublereal * x, integer * ldx, doublereal * xnorm, integer * info);
+static int dlasy2_ (bool * ltranl, bool * ltranr, int * isgn, int * n1, int * n2, double * tl, int * ldtl, double * tr,
+						  int * ldtr, double * b, int * ldb, double * scale, double * x, int * ldx, double * xnorm, int * info);
 
-static int dlanv2_ (doublereal * a, doublereal * b, doublereal * c__, doublereal * d__, doublereal * rt1r, doublereal * rt1i, doublereal * rt2r,
-						  doublereal * rt2i, doublereal * cs, doublereal * sn);
+static int dlanv2_ (double * a, double * b, double * c__, double * d__, double * rt1r, double * rt1i, double * rt2r,
+						  double * rt2i, double * cs, double * sn);
 
-static int dlaexc_ (logical * wantq, integer * n, doublereal * t, integer * ldt, doublereal * q, integer * ldq, integer * j1, integer * n1, integer * n2,
-						  doublereal * work, integer * info);
+static int dlaexc_ (bool * wantq, int * n, double * t, int * ldt, double * q, int * ldq, int * j1, int * n1, int * n2,
+						  double * work, int * info);
 
-static int dladiv_ (doublereal * a, doublereal * b, doublereal * c__, doublereal * d__, doublereal * p, doublereal * q);
+static int dladiv_ (double * a, double * b, double * c__, double * d__, double * p, double * q);
 
-static int dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau, doublereal * c__, integer * ldc, doublereal * work,
-						  ftnlen side_len);
+static int dlarfx_ (char *side, int * m, int * n, double * v, double * tau, double * c__, int * ldc, double * work,
+						  int side_len);
 
-static int dlaset_ (char *uplo, integer * m, integer * n, doublereal * alpha, doublereal * beta, doublereal * a, integer * lda, ftnlen uplo_len);
+static int dlaset_ (char *uplo, int * m, int * n, double * alpha, double * beta, double * a, int * lda, int uplo_len);
 
-static int dlahqr_ (logical * wantt, logical * wantz, integer * n, integer * ilo, integer * ihi, doublereal * h__, integer * ldh, doublereal * wr,
-						  doublereal * wi, integer * iloz, integer * ihiz, doublereal * z__, integer * ldz, integer * info);
+static int dlahqr_ (bool * wantt, bool * wantz, int * n, int * ilo, int * ihi, double * h__, int * ldh, double * wr,
+						  double * wi, int * iloz, int * ihiz, double * z__, int * ldz, int * info);
 
-static doublereal dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * work, ftnlen norm_len);
+static double dlanhs_ (char *norm, int * n, double * a, int * lda, double * work, int norm_len);
 
-static int dlaswp_ (integer * n, doublereal * a, integer * lda, integer * k1, integer * k2, integer * ipiv, integer * incx);
+static int dlaswp_ (int * n, double * a, int * lda, int * k1, int * k2, int * ipiv, int * incx);
 
-static int dgetf2_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv, integer * info);
+static int dgetf2_ (int * m, int * n, double * a, int * lda, int * ipiv, int * info);
 
-static doublereal dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n, doublereal * a, integer * lda, doublereal * work, ftnlen norm_len,
-									ftnlen uplo_len, ftnlen diag_len);
+static double dlantr_ (char *norm, char *uplo, char *diag, int * m, int * n, double * a, int * lda, double * work, int norm_len,
+									int uplo_len, int diag_len);
 
-static int dlaqge_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * r__, doublereal * c__, doublereal * rowcnd, doublereal * colcnd,
-						  doublereal * amax, char *equed, ftnlen equed_len);
+static int dlaqge_ (int * m, int * n, double * a, int * lda, double * r__, double * c__, double * rowcnd, double * colcnd,
+						  double * amax, char *equed, int equed_len);
 
-static int dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv, integer * info);
+static int dgetrf_ (int * m, int * n, double * a, int * lda, int * ipiv, int * info);
 
-static int dgetrs_ (char *trans, integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ipiv, doublereal * b, integer * ldb, integer * info,
-						  ftnlen trans_len);
+static int dgetrs_ (char *trans, int * n, int * nrhs, double * a, int * lda, int * ipiv, double * b, int * ldb, int * info,
+						  int trans_len);
 
-static int dgerfs_ (char *trans, integer * n, integer * nrhs, doublereal * a, integer * lda, doublereal * af, integer * ldaf, integer * ipiv, doublereal * b,
-						  integer * ldb, doublereal * x, integer * ldx, doublereal * ferr, doublereal * berr, doublereal * work, integer * iwork, integer * info,
-						  ftnlen trans_len);
+static int dgerfs_ (char *trans, int * n, int * nrhs, double * a, int * lda, double * af, int * ldaf, int * ipiv, double * b,
+						  int * ldb, double * x, int * ldx, double * ferr, double * berr, double * work, int * iwork, int * info,
+						  int trans_len);
 
-static int dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info);
+static int dgeqr2_ (int * m, int * n, double * a, int * lda, double * tau, double * work, int * info);
 
-static int dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, doublereal * tau, doublereal * t, integer * ldt, doublereal * y,
-						  integer * ldy);
+static int dlahrd_ (int * n, int * k, int * nb, double * a, int * lda, double * tau, double * t, int * ldt, double * y,
+						  int * ldy);
 
-static int dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integer * n, integer * k, doublereal * v, integer * ldv, doublereal * t,
-						  integer * ldt, doublereal * c__, integer * ldc, doublereal * work, integer * ldwork, ftnlen side_len, ftnlen trans_len, ftnlen direct_len,
-						  ftnlen storev_len);
+static int dlarfb_ (char *side, char *trans, char *direct, char *storev, int * m, int * n, int * k, double * v, int * ldv, double * t,
+						  int * ldt, double * c__, int * ldc, double * work, int * ldwork, int side_len, int trans_len, int direct_len,
+						  int storev_len);
 
-static int dlarfg_ (integer * n, doublereal * alpha, doublereal * x, integer * incx, doublereal * tau);
+static int dlarfg_ (int * n, double * alpha, double * x, int * incx, double * tau);
 
-static int dlarf_ (char *side, integer * m, integer * n, doublereal * v, integer * incv, doublereal * tau, doublereal * c__, integer * ldc, doublereal * work,
-						 ftnlen side_len);
+static int dlarf_ (char *side, int * m, int * n, double * v, int * incv, double * tau, double * c__, int * ldc, double * work,
+						 int side_len);
 
-static int dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info);
+static int dgehd2_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * info);
 
-static int dtrsna_ (char *job, char *howmny, logical * select, integer * n, doublereal * t, integer * ldt, doublereal * vl, integer * ldvl, doublereal * vr,
-						  integer * ldvr, doublereal * s, doublereal * sep, integer * mm, integer * m, doublereal * work, integer * ldwork, integer * iwork,
-						  integer * info, ftnlen job_len, ftnlen howmny_len);
+static int dtrsna_ (char *job, char *howmny, bool * select, int * n, double * t, int * ldt, double * vl, int * ldvl, double * vr,
+						  int * ldvr, double * s, double * sep, int * mm, int * m, double * work, int * ldwork, int * iwork,
+						  int * info, int job_len, int howmny_len);
 
-static int dtrevc_ (char *side, char *howmny, logical * select, integer * n, doublereal * t, integer * ldt, doublereal * vl, integer * ldvl, doublereal * vr,
-						  integer * ldvr, integer * mm, integer * m, doublereal * work, integer * info, ftnlen side_len, ftnlen howmny_len);
+static int dtrevc_ (char *side, char *howmny, bool * select, int * n, double * t, int * ldt, double * vl, int * ldvl, double * vr,
+						  int * ldvr, int * mm, int * m, double * work, int * info, int side_len, int howmny_len);
 
-static int dhseqr_ (char *job, char *compz, integer * n, integer * ilo, integer * ihi, doublereal * h__, integer * ldh, doublereal * wr, doublereal * wi,
-						  doublereal * z__, integer * ldz, doublereal * work, integer * lwork, integer * info, ftnlen job_len, ftnlen compz_len);
+static int dhseqr_ (char *job, char *compz, int * n, int * ilo, int * ihi, double * h__, int * ldh, double * wr, double * wi,
+						  double * z__, int * ldz, double * work, int * lwork, int * info, int job_len, int compz_len);
 
-static int dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork,
-						  integer * info);
+static int dorghr_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * lwork,
+						  int * info);
 
-static integer ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, integer * n3, integer * n4, ftnlen name_len, ftnlen opts_len);
+static int ilaenv_ (int * ispec, char *name__, char *opts, int * n1, int * n2, int * n3, int * n4, int name_len, int opts_len);
 
-static int dlartg_ (doublereal * f, doublereal * g, doublereal * cs, doublereal * sn, doublereal * r__);
+static int dlartg_ (double * f, double * g, double * cs, double * sn, double * r__);
 
-static int dlacpy_ (char *uplo, integer * m, integer * n, doublereal * a, integer * lda, doublereal * b, integer * ldb, ftnlen uplo_len);
+static int dlacpy_ (char *uplo, int * m, int * n, double * a, int * lda, double * b, int * ldb, int uplo_len);
 
-static int dlascl_ (char *type__, integer * kl, integer * ku, doublereal * cfrom, doublereal * cto, integer * m, integer * n, doublereal * a, integer * lda,
-						  integer * info, ftnlen type_len);
+static int dlascl_ (char *type__, int * kl, int * ku, double * cfrom, double * cto, int * m, int * n, double * a, int * lda,
+						  int * info, int type_len);
 
-static int dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork,
-						  integer * info);
+static int dgehrd_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * lwork,
+						  int * info);
 
-static doublereal dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, doublereal * work, ftnlen norm_len);
+static double dlange_ (char *norm, int * m, int * n, double * a, int * lda, double * work, int norm_len);
 
-static int dlabad_ (doublereal * small, doublereal * large);
+static int dlabad_ (double * small, double * large);
 
-static doublereal dlapy2_ (doublereal * x, doublereal * y);
+static double dlapy2_ (double * x, double * y);
 
-static int dgeequ_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * r__, doublereal * c__, doublereal * rowcnd, doublereal * colcnd,
-						  doublereal * amax, integer * info);
+static int dgeequ_ (int * m, int * n, double * a, int * lda, double * r__, double * c__, double * rowcnd, double * colcnd,
+						  double * amax, int * info);
 
-static int dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doublereal * a, integer * lda, doublereal * x, doublereal * scale,
-						  doublereal * cnorm, integer * info, ftnlen uplo_len, ftnlen trans_len, ftnlen diag_len, ftnlen normin_len);
+static int dlatrs_ (char *uplo, char *trans, char *diag, char *normin, int * n, double * a, int * lda, double * x, double * scale,
+						  double * cnorm, int * info, int uplo_len, int trans_len, int diag_len, int normin_len);
 
-static int dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal * est, integer * kase);
+static int dlacon_ (int * n, double * v, double * x, int * isgn, double * est, int * kase);
 
-static int drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx);
+static int drscl_ (int * n, double * sa, double * sx, int * incx);
 
-static int dgecon_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * anorm, doublereal * rcond, doublereal * work, integer * iwork,
-						  integer * info, ftnlen norm_len);
+static int dgecon_ (char *norm, int * n, double * a, int * lda, double * anorm, double * rcond, double * work, int * iwork,
+						  int * info, int norm_len);
 
-static int dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, integer * ihi, doublereal * scale, integer * info, ftnlen job_len);
+static int dgebal_ (char *job, int * n, double * a, int * lda, int * ilo, int * ihi, double * scale, int * info, int job_len);
 
-static int xerbla_ (char *srname, integer * info, ftnlen srname_len);
+static int xerbla_ (char *srname, int * info, int srname_len);
 
-static int dgebak_ (char *job, char *side, integer * n, integer * ilo, integer * ihi, doublereal * scale, integer * m, doublereal * v, integer * ldv,
-						  integer * info, ftnlen job_len, ftnlen side_len);
-
-doublereal etime_ (real *);
+static int dgebak_ (char *job, char *side, int * n, int * ilo, int * ihi, double * scale, int * m, double * v, int * ldv,
+						  int * info, int job_len, int side_len);
 
 /* Common Block Declarations */
 
 struct
 {
-	integer logfil, ndigit, mgetv0, msaupd, msaup2, msaitr, mseigt, msapps,
+	int logfil, ndigit, mgetv0, msaupd, msaup2, msaitr, mseigt, msapps,
 		msgets, mseupd, mnaupd, mnaup2, mnaitr, mneigh, mnapps, mngets, mneupd, mcaupd, mcaup2, mcaitr, mceigh, mcapps, mcgets, mceupd;
 } debug_;
 
@@ -233,8 +243,8 @@ struct
 
 struct
 {
-	integer nopx, nbx, nrorth, nitref, nrstrt;
-	real tsaupd, tsaup2, tsaitr, tseigt, tsgets, tsapps, tsconv, tnaupd,
+	int nopx, nbx, nrorth, nitref, nrstrt;
+	float tsaupd, tsaup2, tsaitr, tseigt, tsgets, tsapps, tsconv, tnaupd,
 		tnaup2, tnaitr, tneigh, tngets, tnapps, tnconv, tcaupd, tcaup2, tcaitr, tceigh, tcgets, tcapps, tcconv, tmvopx, tmvbx, tgetv0, titref, trvec;
 } timing_;
 
@@ -242,41 +252,41 @@ struct
 
 /* Table of constant values */
 
-static integer c__1 = 1;
-static integer c__0 = 0;
-static integer c__8 = 8;
-static integer c_n1 = -1;
-static integer c__4 = 4;
-static integer c__3 = 3;
-static integer c__2 = 2;
-static integer c__65 = 65;
-static doublereal c_b347 = -1.;
-static doublereal c_b348 = 1.;
-static doublereal c_b507 = 0.;
-static integer c__15 = 15;
-static logical c_false = FALSE_;
-static logical c_true = TRUE_;
-static integer c__16 = 16;
-static doublereal c_b1496 = .5;
-static real c_b2255 = 0.f;
-static real c_b2256 = 1.f;
-static doublereal c_b2616 = .66666666666666663;
+static int c__1 = 1;
+static int c__0 = 0;
+static int c__8 = 8;
+static int c_n1 = -1;
+static int c__4 = 4;
+static int c__3 = 3;
+static int c__2 = 2;
+static int c__65 = 65;
+static double c_b347 = -1.;
+static double c_b348 = 1.;
+static double c_b507 = 0.;
+static int c__15 = 15;
+static bool c_false = false;
+static bool c_true = true;
+static int c__16 = 16;
+static double c_b1496 = .5;
+static float c_b2255 = 0.f;
+static float c_b2256 = 1.f;
+static double c_b2616 = .66666666666666663;
 
 static int
-dgebak_ (char *job, char *side, integer * n, integer * ilo,
-			integer * ihi, doublereal * scale, integer * m, doublereal * v, integer * ldv, integer * info, ftnlen job_len, ftnlen side_len)
+dgebak_ (char *job, char *side, int * n, int * ilo,
+			int * ihi, double * scale, int * m, double * v, int * ldv, int * info, int job_len, int side_len)
 {
 	/* System generated locals */
-	integer v_dim1, v_offset, i__1;
+	int v_dim1, v_offset, i__1;
 
 	/* Local variables */
-	static integer i__, k;
-	static doublereal s;
-	static integer ii;
+	static int i__, k;
+	static double s;
+	static int ii;
 
-	static logical leftv;
+	static bool leftv;
 
-	static logical rightv;
+	static bool rightv;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -292,7 +302,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEBAK forms the right or left eigenvectors of a real general matrix */
+	/*  DGEBAK forms the right or left eigenvectors of a float general matrix */
 	/*  by backward transformation on the computed eigenvectors of the */
 	/*  balanced matrix output by DGEBAL. */
 
@@ -317,7 +327,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 
 	/*  ILO     (input) INTEGER */
 	/*  IHI     (input) INTEGER */
-	/*          The integers ILO and IHI determined by DGEBAL. */
+	/*          The ints ILO and IHI determined by DGEBAL. */
 	/*          1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0. */
 
 	/*  SCALE   (input) DOUBLE PRECISION array, dimension (N) */
@@ -362,12 +372,12 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 	v -= v_offset;
 
 	/* Function Body */
-	rightv = lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1);
-	leftv = lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1);
+	rightv = lsame_ (side, "R", (int) 1, (int) 1);
+	leftv = lsame_ (side, "L", (int) 1, (int) 1);
 
 	*info = 0;
-	if (!lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1) && !lsame_ (job, "P", (ftnlen) 1, (ftnlen) 1) && !lsame_ (job, "S", (ftnlen) 1, (ftnlen) 1)
-		 && !lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1))
+	if (!lsame_ (job, "N", (int) 1, (int) 1) && !lsame_ (job, "P", (int) 1, (int) 1) && !lsame_ (job, "S", (int) 1, (int) 1)
+		 && !lsame_ (job, "B", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -398,7 +408,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEBAK", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEBAK", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -412,7 +422,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 	{
 		return 0;
 	}
-	if (lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "N", (int) 1, (int) 1))
 	{
 		return 0;
 	}
@@ -424,7 +434,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 
 	/*     Backward balance */
 
-	if (lsame_ (job, "S", (ftnlen) 1, (ftnlen) 1) || lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "S", (int) 1, (int) 1) || lsame_ (job, "B", (int) 1, (int) 1))
 	{
 
 		if (rightv)
@@ -457,7 +467,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 	/*              IHI+1 step 1 until N do -- */
 
  L30:
-	if (lsame_ (job, "P", (ftnlen) 1, (ftnlen) 1) || lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "P", (int) 1, (int) 1) || lsame_ (job, "B", (int) 1, (int) 1))
 	{
 		if (rightv)
 		{
@@ -473,7 +483,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 				{
 					i__ = *ilo - ii;
 				}
-				k = (integer) scale[i__];
+				k = (int) scale[i__];
 				if (k == i__)
 				{
 					goto L40;
@@ -498,7 +508,7 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 				{
 					i__ = *ilo - ii;
 				}
-				k = (integer) scale[i__];
+				k = (int) scale[i__];
 				if (k == i__)
 				{
 					goto L50;
@@ -517,20 +527,20 @@ dgebak_ (char *job, char *side, integer * n, integer * ilo,
 }	/* dgebak_ */
 
 static int
-dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, integer * ihi, doublereal * scale, integer * info, ftnlen job_len)
+dgebal_ (char *job, int * n, double * a, int * lda, int * ilo, int * ihi, double * scale, int * info, int job_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
-	doublereal d__1, d__2;
+	int a_dim1, a_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Local variables */
-	static doublereal c__, f, g;
-	static integer i__, j, k, l, m;
-	static doublereal r__, s, ca, ra;
-	static integer ica, ira, iexc;
+	static double c__, f, g;
+	static int i__, j, k, l, m;
+	static double r__, s, ca, ra;
+	static int ica, ira, iexc;
 
-	static doublereal sfmin1, sfmin2, sfmax1, sfmax2;
-	static logical noconv;
+	static double sfmin1, sfmin2, sfmax1, sfmax2;
+	static bool noconv;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -546,7 +556,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEBAL balances a general real matrix A.  This involves, first, */
+	/*  DGEBAL balances a general float matrix A.  This involves, first, */
 	/*  permuting A by a similarity transformation to isolate eigenvalues */
 	/*  in the first 1 to ILO-1 and last IHI+1 to N elements on the */
 	/*  diagonal; and second, applying a diagonal similarity transformation */
@@ -581,7 +591,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 
 	/*  ILO     (output) INTEGER */
 	/*  IHI     (output) INTEGER */
-	/*          ILO and IHI are set to integers such that on exit */
+	/*          ILO and IHI are set to ints such that on exit */
 	/*          A(i,j) = 0 if i > j and j = 1,...,ILO-1 or I = IHI+1,...,N. */
 	/*          If JOB = 'N' or 'S', ILO = 1 and IHI = N. */
 
@@ -653,8 +663,8 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 
 	/* Function Body */
 	*info = 0;
-	if (!lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1) && !lsame_ (job, "P", (ftnlen) 1, (ftnlen) 1) && !lsame_ (job, "S", (ftnlen) 1, (ftnlen) 1)
-		 && !lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1))
+	if (!lsame_ (job, "N", (int) 1, (int) 1) && !lsame_ (job, "P", (int) 1, (int) 1) && !lsame_ (job, "S", (int) 1, (int) 1)
+		 && !lsame_ (job, "B", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -669,7 +679,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEBAL", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEBAL", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -681,7 +691,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 		goto L210;
 	}
 
-	if (lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "N", (int) 1, (int) 1))
 	{
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -692,7 +702,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 		goto L210;
 	}
 
-	if (lsame_ (job, "S", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "S", (int) 1, (int) 1))
 	{
 		goto L120;
 	}
@@ -704,7 +714,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 	/*     Row and column exchange. */
 
  L20:
-	scale[m] = (doublereal) j;
+	scale[m] = (double) j;
 	if (j == m)
 	{
 		goto L30;
@@ -800,7 +810,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 		/* L130: */
 	}
 
-	if (lsame_ (job, "P", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (job, "P", (int) 1, (int) 1))
 	{
 		goto L210;
 	}
@@ -809,12 +819,12 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 
 	/*     Iterative loop for norm reduction */
 
-	sfmin1 = dlamch_ ("S", (ftnlen) 1) / dlamch_ ("P", (ftnlen) 1);
+	sfmin1 = dlamch_ ("S", (int) 1) / dlamch_ ("P", (int) 1);
 	sfmax1 = 1. / sfmin1;
 	sfmin2 = sfmin1 * 8.;
 	sfmax2 = 1. / sfmin2;
  L140:
-	noconv = FALSE_;
+	noconv = false;
 
 	i__1 = l;
 	for (i__ = k; i__ <= i__1; ++i__)
@@ -906,7 +916,7 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 		}
 		g = 1. / f;
 		scale[i__] *= f;
-		noconv = TRUE_;
+		noconv = true;
 
 		i__2 = *n - k + 1;
 		dscal_ (&i__2, &g, &a[i__ + k * a_dim1], lda);
@@ -932,24 +942,24 @@ dgebal_ (char *job, integer * n, doublereal * a, integer * lda, integer * ilo, i
 }	/* dgebal_ */
 
 static int
-dgecon_ (char *norm, integer * n, doublereal * a, integer *
-			lda, doublereal * anorm, doublereal * rcond, doublereal * work, integer * iwork, integer * info, ftnlen norm_len)
+dgecon_ (char *norm, int * n, double * a, int *
+			lda, double * anorm, double * rcond, double * work, int * iwork, int * info, int norm_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1;
-	doublereal d__1;
+	int a_dim1, a_offset, i__1;
+	double d__1;
 
 	/* Local variables */
-	static doublereal sl;
-	static integer ix;
-	static doublereal su;
-	static integer kase, kase1;
-	static doublereal scale;
+	static double sl;
+	static int ix;
+	static double su;
+	static int kase, kase1;
+	static double scale;
 
-	static doublereal ainvnm;
-	static logical onenrm;
+	static double ainvnm;
+	static bool onenrm;
 	static char normin[1];
-	static doublereal smlnum;
+	static double smlnum;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -966,7 +976,7 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 	/*  ======= */
 
 	/*  DGECON estimates the reciprocal of the condition number of a general */
-	/*  real matrix A, in either the 1-norm or the infinity-norm, using */
+	/*  float matrix A, in either the 1-norm or the infinity-norm, using */
 	/*  the LU factorization computed by DGETRF. */
 
 	/*  An estimate is obtained for norm(inv(A)), and the reciprocal of the */
@@ -1033,8 +1043,8 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 
 	/* Function Body */
 	*info = 0;
-	onenrm = *(unsigned char *) norm == '1' || lsame_ (norm, "O", (ftnlen) 1, (ftnlen) 1);
-	if (!onenrm && !lsame_ (norm, "I", (ftnlen) 1, (ftnlen) 1))
+	onenrm = *(unsigned char *) norm == '1' || lsame_ (norm, "O", (int) 1, (int) 1);
+	if (!onenrm && !lsame_ (norm, "I", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -1053,7 +1063,7 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGECON", &i__1, (ftnlen) 6);
+		xerbla_ ("DGECON", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -1070,7 +1080,7 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 		return 0;
 	}
 
-	smlnum = dlamch_ ("Safe minimum", (ftnlen) 12);
+	smlnum = dlamch_ ("Safe minimum", (int) 12);
 
 	/*     Estimate the norm of inv(A). */
 
@@ -1095,12 +1105,12 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 			/*           Multiply by inv(L). */
 
 			dlatrs_ ("Lower", "No transpose", "Unit", normin, n, &a[a_offset],
-						lda, &work[1], &sl, &work[(*n << 1) + 1], info, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4, (ftnlen) 1);
+						lda, &work[1], &sl, &work[(*n << 1) + 1], info, (int) 5, (int) 12, (int) 4, (int) 1);
 
 			/*           Multiply by inv(U). */
 
-			dlatrs_ ("Upper", "No transpose", "Non-unit", normin, n, &a[a_offset], lda, &work[1], &su, &work[*n * 3 + 1], info, (ftnlen) 5, (ftnlen) 12,
-						(ftnlen) 8, (ftnlen) 1);
+			dlatrs_ ("Upper", "No transpose", "Non-unit", normin, n, &a[a_offset], lda, &work[1], &su, &work[*n * 3 + 1], info, (int) 5, (int) 12,
+						(int) 8, (int) 1);
 		}
 		else
 		{
@@ -1108,12 +1118,12 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 			/*           Multiply by inv(U'). */
 
 			dlatrs_ ("Upper", "Transpose", "Non-unit", normin, n, &a[a_offset],
-						lda, &work[1], &su, &work[*n * 3 + 1], info, (ftnlen) 5, (ftnlen) 9, (ftnlen) 8, (ftnlen) 1);
+						lda, &work[1], &su, &work[*n * 3 + 1], info, (int) 5, (int) 9, (int) 8, (int) 1);
 
 			/*           Multiply by inv(L'). */
 
 			dlatrs_ ("Lower", "Transpose", "Unit", normin, n, &a[a_offset],
-						lda, &work[1], &sl, &work[(*n << 1) + 1], info, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4, (ftnlen) 1);
+						lda, &work[1], &sl, &work[(*n << 1) + 1], info, (int) 5, (int) 9, (int) 4, (int) 1);
 		}
 
 		/*        Divide X by 1/(SL*SU) if doing so will not cause overflow. */
@@ -1147,18 +1157,18 @@ dgecon_ (char *norm, integer * n, doublereal * a, integer *
 }	/* dgecon_ */
 
 static int
-dgeequ_ (integer * m, integer * n, doublereal * a, integer *
-			lda, doublereal * r__, doublereal * c__, doublereal * rowcnd, doublereal * colcnd, doublereal * amax, integer * info)
+dgeequ_ (int * m, int * n, double * a, int *
+			lda, double * r__, double * c__, double * rowcnd, double * colcnd, double * amax, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
-	doublereal d__1, d__2, d__3;
+	int a_dim1, a_offset, i__1, i__2;
+	double d__1, d__2, d__3;
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal rcmin, rcmax;
+	static int i__, j;
+	static double rcmin, rcmax;
 
-	static doublereal bignum, smlnum;
+	static double bignum, smlnum;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -1271,7 +1281,7 @@ dgeequ_ (integer * m, integer * n, doublereal * a, integer *
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEEQU", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEEQU", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -1287,7 +1297,7 @@ dgeequ_ (integer * m, integer * n, doublereal * a, integer *
 
 	/*     Get machine constants. */
 
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 
 	/*     Compute row scale factors. */
@@ -1455,43 +1465,43 @@ dgeequ_ (integer * m, integer * n, doublereal * a, integer *
 }	/* dgeequ_ */
 
 int
-dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
-		  a, integer * lda, doublereal * wr, doublereal * wi, doublereal * vl,
-		  integer * ldvl, doublereal * vr, integer * ldvr, doublereal * work, integer * lwork, integer * info, ftnlen jobvl_len, ftnlen jobvr_len)
+dgeev_ (char *jobvl, char *jobvr, int * n, double *
+		  a, int * lda, double * wr, double * wi, double * vl,
+		  int * ldvl, double * vr, int * ldvr, double * work, int * lwork, int * info, int jobvl_len, int jobvr_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int a_dim1, a_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, k;
-	static doublereal r__, cs, sn;
-	static integer ihi;
-	static doublereal scl;
-	static integer ilo;
-	static doublereal dum[1], eps;
-	static integer ibal;
+	static int i__, k;
+	static double r__, cs, sn;
+	static int ihi;
+	static double scl;
+	static int ilo;
+	static double dum[1], eps;
+	static int ibal;
 	static char side[1];
-	static integer maxb;
-	static doublereal anrm;
-	static integer ierr, itau;
+	static int maxb;
+	static double anrm;
+	static int ierr, itau;
 
-	static integer iwrk, nout;
+	static int iwrk, nout;
 
-	static logical scalea;
-	static doublereal cscale;
-	static logical select[1];
+	static bool scalea;
+	static double cscale;
+	static bool select[1];
 
-	static doublereal bignum;
+	static double bignum;
 
-	static integer minwrk, maxwrk;
-	static logical wantvl;
-	static doublereal smlnum;
-	static integer hswork;
-	static logical lquery, wantvr;
+	static int minwrk, maxwrk;
+	static bool wantvl;
+	static double smlnum;
+	static int hswork;
+	static bool lquery, wantvr;
 
 
 	/*  -- LAPACK driver routine (version 3.0) -- */
@@ -1507,7 +1517,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEEV computes for an N-by-N real nonsymmetric matrix A, the */
+	/*  DGEEV computes for an N-by-N float nonsymmetric matrix A, the */
 	/*  eigenvalues and, optionally, the left and/or right eigenvectors. */
 
 	/*  The right eigenvector v(j) of A satisfies */
@@ -1518,7 +1528,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	/*  where u(j)**H denotes the conjugate transpose of u(j). */
 
 	/*  The computed eigenvectors are normalized to have Euclidean norm */
-	/*  equal to 1 and largest component real. */
+	/*  equal to 1 and largest component float. */
 
 	/*  Arguments */
 	/*  ========= */
@@ -1543,7 +1553,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 	/*  WR      (output) DOUBLE PRECISION array, dimension (N) */
 	/*  WI      (output) DOUBLE PRECISION array, dimension (N) */
-	/*          WR and WI contain the real and imaginary parts, */
+	/*          WR and WI contain the float and imaginary parts, */
 	/*          respectively, of the computed eigenvalues.  Complex */
 	/*          conjugate pairs of eigenvalues appear consecutively */
 	/*          with the eigenvalue having the positive imaginary part */
@@ -1554,7 +1564,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	/*          after another in the columns of VL, in the same order */
 	/*          as their eigenvalues. */
 	/*          If JOBVL = 'N', VL is not referenced. */
-	/*          If the j-th eigenvalue is real, then u(j) = VL(:,j), */
+	/*          If the j-th eigenvalue is float, then u(j) = VL(:,j), */
 	/*          the j-th column of VL. */
 	/*          If the j-th and (j+1)-st eigenvalues form a complex */
 	/*          conjugate pair, then u(j) = VL(:,j) + i*VL(:,j+1) and */
@@ -1569,7 +1579,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	/*          after another in the columns of VR, in the same order */
 	/*          as their eigenvalues. */
 	/*          If JOBVR = 'N', VR is not referenced. */
-	/*          If the j-th eigenvalue is real, then v(j) = VR(:,j), */
+	/*          If the j-th eigenvalue is float, then v(j) = VR(:,j), */
 	/*          the j-th column of VR. */
 	/*          If the j-th and (j+1)-st eigenvalues form a complex */
 	/*          conjugate pair, then v(j) = VR(:,j) + i*VR(:,j+1) and */
@@ -1635,13 +1645,13 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	/* Function Body */
 	*info = 0;
 	lquery = *lwork == -1;
-	wantvl = lsame_ (jobvl, "V", (ftnlen) 1, (ftnlen) 1);
-	wantvr = lsame_ (jobvr, "V", (ftnlen) 1, (ftnlen) 1);
-	if (!wantvl && !lsame_ (jobvl, "N", (ftnlen) 1, (ftnlen) 1))
+	wantvl = lsame_ (jobvl, "V", (int) 1, (int) 1);
+	wantvr = lsame_ (jobvr, "V", (int) 1, (int) 1);
+	if (!wantvl && !lsame_ (jobvl, "N", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
-	else if (!wantvr && !lsame_ (jobvr, "N", (ftnlen) 1, (ftnlen) 1))
+	else if (!wantvr && !lsame_ (jobvr, "N", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
@@ -1675,18 +1685,18 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	minwrk = 1;
 	if (*info == 0 && (*lwork >= 1 || lquery))
 	{
-		maxwrk = (*n << 1) + *n * ilaenv_ (&c__1, "DGEHRD", " ", n, &c__1, n, &c__0, (ftnlen) 6, (ftnlen) 1);
+		maxwrk = (*n << 1) + *n * ilaenv_ (&c__1, "DGEHRD", " ", n, &c__1, n, &c__0, (int) 6, (int) 1);
 		if (!wantvl && !wantvr)
 		{
 			/* Computing MAX */
 			i__1 = 1, i__2 = *n * 3;
 			minwrk = max (i__1, i__2);
 			/* Computing MAX */
-			i__1 = ilaenv_ (&c__8, "DHSEQR", "EN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__1 = ilaenv_ (&c__8, "DHSEQR", "EN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			maxb = max (i__1, 2);
 			/* Computing MIN */
 			/* Computing MAX */
-			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			i__1 = min (maxb, *n), i__2 = max (i__3, i__4);
 			k = min (i__1, i__2);
 			/* Computing MAX */
@@ -1702,14 +1712,14 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 			i__1 = 1, i__2 = *n << 2;
 			minwrk = max (i__1, i__2);
 			/* Computing MAX */
-			i__1 = maxwrk, i__2 = (*n << 1) + (*n - 1) * ilaenv_ (&c__1, "DOR" "GHR", " ", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 1);
+			i__1 = maxwrk, i__2 = (*n << 1) + (*n - 1) * ilaenv_ (&c__1, "DOR" "GHR", " ", n, &c__1, n, &c_n1, (int) 6, (int) 1);
 			maxwrk = max (i__1, i__2);
 			/* Computing MAX */
-			i__1 = ilaenv_ (&c__8, "DHSEQR", "SV", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__1 = ilaenv_ (&c__8, "DHSEQR", "SV", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			maxb = max (i__1, 2);
 			/* Computing MIN */
 			/* Computing MAX */
-			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "SV", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "SV", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			i__1 = min (maxb, *n), i__2 = max (i__3, i__4);
 			k = min (i__1, i__2);
 			/* Computing MAX */
@@ -1722,7 +1732,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 			i__1 = maxwrk, i__2 = *n << 2;
 			maxwrk = max (i__1, i__2);
 		}
-		work[1] = (doublereal) maxwrk;
+		work[1] = (double) maxwrk;
 	}
 	if (*lwork < minwrk && !lquery)
 	{
@@ -1731,7 +1741,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEEV ", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEEV ", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -1748,8 +1758,8 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 	/*     Get machine constants */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 	dlabad_ (&smlnum, &bignum);
 	smlnum = sqrt (smlnum) / eps;
@@ -1757,28 +1767,28 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 	/*     Scale A if max element outside range [SMLNUM,BIGNUM] */
 
-	anrm = dlange_ ("M", n, n, &a[a_offset], lda, dum, (ftnlen) 1);
-	scalea = FALSE_;
+	anrm = dlange_ ("M", n, n, &a[a_offset], lda, dum, (int) 1);
+	scalea = false;
 	if (anrm > 0. && anrm < smlnum)
 	{
-		scalea = TRUE_;
+		scalea = true;
 		cscale = smlnum;
 	}
 	else if (anrm > bignum)
 	{
-		scalea = TRUE_;
+		scalea = true;
 		cscale = bignum;
 	}
 	if (scalea)
 	{
-		dlascl_ ("G", &c__0, &c__0, &anrm, &cscale, n, n, &a[a_offset], lda, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &anrm, &cscale, n, n, &a[a_offset], lda, &ierr, (int) 1);
 	}
 
 	/*     Balance the matrix */
 	/*     (Workspace: need N) */
 
 	ibal = 1;
-	dgebal_ ("B", n, &a[a_offset], lda, &ilo, &ihi, &work[ibal], &ierr, (ftnlen) 1);
+	dgebal_ ("B", n, &a[a_offset], lda, &ilo, &ihi, &work[ibal], &ierr, (int) 1);
 
 	/*     Reduce to upper Hessenberg form */
 	/*     (Workspace: need 3*N, prefer 2*N+N*NB) */
@@ -1795,7 +1805,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/*        Copy Householder vectors to VL */
 
 		*(unsigned char *) side = 'L';
-		dlacpy_ ("L", n, n, &a[a_offset], lda, &vl[vl_offset], ldvl, (ftnlen) 1);
+		dlacpy_ ("L", n, n, &a[a_offset], lda, &vl[vl_offset], ldvl, (int) 1);
 
 		/*        Generate orthogonal matrix in VL */
 		/*        (Workspace: need 3*N-1, prefer 2*N+(N-1)*NB) */
@@ -1808,7 +1818,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ ("S", "V", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vl[vl_offset], ldvl, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ ("S", "V", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vl[vl_offset], ldvl, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 
 		if (wantvr)
 		{
@@ -1817,7 +1827,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 			/*           Copy Schur vectors to VR */
 
 			*(unsigned char *) side = 'B';
-			dlacpy_ ("F", n, n, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, (ftnlen) 1);
+			dlacpy_ ("F", n, n, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, (int) 1);
 		}
 
 	}
@@ -1828,7 +1838,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/*        Copy Householder vectors to VR */
 
 		*(unsigned char *) side = 'R';
-		dlacpy_ ("L", n, n, &a[a_offset], lda, &vr[vr_offset], ldvr, (ftnlen) 1);
+		dlacpy_ ("L", n, n, &a[a_offset], lda, &vr[vr_offset], ldvr, (int) 1);
 
 		/*        Generate orthogonal matrix in VR */
 		/*        (Workspace: need 3*N-1, prefer 2*N+(N-1)*NB) */
@@ -1841,7 +1851,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ ("S", "V", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ ("S", "V", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 
 	}
 	else
@@ -1852,7 +1862,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ ("E", "N", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ ("E", "N", n, &ilo, &ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 	}
 
 	/*     If INFO > 0 from DHSEQR, then quit */
@@ -1868,7 +1878,7 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/*        Compute left and/or right eigenvectors */
 		/*        (Workspace: need 4*N) */
 
-		dtrevc_ (side, "B", select, n, &a[a_offset], lda, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, n, &nout, &work[iwrk], &ierr, (ftnlen) 1, (ftnlen) 1);
+		dtrevc_ (side, "B", select, n, &a[a_offset], lda, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, n, &nout, &work[iwrk], &ierr, (int) 1, (int) 1);
 	}
 
 	if (wantvl)
@@ -1877,9 +1887,9 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/*        Undo balancing of left eigenvectors */
 		/*        (Workspace: need N) */
 
-		dgebak_ ("B", "L", n, &ilo, &ihi, &work[ibal], n, &vl[vl_offset], ldvl, &ierr, (ftnlen) 1, (ftnlen) 1);
+		dgebak_ ("B", "L", n, &ilo, &ihi, &work[ibal], n, &vl[vl_offset], ldvl, &ierr, (int) 1, (int) 1);
 
-		/*        Normalize left eigenvectors and make largest component real */
+		/*        Normalize left eigenvectors and make largest component float */
 
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -1921,9 +1931,9 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/*        Undo balancing of right eigenvectors */
 		/*        (Workspace: need N) */
 
-		dgebak_ ("B", "R", n, &ilo, &ihi, &work[ibal], n, &vr[vr_offset], ldvr, &ierr, (ftnlen) 1, (ftnlen) 1);
+		dgebak_ ("B", "R", n, &ilo, &ihi, &work[ibal], n, &vr[vr_offset], ldvr, &ierr, (int) 1, (int) 1);
 
-		/*        Normalize right eigenvectors and make largest component real */
+		/*        Normalize right eigenvectors and make largest component float */
 
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -1968,22 +1978,22 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 		/* Computing MAX */
 		i__3 = *n - *info;
 		i__2 = max (i__3, 1);
-		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[*info + 1], &i__2, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[*info + 1], &i__2, &ierr, (int) 1);
 		i__1 = *n - *info;
 		/* Computing MAX */
 		i__3 = *n - *info;
 		i__2 = max (i__3, 1);
-		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[*info + 1], &i__2, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[*info + 1], &i__2, &ierr, (int) 1);
 		if (*info > 0)
 		{
 			i__1 = ilo - 1;
-			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[1], n, &ierr, (ftnlen) 1);
+			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[1], n, &ierr, (int) 1);
 			i__1 = ilo - 1;
-			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[1], n, &ierr, (ftnlen) 1);
+			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[1], n, &ierr, (int) 1);
 		}
 	}
 
-	work[1] = (doublereal) maxwrk;
+	work[1] = (double) maxwrk;
 	return 0;
 
 	/*     End of DGEEV */
@@ -1991,41 +2001,41 @@ dgeev_ (char *jobvl, char *jobvr, integer * n, doublereal *
 }	/* dgeev_ */
 
 int
-dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doublereal * a, integer * lda, doublereal * wr,
-			doublereal * wi, doublereal * vl, integer * ldvl, doublereal * vr,
-			integer * ldvr, integer * ilo, integer * ihi, doublereal * scale,
-			doublereal * abnrm, doublereal * rconde, doublereal * rcondv, doublereal
-			* work, integer * lwork, integer * iwork, integer * info, ftnlen balanc_len, ftnlen jobvl_len, ftnlen jobvr_len, ftnlen sense_len)
+dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, int * n, double * a, int * lda, double * wr,
+			double * wi, double * vl, int * ldvl, double * vr,
+			int * ldvr, int * ilo, int * ihi, double * scale,
+			double * abnrm, double * rconde, double * rcondv, double
+			* work, int * lwork, int * iwork, int * info, int balanc_len, int jobvl_len, int jobvr_len, int sense_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int a_dim1, a_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, k;
-	static doublereal r__, cs, sn;
+	static int i__, k;
+	static double r__, cs, sn;
 	static char job[1];
-	static doublereal scl, dum[1], eps;
+	static double scl, dum[1], eps;
 	static char side[1];
-	static integer maxb;
-	static doublereal anrm;
-	static integer ierr, itau;
+	static int maxb;
+	static double anrm;
+	static int ierr, itau;
 
-	static integer iwrk, nout;
-	static integer icond;
-	static logical scalea;
-	static doublereal cscale;
-	static logical select[1];
-	static doublereal bignum;
-	static integer minwrk, maxwrk;
-	static logical wantvl, wntsnb;
-	static integer hswork;
-	static logical wntsne;
-	static doublereal smlnum;
-	static logical lquery, wantvr, wntsnn, wntsnv;
+	static int iwrk, nout;
+	static int icond;
+	static bool scalea;
+	static double cscale;
+	static bool select[1];
+	static double bignum;
+	static int minwrk, maxwrk;
+	static bool wantvl, wntsnb;
+	static int hswork;
+	static bool wntsne;
+	static double smlnum;
+	static bool lquery, wantvr, wntsnn, wntsnv;
 
 
 	/*  -- LAPACK driver routine (version 3.0) -- */
@@ -2041,7 +2051,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEEVX computes for an N-by-N real nonsymmetric matrix A, the */
+	/*  DGEEVX computes for an N-by-N float nonsymmetric matrix A, the */
 	/*  eigenvalues and, optionally, the left and/or right eigenvectors. */
 
 	/*  Optionally also, it computes a balancing transformation to improve */
@@ -2058,7 +2068,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*  where u(j)**H denotes the conjugate transpose of u(j). */
 
 	/*  The computed eigenvectors are normalized to have Euclidean norm */
-	/*  equal to 1 and largest component real. */
+	/*  equal to 1 and largest component float. */
 
 	/*  Balancing a matrix means permuting the rows and columns to make it */
 	/*  more nearly upper triangular, and applying a diagonal similarity */
@@ -2117,7 +2127,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N) */
 	/*          On entry, the N-by-N matrix A. */
 	/*          On exit, A has been overwritten.  If JOBVL = 'V' or */
-	/*          JOBVR = 'V', A contains the real Schur form of the balanced */
+	/*          JOBVR = 'V', A contains the float Schur form of the balanced */
 	/*          version of the input matrix A. */
 
 	/*  LDA     (input) INTEGER */
@@ -2125,7 +2135,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 	/*  WR      (output) DOUBLE PRECISION array, dimension (N) */
 	/*  WI      (output) DOUBLE PRECISION array, dimension (N) */
-	/*          WR and WI contain the real and imaginary parts, */
+	/*          WR and WI contain the float and imaginary parts, */
 	/*          respectively, of the computed eigenvalues.  Complex */
 	/*          conjugate pairs of eigenvalues will appear consecutively */
 	/*          with the eigenvalue having the positive imaginary part */
@@ -2136,7 +2146,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*          after another in the columns of VL, in the same order */
 	/*          as their eigenvalues. */
 	/*          If JOBVL = 'N', VL is not referenced. */
-	/*          If the j-th eigenvalue is real, then u(j) = VL(:,j), */
+	/*          If the j-th eigenvalue is float, then u(j) = VL(:,j), */
 	/*          the j-th column of VL. */
 	/*          If the j-th and (j+1)-st eigenvalues form a complex */
 	/*          conjugate pair, then u(j) = VL(:,j) + i*VL(:,j+1) and */
@@ -2151,7 +2161,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*          after another in the columns of VR, in the same order */
 	/*          as their eigenvalues. */
 	/*          If JOBVR = 'N', VR is not referenced. */
-	/*          If the j-th eigenvalue is real, then v(j) = VR(:,j), */
+	/*          If the j-th eigenvalue is float, then v(j) = VR(:,j), */
 	/*          the j-th column of VR. */
 	/*          If the j-th and (j+1)-st eigenvalues form a complex */
 	/*          conjugate pair, then v(j) = VR(:,j) + i*VR(:,j+1) and */
@@ -2162,7 +2172,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*          JOBVR = 'V', LDVR >= N. */
 
 	/*  ILO,IHI (output) INTEGER */
-	/*          ILO and IHI are integer values determined when A was */
+	/*          ILO and IHI are int values determined when A was */
 	/*          balanced.  The balanced A(i,j) = 0 if I > J and */
 	/*          J = 1,...,ILO-1 or I = IHI+1,...,N. */
 
@@ -2253,22 +2263,22 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/* Function Body */
 	*info = 0;
 	lquery = *lwork == -1;
-	wantvl = lsame_ (jobvl, "V", (ftnlen) 1, (ftnlen) 1);
-	wantvr = lsame_ (jobvr, "V", (ftnlen) 1, (ftnlen) 1);
-	wntsnn = lsame_ (sense, "N", (ftnlen) 1, (ftnlen) 1);
-	wntsne = lsame_ (sense, "E", (ftnlen) 1, (ftnlen) 1);
-	wntsnv = lsame_ (sense, "V", (ftnlen) 1, (ftnlen) 1);
-	wntsnb = lsame_ (sense, "B", (ftnlen) 1, (ftnlen) 1);
-	if (!(lsame_ (balanc, "N", (ftnlen) 1, (ftnlen) 1) || lsame_ (balanc, "S", (ftnlen) 1, (ftnlen) 1) || lsame_ (balanc, "P", (ftnlen) 1, (ftnlen) 1)
-			|| lsame_ (balanc, "B", (ftnlen) 1, (ftnlen) 1)))
+	wantvl = lsame_ (jobvl, "V", (int) 1, (int) 1);
+	wantvr = lsame_ (jobvr, "V", (int) 1, (int) 1);
+	wntsnn = lsame_ (sense, "N", (int) 1, (int) 1);
+	wntsne = lsame_ (sense, "E", (int) 1, (int) 1);
+	wntsnv = lsame_ (sense, "V", (int) 1, (int) 1);
+	wntsnb = lsame_ (sense, "B", (int) 1, (int) 1);
+	if (!(lsame_ (balanc, "N", (int) 1, (int) 1) || lsame_ (balanc, "S", (int) 1, (int) 1) || lsame_ (balanc, "P", (int) 1, (int) 1)
+			|| lsame_ (balanc, "B", (int) 1, (int) 1)))
 	{
 		*info = -1;
 	}
-	else if (!wantvl && !lsame_ (jobvl, "N", (ftnlen) 1, (ftnlen) 1))
+	else if (!wantvl && !lsame_ (jobvl, "N", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
-	else if (!wantvr && !lsame_ (jobvr, "N", (ftnlen) 1, (ftnlen) 1))
+	else if (!wantvr && !lsame_ (jobvr, "N", (int) 1, (int) 1))
 	{
 		*info = -3;
 	}
@@ -2306,7 +2316,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	minwrk = 1;
 	if (*info == 0 && (*lwork >= 1 || lquery))
 	{
-		maxwrk = *n + *n * ilaenv_ (&c__1, "DGEHRD", " ", n, &c__1, n, &c__0, (ftnlen) 6, (ftnlen) 1);
+		maxwrk = *n + *n * ilaenv_ (&c__1, "DGEHRD", " ", n, &c__1, n, &c__0, (int) 6, (int) 1);
 		if (!wantvl && !wantvr)
 		{
 			/* Computing MAX */
@@ -2319,13 +2329,13 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 				minwrk = max (i__1, i__2);
 			}
 			/* Computing MAX */
-			i__1 = ilaenv_ (&c__8, "DHSEQR", "SN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__1 = ilaenv_ (&c__8, "DHSEQR", "SN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			maxb = max (i__1, 2);
 			if (wntsnn)
 			{
 				/* Computing MIN */
 				/* Computing MAX */
-				i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+				i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 				i__1 = min (maxb, *n), i__2 = max (i__3, i__4);
 				k = min (i__1, i__2);
 			}
@@ -2333,7 +2343,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 			{
 				/* Computing MIN */
 				/* Computing MAX */
-				i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "SN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+				i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "SN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 				i__1 = min (maxb, *n), i__2 = max (i__3, i__4);
 				k = min (i__1, i__2);
 			}
@@ -2362,11 +2372,11 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 				minwrk = max (i__1, i__2);
 			}
 			/* Computing MAX */
-			i__1 = ilaenv_ (&c__8, "DHSEQR", "SN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__1 = ilaenv_ (&c__8, "DHSEQR", "SN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			maxb = max (i__1, 2);
 			/* Computing MIN */
 			/* Computing MAX */
-			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 2);
+			i__3 = 2, i__4 = ilaenv_ (&c__4, "DHSEQR", "EN", n, &c__1, n, &c_n1, (int) 6, (int) 2);
 			i__1 = min (maxb, *n), i__2 = max (i__3, i__4);
 			k = min (i__1, i__2);
 			/* Computing MAX */
@@ -2376,7 +2386,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 			i__1 = max (maxwrk, 1);
 			maxwrk = max (i__1, hswork);
 			/* Computing MAX */
-			i__1 = maxwrk, i__2 = *n + (*n - 1) * ilaenv_ (&c__1, "DORGHR", " ", n, &c__1, n, &c_n1, (ftnlen) 6, (ftnlen) 1);
+			i__1 = maxwrk, i__2 = *n + (*n - 1) * ilaenv_ (&c__1, "DORGHR", " ", n, &c__1, n, &c_n1, (int) 6, (int) 1);
 			maxwrk = max (i__1, i__2);
 			if (!wntsnn && !wntsne)
 			{
@@ -2388,7 +2398,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 			i__1 = maxwrk, i__2 = *n * 3, i__1 = max (i__1, i__2);
 			maxwrk = max (i__1, 1);
 		}
-		work[1] = (doublereal) maxwrk;
+		work[1] = (double) maxwrk;
 	}
 	if (*lwork < minwrk && !lquery)
 	{
@@ -2397,7 +2407,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEEVX", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEEVX", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -2414,8 +2424,8 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 	/*     Get machine constants */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 	dlabad_ (&smlnum, &bignum);
 	smlnum = sqrt (smlnum) / eps;
@@ -2424,31 +2434,31 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	/*     Scale A if max element outside range [SMLNUM,BIGNUM] */
 
 	icond = 0;
-	anrm = dlange_ ("M", n, n, &a[a_offset], lda, dum, (ftnlen) 1);
-	scalea = FALSE_;
+	anrm = dlange_ ("M", n, n, &a[a_offset], lda, dum, (int) 1);
+	scalea = false;
 	if (anrm > 0. && anrm < smlnum)
 	{
-		scalea = TRUE_;
+		scalea = true;
 		cscale = smlnum;
 	}
 	else if (anrm > bignum)
 	{
-		scalea = TRUE_;
+		scalea = true;
 		cscale = bignum;
 	}
 	if (scalea)
 	{
-		dlascl_ ("G", &c__0, &c__0, &anrm, &cscale, n, n, &a[a_offset], lda, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &anrm, &cscale, n, n, &a[a_offset], lda, &ierr, (int) 1);
 	}
 
 	/*     Balance the matrix and compute ABNRM */
 
-	dgebal_ (balanc, n, &a[a_offset], lda, ilo, ihi, &scale[1], &ierr, (ftnlen) 1);
-	*abnrm = dlange_ ("1", n, n, &a[a_offset], lda, dum, (ftnlen) 1);
+	dgebal_ (balanc, n, &a[a_offset], lda, ilo, ihi, &scale[1], &ierr, (int) 1);
+	*abnrm = dlange_ ("1", n, n, &a[a_offset], lda, dum, (int) 1);
 	if (scalea)
 	{
 		dum[0] = *abnrm;
-		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &c__1, &c__1, dum, &c__1, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &c__1, &c__1, dum, &c__1, &ierr, (int) 1);
 		*abnrm = dum[0];
 	}
 
@@ -2467,7 +2477,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 		/*        Copy Householder vectors to VL */
 
 		*(unsigned char *) side = 'L';
-		dlacpy_ ("L", n, n, &a[a_offset], lda, &vl[vl_offset], ldvl, (ftnlen) 1);
+		dlacpy_ ("L", n, n, &a[a_offset], lda, &vl[vl_offset], ldvl, (int) 1);
 
 		/*        Generate orthogonal matrix in VL */
 		/*        (Workspace: need 2*N-1, prefer N+(N-1)*NB) */
@@ -2480,7 +2490,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ ("S", "V", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vl[vl_offset], ldvl, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ ("S", "V", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vl[vl_offset], ldvl, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 
 		if (wantvr)
 		{
@@ -2489,7 +2499,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 			/*           Copy Schur vectors to VR */
 
 			*(unsigned char *) side = 'B';
-			dlacpy_ ("F", n, n, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, (ftnlen) 1);
+			dlacpy_ ("F", n, n, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, (int) 1);
 		}
 
 	}
@@ -2500,7 +2510,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 		/*        Copy Householder vectors to VR */
 
 		*(unsigned char *) side = 'R';
-		dlacpy_ ("L", n, n, &a[a_offset], lda, &vr[vr_offset], ldvr, (ftnlen) 1);
+		dlacpy_ ("L", n, n, &a[a_offset], lda, &vr[vr_offset], ldvr, (int) 1);
 
 		/*        Generate orthogonal matrix in VR */
 		/*        (Workspace: need 2*N-1, prefer N+(N-1)*NB) */
@@ -2513,7 +2523,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ ("S", "V", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ ("S", "V", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 
 	}
 	else
@@ -2535,7 +2545,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 		iwrk = itau;
 		i__1 = *lwork - iwrk + 1;
-		dhseqr_ (job, "N", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (ftnlen) 1, (ftnlen) 1);
+		dhseqr_ (job, "N", n, ilo, ihi, &a[a_offset], lda, &wr[1], &wi[1], &vr[vr_offset], ldvr, &work[iwrk], &i__1, info, (int) 1, (int) 1);
 	}
 
 	/*     If INFO > 0 from DHSEQR, then quit */
@@ -2551,7 +2561,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 		/*        Compute left and/or right eigenvectors */
 		/*        (Workspace: need 3*N) */
 
-		dtrevc_ (side, "B", select, n, &a[a_offset], lda, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, n, &nout, &work[iwrk], &ierr, (ftnlen) 1, (ftnlen) 1);
+		dtrevc_ (side, "B", select, n, &a[a_offset], lda, &vl[vl_offset], ldvl, &vr[vr_offset], ldvr, n, &nout, &work[iwrk], &ierr, (int) 1, (int) 1);
 	}
 
 	/*     Compute condition numbers if desired */
@@ -2560,7 +2570,7 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 	if (!wntsnn)
 	{
 		dtrsna_ (sense, "A", select, n, &a[a_offset], lda, &vl[vl_offset],
-					ldvl, &vr[vr_offset], ldvr, &rconde[1], &rcondv[1], n, &nout, &work[iwrk], n, &iwork[1], &icond, (ftnlen) 1, (ftnlen) 1);
+					ldvl, &vr[vr_offset], ldvr, &rconde[1], &rcondv[1], n, &nout, &work[iwrk], n, &iwork[1], &icond, (int) 1, (int) 1);
 	}
 
 	if (wantvl)
@@ -2568,9 +2578,9 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 		/*        Undo balancing of left eigenvectors */
 
-		dgebak_ (balanc, "L", n, ilo, ihi, &scale[1], n, &vl[vl_offset], ldvl, &ierr, (ftnlen) 1, (ftnlen) 1);
+		dgebak_ (balanc, "L", n, ilo, ihi, &scale[1], n, &vl[vl_offset], ldvl, &ierr, (int) 1, (int) 1);
 
-		/*        Normalize left eigenvectors and make largest component real */
+		/*        Normalize left eigenvectors and make largest component float */
 
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -2611,9 +2621,9 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 
 		/*        Undo balancing of right eigenvectors */
 
-		dgebak_ (balanc, "R", n, ilo, ihi, &scale[1], n, &vr[vr_offset], ldvr, &ierr, (ftnlen) 1, (ftnlen) 1);
+		dgebak_ (balanc, "R", n, ilo, ihi, &scale[1], n, &vr[vr_offset], ldvr, &ierr, (int) 1, (int) 1);
 
-		/*        Normalize right eigenvectors and make largest component real */
+		/*        Normalize right eigenvectors and make largest component float */
 
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -2658,29 +2668,29 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 		/* Computing MAX */
 		i__3 = *n - *info;
 		i__2 = max (i__3, 1);
-		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[*info + 1], &i__2, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[*info + 1], &i__2, &ierr, (int) 1);
 		i__1 = *n - *info;
 		/* Computing MAX */
 		i__3 = *n - *info;
 		i__2 = max (i__3, 1);
-		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[*info + 1], &i__2, &ierr, (ftnlen) 1);
+		dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[*info + 1], &i__2, &ierr, (int) 1);
 		if (*info == 0)
 		{
 			if ((wntsnv || wntsnb) && icond == 0)
 			{
-				dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, n, &c__1, &rcondv[1], n, &ierr, (ftnlen) 1);
+				dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, n, &c__1, &rcondv[1], n, &ierr, (int) 1);
 			}
 		}
 		else
 		{
 			i__1 = *ilo - 1;
-			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[1], n, &ierr, (ftnlen) 1);
+			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wr[1], n, &ierr, (int) 1);
 			i__1 = *ilo - 1;
-			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[1], n, &ierr, (ftnlen) 1);
+			dlascl_ ("G", &c__0, &c__0, &cscale, &anrm, &i__1, &c__1, &wi[1], n, &ierr, (int) 1);
 		}
 	}
 
-	work[1] = (doublereal) maxwrk;
+	work[1] = (double) maxwrk;
 	return 0;
 
 	/*     End of DGEEVX */
@@ -2688,14 +2698,14 @@ dgeevx_ (char *balanc, char *jobvl, char *jobvr, char *sense, integer * n, doubl
 }	/* dgeevx_ */
 
 static int
-dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info)
+dgehd2_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
+	int a_dim1, a_offset, i__1, i__2, i__3;
 
 	/* Local variables */
-	static integer i__;
-	static doublereal aii;
+	static int i__;
+	static double aii;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -2711,7 +2721,7 @@ dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEHD2 reduces a real general matrix A to upper Hessenberg form H by */
+	/*  DGEHD2 reduces a float general matrix A to upper Hessenberg form H by */
 	/*  an orthogonal similarity transformation:  Q' * A * Q = H . */
 
 	/*  Arguments */
@@ -2761,7 +2771,7 @@ dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 
 	/*     H(i) = I - tau * v * v' */
 
-	/*  where tau is a real scalar, and v is a real vector with */
+	/*  where tau is a float scalar, and v is a float vector with */
 	/*  v(1:i) = 0, v(i+1) = 1 and v(ihi+1:n) = 0; v(i+2:ihi) is stored on */
 	/*  exit in A(i+2:ihi,i), and tau in TAU(i). */
 
@@ -2824,7 +2834,7 @@ dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEHD2", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEHD2", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -2844,13 +2854,13 @@ dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 		/*        Apply H(i) to A(1:ihi,i+1:ihi) from the right */
 
 		i__2 = *ihi - i__;
-		dlarf_ ("Right", ihi, &i__2, &a[i__ + 1 + i__ * a_dim1], &c__1, &tau[i__], &a[(i__ + 1) * a_dim1 + 1], lda, &work[1], (ftnlen) 5);
+		dlarf_ ("Right", ihi, &i__2, &a[i__ + 1 + i__ * a_dim1], &c__1, &tau[i__], &a[(i__ + 1) * a_dim1 + 1], lda, &work[1], (int) 5);
 
 		/*        Apply H(i) to A(i+1:ihi,i+1:n) from the left */
 
 		i__2 = *ihi - i__;
 		i__3 = *n - i__;
-		dlarf_ ("Left", &i__2, &i__3, &a[i__ + 1 + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + 1 + (i__ + 1) * a_dim1], lda, &work[1], (ftnlen) 4);
+		dlarf_ ("Left", &i__2, &i__3, &a[i__ + 1 + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + 1 + (i__ + 1) * a_dim1], lda, &work[1], (int) 4);
 
 		a[i__ + 1 + i__ * a_dim1] = aii;
 		/* L10: */
@@ -2863,20 +2873,20 @@ dgehd2_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 }	/* dgehd2_ */
 
 static int
-dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork, integer * info)
+dgehrd_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * lwork, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4;
 
 	/* Local variables */
-	static integer i__;
-	static doublereal t[4160] /* was [65][64] */ ;
-	static integer ib;
-	static doublereal ei;
-	static integer nb, nh, nx, iws;
-	static integer nbmin, iinfo;
-	static integer ldwork, lwkopt;
-	static logical lquery;
+	static int i__;
+	static double t[4160] /* was [65][64] */ ;
+	static int ib;
+	static double ei;
+	static int nb, nh, nx, iws;
+	static int nbmin, iinfo;
+	static int ldwork, lwkopt;
+	static bool lquery;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -2892,7 +2902,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEHRD reduces a real general matrix A to upper Hessenberg form H by */
+	/*  DGEHRD reduces a float general matrix A to upper Hessenberg form H by */
 	/*  an orthogonal similarity transformation:  Q' * A * Q = H . */
 
 	/*  Arguments */
@@ -2954,7 +2964,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 
 	/*     H(i) = I - tau * v * v' */
 
-	/*  where tau is a real scalar, and v is a real vector with */
+	/*  where tau is a float scalar, and v is a float vector with */
 	/*  v(1:i) = 0, v(i+1) = 1 and v(ihi+1:n) = 0; v(i+2:ihi) is stored on */
 	/*  exit in A(i+2:ihi,i), and tau in TAU(i). */
 
@@ -3003,10 +3013,10 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/* Function Body */
 	*info = 0;
 	/* Computing MIN */
-	i__1 = 64, i__2 = ilaenv_ (&c__1, "DGEHRD", " ", n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 1);
+	i__1 = 64, i__2 = ilaenv_ (&c__1, "DGEHRD", " ", n, ilo, ihi, &c_n1, (int) 6, (int) 1);
 	nb = min (i__1, i__2);
 	lwkopt = *n * nb;
-	work[1] = (doublereal) lwkopt;
+	work[1] = (double) lwkopt;
 	lquery = *lwork == -1;
 	if (*n < 0)
 	{
@@ -3031,7 +3041,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEHRD", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEHRD", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -3066,7 +3076,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/*     Determine the block size. */
 
 	/* Computing MIN */
-	i__1 = 64, i__2 = ilaenv_ (&c__1, "DGEHRD", " ", n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 1);
+	i__1 = 64, i__2 = ilaenv_ (&c__1, "DGEHRD", " ", n, ilo, ihi, &c_n1, (int) 6, (int) 1);
 	nb = min (i__1, i__2);
 	nbmin = 2;
 	iws = 1;
@@ -3077,7 +3087,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 		/*        (last block is always handled by unblocked code). */
 
 		/* Computing MAX */
-		i__1 = nb, i__2 = ilaenv_ (&c__3, "DGEHRD", " ", n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 1);
+		i__1 = nb, i__2 = ilaenv_ (&c__3, "DGEHRD", " ", n, ilo, ihi, &c_n1, (int) 6, (int) 1);
 		nx = max (i__1, i__2);
 		if (nx < nh)
 		{
@@ -3093,7 +3103,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 				/*              unblocked code. */
 
 				/* Computing MAX */
-				i__1 = 2, i__2 = ilaenv_ (&c__2, "DGEHRD", " ", n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 1);
+				i__1 = 2, i__2 = ilaenv_ (&c__2, "DGEHRD", " ", n, ilo, ihi, &c_n1, (int) 6, (int) 1);
 				nbmin = max (i__1, i__2);
 				if (*lwork >= *n * nbmin)
 				{
@@ -3143,7 +3153,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 			a[i__ + ib + (i__ + ib - 1) * a_dim1] = 1.;
 			i__3 = *ihi - i__ - ib + 1;
 			dgemm_ ("No transpose", "Transpose", ihi, &i__3, &ib, &c_b347, &work[1], &ldwork, &a[i__ + ib + i__ * a_dim1], lda, &c_b348,
-					  &a[(i__ + ib) * a_dim1 + 1], lda, (ftnlen) 12, (ftnlen) 9);
+					  &a[(i__ + ib) * a_dim1 + 1], lda, (int) 12, (int) 9);
 			a[i__ + ib + (i__ + ib - 1) * a_dim1] = ei;
 
 			/*           Apply the block reflector H to A(i+1:ihi,i+ib:n) from the */
@@ -3152,7 +3162,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 			i__3 = *ihi - i__;
 			i__4 = *n - i__ - ib + 1;
 			dlarfb_ ("Left", "Transpose", "Forward", "Columnwise", &i__3, &i__4, &ib, &a[i__ + 1 + i__ * a_dim1], lda, t, &c__65,
-						&a[i__ + 1 + (i__ + ib) * a_dim1], lda, &work[1], &ldwork, (ftnlen) 4, (ftnlen) 9, (ftnlen) 7, (ftnlen) 10);
+						&a[i__ + 1 + (i__ + ib) * a_dim1], lda, &work[1], &ldwork, (int) 4, (int) 9, (int) 7, (int) 10);
 			/* L30: */
 		}
 	}
@@ -3160,7 +3170,7 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/*     Use unblocked code to reduce the rest of the matrix */
 
 	dgehd2_ (n, &i__, ihi, &a[a_offset], lda, &tau[1], &work[1], &iinfo);
-	work[1] = (doublereal) iws;
+	work[1] = (double) iws;
 
 	return 0;
 
@@ -3169,14 +3179,14 @@ dgehrd_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 }	/* dgehrd_ */
 
 static int
-dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info)
+dgeqr2_ (int * m, int * n, double * a, int * lda, double * tau, double * work, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
+	int a_dim1, a_offset, i__1, i__2, i__3;
 
 	/* Local variables */
-	static integer i__, k;
-	static doublereal aii;
+	static int i__, k;
+	static double aii;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -3192,7 +3202,7 @@ dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * t
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGEQR2 computes a QR factorization of a real m by n matrix A: */
+	/*  DGEQR2 computes a QR factorization of a float m by n matrix A: */
 	/*  A = Q * R. */
 
 	/*  Arguments */
@@ -3236,7 +3246,7 @@ dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * t
 
 	/*     H(i) = I - tau * v * v' */
 
-	/*  where tau is a real scalar, and v is a real vector with */
+	/*  where tau is a float scalar, and v is a float vector with */
 	/*  v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), */
 	/*  and tau in TAU(i). */
 
@@ -3278,7 +3288,7 @@ dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * t
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGEQR2", &i__1, (ftnlen) 6);
+		xerbla_ ("DGEQR2", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -3303,7 +3313,7 @@ dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * t
 			a[i__ + i__ * a_dim1] = 1.;
 			i__2 = *m - i__ + 1;
 			i__3 = *n - i__;
-			dlarf_ ("Left", &i__2, &i__3, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + (i__ + 1) * a_dim1], lda, &work[1], (ftnlen) 4);
+			dlarf_ ("Left", &i__2, &i__3, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + (i__ + 1) * a_dim1], lda, &work[1], (int) 4);
 			a[i__ + i__ * a_dim1] = aii;
 		}
 		/* L10: */
@@ -3315,27 +3325,27 @@ dgeqr2_ (integer * m, integer * n, doublereal * a, integer * lda, doublereal * t
 }	/* dgeqr2_ */
 
 static int
-dgerfs_ (char *trans, integer * n, integer * nrhs,
-			doublereal * a, integer * lda, doublereal * af, integer * ldaf, integer *
-			ipiv, doublereal * b, integer * ldb, doublereal * x, integer * ldx,
-			doublereal * ferr, doublereal * berr, doublereal * work, integer * iwork, integer * info, ftnlen trans_len)
+dgerfs_ (char *trans, int * n, int * nrhs,
+			double * a, int * lda, double * af, int * ldaf, int *
+			ipiv, double * b, int * ldb, double * x, int * ldx,
+			double * ferr, double * berr, double * work, int * iwork, int * info, int trans_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, af_dim1, af_offset, b_dim1, b_offset, x_dim1, x_offset, i__1, i__2, i__3;
-	doublereal d__1, d__2, d__3;
+	int a_dim1, a_offset, af_dim1, af_offset, b_dim1, b_offset, x_dim1, x_offset, i__1, i__2, i__3;
+	double d__1, d__2, d__3;
 
 	/* Local variables */
-	static integer i__, j, k;
-	static doublereal s, xk;
-	static integer nz;
-	static doublereal eps;
-	static integer kase;
-	static doublereal safe1, safe2;
-	static integer count;
-	static doublereal safmin;
-	static logical notran;
+	static int i__, j, k;
+	static double s, xk;
+	static int nz;
+	static double eps;
+	static int kase;
+	static double safe1, safe2;
+	static int count;
+	static double safmin;
+	static bool notran;
 	static char transt[1];
-	static doublereal lstres;
+	static double lstres;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -3466,8 +3476,8 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 
 	/* Function Body */
 	*info = 0;
-	notran = lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1);
-	if (!notran && !lsame_ (trans, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (trans, "C", (ftnlen) 1, (ftnlen) 1))
+	notran = lsame_ (trans, "N", (int) 1, (int) 1);
+	if (!notran && !lsame_ (trans, "T", (int) 1, (int) 1) && !lsame_ (trans, "C", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -3498,7 +3508,7 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGERFS", &i__1, (ftnlen) 6);
+		xerbla_ ("DGERFS", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -3528,8 +3538,8 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 	/*     NZ = maximum number of nonzero elements in each row of A, plus 1 */
 
 	nz = *n + 1;
-	eps = dlamch_ ("Epsilon", (ftnlen) 7);
-	safmin = dlamch_ ("Safe minimum", (ftnlen) 12);
+	eps = dlamch_ ("Epsilon", (int) 7);
+	safmin = dlamch_ ("Safe minimum", (int) 12);
 	safe1 = nz * safmin;
 	safe2 = safe1 / eps;
 
@@ -3549,7 +3559,7 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 		/*        where op(A) = A, A**T, or A**H, depending on TRANS. */
 
 		dcopy_ (n, &b[j * b_dim1 + 1], &c__1, &work[*n + 1], &c__1);
-		dgemv_ (trans, n, n, &c_b347, &a[a_offset], lda, &x[j * x_dim1 + 1], &c__1, &c_b348, &work[*n + 1], &c__1, (ftnlen) 1);
+		dgemv_ (trans, n, n, &c_b347, &a[a_offset], lda, &x[j * x_dim1 + 1], &c__1, &c_b348, &work[*n + 1], &c__1, (int) 1);
 
 		/*        Compute componentwise relative backward error from formula */
 
@@ -3631,7 +3641,7 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 
 			/*           Update solution and try again. */
 
-			dgetrs_ (trans, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (ftnlen) 1);
+			dgetrs_ (trans, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (int) 1);
 			daxpy_ (n, &c_b348, &work[*n + 1], &c__1, &x[j * x_dim1 + 1], &c__1);
 			lstres = berr[j];
 			++count;
@@ -3684,7 +3694,7 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 
 				/*              Multiply by diag(W)*inv(op(A)**T). */
 
-				dgetrs_ (transt, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (ftnlen) 1);
+				dgetrs_ (transt, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (int) 1);
 				i__2 = *n;
 				for (i__ = 1; i__ <= i__2; ++i__)
 				{
@@ -3703,7 +3713,7 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 					work[*n + i__] = work[i__] * work[*n + i__];
 					/* L120: */
 				}
-				dgetrs_ (trans, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (ftnlen) 1);
+				dgetrs_ (trans, n, &c__1, &af[af_offset], ldaf, &ipiv[1], &work[*n + 1], n, info, (int) 1);
 			}
 			goto L100;
 		}
@@ -3734,10 +3744,10 @@ dgerfs_ (char *trans, integer * n, integer * nrhs,
 }	/* dgerfs_ */
 
 int
-dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ipiv, doublereal * b, integer * ldb, integer * info)
+dgesv_ (int * n, int * nrhs, double * a, int * lda, int * ipiv, double * b, int * ldb, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, b_dim1, b_offset, i__1;
+	int a_dim1, a_offset, b_dim1, b_offset, i__1;
 
 	/* Local variables */
 
@@ -3755,7 +3765,7 @@ dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ip
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGESV computes the solution to a real system of linear equations */
+	/*  DGESV computes the solution to a float system of linear equations */
 	/*     A * X = B, */
 	/*  where A is an N-by-N matrix and X and B are N-by-NRHS matrices. */
 
@@ -3843,7 +3853,7 @@ dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ip
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGESV ", &i__1, (ftnlen) 6);
+		xerbla_ ("DGESV ", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -3855,7 +3865,7 @@ dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ip
 
 		/*        Solve the system A*X = B, overwriting B with X. */
 
-		dgetrs_ ("No transpose", n, nrhs, &a[a_offset], lda, &ipiv[1], &b[b_offset], ldb, info, (ftnlen) 12);
+		dgetrs_ ("No transpose", n, nrhs, &a[a_offset], lda, &ipiv[1], &b[b_offset], ldb, info, (int) 12);
 	}
 	return 0;
 
@@ -3864,32 +3874,32 @@ dgesv_ (integer * n, integer * nrhs, doublereal * a, integer * lda, integer * ip
 }	/* dgesv_ */
 
 int
-dgesvx_ (char *fact, char *trans, integer * n, integer *
-			nrhs, doublereal * a, integer * lda, doublereal * af, integer * ldaf,
-			integer * ipiv, char *equed, doublereal * r__, doublereal * c__,
-			doublereal * b, integer * ldb, doublereal * x, integer * ldx, doublereal *
-			rcond, doublereal * ferr, doublereal * berr, doublereal * work, integer * iwork, integer * info, ftnlen fact_len, ftnlen trans_len, ftnlen equed_len)
+dgesvx_ (char *fact, char *trans, int * n, int *
+			nrhs, double * a, int * lda, double * af, int * ldaf,
+			int * ipiv, char *equed, double * r__, double * c__,
+			double * b, int * ldb, double * x, int * ldx, double *
+			rcond, double * ferr, double * berr, double * work, int * iwork, int * info, int fact_len, int trans_len, int equed_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, af_dim1, af_offset, b_dim1, b_offset, x_dim1, x_offset, i__1, i__2;
-	doublereal d__1, d__2;
+	int a_dim1, a_offset, af_dim1, af_offset, b_dim1, b_offset, x_dim1, x_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal amax;
+	static int i__, j;
+	static double amax;
 	static char norm[1];
-	static doublereal rcmin, rcmax, anorm;
-	static logical equil;
-	static doublereal colcnd;
-	static logical nofact;
-	static doublereal bignum;
-	static integer infequ;
-	static logical colequ;
-	static doublereal rowcnd;
-	static logical notran;
-	static doublereal smlnum;
-	static logical rowequ;
-	static doublereal rpvgrw;
+	static double rcmin, rcmax, anorm;
+	static bool equil;
+	static double colcnd;
+	static bool nofact;
+	static double bignum;
+	static int infequ;
+	static bool colequ;
+	static double rowcnd;
+	static bool notran;
+	static double smlnum;
+	static bool rowequ;
+	static double rpvgrw;
 
 
 	/*  -- LAPACK driver routine (version 3.0) -- */
@@ -3905,7 +3915,7 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DGESVX uses the LU factorization to compute the solution to a real */
+	/*  DGESVX uses the LU factorization to compute the solution to a float */
 	/*  system of linear equations */
 	/*     A * X = B, */
 	/*  where A is an N-by-N matrix and X and B are N-by-NRHS matrices. */
@@ -3918,7 +3928,7 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 
 	/*  The following steps are performed: */
 
-	/*  1. If FACT = 'E', real scaling factors are computed to equilibrate */
+	/*  1. If FACT = 'E', float scaling factors are computed to equilibrate */
 	/*     the system: */
 	/*        TRANS = 'N':  diag(R)*A*diag(C)     *inv(diag(C))*X = diag(R)*B */
 	/*        TRANS = 'T': (diag(R)*A*diag(C))**T *inv(diag(R))*X = diag(C)*B */
@@ -4164,30 +4174,30 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 
 	/* Function Body */
 	*info = 0;
-	nofact = lsame_ (fact, "N", (ftnlen) 1, (ftnlen) 1);
-	equil = lsame_ (fact, "E", (ftnlen) 1, (ftnlen) 1);
-	notran = lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1);
+	nofact = lsame_ (fact, "N", (int) 1, (int) 1);
+	equil = lsame_ (fact, "E", (int) 1, (int) 1);
+	notran = lsame_ (trans, "N", (int) 1, (int) 1);
 	if (nofact || equil)
 	{
 		*(unsigned char *) equed = 'N';
-		rowequ = FALSE_;
-		colequ = FALSE_;
+		rowequ = false;
+		colequ = false;
 	}
 	else
 	{
-		rowequ = lsame_ (equed, "R", (ftnlen) 1, (ftnlen) 1) || lsame_ (equed, "B", (ftnlen) 1, (ftnlen) 1);
-		colequ = lsame_ (equed, "C", (ftnlen) 1, (ftnlen) 1) || lsame_ (equed, "B", (ftnlen) 1, (ftnlen) 1);
-		smlnum = dlamch_ ("Safe minimum", (ftnlen) 12);
+		rowequ = lsame_ (equed, "R", (int) 1, (int) 1) || lsame_ (equed, "B", (int) 1, (int) 1);
+		colequ = lsame_ (equed, "C", (int) 1, (int) 1) || lsame_ (equed, "B", (int) 1, (int) 1);
+		smlnum = dlamch_ ("Safe minimum", (int) 12);
 		bignum = 1. / smlnum;
 	}
 
 	/*     Test the input parameters. */
 
-	if (!nofact && !equil && !lsame_ (fact, "F", (ftnlen) 1, (ftnlen) 1))
+	if (!nofact && !equil && !lsame_ (fact, "F", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
-	else if (!notran && !lsame_ (trans, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (trans, "C", (ftnlen) 1, (ftnlen) 1))
+	else if (!notran && !lsame_ (trans, "T", (int) 1, (int) 1) && !lsame_ (trans, "C", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
@@ -4207,7 +4217,7 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 	{
 		*info = -8;
 	}
-	else if (lsame_ (fact, "F", (ftnlen) 1, (ftnlen) 1) && !(rowequ || colequ || lsame_ (equed, "N", (ftnlen) 1, (ftnlen) 1)))
+	else if (lsame_ (fact, "F", (int) 1, (int) 1) && !(rowequ || colequ || lsame_ (equed, "N", (int) 1, (int) 1)))
 	{
 		*info = -10;
 	}
@@ -4285,7 +4295,7 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGESVX", &i__1, (ftnlen) 6);
+		xerbla_ ("DGESVX", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -4300,9 +4310,9 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 
 			/*           Equilibrate the matrix. */
 
-			dlaqge_ (n, n, &a[a_offset], lda, &r__[1], &c__[1], &rowcnd, &colcnd, &amax, equed, (ftnlen) 1);
-			rowequ = lsame_ (equed, "R", (ftnlen) 1, (ftnlen) 1) || lsame_ (equed, "B", (ftnlen) 1, (ftnlen) 1);
-			colequ = lsame_ (equed, "C", (ftnlen) 1, (ftnlen) 1) || lsame_ (equed, "B", (ftnlen) 1, (ftnlen) 1);
+			dlaqge_ (n, n, &a[a_offset], lda, &r__[1], &c__[1], &rowcnd, &colcnd, &amax, equed, (int) 1);
+			rowequ = lsame_ (equed, "R", (int) 1, (int) 1) || lsame_ (equed, "B", (int) 1, (int) 1);
+			colequ = lsame_ (equed, "C", (int) 1, (int) 1) || lsame_ (equed, "B", (int) 1, (int) 1);
 		}
 	}
 
@@ -4345,7 +4355,7 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 
 		/*        Compute the LU factorization of A. */
 
-		dlacpy_ ("Full", n, n, &a[a_offset], lda, &af[af_offset], ldaf, (ftnlen) 4);
+		dlacpy_ ("Full", n, n, &a[a_offset], lda, &af[af_offset], ldaf, (int) 4);
 		dgetrf_ (n, n, &af[af_offset], ldaf, &ipiv[1], info);
 
 		/*        Return if INFO is non-zero. */
@@ -4358,14 +4368,14 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 				/*              Compute the reciprocal pivot growth factor of the */
 				/*              leading rank-deficient INFO columns of A. */
 
-				rpvgrw = dlantr_ ("M", "U", "N", info, info, &af[af_offset], ldaf, &work[1], (ftnlen) 1, (ftnlen) 1, (ftnlen) 1);
+				rpvgrw = dlantr_ ("M", "U", "N", info, info, &af[af_offset], ldaf, &work[1], (int) 1, (int) 1, (int) 1);
 				if (rpvgrw == 0.)
 				{
 					rpvgrw = 1.;
 				}
 				else
 				{
-					rpvgrw = dlange_ ("M", n, info, &a[a_offset], lda, &work[1], (ftnlen) 1) / rpvgrw;
+					rpvgrw = dlange_ ("M", n, info, &a[a_offset], lda, &work[1], (int) 1) / rpvgrw;
 				}
 				work[1] = rpvgrw;
 				*rcond = 0.;
@@ -4385,38 +4395,38 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 	{
 		*(unsigned char *) norm = 'I';
 	}
-	anorm = dlange_ (norm, n, n, &a[a_offset], lda, &work[1], (ftnlen) 1);
-	rpvgrw = dlantr_ ("M", "U", "N", n, n, &af[af_offset], ldaf, &work[1], (ftnlen) 1, (ftnlen) 1, (ftnlen) 1);
+	anorm = dlange_ (norm, n, n, &a[a_offset], lda, &work[1], (int) 1);
+	rpvgrw = dlantr_ ("M", "U", "N", n, n, &af[af_offset], ldaf, &work[1], (int) 1, (int) 1, (int) 1);
 	if (rpvgrw == 0.)
 	{
 		rpvgrw = 1.;
 	}
 	else
 	{
-		rpvgrw = dlange_ ("M", n, n, &a[a_offset], lda, &work[1], (ftnlen) 1) / rpvgrw;
+		rpvgrw = dlange_ ("M", n, n, &a[a_offset], lda, &work[1], (int) 1) / rpvgrw;
 	}
 
 	/*     Compute the reciprocal of the condition number of A. */
 
-	dgecon_ (norm, n, &af[af_offset], ldaf, &anorm, rcond, &work[1], &iwork[1], info, (ftnlen) 1);
+	dgecon_ (norm, n, &af[af_offset], ldaf, &anorm, rcond, &work[1], &iwork[1], info, (int) 1);
 
 	/*     Set INFO = N+1 if the matrix is singular to working precision. */
 
-	if (*rcond < dlamch_ ("Epsilon", (ftnlen) 7))
+	if (*rcond < dlamch_ ("Epsilon", (int) 7))
 	{
 		*info = *n + 1;
 	}
 
 	/*     Compute the solution matrix X. */
 
-	dlacpy_ ("Full", n, nrhs, &b[b_offset], ldb, &x[x_offset], ldx, (ftnlen) 4);
-	dgetrs_ (trans, n, nrhs, &af[af_offset], ldaf, &ipiv[1], &x[x_offset], ldx, info, (ftnlen) 1);
+	dlacpy_ ("Full", n, nrhs, &b[b_offset], ldb, &x[x_offset], ldx, (int) 4);
+	dgetrs_ (trans, n, nrhs, &af[af_offset], ldaf, &ipiv[1], &x[x_offset], ldx, info, (int) 1);
 
 	/*     Use iterative refinement to improve the computed solution and */
 	/*     compute error bounds and backward error estimates for it. */
 
 	dgerfs_ (trans, n, nrhs, &a[a_offset], lda, &af[af_offset], ldaf, &ipiv[1],
-				&b[b_offset], ldb, &x[x_offset], ldx, &ferr[1], &berr[1], &work[1], &iwork[1], info, (ftnlen) 1);
+				&b[b_offset], ldb, &x[x_offset], ldx, &ferr[1], &berr[1], &work[1], &iwork[1], info, (int) 1);
 
 	/*     Transform the solution matrix X to a solution of the original */
 	/*     system. */
@@ -4473,14 +4483,14 @@ dgesvx_ (char *fact, char *trans, integer * n, integer *
 }	/* dgesvx_ */
 
 static int
-dgetf2_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv, integer * info)
+dgetf2_ (int * m, int * n, double * a, int * lda, int * ipiv, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
-	doublereal d__1;
+	int a_dim1, a_offset, i__1, i__2, i__3;
+	double d__1;
 
 	/* Local variables */
-	static integer j, jp;
+	static int j, jp;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -4575,7 +4585,7 @@ dgetf2_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGETF2", &i__1, (ftnlen) 6);
+		xerbla_ ("DGETF2", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -4639,14 +4649,14 @@ dgetf2_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 }	/* dgetf2_ */
 
 static int
-dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv, integer * info)
+dgetrf_ (int * m, int * n, double * a, int * lda, int * ipiv, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4, i__5;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4, i__5;
 
 	/* Local variables */
-	static integer i__, j, jb, nb;
-	static integer iinfo;
+	static int i__, j, jb, nb;
+	static int iinfo;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -4741,7 +4751,7 @@ dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGETRF", &i__1, (ftnlen) 6);
+		xerbla_ ("DGETRF", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -4754,7 +4764,7 @@ dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 
 	/*     Determine the block size for this environment. */
 
-	nb = ilaenv_ (&c__1, "DGETRF", " ", m, n, &c_n1, &c_n1, (ftnlen) 6, (ftnlen) 1);
+	nb = ilaenv_ (&c__1, "DGETRF", " ", m, n, &c_n1, &c_n1, (int) 6, (int) 1);
 	if (nb <= 1 || nb >= min (*m, *n))
 	{
 
@@ -4815,8 +4825,8 @@ dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 
 				i__3 = *n - j - jb + 1;
 				dtrsm_ ("Left", "Lower", "No transpose", "Unit", &jb, &i__3, &c_b348, &a[j + j * a_dim1], lda, &a[j + (j + jb) *
-																																				  a_dim1], lda, (ftnlen) 4, (ftnlen) 5, (ftnlen) 12,
-						  (ftnlen) 4);
+																																				  a_dim1], lda, (int) 4, (int) 5, (int) 12,
+						  (int) 4);
 				if (j + jb <= *m)
 				{
 
@@ -4827,7 +4837,7 @@ dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 					dgemm_ ("No transpose", "No transpose", &i__3, &i__4, &jb,
 							  &c_b347, &a[j + jb + j * a_dim1], lda, &a[j + (j
 																							 + jb) * a_dim1], lda, &c_b348, &a[j + jb + (j +
-																																						jb) * a_dim1], lda, (ftnlen) 12, (ftnlen) 12);
+																																						jb) * a_dim1], lda, (int) 12, (int) 12);
 				}
 			}
 			/* L20: */
@@ -4840,14 +4850,14 @@ dgetrf_ (integer * m, integer * n, doublereal * a, integer * lda, integer * ipiv
 }	/* dgetrf_ */
 
 static int
-dgetrs_ (char *trans, integer * n, integer * nrhs,
-			doublereal * a, integer * lda, integer * ipiv, doublereal * b, integer * ldb, integer * info, ftnlen trans_len)
+dgetrs_ (char *trans, int * n, int * nrhs,
+			double * a, int * lda, int * ipiv, double * b, int * ldb, int * info, int trans_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, b_dim1, b_offset, i__1;
+	int a_dim1, a_offset, b_dim1, b_offset, i__1;
 
 	/* Local variables */
-	static logical notran;
+	static bool notran;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -4933,8 +4943,8 @@ dgetrs_ (char *trans, integer * n, integer * nrhs,
 
 	/* Function Body */
 	*info = 0;
-	notran = lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1);
-	if (!notran && !lsame_ (trans, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (trans, "C", (ftnlen) 1, (ftnlen) 1))
+	notran = lsame_ (trans, "N", (int) 1, (int) 1);
+	if (!notran && !lsame_ (trans, "T", (int) 1, (int) 1) && !lsame_ (trans, "C", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -4957,7 +4967,7 @@ dgetrs_ (char *trans, integer * n, integer * nrhs,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DGETRS", &i__1, (ftnlen) 6);
+		xerbla_ ("DGETRS", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -4979,12 +4989,12 @@ dgetrs_ (char *trans, integer * n, integer * nrhs,
 
 		/*        Solve L*X = B, overwriting B with X. */
 
-		dtrsm_ ("Left", "Lower", "No transpose", "Unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (ftnlen) 4, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+		dtrsm_ ("Left", "Lower", "No transpose", "Unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (int) 4, (int) 5, (int) 12, (int) 4);
 
 		/*        Solve U*X = B, overwriting B with X. */
 
 		dtrsm_ ("Left", "Upper", "No transpose", "Non-unit", n, nrhs, &c_b348,
-				  &a[a_offset], lda, &b[b_offset], ldb, (ftnlen) 4, (ftnlen) 5, (ftnlen) 12, (ftnlen) 8);
+				  &a[a_offset], lda, &b[b_offset], ldb, (int) 4, (int) 5, (int) 12, (int) 8);
 	}
 	else
 	{
@@ -4993,11 +5003,11 @@ dgetrs_ (char *trans, integer * n, integer * nrhs,
 
 		/*        Solve U'*X = B, overwriting B with X. */
 
-		dtrsm_ ("Left", "Upper", "Transpose", "Non-unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (ftnlen) 4, (ftnlen) 5, (ftnlen) 9, (ftnlen) 8);
+		dtrsm_ ("Left", "Upper", "Transpose", "Non-unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (int) 4, (int) 5, (int) 9, (int) 8);
 
 		/*        Solve L'*X = B, overwriting B with X. */
 
-		dtrsm_ ("Left", "Lower", "Transpose", "Unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (ftnlen) 4, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+		dtrsm_ ("Left", "Lower", "Transpose", "Unit", n, nrhs, &c_b348, &a[a_offset], lda, &b[b_offset], ldb, (int) 4, (int) 5, (int) 9, (int) 4);
 
 		/*        Apply row interchanges to the solution vectors. */
 
@@ -5011,36 +5021,33 @@ dgetrs_ (char *trans, integer * n, integer * nrhs,
 }	/* dgetrs_ */
 
 static int
-dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
-			integer * ihi, doublereal * h__, integer * ldh, doublereal * wr,
-			doublereal * wi, doublereal * z__, integer * ldz, doublereal * work, integer * lwork, integer * info, ftnlen job_len, ftnlen compz_len)
+dhseqr_ (char *job, char *compz, int * n, int * ilo,
+			int * ihi, double * h__, int * ldh, double * wr,
+			double * wi, double * z__, int * ldz, double * work, int * lwork, int * info, int job_len, int compz_len)
 {
 	/* System generated locals */
-	address a__1[2];
-	integer h_dim1, h_offset, z_dim1, z_offset, i__1, i__2, i__3[2], i__4, i__5;
-	doublereal d__1, d__2;
+	char * a__1[2];
+	int h_dim1, h_offset, z_dim1, z_offset, i__1, i__2, i__3[2], i__4, i__5;
+	double d__1, d__2;
 	char ch__1[2];
 
-	/* Builtin functions */
-	/* Subroutine */ int s_cat (char *, char **, integer *, integer *, ftnlen);
-
 	/* Local variables */
-	static integer i__, j, k, l;
-	static doublereal s[225] /* was [15][15] */ , v[16];
-	static integer i1, i2, ii, nh, nr, ns, nv;
-	static doublereal vv[16];
-	static integer itn;
-	static doublereal tau;
-	static integer its;
-	static doublereal ulp, tst1;
-	static integer maxb;
-	static doublereal absw;
-	static integer ierr;
-	static doublereal unfl, temp, ovfl;
-	static integer itemp;
-	static logical initz, wantt, wantz;
-	static doublereal smlnum;
-	static logical lquery;
+	static int i__, j, k, l;
+	static double s[225] /* was [15][15] */ , v[16];
+	static int i1, i2, ii, nh, nr, ns, nv;
+	static double vv[16];
+	static int itn;
+	static double tau;
+	static int its;
+	static double ulp, tst1;
+	static int maxb;
+	static double absw;
+	static int ierr;
+	static double unfl, temp, ovfl;
+	static int itemp;
+	static bool initz, wantt, wantz;
+	static double smlnum;
+	static bool lquery;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -5056,7 +5063,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DHSEQR computes the eigenvalues of a real upper Hessenberg matrix H */
+	/*  DHSEQR computes the eigenvalues of a float upper Hessenberg matrix H */
 	/*  and, optionally, the matrices T and Z from the Schur decomposition */
 	/*  H = Z T Z**T, where T is an upper quasi-triangular matrix (the Schur */
 	/*  form), and Z is the orthogonal matrix of Schur vectors. */
@@ -5107,7 +5114,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 
 	/*  WR      (output) DOUBLE PRECISION array, dimension (N) */
 	/*  WI      (output) DOUBLE PRECISION array, dimension (N) */
-	/*          The real and imaginary parts, respectively, of the computed */
+	/*          The float and imaginary parts, respectively, of the computed */
 	/*          eigenvalues. If two eigenvalues are computed as a complex */
 	/*          conjugate pair, they are stored in consecutive elements of */
 	/*          WR and WI, say the i-th and (i+1)th, with WI(i) > 0 and */
@@ -5180,18 +5187,18 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	--work;
 
 	/* Function Body */
-	wantt = lsame_ (job, "S", (ftnlen) 1, (ftnlen) 1);
-	initz = lsame_ (compz, "I", (ftnlen) 1, (ftnlen) 1);
-	wantz = initz || lsame_ (compz, "V", (ftnlen) 1, (ftnlen) 1);
+	wantt = lsame_ (job, "S", (int) 1, (int) 1);
+	initz = lsame_ (compz, "I", (int) 1, (int) 1);
+	wantz = initz || lsame_ (compz, "V", (int) 1, (int) 1);
 
 	*info = 0;
-	work[1] = (doublereal) max (1, *n);
+	work[1] = (double) max (1, *n);
 	lquery = *lwork == -1;
-	if (!lsame_ (job, "E", (ftnlen) 1, (ftnlen) 1) && !wantt)
+	if (!lsame_ (job, "E", (int) 1, (int) 1) && !wantt)
 	{
 		*info = -1;
 	}
-	else if (!lsame_ (compz, "N", (ftnlen) 1, (ftnlen) 1) && !wantz)
+	else if (!lsame_ (compz, "N", (int) 1, (int) 1) && !wantz)
 	{
 		*info = -2;
 	}
@@ -5222,7 +5229,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DHSEQR", &i__1, (ftnlen) 6);
+		xerbla_ ("DHSEQR", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -5234,7 +5241,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 
 	if (initz)
 	{
-		dlaset_ ("Full", n, n, &c_b507, &c_b348, &z__[z_offset], ldz, (ftnlen) 4);
+		dlaset_ ("Full", n, n, &c_b507, &c_b348, &z__[z_offset], ldz, (int) 4);
 	}
 
 	/*     Store the eigenvalues isolated by DGEBAL. */
@@ -5288,13 +5295,13 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	/* Writing concatenation */
 	i__3[0] = 1, a__1[0] = job;
 	i__3[1] = 1, a__1[1] = compz;
-	s_cat (ch__1, a__1, i__3, &c__2, (ftnlen) 2);
-	ns = ilaenv_ (&c__4, "DHSEQR", ch__1, n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 2);
+	s_cat (ch__1, a__1, i__3, &c__2, (int) 2);
+	ns = ilaenv_ (&c__4, "DHSEQR", ch__1, n, ilo, ihi, &c_n1, (int) 6, (int) 2);
 	/* Writing concatenation */
 	i__3[0] = 1, a__1[0] = job;
 	i__3[1] = 1, a__1[1] = compz;
-	s_cat (ch__1, a__1, i__3, &c__2, (ftnlen) 2);
-	maxb = ilaenv_ (&c__8, "DHSEQR", ch__1, n, ilo, ihi, &c_n1, (ftnlen) 6, (ftnlen) 2);
+	s_cat (ch__1, a__1, i__3, &c__2, (int) 2);
+	maxb = ilaenv_ (&c__8, "DHSEQR", ch__1, n, ilo, ihi, &c_n1, (int) 6, (int) 2);
 	if (ns <= 2 || ns > nh || maxb >= nh)
 	{
 
@@ -5313,10 +5320,10 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	/*     Set machine-dependent constants for the stopping criterion. */
 	/*     If norm(H) <= sqrt(OVFL), overflow should not occur. */
 
-	unfl = dlamch_ ("Safe minimum", (ftnlen) 12);
+	unfl = dlamch_ ("Safe minimum", (int) 12);
 	ovfl = 1. / unfl;
 	dlabad_ (&unfl, &ovfl);
-	ulp = dlamch_ ("Precision", (ftnlen) 9);
+	ulp = dlamch_ ("Precision", (int) 9);
 	smlnum = unfl * (nh / ulp);
 
 	/*     I1 and I2 are the indices of the first row and last column of H */
@@ -5364,7 +5371,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 			if (tst1 == 0.)
 			{
 				i__4 = i__ - l + 1;
-				tst1 = dlanhs_ ("1", &i__4, &h__[l + l * h_dim1], ldh, &work[1], (ftnlen) 1);
+				tst1 = dlanhs_ ("1", &i__4, &h__[l + l * h_dim1], ldh, &work[1], (int) 1);
 			}
 			/* Computing MAX */
 			d__2 = ulp * tst1;
@@ -5419,7 +5426,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 
 			/*           Use eigenvalues of trailing submatrix of order NS as shifts. */
 
-			dlacpy_ ("Full", &ns, &ns, &h__[i__ - ns + 1 + (i__ - ns + 1) * h_dim1], ldh, s, &c__15, (ftnlen) 4);
+			dlacpy_ ("Full", &ns, &ns, &h__[i__ - ns + 1 + (i__ - ns + 1) * h_dim1], ldh, s, &c__15, (int) 4);
 			dlahqr_ (&c_false, &c_false, &ns, &c__1, &ns, s, &c__15, &wr[i__ - ns + 1], &wi[i__ - ns + 1], &c__1, &ns, &z__[z_offset], ldz, &ierr);
 			if (ierr > 0)
 			{
@@ -5458,13 +5465,13 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 				if (wi[j] == 0.)
 				{
 
-					/*                 real shift */
+					/*                 float shift */
 
 					i__4 = nv + 1;
 					dcopy_ (&i__4, v, &c__1, vv, &c__1);
 					i__4 = nv + 1;
 					d__1 = -wr[j];
-					dgemv_ ("No transpose", &i__4, &nv, &c_b348, &h__[l + l * h_dim1], ldh, vv, &c__1, &d__1, v, &c__1, (ftnlen) 12);
+					dgemv_ ("No transpose", &i__4, &nv, &c_b348, &h__[l + l * h_dim1], ldh, vv, &c__1, &d__1, v, &c__1, (int) 12);
 					++nv;
 				}
 				else if (wi[j] > 0.)
@@ -5476,7 +5483,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 					dcopy_ (&i__4, v, &c__1, vv, &c__1);
 					i__4 = nv + 1;
 					d__1 = wr[j] * -2.;
-					dgemv_ ("No transpose", &i__4, &nv, &c_b348, &h__[l + l * h_dim1], ldh, v, &c__1, &d__1, vv, &c__1, (ftnlen) 12);
+					dgemv_ ("No transpose", &i__4, &nv, &c_b348, &h__[l + l * h_dim1], ldh, v, &c__1, &d__1, vv, &c__1, (int) 12);
 					i__4 = nv + 1;
 					itemp = idamax_ (&i__4, vv, &c__1);
 					/* Computing MAX */
@@ -5488,7 +5495,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 					temp = temp * absw * absw;
 					i__4 = nv + 2;
 					i__5 = nv + 1;
-					dgemv_ ("No transpose", &i__4, &i__5, &c_b348, &h__[l + l * h_dim1], ldh, vv, &c__1, &temp, v, &c__1, (ftnlen) 12);
+					dgemv_ ("No transpose", &i__4, &i__5, &c_b348, &h__[l + l * h_dim1], ldh, vv, &c__1, &temp, v, &c__1, (int) 12);
 					nv += 2;
 				}
 
@@ -5556,7 +5563,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 			/*           columns K to I2. */
 
 			i__4 = i2 - k + 1;
-			dlarfx_ ("Left", &nr, &i__4, v, &tau, &h__[k + k * h_dim1], ldh, &work[1], (ftnlen) 4);
+			dlarfx_ ("Left", &nr, &i__4, v, &tau, &h__[k + k * h_dim1], ldh, &work[1], (int) 4);
 
 			/*           Apply G from the right to transform the columns of the */
 			/*           matrix in rows I1 to min(K+NR,I). */
@@ -5564,14 +5571,14 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 			/* Computing MIN */
 			i__5 = k + nr;
 			i__4 = min (i__5, i__) - i1 + 1;
-			dlarfx_ ("Right", &i__4, &nr, v, &tau, &h__[i1 + k * h_dim1], ldh, &work[1], (ftnlen) 5);
+			dlarfx_ ("Right", &i__4, &nr, v, &tau, &h__[i1 + k * h_dim1], ldh, &work[1], (int) 5);
 
 			if (wantz)
 			{
 
 				/*              Accumulate transformations in the matrix Z */
 
-				dlarfx_ ("Right", &nh, &nr, v, &tau, &z__[*ilo + k * z_dim1], ldz, &work[1], (ftnlen) 5);
+				dlarfx_ ("Right", &nh, &nr, v, &tau, &z__[*ilo + k * z_dim1], ldz, &work[1], (int) 5);
 			}
 			/* L140: */
 		}
@@ -5603,7 +5610,7 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 	goto L50;
 
  L170:
-	work[1] = (doublereal) max (1, *n);
+	work[1] = (double) max (1, *n);
 	return 0;
 
 	/*     End of DHSEQR */
@@ -5611,10 +5618,10 @@ dhseqr_ (char *job, char *compz, integer * n, integer * ilo,
 }	/* dhseqr_ */
 
 static int
-dlabad_ (doublereal * small, doublereal * large)
+dlabad_ (double * small, double * large)
 {
 	/* Builtin functions */
-	double d_lg10 (doublereal *), sqrt (doublereal);
+	double d_lg10 (double *), sqrt (double);
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -5672,22 +5679,22 @@ dlabad_ (doublereal * small, doublereal * large)
 }	/* dlabad_ */
 
 static int
-dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal * est, integer * kase)
+dlacon_ (int * n, double * v, double * x, int * isgn, double * est, int * kase)
 {
 	/* System generated locals */
-	integer i__1;
-	doublereal d__1;
+	int i__1;
+	double d__1;
 
 	/* Builtin functions */
-	double d_sign (doublereal *, doublereal *);
-	integer i_dnnt (doublereal *);
+	double d_sign (double *, double *);
+	int i_dnnt (double *);
 
 	/* Local variables */
-	static integer i__, j, iter;
-	static doublereal temp;
-	static integer jump;
-	static integer jlast;
-	static doublereal altsgn, estold;
+	static int i__, j, iter;
+	static double temp;
+	static int jump;
+	static int jlast;
+	static double altsgn, estold;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -5703,7 +5710,7 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLACON estimates the 1-norm of a square, real matrix A. */
+	/*  DLACON estimates the 1-norm of a square, float matrix A. */
 	/*  Reverse communication is used for evaluating matrix-vector products. */
 
 	/*  Arguments */
@@ -5741,7 +5748,7 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 	/*  Originally named SONEST, dated March 16, 1988. */
 
 	/*  Reference: N.J. Higham, "FORTRAN codes for estimating the one-norm of */
-	/*  a real or complex matrix, with applications to condition estimation", */
+	/*  a float or complex matrix, with applications to condition estimation", */
 	/*  ACM Trans. Math. Soft., vol. 14, no. 4, pp. 381-396, December 1988. */
 
 	/*  ===================================================================== */
@@ -5771,7 +5778,7 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 		i__1 = *n;
 		for (i__ = 1; i__ <= i__1; ++i__)
 		{
-			x[i__] = 1. / (doublereal) (*n);
+			x[i__] = 1. / (double) (*n);
 			/* L10: */
 		}
 		*kase = 1;
@@ -5895,7 +5902,7 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 	i__1 = *n;
 	for (i__ = 1; i__ <= i__1; ++i__)
 	{
-		x[i__] = altsgn * ((doublereal) (i__ - 1) / (doublereal) (*n - 1) + 1.);
+		x[i__] = altsgn * ((double) (i__ - 1) / (double) (*n - 1) + 1.);
 		altsgn = -altsgn;
 		/* L130: */
 	}
@@ -5907,7 +5914,7 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 	/*     X HAS BEEN OVERWRITTEN BY A*X. */
 
  L140:
-	temp = dasum_ (n, &x[1], &c__1) / (doublereal) (*n * 3) * 2.;
+	temp = dasum_ (n, &x[1], &c__1) / (double) (*n * 3) * 2.;
 	if (temp > *est)
 	{
 		dcopy_ (n, &x[1], &c__1, &v[1], &c__1);
@@ -5923,13 +5930,13 @@ dlacon_ (integer * n, doublereal * v, doublereal * x, integer * isgn, doublereal
 }	/* dlacon_ */
 
 static int
-dlacpy_ (char *uplo, integer * m, integer * n, doublereal * a, integer * lda, doublereal * b, integer * ldb, ftnlen uplo_len)
+dlacpy_ (char *uplo, int * m, int * n, double * a, int * lda, double * b, int * ldb, int uplo_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, b_dim1, b_offset, i__1, i__2;
+	int a_dim1, a_offset, b_dim1, b_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer i__, j;
+	static int i__, j;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -5996,7 +6003,7 @@ dlacpy_ (char *uplo, integer * m, integer * n, doublereal * a, integer * lda, do
 	b -= b_offset;
 
 	/* Function Body */
-	if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (uplo, "U", (int) 1, (int) 1))
 	{
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j)
@@ -6010,7 +6017,7 @@ dlacpy_ (char *uplo, integer * m, integer * n, doublereal * a, integer * lda, do
 			/* L20: */
 		}
 	}
-	else if (lsame_ (uplo, "L", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (uplo, "L", (int) 1, (int) 1))
 	{
 		i__1 = *n;
 		for (j = 1; j <= i__1; ++j)
@@ -6045,9 +6052,9 @@ dlacpy_ (char *uplo, integer * m, integer * n, doublereal * a, integer * lda, do
 }	/* dlacpy_ */
 
 static int
-dladiv_ (doublereal * a, doublereal * b, doublereal * c__, doublereal * d__, doublereal * p, doublereal * q)
+dladiv_ (double * a, double * b, double * c__, double * d__, double * p, double * q)
 {
-	static doublereal e, f;
+	static double e, f;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -6061,7 +6068,7 @@ dladiv_ (doublereal * a, doublereal * b, doublereal * c__, doublereal * d__, dou
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLADIV performs complex division in  real arithmetic */
+	/*  DLADIV performs complex division in  float arithmetic */
 
 	/*                        a + i*b */
 	/*             p + i*q = --------- */
@@ -6113,25 +6120,25 @@ dladiv_ (doublereal * a, doublereal * b, doublereal * c__, doublereal * d__, dou
 }	/* dladiv_ */
 
 static int
-dlaexc_ (logical * wantq, integer * n, doublereal * t,
-			integer * ldt, doublereal * q, integer * ldq, integer * j1, integer * n1, integer * n2, doublereal * work, integer * info)
+dlaexc_ (bool * wantq, int * n, double * t,
+			int * ldt, double * q, int * ldq, int * j1, int * n1, int * n2, double * work, int * info)
 {
 	/* System generated locals */
-	integer q_dim1, q_offset, t_dim1, t_offset, i__1;
-	doublereal d__1, d__2, d__3;
+	int q_dim1, q_offset, t_dim1, t_offset, i__1;
+	double d__1, d__2, d__3;
 
 	/* Local variables */
-	static doublereal d__[16] /* was [4][4] */ ;
-	static integer k;
-	static doublereal u[3], x[4] /* was [2][2] */ ;
-	static integer j2, j3, j4;
-	static doublereal u1[3], u2[3];
-	static integer nd;
-	static doublereal cs, t11, t22, t33, sn, wi1, wi2, wr1, wr2, eps, tau, tau1, tau2;
-	static integer ierr;
-	static doublereal temp;
-	static doublereal scale, dnorm, xnorm;
-	static doublereal thresh, smlnum;
+	static double d__[16] /* was [4][4] */ ;
+	static int k;
+	static double u[3], x[4] /* was [2][2] */ ;
+	static int j2, j3, j4;
+	static double u1[3], u2[3];
+	static int nd;
+	static double cs, t11, t22, t33, sn, wi1, wi2, wr1, wr2, eps, tau, tau1, tau2;
+	static int ierr;
+	static double temp;
+	static double scale, dnorm, xnorm;
+	static double thresh, smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -6287,14 +6294,14 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 		/*        and compute its norm. */
 
 		nd = *n1 + *n2;
-		dlacpy_ ("Full", &nd, &nd, &t[*j1 + *j1 * t_dim1], ldt, d__, &c__4, (ftnlen) 4);
-		dnorm = dlange_ ("Max", &nd, &nd, d__, &c__4, &work[1], (ftnlen) 3);
+		dlacpy_ ("Full", &nd, &nd, &t[*j1 + *j1 * t_dim1], ldt, d__, &c__4, (int) 4);
+		dnorm = dlange_ ("Max", &nd, &nd, d__, &c__4, &work[1], (int) 3);
 
 		/*        Compute machine-dependent threshold for test for accepting */
 		/*        swap. */
 
-		eps = dlamch_ ("P", (ftnlen) 1);
-		smlnum = dlamch_ ("S", (ftnlen) 1) / eps;
+		eps = dlamch_ ("P", (int) 1);
+		smlnum = dlamch_ ("S", (int) 1) / eps;
 		/* Computing MAX */
 		d__1 = eps * 10. * dnorm;
 		thresh = max (d__1, smlnum);
@@ -6333,8 +6340,8 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 		/*        Perform swap provisionally on diagonal block in D. */
 
-		dlarfx_ ("L", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (int) 1);
+		dlarfx_ ("R", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (int) 1);
 
 		/*        Test whether to reject swap. */
 
@@ -6348,8 +6355,8 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 		/*        Accept swap: apply transformation to the entire matrix T. */
 
 		i__1 = *n - *j1 + 1;
-		dlarfx_ ("L", &c__3, &i__1, u, &tau, &t[*j1 + *j1 * t_dim1], ldt, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &j2, &c__3, u, &tau, &t[*j1 * t_dim1 + 1], ldt, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &i__1, u, &tau, &t[*j1 + *j1 * t_dim1], ldt, &work[1], (int) 1);
+		dlarfx_ ("R", &j2, &c__3, u, &tau, &t[*j1 * t_dim1 + 1], ldt, &work[1], (int) 1);
 
 		t[j3 + *j1 * t_dim1] = 0.;
 		t[j3 + j2 * t_dim1] = 0.;
@@ -6360,7 +6367,7 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 			/*           Accumulate transformation in the matrix Q. */
 
-			dlarfx_ ("R", n, &c__3, u, &tau, &q[*j1 * q_dim1 + 1], ldq, &work[1], (ftnlen) 1);
+			dlarfx_ ("R", n, &c__3, u, &tau, &q[*j1 * q_dim1 + 1], ldq, &work[1], (int) 1);
 		}
 		goto L40;
 
@@ -6381,8 +6388,8 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 		/*        Perform swap provisionally on diagonal block in D. */
 
-		dlarfx_ ("L", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (int) 1);
+		dlarfx_ ("R", &c__3, &c__3, u, &tau, d__, &c__4, &work[1], (int) 1);
 
 		/*        Test whether to reject swap. */
 
@@ -6395,9 +6402,9 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 		/*        Accept swap: apply transformation to the entire matrix T. */
 
-		dlarfx_ ("R", &j3, &c__3, u, &tau, &t[*j1 * t_dim1 + 1], ldt, &work[1], (ftnlen) 1);
+		dlarfx_ ("R", &j3, &c__3, u, &tau, &t[*j1 * t_dim1 + 1], ldt, &work[1], (int) 1);
 		i__1 = *n - *j1;
-		dlarfx_ ("L", &c__3, &i__1, u, &tau, &t[*j1 + j2 * t_dim1], ldt, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &i__1, u, &tau, &t[*j1 + j2 * t_dim1], ldt, &work[1], (int) 1);
 
 		t[*j1 + *j1 * t_dim1] = t33;
 		t[j2 + *j1 * t_dim1] = 0.;
@@ -6408,7 +6415,7 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 			/*           Accumulate transformation in the matrix Q. */
 
-			dlarfx_ ("R", n, &c__3, u, &tau, &q[*j1 * q_dim1 + 1], ldq, &work[1], (ftnlen) 1);
+			dlarfx_ ("R", n, &c__3, u, &tau, &q[*j1 * q_dim1 + 1], ldq, &work[1], (int) 1);
 		}
 		goto L40;
 
@@ -6437,10 +6444,10 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 		/*        Perform swap provisionally on diagonal block in D. */
 
-		dlarfx_ ("L", &c__3, &c__4, u1, &tau1, d__, &c__4, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &c__4, &c__3, u1, &tau1, d__, &c__4, &work[1], (ftnlen) 1);
-		dlarfx_ ("L", &c__3, &c__4, u2, &tau2, &d__[1], &c__4, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &c__4, &c__3, u2, &tau2, &d__[4], &c__4, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &c__4, u1, &tau1, d__, &c__4, &work[1], (int) 1);
+		dlarfx_ ("R", &c__4, &c__3, u1, &tau1, d__, &c__4, &work[1], (int) 1);
+		dlarfx_ ("L", &c__3, &c__4, u2, &tau2, &d__[1], &c__4, &work[1], (int) 1);
+		dlarfx_ ("R", &c__4, &c__3, u2, &tau2, &d__[4], &c__4, &work[1], (int) 1);
 
 		/*        Test whether to reject swap. */
 
@@ -6454,11 +6461,11 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 		/*        Accept swap: apply transformation to the entire matrix T. */
 
 		i__1 = *n - *j1 + 1;
-		dlarfx_ ("L", &c__3, &i__1, u1, &tau1, &t[*j1 + *j1 * t_dim1], ldt, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &j4, &c__3, u1, &tau1, &t[*j1 * t_dim1 + 1], ldt, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &i__1, u1, &tau1, &t[*j1 + *j1 * t_dim1], ldt, &work[1], (int) 1);
+		dlarfx_ ("R", &j4, &c__3, u1, &tau1, &t[*j1 * t_dim1 + 1], ldt, &work[1], (int) 1);
 		i__1 = *n - *j1 + 1;
-		dlarfx_ ("L", &c__3, &i__1, u2, &tau2, &t[j2 + *j1 * t_dim1], ldt, &work[1], (ftnlen) 1);
-		dlarfx_ ("R", &j4, &c__3, u2, &tau2, &t[j2 * t_dim1 + 1], ldt, &work[1], (ftnlen) 1);
+		dlarfx_ ("L", &c__3, &i__1, u2, &tau2, &t[j2 + *j1 * t_dim1], ldt, &work[1], (int) 1);
+		dlarfx_ ("R", &j4, &c__3, u2, &tau2, &t[j2 * t_dim1 + 1], ldt, &work[1], (int) 1);
 
 		t[j3 + *j1 * t_dim1] = 0.;
 		t[j3 + j2 * t_dim1] = 0.;
@@ -6470,8 +6477,8 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 
 			/*           Accumulate transformation in the matrix Q. */
 
-			dlarfx_ ("R", n, &c__3, u1, &tau1, &q[*j1 * q_dim1 + 1], ldq, &work[1], (ftnlen) 1);
-			dlarfx_ ("R", n, &c__3, u2, &tau2, &q[j2 * q_dim1 + 1], ldq, &work[1], (ftnlen) 1);
+			dlarfx_ ("R", n, &c__3, u1, &tau1, &q[*j1 * q_dim1 + 1], ldq, &work[1], (int) 1);
+			dlarfx_ ("R", n, &c__3, u2, &tau2, &q[j2 * q_dim1 + 1], ldq, &work[1], (int) 1);
 		}
 
 	 L40:
@@ -6527,32 +6534,32 @@ dlaexc_ (logical * wantq, integer * n, doublereal * t,
 }	/* dlaexc_ */
 
 static int
-dlahqr_ (logical * wantt, logical * wantz, integer * n,
-			integer * ilo, integer * ihi, doublereal * h__, integer * ldh, doublereal
-			* wr, doublereal * wi, integer * iloz, integer * ihiz, doublereal * z__, integer * ldz, integer * info)
+dlahqr_ (bool * wantt, bool * wantz, int * n,
+			int * ilo, int * ihi, double * h__, int * ldh, double
+			* wr, double * wi, int * iloz, int * ihiz, double * z__, int * ldz, int * info)
 {
 	/* System generated locals */
-	integer h_dim1, h_offset, z_dim1, z_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int h_dim1, h_offset, z_dim1, z_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal), d_sign (doublereal *, doublereal *);
+	double sqrt (double), d_sign (double *, double *);
 
 	/* Local variables */
-	static integer i__, j, k, l, m;
-	static doublereal s, v[3];
-	static integer i1, i2;
-	static doublereal t1, t2, t3, v1, v2, v3, h00, h10, h11, h12, h21, h22, h33, h44;
-	static integer nh;
-	static doublereal cs;
-	static integer nr;
-	static doublereal sn;
-	static integer nz;
-	static doublereal ave, h33s, h44s;
-	static integer itn, its;
-	static doublereal ulp, sum, tst1, h43h34, disc, unfl, ovfl;
-	static doublereal work[1];
-	static doublereal smlnum;
+	static int i__, j, k, l, m;
+	static double s, v[3];
+	static int i1, i2;
+	static double t1, t2, t3, v1, v2, v3, h00, h10, h11, h12, h21, h22, h33, h44;
+	static int nh;
+	static double cs;
+	static int nr;
+	static double sn;
+	static int nz;
+	static double ave, h33s, h44s;
+	static int itn, its;
+	static double ulp, sum, tst1, h43h34, disc, unfl, ovfl;
+	static double work[1];
+	static double smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -6607,7 +6614,7 @@ dlahqr_ (logical * wantt, logical * wantz, integer * n,
 
 	/*  WR      (output) DOUBLE PRECISION array, dimension (N) */
 	/*  WI      (output) DOUBLE PRECISION array, dimension (N) */
-	/*          The real and imaginary parts, respectively, of the computed */
+	/*          The float and imaginary parts, respectively, of the computed */
 	/*          eigenvalues ILO to IHI are stored in the corresponding */
 	/*          elements of WR and WI. If two eigenvalues are computed as a */
 	/*          complex conjugate pair, they are stored in consecutive */
@@ -6695,10 +6702,10 @@ dlahqr_ (logical * wantt, logical * wantz, integer * n,
 	/*     Set machine-dependent constants for the stopping criterion. */
 	/*     If norm(H) <= sqrt(OVFL), overflow should not occur. */
 
-	unfl = dlamch_ ("Safe minimum", (ftnlen) 12);
+	unfl = dlamch_ ("Safe minimum", (int) 12);
 	ovfl = 1. / unfl;
 	dlabad_ (&unfl, &ovfl);
-	ulp = dlamch_ ("Precision", (ftnlen) 9);
+	ulp = dlamch_ ("Precision", (int) 9);
 	smlnum = unfl * (nh / ulp);
 
 	/*     I1 and I2 are the indices of the first row and last column of H */
@@ -6746,7 +6753,7 @@ dlahqr_ (logical * wantt, logical * wantz, integer * n,
 			if (tst1 == 0.)
 			{
 				i__3 = i__ - l + 1;
-				tst1 = dlanhs_ ("1", &i__3, &h__[l + l * h_dim1], ldh, work, (ftnlen) 1);
+				tst1 = dlanhs_ ("1", &i__3, &h__[l + l * h_dim1], ldh, work, (int) 1);
 			}
 			/* Computing MAX */
 			d__2 = ulp * tst1;
@@ -7066,15 +7073,15 @@ dlahqr_ (logical * wantt, logical * wantz, integer * n,
 }	/* dlahqr_ */
 
 static int
-dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, doublereal * tau, doublereal * t, integer * ldt, doublereal * y, integer * ldy)
+dlahrd_ (int * n, int * k, int * nb, double * a, int * lda, double * tau, double * t, int * ldt, double * y, int * ldy)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, t_dim1, t_offset, y_dim1, y_offset, i__1, i__2, i__3;
-	doublereal d__1;
+	int a_dim1, a_offset, t_dim1, t_offset, y_dim1, y_offset, i__1, i__2, i__3;
+	double d__1;
 
 	/* Local variables */
-	static integer i__;
-	static doublereal ei;
+	static int i__;
+	static double ei;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -7090,7 +7097,7 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLAHRD reduces the first NB columns of a real general n-by-(n-k+1) */
+	/*  DLAHRD reduces the first NB columns of a float general n-by-(n-k+1) */
 	/*  matrix A so that elements below the k-th subdiagonal are zero. The */
 	/*  reduction is performed by an orthogonal similarity transformation */
 	/*  Q' * A * Q. The routine returns the matrices V and T which determine */
@@ -7150,7 +7157,7 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 
 	/*     H(i) = I - tau * v * v' */
 
-	/*  where tau is a real scalar, and v is a real vector with */
+	/*  where tau is a float scalar, and v is a float vector with */
 	/*  v(1:i+k-1) = 0, v(i+k) = 1; v(i+k+1:n) is stored on exit in */
 	/*  A(i+k+1:n,i), and tau in TAU(i). */
 
@@ -7217,7 +7224,7 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 			/*           Compute i-th column of A - Y * V' */
 
 			i__2 = i__ - 1;
-			dgemv_ ("No transpose", n, &i__2, &c_b347, &y[y_offset], ldy, &a[*k + i__ - 1 + a_dim1], lda, &c_b348, &a[i__ * a_dim1 + 1], &c__1, (ftnlen) 12);
+			dgemv_ ("No transpose", n, &i__2, &c_b347, &y[y_offset], ldy, &a[*k + i__ - 1 + a_dim1], lda, &c_b348, &a[i__ * a_dim1 + 1], &c__1, (int) 12);
 
 			/*           Apply I - V * T' * V' to this column (call it b) from the */
 			/*           left, using the last column of T as workspace */
@@ -7232,31 +7239,31 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 			i__2 = i__ - 1;
 			dcopy_ (&i__2, &a[*k + 1 + i__ * a_dim1], &c__1, &t[*nb * t_dim1 + 1], &c__1);
 			i__2 = i__ - 1;
-			dtrmv_ ("Lower", "Transpose", "Unit", &i__2, &a[*k + 1 + a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+			dtrmv_ ("Lower", "Transpose", "Unit", &i__2, &a[*k + 1 + a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, (int) 5, (int) 9, (int) 4);
 
 			/*           w := w + V2'*b2 */
 
 			i__2 = *n - *k - i__ + 1;
 			i__3 = i__ - 1;
 			dgemv_ ("Transpose", &i__2, &i__3, &c_b348, &a[*k + i__ + a_dim1],
-					  lda, &a[*k + i__ + i__ * a_dim1], &c__1, &c_b348, &t[*nb * t_dim1 + 1], &c__1, (ftnlen) 9);
+					  lda, &a[*k + i__ + i__ * a_dim1], &c__1, &c_b348, &t[*nb * t_dim1 + 1], &c__1, (int) 9);
 
 			/*           w := T'*w */
 
 			i__2 = i__ - 1;
-			dtrmv_ ("Upper", "Transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[*nb * t_dim1 + 1], &c__1, (ftnlen) 5, (ftnlen) 9, (ftnlen) 8);
+			dtrmv_ ("Upper", "Transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[*nb * t_dim1 + 1], &c__1, (int) 5, (int) 9, (int) 8);
 
 			/*           b2 := b2 - V2*w */
 
 			i__2 = *n - *k - i__ + 1;
 			i__3 = i__ - 1;
 			dgemv_ ("No transpose", &i__2, &i__3, &c_b347, &a[*k + i__ +
-																			  a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, &c_b348, &a[*k + i__ + i__ * a_dim1], &c__1, (ftnlen) 12);
+																			  a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, &c_b348, &a[*k + i__ + i__ * a_dim1], &c__1, (int) 12);
 
 			/*           b1 := b1 - V1*w */
 
 			i__2 = i__ - 1;
-			dtrmv_ ("Lower", "No transpose", "Unit", &i__2, &a[*k + 1 + a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+			dtrmv_ ("Lower", "No transpose", "Unit", &i__2, &a[*k + 1 + a_dim1], lda, &t[*nb * t_dim1 + 1], &c__1, (int) 5, (int) 12, (int) 4);
 			i__2 = i__ - 1;
 			daxpy_ (&i__2, &c_b347, &t[*nb * t_dim1 + 1], &c__1, &a[*k + 1 + i__ * a_dim1], &c__1);
 
@@ -7277,13 +7284,13 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 
 		i__2 = *n - *k - i__ + 1;
 		dgemv_ ("No transpose", n, &i__2, &c_b348, &a[(i__ + 1) * a_dim1 + 1],
-				  lda, &a[*k + i__ + i__ * a_dim1], &c__1, &c_b507, &y[i__ * y_dim1 + 1], &c__1, (ftnlen) 12);
+				  lda, &a[*k + i__ + i__ * a_dim1], &c__1, &c_b507, &y[i__ * y_dim1 + 1], &c__1, (int) 12);
 		i__2 = *n - *k - i__ + 1;
 		i__3 = i__ - 1;
 		dgemv_ ("Transpose", &i__2, &i__3, &c_b348, &a[*k + i__ + a_dim1], lda,
-				  &a[*k + i__ + i__ * a_dim1], &c__1, &c_b507, &t[i__ * t_dim1 + 1], &c__1, (ftnlen) 9);
+				  &a[*k + i__ + i__ * a_dim1], &c__1, &c_b507, &t[i__ * t_dim1 + 1], &c__1, (int) 9);
 		i__2 = i__ - 1;
-		dgemv_ ("No transpose", n, &i__2, &c_b347, &y[y_offset], ldy, &t[i__ * t_dim1 + 1], &c__1, &c_b348, &y[i__ * y_dim1 + 1], &c__1, (ftnlen) 12);
+		dgemv_ ("No transpose", n, &i__2, &c_b347, &y[y_offset], ldy, &t[i__ * t_dim1 + 1], &c__1, &c_b348, &y[i__ * y_dim1 + 1], &c__1, (int) 12);
 		dscal_ (n, &tau[i__], &y[i__ * y_dim1 + 1], &c__1);
 
 		/*        Compute T(1:i,i) */
@@ -7292,7 +7299,7 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 		d__1 = -tau[i__];
 		dscal_ (&i__2, &d__1, &t[i__ * t_dim1 + 1], &c__1);
 		i__2 = i__ - 1;
-		dtrmv_ ("Upper", "No transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[i__ * t_dim1 + 1], &c__1, (ftnlen) 5, (ftnlen) 12, (ftnlen) 8);
+		dtrmv_ ("Upper", "No transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[i__ * t_dim1 + 1], &c__1, (int) 5, (int) 12, (int) 8);
 		t[i__ + i__ * t_dim1] = tau[i__];
 
 		/* L10: */
@@ -7306,36 +7313,36 @@ dlahrd_ (integer * n, integer * k, integer * nb, doublereal * a, integer * lda, 
 }	/* dlahrd_ */
 
 static int
-dlaln2_ (logical * ltrans, integer * na, integer * nw,
-			doublereal * smin, doublereal * ca, doublereal * a, integer * lda,
-			doublereal * d1, doublereal * d2, doublereal * b, integer * ldb,
-			doublereal * wr, doublereal * wi, doublereal * x, integer * ldx, doublereal * scale, doublereal * xnorm, integer * info)
+dlaln2_ (bool * ltrans, int * na, int * nw,
+			double * smin, double * ca, double * a, int * lda,
+			double * d1, double * d2, double * b, int * ldb,
+			double * wr, double * wi, double * x, int * ldx, double * scale, double * xnorm, int * info)
 {
 	/* Initialized data */
 
-	static logical zswap[4] = { FALSE_, FALSE_, TRUE_, TRUE_ };
-	static logical rswap[4] = { FALSE_, TRUE_, FALSE_, TRUE_ };
-	static integer ipivot[16] /* was [4][4] */  = { 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2,
+	static bool zswap[4] = { false, false, true, true };
+	static bool rswap[4] = { false, true, false, true };
+	static int ipivot[16] /* was [4][4] */  = { 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2,
 		4, 3, 2, 1
 	};
 
 	/* System generated locals */
-	integer a_dim1, a_offset, b_dim1, b_offset, x_dim1, x_offset;
-	doublereal d__1, d__2, d__3, d__4, d__5, d__6;
-	static doublereal equiv_0[4], equiv_1[4];
+	int a_dim1, a_offset, b_dim1, b_offset, x_dim1, x_offset;
+	double d__1, d__2, d__3, d__4, d__5, d__6;
+	static double equiv_0[4], equiv_1[4];
 
 	/* Local variables */
-	static integer j;
+	static int j;
 #define ci (equiv_0)
 #define cr (equiv_1)
-	static doublereal bi1, bi2, br1, br2, xi1, xi2, xr1, xr2, ci21, ci22, cr21, cr22, li21, csi, ui11, lr21, ui12, ui22;
+	static double bi1, bi2, br1, br2, xi1, xi2, xr1, xr2, ci21, ci22, cr21, cr22, li21, csi, ui11, lr21, ui12, ui22;
 #define civ (equiv_0)
-	static doublereal csr, ur11, ur12, ur22;
+	static double csr, ur11, ur12, ur22;
 #define crv (equiv_1)
-	static doublereal bbnd, cmax, ui11r, ui12s, temp, ur11r, ur12s, u22abs;
-	static integer icmax;
-	static doublereal bnorm, cnorm, smini;
-	static doublereal bignum, smlnum;
+	static double bbnd, cmax, ui11r, ui12s, temp, ur11r, ur12s, u22abs;
+	static int icmax;
+	static double bnorm, cnorm, smini;
+	static double bignum, smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -7355,13 +7362,13 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 	/*  or (ca A' - w D) X = s B   with possible scaling ("s") and */
 	/*  perturbation of A.  (A' means A-transpose.) */
 
-	/*  A is an NA x NA real matrix, ca is a real scalar, D is an NA x NA */
-	/*  real diagonal matrix, w is a real or complex value, and X and B are */
-	/*  NA x 1 matrices -- real if w is real, complex if w is complex.  NA */
+	/*  A is an NA x NA float matrix, ca is a float scalar, D is an NA x NA */
+	/*  float diagonal matrix, w is a float or complex value, and X and B are */
+	/*  NA x 1 matrices -- float if w is float, complex if w is complex.  NA */
 	/*  may be 1 or 2. */
 
 	/*  If w is complex, X and B are represented as NA x 2 matrices, */
-	/*  the first column of each being the real part and the second */
+	/*  the first column of each being the float part and the second */
 	/*  being the imaginary part. */
 
 	/*  "s" is a scaling factor (.LE. 1), computed by DLALN2, which is */
@@ -7393,7 +7400,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 	/*          The size of the matrix A.  It may (only) be 1 or 2. */
 
 	/*  NW      (input) INTEGER */
-	/*          1 if "w" is real, 2 if "w" is complex.  It may only be 1 */
+	/*          1 if "w" is float, 2 if "w" is complex.  It may only be 1 */
 	/*          or 2. */
 
 	/*  SMIN    (input) DOUBLE PRECISION */
@@ -7419,14 +7426,14 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 
 	/*  B       (input) DOUBLE PRECISION array, dimension (LDB,NW) */
 	/*          The NA x NW matrix B (right-hand side).  If NW=2 ("w" is */
-	/*          complex), column 1 contains the real part of B and column 2 */
+	/*          complex), column 1 contains the float part of B and column 2 */
 	/*          contains the imaginary part. */
 
 	/*  LDB     (input) INTEGER */
 	/*          The leading dimension of B.  It must be at least NA. */
 
 	/*  WR      (input) DOUBLE PRECISION */
-	/*          The real part of the scalar "w". */
+	/*          The float part of the scalar "w". */
 
 	/*  WI      (input) DOUBLE PRECISION */
 	/*          The imaginary part of the scalar "w".  Not used if NW=1. */
@@ -7434,7 +7441,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 	/*  X       (output) DOUBLE PRECISION array, dimension (LDX,NW) */
 	/*          The NA x NW matrix X (unknowns), as computed by DLALN2. */
 	/*          If NW=2 ("w" is complex), on exit, column 1 will contain */
-	/*          the real part of X and column 2 will contain the imaginary */
+	/*          the float part of X and column 2 will contain the imaginary */
 	/*          part. */
 
 	/*  LDX     (input) INTEGER */
@@ -7448,7 +7455,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 
 	/*  XNORM   (output) DOUBLE PRECISION */
 	/*          The infinity-norm of X, when X is regarded as an NA x NW */
-	/*          real matrix. */
+	/*          float matrix. */
 
 	/*  INFO    (output) INTEGER */
 	/*          An error flag.  It will be set to zero if no error occurs, */
@@ -7496,7 +7503,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 
 	/*     Compute BIGNUM */
 
-	smlnum = 2. * dlamch_ ("Safe minimum", (ftnlen) 12);
+	smlnum = 2. * dlamch_ ("Safe minimum", (int) 12);
 	bignum = 1. / smlnum;
 	smini = max (*smin, smlnum);
 
@@ -7594,7 +7601,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 
 		/*        2x2 System */
 
-		/*        Compute the real part of  C = ca A - w D  (or  ca A' - w D ) */
+		/*        Compute the float part of  C = ca A - w D  (or  ca A' - w D ) */
 
 		cr[0] = *ca * a[a_dim1 + 1] - *wr * *d1;
 		cr[3] = *ca * a[(a_dim1 << 1) + 2] - *wr * *d2;
@@ -7612,7 +7619,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 		if (*nw == 1)
 		{
 
-			/*           Real 2x2 system  (w is real) */
+			/*           Real 2x2 system  (w is float) */
 
 			/*           Find the largest element in C */
 
@@ -7783,7 +7790,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 			if (icmax == 1 || icmax == 4)
 			{
 
-				/*              Code when off-diagonals of pivoted C are real */
+				/*              Code when off-diagonals of pivoted C are float */
 
 				if (abs (ur11) > abs (ui11))
 				{
@@ -7811,7 +7818,7 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 			else
 			{
 
-				/*              Code when diagonals of pivoted C are real */
+				/*              Code when diagonals of pivoted C are float */
 
 				ur11r = 1. / ur11;
 				ui11r = 0.;
@@ -7914,20 +7921,20 @@ dlaln2_ (logical * ltrans, integer * na, integer * nw,
 #undef ci
 
 
-static doublereal
-dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, doublereal * work, ftnlen norm_len)
+static double
+dlange_ (char *norm, int * m, int * n, double * a, int * lda, double * work, int norm_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
-	doublereal ret_val, d__1, d__2, d__3;
+	int a_dim1, a_offset, i__1, i__2;
+	double ret_val, d__1, d__2, d__3;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal sum, scale;
-	static doublereal value;
+	static int i__, j;
+	static double sum, scale;
+	static double value;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -7945,7 +7952,7 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 
 	/*  DLANGE  returns the value of the one norm,  or the Frobenius norm, or */
 	/*  the  infinity norm,  or the  element of  largest absolute value  of a */
-	/*  real matrix A. */
+	/*  float matrix A. */
 
 	/*  Description */
 	/*  =========== */
@@ -8015,7 +8022,7 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 	{
 		value = 0.;
 	}
-	else if (lsame_ (norm, "M", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "M", (int) 1, (int) 1))
 	{
 
 		/*        Find max(abs(A(i,j))). */
@@ -8035,7 +8042,7 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 			/* L20: */
 		}
 	}
-	else if (lsame_ (norm, "O", (ftnlen) 1, (ftnlen) 1) || *(unsigned char *) norm == '1')
+	else if (lsame_ (norm, "O", (int) 1, (int) 1) || *(unsigned char *) norm == '1')
 	{
 
 		/*        Find norm1(A). */
@@ -8055,7 +8062,7 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 			/* L40: */
 		}
 	}
-	else if (lsame_ (norm, "I", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "I", (int) 1, (int) 1))
 	{
 
 		/*        Find normI(A). */
@@ -8087,7 +8094,7 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 			/* L80: */
 		}
 	}
-	else if (lsame_ (norm, "F", (ftnlen) 1, (ftnlen) 1) || lsame_ (norm, "E", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "F", (int) 1, (int) 1) || lsame_ (norm, "E", (int) 1, (int) 1))
 	{
 
 		/*        Find normF(A). */
@@ -8110,20 +8117,20 @@ dlange_ (char *norm, integer * m, integer * n, doublereal * a, integer * lda, do
 
 }	/* dlange_ */
 
-static doublereal
-dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * work, ftnlen norm_len)
+static double
+dlanhs_ (char *norm, int * n, double * a, int * lda, double * work, int norm_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4;
-	doublereal ret_val, d__1, d__2, d__3;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4;
+	double ret_val, d__1, d__2, d__3;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal sum, scale;
-	static doublereal value;
+	static int i__, j;
+	static double sum, scale;
+	static double value;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -8208,7 +8215,7 @@ dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * wo
 	{
 		value = 0.;
 	}
-	else if (lsame_ (norm, "M", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "M", (int) 1, (int) 1))
 	{
 
 		/*        Find max(abs(A(i,j))). */
@@ -8230,7 +8237,7 @@ dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * wo
 			/* L20: */
 		}
 	}
-	else if (lsame_ (norm, "O", (ftnlen) 1, (ftnlen) 1) || *(unsigned char *) norm == '1')
+	else if (lsame_ (norm, "O", (int) 1, (int) 1) || *(unsigned char *) norm == '1')
 	{
 
 		/*        Find norm1(A). */
@@ -8252,7 +8259,7 @@ dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * wo
 			/* L40: */
 		}
 	}
-	else if (lsame_ (norm, "I", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "I", (int) 1, (int) 1))
 	{
 
 		/*        Find normI(A). */
@@ -8286,7 +8293,7 @@ dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * wo
 			/* L80: */
 		}
 	}
-	else if (lsame_ (norm, "F", (ftnlen) 1, (ftnlen) 1) || lsame_ (norm, "E", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "F", (int) 1, (int) 1) || lsame_ (norm, "E", (int) 1, (int) 1))
 	{
 
 		/*        Find normF(A). */
@@ -8312,22 +8319,22 @@ dlanhs_ (char *norm, integer * n, doublereal * a, integer * lda, doublereal * wo
 
 }	/* dlanhs_ */
 
-static doublereal
-dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
-			doublereal * a, integer * lda, doublereal * work, ftnlen norm_len, ftnlen uplo_len, ftnlen diag_len)
+static double
+dlantr_ (char *norm, char *uplo, char *diag, int * m, int * n,
+			double * a, int * lda, double * work, int norm_len, int uplo_len, int diag_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4;
-	doublereal ret_val, d__1, d__2, d__3;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4;
+	double ret_val, d__1, d__2, d__3;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal sum, scale;
-	static logical udiag;
-	static doublereal value;
+	static int i__, j;
+	static double sum, scale;
+	static bool udiag;
+	static double value;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -8434,15 +8441,15 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 	{
 		value = 0.;
 	}
-	else if (lsame_ (norm, "M", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "M", (int) 1, (int) 1))
 	{
 
 		/*        Find max(abs(A(i,j))). */
 
-		if (lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+		if (lsame_ (diag, "U", (int) 1, (int) 1))
 		{
 			value = 1.;
-			if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (uplo, "U", (int) 1, (int) 1))
 			{
 				i__1 = *n;
 				for (j = 1; j <= i__1; ++j)
@@ -8480,7 +8487,7 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 		else
 		{
 			value = 0.;
-			if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (uplo, "U", (int) 1, (int) 1))
 			{
 				i__1 = *n;
 				for (j = 1; j <= i__1; ++j)
@@ -8514,14 +8521,14 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 			}
 		}
 	}
-	else if (lsame_ (norm, "O", (ftnlen) 1, (ftnlen) 1) || *(unsigned char *) norm == '1')
+	else if (lsame_ (norm, "O", (int) 1, (int) 1) || *(unsigned char *) norm == '1')
 	{
 
 		/*        Find norm1(A). */
 
 		value = 0.;
-		udiag = lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1);
-		if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+		udiag = lsame_ (diag, "U", (int) 1, (int) 1);
+		if (lsame_ (uplo, "U", (int) 1, (int) 1))
 		{
 			i__1 = *n;
 			for (j = 1; j <= i__1; ++j)
@@ -8580,14 +8587,14 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 			}
 		}
 	}
-	else if (lsame_ (norm, "I", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "I", (int) 1, (int) 1))
 	{
 
 		/*        Find normI(A). */
 
-		if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+		if (lsame_ (uplo, "U", (int) 1, (int) 1))
 		{
-			if (lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (diag, "U", (int) 1, (int) 1))
 			{
 				i__1 = *m;
 				for (i__ = 1; i__ <= i__1; ++i__)
@@ -8632,7 +8639,7 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 		}
 		else
 		{
-			if (lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (diag, "U", (int) 1, (int) 1))
 			{
 				i__1 = *n;
 				for (i__ = 1; i__ <= i__1; ++i__)
@@ -8689,17 +8696,17 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 			/* L280: */
 		}
 	}
-	else if (lsame_ (norm, "F", (ftnlen) 1, (ftnlen) 1) || lsame_ (norm, "E", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (norm, "F", (int) 1, (int) 1) || lsame_ (norm, "E", (int) 1, (int) 1))
 	{
 
 		/*        Find normF(A). */
 
-		if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+		if (lsame_ (uplo, "U", (int) 1, (int) 1))
 		{
-			if (lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (diag, "U", (int) 1, (int) 1))
 			{
 				scale = 1.;
-				sum = (doublereal) min (*m, *n);
+				sum = (double) min (*m, *n);
 				i__1 = *n;
 				for (j = 2; j <= i__1; ++j)
 				{
@@ -8725,10 +8732,10 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 		}
 		else
 		{
-			if (lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (diag, "U", (int) 1, (int) 1))
 			{
 				scale = 1.;
-				sum = (doublereal) min (*m, *n);
+				sum = (double) min (*m, *n);
 				i__1 = *n;
 				for (j = 1; j <= i__1; ++j)
 				{
@@ -8763,17 +8770,17 @@ dlantr_ (char *norm, char *uplo, char *diag, integer * m, integer * n,
 }	/* dlantr_ */
 
 static int
-dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
-			doublereal * d__, doublereal * rt1r, doublereal * rt1i, doublereal * rt2r, doublereal * rt2i, doublereal * cs, doublereal * sn)
+dlanv2_ (double * a, double * b, double * c__,
+			double * d__, double * rt1r, double * rt1i, double * rt2r, double * rt2i, double * cs, double * sn)
 {
 	/* System generated locals */
-	doublereal d__1, d__2;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double d_sign (doublereal *, doublereal *), sqrt (doublereal);
+	double d_sign (double *, double *), sqrt (double);
 
 	/* Local variables */
-	static doublereal p, z__, aa, bb, cc, dd, cs1, sn1, sab, sac, eps, tau, temp, scale, bcmax, bcmis, sigma;
+	static double p, z__, aa, bb, cc, dd, cs1, sn1, sab, sac, eps, tau, temp, scale, bcmax, bcmis, sigma;
 
 
 	/*  -- LAPACK driver routine (version 3.0) -- */
@@ -8787,14 +8794,14 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLANV2 computes the Schur factorization of a real 2-by-2 nonsymmetric */
+	/*  DLANV2 computes the Schur factorization of a float 2-by-2 nonsymmetric */
 	/*  matrix in standard form: */
 
 	/*       [ A  B ] = [ CS -SN ] [ AA  BB ] [ CS  SN ] */
 	/*       [ C  D ]   [ SN  CS ] [ CC  DD ] [-SN  CS ] */
 
 	/*  where either */
-	/*  1) CC = 0 so that AA and DD are real eigenvalues of the matrix, or */
+	/*  1) CC = 0 so that AA and DD are float eigenvalues of the matrix, or */
 	/*  2) AA = DD and BB*CC < 0, so that AA + or - sqrt(BB*CC) are complex */
 	/*  conjugate eigenvalues. */
 
@@ -8813,7 +8820,7 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 	/*  RT1I    (output) DOUBLE PRECISION */
 	/*  RT2R    (output) DOUBLE PRECISION */
 	/*  RT2I    (output) DOUBLE PRECISION */
-	/*          The real and imaginary parts of the eigenvalues. If the */
+	/*          The float and imaginary parts of the eigenvalues. If the */
 	/*          eigenvalues are a complex conjugate pair, RT1I > 0. */
 
 	/*  CS      (output) DOUBLE PRECISION */
@@ -8825,7 +8832,7 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 
 	/*  Modified by V. Sima, Research Institute for Informatics, Bucharest, */
 	/*  Romania, to reduce the risk of cancellation errors, */
-	/*  when computing real eigenvalues, and to ensure, if possible, that */
+	/*  when computing float eigenvalues, and to ensure, if possible, that */
 	/*  abs(RT1R) >= abs(RT2R). */
 
 	/*  ===================================================================== */
@@ -8840,7 +8847,7 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 	/*     .. */
 	/*     .. Executable Statements .. */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
+	eps = dlamch_ ("P", (int) 1);
 	if (*c__ == 0.)
 	{
 		*cs = 1.;
@@ -8908,7 +8915,7 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 		else
 		{
 
-			/*           Complex eigenvalues, or real (almost) equal eigenvalues. */
+			/*           Complex eigenvalues, or float (almost) equal eigenvalues. */
 			/*           Make diagonal elements equal. */
 
 			sigma = *b + *c__;
@@ -8996,17 +9003,17 @@ dlanv2_ (doublereal * a, doublereal * b, doublereal * c__,
 
 }	/* dlanv2_ */
 
-static doublereal
-dlapy2_ (doublereal * x, doublereal * y)
+static double
+dlapy2_ (double * x, double * y)
 {
 	/* System generated locals */
-	doublereal ret_val, d__1;
+	double ret_val, d__1;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static doublereal w, z__, xabs, yabs;
+	static double w, z__, xabs, yabs;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -9061,15 +9068,15 @@ dlapy2_ (doublereal * x, doublereal * y)
 }	/* dlapy2_ */
 
 static int
-dlaqge_ (integer * m, integer * n, doublereal * a, integer *
-			lda, doublereal * r__, doublereal * c__, doublereal * rowcnd, doublereal * colcnd, doublereal * amax, char *equed, ftnlen equed_len)
+dlaqge_ (int * m, int * n, double * a, int *
+			lda, double * r__, double * c__, double * rowcnd, double * colcnd, double * amax, char *equed, int equed_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
+	int a_dim1, a_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal cj, large, small;
+	static int i__, j;
+	static double cj, large, small;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -9170,7 +9177,7 @@ dlaqge_ (integer * m, integer * n, doublereal * a, integer *
 
 	/*     Initialize LARGE and SMALL. */
 
-	small = dlamch_ ("Safe minimum", (ftnlen) 12) / dlamch_ ("Precision", (ftnlen) 9);
+	small = dlamch_ ("Safe minimum", (int) 12) / dlamch_ ("Precision", (int) 9);
 	large = 1. / small;
 
 	if (*rowcnd >= .1 && *amax >= small && *amax <= large)
@@ -9250,27 +9257,27 @@ dlaqge_ (integer * m, integer * n, doublereal * a, integer *
 }	/* dlaqge_ */
 
 static int
-dlaqtr_ (logical * ltran, logical * lreal, integer * n,
-			doublereal * t, integer * ldt, doublereal * b, doublereal * w, doublereal * scale, doublereal * x, doublereal * work, integer * info)
+dlaqtr_ (bool * ltran, bool * lfloat, int * n,
+			double * t, int * ldt, double * b, double * w, double * scale, double * x, double * work, int * info)
 {
 	/* System generated locals */
-	integer t_dim1, t_offset, i__1, i__2;
-	doublereal d__1, d__2, d__3, d__4, d__5, d__6;
+	int t_dim1, t_offset, i__1, i__2;
+	double d__1, d__2, d__3, d__4, d__5, d__6;
 
 	/* Local variables */
-	static doublereal d__[4] /* was [2][2] */ ;
-	static integer i__, j, k;
-	static doublereal v[4] /* was [2][2] */ , z__;
-	static integer j1, j2, n1, n2;
-	static doublereal si, xj, sr, rec, eps, tjj, tmp;
-	static integer ierr;
-	static doublereal smin, xmax;
-	static integer jnext;
-	static doublereal sminw, xnorm;
-	static doublereal scaloc;
-	static doublereal bignum;
-	static logical notran;
-	static doublereal smlnum;
+	static double d__[4] /* was [2][2] */ ;
+	static int i__, j, k;
+	static double v[4] /* was [2][2] */ , z__;
+	static int j1, j2, n1, n2;
+	static double si, xj, sr, rec, eps, tjj, tmp;
+	static int ierr;
+	static double smin, xmax;
+	static int jnext;
+	static double sminw, xnorm;
+	static double scaloc;
+	static double bignum;
+	static bool notran;
+	static double smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -9286,7 +9293,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLAQTR solves the real quasi-triangular system */
+	/*  DLAQTR solves the float quasi-triangular system */
 
 	/*               op(T)*p = scale*c,               if LREAL = .TRUE. */
 
@@ -9294,7 +9301,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 
 	/*             op(T + iB)*(p+iq) = scale*(c+id),  if LREAL = .FALSE. */
 
-	/*  in real arithmetic, where T is upper quasi-triangular. */
+	/*  in float arithmetic, where T is upper quasi-triangular. */
 	/*  If LREAL = .FALSE., then the first diagonal block of T must be */
 	/*  1 by 1, B is the specially structured matrix */
 
@@ -9324,7 +9331,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 	/*  LREAL   (input) LOGICAL */
 	/*          On entry, LREAL specifies the input matrix structure: */
 	/*             = .FALSE.,    the input is complex */
-	/*             = .TRUE.,     the input is real */
+	/*             = .TRUE.,     the input is float */
 
 	/*  N       (input) INTEGER */
 	/*          On entry, N specifies the order of T+i*B. N >= 0. */
@@ -9404,15 +9411,15 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 
 	/*     Set constants to control overflow */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1) / eps;
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1) / eps;
 	bignum = 1. / smlnum;
 
-	xnorm = dlange_ ("M", n, n, &t[t_offset], ldt, d__, (ftnlen) 1);
-	if (!(*lreal))
+	xnorm = dlange_ ("M", n, n, &t[t_offset], ldt, d__, (int) 1);
+	if (!(*lfloat))
 	{
 		/* Computing MAX */
-		d__1 = xnorm, d__2 = abs (*w), d__1 = max (d__1, d__2), d__2 = dlange_ ("M", n, &c__1, &b[1], n, d__, (ftnlen) 1);
+		d__1 = xnorm, d__2 = abs (*w), d__1 = max (d__1, d__2), d__2 = dlange_ ("M", n, &c__1, &b[1], n, d__, (int) 1);
 		xnorm = max (d__1, d__2);
 	}
 	/* Computing MAX */
@@ -9431,7 +9438,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 		/* L10: */
 	}
 
-	if (!(*lreal))
+	if (!(*lfloat))
 	{
 		i__1 = *n;
 		for (i__ = 2; i__ <= i__1; ++i__)
@@ -9443,7 +9450,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 
 	n2 = *n << 1;
 	n1 = *n;
-	if (!(*lreal))
+	if (!(*lfloat))
 	{
 		n1 = n2;
 	}
@@ -9458,7 +9465,7 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 		xmax = bignum;
 	}
 
-	if (*lreal)
+	if (*lfloat)
 	{
 
 		if (notran)
@@ -10102,15 +10109,15 @@ dlaqtr_ (logical * ltran, logical * lreal, integer * n,
 }	/* dlaqtr_ */
 
 static int
-dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integer * n, integer * k, doublereal * v, integer *
-			ldv, doublereal * t, integer * ldt, doublereal * c__, integer * ldc,
-			doublereal * work, integer * ldwork, ftnlen side_len, ftnlen trans_len, ftnlen direct_len, ftnlen storev_len)
+dlarfb_ (char *side, char *trans, char *direct, char *storev, int * m, int * n, int * k, double * v, int *
+			ldv, double * t, int * ldt, double * c__, int * ldc,
+			double * work, int * ldwork, int side_len, int trans_len, int direct_len, int storev_len)
 {
 	/* System generated locals */
-	integer c_dim1, c_offset, t_dim1, t_offset, v_dim1, v_offset, work_dim1, work_offset, i__1, i__2;
+	int c_dim1, c_offset, t_dim1, t_offset, v_dim1, v_offset, work_dim1, work_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer i__, j;
+	static int i__, j;
 	static char transt[1];
 
 
@@ -10127,8 +10134,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARFB applies a real block reflector H or its transpose H' to a */
-	/*  real m by n matrix C, from either the left or the right. */
+	/*  DLARFB applies a float block reflector H or its transpose H' to a */
+	/*  float m by n matrix C, from either the left or the right. */
 
 	/*  Arguments */
 	/*  ========= */
@@ -10230,7 +10237,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 		return 0;
 	}
 
-	if (lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (trans, "N", (int) 1, (int) 1))
 	{
 		*(unsigned char *) transt = 'T';
 	}
@@ -10239,17 +10246,17 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 		*(unsigned char *) transt = 'N';
 	}
 
-	if (lsame_ (storev, "C", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (storev, "C", (int) 1, (int) 1))
 	{
 
-		if (lsame_ (direct, "F", (ftnlen) 1, (ftnlen) 1))
+		if (lsame_ (direct, "F", (int) 1, (int) 1))
 		{
 
 			/*           Let  V =  ( V1 )    (first K rows) */
 			/*                     ( V2 ) */
 			/*           where  V1  is unit lower triangular. */
 
-			if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (side, "L", (int) 1, (int) 1))
 			{
 
 				/*              Form  H * C  or  H' * C  where  C = ( C1 ) */
@@ -10269,7 +10276,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				/*              W := W * V1 */
 
 				dtrmm_ ("Right", "Lower", "No transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork,
-						  (ftnlen) 5, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+						  (int) 5, (int) 5, (int) 12, (int) 4);
 				if (*m > *k)
 				{
 
@@ -10277,13 +10284,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("Transpose", "No transpose", n, k, &i__1, &c_b348,
-							  &c__[*k + 1 + c_dim1], ldc, &v[*k + 1 + v_dim1], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 9, (ftnlen) 12);
+							  &c__[*k + 1 + c_dim1], ldc, &v[*k + 1 + v_dim1], ldv, &c_b348, &work[work_offset], ldwork, (int) 9, (int) 12);
 				}
 
 				/*              W := W * T'  or  W * T */
 
-				dtrmm_ ("Right", "Upper", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Upper", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - V * W' */
 
@@ -10294,13 +10301,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("No transpose", "Transpose", &i__1, n, k, &c_b347,
-							  &v[*k + 1 + v_dim1], ldv, &work[work_offset], ldwork, &c_b348, &c__[*k + 1 + c_dim1], ldc, (ftnlen) 12, (ftnlen) 9);
+							  &v[*k + 1 + v_dim1], ldv, &work[work_offset], ldwork, &c_b348, &c__[*k + 1 + c_dim1], ldc, (int) 12, (int) 9);
 				}
 
 				/*              W := W * V1' */
 
-				dtrmm_ ("Right", "Lower", "Transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "Transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 9, (int) 4);
 
 				/*              C1 := C1 - W' */
 
@@ -10317,7 +10324,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				}
 
 			}
-			else if (lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1))
+			else if (lsame_ (side, "R", (int) 1, (int) 1))
 			{
 
 				/*              Form  C * H  or  C * H'  where  C = ( C1  C2 ) */
@@ -10336,7 +10343,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				/*              W := W * V1 */
 
 				dtrmm_ ("Right", "Lower", "No transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork,
-						  (ftnlen) 5, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+						  (int) 5, (int) 5, (int) 12, (int) 4);
 				if (*n > *k)
 				{
 
@@ -10345,13 +10352,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "No transpose", m, k, &i__1, &c_b348, &c__[(*k + 1) * c_dim1 + 1], ldc, &v[*k +
 																																						1 + v_dim1], ldv, &c_b348, &work[work_offset],
-							  ldwork, (ftnlen) 12, (ftnlen) 12);
+							  ldwork, (int) 12, (int) 12);
 				}
 
 				/*              W := W * T  or  W * T' */
 
-				dtrmm_ ("Right", "Upper", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Upper", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - W * V' */
 
@@ -10362,13 +10369,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "Transpose", m, &i__1, k, &c_b347,
-							  &work[work_offset], ldwork, &v[*k + 1 + v_dim1], ldv, &c_b348, &c__[(*k + 1) * c_dim1 + 1], ldc, (ftnlen) 12, (ftnlen) 9);
+							  &work[work_offset], ldwork, &v[*k + 1 + v_dim1], ldv, &c_b348, &c__[(*k + 1) * c_dim1 + 1], ldc, (int) 12, (int) 9);
 				}
 
 				/*              W := W * V1' */
 
-				dtrmm_ ("Right", "Lower", "Transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "Transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 9, (int) 4);
 
 				/*              C1 := C1 - W */
 
@@ -10393,7 +10400,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 			/*                     ( V2 )    (last K rows) */
 			/*           where  V2  is unit upper triangular. */
 
-			if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (side, "L", (int) 1, (int) 1))
 			{
 
 				/*              Form  H * C  or  H' * C  where  C = ( C1 ) */
@@ -10412,8 +10419,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V2 */
 
-				dtrmm_ ("Right", "Upper", "No transpose", "Unit", n, k, &c_b348, &v[*m - *k + 1 + v_dim1], ldv, &work[work_offset], ldwork, (ftnlen) 5, (ftnlen) 5,
-						  (ftnlen) 12, (ftnlen) 4);
+				dtrmm_ ("Right", "Upper", "No transpose", "Unit", n, k, &c_b348, &v[*m - *k + 1 + v_dim1], ldv, &work[work_offset], ldwork, (int) 5, (int) 5,
+						  (int) 12, (int) 4);
 				if (*m > *k)
 				{
 
@@ -10421,13 +10428,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("Transpose", "No transpose", n, k, &i__1, &c_b348,
-							  &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 9, (ftnlen) 12);
+							  &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (int) 9, (int) 12);
 				}
 
 				/*              W := W * T'  or  W * T */
 
-				dtrmm_ ("Right", "Lower", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Lower", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - V * W' */
 
@@ -10438,13 +10445,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("No transpose", "Transpose", &i__1, n, k, &c_b347,
-							  &v[v_offset], ldv, &work[work_offset], ldwork, &c_b348, &c__[c_offset], ldc, (ftnlen) 12, (ftnlen) 9);
+							  &v[v_offset], ldv, &work[work_offset], ldwork, &c_b348, &c__[c_offset], ldc, (int) 12, (int) 9);
 				}
 
 				/*              W := W * V2' */
 
 				dtrmm_ ("Right", "Upper", "Transpose", "Unit", n, k, &c_b348, &v[*m - *k + 1 + v_dim1], ldv, &work[work_offset],
-						  ldwork, (ftnlen) 5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+						  ldwork, (int) 5, (int) 5, (int) 9, (int) 4);
 
 				/*              C2 := C2 - W' */
 
@@ -10461,7 +10468,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				}
 
 			}
-			else if (lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1))
+			else if (lsame_ (side, "R", (int) 1, (int) 1))
 			{
 
 				/*              Form  C * H  or  C * H'  where  C = ( C1  C2 ) */
@@ -10479,8 +10486,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V2 */
 
-				dtrmm_ ("Right", "Upper", "No transpose", "Unit", m, k, &c_b348, &v[*n - *k + 1 + v_dim1], ldv, &work[work_offset], ldwork, (ftnlen) 5, (ftnlen) 5,
-						  (ftnlen) 12, (ftnlen) 4);
+				dtrmm_ ("Right", "Upper", "No transpose", "Unit", m, k, &c_b348, &v[*n - *k + 1 + v_dim1], ldv, &work[work_offset], ldwork, (int) 5, (int) 5,
+						  (int) 12, (int) 4);
 				if (*n > *k)
 				{
 
@@ -10488,13 +10495,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "No transpose", m, k, &i__1, &c_b348, &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork,
-							  (ftnlen) 12, (ftnlen) 12);
+							  (int) 12, (int) 12);
 				}
 
 				/*              W := W * T  or  W * T' */
 
-				dtrmm_ ("Right", "Lower", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Lower", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - W * V' */
 
@@ -10505,13 +10512,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "Transpose", m, &i__1, k, &c_b347,
-							  &work[work_offset], ldwork, &v[v_offset], ldv, &c_b348, &c__[c_offset], ldc, (ftnlen) 12, (ftnlen) 9);
+							  &work[work_offset], ldwork, &v[v_offset], ldv, &c_b348, &c__[c_offset], ldc, (int) 12, (int) 9);
 				}
 
 				/*              W := W * V2' */
 
 				dtrmm_ ("Right", "Upper", "Transpose", "Unit", m, k, &c_b348, &v[*n - *k + 1 + v_dim1], ldv, &work[work_offset],
-						  ldwork, (ftnlen) 5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+						  ldwork, (int) 5, (int) 5, (int) 9, (int) 4);
 
 				/*              C2 := C2 - W */
 
@@ -10530,16 +10537,16 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 		}
 
 	}
-	else if (lsame_ (storev, "R", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (storev, "R", (int) 1, (int) 1))
 	{
 
-		if (lsame_ (direct, "F", (ftnlen) 1, (ftnlen) 1))
+		if (lsame_ (direct, "F", (int) 1, (int) 1))
 		{
 
 			/*           Let  V =  ( V1  V2 )    (V1: first K columns) */
 			/*           where  V1  is unit upper triangular. */
 
-			if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (side, "L", (int) 1, (int) 1))
 			{
 
 				/*              Form  H * C  or  H' * C  where  C = ( C1 ) */
@@ -10558,8 +10565,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V1' */
 
-				dtrmm_ ("Right", "Upper", "Transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Upper", "Transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 9, (int) 4);
 				if (*m > *k)
 				{
 
@@ -10567,14 +10574,14 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("Transpose", "Transpose", n, k, &i__1, &c_b348, &c__[*k + 1 + c_dim1], ldc, &v[(*k + 1) * v_dim1 +
-																																		1], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 9,
-							  (ftnlen) 9);
+																																		1], ldv, &c_b348, &work[work_offset], ldwork, (int) 9,
+							  (int) 9);
 				}
 
 				/*              W := W * T'  or  W * T */
 
-				dtrmm_ ("Right", "Upper", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Upper", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - V' * W' */
 
@@ -10585,13 +10592,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *m - *k;
 					dgemm_ ("Transpose", "Transpose", &i__1, n, k, &c_b347, &v[(*k + 1) * v_dim1 + 1], ldv, &work[work_offset],
-							  ldwork, &c_b348, &c__[*k + 1 + c_dim1], ldc, (ftnlen) 9, (ftnlen) 9);
+							  ldwork, &c_b348, &c__[*k + 1 + c_dim1], ldc, (int) 9, (int) 9);
 				}
 
 				/*              W := W * V1 */
 
 				dtrmm_ ("Right", "Upper", "No transpose", "Unit", n, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork,
-						  (ftnlen) 5, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+						  (int) 5, (int) 5, (int) 12, (int) 4);
 
 				/*              C1 := C1 - W' */
 
@@ -10608,7 +10615,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				}
 
 			}
-			else if (lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1))
+			else if (lsame_ (side, "R", (int) 1, (int) 1))
 			{
 
 				/*              Form  C * H  or  C * H'  where  C = ( C1  C2 ) */
@@ -10626,8 +10633,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V1' */
 
-				dtrmm_ ("Right", "Upper", "Transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Upper", "Transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 9, (int) 4);
 				if (*n > *k)
 				{
 
@@ -10635,13 +10642,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "Transpose", m, k, &i__1, &c_b348,
-							  &c__[(*k + 1) * c_dim1 + 1], ldc, &v[(*k + 1) * v_dim1 + 1], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 12, (ftnlen) 9);
+							  &c__[(*k + 1) * c_dim1 + 1], ldc, &v[(*k + 1) * v_dim1 + 1], ldv, &c_b348, &work[work_offset], ldwork, (int) 12, (int) 9);
 				}
 
 				/*              W := W * T  or  W * T' */
 
-				dtrmm_ ("Right", "Upper", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Upper", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - W * V */
 
@@ -10654,13 +10661,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 					dgemm_ ("No transpose", "No transpose", m, &i__1, k, &c_b347, &work[work_offset], ldwork, &v[(*k + 1) *
 																																				v_dim1 + 1], ldv, &c_b348, &c__[(*k + 1) * c_dim1
 																																														  + 1], ldc,
-							  (ftnlen) 12, (ftnlen) 12);
+							  (int) 12, (int) 12);
 				}
 
 				/*              W := W * V1 */
 
 				dtrmm_ ("Right", "Upper", "No transpose", "Unit", m, k, &c_b348, &v[v_offset], ldv, &work[work_offset], ldwork,
-						  (ftnlen) 5, (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+						  (int) 5, (int) 5, (int) 12, (int) 4);
 
 				/*              C1 := C1 - W */
 
@@ -10685,7 +10692,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 			/*           Let  V =  ( V1  V2 )    (V2: last K columns) */
 			/*           where  V2  is unit lower triangular. */
 
-			if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+			if (lsame_ (side, "L", (int) 1, (int) 1))
 			{
 
 				/*              Form  H * C  or  H' * C  where  C = ( C1 ) */
@@ -10704,22 +10711,22 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V2' */
 
-				dtrmm_ ("Right", "Lower", "Transpose", "Unit", n, k, &c_b348, &v[(*m - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "Transpose", "Unit", n, k, &c_b348, &v[(*m - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 9, (int) 4);
 				if (*m > *k)
 				{
 
 					/*                 W := W + C1'*V1' */
 
 					i__1 = *m - *k;
-					dgemm_ ("Transpose", "Transpose", n, k, &i__1, &c_b348, &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 9,
-							  (ftnlen) 9);
+					dgemm_ ("Transpose", "Transpose", n, k, &i__1, &c_b348, &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (int) 9,
+							  (int) 9);
 				}
 
 				/*              W := W * T'  or  W * T */
 
-				dtrmm_ ("Right", "Lower", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen)
-						  5, (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Lower", transt, "Non-unit", n, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int)
+						  5, (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - V' * W' */
 
@@ -10729,14 +10736,14 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 					/*                 C1 := C1 - V1' * W' */
 
 					i__1 = *m - *k;
-					dgemm_ ("Transpose", "Transpose", &i__1, n, k, &c_b347, &v[v_offset], ldv, &work[work_offset], ldwork, &c_b348, &c__[c_offset], ldc, (ftnlen) 9,
-							  (ftnlen) 9);
+					dgemm_ ("Transpose", "Transpose", &i__1, n, k, &c_b347, &v[v_offset], ldv, &work[work_offset], ldwork, &c_b348, &c__[c_offset], ldc, (int) 9,
+							  (int) 9);
 				}
 
 				/*              W := W * V2 */
 
-				dtrmm_ ("Right", "Lower", "No transpose", "Unit", n, k, &c_b348, &v[(*m - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "No transpose", "Unit", n, k, &c_b348, &v[(*m - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 12, (int) 4);
 
 				/*              C2 := C2 - W' */
 
@@ -10753,7 +10760,7 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 				}
 
 			}
-			else if (lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1))
+			else if (lsame_ (side, "R", (int) 1, (int) 1))
 			{
 
 				/*              Form  C * H  or  C * H'  where  C = ( C1  C2 ) */
@@ -10771,8 +10778,8 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 				/*              W := W * V2' */
 
-				dtrmm_ ("Right", "Lower", "Transpose", "Unit", m, k, &c_b348, &v[(*n - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 9, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "Transpose", "Unit", m, k, &c_b348, &v[(*n - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 9, (int) 4);
 				if (*n > *k)
 				{
 
@@ -10780,13 +10787,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "Transpose", m, k, &i__1, &c_b348,
-							  &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (ftnlen) 12, (ftnlen) 9);
+							  &c__[c_offset], ldc, &v[v_offset], ldv, &c_b348, &work[work_offset], ldwork, (int) 12, (int) 9);
 				}
 
 				/*              W := W * T  or  W * T' */
 
-				dtrmm_ ("Right", "Lower", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 1, (ftnlen) 8);
+				dtrmm_ ("Right", "Lower", trans, "Non-unit", m, k, &c_b348, &t[t_offset], ldt, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 1, (int) 8);
 
 				/*              C := C - W * V */
 
@@ -10797,13 +10804,13 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 
 					i__1 = *n - *k;
 					dgemm_ ("No transpose", "No transpose", m, &i__1, k, &c_b347, &work[work_offset], ldwork, &v[v_offset],
-							  ldv, &c_b348, &c__[c_offset], ldc, (ftnlen) 12, (ftnlen) 12);
+							  ldv, &c_b348, &c__[c_offset], ldc, (int) 12, (int) 12);
 				}
 
 				/*              W := W * V2 */
 
-				dtrmm_ ("Right", "Lower", "No transpose", "Unit", m, k, &c_b348, &v[(*n - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (ftnlen) 5,
-						  (ftnlen) 5, (ftnlen) 12, (ftnlen) 4);
+				dtrmm_ ("Right", "Lower", "No transpose", "Unit", m, k, &c_b348, &v[(*n - *k + 1) * v_dim1 + 1], ldv, &work[work_offset], ldwork, (int) 5,
+						  (int) 5, (int) 12, (int) 4);
 
 				/*              C1 := C1 - W */
 
@@ -10831,12 +10838,12 @@ dlarfb_ (char *side, char *trans, char *direct, char *storev, integer * m, integ
 }	/* dlarfb_ */
 
 static int
-dlarf_ (char *side, integer * m, integer * n, doublereal * v,
-		  integer * incv, doublereal * tau, doublereal * c__, integer * ldc, doublereal * work, ftnlen side_len)
+dlarf_ (char *side, int * m, int * n, double * v,
+		  int * incv, double * tau, double * c__, int * ldc, double * work, int side_len)
 {
 	/* System generated locals */
-	integer c_dim1, c_offset;
-	doublereal d__1;
+	int c_dim1, c_offset;
+	double d__1;
 
 	/* Local variables */
 
@@ -10854,12 +10861,12 @@ dlarf_ (char *side, integer * m, integer * n, doublereal * v,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARF applies a real elementary reflector H to a real m by n matrix */
+	/*  DLARF applies a float elementary reflector H to a float m by n matrix */
 	/*  C, from either the left or the right. H is represented in the form */
 
 	/*        H = I - tau * v * v' */
 
-	/*  where tau is a real scalar and v is a real vector. */
+	/*  where tau is a float scalar and v is a float vector. */
 
 	/*  If tau = 0, then H is taken to be the unit matrix. */
 
@@ -10918,7 +10925,7 @@ dlarf_ (char *side, integer * m, integer * n, doublereal * v,
 	--work;
 
 	/* Function Body */
-	if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (side, "L", (int) 1, (int) 1))
 	{
 
 		/*        Form  H * C */
@@ -10928,7 +10935,7 @@ dlarf_ (char *side, integer * m, integer * n, doublereal * v,
 
 			/*           w := C' * v */
 
-			dgemv_ ("Transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], incv, &c_b507, &work[1], &c__1, (ftnlen) 9);
+			dgemv_ ("Transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], incv, &c_b507, &work[1], &c__1, (int) 9);
 
 			/*           C := C - v * w' */
 
@@ -10946,7 +10953,7 @@ dlarf_ (char *side, integer * m, integer * n, doublereal * v,
 
 			/*           w := C * v */
 
-			dgemv_ ("No transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], incv, &c_b507, &work[1], &c__1, (ftnlen) 12);
+			dgemv_ ("No transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], incv, &c_b507, &work[1], &c__1, (int) 12);
 
 			/*           C := C - w * v' */
 
@@ -10961,20 +10968,20 @@ dlarf_ (char *side, integer * m, integer * n, doublereal * v,
 }	/* dlarf_ */
 
 static int
-dlarfg_ (integer * n, doublereal * alpha, doublereal * x, integer * incx, doublereal * tau)
+dlarfg_ (int * n, double * alpha, double * x, int * incx, double * tau)
 {
 	/* System generated locals */
-	integer i__1;
-	doublereal d__1;
+	int i__1;
+	double d__1;
 
 	/* Builtin functions */
-	double d_sign (doublereal *, doublereal *);
+	double d_sign (double *, double *);
 
 	/* Local variables */
-	static integer j, knt;
-	static doublereal beta;
-	static doublereal xnorm;
-	static doublereal safmin, rsafmn;
+	static int j, knt;
+	static double beta;
+	static double xnorm;
+	static double safmin, rsafmn;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -10990,19 +10997,19 @@ dlarfg_ (integer * n, doublereal * alpha, doublereal * x, integer * incx, double
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARFG generates a real elementary reflector H of order n, such */
+	/*  DLARFG generates a float elementary reflector H of order n, such */
 	/*  that */
 
 	/*        H * ( alpha ) = ( beta ),   H' * H = I. */
 	/*            (   x   )   (   0  ) */
 
-	/*  where alpha and beta are scalars, and x is an (n-1)-element real */
+	/*  where alpha and beta are scalars, and x is an (n-1)-element float */
 	/*  vector. H is represented in the form */
 
 	/*        H = I - tau * ( 1 ) * ( 1 v' ) , */
 	/*                      ( v ) */
 
-	/*  where tau is a real scalar and v is a real (n-1)-element */
+	/*  where tau is a float scalar and v is a float (n-1)-element */
 	/*  vector. */
 
 	/*  If the elements of x are all zero, then tau = 0 and H is taken to be */
@@ -11072,7 +11079,7 @@ dlarfg_ (integer * n, doublereal * alpha, doublereal * x, integer * incx, double
 
 		d__1 = dlapy2_ (alpha, &xnorm);
 		beta = -d_sign (&d__1, alpha);
-		safmin = dlamch_ ("S", (ftnlen) 1) / dlamch_ ("E", (ftnlen) 1);
+		safmin = dlamch_ ("S", (int) 1) / dlamch_ ("E", (int) 1);
 		if (abs (beta) < safmin)
 		{
 
@@ -11129,16 +11136,16 @@ dlarfg_ (integer * n, doublereal * alpha, doublereal * x, integer * incx, double
 }	/* dlarfg_ */
 
 static int
-dlarft_ (char *direct, char *storev, integer * n, integer *
-			k, doublereal * v, integer * ldv, doublereal * tau, doublereal * t, integer * ldt, ftnlen direct_len, ftnlen storev_len)
+dlarft_ (char *direct, char *storev, int * n, int *
+			k, double * v, int * ldv, double * tau, double * t, int * ldt, int direct_len, int storev_len)
 {
 	/* System generated locals */
-	integer t_dim1, t_offset, v_dim1, v_offset, i__1, i__2, i__3;
-	doublereal d__1;
+	int t_dim1, t_offset, v_dim1, v_offset, i__1, i__2, i__3;
+	double d__1;
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal vii;
+	static int i__, j;
+	static double vii;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -11154,7 +11161,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARFT forms the triangular factor T of a real block reflector H */
+	/*  DLARFT forms the triangular factor T of a float block reflector H */
 	/*  of order n, which is defined as a product of k elementary reflectors. */
 
 	/*  If DIRECT = 'F', H = H(1) H(2) . . . H(k) and T is upper triangular; */
@@ -11268,7 +11275,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 		return 0;
 	}
 
-	if (lsame_ (direct, "F", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (direct, "F", (int) 1, (int) 1))
 	{
 		i__1 = *k;
 		for (i__ = 1; i__ <= i__1; ++i__)
@@ -11292,7 +11299,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 
 				vii = v[i__ + i__ * v_dim1];
 				v[i__ + i__ * v_dim1] = 1.;
-				if (lsame_ (storev, "C", (ftnlen) 1, (ftnlen) 1))
+				if (lsame_ (storev, "C", (int) 1, (int) 1))
 				{
 
 					/*                 T(1:i-1,i) := - tau(i) * V(i:n,1:i-1)' * V(i:n,i) */
@@ -11301,7 +11308,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 					i__3 = i__ - 1;
 					d__1 = -tau[i__];
 					dgemv_ ("Transpose", &i__2, &i__3, &d__1, &v[i__ + v_dim1],
-							  ldv, &v[i__ + i__ * v_dim1], &c__1, &c_b507, &t[i__ * t_dim1 + 1], &c__1, (ftnlen) 9);
+							  ldv, &v[i__ + i__ * v_dim1], &c__1, &c_b507, &t[i__ * t_dim1 + 1], &c__1, (int) 9);
 				}
 				else
 				{
@@ -11313,14 +11320,14 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 					d__1 = -tau[i__];
 					dgemv_ ("No transpose", &i__2, &i__3, &d__1, &v[i__ *
 																					v_dim1 + 1], ldv, &v[i__ + i__ * v_dim1], ldv, &c_b507, &t[i__ * t_dim1 + 1], &c__1,
-							  (ftnlen) 12);
+							  (int) 12);
 				}
 				v[i__ + i__ * v_dim1] = vii;
 
 				/*              T(1:i-1,i) := T(1:i-1,1:i-1) * T(1:i-1,i) */
 
 				i__2 = i__ - 1;
-				dtrmv_ ("Upper", "No transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[i__ * t_dim1 + 1], &c__1, (ftnlen) 5, (ftnlen) 12, (ftnlen) 8);
+				dtrmv_ ("Upper", "No transpose", "Non-unit", &i__2, &t[t_offset], ldt, &t[i__ * t_dim1 + 1], &c__1, (int) 5, (int) 12, (int) 8);
 				t[i__ + i__ * t_dim1] = tau[i__];
 			}
 			/* L20: */
@@ -11349,7 +11356,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 
 				if (i__ < *k)
 				{
-					if (lsame_ (storev, "C", (ftnlen) 1, (ftnlen) 1))
+					if (lsame_ (storev, "C", (int) 1, (int) 1))
 					{
 						vii = v[*n - *k + i__ + i__ * v_dim1];
 						v[*n - *k + i__ + i__ * v_dim1] = 1.;
@@ -11362,7 +11369,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 						d__1 = -tau[i__];
 						dgemv_ ("Transpose", &i__1, &i__2, &d__1, &v[(i__ + 1)
 																					* v_dim1 + 1], ldv, &v[i__ * v_dim1 + 1], &c__1, &c_b507, &t[i__ + 1 + i__ * t_dim1], &c__1,
-								  (ftnlen) 9);
+								  (int) 9);
 						v[*n - *k + i__ + i__ * v_dim1] = vii;
 					}
 					else
@@ -11378,7 +11385,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 						d__1 = -tau[i__];
 						dgemv_ ("No transpose", &i__1, &i__2, &d__1, &v[i__ +
 																						1 + v_dim1], ldv, &v[i__ + v_dim1], ldv, &c_b507, &t[i__ + 1 + i__ * t_dim1], &c__1,
-								  (ftnlen) 12);
+								  (int) 12);
 						v[i__ + (*n - *k + i__) * v_dim1] = vii;
 					}
 
@@ -11387,7 +11394,7 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 					i__1 = *k - i__;
 					dtrmv_ ("Lower", "No transpose", "Non-unit", &i__1, &t[i__
 																							 + 1 + (i__ + 1) * t_dim1], ldt, &t[i__ + 1 + i__ *
-																																			t_dim1], &c__1, (ftnlen) 5, (ftnlen) 12, (ftnlen) 8);
+																																			t_dim1], &c__1, (int) 5, (int) 12, (int) 8);
 				}
 				t[i__ + i__ * t_dim1] = tau[i__];
 			}
@@ -11401,15 +11408,15 @@ dlarft_ (char *direct, char *storev, integer * n, integer *
 }	/* dlarft_ */
 
 static int
-dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau, doublereal * c__, integer * ldc, doublereal * work, ftnlen side_len)
+dlarfx_ (char *side, int * m, int * n, double * v, double * tau, double * c__, int * ldc, double * work, int side_len)
 {
 	/* System generated locals */
-	integer c_dim1, c_offset, i__1;
-	doublereal d__1;
+	int c_dim1, c_offset, i__1;
+	double d__1;
 
 	/* Local variables */
-	static integer j;
-	static doublereal t1, t2, t3, t4, t5, t6, t7, t8, t9, v1, v2, v3, v4, v5, v6, v7, v8, v9, t10, v10, sum;
+	static int j;
+	static double t1, t2, t3, t4, t5, t6, t7, t8, t9, v1, v2, v3, v4, v5, v6, v7, v8, v9, t10, v10, sum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -11425,13 +11432,13 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARFX applies a real elementary reflector H to a real m by n */
+	/*  DLARFX applies a float elementary reflector H to a float m by n */
 	/*  matrix C, from either the left or the right. H is represented in the */
 	/*  form */
 
 	/*        H = I - tau * v * v' */
 
-	/*  where tau is a real scalar and v is a real vector. */
+	/*  where tau is a float scalar and v is a float vector. */
 
 	/*  If tau = 0, then H is taken to be the unit matrix */
 
@@ -11494,7 +11501,7 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 	{
 		return 0;
 	}
-	if (lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (side, "L", (int) 1, (int) 1))
 	{
 
 		/*        Form  H * C, where H has order m. */
@@ -11527,7 +11534,7 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 
 		/*        w := C'*v */
 
-		dgemv_ ("Transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], &c__1, &c_b507, &work[1], &c__1, (ftnlen) 9);
+		dgemv_ ("Transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], &c__1, &c_b507, &work[1], &c__1, (int) 9);
 
 		/*        C := C - tau * v * w' */
 
@@ -11854,7 +11861,7 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 
 		/*        w := C * v */
 
-		dgemv_ ("No transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], &c__1, &c_b507, &work[1], &c__1, (ftnlen) 12);
+		dgemv_ ("No transpose", m, n, &c_b348, &c__[c_offset], ldc, &v[1], &c__1, &c_b507, &work[1], &c__1, (int) 12);
 
 		/*        C := C - tau * w * v' */
 
@@ -12153,18 +12160,15 @@ dlarfx_ (char *side, integer * m, integer * n, doublereal * v, doublereal * tau,
 
 }	/* dlarfx_ */
 
-int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
+int dlarnv_ (int * idist, int * iseed, int * n, double * x)
 {
 	/* System generated locals */
-	integer i__1, i__2, i__3;
-
-	/* Builtin functions */
-	double log (doublereal), sqrt (doublereal), cos (doublereal);
+	int i__1, i__2, i__3;
 
 	/* Local variables */
-	static integer i__;
-	static doublereal u[128];
-	static integer il, iv, il2;
+	static int i__;
+	static double u[128];
+	static int il, iv, il2;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -12180,7 +12184,7 @@ int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARNV returns a vector of n random real numbers from a uniform or */
+	/*  DLARNV returns a vector of n random float numbers from a uniform or */
 	/*  normal distribution. */
 
 	/*  Arguments */
@@ -12208,7 +12212,7 @@ int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
 	/*  =============== */
 
 	/*  This routine calls the auxiliary routine DLARUV to generate random */
-	/*  real numbers from a uniform (0,1) distribution, in batches of up to */
+	/*  float numbers from a uniform (0,1) distribution, in batches of up to */
 	/*  128 using vectorisable code. The Box-Muller method is used to */
 	/*  transform numbers from a uniform to a normal distribution. */
 
@@ -12296,25 +12300,25 @@ int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x)
 }	/* dlarnv_ */
 
 static int
-dlartg_ (doublereal * f, doublereal * g, doublereal * cs, doublereal * sn, doublereal * r__)
+dlartg_ (double * f, double * g, double * cs, double * sn, double * r__)
 {
 	/* Initialized data */
 
-	static logical first = TRUE_;
+	static bool first = true;
 
 	/* System generated locals */
-	integer i__1;
-	doublereal d__1, d__2;
+	int i__1;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double log (doublereal), pow_di (doublereal *, integer *), sqrt (doublereal);
+	double log (double), pow_di (double *, int *), sqrt (double);
 
 	/* Local variables */
-	static integer i__;
-	static doublereal f1, g1, eps, scale;
-	static integer count;
-	static doublereal safmn2, safmx2;
-	static doublereal safmin;
+	static int i__;
+	static double f1, g1, eps, scale;
+	static int count;
+	static double safmn2, safmx2;
+	static double safmin;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -12379,11 +12383,11 @@ dlartg_ (doublereal * f, doublereal * g, doublereal * cs, doublereal * sn, doubl
 
 	if (first)
 	{
-		first = FALSE_;
-		safmin = dlamch_ ("S", (ftnlen) 1);
-		eps = dlamch_ ("E", (ftnlen) 1);
-		d__1 = dlamch_ ("B", (ftnlen) 1);
-		i__1 = (integer) (log (safmin / eps) / log (dlamch_ ("B", (ftnlen) 1)) / 2.);
+		first = false;
+		safmin = dlamch_ ("S", (int) 1);
+		eps = dlamch_ ("E", (int) 1);
+		d__1 = dlamch_ ("B", (int) 1);
+		i__1 = (int) (log (safmin / eps) / log (dlamch_ ("B", (int) 1)) / 2.);
 		safmn2 = pow_di (&d__1, &i__1);
 		safmx2 = 1. / safmn2;
 	}
@@ -12486,11 +12490,11 @@ dlartg_ (doublereal * f, doublereal * g, doublereal * cs, doublereal * sn, doubl
 }	/* dlartg_ */
 
 static int
-dlaruv_ (integer * iseed, integer * n, doublereal * x)
+dlaruv_ (int * iseed, int * n, double * x)
 {
 	/* Initialized data */
 
-	static integer mm[512] /* was [128][4] */  = { 494, 2637, 255, 2008, 1253,
+	static int mm[512] /* was [128][4] */  = { 494, 2637, 255, 2008, 1253,
 		3344, 4084, 1739, 3143, 3468, 688, 1657, 1238, 3166, 1292, 3422, 1270, 2016,
 		154, 2862, 697, 1706, 491, 931, 1444, 444, 3577, 3944, 2184, 1661, 3482, 657,
 		3023, 3618, 1267, 1828, 164, 3798, 3087, 2400, 2870, 3876, 1905, 1593, 1797,
@@ -12532,10 +12536,10 @@ dlaruv_ (integer * iseed, integer * n, doublereal * x)
 	};
 
 	/* System generated locals */
-	integer i__1;
+	int i__1;
 
 	/* Local variables */
-	static integer i__, i1, i2, i3, i4, it1, it2, it3, it4;
+	static int i__, i1, i2, i3, i4, it1, it2, it3, it4;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -12551,7 +12555,7 @@ dlaruv_ (integer * iseed, integer * n, doublereal * x)
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLARUV returns a vector of n random real numbers from a uniform (0,1) */
+	/*  DLARUV returns a vector of n random float numbers from a uniform (0,1) */
 	/*  distribution (n <= 128). */
 
 	/*  This is an auxiliary routine called by DLARNV and ZLARNV. */
@@ -12580,9 +12584,9 @@ dlaruv_ (integer * iseed, integer * n, doublereal * x)
 	/*  2**b: an exhaustive analysis for b = 32 and a partial analysis for */
 	/*  b = 48', Math. Comp. 189, pp 331-344, 1990). */
 
-	/*  48-bit integers are stored in 4 integer array elements with 12 bits */
+	/*  48-bit ints are stored in 4 int array elements with 12 bits */
 	/*  per element. Hence the routine is portable across machines with */
-	/*  integers of 32 bits or more. */
+	/*  ints of 32 bits or more. */
 
 	/*  ===================================================================== */
 
@@ -12626,9 +12630,9 @@ dlaruv_ (integer * iseed, integer * n, doublereal * x)
 		it1 = it1 + i1 * mm[i__ + 383] + i2 * mm[i__ + 255] + i3 * mm[i__ + 127] + i4 * mm[i__ - 1];
 		it1 %= 4096;
 
-		/*        Convert 48-bit integer to a real number in the interval (0,1) */
+		/*        Convert 48-bit int to a float number in the interval (0,1) */
 
-		x[i__] = ((doublereal) it1 + ((doublereal) it2 + ((doublereal) it3 + (doublereal) it4 * 2.44140625e-4) * 2.44140625e-4) * 2.44140625e-4) * 2.44140625e-4;
+		x[i__] = ((double) it1 + ((double) it2 + ((double) it3 + (double) it4 * 2.44140625e-4) * 2.44140625e-4) * 2.44140625e-4) * 2.44140625e-4;
 		/* L10: */
 	}
 
@@ -12645,21 +12649,21 @@ dlaruv_ (integer * iseed, integer * n, doublereal * x)
 }	/* dlaruv_ */
 
 static int
-dlascl_ (char *type__, integer * kl, integer * ku,
-			doublereal * cfrom, doublereal * cto, integer * m, integer * n, doublereal * a, integer * lda, integer * info, ftnlen type_len)
+dlascl_ (char *type__, int * kl, int * ku,
+			double * cfrom, double * cto, int * m, int * n, double * a, int * lda, int * info, int type_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4, i__5;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4, i__5;
 
 	/* Local variables */
-	static integer i__, j, k1, k2, k3, k4;
-	static doublereal mul, cto1;
-	static logical done;
-	static doublereal ctoc;
-	static integer itype;
-	static doublereal cfrom1;
-	static doublereal cfromc;
-	static doublereal bignum, smlnum;
+	static int i__, j, k1, k2, k3, k4;
+	static double mul, cto1;
+	static bool done;
+	static double ctoc;
+	static int itype;
+	static double cfrom1;
+	static double cfromc;
+	static double bignum, smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -12675,7 +12679,7 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DLASCL multiplies the M by N real matrix A by the real scalar */
+	/*  DLASCL multiplies the M by N float matrix A by the float scalar */
 	/*  CTO/CFROM.  This is done without over/underflow as long as the final */
 	/*  result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that */
 	/*  A may be full, upper triangular, lower triangular, upper Hessenberg, */
@@ -12755,31 +12759,31 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 	/* Function Body */
 	*info = 0;
 
-	if (lsame_ (type__, "G", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (type__, "G", (int) 1, (int) 1))
 	{
 		itype = 0;
 	}
-	else if (lsame_ (type__, "L", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "L", (int) 1, (int) 1))
 	{
 		itype = 1;
 	}
-	else if (lsame_ (type__, "U", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "U", (int) 1, (int) 1))
 	{
 		itype = 2;
 	}
-	else if (lsame_ (type__, "H", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "H", (int) 1, (int) 1))
 	{
 		itype = 3;
 	}
-	else if (lsame_ (type__, "B", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "B", (int) 1, (int) 1))
 	{
 		itype = 4;
 	}
-	else if (lsame_ (type__, "Q", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "Q", (int) 1, (int) 1))
 	{
 		itype = 5;
 	}
-	else if (lsame_ (type__, "Z", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (type__, "Z", (int) 1, (int) 1))
 	{
 		itype = 6;
 	}
@@ -12834,7 +12838,7 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DLASCL", &i__1, (ftnlen) 6);
+		xerbla_ ("DLASCL", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -12847,7 +12851,7 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 
 	/*     Get machine parameters */
 
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 
 	cfromc = *cfrom;
@@ -12859,19 +12863,19 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 	if (abs (cfrom1) > abs (ctoc) && ctoc != 0.)
 	{
 		mul = smlnum;
-		done = FALSE_;
+		done = false;
 		cfromc = cfrom1;
 	}
 	else if (abs (cto1) > abs (cfromc))
 	{
 		mul = bignum;
-		done = FALSE_;
+		done = false;
 		ctoc = cto1;
 	}
 	else
 	{
 		mul = ctoc / cfromc;
-		done = TRUE_;
+		done = true;
 	}
 
 	if (itype == 0)
@@ -13031,13 +13035,13 @@ dlascl_ (char *type__, integer * kl, integer * ku,
 }	/* dlascl_ */
 
 static int
-dlaset_ (char *uplo, integer * m, integer * n, doublereal * alpha, doublereal * beta, doublereal * a, integer * lda, ftnlen uplo_len)
+dlaset_ (char *uplo, int * m, int * n, double * alpha, double * beta, double * a, int * lda, int uplo_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
+	int a_dim1, a_offset, i__1, i__2, i__3;
 
 	/* Local variables */
-	static integer i__, j;
+	static int i__, j;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -13107,7 +13111,7 @@ dlaset_ (char *uplo, integer * m, integer * n, doublereal * alpha, doublereal * 
 	a -= a_offset;
 
 	/* Function Body */
-	if (lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (uplo, "U", (int) 1, (int) 1))
 	{
 
 		/*        Set the strictly upper triangular or trapezoidal part of the */
@@ -13128,7 +13132,7 @@ dlaset_ (char *uplo, integer * m, integer * n, doublereal * alpha, doublereal * 
 		}
 
 	}
-	else if (lsame_ (uplo, "L", (ftnlen) 1, (ftnlen) 1))
+	else if (lsame_ (uplo, "L", (int) 1, (int) 1))
 	{
 
 		/*        Set the strictly lower triangular or trapezoidal part of the */
@@ -13181,15 +13185,15 @@ dlaset_ (char *uplo, integer * m, integer * n, doublereal * alpha, doublereal * 
 }	/* dlaset_ */
 
 static int
-dlassq_ (integer * n, doublereal * x, integer * incx, doublereal * scale, doublereal * sumsq)
+dlassq_ (int * n, double * x, int * incx, double * scale, double * sumsq)
 {
 	/* System generated locals */
-	integer i__1, i__2;
-	doublereal d__1;
+	int i__1, i__2;
+	double d__1;
 
 	/* Local variables */
-	static integer ix;
-	static doublereal absxi;
+	static int ix;
+	static double absxi;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -13290,14 +13294,14 @@ dlassq_ (integer * n, doublereal * x, integer * incx, doublereal * scale, double
 }	/* dlassq_ */
 
 static int
-dlaswp_ (integer * n, doublereal * a, integer * lda, integer * k1, integer * k2, integer * ipiv, integer * incx)
+dlaswp_ (int * n, double * a, int * lda, int * k1, int * k2, int * ipiv, int * incx)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3, i__4;
+	int a_dim1, a_offset, i__1, i__2, i__3, i__4;
 
 	/* Local variables */
-	static integer i__, j, k, i1, i2, n32, ip, ix, ix0, inc;
-	static doublereal temp;
+	static int i__, j, k, i1, i2, n32, ip, ix, ix0, inc;
+	static double temp;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -13448,35 +13452,35 @@ dlaswp_ (integer * n, doublereal * a, integer * lda, integer * k1, integer * k2,
 }	/* dlaswp_ */
 
 static int
-dlasy2_ (logical * ltranl, logical * ltranr, integer * isgn,
-			integer * n1, integer * n2, doublereal * tl, integer * ldtl, doublereal *
-			tr, integer * ldtr, doublereal * b, integer * ldb, doublereal * scale, doublereal * x, integer * ldx, doublereal * xnorm, integer * info)
+dlasy2_ (bool * ltranl, bool * ltranr, int * isgn,
+			int * n1, int * n2, double * tl, int * ldtl, double *
+			tr, int * ldtr, double * b, int * ldb, double * scale, double * x, int * ldx, double * xnorm, int * info)
 {
 	/* Initialized data */
 
-	static integer locu12[4] = { 3, 4, 1, 2 };
-	static integer locl21[4] = { 2, 1, 4, 3 };
-	static integer locu22[4] = { 4, 3, 2, 1 };
-	static logical xswpiv[4] = { FALSE_, FALSE_, TRUE_, TRUE_ };
-	static logical bswpiv[4] = { FALSE_, TRUE_, FALSE_, TRUE_ };
+	static int locu12[4] = { 3, 4, 1, 2 };
+	static int locl21[4] = { 2, 1, 4, 3 };
+	static int locu22[4] = { 4, 3, 2, 1 };
+	static bool xswpiv[4] = { false, false, true, true };
+	static bool bswpiv[4] = { false, true, false, true };
 
 	/* System generated locals */
-	integer b_dim1, b_offset, tl_dim1, tl_offset, tr_dim1, tr_offset, x_dim1, x_offset;
-	doublereal d__1, d__2, d__3, d__4, d__5, d__6, d__7, d__8;
+	int b_dim1, b_offset, tl_dim1, tl_offset, tr_dim1, tr_offset, x_dim1, x_offset;
+	double d__1, d__2, d__3, d__4, d__5, d__6, d__7, d__8;
 
 	/* Local variables */
-	static integer i__, j, k;
-	static doublereal x2[2], l21, u11, u12;
-	static integer ip, jp;
-	static doublereal u22, t16[16] /* was [4][4] */ , gam, bet, eps, sgn, tmp[4], tau1, btmp[4], smin;
-	static integer ipiv;
-	static doublereal temp;
-	static integer jpiv[4];
-	static doublereal xmax;
-	static integer ipsv, jpsv;
-	static logical bswap;
-	static logical xswap;
-	static doublereal smlnum;
+	static int i__, j, k;
+	static double x2[2], l21, u11, u12;
+	static int ip, jp;
+	static double u22, t16[16] /* was [4][4] */ , gam, bet, eps, sgn, tmp[4], tau1, btmp[4], smin;
+	static int ipiv;
+	static double temp;
+	static int jpiv[4];
+	static double xmax;
+	static int ipsv, jpsv;
+	static bool bswap;
+	static bool xswap;
+	static double smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -13610,9 +13614,9 @@ dlasy2_ (logical * ltranl, logical * ltranr, integer * isgn,
 
 	/*     Set constants to control overflow */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1) / eps;
-	sgn = (doublereal) (*isgn);
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1) / eps;
+	sgn = (double) (*isgn);
 
 	k = *n1 + *n1 + *n2 - 2;
 	switch (k)
@@ -13931,28 +13935,28 @@ dlasy2_ (logical * ltranl, logical * ltranr, integer * isgn,
 }	/* dlasy2_ */
 
 static int
-dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doublereal * a, integer * lda, doublereal * x,
-			doublereal * scale, doublereal * cnorm, integer * info, ftnlen uplo_len, ftnlen trans_len, ftnlen diag_len, ftnlen normin_len)
+dlatrs_ (char *uplo, char *trans, char *diag, char *normin, int * n, double * a, int * lda, double * x,
+			double * scale, double * cnorm, int * info, int uplo_len, int trans_len, int diag_len, int normin_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
-	doublereal d__1, d__2, d__3;
+	int a_dim1, a_offset, i__1, i__2, i__3;
+	double d__1, d__2, d__3;
 
 	/* Local variables */
-	static integer i__, j;
-	static doublereal xj, rec, tjj;
-	static integer jinc;
-	static doublereal xbnd;
-	static integer imax;
-	static doublereal tmax, tjjs, xmax, grow, sumj;
-	static doublereal tscal, uscal;
-	static integer jlast;
-	static logical upper;
-	static doublereal bignum;
-	static logical notran;
-	static integer jfirst;
-	static doublereal smlnum;
-	static logical nounit;
+	static int i__, j;
+	static double xj, rec, tjj;
+	static int jinc;
+	static double xbnd;
+	static int imax;
+	static double tmax, tjjs, xmax, grow, sumj;
+	static double tscal, uscal;
+	static int jlast;
+	static bool upper;
+	static double bignum;
+	static bool notran;
+	static int jfirst;
+	static double smlnum;
+	static bool nounit;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -14140,25 +14144,25 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doubler
 
 	/* Function Body */
 	*info = 0;
-	upper = lsame_ (uplo, "U", (ftnlen) 1, (ftnlen) 1);
-	notran = lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1);
-	nounit = lsame_ (diag, "N", (ftnlen) 1, (ftnlen) 1);
+	upper = lsame_ (uplo, "U", (int) 1, (int) 1);
+	notran = lsame_ (trans, "N", (int) 1, (int) 1);
+	nounit = lsame_ (diag, "N", (int) 1, (int) 1);
 
 	/*     Test the input parameters. */
 
-	if (!upper && !lsame_ (uplo, "L", (ftnlen) 1, (ftnlen) 1))
+	if (!upper && !lsame_ (uplo, "L", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
-	else if (!notran && !lsame_ (trans, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (trans, "C", (ftnlen) 1, (ftnlen) 1))
+	else if (!notran && !lsame_ (trans, "T", (int) 1, (int) 1) && !lsame_ (trans, "C", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
-	else if (!nounit && !lsame_ (diag, "U", (ftnlen) 1, (ftnlen) 1))
+	else if (!nounit && !lsame_ (diag, "U", (int) 1, (int) 1))
 	{
 		*info = -3;
 	}
-	else if (!lsame_ (normin, "Y", (ftnlen) 1, (ftnlen) 1) && !lsame_ (normin, "N", (ftnlen) 1, (ftnlen) 1))
+	else if (!lsame_ (normin, "Y", (int) 1, (int) 1) && !lsame_ (normin, "N", (int) 1, (int) 1))
 	{
 		*info = -4;
 	}
@@ -14173,7 +14177,7 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doubler
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DLATRS", &i__1, (ftnlen) 6);
+		xerbla_ ("DLATRS", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -14186,11 +14190,11 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doubler
 
 	/*     Determine machine dependent parameters to control overflow. */
 
-	smlnum = dlamch_ ("Safe minimum", (ftnlen) 12) / dlamch_ ("Precision", (ftnlen) 9);
+	smlnum = dlamch_ ("Safe minimum", (int) 12) / dlamch_ ("Precision", (int) 9);
 	bignum = 1. / smlnum;
 	*scale = 1.;
 
-	if (lsame_ (normin, "N", (ftnlen) 1, (ftnlen) 1))
+	if (lsame_ (normin, "N", (int) 1, (int) 1))
 	{
 
 		/*        Compute the 1-norm of each column, not including the diagonal. */
@@ -14450,7 +14454,7 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doubler
 		/*        Use the Level 2 BLAS solve if the reciprocal of the bound on */
 		/*        elements of X is not too small. */
 
-		dtrsv_ (uplo, trans, diag, n, &a[a_offset], lda, &x[1], &c__1, (ftnlen) 1, (ftnlen) 1, (ftnlen) 1);
+		dtrsv_ (uplo, trans, diag, n, &a[a_offset], lda, &x[1], &c__1, (int) 1, (int) 1, (int) 1);
 	}
 	else
 	{
@@ -14826,14 +14830,14 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, integer * n, doubler
 }	/* dlatrs_ */
 
 static int
-dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * info)
+dorg2r_ (int * m, int * n, int * k, double * a, int * lda, double * tau, double * work, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
-	doublereal d__1;
+	int a_dim1, a_offset, i__1, i__2;
+	double d__1;
 
 	/* Local variables */
-	static integer i__, j, l;
+	static int i__, j, l;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -14849,7 +14853,7 @@ dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DORG2R generates an m by n real matrix Q with orthonormal columns, */
+	/*  DORG2R generates an m by n float matrix Q with orthonormal columns, */
 	/*  which is defined as the first n columns of a product of k elementary */
 	/*  reflectors of order m */
 
@@ -14932,7 +14936,7 @@ dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DORG2R", &i__1, (ftnlen) 6);
+		xerbla_ ("DORG2R", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -14968,7 +14972,7 @@ dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 			a[i__ + i__ * a_dim1] = 1.;
 			i__1 = *m - i__ + 1;
 			i__2 = *n - i__;
-			dlarf_ ("Left", &i__1, &i__2, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + (i__ + 1) * a_dim1], lda, &work[1], (ftnlen) 4);
+			dlarf_ ("Left", &i__1, &i__2, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &a[i__ + (i__ + 1) * a_dim1], lda, &work[1], (int) 4);
 		}
 		if (i__ < *m)
 		{
@@ -14995,15 +14999,15 @@ dorg2r_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 }	/* dorg2r_ */
 
 static int
-dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork, integer * info)
+dorghr_ (int * n, int * ilo, int * ihi, double * a, int * lda, double * tau, double * work, int * lwork, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2;
+	int a_dim1, a_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer i__, j, nb, nh, iinfo;
-	static integer lwkopt;
-	static logical lquery;
+	static int i__, j, nb, nh, iinfo;
+	static int lwkopt;
+	static bool lquery;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -15019,7 +15023,7 @@ dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DORGHR generates a real orthogonal matrix Q which is defined as the */
+	/*  DORGHR generates a float orthogonal matrix Q which is defined as the */
 	/*  product of IHI-ILO elementary reflectors of order N, as returned by */
 	/*  DGEHRD: */
 
@@ -15117,15 +15121,15 @@ dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 
 	if (*info == 0)
 	{
-		nb = ilaenv_ (&c__1, "DORGQR", " ", &nh, &nh, &nh, &c_n1, (ftnlen) 6, (ftnlen) 1);
+		nb = ilaenv_ (&c__1, "DORGQR", " ", &nh, &nh, &nh, &c_n1, (int) 6, (int) 1);
 		lwkopt = max (1, nh) * nb;
-		work[1] = (doublereal) lwkopt;
+		work[1] = (double) lwkopt;
 	}
 
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DORGHR", &i__1, (ftnlen) 6);
+		xerbla_ ("DORGHR", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -15200,7 +15204,7 @@ dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 
 		dorgqr_ (&nh, &nh, &nh, &a[*ilo + 1 + (*ilo + 1) * a_dim1], lda, &tau[*ilo], &work[1], lwork, &iinfo);
 	}
-	work[1] = (doublereal) lwkopt;
+	work[1] = (double) lwkopt;
 	return 0;
 
 	/*     End of DORGHR */
@@ -15208,15 +15212,15 @@ dorghr_ (integer * n, integer * ilo, integer * ihi, doublereal * a, integer * ld
 }	/* dorghr_ */
 
 static int
-dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal * work, integer * lwork, integer * info)
+dorgqr_ (int * m, int * n, int * k, double * a, int * lda, double * tau, double * work, int * lwork, int * info)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
+	int a_dim1, a_offset, i__1, i__2, i__3;
 
 	/* Local variables */
-	static integer i__, j, l, ib, nb, ki, kk, nx, iws, nbmin, iinfo;
-	static integer ldwork, lwkopt;
-	static logical lquery;
+	static int i__, j, l, ib, nb, ki, kk, nx, iws, nbmin, iinfo;
+	static int ldwork, lwkopt;
+	static bool lquery;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -15232,7 +15236,7 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DORGQR generates an M-by-N real matrix Q with orthonormal columns, */
+	/*  DORGQR generates an M-by-N float matrix Q with orthonormal columns, */
 	/*  which is defined as the first N columns of a product of K elementary */
 	/*  reflectors of order M */
 
@@ -15309,9 +15313,9 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 
 	/* Function Body */
 	*info = 0;
-	nb = ilaenv_ (&c__1, "DORGQR", " ", m, n, k, &c_n1, (ftnlen) 6, (ftnlen) 1);
+	nb = ilaenv_ (&c__1, "DORGQR", " ", m, n, k, &c_n1, (int) 6, (int) 1);
 	lwkopt = max (1, *n) * nb;
-	work[1] = (doublereal) lwkopt;
+	work[1] = (double) lwkopt;
 	lquery = *lwork == -1;
 	if (*m < 0)
 	{
@@ -15336,7 +15340,7 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DORGQR", &i__1, (ftnlen) 6);
+		xerbla_ ("DORGQR", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -15361,7 +15365,7 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 		/*        Determine when to cross over from blocked to unblocked code. */
 
 		/* Computing MAX */
-		i__1 = 0, i__2 = ilaenv_ (&c__3, "DORGQR", " ", m, n, k, &c_n1, (ftnlen) 6, (ftnlen) 1);
+		i__1 = 0, i__2 = ilaenv_ (&c__3, "DORGQR", " ", m, n, k, &c_n1, (int) 6, (int) 1);
 		nx = max (i__1, i__2);
 		if (nx < *k)
 		{
@@ -15378,7 +15382,7 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 
 				nb = *lwork / ldwork;
 				/* Computing MAX */
-				i__1 = 2, i__2 = ilaenv_ (&c__2, "DORGQR", " ", m, n, k, &c_n1, (ftnlen) 6, (ftnlen) 1);
+				i__1 = 2, i__2 = ilaenv_ (&c__2, "DORGQR", " ", m, n, k, &c_n1, (int) 6, (int) 1);
 				nbmin = max (i__1, i__2);
 			}
 		}
@@ -15442,14 +15446,14 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 				/*              H = H(i) H(i+1) . . . H(i+ib-1) */
 
 				i__2 = *m - i__ + 1;
-				dlarft_ ("Forward", "Columnwise", &i__2, &ib, &a[i__ + i__ * a_dim1], lda, &tau[i__], &work[1], &ldwork, (ftnlen) 7, (ftnlen) 10);
+				dlarft_ ("Forward", "Columnwise", &i__2, &ib, &a[i__ + i__ * a_dim1], lda, &tau[i__], &work[1], &ldwork, (int) 7, (int) 10);
 
 				/*              Apply H to A(i:m,i+ib:n) from the left */
 
 				i__2 = *m - i__ + 1;
 				i__3 = *n - i__ - ib + 1;
 				dlarfb_ ("Left", "No transpose", "Forward", "Columnwise", &i__2, &i__3, &ib, &a[i__ + i__ * a_dim1], lda, &work[1], &ldwork,
-							&a[i__ + (i__ + ib) * a_dim1], lda, &work[ib + 1], &ldwork, (ftnlen) 4, (ftnlen) 12, (ftnlen) 7, (ftnlen) 10);
+							&a[i__ + (i__ + ib) * a_dim1], lda, &work[ib + 1], &ldwork, (int) 4, (int) 12, (int) 7, (int) 10);
 			}
 
 			/*           Apply H to rows i:m of current block */
@@ -15474,7 +15478,7 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 		}
 	}
 
-	work[1] = (doublereal) iws;
+	work[1] = (double) iws;
 	return 0;
 
 	/*     End of DORGQR */
@@ -15482,18 +15486,18 @@ dorgqr_ (integer * m, integer * n, integer * k, doublereal * a, integer * lda, d
 }	/* dorgqr_ */
 
 static int
-dorm2r_ (char *side, char *trans, integer * m, integer * n,
-			integer * k, doublereal * a, integer * lda, doublereal * tau, doublereal *
-			c__, integer * ldc, doublereal * work, integer * info, ftnlen side_len, ftnlen trans_len)
+dorm2r_ (char *side, char *trans, int * m, int * n,
+			int * k, double * a, int * lda, double * tau, double *
+			c__, int * ldc, double * work, int * info, int side_len, int trans_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, c_dim1, c_offset, i__1, i__2;
+	int a_dim1, a_offset, c_dim1, c_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer i__, i1, i2, i3, ic, jc, mi, ni, nq;
-	static doublereal aii;
-	static logical left;
-	static logical notran;
+	static int i__, i1, i2, i3, ic, jc, mi, ni, nq;
+	static double aii;
+	static bool left;
+	static bool notran;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -15509,7 +15513,7 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DORM2R overwrites the general real m by n matrix C with */
+	/*  DORM2R overwrites the general float m by n matrix C with */
 
 	/*        Q * C  if SIDE = 'L' and TRANS = 'N', or */
 
@@ -15519,7 +15523,7 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 
 	/*        C * Q' if SIDE = 'R' and TRANS = 'T', */
 
-	/*  where Q is a real orthogonal matrix defined as the product of k */
+	/*  where Q is a float orthogonal matrix defined as the product of k */
 	/*  elementary reflectors */
 
 	/*        Q = H(1) H(2) . . . H(k) */
@@ -15608,8 +15612,8 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 
 	/* Function Body */
 	*info = 0;
-	left = lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1);
-	notran = lsame_ (trans, "N", (ftnlen) 1, (ftnlen) 1);
+	left = lsame_ (side, "L", (int) 1, (int) 1);
+	notran = lsame_ (trans, "N", (int) 1, (int) 1);
 
 	/*     NQ is the order of Q */
 
@@ -15621,11 +15625,11 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 	{
 		nq = *n;
 	}
-	if (!left && !lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1))
+	if (!left && !lsame_ (side, "R", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
-	else if (!notran && !lsame_ (trans, "T", (ftnlen) 1, (ftnlen) 1))
+	else if (!notran && !lsame_ (trans, "T", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
@@ -15652,7 +15656,7 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DORM2R", &i__1, (ftnlen) 6);
+		xerbla_ ("DORM2R", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -15712,7 +15716,7 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 
 		aii = a[i__ + i__ * a_dim1];
 		a[i__ + i__ * a_dim1] = 1.;
-		dlarf_ (side, &mi, &ni, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &c__[ic + jc * c_dim1], ldc, &work[1], (ftnlen) 1);
+		dlarf_ (side, &mi, &ni, &a[i__ + i__ * a_dim1], &c__1, &tau[i__], &c__[ic + jc * c_dim1], ldc, &work[1], (int) 1);
 		a[i__ + i__ * a_dim1] = aii;
 		/* L10: */
 	}
@@ -15723,12 +15727,12 @@ dorm2r_ (char *side, char *trans, integer * m, integer * n,
 }	/* dorm2r_ */
 
 static int
-drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
+drscl_ (int * n, double * sa, double * sx, int * incx)
 {
-	static doublereal mul, cden;
-	static logical done;
-	static doublereal cnum, cden1, cnum1;
-	static doublereal bignum, smlnum;
+	static double mul, cden;
+	static bool done;
+	static double cnum, cden1, cnum1;
+	static double bignum, smlnum;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -15744,7 +15748,7 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DRSCL multiplies an n-element real vector x by the real scalar 1/a. */
+	/*  DRSCL multiplies an n-element float vector x by the float scalar 1/a. */
 	/*  This is done without overflow or underflow as long as */
 	/*  the final result x/a does not overflow or underflow. */
 
@@ -15793,7 +15797,7 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 
 	/*     Get machine parameters */
 
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 	dlabad_ (&smlnum, &bignum);
 
@@ -15811,7 +15815,7 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 		/*        Pre-multiply X by SMLNUM if CDEN is large compared to CNUM. */
 
 		mul = smlnum;
-		done = FALSE_;
+		done = false;
 		cden = cden1;
 	}
 	else if (abs (cnum1) > abs (cden))
@@ -15820,7 +15824,7 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 		/*        Pre-multiply X by BIGNUM if CDEN is small compared to CNUM. */
 
 		mul = bignum;
-		done = FALSE_;
+		done = false;
 		cnum = cnum1;
 	}
 	else
@@ -15829,7 +15833,7 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 		/*        Multiply X by CNUM / CDEN and return. */
 
 		mul = cnum / cden;
-		done = TRUE_;
+		done = true;
 	}
 
 	/*     Scale the vector X by MUL */
@@ -15848,38 +15852,38 @@ drscl_ (integer * n, doublereal * sa, doublereal * sx, integer * incx)
 }	/* drscl_ */
 
 static int
-dtrevc_ (char *side, char *howmny, logical * select,
-			integer * n, doublereal * t, integer * ldt, doublereal * vl, integer *
-			ldvl, doublereal * vr, integer * ldvr, integer * mm, integer * m, doublereal * work, integer * info, ftnlen side_len, ftnlen howmny_len)
+dtrevc_ (char *side, char *howmny, bool * select,
+			int * n, double * t, int * ldt, double * vl, int *
+			ldvl, double * vr, int * ldvr, int * mm, int * m, double * work, int * info, int side_len, int howmny_len)
 {
 	/* System generated locals */
-	integer t_dim1, t_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3;
-	doublereal d__1, d__2, d__3, d__4;
+	int t_dim1, t_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, i__1, i__2, i__3;
+	double d__1, d__2, d__3, d__4;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j, k;
-	static doublereal x[4] /* was [2][2] */ ;
-	static integer j1, j2, n2, ii, ki, ip, is;
-	static doublereal wi, wr, rec, ulp, beta, emax;
-	static logical pair;
-	static logical allv;
-	static integer ierr;
-	static doublereal unfl, ovfl, smin;
-	static logical over;
-	static doublereal vmax;
-	static integer jnxt;
-	static doublereal scale;
-	static doublereal remax;
-	static logical leftv, bothv;
-	static doublereal vcrit;
-	static logical somev;
-	static doublereal xnorm;
-	static doublereal bignum;
-	static logical rightv;
-	static doublereal smlnum;
+	static int i__, j, k;
+	static double x[4] /* was [2][2] */ ;
+	static int j1, j2, n2, ii, ki, ip, is;
+	static double wi, wr, rec, ulp, beta, emax;
+	static bool pair;
+	static bool allv;
+	static int ierr;
+	static double unfl, ovfl, smin;
+	static bool over;
+	static double vmax;
+	static int jnxt;
+	static double scale;
+	static double remax;
+	static bool leftv, bothv;
+	static double vcrit;
+	static bool somev;
+	static double xnorm;
+	static double bignum;
+	static bool rightv;
+	static double smlnum;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -15896,7 +15900,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*  ======= */
 
 	/*  DTREVC computes some or all of the right and/or left eigenvectors of */
-	/*  a real upper quasi-triangular matrix T. */
+	/*  a float upper quasi-triangular matrix T. */
 
 	/*  The right eigenvector x and the left eigenvector y of T corresponding */
 	/*  to an eigenvalue w are defined by: */
@@ -15908,7 +15912,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*  If all eigenvectors are requested, the routine may either return the */
 	/*  matrices X and/or Y of right or left eigenvectors of T, or the */
 	/*  products Q*X and/or Q*Y, where Q is an input orthogonal */
-	/*  matrix. If T was obtained from the real-Schur factorization of an */
+	/*  matrix. If T was obtained from the float-Schur factorization of an */
 	/*  original matrix A = Q*T*Q', then Q*X and Q*Y are the matrices of */
 	/*  right or left eigenvectors of A. */
 
@@ -15934,13 +15938,13 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*                  and backtransform them using the input matrices */
 	/*                  supplied in VR and/or VL; */
 	/*          = 'S':  compute selected right and/or left eigenvectors, */
-	/*                  specified by the logical array SELECT. */
+	/*                  specified by the bool array SELECT. */
 
 	/*  SELECT  (input/output) LOGICAL array, dimension (N) */
 	/*          If HOWMNY = 'S', SELECT specifies the eigenvectors to be */
 	/*          computed. */
 	/*          If HOWMNY = 'A' or 'B', SELECT is not referenced. */
-	/*          To select the real eigenvector corresponding to a real */
+	/*          To select the float eigenvector corresponding to a float */
 	/*          eigenvalue w(j), SELECT(j) must be set to .TRUE..  To select */
 	/*          the complex eigenvector corresponding to a complex conjugate */
 	/*          pair w(j) and w(j+1), either SELECT(j) or SELECT(j+1) must be */
@@ -15963,14 +15967,14 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*          On exit, if SIDE = 'L' or 'B', VL contains: */
 	/*          if HOWMNY = 'A', the matrix Y of left eigenvectors of T; */
 	/*                           VL has the same quasi-lower triangular form */
-	/*                           as T'. If T(i,i) is a real eigenvalue, then */
+	/*                           as T'. If T(i,i) is a float eigenvalue, then */
 	/*                           the i-th column VL(i) of VL  is its */
 	/*                           corresponding eigenvector. If T(i:i+1,i:i+1) */
 	/*                           is a 2-by-2 block whose eigenvalues are */
 	/*                           complex-conjugate eigenvalues of T, then */
 	/*                           VL(i)+sqrt(-1)*VL(i+1) is the complex */
 	/*                           eigenvector corresponding to the eigenvalue */
-	/*                           with positive real part. */
+	/*                           with positive float part. */
 	/*          if HOWMNY = 'B', the matrix Q*Y; */
 	/*          if HOWMNY = 'S', the left eigenvectors of T specified by */
 	/*                           SELECT, stored consecutively in the columns */
@@ -15978,7 +15982,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*                           eigenvalues. */
 	/*          A complex eigenvector corresponding to a complex eigenvalue */
 	/*          is stored in two consecutive columns, the first holding the */
-	/*          real part, and the second the imaginary part. */
+	/*          float part, and the second the imaginary part. */
 	/*          If SIDE = 'R', VL is not referenced. */
 
 	/*  LDVL    (input) INTEGER */
@@ -15992,14 +15996,14 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*          On exit, if SIDE = 'R' or 'B', VR contains: */
 	/*          if HOWMNY = 'A', the matrix X of right eigenvectors of T; */
 	/*                           VR has the same quasi-upper triangular form */
-	/*                           as T. If T(i,i) is a real eigenvalue, then */
+	/*                           as T. If T(i,i) is a float eigenvalue, then */
 	/*                           the i-th column VR(i) of VR  is its */
 	/*                           corresponding eigenvector. If T(i:i+1,i:i+1) */
 	/*                           is a 2-by-2 block whose eigenvalues are */
 	/*                           complex-conjugate eigenvalues of T, then */
 	/*                           VR(i)+sqrt(-1)*VR(i+1) is the complex */
 	/*                           eigenvector corresponding to the eigenvalue */
-	/*                           with positive real part. */
+	/*                           with positive float part. */
 	/*          if HOWMNY = 'B', the matrix Q*X; */
 	/*          if HOWMNY = 'S', the right eigenvectors of T specified by */
 	/*                           SELECT, stored consecutively in the columns */
@@ -16007,7 +16011,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*                           eigenvalues. */
 	/*          A complex eigenvector corresponding to a complex eigenvalue */
 	/*          is stored in two consecutive columns, the first holding the */
-	/*          real part and the second the imaginary part. */
+	/*          float part and the second the imaginary part. */
 	/*          If SIDE = 'L', VR is not referenced. */
 
 	/*  LDVR    (input) INTEGER */
@@ -16021,7 +16025,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	/*          The number of columns in the arrays VL and/or VR actually */
 	/*          used to store the eigenvectors. */
 	/*          If HOWMNY = 'A' or 'B', M is set to N. */
-	/*          Each selected real eigenvector occupies one column and each */
+	/*          Each selected float eigenvector occupies one column and each */
 	/*          selected complex eigenvector occupies two columns. */
 
 	/*  WORK    (workspace) DOUBLE PRECISION array, dimension (3*N) */
@@ -16073,13 +16077,13 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	--work;
 
 	/* Function Body */
-	bothv = lsame_ (side, "B", (ftnlen) 1, (ftnlen) 1);
-	rightv = lsame_ (side, "R", (ftnlen) 1, (ftnlen) 1) || bothv;
-	leftv = lsame_ (side, "L", (ftnlen) 1, (ftnlen) 1) || bothv;
+	bothv = lsame_ (side, "B", (int) 1, (int) 1);
+	rightv = lsame_ (side, "R", (int) 1, (int) 1) || bothv;
+	leftv = lsame_ (side, "L", (int) 1, (int) 1) || bothv;
 
-	allv = lsame_ (howmny, "A", (ftnlen) 1, (ftnlen) 1);
-	over = lsame_ (howmny, "B", (ftnlen) 1, (ftnlen) 1);
-	somev = lsame_ (howmny, "S", (ftnlen) 1, (ftnlen) 1);
+	allv = lsame_ (howmny, "A", (int) 1, (int) 1);
+	over = lsame_ (howmny, "B", (int) 1, (int) 1);
+	somev = lsame_ (howmny, "S", (int) 1, (int) 1);
 
 	*info = 0;
 	if (!rightv && !leftv)
@@ -16116,14 +16120,14 @@ dtrevc_ (char *side, char *howmny, logical * select,
 		if (somev)
 		{
 			*m = 0;
-			pair = FALSE_;
+			pair = false;
 			i__1 = *n;
 			for (j = 1; j <= i__1; ++j)
 			{
 				if (pair)
 				{
-					pair = FALSE_;
-					select[j] = FALSE_;
+					pair = false;
+					select[j] = false;
 				}
 				else
 				{
@@ -16138,10 +16142,10 @@ dtrevc_ (char *side, char *howmny, logical * select,
 						}
 						else
 						{
-							pair = TRUE_;
+							pair = true;
 							if (select[j] || select[j + 1])
 							{
-								select[j] = TRUE_;
+								select[j] = true;
 								*m += 2;
 							}
 						}
@@ -16170,7 +16174,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DTREVC", &i__1, (ftnlen) 6);
+		xerbla_ ("DTREVC", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -16183,10 +16187,10 @@ dtrevc_ (char *side, char *howmny, logical * select,
 
 	/*     Set the constants to control overflow. */
 
-	unfl = dlamch_ ("Safe minimum", (ftnlen) 12);
+	unfl = dlamch_ ("Safe minimum", (int) 12);
 	ovfl = 1. / unfl;
 	dlabad_ (&unfl, &ovfl);
-	ulp = dlamch_ ("Precision", (ftnlen) 9);
+	ulp = dlamch_ ("Precision", (int) 9);
 	smlnum = unfl * (*n / ulp);
 	bignum = (1. - ulp) / smlnum;
 
@@ -16207,8 +16211,8 @@ dtrevc_ (char *side, char *howmny, logical * select,
 		/* L30: */
 	}
 
-	/*     Index IP is used to specify the real or complex eigenvalue: */
-	/*       IP = 0, real eigenvalue, */
+	/*     Index IP is used to specify the float or complex eigenvalue: */
+	/*       IP = 0, float eigenvalue, */
 	/*            1, first of conjugate complex pair: (wr,wi) */
 	/*           -1, second of conjugate complex pair: (wr,wi) */
 
@@ -16413,7 +16417,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 					if (ki > 1)
 					{
 						i__1 = ki - 1;
-						dgemv_ ("N", n, &i__1, &c_b348, &vr[vr_offset], ldvr, &work[*n + 1], &c__1, &work[ki + *n], &vr[ki * vr_dim1 + 1], &c__1, (ftnlen) 1);
+						dgemv_ ("N", n, &i__1, &c_b348, &vr[vr_offset], ldvr, &work[*n + 1], &c__1, &work[ki + *n], &vr[ki * vr_dim1 + 1], &c__1, (int) 1);
 					}
 
 					ii = idamax_ (n, &vr[ki * vr_dim1 + 1], &c__1);
@@ -16615,9 +16619,9 @@ dtrevc_ (char *side, char *howmny, logical * select,
 					{
 						i__1 = ki - 2;
 						dgemv_ ("N", n, &i__1, &c_b348, &vr[vr_offset], ldvr, &work[*n + 1], &c__1, &work[ki - 1 + *n], &vr[(ki - 1) * vr_dim1 + 1], &c__1,
-								  (ftnlen) 1);
+								  (int) 1);
 						i__1 = ki - 2;
-						dgemv_ ("N", n, &i__1, &c_b348, &vr[vr_offset], ldvr, &work[n2 + 1], &c__1, &work[ki + n2], &vr[ki * vr_dim1 + 1], &c__1, (ftnlen) 1);
+						dgemv_ ("N", n, &i__1, &c_b348, &vr[vr_offset], ldvr, &work[n2 + 1], &c__1, &work[ki + n2], &vr[ki * vr_dim1 + 1], &c__1, (int) 1);
 					}
 					else
 					{
@@ -16870,7 +16874,7 @@ dtrevc_ (char *side, char *howmny, logical * select,
 					{
 						i__2 = *n - ki;
 						dgemv_ ("N", n, &i__2, &c_b348, &vl[(ki + 1) * vl_dim1
-																		+ 1], ldvl, &work[ki + 1 + *n], &c__1, &work[ki + *n], &vl[ki * vl_dim1 + 1], &c__1, (ftnlen) 1);
+																		+ 1], ldvl, &work[ki + 1 + *n], &c__1, &work[ki + *n], &vl[ki * vl_dim1 + 1], &c__1, (int) 1);
 					}
 
 					ii = idamax_ (n, &vl[ki * vl_dim1 + 1], &c__1);
@@ -17095,11 +17099,11 @@ dtrevc_ (char *side, char *howmny, logical * select,
 					{
 						i__2 = *n - ki - 1;
 						dgemv_ ("N", n, &i__2, &c_b348, &vl[(ki + 2) * vl_dim1
-																		+ 1], ldvl, &work[ki + 2 + *n], &c__1, &work[ki + *n], &vl[ki * vl_dim1 + 1], &c__1, (ftnlen) 1);
+																		+ 1], ldvl, &work[ki + 2 + *n], &c__1, &work[ki + *n], &vl[ki * vl_dim1 + 1], &c__1, (int) 1);
 						i__2 = *n - ki - 1;
 						dgemv_ ("N", n, &i__2, &c_b348, &vl[(ki + 2) * vl_dim1
 																		+ 1], ldvl, &work[ki + 2 + n2], &c__1, &work[ki + 1 + n2], &vl[(ki + 1) * vl_dim1 + 1], &c__1,
-								  (ftnlen) 1);
+								  (int) 1);
 					}
 					else
 					{
@@ -17151,16 +17155,16 @@ dtrevc_ (char *side, char *howmny, logical * select,
 }	/* dtrevc_ */
 
 static int
-dtrexc_ (char *compq, integer * n, doublereal * t, integer *
-			ldt, doublereal * q, integer * ldq, integer * ifst, integer * ilst, doublereal * work, integer * info, ftnlen compq_len)
+dtrexc_ (char *compq, int * n, double * t, int *
+			ldt, double * q, int * ldq, int * ifst, int * ilst, double * work, int * info, int compq_len)
 {
 	/* System generated locals */
-	integer q_dim1, q_offset, t_dim1, t_offset, i__1;
+	int q_dim1, q_offset, t_dim1, t_offset, i__1;
 
 	/* Local variables */
-	static integer nbf, nbl, here;
-	static logical wantq;
-	static integer nbnext;
+	static int nbf, nbl, here;
+	static bool wantq;
+	static int nbnext;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -17176,11 +17180,11 @@ dtrexc_ (char *compq, integer * n, doublereal * t, integer *
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DTREXC reorders the real Schur factorization of a real matrix */
+	/*  DTREXC reorders the float Schur factorization of a float matrix */
 	/*  A = Q*T*Q**T, so that the diagonal block of T with row index IFST is */
 	/*  moved to row ILST. */
 
-	/*  The real Schur form T is reordered by an orthogonal similarity */
+	/*  The float Schur form T is reordered by an orthogonal similarity */
 	/*  transformation Z**T*T*Z, and optionally the matrix Q of Schur vectors */
 	/*  is updated by postmultiplying it with Z. */
 
@@ -17265,8 +17269,8 @@ dtrexc_ (char *compq, integer * n, doublereal * t, integer *
 
 	/* Function Body */
 	*info = 0;
-	wantq = lsame_ (compq, "V", (ftnlen) 1, (ftnlen) 1);
-	if (!wantq && !lsame_ (compq, "N", (ftnlen) 1, (ftnlen) 1))
+	wantq = lsame_ (compq, "V", (int) 1, (int) 1);
+	if (!wantq && !lsame_ (compq, "N", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
@@ -17293,7 +17297,7 @@ dtrexc_ (char *compq, integer * n, doublereal * t, integer *
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DTREXC", &i__1, (ftnlen) 6);
+		xerbla_ ("DTREXC", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -17587,32 +17591,32 @@ dtrexc_ (char *compq, integer * n, doublereal * t, integer *
 }	/* dtrexc_ */
 
 static int
-dtrsen_ (char *job, char *compq, logical * select, integer
-			* n, doublereal * t, integer * ldt, doublereal * q, integer * ldq,
-			doublereal * wr, doublereal * wi, integer * m, doublereal * s, doublereal
-			* sep, doublereal * work, integer * lwork, integer * iwork, integer * liwork, integer * info, ftnlen job_len, ftnlen compq_len)
+dtrsen_ (char *job, char *compq, bool * select, int
+			* n, double * t, int * ldt, double * q, int * ldq,
+			double * wr, double * wi, int * m, double * s, double
+			* sep, double * work, int * lwork, int * iwork, int * liwork, int * info, int job_len, int compq_len)
 {
 	/* System generated locals */
-	integer q_dim1, q_offset, t_dim1, t_offset, i__1, i__2;
-	doublereal d__1, d__2;
+	int q_dim1, q_offset, t_dim1, t_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer k, n1, n2, kk, nn, ks;
-	static doublereal est;
-	static integer kase;
-	static logical pair;
-	static integer ierr;
-	static logical swap;
-	static doublereal scale;
-	static integer lwmin;
-	static logical wantq, wants;
-	static doublereal rnorm;
-	static logical wantbh;
-	static integer liwmin;
-	static logical wantsp, lquery;
+	static int k, n1, n2, kk, nn, ks;
+	static double est;
+	static int kase;
+	static bool pair;
+	static int ierr;
+	static bool swap;
+	static double scale;
+	static int lwmin;
+	static bool wantq, wants;
+	static double rnorm;
+	static bool wantbh;
+	static int liwmin;
+	static bool wantsp, lquery;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -17628,7 +17632,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DTRSEN reorders the real Schur factorization of a real matrix */
+	/*  DTRSEN reorders the float Schur factorization of a float matrix */
 	/*  A = Q*T*Q**T, so that a selected cluster of eigenvalues appears in */
 	/*  the leading diagonal blocks of the upper quasi-triangular matrix T, */
 	/*  and the leading columns of Q form an orthonormal basis of the */
@@ -17660,7 +17664,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 
 	/*  SELECT  (input) LOGICAL array, dimension (N) */
 	/*          SELECT specifies the eigenvalues in the selected cluster. To */
-	/*          select a real eigenvalue w(j), SELECT(j) must be set to */
+	/*          select a float eigenvalue w(j), SELECT(j) must be set to */
 	/*          .TRUE.. To select a complex conjugate pair of eigenvalues */
 	/*          w(j) and w(j+1), corresponding to a 2-by-2 diagonal block, */
 	/*          either SELECT(j) or SELECT(j+1) or both must be set to */
@@ -17694,7 +17698,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 
 	/*  WR      (output) DOUBLE PRECISION array, dimension (N) */
 	/*  WI      (output) DOUBLE PRECISION array, dimension (N) */
-	/*          The real and imaginary parts, respectively, of the reordered */
+	/*          The float and imaginary parts, respectively, of the reordered */
 	/*          eigenvalues of T. The eigenvalues are stored in the same */
 	/*          order as on the diagonal of T, with WR(i) = T(i,i) and, if */
 	/*          T(i:i+1,i:i+1) is a 2-by-2 diagonal block, WI(i) > 0 and */
@@ -17770,8 +17774,8 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 	/*  where N = n1+n2 and Z' means the transpose of Z. The first n1 columns */
 	/*  of Z span the specified invariant subspace of T. */
 
-	/*  If T has been obtained from the real Schur factorization of a matrix */
-	/*  A = Q*T*Q', then the reordered real Schur factorization of A is given */
+	/*  If T has been obtained from the float Schur factorization of a matrix */
+	/*  A = Q*T*Q', then the reordered float Schur factorization of A is given */
 	/*  by A = (Q*Z)*(Z'*T*Z)*(Q*Z)', and the first n1 columns of Q*Z span */
 	/*  the corresponding invariant subspace of A. */
 
@@ -17857,18 +17861,18 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 	--iwork;
 
 	/* Function Body */
-	wantbh = lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1);
-	wants = lsame_ (job, "E", (ftnlen) 1, (ftnlen) 1) || wantbh;
-	wantsp = lsame_ (job, "V", (ftnlen) 1, (ftnlen) 1) || wantbh;
-	wantq = lsame_ (compq, "V", (ftnlen) 1, (ftnlen) 1);
+	wantbh = lsame_ (job, "B", (int) 1, (int) 1);
+	wants = lsame_ (job, "E", (int) 1, (int) 1) || wantbh;
+	wantsp = lsame_ (job, "V", (int) 1, (int) 1) || wantbh;
+	wantq = lsame_ (compq, "V", (int) 1, (int) 1);
 
 	*info = 0;
 	lquery = *lwork == -1;
-	if (!lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1) && !wants && !wantsp)
+	if (!lsame_ (job, "N", (int) 1, (int) 1) && !wants && !wantsp)
 	{
 		*info = -1;
 	}
-	else if (!lsame_ (compq, "N", (ftnlen) 1, (ftnlen) 1) && !wantq)
+	else if (!lsame_ (compq, "N", (int) 1, (int) 1) && !wantq)
 	{
 		*info = -2;
 	}
@@ -17891,13 +17895,13 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 		/*        and test LWORK and LIWORK. */
 
 		*m = 0;
-		pair = FALSE_;
+		pair = false;
 		i__1 = *n;
 		for (k = 1; k <= i__1; ++k)
 		{
 			if (pair)
 			{
-				pair = FALSE_;
+				pair = false;
 			}
 			else
 			{
@@ -17912,7 +17916,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 					}
 					else
 					{
-						pair = TRUE_;
+						pair = true;
 						if (select[k] || select[k + 1])
 						{
 							*m += 2;
@@ -17941,12 +17945,12 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 			lwmin = max (i__1, i__2);
 			liwmin = max (1, nn);
 		}
-		else if (lsame_ (job, "N", (ftnlen) 1, (ftnlen) 1))
+		else if (lsame_ (job, "N", (int) 1, (int) 1))
 		{
 			lwmin = max (1, *n);
 			liwmin = 1;
 		}
-		else if (lsame_ (job, "E", (ftnlen) 1, (ftnlen) 1))
+		else if (lsame_ (job, "E", (int) 1, (int) 1))
 		{
 			lwmin = max (1, nn);
 			liwmin = 1;
@@ -17964,14 +17968,14 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 
 	if (*info == 0)
 	{
-		work[1] = (doublereal) lwmin;
+		work[1] = (double) lwmin;
 		iwork[1] = liwmin;
 	}
 
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DTRSEN", &i__1, (ftnlen) 6);
+		xerbla_ ("DTRSEN", &i__1, (int) 6);
 		return 0;
 	}
 	else if (lquery)
@@ -17989,7 +17993,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 		}
 		if (wantsp)
 		{
-			*sep = dlange_ ("1", n, n, &t[t_offset], ldt, &work[1], (ftnlen) 1);
+			*sep = dlange_ ("1", n, n, &t[t_offset], ldt, &work[1], (int) 1);
 		}
 		goto L40;
 	}
@@ -17997,13 +18001,13 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 	/*     Collect the selected blocks at the top-left corner of T. */
 
 	ks = 0;
-	pair = FALSE_;
+	pair = false;
 	i__1 = *n;
 	for (k = 1; k <= i__1; ++k)
 	{
 		if (pair)
 		{
-			pair = FALSE_;
+			pair = false;
 		}
 		else
 		{
@@ -18012,7 +18016,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 			{
 				if (t[k + 1 + k * t_dim1] != 0.)
 				{
-					pair = TRUE_;
+					pair = true;
 					swap = swap || select[k + 1];
 				}
 			}
@@ -18026,7 +18030,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 				kk = k;
 				if (k != ks)
 				{
-					dtrexc_ (compq, n, &t[t_offset], ldt, &q[q_offset], ldq, &kk, &ks, &work[1], &ierr, (ftnlen) 1);
+					dtrexc_ (compq, n, &t[t_offset], ldt, &q[q_offset], ldq, &kk, &ks, &work[1], &ierr, (int) 1);
 				}
 				if (ierr == 1 || ierr == 2)
 				{
@@ -18060,13 +18064,13 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 
 		/*           T11*R - R*T22 = scale*T12 */
 
-		dlacpy_ ("F", &n1, &n2, &t[(n1 + 1) * t_dim1 + 1], ldt, &work[1], &n1, (ftnlen) 1);
-		dtrsyl_ ("N", "N", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (ftnlen) 1, (ftnlen) 1);
+		dlacpy_ ("F", &n1, &n2, &t[(n1 + 1) * t_dim1 + 1], ldt, &work[1], &n1, (int) 1);
+		dtrsyl_ ("N", "N", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (int) 1, (int) 1);
 
 		/*        Estimate the reciprocal of the condition number of the cluster */
 		/*        of eigenvalues. */
 
-		rnorm = dlange_ ("F", &n1, &n2, &work[1], &n1, &work[1], (ftnlen) 1);
+		rnorm = dlange_ ("F", &n1, &n2, &work[1], &n1, &work[1], (int) 1);
 		if (rnorm == 0.)
 		{
 			*s = 1.;
@@ -18093,14 +18097,14 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 
 				/*              Solve  T11*R - R*T22 = scale*X. */
 
-				dtrsyl_ ("N", "N", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (ftnlen) 1, (ftnlen) 1);
+				dtrsyl_ ("N", "N", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (int) 1, (int) 1);
 			}
 			else
 			{
 
 				/*              Solve  T11'*R - R*T22' = scale*X. */
 
-				dtrsyl_ ("T", "T", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (ftnlen) 1, (ftnlen) 1);
+				dtrsyl_ ("T", "T", &c_n1, &n1, &n2, &t[t_offset], ldt, &t[n1 + 1 + (n1 + 1) * t_dim1], ldt, &work[1], &n1, &scale, &ierr, (int) 1, (int) 1);
 			}
 			goto L30;
 		}
@@ -18130,7 +18134,7 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 		/* L60: */
 	}
 
-	work[1] = (doublereal) lwmin;
+	work[1] = (double) lwmin;
 	iwork[1] = liwmin;
 
 	return 0;
@@ -18140,40 +18144,40 @@ dtrsen_ (char *job, char *compq, logical * select, integer
 }	/* dtrsen_ */
 
 static int
-dtrsna_ (char *job, char *howmny, logical * select,
-			integer * n, doublereal * t, integer * ldt, doublereal * vl, integer *
-			ldvl, doublereal * vr, integer * ldvr, doublereal * s, doublereal * sep,
-			integer * mm, integer * m, doublereal * work, integer * ldwork, integer * iwork, integer * info, ftnlen job_len, ftnlen howmny_len)
+dtrsna_ (char *job, char *howmny, bool * select,
+			int * n, double * t, int * ldt, double * vl, int *
+			ldvl, double * vr, int * ldvr, double * s, double * sep,
+			int * mm, int * m, double * work, int * ldwork, int * iwork, int * info, int job_len, int howmny_len)
 {
 	/* System generated locals */
-	integer t_dim1, t_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, work_dim1, work_offset, i__1, i__2;
-	doublereal d__1, d__2;
+	int t_dim1, t_offset, vl_dim1, vl_offset, vr_dim1, vr_offset, work_dim1, work_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j, k, n2;
-	static doublereal cs;
-	static integer nn, ks;
-	static doublereal sn, mu, eps, est;
-	static integer kase;
-	static doublereal cond;
-	static logical pair;
-	static integer ierr;
-	static doublereal dumm, prod;
-	static integer ifst;
-	static doublereal lnrm;
-	static integer ilst;
-	static doublereal rnrm;
-	static doublereal prod1, prod2, scale, delta;
-	static logical wants;
-	static doublereal dummy[1];
-	static doublereal bignum;
-	static logical wantbh;
-	static logical somcon;
-	static doublereal smlnum;
-	static logical wantsp;
+	static int i__, j, k, n2;
+	static double cs;
+	static int nn, ks;
+	static double sn, mu, eps, est;
+	static int kase;
+	static double cond;
+	static bool pair;
+	static int ierr;
+	static double dumm, prod;
+	static int ifst;
+	static double lnrm;
+	static int ilst;
+	static double rnrm;
+	static double prod1, prod2, scale, delta;
+	static bool wants;
+	static double dummy[1];
+	static double bignum;
+	static bool wantbh;
+	static bool somcon;
+	static double smlnum;
+	static bool wantsp;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -18190,7 +18194,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 	/*  ======= */
 
 	/*  DTRSNA estimates reciprocal condition numbers for specified */
-	/*  eigenvalues and/or right eigenvectors of a real upper */
+	/*  eigenvalues and/or right eigenvectors of a float upper */
 	/*  quasi-triangular matrix T (or of any matrix Q*T*Q**T with Q */
 	/*  orthogonal). */
 
@@ -18217,7 +18221,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 	/*  SELECT  (input) LOGICAL array, dimension (N) */
 	/*          If HOWMNY = 'S', SELECT specifies the eigenpairs for which */
 	/*          condition numbers are required. To select condition numbers */
-	/*          for the eigenpair corresponding to a real eigenvalue w(j), */
+	/*          for the eigenpair corresponding to a float eigenvalue w(j), */
 	/*          SELECT(j) must be set to .TRUE.. To select condition numbers */
 	/*          corresponding to a complex conjugate pair of eigenvalues w(j) */
 	/*          and w(j+1), either SELECT(j) or SELECT(j+1) or both, must be */
@@ -18377,18 +18381,18 @@ dtrsna_ (char *job, char *howmny, logical * select,
 	--iwork;
 
 	/* Function Body */
-	wantbh = lsame_ (job, "B", (ftnlen) 1, (ftnlen) 1);
-	wants = lsame_ (job, "E", (ftnlen) 1, (ftnlen) 1) || wantbh;
-	wantsp = lsame_ (job, "V", (ftnlen) 1, (ftnlen) 1) || wantbh;
+	wantbh = lsame_ (job, "B", (int) 1, (int) 1);
+	wants = lsame_ (job, "E", (int) 1, (int) 1) || wantbh;
+	wantsp = lsame_ (job, "V", (int) 1, (int) 1) || wantbh;
 
-	somcon = lsame_ (howmny, "S", (ftnlen) 1, (ftnlen) 1);
+	somcon = lsame_ (howmny, "S", (int) 1, (int) 1);
 
 	*info = 0;
 	if (!wants && !wantsp)
 	{
 		*info = -1;
 	}
-	else if (!lsame_ (howmny, "A", (ftnlen) 1, (ftnlen) 1) && !somcon)
+	else if (!lsame_ (howmny, "A", (int) 1, (int) 1) && !somcon)
 	{
 		*info = -2;
 	}
@@ -18417,13 +18421,13 @@ dtrsna_ (char *job, char *howmny, logical * select,
 		if (somcon)
 		{
 			*m = 0;
-			pair = FALSE_;
+			pair = false;
 			i__1 = *n;
 			for (k = 1; k <= i__1; ++k)
 			{
 				if (pair)
 				{
-					pair = FALSE_;
+					pair = false;
 				}
 				else
 				{
@@ -18438,7 +18442,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 						}
 						else
 						{
-							pair = TRUE_;
+							pair = true;
 							if (select[k] || select[k + 1])
 							{
 								*m += 2;
@@ -18473,7 +18477,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DTRSNA", &i__1, (ftnlen) 6);
+		xerbla_ ("DTRSNA", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -18506,13 +18510,13 @@ dtrsna_ (char *job, char *howmny, logical * select,
 
 	/*     Get machine constants */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1) / eps;
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1) / eps;
 	bignum = 1. / smlnum;
 	dlabad_ (&smlnum, &bignum);
 
 	ks = 0;
-	pair = FALSE_;
+	pair = false;
 	i__1 = *n;
 	for (k = 1; k <= i__1; ++k)
 	{
@@ -18521,7 +18525,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 
 		if (pair)
 		{
-			pair = FALSE_;
+			pair = false;
 			goto L60;
 		}
 		else
@@ -18601,10 +18605,10 @@ dtrsna_ (char *job, char *howmny, logical * select,
 			/*           Copy the matrix T to the array WORK and swap the diagonal */
 			/*           block beginning at T(k,k) to the (1,1) position. */
 
-			dlacpy_ ("Full", n, n, &t[t_offset], ldt, &work[work_offset], ldwork, (ftnlen) 4);
+			dlacpy_ ("Full", n, n, &t[t_offset], ldt, &work[work_offset], ldwork, (int) 4);
 			ifst = k;
 			ilst = 1;
-			dtrexc_ ("No Q", n, &work[work_offset], ldwork, dummy, &c__1, &ifst, &ilst, &work[(*n + 1) * work_dim1 + 1], &ierr, (ftnlen) 4);
+			dtrexc_ ("No Q", n, &work[work_offset], ldwork, dummy, &c__1, &ifst, &ilst, &work[(*n + 1) * work_dim1 + 1], &ierr, (int) 4);
 
 			if (ierr == 1 || ierr == 2)
 			{
@@ -18704,7 +18708,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 						{
 
 							/*                       Complex eigenvalue: solve */
-							/*                       C'*(p+iq) = scale*(c+id) in real arithmetic. */
+							/*                       C'*(p+iq) = scale*(c+id) in float arithmetic. */
 
 							i__2 = *n - 1;
 							dlaqtr_ (&c_true, &c_false, &i__2, &work[(work_dim1 << 1) + 2], ldwork, &work[(*n +
@@ -18728,7 +18732,7 @@ dtrsna_ (char *job, char *howmny, logical * select,
 						{
 
 							/*                       Complex eigenvalue: solve */
-							/*                       C*(p+iq) = scale*(c+id) in real arithmetic. */
+							/*                       C*(p+iq) = scale*(c+id) in float arithmetic. */
 
 							i__2 = *n - 1;
 							dlaqtr_ (&c_false, &c_false, &i__2, &work[(work_dim1 << 1) + 2], ldwork, &work[(*n +
@@ -18764,27 +18768,27 @@ dtrsna_ (char *job, char *howmny, logical * select,
 }	/* dtrsna_ */
 
 static int
-dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
-			* m, integer * n, doublereal * a, integer * lda, doublereal * b, integer *
-			ldb, doublereal * c__, integer * ldc, doublereal * scale, integer * info, ftnlen trana_len, ftnlen tranb_len)
+dtrsyl_ (char *trana, char *tranb, int * isgn, int
+			* m, int * n, double * a, int * lda, double * b, int *
+			ldb, double * c__, int * ldc, double * scale, int * info, int trana_len, int tranb_len)
 {
 	/* System generated locals */
-	integer a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer j, k, l;
-	static doublereal x[4] /* was [2][2] */ ;
-	static integer k1, k2, l1, l2;
-	static doublereal a11, db, da11, vec[4] /* was [2][2] */ , dum[1], eps, sgn;
-	static integer ierr;
-	static doublereal smin, suml, sumr;
-	static integer knext, lnext;
-	static doublereal xnorm;
-	static doublereal scaloc;
-	static doublereal bignum;
-	static logical notrna, notrnb;
-	static doublereal smlnum;
+	static int j, k, l;
+	static double x[4] /* was [2][2] */ ;
+	static int k1, k2, l1, l2;
+	static double a11, db, da11, vec[4] /* was [2][2] */ , dum[1], eps, sgn;
+	static int ierr;
+	static double smin, suml, sumr;
+	static int knext, lnext;
+	static double xnorm;
+	static double scaloc;
+	static double bignum;
+	static bool notrna, notrnb;
+	static double smlnum;
 
 
 	/*  -- LAPACK routine (version 3.0) -- */
@@ -18800,7 +18804,7 @@ dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
 	/*  Purpose */
 	/*  ======= */
 
-	/*  DTRSYL solves the real Sylvester matrix equation: */
+	/*  DTRSYL solves the float Sylvester matrix equation: */
 
 	/*     op(A)*X + X*op(B) = scale*C or */
 	/*     op(A)*X - X*op(B) = scale*C, */
@@ -18902,15 +18906,15 @@ dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
 	c__ -= c_offset;
 
 	/* Function Body */
-	notrna = lsame_ (trana, "N", (ftnlen) 1, (ftnlen) 1);
-	notrnb = lsame_ (tranb, "N", (ftnlen) 1, (ftnlen) 1);
+	notrna = lsame_ (trana, "N", (int) 1, (int) 1);
+	notrnb = lsame_ (tranb, "N", (int) 1, (int) 1);
 
 	*info = 0;
-	if (!notrna && !lsame_ (trana, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (trana, "C", (ftnlen) 1, (ftnlen) 1))
+	if (!notrna && !lsame_ (trana, "T", (int) 1, (int) 1) && !lsame_ (trana, "C", (int) 1, (int) 1))
 	{
 		*info = -1;
 	}
-	else if (!notrnb && !lsame_ (tranb, "T", (ftnlen) 1, (ftnlen) 1) && !lsame_ (tranb, "C", (ftnlen) 1, (ftnlen) 1))
+	else if (!notrnb && !lsame_ (tranb, "T", (int) 1, (int) 1) && !lsame_ (tranb, "C", (int) 1, (int) 1))
 	{
 		*info = -2;
 	}
@@ -18941,7 +18945,7 @@ dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
 	if (*info != 0)
 	{
 		i__1 = -(*info);
-		xerbla_ ("DTRSYL", &i__1, (ftnlen) 6);
+		xerbla_ ("DTRSYL", &i__1, (int) 6);
 		return 0;
 	}
 
@@ -18954,21 +18958,21 @@ dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
 
 	/*     Set constants to control overflow */
 
-	eps = dlamch_ ("P", (ftnlen) 1);
-	smlnum = dlamch_ ("S", (ftnlen) 1);
+	eps = dlamch_ ("P", (int) 1);
+	smlnum = dlamch_ ("S", (int) 1);
 	bignum = 1. / smlnum;
 	dlabad_ (&smlnum, &bignum);
-	smlnum = smlnum * (doublereal) (*m * *n) / eps;
+	smlnum = smlnum * (double) (*m * *n) / eps;
 	bignum = 1. / smlnum;
 
 	/* Computing MAX */
-	d__1 = smlnum, d__2 = eps * dlange_ ("M", m, m, &a[a_offset], lda, dum, (ftnlen) 1), d__1 = max (d__1, d__2), d__2 = eps * dlange_ ("M", n, n,
+	d__1 = smlnum, d__2 = eps * dlange_ ("M", m, m, &a[a_offset], lda, dum, (int) 1), d__1 = max (d__1, d__2), d__2 = eps * dlange_ ("M", n, n,
 																																													&b[b_offset], ldb, dum,
-																																													(ftnlen) 1);
+																																													(int) 1);
 	smin = max (d__1, d__2);
 
 	*scale = 1.;
-	sgn = (doublereal) (*isgn);
+	sgn = (double) (*isgn);
 
 	if (notrna && notrnb)
 	{
@@ -20130,14 +20134,14 @@ dtrsyl_ (char *trana, char *tranb, integer * isgn, integer
 
 }	/* dtrsyl_ */
 
-static integer
-ieeeck_ (integer * ispec, real * zero, real * one)
+static int
+ieeeck_ (int * ispec, float * zero, float * one)
 {
 	/* System generated locals */
-	integer ret_val;
+	int ret_val;
 
 	/* Local variables */
-	static real nan1, nan2, nan3, nan4, nan5, nan6, neginf, posinf, negzro, newzro;
+	static float nan1, nan2, nan3, nan4, nan5, nan6, neginf, posinf, negzro, newzro;
 
 
 	/*  -- LAPACK auxiliary routine (version 3.0) -- */
@@ -20299,22 +20303,18 @@ ieeeck_ (integer * ispec, real * zero, real * one)
 	return ret_val;
 }	/* ieeeck_ */
 
-static integer
-ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, integer * n3, integer * n4, ftnlen name_len, ftnlen opts_len)
+static int
+ilaenv_ (int * ispec, char *name__, char *opts, int * n1, int * n2, int * n3, int * n4, int name_len, int opts_len)
 {
 	/* System generated locals */
-	integer ret_val;
-
-	/* Builtin functions */
-	/* Subroutine */ int s_copy (char *, char *, ftnlen, ftnlen);
-	integer s_cmp (char *, char *, ftnlen, ftnlen);
+	int ret_val;
 
 	/* Local variables */
-	static integer i__;
+	static int i__;
 	static char c1[1], c2[2], c3[3], c4[2];
-	static integer ic, nb, iz, nx;
-	static logical cname, sname;
-	static integer nbmin;
+	static int ic, nb, iz, nx;
+	static bool cname, sname;
+	static int nbmin;
 	static char subnam[6];
 
 
@@ -20460,7 +20460,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 	/*     Convert NAME to upper case if the first character is lower case. */
 
 	ret_val = 1;
-	s_copy (subnam, name__, (ftnlen) 6, name_len);
+	s_copy (subnam, name__, (int) 6, name_len);
 	ic = *(unsigned char *) subnam;
 	iz = 'Z';
 	if (iz == 90 || iz == 122)
@@ -20530,9 +20530,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 	{
 		return ret_val;
 	}
-	s_copy (c2, subnam + 1, (ftnlen) 2, (ftnlen) 2);
-	s_copy (c3, subnam + 3, (ftnlen) 3, (ftnlen) 3);
-	s_copy (c4, c3 + 1, (ftnlen) 2, (ftnlen) 2);
+	s_copy (c2, subnam + 1, (int) 2, (int) 2);
+	s_copy (c3, subnam + 3, (int) 3, (int) 3);
+	s_copy (c4, c3 + 1, (int) 2, (int) 2);
 
 	switch (*ispec)
 	{
@@ -20549,14 +20549,14 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 	/*     ISPEC = 1:  block size */
 
 	/*     In these examples, separate code is provided for setting NB for */
-	/*     real and complex.  We assume that NB will take the same value in */
+	/*     float and complex.  We assume that NB will take the same value in */
 	/*     single or double precision. */
 
 	nb = 1;
 
-	if (s_cmp (c2, "GE", (ftnlen) 2, (ftnlen) 2) == 0)
+	if (s_cmp (c2, "GE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20567,10 +20567,10 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nb = 64;
 			}
 		}
-		else if (s_cmp (c3, "QRF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3,
-																								"RQF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3, "LQF", (ftnlen)
-																																							 3, (ftnlen) 3) == 0
-					|| s_cmp (c3, "QLF", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "QRF", (int) 3, (int) 3) == 0 || s_cmp (c3,
+																								"RQF", (int) 3, (int) 3) == 0 || s_cmp (c3, "LQF", (int)
+																																							 3, (int) 3) == 0
+					|| s_cmp (c3, "QLF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20581,7 +20581,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nb = 32;
 			}
 		}
-		else if (s_cmp (c3, "HRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "HRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20592,7 +20592,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nb = 32;
 			}
 		}
-		else if (s_cmp (c3, "BRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "BRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20603,7 +20603,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nb = 32;
 			}
 		}
-		else if (s_cmp (c3, "TRI", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "TRI", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20615,9 +20615,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "PO", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "PO", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20629,9 +20629,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "SY", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "SY", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20642,79 +20642,79 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nb = 64;
 			}
 		}
-		else if (sname && s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (sname && s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nb = 32;
 		}
-		else if (sname && s_cmp (c3, "GST", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (sname && s_cmp (c3, "GST", (int) 3, (int) 3) == 0)
 		{
 			nb = 64;
 		}
 	}
-	else if (cname && s_cmp (c2, "HE", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "HE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			nb = 64;
 		}
-		else if (s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nb = 32;
 		}
-		else if (s_cmp (c3, "GST", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "GST", (int) 3, (int) 3) == 0)
 		{
 			nb = 64;
 		}
 	}
-	else if (sname && s_cmp (c2, "OR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (sname && s_cmp (c2, "OR", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nb = 32;
 			}
 		}
 		else if (*(unsigned char *) c3 == 'M')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nb = 32;
 			}
 		}
 	}
-	else if (cname && s_cmp (c2, "UN", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "UN", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nb = 32;
 			}
 		}
 		else if (*(unsigned char *) c3 == 'M')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nb = 32;
 			}
 		}
 	}
-	else if (s_cmp (c2, "GB", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "GB", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20740,9 +20740,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "PB", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "PB", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20768,9 +20768,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "TR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "TR", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRI", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRI", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20782,9 +20782,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "LA", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "LA", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "UUM", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "UUM", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20796,9 +20796,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (sname && s_cmp (c2, "ST", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (sname && s_cmp (c2, "ST", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "EBZ", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "EBZ", (int) 3, (int) 3) == 0)
 		{
 			nb = 1;
 		}
@@ -20811,10 +20811,10 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 	/*     ISPEC = 2:  minimum block size */
 
 	nbmin = 2;
-	if (s_cmp (c2, "GE", (ftnlen) 2, (ftnlen) 2) == 0)
+	if (s_cmp (c2, "GE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "QRF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3, "RQF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3, "LQF", (ftnlen) 3, (ftnlen) 3) == 0
-			 || s_cmp (c3, "QLF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "QRF", (int) 3, (int) 3) == 0 || s_cmp (c3, "RQF", (int) 3, (int) 3) == 0 || s_cmp (c3, "LQF", (int) 3, (int) 3) == 0
+			 || s_cmp (c3, "QLF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20825,7 +20825,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nbmin = 2;
 			}
 		}
-		else if (s_cmp (c3, "HRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "HRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20836,7 +20836,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nbmin = 2;
 			}
 		}
-		else if (s_cmp (c3, "BRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "BRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20847,7 +20847,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nbmin = 2;
 			}
 		}
-		else if (s_cmp (c3, "TRI", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "TRI", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20859,9 +20859,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "SY", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "SY", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20872,59 +20872,59 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nbmin = 8;
 			}
 		}
-		else if (sname && s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (sname && s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nbmin = 2;
 		}
 	}
-	else if (cname && s_cmp (c2, "HE", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "HE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nbmin = 2;
 		}
 	}
-	else if (sname && s_cmp (c2, "OR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (sname && s_cmp (c2, "OR", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nbmin = 2;
 			}
 		}
 		else if (*(unsigned char *) c3 == 'M')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nbmin = 2;
 			}
 		}
 	}
-	else if (cname && s_cmp (c2, "UN", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "UN", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nbmin = 2;
 			}
 		}
 		else if (*(unsigned char *) c3 == 'M')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nbmin = 2;
 			}
@@ -20938,10 +20938,10 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 	/*     ISPEC = 3:  crossover point */
 
 	nx = 0;
-	if (s_cmp (c2, "GE", (ftnlen) 2, (ftnlen) 2) == 0)
+	if (s_cmp (c2, "GE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "QRF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3, "RQF", (ftnlen) 3, (ftnlen) 3) == 0 || s_cmp (c3, "LQF", (ftnlen) 3, (ftnlen) 3) == 0
-			 || s_cmp (c3, "QLF", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "QRF", (int) 3, (int) 3) == 0 || s_cmp (c3, "RQF", (int) 3, (int) 3) == 0 || s_cmp (c3, "LQF", (int) 3, (int) 3) == 0
+			 || s_cmp (c3, "QLF", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20952,7 +20952,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nx = 128;
 			}
 		}
-		else if (s_cmp (c3, "HRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "HRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20963,7 +20963,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 				nx = 128;
 			}
 		}
-		else if (s_cmp (c3, "BRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		else if (s_cmp (c3, "BRD", (int) 3, (int) 3) == 0)
 		{
 			if (sname)
 			{
@@ -20975,41 +20975,41 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 			}
 		}
 	}
-	else if (s_cmp (c2, "SY", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (c2, "SY", (int) 2, (int) 2) == 0)
 	{
-		if (sname && s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (sname && s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nx = 32;
 		}
 	}
-	else if (cname && s_cmp (c2, "HE", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "HE", (int) 2, (int) 2) == 0)
 	{
-		if (s_cmp (c3, "TRD", (ftnlen) 3, (ftnlen) 3) == 0)
+		if (s_cmp (c3, "TRD", (int) 3, (int) 3) == 0)
 		{
 			nx = 32;
 		}
 	}
-	else if (sname && s_cmp (c2, "OR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (sname && s_cmp (c2, "OR", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nx = 128;
 			}
 		}
 	}
-	else if (cname && s_cmp (c2, "UN", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (cname && s_cmp (c2, "UN", (int) 2, (int) 2) == 0)
 	{
 		if (*(unsigned char *) c3 == 'G')
 		{
-			if (s_cmp (c4, "QR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "RQ",
-																							(ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "LQ", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "QL", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "HR", (ftnlen) 2, (ftnlen) 2) == 0 || s_cmp (c4, "TR", (ftnlen) 2, (ftnlen) 2) == 0
-				 || s_cmp (c4, "BR", (ftnlen) 2, (ftnlen) 2) == 0)
+			if (s_cmp (c4, "QR", (int) 2, (int) 2) == 0 || s_cmp (c4, "RQ",
+																							(int) 2, (int) 2) == 0 || s_cmp (c4, "LQ", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "QL", (int) 2, (int) 2) == 0 || s_cmp (c4, "HR", (int) 2, (int) 2) == 0 || s_cmp (c4, "TR", (int) 2, (int) 2) == 0
+				 || s_cmp (c4, "BR", (int) 2, (int) 2) == 0)
 			{
 				nx = 128;
 			}
@@ -21036,7 +21036,7 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 
 	/*     ISPEC = 6:  crossover point for SVD (used by xGELSS and xGESVD) */
 
-	ret_val = (integer) ((real) min (*n1, *n2) * 1.6f);
+	ret_val = (int) ((float) min (*n1, *n2) * 1.6f);
 	return ret_val;
 
  L700:
@@ -21091,62 +21091,9 @@ ilaenv_ (integer * ispec, char *name__, char *opts, integer * n1, integer * n2, 
 }	/* ilaenv_ */
 
 static int
-xerbla_ (char *srname, integer * info, ftnlen srname_len)
+xerbla_ (char *srname, int * info, int srname_len)
 {
-	/* Format strings */
-	static char fmt_9999[] = "(\002 ** On entry to \002,a6,\002 parameter nu" "mber \002,i2,\002 had \002,\002an illegal value\002)";
-
-	/* Builtin functions */
-	integer s_wsfe (cilist *), do_fio (integer *, char *, ftnlen), e_wsfe (void);
-	/* Subroutine */ int s_stop (char *, ftnlen);
-
-	/* Fortran I/O blocks */
-	static cilist io___810 = { 0, 6, 0, fmt_9999, 0 };
-
-
-
-	/*  -- LAPACK auxiliary routine (version 3.0) -- */
-	/*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd., */
-	/*     Courant Institute, Argonne National Lab, and Rice University */
-	/*     September 30, 1994 */
-
-	/*     .. Scalar Arguments .. */
-	/*     .. */
-
-	/*  Purpose */
-	/*  ======= */
-
-	/*  XERBLA  is an error handler for the LAPACK routines. */
-	/*  It is called by an LAPACK routine if an input parameter has an */
-	/*  invalid value.  A message is printed and execution stops. */
-
-	/*  Installers may consider modifying the STOP statement in order to */
-	/*  call system-specific exception-handling facilities. */
-
-	/*  Arguments */
-	/*  ========= */
-
-	/*  SRNAME  (input) CHARACTER*6 */
-	/*          The name of the routine which called XERBLA. */
-
-	/*  INFO    (input) INTEGER */
-	/*          The position of the invalid parameter in the parameter list */
-	/*          of the calling routine. */
-
-	/* ===================================================================== */
-
-	/*     .. Executable Statements .. */
-
-	s_wsfe (&io___810);
-	do_fio (&c__1, srname, (ftnlen) 6);
-	do_fio (&c__1, (char *) &(*info), (ftnlen) sizeof (integer));
-	e_wsfe ();
-
-	s_stop ("", (ftnlen) 0);
-
-
-	/*     End of XERBLA */
-
+	if( *info != 0 ) printf("Wrong argument");
 	return 0;
 }	/* xerbla_ */
 
@@ -21234,7 +21181,7 @@ xerbla_ (char *srname, integer * info, ftnlen srname_len)
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \References: */
 /*  1. D.C. Sorensen, "Implicit Application of Polynomial Filters in */
@@ -21269,30 +21216,30 @@ xerbla_ (char *srname, integer * info, ftnlen srname_len)
 /* ----------------------------------------------------------------------- */
 
 static int
-dgetv0_ (integer * ido, char *bmat, integer * itry, logical
-			* initv, integer * n, integer * j, doublereal * v, integer * ldv,
-			doublereal * resid, doublereal * rnorm, integer * ipntr, doublereal * workd, integer * ierr, ftnlen bmat_len)
+dgetv0_ (int * ido, char *bmat, int * itry, bool
+			* initv, int * n, int * j, double * v, int * ldv,
+			double * resid, double * rnorm, int * ipntr, double * workd, int * ierr, int bmat_len)
 {
 	/* Initialized data */
 
-	static logical inits = TRUE_;
+	static bool inits = true;
 
 	/* System generated locals */
-	integer v_dim1, v_offset, i__1;
+	int v_dim1, v_offset, i__1;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static real t0, t1, t2, t3;
-	static integer jj;
-	static integer iter;
-	static logical orth;
-	static integer iseed[4];
-	static integer idist;
-	static logical first;
-	static doublereal rnorm0;
-	static integer msglvl;
+	static float t0, t1, t2, t3;
+	static int jj;
+	static int iter;
+	static bool orth;
+	static int iseed[4];
+	static int idist;
+	static bool first;
+	static double rnorm0;
+	static int msglvl;
 
 
 	/*     %----------------------------------------------------% */
@@ -21380,7 +21327,7 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 		iseed[1] = 3;
 		iseed[2] = 5;
 		iseed[3] = 7;
-		inits = FALSE_;
+		inits = false;
 	}
 
 	if (*ido == 0)
@@ -21396,8 +21343,8 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 
 		*ierr = 0;
 		iter = 0;
-		first = FALSE_;
-		orth = FALSE_;
+		first = false;
+		orth = false;
 
 		/*        %-----------------------------------------------------% */
 		/*        | Possibly generate a random starting vector in RESID | */
@@ -21461,7 +21408,7 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 	/*     %------------------------------------------------------% */
 
 	second_ (&t2);
-	first = TRUE_;
+	first = true;
 	if (*(unsigned char *) bmat == 'G')
 	{
 		++timing_1.nbx;
@@ -21484,7 +21431,7 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 		timing_1.tmvbx += t3 - t2;
 	}
 
-	first = FALSE_;
+	first = false;
 	if (*(unsigned char *) bmat == 'G')
 	{
 		rnorm0 = ddot_ (n, &resid[1], &c__1, &workd[1], &c__1);
@@ -21517,13 +21464,13 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 	/*     | Parlett's book, page 107 and in Gragg & Reichel TOMS paper.   | */
 	/*     %---------------------------------------------------------------% */
 
-	orth = TRUE_;
+	orth = true;
  L30:
 
 	i__1 = *j - 1;
-	dgemv_ ("T", n, &i__1, &c_b348, &v[v_offset], ldv, &workd[1], &c__1, &c_b507, &workd[*n + 1], &c__1, (ftnlen) 1);
+	dgemv_ ("T", n, &i__1, &c_b348, &v[v_offset], ldv, &workd[1], &c__1, &c_b507, &workd[*n + 1], &c__1, (int) 1);
 	i__1 = *j - 1;
-	dgemv_ ("N", n, &i__1, &c_b347, &v[v_offset], ldv, &workd[*n + 1], &c__1, &c_b348, &resid[1], &c__1, (ftnlen) 1);
+	dgemv_ ("N", n, &i__1, &c_b347, &v[v_offset], ldv, &workd[*n + 1], &c__1, &c_b348, &resid[1], &c__1, (int) 1);
 
 	/*     %----------------------------------------------------------% */
 	/*     | Compute the B-norm of the orthogonalized starting vector | */
@@ -21568,8 +21515,8 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 
 	if (msglvl > 2)
 	{
-		dvout_ (&debug_1.logfil, &c__1, &rnorm0, &debug_1.ndigit, "_getv0: re" "-orthonalization ; rnorm0 is", (ftnlen) 38);
-		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_getv0: re-o" "rthonalization ; rnorm is", (ftnlen) 37);
+		dvout_ (&debug_1.logfil, &c__1, &rnorm0, &debug_1.ndigit, "_getv0: re" "-orthonalization ; rnorm0 is", (int) 38);
+		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_getv0: re-o" "rthonalization ; rnorm is", (int) 37);
 	}
 
 	if (*rnorm > rnorm0 * .717f)
@@ -21609,11 +21556,11 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 
 	if (msglvl > 0)
 	{
-		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_getv0: B-no" "rm of initial / restarted starting vector", (ftnlen) 53);
+		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_getv0: B-no" "rm of initial / restarted starting vector", (int) 53);
 	}
 	if (msglvl > 3)
 	{
-		dvout_ (&debug_1.logfil, n, &resid[1], &debug_1.ndigit, "_getv0: init" "ial / restarted starting vector", (ftnlen) 43);
+		dvout_ (&debug_1.logfil, n, &resid[1], &debug_1.ndigit, "_getv0: init" "ial / restarted starting vector", (int) 43);
 	}
 	*ido = 99;
 
@@ -21674,7 +21621,7 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 
 /*  WR      Double precision array, dimension (N).  (OUTPUT) */
 /*  WI      Double precision array, dimension (N).  (OUTPUT) */
-/*          The real and imaginary parts, respectively, of the computed */
+/*          The float and imaginary parts, respectively, of the computed */
 /*          eigenvalues ILO to IHI are stored in the corresponding */
 /*          elements of WR and WI. If two eigenvalues are computed as a */
 /*          complex conjugate pair, they are stored in consecutive */
@@ -21703,7 +21650,7 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \Routines called: */
 /*     dlabad  LAPACK routine that computes machine constants. */
@@ -21739,26 +21686,26 @@ dgetv0_ (integer * ido, char *bmat, integer * itry, logical
 /* ----------------------------------------------------------------------- */
 
 static int
-dlaqrb_ (logical * wantt, integer * n, integer * ilo,
-			integer * ihi, doublereal * h__, integer * ldh, doublereal * wr, doublereal * wi, doublereal * z__, integer * info)
+dlaqrb_ (bool * wantt, int * n, int * ilo,
+			int * ihi, double * h__, int * ldh, double * wr, double * wi, double * z__, int * info)
 {
 	/* System generated locals */
-	integer h_dim1, h_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int h_dim1, h_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer i__, j, k, l, m;
-	static doublereal s, v[3];
-	static integer i1, i2;
-	static doublereal t1, t2, t3, v1, v2, v3, h00, h10, h11, h12, h21, h22, h33, h44;
-	static integer nh;
-	static doublereal cs;
-	static integer nr;
-	static doublereal sn, h33s, h44s;
-	static integer itn, its;
-	static doublereal ulp, sum, tst1, h43h34, unfl, ovfl;
-	static doublereal work[1];
-	static doublereal smlnum;
+	static int i__, j, k, l, m;
+	static double s, v[3];
+	static int i1, i2;
+	static double t1, t2, t3, v1, v2, v3, h00, h10, h11, h12, h21, h22, h33, h44;
+	static int nh;
+	static double cs;
+	static int nr;
+	static double sn, h33s, h44s;
+	static int itn, its;
+	static double ulp, sum, tst1, h43h34, unfl, ovfl;
+	static double work[1];
+	static double smlnum;
 
 
 	/*     %------------------% */
@@ -21841,10 +21788,10 @@ dlaqrb_ (logical * wantt, integer * n, integer * ilo,
 	/*     | If norm(H) <= sqrt(OVFL), overflow should not occur.        | */
 	/*     %-------------------------------------------------------------% */
 
-	unfl = dlamch_ ("safe minimum", (ftnlen) 12);
+	unfl = dlamch_ ("safe minimum", (int) 12);
 	ovfl = 1. / unfl;
 	dlabad_ (&unfl, &ovfl);
-	ulp = dlamch_ ("precision", (ftnlen) 9);
+	ulp = dlamch_ ("precision", (int) 9);
 	smlnum = unfl * (nh / ulp);
 
 	/*     %---------------------------------------------------------------% */
@@ -21917,7 +21864,7 @@ dlaqrb_ (logical * wantt, integer * n, integer * ilo,
 			if (tst1 == 0.)
 			{
 				i__3 = i__ - l + 1;
-				tst1 = dlanhs_ ("1", &i__3, &h__[l + l * h_dim1], ldh, work, (ftnlen) 1);
+				tst1 = dlanhs_ ("1", &i__3, &h__[l + l * h_dim1], ldh, work, (int) 1);
 			}
 			/* Computing MAX */
 			d__2 = ulp * tst1;
@@ -22253,415 +22200,12 @@ dlaqrb_ (logical * wantt, integer * n, integer * ilo,
 /* ----------------------------------------------------------------------- */
 
 static int
-dmout_ (integer * lout, integer * m, integer * n, doublereal * a, integer * lda, integer * idigit, char *ifmt, ftnlen ifmt_len)
+dmout_ (int * lout, int * m, int * n, double * a, int * lda, int * idigit, char *ifmt, int ifmt_len)
 {
-	/* Initialized data */
-
-	static char icol[1 * 3] = "C" "o" "l";
-
-	/* Format strings */
-	static char fmt_9999[] = "(/1x,a,/1x,a)";
-	static char fmt_9998[] = "(10x,10(4x,3a1,i4,1x))";
-	static char fmt_9994[] = "(1x,\002 Row\002,i4,\002:\002,1x,1p,10d12.3)";
-	static char fmt_9997[] = "(10x,8(5x,3a1,i4,2x))";
-	static char fmt_9993[] = "(1x,\002 Row\002,i4,\002:\002,1x,1p,8d14.5)";
-	static char fmt_9996[] = "(10x,6(7x,3a1,i4,4x))";
-	static char fmt_9992[] = "(1x,\002 Row\002,i4,\002:\002,1x,1p,6d18.9)";
-	static char fmt_9995[] = "(10x,5(9x,3a1,i4,6x))";
-	static char fmt_9991[] = "(1x,\002 Row\002,i4,\002:\002,1x,1p,5d22.13)";
-	static char fmt_9990[] = "(1x,\002 \002)";
-
-	/* System generated locals */
-	integer a_dim1, a_offset, i__1, i__2, i__3;
-
-	/* Builtin functions */
-	integer i_len (char *, ftnlen), s_wsfe (cilist *), do_fio (integer *, char *, ftnlen), e_wsfe (void);
-
-	/* Local variables */
-	static integer i__, j, k1, k2, lll;
-	static char line[80];
-	static integer ndigit;
-
-	/* Fortran I/O blocks */
-	static cilist io___867 = { 0, 0, 0, fmt_9999, 0 };
-	static cilist io___871 = { 0, 0, 0, fmt_9998, 0 };
-	static cilist io___872 = { 0, 0, 0, fmt_9994, 0 };
-	static cilist io___874 = { 0, 0, 0, fmt_9997, 0 };
-	static cilist io___875 = { 0, 0, 0, fmt_9993, 0 };
-	static cilist io___876 = { 0, 0, 0, fmt_9996, 0 };
-	static cilist io___877 = { 0, 0, 0, fmt_9992, 0 };
-	static cilist io___878 = { 0, 0, 0, fmt_9995, 0 };
-	static cilist io___879 = { 0, 0, 0, fmt_9991, 0 };
-	static cilist io___880 = { 0, 0, 0, fmt_9998, 0 };
-	static cilist io___881 = { 0, 0, 0, fmt_9994, 0 };
-	static cilist io___882 = { 0, 0, 0, fmt_9997, 0 };
-	static cilist io___883 = { 0, 0, 0, fmt_9993, 0 };
-	static cilist io___884 = { 0, 0, 0, fmt_9996, 0 };
-	static cilist io___885 = { 0, 0, 0, fmt_9992, 0 };
-	static cilist io___886 = { 0, 0, 0, fmt_9995, 0 };
-	static cilist io___887 = { 0, 0, 0, fmt_9991, 0 };
-	static cilist io___888 = { 0, 0, 0, fmt_9990, 0 };
-
-
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR ARGUMENTS */
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR LOCAL VARIABLES */
-	/*     .. Scalar Arguments .. */
-	/*     .. */
-	/*     .. Array Arguments .. */
-	/*     .. */
-	/*     .. Local Scalars .. */
-	/*     .. */
-	/*     .. Local Arrays .. */
-	/*     .. */
-	/*     .. Intrinsic Functions .. */
-	/*     .. */
-	/*     .. Data statements .. */
-	/* Parameter adjustments */
-	a_dim1 = *lda;
-	a_offset = 1 + a_dim1;
-	a -= a_offset;
-
-	/* Function Body */
-	/*     .. */
-	/*     .. Executable Statements .. */
-	/*     ... */
-	/*     ... FIRST EXECUTABLE STATEMENT */
-
-	/* Computing MIN */
-	i__1 = i_len (ifmt, ifmt_len);
-	lll = min (i__1, 80);
-	i__1 = lll;
-	for (i__ = 1; i__ <= i__1; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = '-';
-		/* L10: */
-	}
-
-	for (i__ = lll + 1; i__ <= 80; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = ' ';
-		/* L20: */
-	}
-
-	io___867.ciunit = *lout;
-	s_wsfe (&io___867);
-	do_fio (&c__1, ifmt, ifmt_len);
-	do_fio (&c__1, line, lll);
-	e_wsfe ();
-
-	if (*m <= 0 || *n <= 0 || *lda <= 0)
-	{
-		return 0;
-	}
-	ndigit = *idigit;
-	if (*idigit == 0)
-	{
-		ndigit = 4;
-	}
-
-	/* ======================================================================= */
-	/*             CODE FOR OUTPUT USING 72 COLUMNS FORMAT */
-	/* ======================================================================= */
-
-	if (*idigit < 0)
-	{
-		ndigit = -(*idigit);
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 5)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 4;
-				k2 = min (i__2, i__3);
-				io___871.ciunit = *lout;
-				s_wsfe (&io___871);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___872.ciunit = *lout;
-					s_wsfe (&io___872);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L30: */
-				}
-				/* L40: */
-			}
-
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 4)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 3;
-				k2 = min (i__2, i__3);
-				io___874.ciunit = *lout;
-				s_wsfe (&io___874);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___875.ciunit = *lout;
-					s_wsfe (&io___875);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L50: */
-				}
-				/* L60: */
-			}
-
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 3)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 2;
-				k2 = min (i__2, i__3);
-				io___876.ciunit = *lout;
-				s_wsfe (&io___876);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___877.ciunit = *lout;
-					s_wsfe (&io___877);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L70: */
-				}
-				/* L80: */
-			}
-
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 2)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 1;
-				k2 = min (i__2, i__3);
-				io___878.ciunit = *lout;
-				s_wsfe (&io___878);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___879.ciunit = *lout;
-					s_wsfe (&io___879);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L90: */
-				}
-				/* L100: */
-			}
-		}
-
-		/* ======================================================================= */
-		/*             CODE FOR OUTPUT USING 132 COLUMNS FORMAT */
-		/* ======================================================================= */
-
-	}
-	else
-	{
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 10)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 9;
-				k2 = min (i__2, i__3);
-				io___880.ciunit = *lout;
-				s_wsfe (&io___880);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___881.ciunit = *lout;
-					s_wsfe (&io___881);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L110: */
-				}
-				/* L120: */
-			}
-
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 8)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 7;
-				k2 = min (i__2, i__3);
-				io___882.ciunit = *lout;
-				s_wsfe (&io___882);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___883.ciunit = *lout;
-					s_wsfe (&io___883);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L130: */
-				}
-				/* L140: */
-			}
-
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 6)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 5;
-				k2 = min (i__2, i__3);
-				io___884.ciunit = *lout;
-				s_wsfe (&io___884);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___885.ciunit = *lout;
-					s_wsfe (&io___885);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L150: */
-				}
-				/* L160: */
-			}
-
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 5)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 4;
-				k2 = min (i__2, i__3);
-				io___886.ciunit = *lout;
-				s_wsfe (&io___886);
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__3, icol, (ftnlen) 1);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				i__2 = *m;
-				for (i__ = 1; i__ <= i__2; ++i__)
-				{
-					io___887.ciunit = *lout;
-					s_wsfe (&io___887);
-					do_fio (&c__1, (char *) &i__, (ftnlen) sizeof (integer));
-					i__3 = k2;
-					for (j = k1; j <= i__3; ++j)
-					{
-						do_fio (&c__1, (char *) &a[i__ + j * a_dim1], (ftnlen) sizeof (doublereal));
-					}
-					e_wsfe ();
-					/* L170: */
-				}
-				/* L180: */
-			}
-		}
-	}
-	io___888.ciunit = *lout;
-	s_wsfe (&io___888);
-	e_wsfe ();
-
-
+	printf("Matrix printing is not supported\n");
 	return 0;
 }	/* dmout_ */
+
 
 /* ----------------------------------------------------------------------- */
 /* \BeginDoc */
@@ -22784,7 +22328,7 @@ dmout_ (integer * lout, integer * m, integer * n, doublereal * a, integer * lda,
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \References: */
 /*  1. D.C. Sorensen, "Implicit Application of Polynomial Filters in */
@@ -22796,7 +22340,7 @@ dmout_ (integer * lout, integer * m, integer * n, doublereal * a, integer * lda,
 
 /* \Routines called: */
 /*     dgetv0  ARPACK routine to generate the initial vector. */
-/*     ivout   ARPACK utility routine that prints integers. */
+/*     ivout   ARPACK utility routine that prints ints. */
 /*     second  ARPACK utility routine for timing. */
 /*     dmout   ARPACK utility routine that prints matrices */
 /*     dvout   ARPACK utility routine that prints vectors. */
@@ -22872,39 +22416,39 @@ dmout_ (integer * lout, integer * m, integer * n, doublereal * a, integer * lda,
 /* ----------------------------------------------------------------------- */
 
 static int
-dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
-			integer * np, integer * nb, doublereal * resid, doublereal * rnorm,
-			doublereal * v, integer * ldv, doublereal * h__, integer * ldh, integer * ipntr, doublereal * workd, integer * info, ftnlen bmat_len)
+dnaitr_ (int * ido, char *bmat, int * n, int * k,
+			int * np, int * nb, double * resid, double * rnorm,
+			double * v, int * ldv, double * h__, int * ldh, int * ipntr, double * workd, int * info, int bmat_len)
 {
 	/* Initialized data */
 
-	static logical first = TRUE_;
+	static bool first = true;
 
 	/* System generated locals */
-	integer h_dim1, h_offset, v_dim1, v_offset, i__1, i__2;
-	doublereal d__1, d__2;
+	int h_dim1, h_offset, v_dim1, v_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double sqrt (doublereal);
+	double sqrt (double);
 
 	/* Local variables */
-	static integer i__, j;
-	static real t0, t1, t2, t3, t4, t5;
-	static integer jj, ipj, irj, ivj;
-	static doublereal ulp, tst1;
-	static integer ierr, iter;
-	static doublereal unfl, ovfl;
-	static integer itry;
-	static doublereal temp1;
-	static logical orth1, orth2, step3, step4;
-	static doublereal betaj;
-	static integer infol;
-	static doublereal xtemp[2];
-	static doublereal wnorm;
-	static doublereal rnorm1;
-	static logical rstart;
-	static integer msglvl;
-	static doublereal smlnum;
+	static int i__, j;
+	static float t0, t1, t2, t3, t4, t5;
+	static int jj, ipj, irj, ivj;
+	static double ulp, tst1;
+	static int ierr, iter;
+	static double unfl, ovfl;
+	static int itry;
+	static double temp1;
+	static bool orth1, orth2, step3, step4;
+	static double betaj;
+	static int infol;
+	static double xtemp[2];
+	static double wnorm;
+	static double rnorm1;
+	static bool rstart;
+	static int msglvl;
+	static double smlnum;
 
 
 	/*     %----------------------------------------------------% */
@@ -22999,12 +22543,12 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		/*        | REFERENCE: LAPACK subroutine dlahqr     | */
 		/*        %-----------------------------------------% */
 
-		unfl = dlamch_ ("safe minimum", (ftnlen) 12);
+		unfl = dlamch_ ("safe minimum", (int) 12);
 		ovfl = 1. / unfl;
 		dlabad_ (&unfl, &ovfl);
-		ulp = dlamch_ ("precision", (ftnlen) 9);
+		ulp = dlamch_ ("precision", (int) 9);
 		smlnum = unfl * (*n / ulp);
-		first = FALSE_;
+		first = false;
 	}
 
 	if (*ido == 0)
@@ -23023,11 +22567,11 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		/*        %------------------------------% */
 
 		*info = 0;
-		step3 = FALSE_;
-		step4 = FALSE_;
-		rstart = FALSE_;
-		orth1 = FALSE_;
-		orth2 = FALSE_;
+		step3 = false;
+		step4 = false;
+		rstart = false;
+		orth1 = false;
+		orth2 = false;
 		j = *k + 1;
 		ipj = 1;
 		irj = ipj + *n;
@@ -23082,8 +22626,8 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
 	if (msglvl > 1)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: generat" "ing Arnoldi vector number", (ftnlen) 40);
-		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_naitr: B-no" "rm of the current residual is", (ftnlen) 41);
+		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: generat" "ing Arnoldi vector number", (int) 40);
+		dvout_ (&debug_1.logfil, &c__1, rnorm, &debug_1.ndigit, "_naitr: B-no" "rm of the current residual is", (int) 41);
 	}
 
 	/*        %---------------------------------------------------% */
@@ -23106,7 +22650,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
 	if (msglvl > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: ****** " "RESTART AT STEP ******", (ftnlen) 37);
+		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: ****** " "RESTART AT STEP ******", (int) 37);
 	}
 
 	/*           %---------------------------------------------% */
@@ -23119,7 +22663,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	++timing_1.nrstrt;
 	itry = 1;
  L20:
-	rstart = TRUE_;
+	rstart = true;
 	*ido = 0;
  L30:
 
@@ -23128,7 +22672,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	/*           | RSTART = .true. flow returns here.   | */
 	/*           %--------------------------------------% */
 
-	dgetv0_ (ido, bmat, &itry, &c_false, n, &j, &v[v_offset], ldv, &resid[1], rnorm, &ipntr[1], &workd[1], &ierr, (ftnlen) 1);
+	dgetv0_ (ido, bmat, &itry, &c_false, n, &j, &v[v_offset], ldv, &resid[1], rnorm, &ipntr[1], &workd[1], &ierr, (int) 1);
 	if (*ido != 99)
 	{
 		goto L9000;
@@ -23178,8 +22722,8 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		/*            | use LAPACK routine SLASCL               | */
 		/*            %-----------------------------------------% */
 
-		dlascl_ ("General", &i__, &i__, rnorm, &c_b348, n, &c__1, &v[j * v_dim1 + 1], n, &infol, (ftnlen) 7);
-		dlascl_ ("General", &i__, &i__, rnorm, &c_b348, n, &c__1, &workd[ipj], n, &infol, (ftnlen) 7);
+		dlascl_ ("General", &i__, &i__, rnorm, &c_b348, n, &c__1, &v[j * v_dim1 + 1], n, &infol, (int) 7);
+		dlascl_ ("General", &i__, &i__, rnorm, &c_b348, n, &c__1, &workd[ipj], n, &infol, (int) 7);
 	}
 
 	/*        %------------------------------------------------------% */
@@ -23187,7 +22731,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	/*        | Note that this is not quite yet r_{j}. See STEP 4    | */
 	/*        %------------------------------------------------------% */
 
-	step3 = TRUE_;
+	step3 = true;
 	++timing_1.nopx;
 	second_ (&t2);
 	dcopy_ (n, &v[j * v_dim1 + 1], &c__1, &workd[ivj], &c__1);
@@ -23211,7 +22755,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
 	second_ (&t3);
 	timing_1.tmvopx += t3 - t2;
-	step3 = FALSE_;
+	step3 = false;
 
 	/*        %------------------------------------------% */
 	/*        | Put another copy of OP*v_{j} into RESID. | */
@@ -23228,7 +22772,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	if (*(unsigned char *) bmat == 'G')
 	{
 		++timing_1.nbx;
-		step4 = TRUE_;
+		step4 = true;
 		ipntr[1] = irj;
 		ipntr[2] = ipj;
 		*ido = 2;
@@ -23257,7 +22801,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		timing_1.tmvbx += t3 - t2;
 	}
 
-	step4 = FALSE_;
+	step4 = false;
 
 	/*        %-------------------------------------% */
 	/*        | The following is needed for STEP 5. | */
@@ -23288,14 +22832,14 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	/*        | WORKD(IPJ:IPJ+N-1) contains B*OP*v_{j}.  | */
 	/*        %------------------------------------------% */
 
-	dgemv_ ("T", n, &j, &c_b348, &v[v_offset], ldv, &workd[ipj], &c__1, &c_b507, &h__[j * h_dim1 + 1], &c__1, (ftnlen) 1);
+	dgemv_ ("T", n, &j, &c_b348, &v[v_offset], ldv, &workd[ipj], &c__1, &c_b507, &h__[j * h_dim1 + 1], &c__1, (int) 1);
 
 	/*        %--------------------------------------% */
 	/*        | Orthogonalize r_{j} against V_{j}.   | */
 	/*        | RESID contains OP*v_{j}. See STEP 3. | */
 	/*        %--------------------------------------% */
 
-	dgemv_ ("N", n, &j, &c_b347, &v[v_offset], ldv, &h__[j * h_dim1 + 1], &c__1, &c_b348, &resid[1], &c__1, (ftnlen) 1);
+	dgemv_ ("N", n, &j, &c_b347, &v[v_offset], ldv, &h__[j * h_dim1 + 1], &c__1, &c_b348, &resid[1], &c__1, (int) 1);
 
 	if (j > 1)
 	{
@@ -23304,7 +22848,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
 	second_ (&t4);
 
-	orth1 = TRUE_;
+	orth1 = true;
 
 	second_ (&t2);
 	if (*(unsigned char *) bmat == 'G')
@@ -23338,7 +22882,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		timing_1.tmvbx += t3 - t2;
 	}
 
-	orth1 = FALSE_;
+	orth1 = false;
 
 	/*        %------------------------------% */
 	/*        | Compute the B-norm of r_{j}. | */
@@ -23392,8 +22936,8 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	{
 		xtemp[0] = wnorm;
 		xtemp[1] = *rnorm;
-		dvout_ (&debug_1.logfil, &c__2, xtemp, &debug_1.ndigit, "_naitr: re-o" "rthonalization; wnorm and rnorm are", (ftnlen) 47);
-		dvout_ (&debug_1.logfil, &j, &h__[j * h_dim1 + 1], &debug_1.ndigit, "_naitr: j-th column of H", (ftnlen) 24);
+		dvout_ (&debug_1.logfil, &c__2, xtemp, &debug_1.ndigit, "_naitr: re-o" "rthonalization; wnorm and rnorm are", (int) 47);
+		dvout_ (&debug_1.logfil, &j, &h__[j * h_dim1 + 1], &debug_1.ndigit, "_naitr: j-th column of H", (int) 24);
 	}
 
 	/*        %----------------------------------------------------% */
@@ -23401,7 +22945,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	/*        | WORKD(IRJ:IRJ+J-1) = v(:,1:J)'*WORKD(IPJ:IPJ+N-1). | */
 	/*        %----------------------------------------------------% */
 
-	dgemv_ ("T", n, &j, &c_b348, &v[v_offset], ldv, &workd[ipj], &c__1, &c_b507, &workd[irj], &c__1, (ftnlen) 1);
+	dgemv_ ("T", n, &j, &c_b348, &v[v_offset], ldv, &workd[ipj], &c__1, &c_b507, &workd[irj], &c__1, (int) 1);
 
 	/*        %---------------------------------------------% */
 	/*        | Compute the correction to the residual:     | */
@@ -23410,10 +22954,10 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 	/*        | + v(:,1:J)*WORKD(IRJ:IRJ+J-1)*e'_j.         | */
 	/*        %---------------------------------------------% */
 
-	dgemv_ ("N", n, &j, &c_b347, &v[v_offset], ldv, &workd[irj], &c__1, &c_b348, &resid[1], &c__1, (ftnlen) 1);
+	dgemv_ ("N", n, &j, &c_b347, &v[v_offset], ldv, &workd[irj], &c__1, &c_b348, &resid[1], &c__1, (int) 1);
 	daxpy_ (&j, &c_b348, &workd[irj], &c__1, &h__[j * h_dim1 + 1], &c__1);
 
-	orth2 = TRUE_;
+	orth2 = true;
 	second_ (&t2);
 	if (*(unsigned char *) bmat == 'G')
 	{
@@ -23462,12 +23006,12 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
 	if (msglvl > 0 && iter > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: Iterati" "ve refinement for Arnoldi residual", (ftnlen) 49);
+		ivout_ (&debug_1.logfil, &c__1, &j, &debug_1.ndigit, "_naitr: Iterati" "ve refinement for Arnoldi residual", (int) 49);
 		if (msglvl > 2)
 		{
 			xtemp[0] = *rnorm;
 			xtemp[1] = rnorm1;
-			dvout_ (&debug_1.logfil, &c__2, xtemp, &debug_1.ndigit, "_naitr: " "iterative refinement ; rnorm and rnorm1 are", (ftnlen) 51);
+			dvout_ (&debug_1.logfil, &c__2, xtemp, &debug_1.ndigit, "_naitr: " "iterative refinement ; rnorm and rnorm1 are", (int) 51);
 		}
 	}
 
@@ -23529,8 +23073,8 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 
  L100:
 
-	rstart = FALSE_;
-	orth2 = FALSE_;
+	rstart = false;
+	orth2 = false;
 
 	second_ (&t5);
 	timing_1.titref += t5 - t4;
@@ -23559,7 +23103,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 			if (tst1 == 0.)
 			{
 				i__2 = *k + *np;
-				tst1 = dlanhs_ ("1", &i__2, &h__[h_offset], ldh, &workd[*n + 1], (ftnlen) 1);
+				tst1 = dlanhs_ ("1", &i__2, &h__[h_offset], ldh, &workd[*n + 1], (int) 1);
 			}
 			/* Computing MAX */
 			d__2 = ulp * tst1;
@@ -23574,7 +23118,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 		{
 			i__1 = *k + *np;
 			i__2 = *k + *np;
-			dmout_ (&debug_1.logfil, &i__1, &i__2, &h__[h_offset], ldh, &debug_1.ndigit, "_naitr: Final upper Hessenberg matrix H" " of order K+NP", (ftnlen) 53);
+			dmout_ (&debug_1.logfil, &i__1, &i__2, &h__[h_offset], ldh, &debug_1.ndigit, "_naitr: Final upper Hessenberg matrix H" " of order K+NP", (int) 53);
 		}
 
 		goto L9000;
@@ -23691,7 +23235,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \References: */
 /*  1. D.C. Sorensen, "Implicit Application of Polynomial Filters in */
@@ -23699,7 +23243,7 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 /*     pp 357-385. */
 
 /* \Routines called: */
-/*     ivout   ARPACK utility routine that prints integers. */
+/*     ivout   ARPACK utility routine that prints ints. */
 /*     second  ARPACK utility routine for timing. */
 /*     dmout   ARPACK utility routine that prints matrices. */
 /*     dvout   ARPACK utility routine that prints vectors. */
@@ -23744,32 +23288,32 @@ dnaitr_ (integer * ido, char *bmat, integer * n, integer * k,
 /* ----------------------------------------------------------------------- */
 
 static int
-dnapps_ (integer * n, integer * kev, integer * np,
-			doublereal * shiftr, doublereal * shifti, doublereal * v, integer * ldv,
-			doublereal * h__, integer * ldh, doublereal * resid, doublereal * q, integer * ldq, doublereal * workl, doublereal * workd)
+dnapps_ (int * n, int * kev, int * np,
+			double * shiftr, double * shifti, double * v, int * ldv,
+			double * h__, int * ldh, double * resid, double * q, int * ldq, double * workl, double * workd)
 {
 	/* Initialized data */
 
-	static logical first = TRUE_;
+	static bool first = true;
 
 	/* System generated locals */
-	integer h_dim1, h_offset, v_dim1, v_offset, q_dim1, q_offset, i__1, i__2, i__3, i__4;
-	doublereal d__1, d__2;
+	int h_dim1, h_offset, v_dim1, v_offset, q_dim1, q_offset, i__1, i__2, i__3, i__4;
+	double d__1, d__2;
 
 	/* Local variables */
-	static doublereal c__, f, g;
-	static integer i__, j;
-	static doublereal r__, s, t, u[3];
-	static real t0, t1;
-	static doublereal h11, h12, h21, h22, h32;
-	static integer jj, ir, nr;
-	static doublereal tau, ulp, tst1;
-	static integer iend;
-	static doublereal unfl, ovfl;
-	static logical cconj;
-	static doublereal sigmai;
-	static integer istart, kplusp, msglvl;
-	static doublereal sigmar, smlnum;
+	static double c__, f, g;
+	static int i__, j;
+	static double r__, s, t, u[3];
+	static float t0, t1;
+	static double h11, h12, h21, h22, h32;
+	static int jj, ir, nr;
+	static double tau, ulp, tst1;
+	static int iend;
+	static double unfl, ovfl;
+	static bool cconj;
+	static double sigmai;
+	static int istart, kplusp, msglvl;
+	static double sigmar, smlnum;
 
 
 	/*     %----------------------------------------------------% */
@@ -23863,12 +23407,12 @@ dnapps_ (integer * n, integer * kev, integer * np,
 		/*        | REFERENCE: LAPACK subroutine dlahqr           | */
 		/*        %-----------------------------------------------% */
 
-		unfl = dlamch_ ("safe minimum", (ftnlen) 12);
+		unfl = dlamch_ ("safe minimum", (int) 12);
 		ovfl = 1. / unfl;
 		dlabad_ (&unfl, &ovfl);
-		ulp = dlamch_ ("precision", (ftnlen) 9);
+		ulp = dlamch_ ("precision", (int) 9);
 		smlnum = unfl * (*n / ulp);
-		first = FALSE_;
+		first = false;
 	}
 
 	/*     %-------------------------------% */
@@ -23885,7 +23429,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 	/*     | the rotations and reflections              | */
 	/*     %--------------------------------------------% */
 
-	dlaset_ ("All", &kplusp, &kplusp, &c_b507, &c_b348, &q[q_offset], ldq, (ftnlen) 3);
+	dlaset_ ("All", &kplusp, &kplusp, &c_b507, &c_b348, &q[q_offset], ldq, (int) 3);
 
 	/*     %----------------------------------------------% */
 	/*     | Quick return if there are no shifts to apply | */
@@ -23902,7 +23446,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 	/*     | whole matrix including each block.           | */
 	/*     %----------------------------------------------% */
 
-	cconj = FALSE_;
+	cconj = false;
 	i__1 = *np;
 	for (jj = 1; jj <= i__1; ++jj)
 	{
@@ -23911,9 +23455,9 @@ dnapps_ (integer * n, integer * kev, integer * np,
 
 		if (msglvl > 2)
 		{
-			ivout_ (&debug_1.logfil, &c__1, &jj, &debug_1.ndigit, "_napps: sh" "ift number.", (ftnlen) 21);
-			dvout_ (&debug_1.logfil, &c__1, &sigmar, &debug_1.ndigit, "_napps" ": The real part of the shift ", (ftnlen) 35);
-			dvout_ (&debug_1.logfil, &c__1, &sigmai, &debug_1.ndigit, "_napps" ": The imaginary part of the shift ", (ftnlen) 40);
+			ivout_ (&debug_1.logfil, &c__1, &jj, &debug_1.ndigit, "_napps: sh" "ift number.", (int) 21);
+			dvout_ (&debug_1.logfil, &c__1, &sigmar, &debug_1.ndigit, "_napps" ": The float part of the shift ", (int) 35);
+			dvout_ (&debug_1.logfil, &c__1, &sigmai, &debug_1.ndigit, "_napps" ": The imaginary part of the shift ", (int) 40);
 		}
 
 		/*        %-------------------------------------------------% */
@@ -23930,7 +23474,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 			/*           | had non-zero imaginary part.            | */
 			/*           %-----------------------------------------% */
 
-			cconj = FALSE_;
+			cconj = false;
 			goto L110;
 		}
 		else if (jj < *np && abs (sigmai) > 0.)
@@ -23940,7 +23484,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 			/*           | Start of a complex conjugate pair. | */
 			/*           %------------------------------------% */
 
-			cconj = TRUE_;
+			cconj = true;
 		}
 		else if (jj == *np && abs (sigmai) > 0.)
 		{
@@ -23983,7 +23527,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 			if (tst1 == 0.)
 			{
 				i__3 = kplusp - jj + 1;
-				tst1 = dlanhs_ ("1", &i__3, &h__[h_offset], ldh, &workl[1], (ftnlen) 1);
+				tst1 = dlanhs_ ("1", &i__3, &h__[h_offset], ldh, &workl[1], (int) 1);
 			}
 			/* Computing MAX */
 			d__2 = ulp * tst1;
@@ -23991,9 +23535,9 @@ dnapps_ (integer * n, integer * kev, integer * np,
 			{
 				if (msglvl > 0)
 				{
-					ivout_ (&debug_1.logfil, &c__1, &i__, &debug_1.ndigit, "_napps: matrix splitting at row/column no.", (ftnlen) 42);
-					ivout_ (&debug_1.logfil, &c__1, &jj, &debug_1.ndigit, "_napps: matrix splitting with shift number.", (ftnlen) 43);
-					dvout_ (&debug_1.logfil, &c__1, &h__[i__ + 1 + i__ * h_dim1], &debug_1.ndigit, "_napps: off diagonal " "element.", (ftnlen) 29);
+					ivout_ (&debug_1.logfil, &c__1, &i__, &debug_1.ndigit, "_napps: matrix splitting at row/column no.", (int) 42);
+					ivout_ (&debug_1.logfil, &c__1, &jj, &debug_1.ndigit, "_napps: matrix splitting with shift number.", (int) 43);
+					dvout_ (&debug_1.logfil, &c__1, &h__[i__ + 1 + i__ * h_dim1], &debug_1.ndigit, "_napps: off diagonal " "element.", (int) 29);
 				}
 				iend = i__;
 				h__[i__ + 1 + i__ * h_dim1] = 0.;
@@ -24006,8 +23550,8 @@ dnapps_ (integer * n, integer * kev, integer * np,
 
 		if (msglvl > 2)
 		{
-			ivout_ (&debug_1.logfil, &c__1, &istart, &debug_1.ndigit, "_napps" ": Start of current block ", (ftnlen) 31);
-			ivout_ (&debug_1.logfil, &c__1, &iend, &debug_1.ndigit, "_napps: " "End of current block ", (ftnlen) 29);
+			ivout_ (&debug_1.logfil, &c__1, &istart, &debug_1.ndigit, "_napps" ": Start of current block ", (int) 31);
+			ivout_ (&debug_1.logfil, &c__1, &iend, &debug_1.ndigit, "_napps: " "End of current block ", (int) 29);
 		}
 
 		/*        %------------------------------------------------% */
@@ -24125,7 +23669,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 			}
 
 			/*           %-----------------------------------% */
-			/*           | Finished applying the real shift. | */
+			/*           | Finished applying the float shift. | */
 			/*           %-----------------------------------% */
 
 		}
@@ -24181,7 +23725,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 				/*              %--------------------------------------% */
 
 				i__3 = kplusp - i__ + 1;
-				dlarf_ ("Left", &nr, &i__3, u, &c__1, &tau, &h__[i__ + i__ * h_dim1], ldh, &workl[1], (ftnlen) 4);
+				dlarf_ ("Left", &nr, &i__3, u, &c__1, &tau, &h__[i__ + i__ * h_dim1], ldh, &workl[1], (int) 4);
 
 				/*              %---------------------------------------% */
 				/*              | Apply the reflector to the right of H | */
@@ -24190,13 +23734,13 @@ dnapps_ (integer * n, integer * kev, integer * np,
 				/* Computing MIN */
 				i__3 = i__ + 3;
 				ir = min (i__3, iend);
-				dlarf_ ("Right", &ir, &nr, u, &c__1, &tau, &h__[i__ * h_dim1 + 1], ldh, &workl[1], (ftnlen) 5);
+				dlarf_ ("Right", &ir, &nr, u, &c__1, &tau, &h__[i__ * h_dim1 + 1], ldh, &workl[1], (int) 5);
 
 				/*              %-----------------------------------------------------% */
 				/*              | Accumulate the reflector in the matrix Q;  Q <- Q*G | */
 				/*              %-----------------------------------------------------% */
 
-				dlarf_ ("Right", &kplusp, &nr, u, &c__1, &tau, &q[i__ * q_dim1 + 1], ldq, &workl[1], (ftnlen) 5);
+				dlarf_ ("Right", &kplusp, &nr, u, &c__1, &tau, &q[i__ * q_dim1 + 1], ldq, &workl[1], (int) 5);
 
 				/*              %----------------------------% */
 				/*              | Prepare for next reflector | */
@@ -24279,7 +23823,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 		tst1 = (d__1 = h__[i__ + i__ * h_dim1], abs (d__1)) + (d__2 = h__[i__ + 1 + (i__ + 1) * h_dim1], abs (d__2));
 		if (tst1 == 0.)
 		{
-			tst1 = dlanhs_ ("1", kev, &h__[h_offset], ldh, &workl[1], (ftnlen) 1);
+			tst1 = dlanhs_ ("1", kev, &h__[h_offset], ldh, &workl[1], (int) 1);
 		}
 		/* Computing MAX */
 		d__1 = ulp * tst1;
@@ -24300,7 +23844,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 
 	if (h__[*kev + 1 + *kev * h_dim1] > 0.)
 	{
-		dgemv_ ("N", n, &kplusp, &c_b348, &v[v_offset], ldv, &q[(*kev + 1) * q_dim1 + 1], &c__1, &c_b507, &workd[*n + 1], &c__1, (ftnlen) 1);
+		dgemv_ ("N", n, &kplusp, &c_b348, &v[v_offset], ldv, &q[(*kev + 1) * q_dim1 + 1], &c__1, &c_b507, &workd[*n + 1], &c__1, (int) 1);
 	}
 
 	/*     %----------------------------------------------------------% */
@@ -24312,7 +23856,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 	for (i__ = 1; i__ <= i__1; ++i__)
 	{
 		i__2 = kplusp - i__ + 1;
-		dgemv_ ("N", n, &i__2, &c_b348, &v[v_offset], ldv, &q[(*kev - i__ + 1) * q_dim1 + 1], &c__1, &c_b507, &workd[1], &c__1, (ftnlen) 1);
+		dgemv_ ("N", n, &i__2, &c_b348, &v[v_offset], ldv, &q[(*kev - i__ + 1) * q_dim1 + 1], &c__1, &c_b507, &workd[1], &c__1, (int) 1);
 		dcopy_ (n, &workd[1], &c__1, &v[(kplusp - i__ + 1) * v_dim1 + 1], &c__1);
 		/* L140: */
 	}
@@ -24321,7 +23865,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 	/*     |  Move v(:,kplusp-kev+1:kplusp) into v(:,1:kev). | */
 	/*     %-------------------------------------------------% */
 
-	dlacpy_ ("A", n, kev, &v[(kplusp - *kev + 1) * v_dim1 + 1], ldv, &v[v_offset], ldv, (ftnlen) 1);
+	dlacpy_ ("A", n, kev, &v[(kplusp - *kev + 1) * v_dim1 + 1], ldv, &v[v_offset], ldv, (int) 1);
 
 	/*     %--------------------------------------------------------------% */
 	/*     | Copy the (kev+1)-st column of (V*Q) in the appropriate place | */
@@ -24348,12 +23892,12 @@ dnapps_ (integer * n, integer * kev, integer * np,
 
 	if (msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, &c__1, &q[kplusp + *kev * q_dim1], &debug_1.ndigit, "_napps: sigmak = (e_{kev+p}^T*Q)*e_{kev}", (ftnlen) 40);
-		dvout_ (&debug_1.logfil, &c__1, &h__[*kev + 1 + *kev * h_dim1], &debug_1.ndigit, "_napps: betak = e_{kev+1}^T*H*e_{kev}", (ftnlen) 37);
-		ivout_ (&debug_1.logfil, &c__1, kev, &debug_1.ndigit, "_napps: Order " "of the final Hessenberg matrix ", (ftnlen) 45);
+		dvout_ (&debug_1.logfil, &c__1, &q[kplusp + *kev * q_dim1], &debug_1.ndigit, "_napps: sigmak = (e_{kev+p}^T*Q)*e_{kev}", (int) 40);
+		dvout_ (&debug_1.logfil, &c__1, &h__[*kev + 1 + *kev * h_dim1], &debug_1.ndigit, "_napps: betak = e_{kev+1}^T*H*e_{kev}", (int) 37);
+		ivout_ (&debug_1.logfil, &c__1, kev, &debug_1.ndigit, "_napps: Order " "of the final Hessenberg matrix ", (int) 45);
 		if (msglvl > 2)
 		{
-			dmout_ (&debug_1.logfil, kev, kev, &h__[h_offset], ldh, &debug_1.ndigit, "_napps: updated Hessenberg matrix H for" " next iteration", (ftnlen) 54);
+			dmout_ (&debug_1.logfil, kev, kev, &h__[h_offset], ldh, &debug_1.ndigit, "_napps: updated Hessenberg matrix H for" " next iteration", (int) 54);
 		}
 
 	}
@@ -24427,7 +23971,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 /*          program. */
 
 /*  RITZR,  Double precision arrays of length NEV+NP.  (OUTPUT) */
-/*  RITZI   RITZR(1:NEV) (resp. RITZI(1:NEV)) contains the real (resp. */
+/*  RITZI   RITZR(1:NEV) (resp. RITZI(1:NEV)) contains the float (resp. */
 /*          imaginary) part of the computed Ritz values of OP. */
 
 /*  BOUNDS  Double precision array of length NEV+NP.  (OUTPUT) */
@@ -24449,7 +23993,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 /*          application and convergence checking. */
 
 /*          On exit, the last 3*(NEV+NP) locations of WORKL contain */
-/*          the Ritz values (real,imaginary) and associated Ritz */
+/*          the Ritz values (float,imaginary) and associated Ritz */
 /*          estimates of the current Hessenberg matrix.  They are */
 /*          listed in the same order as returned from dneigh. */
 
@@ -24496,7 +24040,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \References: */
 /*  1. D.C. Sorensen, "Implicit Application of Polynomial Filters in */
@@ -24514,7 +24058,7 @@ dnapps_ (integer * n, integer * kev, integer * np,
 /*     dneigh  ARPACK compute Ritz values and error bounds routine. */
 /*     dngets  ARPACK reorder Ritz values and error bounds routine. */
 /*     dsortc  ARPACK sorting routine. */
-/*     ivout   ARPACK utility routine that prints integers. */
+/*     ivout   ARPACK utility routine that prints ints. */
 /*     second  ARPACK utility routine for timing. */
 /*     dmout   ARPACK utility routine that prints matrices */
 /*     dvout   ARPACK utility routine that prints vectors. */
@@ -24544,38 +24088,32 @@ dnapps_ (integer * n, integer * kev, integer * np,
 /* ----------------------------------------------------------------------- */
 
 static int
-dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, integer * np, doublereal * tol, doublereal * resid,
-			integer * mode, integer * iupd, integer * ishift, integer * mxiter,
-			doublereal * v, integer * ldv, doublereal * h__, integer * ldh,
-			doublereal * ritzr, doublereal * ritzi, doublereal * bounds, doublereal *
-			q, integer * ldq, doublereal * workl, integer * ipntr, doublereal * workd, integer * info, ftnlen bmat_len, ftnlen which_len)
+dnaup2_ (int * ido, char *bmat, int * n, char *which, int * nev, int * np, double * tol, double * resid,
+			int * mode, int * iupd, int * ishift, int * mxiter,
+			double * v, int * ldv, double * h__, int * ldh,
+			double * ritzr, double * ritzi, double * bounds, double *
+			q, int * ldq, double * workl, int * ipntr, double * workd, int * info, int bmat_len, int which_len)
 {
 	/* System generated locals */
-	integer h_dim1, h_offset, q_dim1, q_offset, v_dim1, v_offset, i__1, i__2;
-	doublereal d__1, d__2;
-
-	/* Builtin functions */
-	double pow_dd (doublereal *, doublereal *);
-	integer s_cmp (char *, char *, ftnlen, ftnlen);
-	/* Subroutine */ int s_copy (char *, char *, ftnlen, ftnlen);
-	double sqrt (doublereal);
+	int h_dim1, h_offset, q_dim1, q_offset, v_dim1, v_offset, i__1, i__2;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer j;
-	static real t0, t1, t2, t3;
-	static integer kp[4], np0, nev0;
-	static doublereal eps23;
-	static integer ierr, iter;
-	static doublereal temp;
-	static logical getv0, cnorm;
-	static integer nconv;
-	static logical initv;
-	static doublereal rnorm;
-	static integer nevbef;
-	static logical update;
+	static int j;
+	static float t0, t1, t2, t3;
+	static int kp[4], np0, nev0;
+	static double eps23;
+	static int ierr, iter;
+	static double temp;
+	static bool getv0, cnorm;
+	static int nconv;
+	static bool initv;
+	static double rnorm;
+	static int nevbef;
+	static bool update;
 	static char wprime[2];
-	static logical ushift;
-	static integer kplusp, msglvl, nptemp, numcnv;
+	static bool ushift;
+	static int kplusp, msglvl, nptemp, numcnv;
 
 
 	/*     %----------------------------------------------------% */
@@ -24672,7 +24210,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*        | Get the machine dependent constant. | */
 		/*        %-------------------------------------% */
 
-		eps23 = dlamch_ ("Epsilon-Machine", (ftnlen) 15);
+		eps23 = dlamch_ ("Epsilon-Machine", (int) 15);
 		eps23 = pow_dd (&eps23, &c_b2616);
 
 		nev0 = *nev;
@@ -24696,10 +24234,10 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*        | steps of the Arnoldi factorization.   | */
 		/*        %---------------------------------------% */
 
-		getv0 = TRUE_;
-		update = FALSE_;
-		ushift = FALSE_;
-		cnorm = FALSE_;
+		getv0 = true;
+		update = false;
+		ushift = false;
+		cnorm = false;
 
 		if (*info != 0)
 		{
@@ -24708,12 +24246,12 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 			/*           | User provides the initial residual vector. | */
 			/*           %--------------------------------------------% */
 
-			initv = TRUE_;
+			initv = true;
 			*info = 0;
 		}
 		else
 		{
-			initv = FALSE_;
+			initv = false;
 		}
 	}
 
@@ -24726,7 +24264,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 	if (getv0)
 	{
-		dgetv0_ (ido, bmat, &c__1, &initv, n, &c__1, &v[v_offset], ldv, &resid[1], &rnorm, &ipntr[1], &workd[1], info, (ftnlen) 1);
+		dgetv0_ (ido, bmat, &c__1, &initv, n, &c__1, &v[v_offset], ldv, &resid[1], &rnorm, &ipntr[1], &workd[1], info, (int) 1);
 
 		if (*ido != 99)
 		{
@@ -24743,7 +24281,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 			*info = -9;
 			goto L1100;
 		}
-		getv0 = FALSE_;
+		getv0 = false;
 		*ido = 0;
 	}
 
@@ -24780,7 +24318,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 	/*     | Compute the first NEV steps of the Arnoldi factorization | */
 	/*     %----------------------------------------------------------% */
 
-	dnaitr_ (ido, bmat, n, &c__0, nev, mode, &resid[1], &rnorm, &v[v_offset], ldv, &h__[h_offset], ldh, &ipntr[1], &workd[1], info, (ftnlen) 1);
+	dnaitr_ (ido, bmat, n, &c__0, nev, mode, &resid[1], &rnorm, &v[v_offset], ldv, &h__[h_offset], ldh, &ipntr[1], &workd[1], info, (int) 1);
 
 	/*     %---------------------------------------------------% */
 	/*     | ido .ne. 99 implies use of reverse communication  | */
@@ -24814,7 +24352,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 	if (msglvl > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &iter, &debug_1.ndigit, "_naup2: ****" " Start of major iteration number ****", (ftnlen) 49);
+		ivout_ (&debug_1.logfil, &c__1, &iter, &debug_1.ndigit, "_naup2: ****" " Start of major iteration number ****", (int) 49);
 	}
 
 	/*        %-----------------------------------------------------------% */
@@ -24827,8 +24365,8 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 	if (msglvl > 1)
 	{
-		ivout_ (&debug_1.logfil, &c__1, nev, &debug_1.ndigit, "_naup2: The le" "ngth of the current Arnoldi factorization", (ftnlen) 55);
-		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_naup2: Extend " "the Arnoldi factorization by", (ftnlen) 43);
+		ivout_ (&debug_1.logfil, &c__1, nev, &debug_1.ndigit, "_naup2: The le" "ngth of the current Arnoldi factorization", (int) 55);
+		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_naup2: Extend " "the Arnoldi factorization by", (int) 43);
 	}
 
 	/*        %-----------------------------------------------------------% */
@@ -24837,9 +24375,9 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 	*ido = 0;
  L20:
-	update = TRUE_;
+	update = true;
 
-	dnaitr_ (ido, bmat, n, nev, np, mode, &resid[1], &rnorm, &v[v_offset], ldv, &h__[h_offset], ldh, &ipntr[1], &workd[1], info, (ftnlen) 1);
+	dnaitr_ (ido, bmat, n, nev, np, mode, &resid[1], &rnorm, &v[v_offset], ldv, &h__[h_offset], ldh, &ipntr[1], &workd[1], info, (int) 1);
 
 	/*        %---------------------------------------------------% */
 	/*        | ido .ne. 99 implies use of reverse communication  | */
@@ -24858,11 +24396,11 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		*info = -9999;
 		goto L1200;
 	}
-	update = FALSE_;
+	update = false;
 
 	if (msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, &c__1, &rnorm, &debug_1.ndigit, "_naup2: Cor" "responding B-norm of the residual", (ftnlen) 44);
+		dvout_ (&debug_1.logfil, &c__1, &rnorm, &debug_1.ndigit, "_naup2: Cor" "responding B-norm of the residual", (int) 44);
 	}
 
 	/*        %--------------------------------------------------------% */
@@ -24909,7 +24447,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 	*nev = nev0;
 	*np = np0;
 	numcnv = *nev;
-	dngets_ (ishift, which, nev, np, &ritzr[1], &ritzi[1], &bounds[1], &workl[1], &workl[*np + 1], (ftnlen) 2);
+	dngets_ (ishift, which, nev, np, &ritzr[1], &ritzi[1], &bounds[1], &workl[1], &workl[*np + 1], (int) 2);
 	if (*nev == nev0 + 1)
 	{
 		numcnv = nev0 + 1;
@@ -24928,10 +24466,10 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		kp[1] = *np;
 		kp[2] = numcnv;
 		kp[3] = nconv;
-		ivout_ (&debug_1.logfil, &c__4, kp, &debug_1.ndigit, "_naup2: NEV, NP" ", NUMCNV, NCONV are", (ftnlen) 34);
-		dvout_ (&debug_1.logfil, &kplusp, &ritzr[1], &debug_1.ndigit, "_naup2" ": Real part of the eigenvalues of H", (ftnlen) 41);
-		dvout_ (&debug_1.logfil, &kplusp, &ritzi[1], &debug_1.ndigit, "_naup2" ": Imaginary part of the eigenvalues of H", (ftnlen) 46);
-		dvout_ (&debug_1.logfil, &kplusp, &bounds[1], &debug_1.ndigit, "_naup" "2: Ritz estimates of the current NCV Ritz values", (ftnlen) 53);
+		ivout_ (&debug_1.logfil, &c__4, kp, &debug_1.ndigit, "_naup2: NEV, NP" ", NUMCNV, NCONV are", (int) 34);
+		dvout_ (&debug_1.logfil, &kplusp, &ritzr[1], &debug_1.ndigit, "_naup2" ": Real part of the eigenvalues of H", (int) 41);
+		dvout_ (&debug_1.logfil, &kplusp, &ritzi[1], &debug_1.ndigit, "_naup2" ": Imaginary part of the eigenvalues of H", (int) 46);
+		dvout_ (&debug_1.logfil, &kplusp, &bounds[1], &debug_1.ndigit, "_naup" "2: Ritz estimates of the current NCV Ritz values", (int) 53);
 	}
 
 	/*        %---------------------------------------------------------% */
@@ -24963,15 +24501,15 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		{
 			/* Computing 2nd power */
 			i__1 = kplusp;
-			dvout_ (&debug_1.logfil, &kplusp, &workl[i__1 * i__1 + 1], &debug_1.ndigit, "_naup2: Real part of the eig computed b" "y _neigh:", (ftnlen) 48);
+			dvout_ (&debug_1.logfil, &kplusp, &workl[i__1 * i__1 + 1], &debug_1.ndigit, "_naup2: Real part of the eig computed b" "y _neigh:", (int) 48);
 			/* Computing 2nd power */
 			i__1 = kplusp;
 			dvout_ (&debug_1.logfil, &kplusp, &workl[i__1 * i__1 + kplusp + 1],
-					  &debug_1.ndigit, "_naup2: Imag part of the eig computed" " by _neigh:", (ftnlen) 48);
+					  &debug_1.ndigit, "_naup2: Imag part of the eig computed" " by _neigh:", (int) 48);
 			/* Computing 2nd power */
 			i__1 = kplusp;
 			dvout_ (&debug_1.logfil, &kplusp, &workl[i__1 * i__1 + (kplusp <<
-																					  1) + 1], &debug_1.ndigit, "_naup2: Ritz eistmates comput" "ed by _neigh:", (ftnlen) 42);
+																					  1) + 1], &debug_1.ndigit, "_naup2: Ritz eistmates comput" "ed by _neigh:", (int) 42);
 		}
 
 		/*           %------------------------------------------------% */
@@ -24996,32 +24534,32 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*           | order.                                       | */
 		/*           %----------------------------------------------% */
 
-		if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LM", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SR", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SR", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SM", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SM", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LR", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LR", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "LR", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LR", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SM", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SR", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LM", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LI", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SM", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SI", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LM", (int) 2, (int) 2);
 		}
 
-		dsortc_ (wprime, &c_true, &kplusp, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ (wprime, &c_true, &kplusp, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 
 		/*           %----------------------------------------------% */
 		/*           | Now sort Ritz values so that converged Ritz  | */
@@ -25030,32 +24568,32 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*           | desired one appears at the front.            | */
 		/*           %----------------------------------------------% */
 
-		if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LM", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SM", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SM", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SM", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LM", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LM", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "LR", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LR", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SR", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SR", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SR", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LR", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LR", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "LI", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "SI", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "SI", (int) 2, (int) 2);
 		}
-		if (s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) == 0)
+		if (s_cmp (which, "SI", (int) 2, (int) 2) == 0)
 		{
-			s_copy (wprime, "LI", (ftnlen) 2, (ftnlen) 2);
+			s_copy (wprime, "LI", (int) 2, (int) 2);
 		}
 
-		dsortc_ (wprime, &c_true, &kplusp, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ (wprime, &c_true, &kplusp, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 
 		/*           %--------------------------------------------------% */
 		/*           | Scale the Ritz estimate of each Ritz value       | */
@@ -25079,8 +24617,8 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*           | (in the case when NCONV < NEV.)                    | */
 		/*           %----------------------------------------------------% */
 
-		s_copy (wprime, "LR", (ftnlen) 2, (ftnlen) 2);
-		dsortc_ (wprime, &c_true, &numcnv, &bounds[1], &ritzr[1], &ritzi[1], (ftnlen) 2);
+		s_copy (wprime, "LR", (int) 2, (int) 2);
+		dsortc_ (wprime, &c_true, &numcnv, &bounds[1], &ritzr[1], &ritzi[1], (int) 2);
 
 		/*           %----------------------------------------------% */
 		/*           | Scale the Ritz estimate back to its original | */
@@ -25103,13 +24641,13 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*           | ritzr, ritzi and bound.                        | */
 		/*           %------------------------------------------------% */
 
-		dsortc_ (which, &c_true, &nconv, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ (which, &c_true, &nconv, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 
 		if (msglvl > 1)
 		{
-			dvout_ (&debug_1.logfil, &kplusp, &ritzr[1], &debug_1.ndigit, "_naup2: Sorted real part of the eigenvalues", (ftnlen) 43);
-			dvout_ (&debug_1.logfil, &kplusp, &ritzi[1], &debug_1.ndigit, "_naup2: Sorted imaginary part of the eigenvalues", (ftnlen) 48);
-			dvout_ (&debug_1.logfil, &kplusp, &bounds[1], &debug_1.ndigit, "_naup2: Sorted ritz estimates.", (ftnlen) 30);
+			dvout_ (&debug_1.logfil, &kplusp, &ritzr[1], &debug_1.ndigit, "_naup2: Sorted float part of the eigenvalues", (int) 43);
+			dvout_ (&debug_1.logfil, &kplusp, &ritzi[1], &debug_1.ndigit, "_naup2: Sorted imaginary part of the eigenvalues", (int) 48);
+			dvout_ (&debug_1.logfil, &kplusp, &bounds[1], &debug_1.ndigit, "_naup2: Sorted ritz estimates.", (int) 30);
 		}
 
 		/*           %------------------------------------% */
@@ -25164,22 +24702,22 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 		if (nevbef < *nev)
 		{
-			dngets_ (ishift, which, nev, np, &ritzr[1], &ritzi[1], &bounds[1], &workl[1], &workl[*np + 1], (ftnlen) 2);
+			dngets_ (ishift, which, nev, np, &ritzr[1], &ritzi[1], &bounds[1], &workl[1], &workl[*np + 1], (int) 2);
 		}
 
 	}
 
 	if (msglvl > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &nconv, &debug_1.ndigit, "_naup2: no." " of \"converged\" Ritz values at this iter.", (ftnlen) 52);
+		ivout_ (&debug_1.logfil, &c__1, &nconv, &debug_1.ndigit, "_naup2: no." " of \"converged\" Ritz values at this iter.", (int) 52);
 		if (msglvl > 1)
 		{
 			kp[0] = *nev;
 			kp[1] = *np;
-			ivout_ (&debug_1.logfil, &c__2, kp, &debug_1.ndigit, "_naup2: NEV" " and NP are", (ftnlen) 22);
-			dvout_ (&debug_1.logfil, nev, &ritzr[*np + 1], &debug_1.ndigit, "_naup2: \"wanted\" Ritz values -- real part", (ftnlen) 41);
-			dvout_ (&debug_1.logfil, nev, &ritzi[*np + 1], &debug_1.ndigit, "_naup2: \"wanted\" Ritz values -- imag part", (ftnlen) 41);
-			dvout_ (&debug_1.logfil, nev, &bounds[*np + 1], &debug_1.ndigit, "_naup2: Ritz estimates of the \"wanted\" values ", (ftnlen) 46);
+			ivout_ (&debug_1.logfil, &c__2, kp, &debug_1.ndigit, "_naup2: NEV" " and NP are", (int) 22);
+			dvout_ (&debug_1.logfil, nev, &ritzr[*np + 1], &debug_1.ndigit, "_naup2: \"wanted\" Ritz values -- float part", (int) 41);
+			dvout_ (&debug_1.logfil, nev, &ritzi[*np + 1], &debug_1.ndigit, "_naup2: \"wanted\" Ritz values -- imag part", (int) 41);
+			dvout_ (&debug_1.logfil, nev, &bounds[*np + 1], &debug_1.ndigit, "_naup2: Ritz estimates of the \"wanted\" values ", (int) 46);
 		}
 	}
 
@@ -25192,7 +24730,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 		/*           | 2*NP locations of WORKL.                              | */
 		/*           %-------------------------------------------------------% */
 
-		ushift = TRUE_;
+		ushift = true;
 		*ido = 3;
 		goto L9000;
 	}
@@ -25205,7 +24743,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 	/*        | in WORKL(1:2*NP)                   | */
 	/*        %------------------------------------% */
 
-	ushift = FALSE_;
+	ushift = false;
 
 	if (*ishift == 0)
 	{
@@ -25222,12 +24760,12 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 	if (msglvl > 2)
 	{
-		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_naup2: The num" "ber of shifts to apply ", (ftnlen) 38);
-		dvout_ (&debug_1.logfil, np, &ritzr[1], &debug_1.ndigit, "_naup2: Rea" "l part of the shifts", (ftnlen) 31);
-		dvout_ (&debug_1.logfil, np, &ritzi[1], &debug_1.ndigit, "_naup2: Ima" "ginary part of the shifts", (ftnlen) 36);
+		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_naup2: The num" "ber of shifts to apply ", (int) 38);
+		dvout_ (&debug_1.logfil, np, &ritzr[1], &debug_1.ndigit, "_naup2: Rea" "l part of the shifts", (int) 31);
+		dvout_ (&debug_1.logfil, np, &ritzi[1], &debug_1.ndigit, "_naup2: Ima" "ginary part of the shifts", (int) 36);
 		if (*ishift == 1)
 		{
-			dvout_ (&debug_1.logfil, np, &bounds[1], &debug_1.ndigit, "_naup2" ": Ritz estimates of the shifts", (ftnlen) 36);
+			dvout_ (&debug_1.logfil, np, &bounds[1], &debug_1.ndigit, "_naup2" ": Ritz estimates of the shifts", (int) 36);
 		}
 	}
 
@@ -25246,7 +24784,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 	/*        | the first step of the next call to dnaitr.  | */
 	/*        %---------------------------------------------% */
 
-	cnorm = TRUE_;
+	cnorm = true;
 	second_ (&t2);
 	if (*(unsigned char *) bmat == 'G')
 	{
@@ -25289,12 +24827,12 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 	{
 		rnorm = dnrm2_ (n, &resid[1], &c__1);
 	}
-	cnorm = FALSE_;
+	cnorm = false;
 
 	if (msglvl > 2)
 	{
-		dvout_ (&debug_1.logfil, &c__1, &rnorm, &debug_1.ndigit, "_naup2: B-n" "orm of residual for compressed factorization", (ftnlen) 55);
-		dmout_ (&debug_1.logfil, nev, nev, &h__[h_offset], ldh, &debug_1.ndigit, "_naup2: Compressed upper Hessenberg matrix H", (ftnlen) 44);
+		dvout_ (&debug_1.logfil, &c__1, &rnorm, &debug_1.ndigit, "_naup2: B-n" "orm of residual for compressed factorization", (int) 55);
+		dmout_ (&debug_1.logfil, nev, nev, &h__[h_offset], ldh, &debug_1.ndigit, "_naup2: Compressed upper Hessenberg matrix H", (int) 44);
 	}
 
 	goto L1000;
@@ -25337,9 +24875,9 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*  Reverse communication interface for the Implicitly Restarted Arnoldi */
 /*  iteration. This subroutine computes approximations to a few eigenpairs */
 /*  of a linear operator "OP" with respect to a semi-inner product defined by */
-/*  a symmetric positive semi-definite real matrix B. B may be the identity */
-/*  matrix. NOTE: If the linear operator "OP" is real and symmetric */
-/*  with respect to the real positive semi-definite symmetric matrix B, */
+/*  a symmetric positive semi-definite float matrix B. B may be the identity */
+/*  matrix. NOTE: If the linear operator "OP" is float and symmetric */
+/*  with respect to the float positive semi-definite symmetric matrix B, */
 /*  i.e. B*OP = (OP`)*B, then subroutine dsaupd should be used instead. */
 
 /*  The computed approximate eigenvalues are called Ritz values and */
@@ -25357,16 +24895,16 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 /*  Mode 3:  A*x = lambda*M*x, M symmetric semi-definite */
 /*           ===> OP = Real_Part{ inv[A - sigma*M]*M }  and  B = M. */
-/*           ===> shift-and-invert mode (in real arithmetic) */
+/*           ===> shift-and-invert mode (in float arithmetic) */
 /*           If OP*x = amu*x, then */
 /*           amu = 1/2 * [ 1/(lambda-sigma) + 1/(lambda-conjg(sigma)) ]. */
-/*           Note: If sigma is real, i.e. imaginary part of sigma is zero; */
+/*           Note: If sigma is float, i.e. imaginary part of sigma is zero; */
 /*                 Real_Part{ inv[A - sigma*M]*M } == inv[A - sigma*M]*M */
 /*                 amu == 1/(lambda-sigma). */
 
 /*  Mode 4:  A*x = lambda*M*x, M symmetric semi-definite */
 /*           ===> OP = Imaginary_Part{ inv[A - sigma*M]*M }  and  B = M. */
-/*           ===> shift-and-invert mode (in real arithmetic) */
+/*           ===> shift-and-invert mode (in float arithmetic) */
 /*           If OP*x = amu*x, then */
 /*           amu = 1/2i * [ 1/(lambda-sigma) - 1/(lambda-conjg(sigma)) ]. */
 
@@ -25417,7 +24955,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*          IDO =  2: compute  Y = B * X  where */
 /*                    IPNTR(1) is the pointer into WORKD for X, */
 /*                    IPNTR(2) is the pointer into WORKD for Y. */
-/*          IDO =  3: compute the IPARAM(8) real and imaginary parts */
+/*          IDO =  3: compute the IPARAM(8) float and imaginary parts */
 /*                    of the shifts where INPTR(14) is the pointer */
 /*                    into WORKL for placing the shifts. See Remark */
 /*                    5 below. */
@@ -25436,8 +24974,8 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*  WHICH   Character*2.  (INPUT) */
 /*          'LM' -> want the NEV eigenvalues of largest magnitude. */
 /*          'SM' -> want the NEV eigenvalues of smallest magnitude. */
-/*          'LR' -> want the NEV eigenvalues of largest real part. */
-/*          'SR' -> want the NEV eigenvalues of smallest real part. */
+/*          'LR' -> want the NEV eigenvalues of largest float part. */
+/*          'SR' -> want the NEV eigenvalues of smallest float part. */
 /*          'LI' -> want the NEV eigenvalues of largest imaginary part. */
 /*          'SI' -> want the NEV eigenvalues of smallest imaginary part. */
 
@@ -25483,7 +25021,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*          the Arnoldi iteration in an implicit fashion. */
 /*          ------------------------------------------------------------- */
 /*          ISHIFT = 0: the shifts are provided by the user via */
-/*                      reverse communication.  The real and imaginary */
+/*                      reverse communication.  The float and imaginary */
 /*                      parts of the NCV eigenvalues of the Hessenberg */
 /*                      matrix H are returned in the part of the WORKL */
 /*                      array corresponding to RITZR and RITZI. See remark */
@@ -25539,7 +25077,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*                    that is untouched by the program. */
 /*          IPNTR(5): pointer to the NCV by NCV upper Hessenberg matrix */
 /*                    H in WORKL. */
-/*          IPNTR(6): pointer to the real part of the ritz value array */
+/*          IPNTR(6): pointer to the float part of the ritz value array */
 /*                    RITZR in WORKL. */
 /*          IPNTR(7): pointer to the imaginary part of the ritz value array */
 /*                    RITZI in WORKL. */
@@ -25550,7 +25088,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 
 /*          Note: IPNTR(9:13) is only referenced by dneupd. See Remark 2 below. */
 
-/*          IPNTR(9):  pointer to the real part of the NCV RITZ values of the */
+/*          IPNTR(9):  pointer to the float part of the NCV RITZ values of the */
 /*                     original system. */
 /*          IPNTR(10): pointer to the imaginary part of the NCV RITZ values of */
 /*                     the original system. */
@@ -25640,8 +25178,8 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*     See Chapter 8 of Reference 2 for further information. */
 
 /*  5. When IPARAM(1) = 0, and IDO = 3, the user needs to provide the */
-/*     NP = IPARAM(8) real and imaginary parts of the shifts in locations */
-/*         real part                  imaginary part */
+/*     NP = IPARAM(8) float and imaginary parts of the shifts in locations */
+/*         float part                  imaginary part */
 /*         -----------------------    -------------- */
 /*     1   WORKL(IPNTR(14))           WORKL(IPNTR(14)+NP) */
 /*     2   WORKL(IPNTR(14)+1)         WORKL(IPNTR(14)+NP+1) */
@@ -25651,7 +25189,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /*     NP  WORKL(IPNTR(14)+NP-1)      WORKL(IPNTR(14)+2*NP-1). */
 
 /*     Only complex conjugate pairs of shifts may be applied and the pairs */
-/*     must be placed in consecutive locations. The real part of the */
+/*     must be placed in consecutive locations. The float part of the */
 /*     eigenvalues of the current upper Hessenberg matrix are located in */
 /*     WORKL(IPNTR(6)) through WORKL(IPNTR(6)+NCV-1) and the imaginary part */
 /*     in WORKL(IPNTR(7)) through WORKL(IPNTR(7)+NCV-1). They are ordered */
@@ -25693,7 +25231,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \References: */
 /*  1. D.C. Sorensen, "Implicit Application of Polynomial Filters in */
@@ -25709,7 +25247,7 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /* \Routines called: */
 /*     dnaup2  ARPACK routine that implements the Implicitly Restarted */
 /*             Arnoldi Iteration. */
-/*     ivout   ARPACK utility routine that prints integers. */
+/*     ivout   ARPACK utility routine that prints ints. */
 /*     second  ARPACK utility routine for timing. */
 /*     dvout   ARPACK utility routine that prints vectors. */
 /*     dlamch  LAPACK routine that determines machine constants. */
@@ -25735,53 +25273,19 @@ dnaup2_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, int
 /* ----------------------------------------------------------------------- */
 
 int
-dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, doublereal * tol, doublereal * resid, integer * ncv,
-			doublereal * v, integer * ldv, integer * iparam, integer * ipntr,
-			doublereal * workd, doublereal * workl, integer * lworkl, integer * info, ftnlen bmat_len, ftnlen which_len)
+dnaupd_ (int * ido, char *bmat, int * n, char *which, int * nev, double * tol, double * resid, int * ncv,
+			double * v, int * ldv, int * iparam, int * ipntr,
+			double * workd, double * workl, int * lworkl, int * info, int bmat_len, int which_len)
 {
-	/* Format strings */
-	static char fmt_1000[] = "(//,5x,\002==================================="
-		"==========\002,/5x,\002= Nonsymmetric implicit Arnoldi update co"
-		"de =\002,/5x,\002= Version Number: \002,\002 2.4\002,21x,\002 "
-		"=\002,/5x,\002= Version Date:   \002,\002 07/31/96\002,16x,\002 ="
-		"\002,/5x,\002=============================================\002,/"
-		"5x,\002= Summary of timing statistics              =\002,/5x," "\002=============================================\002,//)";
-	static char fmt_1100[] = "(5x,\002Total number update iterations        "
-		"     = \002,i5,/5x,\002Total number of OP*x operations          "
-		"  = \002,i5,/5x,\002Total number of B*x operations             = "
-		"\002,i5,/5x,\002Total number of reorthogonalization steps  = "
-		"\002,i5,/5x,\002Total number of iterative refinement steps = "
-		"\002,i5,/5x,\002Total number of restart steps              = "
-		"\002,i5,/5x,\002Total time in user OP*x operation          = "
-		"\002,f12.6,/5x,\002Total time in user B*x operation           ="
-		" \002,f12.6,/5x,\002Total time in Arnoldi update routine       = "
-		"\002,f12.6,/5x,\002Total time in naup2 routine                ="
-		" \002,f12.6,/5x,\002Total time in basic Arnoldi iteration loop = "
-		"\002,f12.6,/5x,\002Total time in reorthogonalization phase    ="
-		" \002,f12.6,/5x,\002Total time in (re)start vector generation  = "
-		"\002,f12.6,/5x,\002Total time in Hessenberg eig. subproblem   ="
-		" \002,f12.6,/5x,\002Total time in getting the shifts           = "
-		"\002,f12.6,/5x,\002Total time in applying the shifts          ="
-		" \002,f12.6,/5x,\002Total time in convergence testing          = " "\002,f12.6,/5x,\002Total time in computing final Ritz vectors =" " \002,f12.6/)";
-
 	/* System generated locals */
-	integer v_dim1, v_offset, i__1, i__2;
-
-	/* Builtin functions */
-	integer s_cmp (char *, char *, ftnlen, ftnlen), s_wsfe (cilist *), e_wsfe (void), do_fio (integer *, char *, ftnlen);
+	int v_dim1, v_offset, i__1, i__2;
 
 	/* Local variables */
-	static integer j;
-	static real t0, t1;
-	static integer nb, ih, iq, np, iw, ldh, ldq, nev0, mode, ierr, iupd, next, ritzi;
-	static integer ritzr;
-	static integer bounds, ishift, msglvl, mxiter;
-
-	/* Fortran I/O blocks */
-	static cilist io___1001 = { 0, 6, 0, fmt_1000, 0 };
-	static cilist io___1002 = { 0, 6, 0, fmt_1100, 0 };
-
-
+	static int j;
+	static float t0, t1;
+	static int nb, ih, iq, np, iw, ldh, ldq, nev0, mode, ierr, iupd, next, ritzi;
+	static int ritzr;
+	static int bounds, ishift, msglvl, mxiter;
 
 	/*     %----------------------------------------------------% */
 	/*     | Include files for debugging and timing information | */
@@ -25894,10 +25398,10 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 		{
 			ierr = 4;
 		}
-		else if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which, "SM", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which, "LR",
-																																										(ftnlen) 2, (ftnlen) 2) != 0
-					&& s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) != 0
-					&& s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) != 0)
+		else if (s_cmp (which, "LM", (int) 2, (int) 2) != 0 && s_cmp (which, "SM", (int) 2, (int) 2) != 0 && s_cmp (which, "LR",
+																																										(int) 2, (int) 2) != 0
+					&& s_cmp (which, "SR", (int) 2, (int) 2) != 0 && s_cmp (which, "LI", (int) 2, (int) 2) != 0
+					&& s_cmp (which, "SI", (int) 2, (int) 2) != 0)
 		{
 			ierr = -5;
 		}
@@ -25948,7 +25452,7 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 		}
 		if (*tol <= 0.)
 		{
-			*tol = dlamch_ ("EpsMach", (ftnlen) 7);
+			*tol = dlamch_ ("EpsMach", (int) 7);
 		}
 
 		/*        %----------------------------------------------% */
@@ -25975,12 +25479,12 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 		}
 
 		/*        %-------------------------------------------------------------% */
-		/*        | Pointer into WORKL for address of H, RITZ, BOUNDS, Q        | */
+		/*        | Pointer into WORKL for char * of H, RITZ, BOUNDS, Q        | */
 		/*        | etc... and the remaining workspace.                         | */
 		/*        | Also update pointer to be used on output.                   | */
 		/*        | Memory is laid out as follows:                              | */
 		/*        | workl(1:ncv*ncv) := generated Hessenberg matrix             | */
-		/*        | workl(ncv*ncv+1:ncv*ncv+2*ncv) := real and imaginary        | */
+		/*        | workl(ncv*ncv+1:ncv*ncv+2*ncv) := float and imaginary        | */
 		/*        |                                   parts of ritz values      | */
 		/*        | workl(ncv*ncv+2*ncv+1:ncv*ncv+3*ncv) := error bounds        | */
 		/*        | workl(ncv*ncv+3*ncv+1:2*ncv*ncv+3*ncv) := rotation matrix Q | */
@@ -26017,7 +25521,7 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 	/*     %-------------------------------------------------------% */
 
 	dnaup2_ (ido, bmat, n, which, &nev0, &np, tol, &resid[1], &mode, &iupd, &ishift, &mxiter, &v[v_offset], ldv, &workl[ih], &ldh, &workl[ritzr], &workl[ritzi],
-				&workl[bounds], &workl[iq], &ldq, &workl[iw], &ipntr[1], &workd[1], info, (ftnlen) 1, (ftnlen) 2);
+				&workl[bounds], &workl[iq], &ldq, &workl[iw], &ipntr[1], &workd[1], info, (int) 1, (int) 2);
 
 	/*     %--------------------------------------------------% */
 	/*     | ido .ne. 99 implies use of reverse communication | */
@@ -26055,11 +25559,11 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 
 	if (msglvl > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, &mxiter, &debug_1.ndigit, "_naupd: Nu" "mber of update iterations taken", (ftnlen) 41);
-		ivout_ (&debug_1.logfil, &c__1, &np, &debug_1.ndigit, "_naupd: Number" " of wanted \"converged\" Ritz values", (ftnlen) 48);
-		dvout_ (&debug_1.logfil, &np, &workl[ritzr], &debug_1.ndigit, "_naupd" ": Real part of the final Ritz values", (ftnlen) 42);
-		dvout_ (&debug_1.logfil, &np, &workl[ritzi], &debug_1.ndigit, "_naupd" ": Imaginary part of the final Ritz values", (ftnlen) 47);
-		dvout_ (&debug_1.logfil, &np, &workl[bounds], &debug_1.ndigit, "_naup" "d: Associated Ritz estimates", (ftnlen) 33);
+		ivout_ (&debug_1.logfil, &c__1, &mxiter, &debug_1.ndigit, "_naupd: Nu" "mber of update iterations taken", (int) 41);
+		ivout_ (&debug_1.logfil, &c__1, &np, &debug_1.ndigit, "_naupd: Number" " of wanted \"converged\" Ritz values", (int) 48);
+		dvout_ (&debug_1.logfil, &np, &workl[ritzr], &debug_1.ndigit, "_naupd" ": Real part of the final Ritz values", (int) 42);
+		dvout_ (&debug_1.logfil, &np, &workl[ritzi], &debug_1.ndigit, "_naupd" ": Imaginary part of the final Ritz values", (int) 47);
+		dvout_ (&debug_1.logfil, &np, &workl[bounds], &debug_1.ndigit, "_naup" "d: Associated Ritz estimates", (int) 33);
 	}
 
 	second_ (&t1);
@@ -26072,28 +25576,28 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 		/*        | Version Number & Version Date are defined in version.h | */
 		/*        %--------------------------------------------------------% */
 
-		s_wsfe (&io___1001);
-		e_wsfe ();
-		s_wsfe (&io___1002);
-		do_fio (&c__1, (char *) &mxiter, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.nopx, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.nbx, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.nrorth, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.nitref, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.nrstrt, (ftnlen) sizeof (integer));
-		do_fio (&c__1, (char *) &timing_1.tmvopx, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tmvbx, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tnaupd, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tnaup2, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tnaitr, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.titref, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tgetv0, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tneigh, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tngets, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tnapps, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.tnconv, (ftnlen) sizeof (real));
-		do_fio (&c__1, (char *) &timing_1.trvec, (ftnlen) sizeof (real));
-		e_wsfe ();
+// 		s_wsfe (&io___1001);
+// 		e_wsfe ();
+// 		s_wsfe (&io___1002);
+// 		do_fio (&c__1, (char *) &mxiter, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.nopx, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.nbx, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.nrorth, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.nitref, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.nrstrt, (int) sizeof (int));
+// 		do_fio (&c__1, (char *) &timing_1.tmvopx, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tmvbx, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tnaupd, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tnaup2, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tnaitr, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.titref, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tgetv0, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tneigh, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tngets, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tnapps, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.tnconv, (int) sizeof (float));
+// 		do_fio (&c__1, (char *) &timing_1.trvec, (int) sizeof (float));
+// 		e_wsfe ();
 	}
 
  L9000:
@@ -26142,7 +25646,7 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \Routines called: */
 /*     second  ARPACK utility routine for timing. */
@@ -26171,19 +25675,19 @@ dnaupd_ (integer * ido, char *bmat, integer * n, char *which, integer * nev, dou
 /* ----------------------------------------------------------------------- */
 
 static int
-dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bounds, doublereal * tol, integer * nconv)
+dnconv_ (int * n, double * ritzr, double * ritzi, double * bounds, double * tol, int * nconv)
 {
 	/* System generated locals */
-	integer i__1;
-	doublereal d__1, d__2;
+	int i__1;
+	double d__1, d__2;
 
 	/* Builtin functions */
-	double pow_dd (doublereal *, doublereal *);
+	double pow_dd (double *, double *);
 
 	/* Local variables */
-	static integer i__;
-	static real t0, t1;
-	static doublereal eps23, temp;
+	static int i__;
+	static float t0, t1;
+	static double eps23, temp;
 
 
 	/*     %----------------------------------------------------% */
@@ -26252,7 +25756,7 @@ dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bound
 	/*     | Get machine dependent constant. | */
 	/*     %---------------------------------% */
 
-	eps23 = dlamch_ ("Epsilon-Machine", (ftnlen) 15);
+	eps23 = dlamch_ ("Epsilon-Machine", (int) 15);
 	eps23 = pow_dd (&eps23, &c_b2616);
 
 	*nconv = 0;
@@ -26309,7 +25813,7 @@ dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bound
 /*          program. */
 
 /*  RITZR,  Double precision arrays of length N.  (OUTPUT) */
-/*  RITZI   On output, RITZR(1:N) (resp. RITZI(1:N)) contains the real */
+/*  RITZI   On output, RITZR(1:N) (resp. RITZI(1:N)) contains the float */
 /*          (respectively imaginary) parts of the eigenvalues of H. */
 
 /*  BOUNDS  Double precision array of length N.  (OUTPUT) */
@@ -26340,10 +25844,10 @@ dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bound
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \Routines called: */
-/*     dlaqrb  ARPACK routine to compute the real Schur form of an */
+/*     dlaqrb  ARPACK routine to compute the float Schur form of an */
 /*             upper Hessenberg matrix and last row of the Schur vectors. */
 /*     second  ARPACK utility routine for timing. */
 /*     dmout   ARPACK utility routine that prints matrices */
@@ -26380,20 +25884,20 @@ dnconv_ (integer * n, doublereal * ritzr, doublereal * ritzi, doublereal * bound
 /* ----------------------------------------------------------------------- */
 
 static int
-dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
-			integer * ldh, doublereal * ritzr, doublereal * ritzi, doublereal * bounds, doublereal * q, integer * ldq, doublereal * workl, integer * ierr)
+dneigh_ (double * rnorm, int * n, double * h__,
+			int * ldh, double * ritzr, double * ritzi, double * bounds, double * q, int * ldq, double * workl, int * ierr)
 {
 	/* System generated locals */
-	integer h_dim1, h_offset, q_dim1, q_offset, i__1;
-	doublereal d__1, d__2;
+	int h_dim1, h_offset, q_dim1, q_offset, i__1;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer i__;
-	static real t0, t1;
-	static doublereal vl[1], temp;
-	static integer iconj;
-	static logical select[1];
-	static integer msglvl;
+	static int i__;
+	static float t0, t1;
+	static double vl[1], temp;
+	static int iconj;
+	static bool select[1];
+	static int msglvl;
 
 	/*     %----------------------------------------------------% */
 	/*     | Include files for debugging and timing information | */
@@ -26478,7 +25982,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 	if (msglvl > 2)
 	{
-		dmout_ (&debug_1.logfil, n, n, &h__[h_offset], ldh, &debug_1.ndigit, "_neigh: Entering upper Hessenberg matrix H ", (ftnlen) 43);
+		dmout_ (&debug_1.logfil, n, n, &h__[h_offset], ldh, &debug_1.ndigit, "_neigh: Entering upper Hessenberg matrix H ", (int) 43);
 	}
 
 	/*     %-----------------------------------------------------------% */
@@ -26489,7 +25993,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 	/*     | and the last components of the Schur vectors in BOUNDS.   | */
 	/*     %-----------------------------------------------------------% */
 
-	dlacpy_ ("All", n, n, &h__[h_offset], ldh, &workl[1], n, (ftnlen) 3);
+	dlacpy_ ("All", n, n, &h__[h_offset], ldh, &workl[1], n, (int) 3);
 	dlaqrb_ (&c_true, n, &c__1, n, &workl[1], n, &ritzr[1], &ritzi[1], &bounds[1], ierr);
 	if (*ierr != 0)
 	{
@@ -26498,7 +26002,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 	if (msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, n, &bounds[1], &debug_1.ndigit, "_neigh: las" "t row of the Schur matrix for H", (ftnlen) 42);
+		dvout_ (&debug_1.logfil, n, &bounds[1], &debug_1.ndigit, "_neigh: las" "t row of the Schur matrix for H", (int) 42);
 	}
 
 	/*     %-----------------------------------------------------------% */
@@ -26506,12 +26010,12 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 	/*     |    apply the last components of the Schur vectors to get  | */
 	/*     |    the last components of the corresponding eigenvectors. | */
 	/*     | Remember that if the i-th and (i+1)-st eigenvalues are    | */
-	/*     | complex conjugate pairs, then the real & imaginary part   | */
+	/*     | complex conjugate pairs, then the float & imaginary part   | */
 	/*     | of the eigenvector components are split across adjacent   | */
 	/*     | columns of Q.                                             | */
 	/*     %-----------------------------------------------------------% */
 
-	dtrevc_ ("R", "A", select, n, &workl[1], n, vl, n, &q[q_offset], ldq, n, n, &workl[*n * *n + 1], ierr, (ftnlen) 1, (ftnlen) 1);
+	dtrevc_ ("R", "A", select, n, &workl[1], n, vl, n, &q[q_offset], ldq, n, n, &workl[*n * *n + 1], ierr, (int) 1, (int) 1);
 
 	if (*ierr != 0)
 	{
@@ -26547,7 +26051,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 			/*           %-------------------------------------------% */
 			/*           | Complex conjugate pair case. Note that    | */
-			/*           | since the real and imaginary part of      | */
+			/*           | since the float and imaginary part of      | */
 			/*           | the eigenvector are stored in consecutive | */
 			/*           | columns, we further normalize by the      | */
 			/*           | square root of two.                       | */
@@ -26572,11 +26076,11 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 		/* L10: */
 	}
 
-	dgemv_ ("T", n, n, &c_b348, &q[q_offset], ldq, &bounds[1], &c__1, &c_b507, &workl[1], &c__1, (ftnlen) 1);
+	dgemv_ ("T", n, n, &c_b348, &q[q_offset], ldq, &bounds[1], &c__1, &c_b507, &workl[1], &c__1, (int) 1);
 
 	if (msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, n, &workl[1], &debug_1.ndigit, "_neigh: Last" " row of the eigenvector matrix for H", (ftnlen) 48);
+		dvout_ (&debug_1.logfil, n, &workl[1], &debug_1.ndigit, "_neigh: Last" " row of the eigenvector matrix for H", (int) 48);
 	}
 
 	/*     %----------------------------% */
@@ -26601,7 +26105,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 			/*           %-------------------------------------------% */
 			/*           | Complex conjugate pair case. Note that    | */
-			/*           | since the real and imaginary part of      | */
+			/*           | since the float and imaginary part of      | */
 			/*           | the eigenvector are stored in consecutive | */
 			/*           | columns, we need to take the magnitude    | */
 			/*           | of the last components of the two vectors | */
@@ -26623,9 +26127,9 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 	if (msglvl > 2)
 	{
-		dvout_ (&debug_1.logfil, n, &ritzr[1], &debug_1.ndigit, "_neigh: Real" " part of the eigenvalues of H", (ftnlen) 41);
-		dvout_ (&debug_1.logfil, n, &ritzi[1], &debug_1.ndigit, "_neigh: Imag" "inary part of the eigenvalues of H", (ftnlen) 46);
-		dvout_ (&debug_1.logfil, n, &bounds[1], &debug_1.ndigit, "_neigh: Rit" "z estimates for the eigenvalues of H", (ftnlen) 47);
+		dvout_ (&debug_1.logfil, n, &ritzr[1], &debug_1.ndigit, "_neigh: Real" " part of the eigenvalues of H", (int) 41);
+		dvout_ (&debug_1.logfil, n, &ritzi[1], &debug_1.ndigit, "_neigh: Imag" "inary part of the eigenvalues of H", (int) 46);
+		dvout_ (&debug_1.logfil, n, &bounds[1], &debug_1.ndigit, "_neigh: Rit" "z estimates for the eigenvalues of H", (int) 47);
 	}
 
 	second_ (&t1);
@@ -26700,7 +26204,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*          = 'A': Compute NEV Ritz vectors; */
 /*          = 'P': Compute NEV Schur vectors; */
 /*          = 'S': compute some of the Ritz vectors, specified */
-/*                 by the logical array SELECT. */
+/*                 by the bool array SELECT. */
 
 /*  SELECT  Logical array of dimension NCV.  (INPUT) */
 /*          If HOWMNY = 'S', SELECT specifies the Ritz vectors to be */
@@ -26710,10 +26214,10 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 /*  DR      Double precision  array of dimension NEV+1.  (OUTPUT) */
 /*          If IPARAM(7) = 1,2 or 3 and SIGMAI=0.0  then on exit: DR contains */
-/*          the real part of the Ritz  approximations to the eigenvalues of */
+/*          the float part of the Ritz  approximations to the eigenvalues of */
 /*          A*z = lambda*B*z. */
 /*          If IPARAM(7) = 3, 4 and SIGMAI is not equal to zero, then on exit: */
-/*          DR contains the real part of the Ritz values of OP computed by */
+/*          DR contains the float part of the Ritz values of OP computed by */
 /*          DNAUPD . A further computation must be performed by the user */
 /*          to transform the Ritz values computed for OP by DNAUPD  to those */
 /*          of the original system A*z = lambda*B*z. See remark 3 below. */
@@ -26726,7 +26230,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*          NOTE: When Ritz values are complex, they will come in complex */
 /*                conjugate pairs.  If eigenvectors are requested, the */
 /*                corresponding Ritz vectors will also come in conjugate */
-/*                pairs and the real and imaginary parts of these are */
+/*                pairs and the float and imaginary parts of these are */
 /*                represented in two consecutive columns of the array Z */
 /*                (see below). */
 
@@ -26738,7 +26242,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 /*          The complex Ritz vector associated with the Ritz value */
 /*          with positive imaginary part is stored in two consecutive */
-/*          columns.  The first column holds the real part of the Ritz */
+/*          columns.  The first column holds the float part of the Ritz */
 /*          vector and the second column holds the imaginary part.  The */
 /*          Ritz vector associated with the Ritz value with negative */
 /*          imaginary part is simply the complex conjugate of the Ritz vector */
@@ -26756,7 +26260,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*          desired, then  LDZ >= max( 1, N ).  In any case,  LDZ >= 1. */
 
 /*  SIGMAR  Double precision   (INPUT) */
-/*          If IPARAM(7) = 3 or 4, represents the real part of the shift. */
+/*          If IPARAM(7) = 3 or 4, represents the float part of the shift. */
 /*          Not referenced if IPARAM(7) = 1 or 2. */
 
 /*  SIGMAI  Double precision   (INPUT) */
@@ -26799,14 +26303,14 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*          WORKL(1:ncv*ncv+3*ncv) contains information obtained in */
 /*          dnaupd .  They are not changed by dneupd . */
 /*          WORKL(ncv*ncv+3*ncv+1:3*ncv*ncv+6*ncv) holds the */
-/*          real and imaginary part of the untransformed Ritz values, */
+/*          float and imaginary part of the untransformed Ritz values, */
 /*          the upper quasi-triangular matrix for H, and the */
 /*          associated matrix representation of the invariant subspace for H. */
 
-/*          Note: IPNTR(9:13) contains the pointer into WORKL for addresses */
+/*          Note: IPNTR(9:13) contains the pointer into WORKL for char *es */
 /*          of the above information computed by dneupd . */
 /*          ------------------------------------------------------------- */
-/*          IPNTR(9):  pointer to the real part of the NCV RITZ values of the */
+/*          IPNTR(9):  pointer to the float part of the NCV RITZ values of the */
 /*                     original system. */
 /*          IPNTR(10): pointer to the imaginary part of the NCV RITZ values of */
 /*                     the original system. */
@@ -26838,7 +26342,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*          = -5: WHICH must be one of 'LM', 'SM', 'LR', 'SR', 'LI', 'SI' */
 /*          = -6: BMAT must be one of 'I' or 'G'. */
 /*          = -7: Length of private work WORKL array is not sufficient. */
-/*          = -8: Error return from calculation of a real Schur form. */
+/*          = -8: Error return from calculation of a float Schur form. */
 /*                Informational error from LAPACK routine dlahqr . */
 /*          = -9: Error return from calculation of eigenvectors. */
 /*                Informational error from LAPACK routine dtrevc . */
@@ -26868,13 +26372,13 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*     pp 575-595, (1987). */
 
 /* \Routines called: */
-/*     ivout   ARPACK utility routine that prints integers. */
+/*     ivout   ARPACK utility routine that prints ints. */
 /*     dmout    ARPACK utility routine that prints matrices */
 /*     dvout    ARPACK utility routine that prints vectors. */
 /*     dgeqr2   LAPACK routine that computes the QR factorization of */
 /*             a matrix. */
 /*     dlacpy   LAPACK matrix copy routine. */
-/*     dlahqr   LAPACK routine to compute the real Schur form of an */
+/*     dlahqr   LAPACK routine to compute the float Schur form of an */
 /*             upper Hessenberg matrix. */
 /*     dlamch   LAPACK routine that determines machine constants. */
 /*     dlapy2   LAPACK routine to compute sqrt(x**2+y**2) carefully. */
@@ -26903,11 +26407,11 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*             A * V(:,1:IPARAM(5)) = V(:,1:IPARAM(5)) * T, and */
 /*     trans(V(:,1:IPARAM(5))) * V(:,1:IPARAM(5)) = I are approximately */
 /*     satisfied. Here T is the leading submatrix of order IPARAM(5) of the */
-/*     real upper quasi-triangular matrix stored workl(ipntr(12)). That is, */
+/*     float upper quasi-triangular matrix stored workl(ipntr(12)). That is, */
 /*     T is block upper triangular with 1-by-1 and 2-by-2 diagonal blocks; */
 /*     each 2-by-2 diagonal block has its diagonal elements equal and its */
 /*     off-diagonal elements of opposite sign.  Corresponding to each 2-by-2 */
-/*     diagonal block is a complex conjugate pair of Ritz values. The real */
+/*     diagonal block is a complex conjugate pair of Ritz values. The float */
 /*     Ritz values are stored on the diagonal of T. */
 
 /*  3. If IPARAM(7) = 3 or 4 and SIGMAI is not equal zero, then the user must */
@@ -26917,7 +26421,7 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 /*     compute */
 /*           trans(Z(:,I)) * A * Z(:,I) if DI(I) = 0. */
 /*     If DI(I) is not equal to zero and DI(I+1) = - D(I), */
-/*     then the desired real and imaginary parts of the Ritz value are */
+/*     then the desired float and imaginary parts of the Ritz value are */
 /*           trans(Z(:,I)) * A * Z(:,I) +  trans(Z(:,I+1)) * A * Z(:,I+1), */
 /*           trans(Z(:,I)) * A * Z(:,I+1) -  trans(Z(:,I+1)) * A * Z(:,I), */
 /*     respectively. */
@@ -26942,44 +26446,39 @@ dneigh_ (doublereal * rnorm, integer * n, doublereal * h__,
 
 /* ----------------------------------------------------------------------- */
 int
-dneupd_ (logical * rvec, char *howmny, logical * select,
-			doublereal * dr, doublereal * di, doublereal * z__, integer * ldz,
-			doublereal * sigmar, doublereal * sigmai, doublereal * workev, char *bmat, integer * n, char *which, integer * nev, doublereal * tol,
-			doublereal * resid, integer * ncv, doublereal * v, integer * ldv, integer
-			* iparam, integer * ipntr, doublereal * workd, doublereal * workl,
-			integer * lworkl, integer * info, ftnlen howmny_len, ftnlen bmat_len, ftnlen which_len)
+dneupd_ (bool * rvec, char *howmny, bool * select,
+			double * dr, double * di, double * z__, int * ldz,
+			double * sigmar, double * sigmai, double * workev, char *bmat, int * n, char *which, int * nev, double * tol,
+			double * resid, int * ncv, double * v, int * ldv, int
+			* iparam, int * ipntr, double * workd, double * workl,
+			int * lworkl, int * info, int howmny_len, int bmat_len, int which_len)
 {
 	/* System generated locals */
-	integer v_dim1, v_offset, z_dim1, z_offset, i__1;
-	doublereal d__1, d__2;
-
-	/* Builtin functions */
-	double pow_dd (doublereal *, doublereal *);
-	integer s_cmp (char *, char *, ftnlen, ftnlen);
-	/* Subroutine */ int s_copy (char *, char *, ftnlen, ftnlen);
+	int v_dim1, v_offset, z_dim1, z_offset, i__1;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer j, k, ih, jj, np;
-	static doublereal vl[1] /* was [1][1] */ ;
-	static integer ibd, ldh, ldq, iri;
-	static doublereal sep;
-	static integer irr, wri, wrr;
-	static integer mode;
-	static doublereal eps23;
-	static integer ierr;
-	static doublereal temp;
-	static integer iwev;
+	static int j, k, ih, jj, np;
+	static double vl[1] /* was [1][1] */ ;
+	static int ibd, ldh, ldq, iri;
+	static double sep;
+	static int irr, wri, wrr;
+	static int mode;
+	static double eps23;
+	static int ierr;
+	static double temp;
+	static int iwev;
 	static char type__[6];
-	static doublereal temp1;
-	static integer ihbds, iconj;
-	static doublereal conds;
-	static logical reord;
-	static integer nconv;
-	static integer iwork[1];
-	static doublereal rnorm;
-	static integer ritzi;
-	static integer ritzr;
-	static integer iheigi, iheigr, bounds, invsub, iuptri, msglvl, outncv, ishift, numcnv;
+	static double temp1;
+	static int ihbds, iconj;
+	static double conds;
+	static bool reord;
+	static int nconv;
+	static int iwork[1];
+	static double rnorm;
+	static int ritzi;
+	static int ritzr;
+	static int iheigi, iheigr, bounds, invsub, iuptri, msglvl, outncv, ishift, numcnv;
 
 
 	/*     %----------------------------------------------------% */
@@ -27072,7 +26571,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	/*     | Get machine dependent constant. | */
 	/*     %---------------------------------% */
 
-	eps23 = dlamch_ ("Epsilon-Machine", (ftnlen) 15);
+	eps23 = dlamch_ ("Epsilon-Machine", (int) 15);
 	eps23 = pow_dd (&eps23, &c_b2616);
 
 	/*     %--------------% */
@@ -27097,11 +26596,11 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	{
 		ierr = -3;
 	}
-	else if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which,
-																							  "SM", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which, "LR", (ftnlen) 2,
-																																						  (ftnlen) 2) != 0
-				&& s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) != 0 && s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) != 0
-				&& s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) != 0)
+	else if (s_cmp (which, "LM", (int) 2, (int) 2) != 0 && s_cmp (which,
+																							  "SM", (int) 2, (int) 2) != 0 && s_cmp (which, "LR", (int) 2,
+																																						  (int) 2) != 0
+				&& s_cmp (which, "SR", (int) 2, (int) 2) != 0 && s_cmp (which, "LI", (int) 2, (int) 2) != 0
+				&& s_cmp (which, "SI", (int) 2, (int) 2) != 0)
 	{
 		ierr = -5;
 	}
@@ -27129,19 +26628,19 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 	if (mode == 1 || mode == 2)
 	{
-		s_copy (type__, "REGULR", (ftnlen) 6, (ftnlen) 6);
+		s_copy (type__, "REGULR", (int) 6, (int) 6);
 	}
 	else if (mode == 3 && *sigmai == 0.)
 	{
-		s_copy (type__, "SHIFTI", (ftnlen) 6, (ftnlen) 6);
+		s_copy (type__, "SHIFTI", (int) 6, (int) 6);
 	}
 	else if (mode == 3)
 	{
-		s_copy (type__, "REALPT", (ftnlen) 6, (ftnlen) 6);
+		s_copy (type__, "REALPT", (int) 6, (int) 6);
 	}
 	else if (mode == 4)
 	{
-		s_copy (type__, "IMAGPT", (ftnlen) 6, (ftnlen) 6);
+		s_copy (type__, "IMAGPT", (int) 6, (int) 6);
 	}
 	else
 	{
@@ -27163,12 +26662,12 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	}
 
 	/*     %--------------------------------------------------------% */
-	/*     | Pointer into WORKL for address of H, RITZ, BOUNDS, Q   | */
+	/*     | Pointer into WORKL for char * of H, RITZ, BOUNDS, Q   | */
 	/*     | etc... and the remaining workspace.                    | */
 	/*     | Also update pointer to be used on output.              | */
 	/*     | Memory is laid out as follows:                         | */
 	/*     | workl(1:ncv*ncv) := generated Hessenberg matrix        | */
-	/*     | workl(ncv*ncv+1:ncv*ncv+2*ncv) := real and imaginary   | */
+	/*     | workl(ncv*ncv+1:ncv*ncv+2*ncv) := float and imaginary   | */
 	/*     |                                   parts of ritz values | */
 	/*     | workl(ncv*ncv+2*ncv+1:ncv*ncv+3*ncv) := error bounds   | */
 	/*     %--------------------------------------------------------% */
@@ -27176,7 +26675,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	/*     %-----------------------------------------------------------% */
 	/*     | The following is used and set by DNEUPD .                  | */
 	/*     | workl(ncv*ncv+3*ncv+1:ncv*ncv+4*ncv) := The untransformed | */
-	/*     |                             real part of the Ritz values. | */
+	/*     |                             float part of the Ritz values. | */
 	/*     | workl(ncv*ncv+4*ncv+1:ncv*ncv+5*ncv) := The untransformed | */
 	/*     |                        imaginary part of the Ritz values. | */
 	/*     | workl(ncv*ncv+5*ncv+1:ncv*ncv+6*ncv) := The untransformed | */
@@ -27234,15 +26733,15 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 	if (msglvl > 2)
 	{
-		dvout_ (&debug_1.logfil, ncv, &workl[irr], &debug_1.ndigit, "_neupd: " "Real part of Ritz values passed in from _NAUPD.", (ftnlen) 55);
-		dvout_ (&debug_1.logfil, ncv, &workl[iri], &debug_1.ndigit, "_neupd: " "Imag part of Ritz values passed in from _NAUPD.", (ftnlen) 55);
-		dvout_ (&debug_1.logfil, ncv, &workl[ibd], &debug_1.ndigit, "_neupd: " "Ritz estimates passed in from _NAUPD.", (ftnlen) 45);
+		dvout_ (&debug_1.logfil, ncv, &workl[irr], &debug_1.ndigit, "_neupd: " "Real part of Ritz values passed in from _NAUPD.", (int) 55);
+		dvout_ (&debug_1.logfil, ncv, &workl[iri], &debug_1.ndigit, "_neupd: " "Imag part of Ritz values passed in from _NAUPD.", (int) 55);
+		dvout_ (&debug_1.logfil, ncv, &workl[ibd], &debug_1.ndigit, "_neupd: " "Ritz estimates passed in from _NAUPD.", (int) 45);
 	}
 
 	if (*rvec)
 	{
 
-		reord = FALSE_;
+		reord = false;
 
 		/*        %---------------------------------------------------% */
 		/*        | Use the temporary bounds array to store indices   | */
@@ -27252,8 +26751,8 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		i__1 = *ncv;
 		for (j = 1; j <= i__1; ++j)
 		{
-			workl[bounds + j - 1] = (doublereal) j;
-			select[j] = FALSE_;
+			workl[bounds + j - 1] = (double) j;
+			select[j] = false;
 			/* L10: */
 		}
 
@@ -27269,13 +26768,13 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 		np = *ncv - *nev;
 		ishift = 0;
-		dngets_ (&ishift, which, nev, &np, &workl[irr], &workl[iri], &workl[bounds], &workl[1], &workl[np + 1], (ftnlen) 2);
+		dngets_ (&ishift, which, nev, &np, &workl[irr], &workl[iri], &workl[bounds], &workl[1], &workl[np + 1], (int) 2);
 
 		if (msglvl > 2)
 		{
-			dvout_ (&debug_1.logfil, ncv, &workl[irr], &debug_1.ndigit, "_neu" "pd: Real part of Ritz values after calling _NGETS.", (ftnlen) 54);
-			dvout_ (&debug_1.logfil, ncv, &workl[iri], &debug_1.ndigit, "_neu" "pd: Imag part of Ritz values after calling _NGETS.", (ftnlen) 54);
-			dvout_ (&debug_1.logfil, ncv, &workl[bounds], &debug_1.ndigit, "_neupd: Ritz value indices after calling _NGETS.", (ftnlen) 48);
+			dvout_ (&debug_1.logfil, ncv, &workl[irr], &debug_1.ndigit, "_neu" "pd: Real part of Ritz values after calling _NGETS.", (int) 54);
+			dvout_ (&debug_1.logfil, ncv, &workl[iri], &debug_1.ndigit, "_neu" "pd: Imag part of Ritz values after calling _NGETS.", (int) 54);
+			dvout_ (&debug_1.logfil, ncv, &workl[bounds], &debug_1.ndigit, "_neupd: Ritz value indices after calling _NGETS.", (int) 48);
 		}
 
 		/*        %-----------------------------------------------------% */
@@ -27290,14 +26789,14 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			/* Computing MAX */
 			d__1 = eps23, d__2 = dlapy2_ (&workl[irr + *ncv - j], &workl[iri + *ncv - j]);
 			temp1 = max (d__1, d__2);
-			jj = (integer) workl[bounds + *ncv - j];
+			jj = (int) workl[bounds + *ncv - j];
 			if (numcnv < nconv && workl[ibd + jj - 1] <= *tol * temp1)
 			{
-				select[jj] = TRUE_;
+				select[jj] = true;
 				++numcnv;
 				if (jj > *nev)
 				{
-					reord = TRUE_;
+					reord = true;
 				}
 			}
 			/* L11: */
@@ -27312,8 +26811,8 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 		if (msglvl > 2)
 		{
-			ivout_ (&debug_1.logfil, &c__1, &numcnv, &debug_1.ndigit, "_neupd" ": Number of specified eigenvalues", (ftnlen) 39);
-			ivout_ (&debug_1.logfil, &c__1, &nconv, &debug_1.ndigit, "_neupd:" " Number of \"converged\" eigenvalues", (ftnlen) 41);
+			ivout_ (&debug_1.logfil, &c__1, &numcnv, &debug_1.ndigit, "_neupd" ": Number of specified eigenvalues", (int) 39);
+			ivout_ (&debug_1.logfil, &c__1, &nconv, &debug_1.ndigit, "_neupd:" " Number of \"converged\" eigenvalues", (int) 41);
 		}
 
 		if (numcnv != nconv)
@@ -27323,7 +26822,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		}
 
 		/*        %-----------------------------------------------------------% */
-		/*        | Call LAPACK routine dlahqr  to compute the real Schur form | */
+		/*        | Call LAPACK routine dlahqr  to compute the float Schur form | */
 		/*        | of the upper Hessenberg matrix returned by DNAUPD .        | */
 		/*        | Make a copy of the upper Hessenberg matrix.               | */
 		/*        | Initialize the Schur vector matrix Q to the identity.     | */
@@ -27331,7 +26830,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 		i__1 = ldh * *ncv;
 		dcopy_ (&i__1, &workl[ih], &c__1, &workl[iuptri], &c__1);
-		dlaset_ ("All", ncv, ncv, &c_b507, &c_b348, &workl[invsub], &ldq, (ftnlen) 3);
+		dlaset_ ("All", ncv, ncv, &c_b507, &c_b348, &workl[invsub], &ldq, (int) 3);
 		dlahqr_ (&c_true, &c_true, ncv, &c__1, ncv, &workl[iuptri], &ldh, &workl[iheigr], &workl[iheigi], &c__1, ncv, &workl[invsub], &ldq, &ierr);
 		dcopy_ (ncv, &workl[invsub + *ncv - 1], &ldq, &workl[ihbds], &c__1);
 
@@ -27343,12 +26842,12 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 		if (msglvl > 1)
 		{
-			dvout_ (&debug_1.logfil, ncv, &workl[iheigr], &debug_1.ndigit, "_neupd: Real part of the eigenvalues of H", (ftnlen) 41);
-			dvout_ (&debug_1.logfil, ncv, &workl[iheigi], &debug_1.ndigit, "_neupd: Imaginary part of the Eigenvalues of H", (ftnlen) 46);
-			dvout_ (&debug_1.logfil, ncv, &workl[ihbds], &debug_1.ndigit, "_neupd: Last row of the Schur vector matrix", (ftnlen) 43);
+			dvout_ (&debug_1.logfil, ncv, &workl[iheigr], &debug_1.ndigit, "_neupd: Real part of the eigenvalues of H", (int) 41);
+			dvout_ (&debug_1.logfil, ncv, &workl[iheigi], &debug_1.ndigit, "_neupd: Imaginary part of the Eigenvalues of H", (int) 46);
+			dvout_ (&debug_1.logfil, ncv, &workl[ihbds], &debug_1.ndigit, "_neupd: Last row of the Schur vector matrix", (int) 43);
 			if (msglvl > 3)
 			{
-				dmout_ (&debug_1.logfil, ncv, ncv, &workl[iuptri], &ldh, &debug_1.ndigit, "_neupd: The upper quasi-triangular " "matrix ", (ftnlen) 42);
+				dmout_ (&debug_1.logfil, ncv, ncv, &workl[iuptri], &ldh, &debug_1.ndigit, "_neupd: The upper quasi-triangular " "matrix ", (int) 42);
 			}
 		}
 
@@ -27360,7 +26859,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			/*           %-----------------------------------------------------% */
 
 			dtrsen_ ("None", "V", &select[1], ncv, &workl[iuptri], &ldh, &workl[invsub], &ldq, &workl[iheigr], &workl[iheigi], &nconv, &conds, &sep, &workl[ihbds],
-						ncv, iwork, &c__1, &ierr, (ftnlen) 4, (ftnlen) 1);
+						ncv, iwork, &c__1, &ierr, (int) 4, (int) 1);
 
 			if (ierr == 1)
 			{
@@ -27370,11 +26869,11 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 			if (msglvl > 2)
 			{
-				dvout_ (&debug_1.logfil, ncv, &workl[iheigr], &debug_1.ndigit, "_neupd: Real part of the eigenvalues of H--reordered", (ftnlen) 52);
-				dvout_ (&debug_1.logfil, ncv, &workl[iheigi], &debug_1.ndigit, "_neupd: Imag part of the eigenvalues of H--reordered", (ftnlen) 52);
+				dvout_ (&debug_1.logfil, ncv, &workl[iheigr], &debug_1.ndigit, "_neupd: Real part of the eigenvalues of H--reordered", (int) 52);
+				dvout_ (&debug_1.logfil, ncv, &workl[iheigi], &debug_1.ndigit, "_neupd: Imag part of the eigenvalues of H--reordered", (int) 52);
 				if (msglvl > 3)
 				{
-					dmout_ (&debug_1.logfil, ncv, ncv, &workl[iuptri], &ldq, &debug_1.ndigit, "_neupd: Quasi-triangular matrix" " after re-ordering", (ftnlen) 49);
+					dmout_ (&debug_1.logfil, ncv, ncv, &workl[iuptri], &ldq, &debug_1.ndigit, "_neupd: Quasi-triangular matrix" " after re-ordering", (int) 49);
 				}
 			}
 
@@ -27394,7 +26893,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		/*        | if a spectral transformation was not used.         | */
 		/*        %----------------------------------------------------% */
 
-		if (s_cmp (type__, "REGULR", (ftnlen) 6, (ftnlen) 6) == 0)
+		if (s_cmp (type__, "REGULR", (int) 6, (int) 6) == 0)
 		{
 			dcopy_ (&nconv, &workl[iheigr], &c__1, &dr[1], &c__1);
 			dcopy_ (&nconv, &workl[iheigi], &c__1, &di[1], &c__1);
@@ -27416,12 +26915,12 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		/*        | of the approximate invariant subspace associated with   | */
 		/*        | the Ritz values in workl(iheigr) and workl(iheigi)      | */
 		/*        | The first NCONV columns of V are now approximate Schur  | */
-		/*        | vectors associated with the real upper quasi-triangular | */
+		/*        | vectors associated with the float upper quasi-triangular | */
 		/*        | matrix of order NCONV in workl(iuptri)                  | */
 		/*        %---------------------------------------------------------% */
 
-		dorm2r_ ("Right", "Notranspose", n, ncv, &nconv, &workl[invsub], &ldq, &workev[1], &v[v_offset], ldv, &workd[*n + 1], &ierr, (ftnlen) 5, (ftnlen) 11);
-		dlacpy_ ("All", n, &nconv, &v[v_offset], ldv, &z__[z_offset], ldz, (ftnlen) 3);
+		dorm2r_ ("Right", "Notranspose", n, ncv, &nconv, &workl[invsub], &ldq, &workev[1], &v[v_offset], ldv, &workd[*n + 1], &ierr, (int) 5, (int) 11);
+		dlacpy_ ("All", n, &nconv, &v[v_offset], ldv, &z__[z_offset], ldz, (int) 3);
 
 		i__1 = nconv;
 		for (j = 1; j <= i__1; ++j)
@@ -27458,17 +26957,17 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			{
 				if (j <= nconv)
 				{
-					select[j] = TRUE_;
+					select[j] = true;
 				}
 				else
 				{
-					select[j] = FALSE_;
+					select[j] = false;
 				}
 				/* L30: */
 			}
 
 			dtrevc_ ("Right", "Select", &select[1], ncv, &workl[iuptri], &ldq,
-						vl, &c__1, &workl[invsub], &ldq, ncv, &outncv, &workev[1], &ierr, (ftnlen) 5, (ftnlen) 6);
+						vl, &c__1, &workl[invsub], &ldq, ncv, &outncv, &workev[1], &ierr, (int) 5, (int) 6);
 
 			if (ierr != 0)
 			{
@@ -27493,7 +26992,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 				{
 
 					/*                 %----------------------% */
-					/*                 | real eigenvalue case | */
+					/*                 | float eigenvalue case | */
 					/*                 %----------------------% */
 
 					temp = dnrm2_ (ncv, &workl[invsub + (j - 1) * ldq], &c__1);
@@ -27506,7 +27005,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 					/*                 %-------------------------------------------% */
 					/*                 | Complex conjugate pair case. Note that    | */
-					/*                 | since the real and imaginary part of      | */
+					/*                 | since the float and imaginary part of      | */
 					/*                 | the eigenvector are stored in consecutive | */
 					/*                 | columns, we further normalize by the      | */
 					/*                 | square root of two.                       | */
@@ -27533,7 +27032,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 				/* L40: */
 			}
 
-			dgemv_ ("T", ncv, &nconv, &c_b348, &workl[invsub], &ldq, &workl[ihbds], &c__1, &c_b507, &workev[1], &c__1, (ftnlen) 1);
+			dgemv_ ("T", ncv, &nconv, &c_b348, &workl[invsub], &ldq, &workl[ihbds], &c__1, &c_b507, &workev[1], &c__1, (int) 1);
 
 			iconj = 0;
 			i__1 = nconv;
@@ -27544,7 +27043,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 					/*                 %-------------------------------------------% */
 					/*                 | Complex conjugate pair case. Note that    | */
-					/*                 | since the real and imaginary part of      | */
+					/*                 | since the float and imaginary part of      | */
 					/*                 | the eigenvector are stored in consecutive | */
 					/*                 %-------------------------------------------% */
 
@@ -27565,10 +27064,10 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			if (msglvl > 2)
 			{
 				dcopy_ (ncv, &workl[invsub + *ncv - 1], &ldq, &workl[ihbds], &c__1);
-				dvout_ (&debug_1.logfil, ncv, &workl[ihbds], &debug_1.ndigit, "_neupd: Last row of the eigenvector matrix for T", (ftnlen) 48);
+				dvout_ (&debug_1.logfil, ncv, &workl[ihbds], &debug_1.ndigit, "_neupd: Last row of the eigenvector matrix for T", (int) 48);
 				if (msglvl > 3)
 				{
-					dmout_ (&debug_1.logfil, ncv, ncv, &workl[invsub], &ldq, &debug_1.ndigit, "_neupd: The eigenvector matrix " "for T", (ftnlen) 36);
+					dmout_ (&debug_1.logfil, ncv, ncv, &workl[invsub], &ldq, &debug_1.ndigit, "_neupd: The eigenvector matrix " "for T", (int) 36);
 				}
 			}
 
@@ -27594,11 +27093,11 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			/*           | in workl(iheigr) and workl(iheigi).          | */
 			/*           %----------------------------------------------% */
 
-			dorm2r_ ("Right", "Notranspose", n, ncv, &nconv, &workl[invsub], &ldq, &workev[1], &z__[z_offset], ldz, &workd[*n + 1], &ierr, (ftnlen) 5,
-						(ftnlen) 11);
+			dorm2r_ ("Right", "Notranspose", n, ncv, &nconv, &workl[invsub], &ldq, &workev[1], &z__[z_offset], ldz, &workd[*n + 1], &ierr, (int) 5,
+						(int) 11);
 
-			dtrmm_ ("Right", "Upper", "No transpose", "Non-unit", n, &nconv, &c_b348, &workl[invsub], &ldq, &z__[z_offset], ldz, (ftnlen) 5, (ftnlen) 5,
-					  (ftnlen) 12, (ftnlen) 8);
+			dtrmm_ ("Right", "Upper", "No transpose", "Non-unit", n, &nconv, &c_b348, &workl[invsub], &ldq, &z__[z_offset], ldz, (int) 5, (int) 5,
+					  (int) 12, (int) 8);
 
 		}
 
@@ -27624,7 +27123,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	/*     | of A*x = lambda*B*x.                           | */
 	/*     %------------------------------------------------% */
 
-	if (s_cmp (type__, "REGULR", (ftnlen) 6, (ftnlen) 6) == 0)
+	if (s_cmp (type__, "REGULR", (int) 6, (int) 6) == 0)
 	{
 
 		if (*rvec)
@@ -27642,7 +27141,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		/*        |   Ritz values in the original system. | */
 		/*        %---------------------------------------% */
 
-		if (s_cmp (type__, "SHIFTI", (ftnlen) 6, (ftnlen) 6) == 0)
+		if (s_cmp (type__, "SHIFTI", (int) 6, (int) 6) == 0)
 		{
 
 			if (*rvec)
@@ -27659,7 +27158,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			}
 
 		}
-		else if (s_cmp (type__, "REALPT", (ftnlen) 6, (ftnlen) 6) == 0)
+		else if (s_cmp (type__, "REALPT", (int) 6, (int) 6) == 0)
 		{
 
 			i__1 = *ncv;
@@ -27669,7 +27168,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			}
 
 		}
-		else if (s_cmp (type__, "IMAGPT", (ftnlen) 6, (ftnlen) 6) == 0)
+		else if (s_cmp (type__, "IMAGPT", (int) 6, (int) 6) == 0)
 		{
 
 			i__1 = *ncv;
@@ -27690,7 +27189,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 		/*        | *The Ritz vectors are not affected by the transformation. | */
 		/*        %-----------------------------------------------------------% */
 
-		if (s_cmp (type__, "SHIFTI", (ftnlen) 6, (ftnlen) 6) == 0)
+		if (s_cmp (type__, "SHIFTI", (int) 6, (int) 6) == 0)
 		{
 
 			i__1 = *ncv;
@@ -27706,7 +27205,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 			dcopy_ (&nconv, &workl[iheigi], &c__1, &di[1], &c__1);
 
 		}
-		else if (s_cmp (type__, "REALPT", (ftnlen) 6, (ftnlen) 6) == 0 || s_cmp (type__, "IMAGPT", (ftnlen) 6, (ftnlen) 6) == 0)
+		else if (s_cmp (type__, "REALPT", (int) 6, (int) 6) == 0 || s_cmp (type__, "IMAGPT", (int) 6, (int) 6) == 0)
 		{
 
 			dcopy_ (&nconv, &workl[iheigr], &c__1, &dr[1], &c__1);
@@ -27716,17 +27215,17 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 
 	}
 
-	if (s_cmp (type__, "SHIFTI", (ftnlen) 6, (ftnlen) 6) == 0 && msglvl > 1)
+	if (s_cmp (type__, "SHIFTI", (int) 6, (int) 6) == 0 && msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, &nconv, &dr[1], &debug_1.ndigit, "_neupd: Un" "transformed real part of the Ritz valuess.", (ftnlen) 52);
-		dvout_ (&debug_1.logfil, &nconv, &di[1], &debug_1.ndigit, "_neupd: Un" "transformed imag part of the Ritz valuess.", (ftnlen) 52);
-		dvout_ (&debug_1.logfil, &nconv, &workl[ihbds], &debug_1.ndigit, "_ne" "upd: Ritz estimates of untransformed Ritz values.", (ftnlen) 52);
+		dvout_ (&debug_1.logfil, &nconv, &dr[1], &debug_1.ndigit, "_neupd: Un" "transformed float part of the Ritz valuess.", (int) 52);
+		dvout_ (&debug_1.logfil, &nconv, &di[1], &debug_1.ndigit, "_neupd: Un" "transformed imag part of the Ritz valuess.", (int) 52);
+		dvout_ (&debug_1.logfil, &nconv, &workl[ihbds], &debug_1.ndigit, "_ne" "upd: Ritz estimates of untransformed Ritz values.", (int) 52);
 	}
-	else if (s_cmp (type__, "REGULR", (ftnlen) 6, (ftnlen) 6) == 0 && msglvl > 1)
+	else if (s_cmp (type__, "REGULR", (int) 6, (int) 6) == 0 && msglvl > 1)
 	{
-		dvout_ (&debug_1.logfil, &nconv, &dr[1], &debug_1.ndigit, "_neupd: Re" "al parts of converged Ritz values.", (ftnlen) 44);
-		dvout_ (&debug_1.logfil, &nconv, &di[1], &debug_1.ndigit, "_neupd: Im" "ag parts of converged Ritz values.", (ftnlen) 44);
-		dvout_ (&debug_1.logfil, &nconv, &workl[ihbds], &debug_1.ndigit, "_ne" "upd: Associated Ritz estimates.", (ftnlen) 34);
+		dvout_ (&debug_1.logfil, &nconv, &dr[1], &debug_1.ndigit, "_neupd: Re" "al parts of converged Ritz values.", (int) 44);
+		dvout_ (&debug_1.logfil, &nconv, &di[1], &debug_1.ndigit, "_neupd: Im" "ag parts of converged Ritz values.", (int) 44);
+		dvout_ (&debug_1.logfil, &nconv, &workl[ihbds], &debug_1.ndigit, "_ne" "upd: Associated Ritz estimates.", (int) 34);
 	}
 
 	/*     %-------------------------------------------------% */
@@ -27735,7 +27234,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 	/*     | for MODE = 2.                                   | */
 	/*     %-------------------------------------------------% */
 
-	if (*rvec && *(unsigned char *) howmny == 'A' && s_cmp (type__, "SHIFTI", (ftnlen) 6, (ftnlen) 6) == 0)
+	if (*rvec && *(unsigned char *) howmny == 'A' && s_cmp (type__, "SHIFTI", (int) 6, (int) 6) == 0)
 	{
 
 		/*        %------------------------------------------------% */
@@ -27820,8 +27319,8 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 /*          Shift selection criteria. */
 /*          'LM' -> want the KEV eigenvalues of largest magnitude. */
 /*          'SM' -> want the KEV eigenvalues of smallest magnitude. */
-/*          'LR' -> want the KEV eigenvalues of largest real part. */
-/*          'SR' -> want the KEV eigenvalues of smallest real part. */
+/*          'LR' -> want the KEV eigenvalues of largest float part. */
+/*          'SR' -> want the KEV eigenvalues of smallest float part. */
 /*          'LI' -> want the KEV eigenvalues of largest imaginary part. */
 /*          'SI' -> want the KEV eigenvalues of smallest imaginary part. */
 
@@ -27836,7 +27335,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 /*           pairs together. */
 
 /*  RITZR,  Double precision array of length KEV+NP.  (INPUT/OUTPUT) */
-/*  RITZI   On INPUT, RITZR and RITZI contain the real and imaginary */
+/*  RITZI   On INPUT, RITZR and RITZI contain the float and imaginary */
 /*          parts of the eigenvalues of H. */
 /*          On OUTPUT, RITZR and RITZI are sorted so that the unwanted */
 /*          eigenvalues are in the first NP locations and the wanted */
@@ -27859,7 +27358,7 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 /* \BeginLib */
 
 /* \Local variables: */
-/*     xxxxxx  real */
+/*     xxxxxx  float */
 
 /* \Routines called: */
 /*     dsortc  ARPACK sorting routine. */
@@ -27887,18 +27386,15 @@ dneupd_ (logical * rvec, char *howmny, logical * select,
 /* ----------------------------------------------------------------------- */
 
 static int
-dngets_ (integer * ishift, char *which, integer * kev,
-			integer * np, doublereal * ritzr, doublereal * ritzi, doublereal * bounds, doublereal * shiftr, doublereal * shifti, ftnlen which_len)
+dngets_ (int * ishift, char *which, int * kev,
+			int * np, double * ritzr, double * ritzi, double * bounds, double * shiftr, double * shifti, int which_len)
 {
 	/* System generated locals */
-	integer i__1;
-
-	/* Builtin functions */
-	integer s_cmp (char *, char *, ftnlen, ftnlen);
+	int i__1;
 
 	/* Local variables */
-	static real t0, t1;
-	static integer msglvl;
+	static float t0, t1;
+	static int msglvl;
 
 
 	/*     %----------------------------------------------------% */
@@ -27981,39 +27477,39 @@ dngets_ (integer * ishift, char *which, integer * kev,
 	/*     | complex conjugate pairs together                   | */
 	/*     %----------------------------------------------------% */
 
-	if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) == 0)
+	if (s_cmp (which, "LM", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("LR", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("LR", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
-	else if (s_cmp (which, "SM", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SM", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("SR", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("SR", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
-	else if (s_cmp (which, "LR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "LR", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("LM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("LM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
-	else if (s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SR", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("SM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("SM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
-	else if (s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "LI", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("LM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("LM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
-	else if (s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SI", (int) 2, (int) 2) == 0)
 	{
 		i__1 = *kev + *np;
-		dsortc_ ("SM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+		dsortc_ ("SM", &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 	}
 
 	i__1 = *kev + *np;
-	dsortc_ (which, &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (ftnlen) 2);
+	dsortc_ (which, &c_true, &i__1, &ritzr[1], &ritzi[1], &bounds[1], (int) 2);
 
 	/*     %-------------------------------------------------------% */
 	/*     | Increase KEV by one if the ( ritzr(np),ritzi(np) )    | */
@@ -28040,7 +27536,7 @@ dngets_ (integer * ishift, char *which, integer * kev,
 		/*        | Be careful and use 'SR' since we want to sort BOUNDS! | */
 		/*        %-------------------------------------------------------% */
 
-		dsortc_ ("SR", &c_true, np, &bounds[1], &ritzr[1], &ritzi[1], (ftnlen) 2);
+		dsortc_ ("SR", &c_true, np, &bounds[1], &ritzr[1], &ritzi[1], (int) 2);
 	}
 
 	second_ (&t1);
@@ -28048,14 +27544,14 @@ dngets_ (integer * ishift, char *which, integer * kev,
 
 	if (msglvl > 0)
 	{
-		ivout_ (&debug_1.logfil, &c__1, kev, &debug_1.ndigit, "_ngets: KEV is", (ftnlen) 14);
-		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_ngets: NP is", (ftnlen) 13);
+		ivout_ (&debug_1.logfil, &c__1, kev, &debug_1.ndigit, "_ngets: KEV is", (int) 14);
+		ivout_ (&debug_1.logfil, &c__1, np, &debug_1.ndigit, "_ngets: NP is", (int) 13);
 		i__1 = *kev + *np;
-		dvout_ (&debug_1.logfil, &i__1, &ritzr[1], &debug_1.ndigit, "_ngets: " "Eigenvalues of current H matrix -- real part", (ftnlen) 52);
+		dvout_ (&debug_1.logfil, &i__1, &ritzr[1], &debug_1.ndigit, "_ngets: " "Eigenvalues of current H matrix -- float part", (int) 52);
 		i__1 = *kev + *np;
-		dvout_ (&debug_1.logfil, &i__1, &ritzi[1], &debug_1.ndigit, "_ngets: " "Eigenvalues of current H matrix -- imag part", (ftnlen) 52);
+		dvout_ (&debug_1.logfil, &i__1, &ritzi[1], &debug_1.ndigit, "_ngets: " "Eigenvalues of current H matrix -- imag part", (int) 52);
 		i__1 = *kev + *np;
-		dvout_ (&debug_1.logfil, &i__1, &bounds[1], &debug_1.ndigit, "_ngets:" " Ritz estimates of the current KEV+NP Ritz values", (ftnlen) 56);
+		dvout_ (&debug_1.logfil, &i__1, &bounds[1], &debug_1.ndigit, "_ngets:" " Ritz estimates of the current KEV+NP Ritz values", (int) 56);
 	}
 
 	return 0;
@@ -28074,7 +27570,7 @@ dngets_ (integer * ishift, char *which, integer * kev,
 /* \Description: */
 /*  Sorts the complex array in XREAL and XIMAG into the order */
 /*  specified by WHICH and optionally applies the permutation to the */
-/*  real array Y. It is assumed that if an element of XIMAG is */
+/*  float array Y. It is assumed that if an element of XIMAG is */
 /*  nonzero, then its negative is also an element. In other words, */
 /*  both members of a complex conjugate pair are to be sorted and the */
 /*  pairs are kept adjacent to each other. */
@@ -28132,18 +27628,15 @@ dngets_ (integer * ishift, char *which, integer * kev,
 /* ----------------------------------------------------------------------- */
 
 static int
-dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublereal * ximag, doublereal * y, ftnlen which_len)
+dsortc_ (char *which, bool * apply, int * n, double * xfloat, double * ximag, double * y, int which_len)
 {
 	/* System generated locals */
-	integer i__1;
-	doublereal d__1, d__2;
-
-	/* Builtin functions */
-	integer s_cmp (char *, char *, ftnlen, ftnlen);
+	int i__1;
+	double d__1, d__2;
 
 	/* Local variables */
-	static integer i__, j, igap;
-	static doublereal temp, temp1, temp2;
+	static int i__, j, igap;
+	static double temp, temp1, temp2;
 
 
 	/*     %------------------% */
@@ -28172,7 +27665,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 
 	igap = *n / 2;
 
-	if (s_cmp (which, "LM", (ftnlen) 2, (ftnlen) 2) == 0)
+	if (s_cmp (which, "LM", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------------% */
@@ -28196,14 +27689,14 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 				goto L30;
 			}
 
-			temp1 = dlapy2_ (&xreal[j], &ximag[j]);
-			temp2 = dlapy2_ (&xreal[j + igap], &ximag[j + igap]);
+			temp1 = dlapy2_ (&xfloat[j], &ximag[j]);
+			temp2 = dlapy2_ (&xfloat[j + igap], &ximag[j + igap]);
 
 			if (temp1 > temp2)
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28229,7 +27722,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 		goto L10;
 
 	}
-	else if (s_cmp (which, "SM", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SM", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------------% */
@@ -28253,14 +27746,14 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 				goto L60;
 			}
 
-			temp1 = dlapy2_ (&xreal[j], &ximag[j]);
-			temp2 = dlapy2_ (&xreal[j + igap], &ximag[j + igap]);
+			temp1 = dlapy2_ (&xfloat[j], &ximag[j]);
+			temp2 = dlapy2_ (&xfloat[j + igap], &ximag[j + igap]);
 
 			if (temp1 < temp2)
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28286,7 +27779,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 		goto L40;
 
 	}
-	else if (s_cmp (which, "LR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "LR", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------% */
@@ -28310,11 +27803,11 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 				goto L90;
 			}
 
-			if (xreal[j] > xreal[j + igap])
+			if (xfloat[j] > xfloat[j + igap])
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28340,7 +27833,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 		goto L70;
 
 	}
-	else if (s_cmp (which, "SR", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SR", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------% */
@@ -28363,11 +27856,11 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 				goto L120;
 			}
 
-			if (xreal[j] < xreal[j + igap])
+			if (xfloat[j] < xfloat[j + igap])
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28393,7 +27886,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 		goto L100;
 
 	}
-	else if (s_cmp (which, "LI", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "LI", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------% */
@@ -28418,9 +27911,9 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 
 			if ((d__1 = ximag[j], abs (d__1)) > (d__2 = ximag[j + igap], abs (d__2)))
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28446,7 +27939,7 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 		goto L130;
 
 	}
-	else if (s_cmp (which, "SI", (ftnlen) 2, (ftnlen) 2) == 0)
+	else if (s_cmp (which, "SI", (int) 2, (int) 2) == 0)
 	{
 
 		/*        %------------------------------------------------% */
@@ -28471,9 +27964,9 @@ dsortc_ (char *which, logical * apply, integer * n, doublereal * xreal, doublere
 
 			if ((d__1 = ximag[j], abs (d__1)) < (d__2 = ximag[j + igap], abs (d__2)))
 			{
-				temp = xreal[j];
-				xreal[j] = xreal[j + igap];
-				xreal[j + igap] = temp;
+				temp = xfloat[j];
+				xfloat[j] = xfloat[j + igap];
+				xfloat[j + igap] = temp;
 
 				temp = ximag[j];
 				ximag[j] = ximag[j + igap];
@@ -28597,282 +28090,12 @@ dstatn_ (void)
 /* ----------------------------------------------------------------------- */
 
 static int
-dvout_ (integer * lout, integer * n, doublereal * sx, integer * idigit, char *ifmt, ftnlen ifmt_len)
+dvout_ (int * lout, int * n, double * sx, int * idigit, char *ifmt, int ifmt_len)
 {
-	/* Format strings */
-	static char fmt_9999[] = "(/1x,a,/1x,a)";
-	static char fmt_9998[] = "(1x,i4,\002 - \002,i4,\002:\002,1p,10d12.3)";
-	static char fmt_9997[] = "(1x,i4,\002 - \002,i4,\002:\002,1x,1p,8d14.5)";
-	static char fmt_9996[] = "(1x,i4,\002 - \002,i4,\002:\002,1x,1p,6d18.9)";
-	static char fmt_9995[] = "(1x,i4,\002 - \002,i4,\002:\002,1x,1p,5d24.13)";
-	static char fmt_9994[] = "(1x,\002 \002)";
-
-	/* System generated locals */
-	integer i__1, i__2, i__3;
-
-	/* Builtin functions */
-	integer i_len (char *, ftnlen), s_wsfe (cilist *), do_fio (integer *, char *, ftnlen), e_wsfe (void);
-
-	/* Local variables */
-	static integer i__, k1, k2, lll;
-	static char line[80];
-	static integer ndigit;
-
-	/* Fortran I/O blocks */
-	static cilist io___1067 = { 0, 0, 0, fmt_9999, 0 };
-	static cilist io___1071 = { 0, 0, 0, fmt_9998, 0 };
-	static cilist io___1072 = { 0, 0, 0, fmt_9997, 0 };
-	static cilist io___1073 = { 0, 0, 0, fmt_9996, 0 };
-	static cilist io___1074 = { 0, 0, 0, fmt_9995, 0 };
-	static cilist io___1075 = { 0, 0, 0, fmt_9998, 0 };
-	static cilist io___1076 = { 0, 0, 0, fmt_9997, 0 };
-	static cilist io___1077 = { 0, 0, 0, fmt_9996, 0 };
-	static cilist io___1078 = { 0, 0, 0, fmt_9995, 0 };
-	static cilist io___1079 = { 0, 0, 0, fmt_9994, 0 };
-
-
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR ARGUMENTS */
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR LOCAL VARIABLES */
-	/*     .. Scalar Arguments .. */
-	/*     .. */
-	/*     .. Array Arguments .. */
-	/*     .. */
-	/*     .. Local Scalars .. */
-	/*     .. */
-	/*     .. Intrinsic Functions .. */
-	/*     .. */
-	/*     .. Executable Statements .. */
-	/*     ... */
-	/*     ... FIRST EXECUTABLE STATEMENT */
-
-
-	/* Parameter adjustments */
-	--sx;
-
-	/* Function Body */
-	/* Computing MIN */
-	i__1 = i_len (ifmt, ifmt_len);
-	lll = min (i__1, 80);
-	i__1 = lll;
-	for (i__ = 1; i__ <= i__1; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = '-';
-		/* L10: */
-	}
-
-	for (i__ = lll + 1; i__ <= 80; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = ' ';
-		/* L20: */
-	}
-
-	io___1067.ciunit = *lout;
-	s_wsfe (&io___1067);
-	do_fio (&c__1, ifmt, ifmt_len);
-	do_fio (&c__1, line, lll);
-	e_wsfe ();
-
-	if (*n <= 0)
-	{
-		return 0;
-	}
-	ndigit = *idigit;
-	if (*idigit == 0)
-	{
-		ndigit = 4;
-	}
-
-	/* ======================================================================= */
-	/*             CODE FOR OUTPUT USING 72 COLUMNS FORMAT */
-	/* ======================================================================= */
-
-	if (*idigit < 0)
-	{
-		ndigit = -(*idigit);
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 5)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 4;
-				k2 = min (i__2, i__3);
-				io___1071.ciunit = *lout;
-				s_wsfe (&io___1071);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L30: */
-			}
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 4)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 3;
-				k2 = min (i__2, i__3);
-				io___1072.ciunit = *lout;
-				s_wsfe (&io___1072);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L40: */
-			}
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 3)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 2;
-				k2 = min (i__2, i__3);
-				io___1073.ciunit = *lout;
-				s_wsfe (&io___1073);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L50: */
-			}
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 2)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 1;
-				k2 = min (i__2, i__3);
-				io___1074.ciunit = *lout;
-				s_wsfe (&io___1074);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L60: */
-			}
-		}
-
-		/* ======================================================================= */
-		/*             CODE FOR OUTPUT USING 132 COLUMNS FORMAT */
-		/* ======================================================================= */
-
-	}
-	else
-	{
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 10)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 9;
-				k2 = min (i__2, i__3);
-				io___1075.ciunit = *lout;
-				s_wsfe (&io___1075);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L70: */
-			}
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 8)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 7;
-				k2 = min (i__2, i__3);
-				io___1076.ciunit = *lout;
-				s_wsfe (&io___1076);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L80: */
-			}
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 6)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 5;
-				k2 = min (i__2, i__3);
-				io___1077.ciunit = *lout;
-				s_wsfe (&io___1077);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L90: */
-			}
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 5)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 4;
-				k2 = min (i__2, i__3);
-				io___1078.ciunit = *lout;
-				s_wsfe (&io___1078);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &sx[i__], (ftnlen) sizeof (doublereal));
-				}
-				e_wsfe ();
-				/* L100: */
-			}
-		}
-	}
-	io___1079.ciunit = *lout;
-	s_wsfe (&io___1079);
-	e_wsfe ();
+	printf("No real vector output\n");
 	return 0;
 }	/* dvout_ */
+
 
 /* ----------------------------------------------------------------------- */
 /*  Routine:    IVOUT */
@@ -28892,289 +28115,17 @@ dvout_ (integer * lout, integer * n, doublereal * sx, integer * idigit, char *if
 /* ----------------------------------------------------------------------- */
 
 static int
-ivout_ (integer * lout, integer * n, integer * ix, integer * idigit, char *ifmt, ftnlen ifmt_len)
+ivout_ (int * lout, int * n, int * ix, int * idigit, char *ifmt, int ifmt_len)
 {
-	/* Format strings */
-	static char fmt_2000[] = "(/1x,a/1x,a)";
-	static char fmt_1000[] = "(1x,i4,\002 - \002,i4,\002:\002,20(1x,i5))";
-	static char fmt_1001[] = "(1x,i4,\002 - \002,i4,\002:\002,15(1x,i7))";
-	static char fmt_1002[] = "(1x,i4,\002 - \002,i4,\002:\002,10(1x,i11))";
-	static char fmt_1003[] = "(1x,i4,\002 - \002,i4,\002:\002,7(1x,i15))";
-	static char fmt_1004[] = "(1x,\002 \002)";
-
-	/* System generated locals */
-	integer i__1, i__2, i__3;
-
-	/* Builtin functions */
-	integer i_len (char *, ftnlen), s_wsfe (cilist *), do_fio (integer *, char *, ftnlen), e_wsfe (void);
-
-	/* Local variables */
-	static integer i__, k1, k2, lll;
-	static char line[80];
-	static integer ndigit;
-
-	/* Fortran I/O blocks */
-	static cilist io___1083 = { 0, 0, 0, fmt_2000, 0 };
-	static cilist io___1087 = { 0, 0, 0, fmt_1000, 0 };
-	static cilist io___1088 = { 0, 0, 0, fmt_1001, 0 };
-	static cilist io___1089 = { 0, 0, 0, fmt_1002, 0 };
-	static cilist io___1090 = { 0, 0, 0, fmt_1003, 0 };
-	static cilist io___1091 = { 0, 0, 0, fmt_1000, 0 };
-	static cilist io___1092 = { 0, 0, 0, fmt_1001, 0 };
-	static cilist io___1093 = { 0, 0, 0, fmt_1002, 0 };
-	static cilist io___1094 = { 0, 0, 0, fmt_1003, 0 };
-	static cilist io___1095 = { 0, 0, 0, fmt_1004, 0 };
-
-
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR ARGUMENTS */
-	/*     ... */
-	/*     ... SPECIFICATIONS FOR LOCAL VARIABLES */
-	/*     ... */
-	/*     ... SPECIFICATIONS INTRINSICS */
-
-
-	/* Parameter adjustments */
-	--ix;
-
-	/* Function Body */
-	/* Computing MIN */
-	i__1 = i_len (ifmt, ifmt_len);
-	lll = min (i__1, 80);
-	i__1 = lll;
-	for (i__ = 1; i__ <= i__1; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = '-';
-		/* L1: */
-	}
-
-	for (i__ = lll + 1; i__ <= 80; ++i__)
-	{
-		*(unsigned char *) &line[i__ - 1] = ' ';
-		/* L2: */
-	}
-
-	io___1083.ciunit = *lout;
-	s_wsfe (&io___1083);
-	do_fio (&c__1, ifmt, ifmt_len);
-	do_fio (&c__1, line, lll);
-	e_wsfe ();
-
-	if (*n <= 0)
-	{
-		return 0;
-	}
-	ndigit = *idigit;
-	if (*idigit == 0)
-	{
-		ndigit = 4;
-	}
-
-	/* ======================================================================= */
-	/*             CODE FOR OUTPUT USING 72 COLUMNS FORMAT */
-	/* ======================================================================= */
-
-	if (*idigit < 0)
-	{
-
-		ndigit = -(*idigit);
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 10)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 9;
-				k2 = min (i__2, i__3);
-				io___1087.ciunit = *lout;
-				s_wsfe (&io___1087);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L10: */
-			}
-
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 7)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 6;
-				k2 = min (i__2, i__3);
-				io___1088.ciunit = *lout;
-				s_wsfe (&io___1088);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L30: */
-			}
-
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 5)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 4;
-				k2 = min (i__2, i__3);
-				io___1089.ciunit = *lout;
-				s_wsfe (&io___1089);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L50: */
-			}
-
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 3)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 2;
-				k2 = min (i__2, i__3);
-				io___1090.ciunit = *lout;
-				s_wsfe (&io___1090);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L70: */
-			}
-		}
-
-		/* ======================================================================= */
-		/*             CODE FOR OUTPUT USING 132 COLUMNS FORMAT */
-		/* ======================================================================= */
-
-	}
-	else
-	{
-
-		if (ndigit <= 4)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 20)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 19;
-				k2 = min (i__2, i__3);
-				io___1091.ciunit = *lout;
-				s_wsfe (&io___1091);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L90: */
-			}
-
-		}
-		else if (ndigit <= 6)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 15)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 14;
-				k2 = min (i__2, i__3);
-				io___1092.ciunit = *lout;
-				s_wsfe (&io___1092);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L110: */
-			}
-
-		}
-		else if (ndigit <= 10)
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 10)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 9;
-				k2 = min (i__2, i__3);
-				io___1093.ciunit = *lout;
-				s_wsfe (&io___1093);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L130: */
-			}
-
-		}
-		else
-		{
-			i__1 = *n;
-			for (k1 = 1; k1 <= i__1; k1 += 7)
-			{
-				/* Computing MIN */
-				i__2 = *n, i__3 = k1 + 6;
-				k2 = min (i__2, i__3);
-				io___1094.ciunit = *lout;
-				s_wsfe (&io___1094);
-				do_fio (&c__1, (char *) &k1, (ftnlen) sizeof (integer));
-				do_fio (&c__1, (char *) &k2, (ftnlen) sizeof (integer));
-				i__2 = k2;
-				for (i__ = k1; i__ <= i__2; ++i__)
-				{
-					do_fio (&c__1, (char *) &ix[i__], (ftnlen) sizeof (integer));
-				}
-				e_wsfe ();
-				/* L150: */
-			}
-		}
-	}
-	io___1095.ciunit = *lout;
-	s_wsfe (&io___1095);
-	e_wsfe ();
-
-
+	printf("No integer vector output\n");
 	return 0;
 }	/* ivout_ */
 
 static int
-second_ (real * t)
+second_ (float * t)
 {
-	static real t1;
-	static real tarray[2];
+	static float t1;
+	static float tarray[2];
 
 
 
@@ -29197,7 +28148,7 @@ second_ (real * t)
 	/*     .. */
 	/*     .. Executable Statements .. */
 
-	t1 = (real)etime_ (tarray);
+	t1 = (float)etime_ (tarray);
 	*t = tarray[0];
 	return 0;
 

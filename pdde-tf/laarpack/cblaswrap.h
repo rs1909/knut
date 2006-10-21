@@ -1,38 +1,148 @@
-#include "f2c.h"
 #include "cblas.h"
-#include <ctype.h>
-#include <stdio.h>
 
-static inline logical
-lsame_ (char *ca, char *cb, ftnlen ca_len, ftnlen cb_len)
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+
+typedef int bool;
+#define false (0)
+#define true (1)
+
+#define max(a,b) ( (a) > b ? (a) : (b) )
+#define min(a,b) ( (a) > b ? (b) : (a) )
+#define abs(a) (((a)>0)?(a):(-a))
+
+#define s_cmp(a,b,c,d) strncmp(a,b,min(c,d))
+#define s_copy(a,b,c,d) strncpy(a,b,min(c,d))
+
+static inline float etime_(float* et)
+{
+  clock_t clicks;
+  clicks = clock();
+  return ( (float) clicks / CLOCKS_PER_SEC );
+}
+
+static inline double d_lg10(double* a)
+{
+	return log10(*a);
+}
+
+static inline double pow_di(double* a, int *i)
+{
+	return pow(*a,*i);
+}
+
+static inline double pow_dd(double* a, double *b)
+{
+	return pow(*a,*b);
+}
+
+static inline double d_sign (double * a, double * b)
+{
+	double x;
+		x = (*a >= 0 ? *a : -*a);
+		return (*b >= 0 ? x : -x);
+}
+
+static inline int i_dnnt (double * x)
+{
+	return (int) (*x >= 0. ? floor (*x + .5) : -floor (.5 - *x));
+}
+
+static inline char *f77_alloc (int Len, char *whence)
+{
+	char *rv;
+	if (!(rv = (char *) malloc (Len)))
+	{
+		fprintf (stderr, "malloc(%d) failure in %s\n", Len, whence);
+		exit (3);
+	}
+	return rv;
+}
+
+static inline void s_cat (char *lp, char *rpp[], int rnp[], int * np, int ll)
+{
+	int i, nc;
+	char *rp;
+	int n = *np;
+	int L, m;
+	char *lp0, *lp1;
+
+		lp0 = 0;
+		lp1 = lp;
+		L = ll;
+		i = 0;
+	while (i < n)
+	{
+		rp = rpp[i];
+		m = rnp[i++];
+		if (rp >= lp1 || rp + m <= lp)
+		{
+			if ((L -= m) <= 0)
+			{
+				n = i;
+				break;
+			}
+			lp1 += m;
+			continue;
+		}
+		lp0 = lp;
+		lp = lp1 = f77_alloc (L = ll, "s_cat");
+		break;
+	}
+	lp1 = lp;
+	for (i = 0; i < n; ++i)
+	{
+		nc = ll;
+		if (rnp[i] < nc)
+			nc = rnp[i];
+		ll -= nc;
+		rp = rpp[i];
+		while (--nc >= 0)
+			*lp++ = *rp++;
+	}
+	while (--ll >= 0)
+		*lp++ = ' ';
+	if (lp0)
+	{
+		memcpy (lp0, lp1, L);
+		free (lp1);
+	}
+}
+
+static inline bool
+lsame_ (char *ca, char *cb, int ca_len, int cb_len)
 {
 	if (*ca == *cb)
-		return TRUE_;
+		return true;
 	else
 		return toupper (*ca) == toupper (*cb);
 }
 
 static inline void
-daxpy_ (integer * N, doublereal * alpha, doublereal * X, integer * incX, doublereal * Y, integer * incY)
+daxpy_ (int * N, double * alpha, double * X, int * incX, double * Y, int * incY)
 {
 	cblas_daxpy (*N, *alpha, X, *incX, Y, *incY);
 }
 
 static inline void
-dcopy_ (integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY)
+dcopy_ (int * N, double * X, int * incX, double * Y, int * incY)
 {
 	cblas_dcopy (*N, X, *incX, Y, *incY);
 }
 
-static inline doublereal
-ddot_ (integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY)
+static inline double
+ddot_ (int * N, double * X, int * incX, double * Y, int * incY)
 {
 	return cblas_ddot (*N, X, *incX, Y, *incY);
 }
 
 static inline void
-dgemm_ (char *TRANSA, char *TRANSB, integer * M, integer * N, integer * K, doublereal * alpha, doublereal * A, integer * lda, doublereal * B, integer * ldb,
-		  doublereal * beta, doublereal * C, integer * ldc, ftnlen l1, ftnlen l2)
+dgemm_ (char *TRANSA, char *TRANSB, int * M, int * N, int * K, double * alpha, double * A, int * lda, double * B, int * ldb,
+		  double * beta, double * C, int * ldc, int l1, int l2)
 {
 	enum CBLAS_TRANSPOSE TransA;
 	enum CBLAS_TRANSPOSE TransB;
@@ -59,8 +169,8 @@ dgemm_ (char *TRANSA, char *TRANSB, integer * M, integer * N, integer * K, doubl
 }
 
 static inline void
-dgemv_ (char *TRANSA, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * X, integer * incX, doublereal * beta,
-		  doublereal * Y, integer * incY, ftnlen l1)
+dgemv_ (char *TRANSA, int * M, int * N, double * alpha, double * A, int * lda, double * X, int * incX, double * beta,
+		  double * Y, int * incY, int l1)
 {
 	enum CBLAS_TRANSPOSE TransA;
 
@@ -77,8 +187,8 @@ dgemv_ (char *TRANSA, integer * M, integer * N, doublereal * alpha, doublereal *
 }
 
 static inline void
-dtrsm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * B,
-		  integer * ldb, ftnlen l1, ftnlen l2, ftnlen l3, ftnlen l4)
+dtrsm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, int * M, int * N, double * alpha, double * A, int * lda, double * B,
+		  int * ldb, int l1, int l2, int l3, int l4)
 {
 	enum CBLAS_SIDE Side;
 	enum CBLAS_UPLO Uplo;
@@ -119,7 +229,7 @@ dtrsm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer *
 }
 
 static inline void
-dtrmv_ (char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integer * lda, doublereal * X, integer * incX, ftnlen l1, ftnlen l2, ftnlen l3)
+dtrmv_ (char *UPLO, char *TRANSA, char *DIAG, int * N, double * A, int * lda, double * X, int * incX, int l1, int l2, int l3)
 {
 	enum CBLAS_UPLO Uplo;
 	enum CBLAS_TRANSPOSE TransA;
@@ -152,7 +262,7 @@ dtrmv_ (char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integ
 }
 
 static inline void
-dtrsv_ (char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integer * lda, doublereal * X, integer * incX, ftnlen l1, ftnlen l2, ftnlen l3)
+dtrsv_ (char *UPLO, char *TRANSA, char *DIAG, int * N, double * A, int * lda, double * X, int * incX, int l1, int l2, int l3)
 {
 	enum CBLAS_UPLO Uplo;
 	enum CBLAS_TRANSPOSE TransA;
@@ -185,8 +295,8 @@ dtrsv_ (char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integ
 }
 
 static inline void
-dtrmm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * B,
-		  integer * ldb, ftnlen l1, ftnlen l2, ftnlen l3, ftnlen l4)
+dtrmm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, int * M, int * N, double * alpha, double * A, int * lda, double * B,
+		  int * ldb, int l1, int l2, int l3, int l4)
 {
 	enum CBLAS_SIDE Side;
 	enum CBLAS_UPLO Uplo;
@@ -227,43 +337,43 @@ dtrmm_ (char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer *
 }
 
 static inline void
-dscal_ (integer * N, doublereal * alpha, doublereal * X, integer * incX)
+dscal_ (int * N, double * alpha, double * X, int * incX)
 {
 	cblas_dscal (*N, *alpha, X, *incX);
 }
 
 static inline void
-dswap_ (integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY)
+dswap_ (int * N, double * X, int * incX, double * Y, int * incY)
 {
 	cblas_dswap (*N, X, *incX, Y, *incY);
 }
 
-static inline integer
-idamax_ (integer * N, doublereal * X, integer * incX)
+static inline int
+idamax_ (int * N, double * X, int * incX)
 {
 	return cblas_idamax (*N, X, *incX) + 1;
 }
 
-static inline doublereal
-dnrm2_ (integer * N, doublereal * X, integer * incX)
+static inline double
+dnrm2_ (int * N, double * X, int * incX)
 {
 	return cblas_dnrm2 (*N, X, *incX);
 }
 
 static inline void
-drot_ (integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY, doublereal * c, doublereal * s)
+drot_ (int * N, double * X, int * incX, double * Y, int * incY, double * c, double * s)
 {
 	cblas_drot (*N, X, *incX, Y, *incY, *c, *s);
 }
 
-static inline doublereal
-dasum_ (integer * N, doublereal * X, integer * incX)
+static inline double
+dasum_ (int * N, double * X, int * incX)
 {
 	return cblas_dasum (*N, X, *incX);
 }
 
 static inline void
-dger_ (integer * M, integer * N, doublereal * alpha, doublereal * X, integer * incX, doublereal * Y, integer * incY, doublereal * A, integer * lda)
+dger_ (int * M, int * N, double * alpha, double * X, int * incX, double * Y, int * incY, double * A, int * lda)
 {
 	cblas_dger (CblasColMajor, *M, *N, *alpha, X, *incX, Y, *incY, A, *lda);
 }
