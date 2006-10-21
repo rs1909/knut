@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -20,12 +20,12 @@ int umfpack_di_symbolic
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_dl_symbolic
+UF_long umfpack_dl_symbolic
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
     void **Symbolic,
     const double Control [UMFPACK_CONTROL],
@@ -44,12 +44,12 @@ int umfpack_zi_symbolic
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_zl_symbolic
+UF_long umfpack_zl_symbolic
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
     void **Symbolic,
     const double Control [UMFPACK_CONTROL],
@@ -66,11 +66,11 @@ double int Syntax:
     status = umfpack_di_symbolic (n_row, n_col, Ap, Ai, Ax,
 	&Symbolic, Control, Info) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;
-    long n_row, n_col, *Ap, *Ai, status ;
+    UF_long n_row, n_col, *Ap, *Ai, status ;
     double Control [UMFPACK_CONTROL], Info [UMFPACK_INFO], *Ax ;
     status = umfpack_dl_symbolic (n_row, n_col, Ap, Ai, Ax,
 	&Symbolic, Control, Info) ;
@@ -84,11 +84,11 @@ complex int Syntax:
     status = umfpack_zi_symbolic (n_row, n_col, Ap, Ai, Ax, Az,
 	&Symbolic, Control, Info) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;
-    long n_row, n_col, *Ap, *Ai, status ;
+    UF_long n_row, n_col, *Ap, *Ai, status ;
     double Control [UMFPACK_CONTROL], Info [UMFPACK_INFO], *Ax, *Az ;
     status = umfpack_zl_symbolic (n_row, n_col, Ap, Ai, Ax, Az,
 	&Symbolic, Control, Info) ;
@@ -252,7 +252,7 @@ Arguments:
 	    A value less than 1 is treated as 1.  Default: 32.  Modifying this
 	    parameter affects when updates are applied to the working frontal
 	    matrix, and can indirectly affect fill-in and operation count.
-	    As long as the block size is large enough (8 or so), this parameter
+	    Assuming the block size is large enough (8 or so), this parameter
 	    has a modest effect on performance.
 
 	Control [UMFPACK_2BY2_TOLERANCE]:  a diagonal entry S (k,k) is
@@ -328,7 +328,7 @@ Arguments:
 
 	Info [UMFPACK_SIZE_OF_INT]:  the number of bytes in an int.
 
-	Info [UMFPACK_SIZE_OF_LONG]:  the number of bytes in a long.
+	Info [UMFPACK_SIZE_OF_LONG]:  the number of bytes in a UF_long.
 
 	Info [UMFPACK_SIZE_OF_POINTER]:  the number of bytes in a void *
 	    pointer.

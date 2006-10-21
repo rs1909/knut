@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -21,11 +21,11 @@ int umfpack_di_solve
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_dl_solve
+UF_long umfpack_dl_solve
 (
-    long sys,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long sys,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
     double X [ ],
     const double B [ ],
@@ -47,11 +47,11 @@ int umfpack_zi_solve
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_zl_solve
+UF_long umfpack_zl_solve
 (
-    long sys,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long sys,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
     double Xx [ ],	 double Xz [ ],
     const double Bx [ ], const double Bz [ ],
@@ -69,11 +69,11 @@ double int Syntax:
     double *B, *X, *Ax, Info [UMFPACK_INFO], Control [UMFPACK_CONTROL] ;
     status = umfpack_di_solve (sys, Ap, Ai, Ax, X, B, Numeric, Control, Info) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status, *Ap, *Ai, sys ;
+    UF_long status, *Ap, *Ai, sys ;
     double *B, *X, *Ax, Info [UMFPACK_INFO], Control [UMFPACK_CONTROL] ;
     status = umfpack_dl_solve (sys, Ap, Ai, Ax, X, B, Numeric, Control, Info) ;
 
@@ -87,11 +87,11 @@ complex int Syntax:
     status = umfpack_zi_solve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,
 	Control, Info) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status, *Ap, *Ai, sys ;
+    UF_long status, *Ap, *Ai, sys ;
     double *Bx, *Bz, *Xx, *Xz, *Ax, *Az, Info [UMFPACK_INFO],
 	Control [UMFPACK_CONTROL] ;
     status = umfpack_zl_solve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,

@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -22,18 +22,18 @@ int umfpack_di_triplet_to_col
     int Map [ ]
 ) ;
 
-long umfpack_dl_triplet_to_col
+UF_long umfpack_dl_triplet_to_col
 (
-    long n_row,
-    long n_col,
-    long nz,
-    const long Ti [ ],
-    const long Tj [ ],
+    UF_long n_row,
+    UF_long n_col,
+    UF_long nz,
+    const UF_long Ti [ ],
+    const UF_long Tj [ ],
     const double Tx [ ],
-    long Ap [ ],
-    long Ai [ ],
+    UF_long Ap [ ],
+    UF_long Ai [ ],
     double Ax [ ],
-    long Map [ ]
+    UF_long Map [ ]
 ) ;
 
 int umfpack_zi_triplet_to_col
@@ -50,18 +50,18 @@ int umfpack_zi_triplet_to_col
     int Map [ ]
 ) ;
 
-long umfpack_zl_triplet_to_col
+UF_long umfpack_zl_triplet_to_col
 (
-    long n_row,
-    long n_col,
-    long nz,
-    const long Ti [ ],
-    const long Tj [ ],
+    UF_long n_row,
+    UF_long n_col,
+    UF_long nz,
+    const UF_long Ti [ ],
+    const UF_long Tj [ ],
     const double Tx [ ], const double Tz [ ],
-    long Ap [ ],
-    long Ai [ ],
+    UF_long Ap [ ],
+    UF_long Ai [ ],
     double Ax [ ], double Az [ ],
-    long Map [ ]
+    UF_long Map [ ]
 ) ;
 
 /*
@@ -73,10 +73,10 @@ double int Syntax:
     status = umfpack_di_triplet_to_col (n_row, n_col, nz, Ti, Tj, Tx,
 	Ap, Ai, Ax, Map) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, nz, *Ti, *Tj, *Ap, *Ai, status, *Map ;
+    UF_long n_row, n_col, nz, *Ti, *Tj, *Ap, *Ai, status, *Map ;
     double *Tx, *Ax ;
     status = umfpack_dl_triplet_to_col (n_row, n_col, nz, Ti, Tj, Tx,
 	Ap, Ai, Ax, Map) ;
@@ -89,10 +89,10 @@ complex int Syntax:
     status = umfpack_zi_triplet_to_col (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Ap, Ai, Ax, Az, Map) ;
 
-long Syntax:
+UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, nz, *Ti, *Tj, *Ap, *Ai, status, *Map ;
+    UF_long n_row, n_col, nz, *Ti, *Tj, *Ap, *Ai, status, *Map ;
     double *Tx, *Tz, *Ax, *Az ;
     status = umfpack_zl_triplet_to_col (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Ap, Ai, Ax, Az, Map) ;

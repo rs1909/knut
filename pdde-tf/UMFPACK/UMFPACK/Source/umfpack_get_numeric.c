@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -364,13 +364,13 @@ PRIVATE void get_L
     /* count the nonzeros in each row of L */
     /* ---------------------------------------------------------------------- */
 
-/*#pragma ivdep // Robi */
+#pragma ivdep
     for (row = 0 ; row < n_inner ; row++)
     {
 	/* include the diagonal entry in the row counts */
 	Wi [row] = 1 ;
     }
-/*#pragma ivdep // Robi */
+#pragma ivdep
     for (row = n_inner ; row < n_row ; row++)
     {
 	Wi [row] = 0 ;

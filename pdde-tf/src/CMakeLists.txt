@@ -7,6 +7,7 @@ ADD_LIBRARY( pddelib plot.cpp ncolloc.cpp torcolloc.cpp point.cpp torpoint.cpp
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include
+	${PDDE_SOURCE_DIR}/UMFPACK/UFconfig
 	${PDDE_SOURCE_DIR}/ATLAS/include
 	${PDDE_SOURCE_DIR}/src 
 	${PDDE_BINARY_DIR}/src )

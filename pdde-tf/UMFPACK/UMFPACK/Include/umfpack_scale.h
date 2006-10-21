@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -15,7 +15,7 @@ int umfpack_di_scale
     void *Numeric
 ) ;
 
-long umfpack_dl_scale
+UF_long umfpack_dl_scale
 (
     double X [ ],
     const double B [ ],
@@ -29,7 +29,7 @@ int umfpack_zi_scale
     void *Numeric
 ) ;
 
-long umfpack_zl_scale
+UF_long umfpack_zl_scale
 (
     double Xx [ ],	 double Xz [ ],
     const double Bx [ ], const double Bz [ ],
@@ -44,7 +44,7 @@ double int Syntax:
     double *B, *X ;
     status = umfpack_di_scale (X, B, Numeric) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
@@ -58,7 +58,7 @@ complex int Syntax:
     double *Bx, *Bz, *Xx, *Xz ;
     status = umfpack_zi_scale (Xx, Xz, Bx, Bz, Numeric) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;

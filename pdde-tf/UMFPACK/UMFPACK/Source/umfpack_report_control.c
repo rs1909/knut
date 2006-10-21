@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -48,7 +48,7 @@ GLOBAL void UMFPACK_report_control
 #endif
 #ifdef DLONG
     PRINTF (("    Matrix entry defined as: double\n")) ;
-    PRINTF (("    Int (generic integer) defined as: long\n")) ;
+    PRINTF (("    Int (generic integer) defined as: UF_long\n")) ;
 #endif
 #ifdef ZINT
     PRINTF (("    Matrix entry defined as: double complex\n")) ;
@@ -56,7 +56,7 @@ GLOBAL void UMFPACK_report_control
 #endif
 #ifdef ZLONG
     PRINTF (("    Matrix entry defined as: double complex\n")) ;
-    PRINTF (("    Int (generic integer) defined as: long\n")) ;
+    PRINTF (("    Int (generic integer) defined as: UF_long\n")) ;
 #endif
 
     /* ---------------------------------------------------------------------- */
@@ -304,18 +304,11 @@ GLOBAL void UMFPACK_report_control
     PRINTF (("    "ID": BLAS library used:  ",
 	(Int) INDEX (UMFPACK_COMPILED_WITH_BLAS))) ;
 
-#if defined (USE_NO_BLAS)
+#ifdef NBLAS
     PRINTF (("none.  UMFPACK will be slow.\n")) ;
-#elif defined (USE_C_BLAS)
-    PRINTF (("C-BLAS.\n")) ;
-#elif defined (USE_MATLAB_BLAS)
-    PRINTF (("built-in MATLAB BLAS (ATLAS).\n")) ;
-#elif defined (USE_SUNPERF_BLAS)
-    PRINTF (("Sun Performance Library BLAS.\n")) ;
-#elif defined (USE_SCSL_BLAS)
-    PRINTF (("SGI SCSL BLAS.\n")) ;
-#elif defined (USE_FORTRAN_BLAS)
-    PRINTF (("Fortran BLAS.\n")) ;
+#else
+    PRINTF (("Fortran BLAS.  size of BLAS integer: "ID"\n",
+	(Int) (sizeof (BLAS_INT)))) ;
 #endif
 
 #ifdef MATLAB_MEX_FILE
@@ -360,9 +353,9 @@ GLOBAL void UMFPACK_report_control
 #endif
 
     PRINTF (("    computer/operating system: %s\n", UMFPACK_ARCHITECTURE)) ;
-    PRINTF (("    size of int: %g long: %g Int: %g pointer: %g"
+    PRINTF (("    size of int: %g UF_long: %g Int: %g pointer: %g"
 	" double: %g Entry: %g (in bytes)\n\n", (double) sizeof (int),
-	(double) sizeof (long), (double) sizeof (Int),
+	(double) sizeof (UF_long), (double) sizeof (Int),
 	(double) sizeof (void *), (double) sizeof (double),
 	(double) sizeof (Entry))) ;
 }

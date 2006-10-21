@@ -43,7 +43,7 @@ SET( UMFPACK_C umfpack_col_to_triplet.c umfpack_defaults.c umfpack_free_numeric.
 #	umfpack_load_symbolic.c umfpack_save_symbolic.c
 )
 
-SET( GENERIC_C umfpack_timer.c umfpack_tictoc.c umfpack_global.c )
+SET( GENERIC_C umfpack_timer.c umfpack_tictoc.c umfpack_global.c cholmod_blas.h )
 
 SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 	umf_triplet_map.c umf_triplet_values.c umf_triplet_map_values.c
@@ -55,12 +55,12 @@ SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 # include files:
 #-------------------------------------------------------------------------------
 
-INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
+INCLUDE_DIRECTORIES( 
+	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Source
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include
+	${PDDE_SOURCE_DIR}/UMFPACK/UFconfig 
 	${PDDE_SOURCE_DIR}/ATLAS/include )
-
-set( BLAS CBLAS )
 
 SET( FLT DINT ) # form DINT DLONG ZINT ZLONG 
 
@@ -74,4 +74,4 @@ ADD_LIBRARY( umfpack
 SET_SOURCE_FILES_PROPERTIES( ${UMFINT_C} ${UMFINT_H}
 	${UMF_C} ${UMF_H} ${UMFPACK_C}
 	${GENERIC_C} ${UMF_GENERATED_C}
-	PROPERTIES COMPILE_FLAGS "-D${BLAS} -D${FLT}" )
+	PROPERTIES COMPILE_FLAGS "-D${FLT}" )

@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -35,7 +35,7 @@ double int Syntax:
     void *Symbolic ;
     umfpack_di_free_symbolic (&Symbolic) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;
@@ -47,7 +47,7 @@ complex int Syntax:
     void *Symbolic ;
     umfpack_zi_free_symbolic (&Symbolic) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;

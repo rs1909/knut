@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -21,14 +21,14 @@ int umfpack_di_qsymbolic
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_dl_qsymbolic
+UF_long umfpack_dl_qsymbolic
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
-    const long Qinit [ ],
+    const UF_long Qinit [ ],
     void **Symbolic,
     const double Control [UMFPACK_CONTROL],
     double Info [UMFPACK_INFO]
@@ -47,14 +47,14 @@ int umfpack_zi_qsymbolic
     double Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_zl_qsymbolic
+UF_long umfpack_zl_qsymbolic
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
-    const long Qinit [ ],
+    const UF_long Qinit [ ],
     void **Symbolic,
     const double Control [UMFPACK_CONTROL],
     double Info [UMFPACK_INFO]
@@ -70,11 +70,11 @@ double int Syntax:
     status = umfpack_di_qsymbolic (n_row, n_col, Ap, Ai, Ax, Qinit,
 	&Symbolic, Control, Info) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;
-    long n_row, n_col, *Ap, *Ai, *Qinit, status ;
+    UF_long n_row, n_col, *Ap, *Ai, *Qinit, status ;
     double Control [UMFPACK_CONTROL], Info [UMFPACK_INFO], *Ax ;
     status = umfpack_dl_qsymbolic (n_row, n_col, Ap, Ai, Ax, Qinit,
 	&Symbolic, Control, Info) ;
@@ -88,11 +88,11 @@ complex int Syntax:
     status = umfpack_zi_qsymbolic (n_row, n_col, Ap, Ai, Ax, Az, Qinit,
 	&Symbolic, Control, Info) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Symbolic ;
-    long n_row, n_col, *Ap, *Ai, *Qinit, status ;
+    UF_long n_row, n_col, *Ap, *Ai, *Qinit, status ;
     double Control [UMFPACK_CONTROL], Info [UMFPACK_INFO], *Ax, *Az ;
     status = umfpack_zl_qsymbolic (n_row, n_col, Ap, Ai, Ax, Az, Qinit,
 	&Symbolic, Control, Info) ;

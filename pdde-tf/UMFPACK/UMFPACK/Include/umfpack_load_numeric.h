@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -14,7 +14,7 @@ int umfpack_di_load_numeric
     char *filename
 ) ;
 
-long umfpack_dl_load_numeric
+UF_long umfpack_dl_load_numeric
 (
     void **Numeric,
     char *filename
@@ -26,7 +26,7 @@ int umfpack_zi_load_numeric
     char *filename
 ) ;
 
-long umfpack_zl_load_numeric
+UF_long umfpack_zl_load_numeric
 (
     void **Numeric,
     char *filename
@@ -41,10 +41,10 @@ double int Syntax:
     void *Numeric ;
     status = umfpack_di_load_numeric (&Numeric, filename) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long status ;
+    UF_long status ;
     char *filename ;
     void *Numeric ;
     status = umfpack_dl_load_numeric (&Numeric, filename) ;
@@ -57,10 +57,10 @@ complex int Syntax:
     void *Numeric ;
     status = umfpack_zi_load_numeric (&Numeric, filename) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long status ;
+    UF_long status ;
     char *filename ;
     void *Numeric ;
     status = umfpack_zl_load_numeric (&Numeric, filename) ;

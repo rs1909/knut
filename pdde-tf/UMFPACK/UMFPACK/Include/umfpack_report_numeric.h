@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -14,7 +14,7 @@ int umfpack_di_report_numeric
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_dl_report_numeric
+UF_long umfpack_dl_report_numeric
 (
     void *Numeric,
     const double Control [UMFPACK_CONTROL]
@@ -26,7 +26,7 @@ int umfpack_zi_report_numeric
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_zl_report_numeric
+UF_long umfpack_zl_report_numeric
 (
     void *Numeric,
     const double Control [UMFPACK_CONTROL]
@@ -41,12 +41,12 @@ double int Syntax:
     int status ;
     status = umfpack_di_report_numeric (Numeric, Control) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
     double Control [UMFPACK_CONTROL] ;
-    long status ;
+    UF_long status ;
     status = umfpack_dl_report_numeric (Numeric, Control) ;
 
 complex int Syntax:
@@ -57,12 +57,12 @@ complex int Syntax:
     int status ;
     status = umfpack_zi_report_numeric (Numeric, Control) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
     double Control [UMFPACK_CONTROL] ;
-    long status ;
+    UF_long status ;
     status = umfpack_zl_report_numeric (Numeric, Control) ;
 
 Purpose:

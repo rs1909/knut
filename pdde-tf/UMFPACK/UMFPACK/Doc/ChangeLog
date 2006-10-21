@@ -1,3 +1,26 @@
+Aug 31, 2006, version 5.0.1
+
+    * Minor correction to comments in umfpack_get_numeric.h.
+
+May 5, 2006, version 5.0
+
+    * Tcov subdirectory added.  This has existed since the first C version of
+	UMFPACK, but is only now included in the released version.  It provides
+	a near 100% test coverage for UMFPACK.  The code isn't pretty, but it
+	works.
+
+    * now uses CHOLMOD's method for interfacing to the BLAS, including the
+	BLAS_INT definition.  This way, the UF_long version of UMFPACK can
+	call the int BLAS.
+
+    * revised to use AMD v2.0
+
+Apr 7, 2006
+
+    * Minor correction to UMFPACK/Source/Makefile, for those who
+	do not have GNU make.  No change to version number, because
+	no code was modified.
+
 Oct 10, 2005, version 4.6
 
     * umf_solve.c modified for the complex case.  A, X, and b can be
@@ -374,7 +397,7 @@ May 4, 2001:
 
 April 30, 2001:  UMFPACK Version 3.0 released.  Changes since 3.0Beta release:
 
-    * Long integer version added (umfpack_l_* user-callable routines).
+    * long integer version added (umfpack_l_* user-callable routines).
 
     * Peak memory usage in the numerical factorization reduced by a total of
 	12n integers (8n temporary workspace used during numerical factorization,

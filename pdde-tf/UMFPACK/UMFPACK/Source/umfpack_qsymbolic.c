@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -408,7 +408,7 @@ GLOBAL Int UMFPACK_qsymbolic
     Info [UMFPACK_NCOL] = n_col ;
     Info [UMFPACK_SIZE_OF_UNIT] = (double) (sizeof (Unit)) ;
     Info [UMFPACK_SIZE_OF_INT] = (double) (sizeof (int)) ;
-    Info [UMFPACK_SIZE_OF_LONG] = (double) (sizeof (long)) ;
+    Info [UMFPACK_SIZE_OF_LONG] = (double) (sizeof (UF_long)) ;
     Info [UMFPACK_SIZE_OF_POINTER] = (double) (sizeof (void *)) ;
     Info [UMFPACK_SIZE_OF_ENTRY] = (double) (sizeof (Entry)) ;
     Info [UMFPACK_SYMBOLIC_DEFRAG] = 0 ;
@@ -508,7 +508,7 @@ GLOBAL Int UMFPACK_qsymbolic
 	/* :: int overflow, Clen too large :: */
 	/* Problem is too large for array indexing (Ci [i]) with an Int i. */
 	/* Cannot even analyze the problem to determine upper bounds on */
-	/* memory usage. Need to use the long integer version, umfpack_*l_*. */
+	/* memory usage. Need to use the UF_long version, umfpack_*l_*. */
 	DEBUGm4 (("out of memory: symbolic int overflow\n")) ;
 	Info [UMFPACK_STATUS] = UMFPACK_ERROR_out_of_memory ;
 	return (UMFPACK_ERROR_out_of_memory) ;
@@ -710,7 +710,7 @@ GLOBAL Int UMFPACK_qsymbolic
     Symbolic->nempty_col = nempty_col ;
 
     /* UMF_singletons has verified that the user's input matrix is valid */
-    ASSERT (AMD_valid (n_row, n_col, Ap, Ai)) ;
+    ASSERT (AMD_valid (n_row, n_col, Ap, Ai) == AMD_OK) ;
 
     Symbolic->n1 = n1 ;
     Symbolic->nempty = nempty ;
@@ -791,7 +791,7 @@ GLOBAL Int UMFPACK_qsymbolic
 	    Rp = Sp ;
 	    Ri = Si ;
 	}
-	ASSERT (AMD_valid (n2, n2, Rp, Ri)) ;
+	ASSERT (AMD_valid (n2, n2, Rp, Ri) == AMD_OK) ;
 
 	nzaat = AMD_aat (n2, Rp, Ri, Sdeg, Wq, amd_Info) ;
 	sym = amd_Info [AMD_SYMMETRY] ;
@@ -942,7 +942,7 @@ GLOBAL Int UMFPACK_qsymbolic
 	    , (double *) NULL, (double *) NULL, FALSE
 #endif
 	    ) ;
-	ASSERT (AMD_valid (n2, n2, Rp, Ri)) ;
+	ASSERT (AMD_valid (n2, n2, Rp, Ri) == AMD_OK) ;
 
 	/* contents of Si and Sp no longer needed, but the space is
 	 * still needed */

@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -15,11 +15,11 @@ int umfpack_di_col_to_triplet
     int Tj [ ]
 ) ;
 
-long umfpack_dl_col_to_triplet
+UF_long umfpack_dl_col_to_triplet
 (
-    long n_col,
-    const long Ap [ ],
-    long Tj [ ]
+    UF_long n_col,
+    const UF_long Ap [ ],
+    UF_long Tj [ ]
 ) ;
 
 int umfpack_zi_col_to_triplet
@@ -29,11 +29,11 @@ int umfpack_zi_col_to_triplet
     int Tj [ ]
 ) ;
 
-long umfpack_zl_col_to_triplet
+UF_long umfpack_zl_col_to_triplet
 (
-    long n_col,
-    const long Ap [ ],
-    long Tj [ ]
+    UF_long n_col,
+    const UF_long Ap [ ],
+    UF_long Tj [ ]
 ) ;
 
 /*
@@ -43,10 +43,10 @@ double int Syntax:
     int n_col, *Tj, *Ap, status ;
     status = umfpack_di_col_to_triplet (n_col, Ap, Tj) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long n_col, *Tj, *Ap, status ;
+    UF_long n_col, *Tj, *Ap, status ;
     status = umfpack_dl_col_to_triplet (n_col, Ap, Tj) ;
 
 complex int Syntax:
@@ -55,10 +55,10 @@ complex int Syntax:
     int n_col, *Tj, *Ap, status ;
     status = umfpack_zi_col_to_triplet (n_col, Ap, Tj) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long n_col, *Tj, *Ap, status ;
+    UF_long n_col, *Tj, *Ap, status ;
     status = umfpack_zl_col_to_triplet (n_col, Ap, Tj) ;
 
 Purpose:

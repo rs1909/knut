@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -19,14 +19,14 @@ int umfpack_di_report_matrix
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_dl_report_matrix
+UF_long umfpack_dl_report_matrix
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
-    long col_form,
+    UF_long col_form,
     const double Control [UMFPACK_CONTROL]
 ) ;
 
@@ -41,14 +41,14 @@ int umfpack_zi_report_matrix
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_zl_report_matrix
+UF_long umfpack_zl_report_matrix
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
-    long col_form,
+    UF_long col_form,
     const double Control [UMFPACK_CONTROL]
 ) ;
 
@@ -62,10 +62,10 @@ double int Syntax:
 or:
     status = umfpack_di_report_matrix (n_row, n_col, Ap, Ai, Ax, 0, Control) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, *Ap, *Ai, status ;
+    UF_long n_row, n_col, *Ap, *Ai, status ;
     double *Ax, Control [UMFPACK_CONTROL] ;
     status = umfpack_dl_report_matrix (n_row, n_col, Ap, Ai, Ax, 1, Control) ;
 or:
@@ -82,10 +82,10 @@ or:
     status = umfpack_zi_report_matrix (n_row, n_col, Ap, Ai, Ax, Az, 0,
         Control) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, *Ap, *Ai, status ;
+    UF_long n_row, n_col, *Ap, *Ai, status ;
     double *Ax, Control [UMFPACK_CONTROL] ;
     status = umfpack_zl_report_matrix (n_row, n_col, Ap, Ai, Ax, Az, 1,
 	Control) ;

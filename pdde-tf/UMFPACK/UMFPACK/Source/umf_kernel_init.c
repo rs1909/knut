@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -448,7 +448,7 @@ GLOBAL Int UMF_kernel_init
 	do_recip = FALSE ;
 #endif
 	/* check the input matrix */
-	if (!AMD_valid (n_row, n_col, Ap, Ai))
+	if (AMD_valid (n_row, n_col, Ap, Ai) != AMD_OK)
 	{
 	    /* matrix is invalid */
 	    return (FALSE) ;
@@ -702,8 +702,8 @@ GLOBAL Int UMF_kernel_init
 		    k, newrow)) ;
 		if (--(Wp [newrow]) < 0)
 		{
-		    /* :: pattern change (singleton row too long) :: */
-		    DEBUGm4 (("bad U singleton row (too long)\n")) ;
+		    /* :: pattern change (singleton row too lengthy) :: */
+		    DEBUGm4 (("bad U singleton row (too lengthy)\n")) ;
 		    return (FALSE) ;	/* pattern changed */
 		}
 		*(Rpi [newrow]++) = k ;
@@ -716,7 +716,7 @@ GLOBAL Int UMF_kernel_init
 		    k, newrow)) ;
 		if (llen >= lilen)
 		{
-		    DEBUGm4 (("bad L singleton col (too long)\n")) ;
+		    DEBUGm4 (("bad L singleton col (too lengthy)\n")) ;
 		    return (FALSE) ;	/* pattern changed */
 		}
 		Li   [llen] = newrow ;
@@ -727,7 +727,7 @@ GLOBAL Int UMF_kernel_init
 
 	if (llen != lilen)
 	{
-	    /* :: pattern change (singleton column too long) :: */
+	    /* :: pattern change (singleton column too lengthy) :: */
 	    DEBUGm4 (("bad L singleton col (too short)\n")) ;
 	    return (FALSE) ;	/* pattern changed */
 	}
@@ -820,7 +820,7 @@ GLOBAL Int UMF_kernel_init
 		    k, newrow)) ;
 		if (--(Wp [newrow]) < 0)
 		{
-		    DEBUGm4 (("bad row of U or A (too long)\n")) ;
+		    DEBUGm4 (("bad row of U or A (too lengthy)\n")) ;
 		    return (FALSE) ;	/* pattern changed */
 		}
 		*(Rpi [newrow]++) = k ;
@@ -833,7 +833,7 @@ GLOBAL Int UMF_kernel_init
 		    k, e, newrow)) ;
 		if (clen >= esize)
 		{
-		    DEBUGm4 (("bad A column (too long)\n")) ;
+		    DEBUGm4 (("bad A column (too lengthy)\n")) ;
 		    return (FALSE) ;	/* pattern changed */
 		}
 		ASSERT (E [e]) ;

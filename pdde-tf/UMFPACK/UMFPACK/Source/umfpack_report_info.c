@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -120,7 +120,7 @@ GLOBAL void UMFPACK_report_info
 #endif
 #ifdef DLONG
     PRINTF (("    matrix entry defined as:          double\n")) ;
-    PRINTF (("    Int (generic integer) defined as: long\n")) ;
+    PRINTF (("    Int (generic integer) defined as: UF_long\n")) ;
 #endif
 #ifdef ZINT
     PRINTF (("    matrix entry defined as:          double complex\n")) ;
@@ -128,27 +128,20 @@ GLOBAL void UMFPACK_report_info
 #endif
 #ifdef ZLONG
     PRINTF (("    matrix entry defined as:          double complex\n")) ;
-    PRINTF (("    Int (generic integer) defined as: long\n")) ;
+    PRINTF (("    Int (generic integer) defined as: UF_long\n")) ;
 #endif
 
     /* ---------------------------------------------------------------------- */
     /* print compile-time options */
     /* ---------------------------------------------------------------------- */
 
-    PRINTF (("    BLAS library used:                ")) ;
+    PRINTF (("    BLAS library used: ")) ;
 
-#if defined (USE_NO_BLAS)
+#ifdef NBLAS
     PRINTF (("none.  UMFPACK will be slow.\n")) ;
-#elif defined (USE_C_BLAS)
-    PRINTF (("C-BLAS.\n")) ;
-#elif defined (USE_MATLAB_BLAS)
-    PRINTF (("built-in MATLAB BLAS.\n")) ;
-#elif defined (USE_SUNPERF_BLAS)
-    PRINTF (("Sun Performance Library BLAS.\n")) ;
-#elif defined (USE_SCSL_BLAS)
-    PRINTF (("SGI SCSL BLAS.\n")) ;
-#elif defined (USE_FORTRAN_BLAS)
-    PRINTF (("Fortran BLAS.\n")) ;
+#else
+    PRINTF (("Fortran BLAS.  size of BLAS integer: "ID"\n",
+	(Int) (sizeof (BLAS_INT)))) ;
 #endif
 
     PRINTF (("    MATLAB:                           ")) ;
@@ -194,7 +187,7 @@ GLOBAL void UMFPACK_report_info
 
     PRINT_INFO ("    size of int:                      "ID" bytes\n",
 	(Int) Info [UMFPACK_SIZE_OF_INT]) ;
-    PRINT_INFO ("    size of long:                     "ID" bytes\n",
+    PRINT_INFO ("    size of UF_long:                  "ID" bytes\n",
 	(Int) Info [UMFPACK_SIZE_OF_LONG]) ;
     PRINT_INFO ("    size of pointer:                  "ID" bytes\n",
 	(Int) Info [UMFPACK_SIZE_OF_POINTER]) ;

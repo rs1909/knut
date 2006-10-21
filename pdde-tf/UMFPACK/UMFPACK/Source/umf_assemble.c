@@ -3,13 +3,13 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
 
 /*  Degree update and numerical assembly.  This is compiled twice (with and
- *  without FIXQ) for each real/complex int/long version, for a total of 8
+ *  without FIXQ) for each real/complex int/UF_long version, for a total of 8
  *  versions.*/
 
 #include "umf_internal.h"
@@ -112,7 +112,7 @@ PRIVATE void row_assemble
 		/* no columns assembled out this Lson yet */
 		/* -------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
 		for (j = 0 ; j < ncols ; j++)
 		{
 		    col = Cols [j] ;
@@ -132,7 +132,7 @@ PRIVATE void row_assemble
 		/* some columns have been assembled out of this Lson */
 		/* -------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
 		for (j = 0 ; j < ncols ; j++)
 		{
 		    col = Cols [j] ;
@@ -263,7 +263,7 @@ PRIVATE void col_assemble
 		/* no rows assembled out of this Uson yet */
 		/* -------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
 		for (i = 0 ; i < nrows ; i++)
 		{
 		    row = Rows [i] ;
@@ -279,7 +279,7 @@ PRIVATE void col_assemble
 		/* some rows have been assembled out of this Uson */
 		/* -------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
 		for (i = 0 ; i < nrows ; i++)
 		{
 		    row = Rows [i] ;
@@ -639,7 +639,7 @@ GLOBAL void UMF_assemble_fixq
 
 		/* compute the compressed column offset vector*/
 		/* [ use Wm [0..nrows-1] for offsets */
-/* #pragma ivdep // Robi */
+#pragma ivdep
 		for (i = 0 ; i < nrows ; i++)
 		{
 		    row = Rows [i] ;
@@ -660,7 +660,7 @@ GLOBAL void UMF_assemble_fixq
 			Col_degree [col] -= nrowsleft ;
 #endif
 			Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			for (i = 0 ; i < nrows ; i++)
 			{
 			    /* Fcol [Wm [i]] += S [i] ; */
@@ -686,7 +686,7 @@ GLOBAL void UMF_assemble_fixq
 			    Col_degree [col] -= nrowsleft ;
 #endif
 			    Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			    for (i = 0 ; i < nrows ; i++)
 			    {
 				/* Fcol [Wm [i]] += S [i] ; */
@@ -733,7 +733,7 @@ GLOBAL void UMF_assemble_fixq
 			Col_degree [col] -= nrowsleft ;
 #endif
 			Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			for (i = 0 ; i < nrowsleft ; i++)
 			{
 			    /* Fcol [Wm [i]] += S [Woo [i]] ; */
@@ -758,7 +758,7 @@ GLOBAL void UMF_assemble_fixq
 			    Col_degree [col] -= nrowsleft ;
 #endif
 			    Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			    for (i = 0 ; i < nrowsleft ; i++)
 			    {
 				/* Fcol [Wm [i]] += S [Woo [i]] ; */
@@ -817,7 +817,7 @@ GLOBAL void UMF_assemble_fixq
 
 			/* compute the compressed column offset vector */
 			/* [ use Wm [0..nrows-1] for offsets */
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			for (i = 0 ; i < nrows ; i++)
 			{
 			    row = Rows [i] ;
@@ -835,7 +835,7 @@ GLOBAL void UMF_assemble_fixq
 				Col_degree [col] -= nrowsleft ;
 #endif
 				Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 				for (i = 0 ; i < nrows ; i++)
 				{
 				    /* Fcol [Wm [i]] += S [i] ; */
@@ -881,7 +881,7 @@ GLOBAL void UMF_assemble_fixq
 				Col_degree [col] -= nrowsleft ;
 #endif
 				Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 				for (i = 0 ; i < nrowsleft ; i++)
 				{
 				    /* Fcol [Wm [i]] += S [Woo [i]] ; */
@@ -965,7 +965,7 @@ GLOBAL void UMF_assemble_fixq
 			    Col_degree [col] -= nrows_to_assemble ;
 #endif
 			    Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 			    for (i = 0 ; i < nrows_to_assemble ; i++)
 			    {
 				/* Fcol [Wm [i]] += S [Woo [i]] ; */
@@ -992,7 +992,7 @@ GLOBAL void UMF_assemble_fixq
 				Col_degree [col] -= nrows_to_assemble ;
 #endif
 				Fcol = Fcblock + Fcpos [col] ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 				for (i = 0 ; i < nrows_to_assemble ; i++)
 				{
 				    /* Fcol [Wm [i]] += S [Woo [i]] ; */

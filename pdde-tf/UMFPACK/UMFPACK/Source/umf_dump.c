@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -1061,22 +1061,6 @@ GLOBAL void UMF_dump_start
 
     DEBUG0 (("umfpack: debug version (SLOW!) ")) ;
 
-    DEBUG0 ((" BLAS: ")) ;
-
-#if defined (USE_NO_BLAS)
-    DEBUG0 (("none.")) ;
-#elif defined (USE_C_BLAS)
-    DEBUG0 (("C-BLAS.")) ;
-#elif defined (USE_MATLAB_BLAS)
-    DEBUG0 (("built-in MATLAB BLAS.")) ;
-#elif defined (USE_SUNPERF_BLAS)
-    DEBUG0 (("Sun Performance Library BLAS.")) ;
-#elif defined (USE_SCSL_BLAS)
-    DEBUG0 (("SGI SCSL BLAS.")) ;
-#elif defined (USE_FORTRAN_BLAS)
-    DEBUG0 (("Fortran BLAS.")) ;
-#endif
-
     DEBUG0 ((" MATLAB: ")) ;
 #ifdef MATLAB_MEX_FILE
     DEBUG0 (("mexFunction.\n")) ;
@@ -1107,8 +1091,8 @@ GLOBAL void UMF_dump_start
     sizeof (int), sizeof (int) / sizeof (int), UNITS (int, 1) )) ;
     DEBUG2 (("sizeof (size_t)        %u %u %u\n",
     sizeof (size_t), sizeof (size_t) / sizeof (size_t), UNITS (size_t, 1) )) ;
-    DEBUG2 (("sizeof (long)          %u %u %u\n",
-    sizeof (long), sizeof (long) / sizeof (long), UNITS (long, 1) )) ;
+    DEBUG2 (("sizeof (UF_long)       %u %u %u\n",
+    sizeof (UF_long), sizeof (UF_long) / sizeof (UF_long), UNITS (UF_long, 1)));
     DEBUG2 (("sizeof (double)        %u %u %u\n",
     sizeof (double), sizeof (double) / sizeof (int), UNITS (double, 1) )) ;
     DEBUG2 (("sizeof (Unit)          %u %u %u\n",

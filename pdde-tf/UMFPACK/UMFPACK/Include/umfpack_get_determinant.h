@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* UMFPACK_get_determinant contributed by David Bateman, Motorola, Paris. */
@@ -17,7 +17,7 @@ int umfpack_di_get_determinant
     double User_Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_dl_get_determinant
+UF_long umfpack_dl_get_determinant
 (
     double *Mx,
     double *Ex,
@@ -34,7 +34,7 @@ int umfpack_zi_get_determinant
     double User_Info [UMFPACK_INFO]
 ) ;
 
-long umfpack_zl_get_determinant
+UF_long umfpack_zl_get_determinant
 (
     double *Mx,
     double *Mz,
@@ -52,11 +52,11 @@ double int Syntax:
     double Mx, Ex, Info [UMFPACK_INFO] ;
     status = umfpack_di_get_determinant (&Mx, &Ex, Numeric, Info) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status ;
+    UF_long status ;
     double Mx, Ex, Info [UMFPACK_INFO] ;
     status = umfpack_dl_get_determinant (&Mx, &Ex, Numeric, Info) ;
 
@@ -72,7 +72,7 @@ complex int Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status ;
+    UF_long status ;
     double *Mx, *Mz, *Ex, Info [UMFPACK_INFO] ;
     status = umfpack_zl_get_determinant (&Mx, &Mz, &Ex, Numeric, Info) ;
 

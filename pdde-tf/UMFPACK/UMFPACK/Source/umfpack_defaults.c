@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -63,7 +63,7 @@ GLOBAL void UMFPACK_defaults
     /* compile-time settings: cannot be modified at run-time */
     /* ---------------------------------------------------------------------- */
 
-#ifdef USE_NO_BLAS
+#ifdef NBLAS
     /* do not use the BLAS - use in-line C code instead */
     Control [UMFPACK_COMPILED_WITH_BLAS] = 0 ;
 #else

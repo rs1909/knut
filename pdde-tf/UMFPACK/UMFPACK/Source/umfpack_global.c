@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -26,7 +26,7 @@
     umfpack_divcomplex	    umf_divcomplex  umf_divcomplex
 
     This routine is compiled just once for all four versions of UMFPACK
-    (int/long, double/complex).
+    (int/UF_long, double/complex).
 */
 
 #include "umf_internal.h"

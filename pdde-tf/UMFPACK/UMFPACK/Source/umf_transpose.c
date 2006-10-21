@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -92,7 +92,7 @@ GLOBAL Int UMF_transpose
 	{
 	    return (UMFPACK_ERROR_invalid_permutation) ;
 	}
-	if (!AMD_valid (n_row, n_col, Ap, Ai))
+	if (AMD_valid (n_row, n_col, Ap, Ai) != AMD_OK)
 	{
 	    return (UMFPACK_ERROR_invalid_matrix) ;
 	}
@@ -393,7 +393,7 @@ GLOBAL Int UMF_transpose
 	Rz,
 #endif
 	Ri, Rp, n_col, n_row, Rp [n_row]) ;
-    ASSERT (AMD_valid (n_col, n_row, Rp, Ri)) ;
+    ASSERT (AMD_valid (n_col, n_row, Rp, Ri) == AMD_OK) ;
 #endif
 
     return (UMFPACK_OK) ;

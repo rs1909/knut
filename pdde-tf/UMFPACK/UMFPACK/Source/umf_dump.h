@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -109,9 +109,14 @@ GLOBAL void UMF_dump_diagonal_map
 ) ;
 
 #define UMF_DBMAX 50000
-GLOBAL extern Int UMF_debug ;
-GLOBAL extern Int UMF_allocfail ;
-GLOBAL extern double UMF_gprob ;
+
+#ifndef EXTERN
+#define EXTERN extern
+#endif
+
+GLOBAL EXTERN Int UMF_debug ;
+GLOBAL EXTERN Int UMF_allocfail ;
+GLOBAL EXTERN double UMF_gprob ;
 
 #define DEBUGk(k,params) { if (UMF_debug >= (k)) { PRINTF (params) ; } }
 

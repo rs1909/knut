@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -14,7 +14,7 @@ int umfpack_di_save_symbolic
     char *filename
 ) ;
 
-long umfpack_dl_save_symbolic
+UF_long umfpack_dl_save_symbolic
 (
     void *Symbolic,
     char *filename
@@ -26,7 +26,7 @@ int umfpack_zi_save_symbolic
     char *filename
 ) ;
 
-long umfpack_zl_save_symbolic
+UF_long umfpack_zl_save_symbolic
 (
     void *Symbolic,
     char *filename
@@ -41,10 +41,10 @@ double int Syntax:
     void *Symbolic ;
     status = umfpack_di_save_symbolic (Symbolic, filename) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long status ;
+    UF_long status ;
     char *filename ;
     void *Symbolic ;
     status = umfpack_dl_save_symbolic (Symbolic, filename) ;
@@ -57,10 +57,10 @@ complex int Syntax:
     void *Symbolic ;
     status = umfpack_zi_save_symbolic (Symbolic, filename) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long status ;
+    UF_long status ;
     char *filename ;
     void *Symbolic ;
     status = umfpack_zl_save_symbolic (Symbolic, filename) ;

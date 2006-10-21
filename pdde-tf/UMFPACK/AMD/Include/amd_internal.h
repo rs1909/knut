@@ -3,7 +3,7 @@
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/* AMD Version 1.2, Copyright (c) 2005 by Timothy A. Davis,		     */
+/* AMD Version 2.0, Copyright (c) 2006 by Timothy A. Davis,		     */
 /* Patrick R. Amestoy, and Iain S. Duff.  See ../README.txt for License.     */
 /* email: davis at cise.ufl.edu    CISE Department, Univ. of Florida.        */
 /* web: http://www.cise.ufl.edu/research/sparse/amd                          */
@@ -24,8 +24,8 @@
  *	-DNMALLOC
  *
  *	    No memory manager is defined at compile-time.  You MUST define the
- *	    function pointers amd_malloc, amd_free, amd_realloc, and amd_calloc
- *	    at run-time for AMD to work properly.
+ *	    function pointers amd_malloc, amd_free, amd_realloc, and
+ *	    amd_calloc at run-time for AMD to work properly.
  */
 
 /* ========================================================================= */
@@ -54,7 +54,7 @@
 
 /*
     To enable debugging, uncomment the following line:
- #undef NDEBUG
+#undef NDEBUG
 */
 
 /* ------------------------------------------------------------------------- */
@@ -152,16 +152,21 @@
 
 #define NULL 0
 
+/* largest value of size_t */
+#define SIZE_T_MAX ((size_t) (-1))
+
 /* ------------------------------------------------------------------------- */
-/* integer type for AMD: int or long */
+/* integer type for AMD: int or UF_long */
 /* ------------------------------------------------------------------------- */
+
+/* define UF_long */
+#include "UFconfig.h"
 
 #if defined (DLONG) || defined (ZLONG)
 
-#define Int long
-#define ID "%ld"
-#define Int_MAX LONG_MAX
-#define Int_MIN LONG_MIN
+#define Int UF_long
+#define ID  UF_long_id
+#define Int_MAX UF_long_max
 
 #define AMD_order amd_l_order
 #define AMD_defaults amd_l_defaults
@@ -176,16 +181,13 @@
 #define AMD_dump amd_l_dump
 #define AMD_debug amd_l_debug
 #define AMD_debug_init amd_l_debug_init
-#define AMD_wpreprocess amd_l_wpreprocess
 #define AMD_preprocess amd_l_preprocess
-#define AMD_preprocess_valid amd_l_preprocess_valid
 
 #else
 
 #define Int int
 #define ID "%d"
 #define Int_MAX INT_MAX
-#define Int_MIN INT_MIN
 
 #define AMD_order amd_order
 #define AMD_defaults amd_defaults
@@ -200,9 +202,7 @@
 #define AMD_dump amd_dump
 #define AMD_debug amd_debug
 #define AMD_debug_init amd_debug_init
-#define AMD_wpreprocess amd_wpreprocess
 #define AMD_preprocess amd_preprocess
-#define AMD_preprocess_valid amd_preprocess_valid
 
 #endif
 
@@ -223,13 +223,13 @@
 /* AMD routine definitions (not user-callable) */
 /* ------------------------------------------------------------------------- */
 
-GLOBAL Int AMD_aat
+GLOBAL size_t AMD_aat
 (
     Int n,
     const Int Ap [ ],
     const Int Ai [ ],
     Int Len [ ],
-    Int Tp [ ],	
+    Int Tp [ ],
     double Info [ ]
 ) ;
 
@@ -272,7 +272,7 @@ GLOBAL Int AMD_post_tree
 #endif
 ) ;
 
-GLOBAL void AMD_wpreprocess
+GLOBAL void AMD_preprocess
 (
     Int n,
     const Int Ap [ ],
@@ -281,13 +281,6 @@ GLOBAL void AMD_wpreprocess
     Int Ri [ ],
     Int W [ ],
     Int Flag [ ]
-) ;
-
-GLOBAL Int AMD_preprocess_valid
-(
-    Int n,
-    const Int Ap [ ],
-    const Int Ai [ ]
 ) ;
 
 /* ------------------------------------------------------------------------- */
@@ -307,7 +300,8 @@ EXTERN Int AMD_debug ;
 
 GLOBAL void AMD_debug_init ( char *s ) ;
 
-GLOBAL void AMD_dump (
+GLOBAL void AMD_dump
+(
     Int n,
     Int Pe [ ],
     Int Iw [ ],

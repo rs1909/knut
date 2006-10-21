@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -22,17 +22,17 @@ int umfpack_di_transpose
     double Rx [ ]
 ) ;
 
-long umfpack_dl_transpose
+UF_long umfpack_dl_transpose
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
-    const long P [ ],
-    const long Q [ ],
-    long Rp [ ],
-    long Ri [ ],
+    const UF_long P [ ],
+    const UF_long Q [ ],
+    UF_long Rp [ ],
+    UF_long Ri [ ],
     double Rx [ ]
 ) ;
 
@@ -51,19 +51,19 @@ int umfpack_zi_transpose
     int do_conjugate
 ) ;
 
-long umfpack_zl_transpose
+UF_long umfpack_zl_transpose
 (
-    long n_row,
-    long n_col,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long n_row,
+    UF_long n_col,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
-    const long P [ ],
-    const long Q [ ],
-    long Rp [ ],
-    long Ri [ ],
+    const UF_long P [ ],
+    const UF_long Q [ ],
+    UF_long Rp [ ],
+    UF_long Ri [ ],
     double Rx [ ], double Rz [ ],
-    long do_conjugate
+    UF_long do_conjugate
 ) ;
 
 /*
@@ -74,10 +74,10 @@ double int Syntax:
     double *Ax, *Rx ;
     status = umfpack_di_transpose (n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, status, *Ap, *Ai, *P, *Q, *Rp, *Ri ;
+    UF_long n_row, n_col, status, *Ap, *Ai, *P, *Q, *Rp, *Ri ;
     double *Ax, *Rx ;
     status = umfpack_dl_transpose (n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx) ;
 
@@ -89,10 +89,10 @@ complex int Syntax:
     status = umfpack_zi_transpose (n_row, n_col, Ap, Ai, Ax, Az, P, Q,
 	Rp, Ri, Rx, Rz, do_conjugate) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, status, *Ap, *Ai, *P, *Q, *Rp, *Ri, do_conjugate ;
+    UF_long n_row, n_col, status, *Ap, *Ai, *P, *Q, *Rp, *Ri, do_conjugate ;
     double *Ax, *Az, *Rx, *Rz ;
     status = umfpack_zl_transpose (n_row, n_col, Ap, Ai, Ax, Az, P, Q,
 	Rp, Ri, Rx, Rz, do_conjugate) ;

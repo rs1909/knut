@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -103,7 +103,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* Real/complex and int/long definitions, double relops */
+/* Real/complex and int/UF_long definitions, double relops */
 /* -------------------------------------------------------------------------- */
 
 #include "umf_version.h"
@@ -718,8 +718,13 @@ typedef struct	/* SymbolicType */
 
 /* for testing out-of-memory conditions: */
 #define UMF_TCOV_TEST
-GLOBAL extern int umf_fail, umf_fail_lo, umf_fail_hi ;
-GLOBAL extern int umf_realloc_fail, umf_realloc_lo, umf_realloc_hi ;
+
+#ifndef EXTERN
+#define EXTERN extern
+#endif
+
+GLOBAL EXTERN int umf_fail, umf_fail_lo, umf_fail_hi ;
+GLOBAL EXTERN int umf_realloc_fail, umf_realloc_lo, umf_realloc_hi ;
 
 /* for testing malloc count: */
 #define UMF_MALLOC_COUNT

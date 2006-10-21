@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -22,6 +22,12 @@ GLOBAL void UMF_scale
     Entry x ;
     double s ;
     Int i ;
+
+#ifndef NBLAS
+    Int blas_ok = TRUE ;
+#else
+#define blas_ok FALSE
+#endif
 
     /* ---------------------------------------------------------------------- */
     /* compute the approximate absolute value of the pivot, and select method */
@@ -92,16 +98,18 @@ GLOBAL void UMF_scale
 	    /* pivot = 1 / pivot */
 	    RECIPROCAL (pivot) ;
 
-#if defined (USE_NO_BLAS)
-	    for (i = 0 ; i < n ; i++)
-	    {
-		/* X [i] *= pivot ; */
-		x = X [i] ;
-		MULT (X [i], x, pivot) ;
-	    }
-#else
+#ifndef NBLAS
 	    BLAS_SCAL (n, pivot, X) ;
 #endif
+	    if (!blas_ok)
+	    {
+		for (i = 0 ; i < n ; i++)
+		{
+		    /* X [i] *= pivot ; */
+		    x = X [i] ;
+		    MULT (X [i], x, pivot) ;
+		}
+	    }
 
 #else
 

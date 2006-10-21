@@ -7,7 +7,8 @@ INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 	${PDDE_BINARY_DIR}/src
 	${PDDE_SOURCE_DIR}/ATLAS/include
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include 
-	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include )
+	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
+	${PDDE_SOURCE_DIR}/UMFPACK/UFconfig )
 
 QT4_WRAP_CPP( MOC_SRCS mainwindow.h plotdata.h plotwindow.h 
     paramview.h constqtgui.h compthread.h screendialog.h )

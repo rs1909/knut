@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -20,7 +20,13 @@ GLOBAL void UMF_blas3_update
     /* ---------------------------------------------------------------------- */
 
     Entry *L, *U, *C, *LU ;
-    Int k, m, n, d, nb, dc ;
+    Int i, j, s, k, m, n, d, nb, dc ;
+    
+#ifndef NBLAS
+    Int blas_ok = TRUE ;
+#else
+#define blas_ok FALSE
+#endif
 
     DEBUG5 (("In UMF_blas3_update "ID" "ID" "ID"\n",
 	Work->fnpiv, Work->fnrows, Work->fncols)) ;
@@ -56,85 +62,26 @@ GLOBAL void UMF_blas3_update
     if (k == 1)
     {
 
-#ifdef USE_NO_BLAS
-
-	/* no BLAS available - use plain C code instead */
-	Int i, j ;
-
-	/* rank-1 outer product to update the C block */
-	for (j = 0 ; j < n ; j++)
-	{
-	    Entry u_j = U [j] ;
-	    if (IS_NONZERO (u_j))
-	    {
-		Entry *c_ij, *l_is ;
-		c_ij = & C [j*d] ;
-		l_is = & L [0] ;
-#pragma ivdep
-		for (i = 0 ; i < m ; i++)
-		{
-		    /* C [i+j*d]-= L [i] * U [j] */
-		    MULT_SUB (*c_ij, *l_is, u_j) ;
-		    c_ij++ ;
-		    l_is++ ;
-		}
-	    }
-	}
-
-#else
+#ifndef NBLAS
 	BLAS_GER (m, n, L, U, C, d) ;
+#endif
 
-#endif /* USE_NO_BLAS */
-
-    }
-    else
-    {
-
-#ifdef USE_NO_BLAS
-
-	/* no BLAS available - use plain C code instead */
-	Int i, j, s ;
-
-	/* triangular solve to update the U block */
-	for (s = 0 ; s < k ; s++)
+	if (!blas_ok)
 	{
-	    for (i = s+1 ; i < k ; i++)
-	    {
-		Entry l_is = LU [i+s*nb] ;
-		if (IS_NONZERO (l_is))
-		{
-		    Entry *u_ij, *u_sj ;
-		    u_ij = & U [i*dc] ;
-		    u_sj = & U [s*dc] ;
-#pragma ivdep
-		    for (j = 0 ; j < n ; j++)
-		    {
-			/* U [i*dc+j] -= LU [i+s*nb] * U [s*dc+j] ; */
-			MULT_SUB (*u_ij, l_is, *u_sj) ;
-			u_ij++ ;
-			u_sj++ ;
-		    }
-		}
-	    }
-	}
-
-	/* rank-k outer product to update the C block */
-	/* C = C - L*U' (U is stored by rows, not columns) */
-	for (s = 0 ; s < k ; s++)
-	{
+	    /* rank-1 outer product to update the C block */
 	    for (j = 0 ; j < n ; j++)
 	    {
-		Entry u_sj = U [j+s*dc] ;
-		if (IS_NONZERO (u_sj))
+		Entry u_j = U [j] ;
+		if (IS_NONZERO (u_j))
 		{
 		    Entry *c_ij, *l_is ;
 		    c_ij = & C [j*d] ;
-		    l_is = & L [s*d] ;
+		    l_is = & L [0] ;
 #pragma ivdep
 		    for (i = 0 ; i < m ; i++)
 		    {
-			/* C [i+j*d]-= L [i+s*d] * U [s*dc+j] */
-			MULT_SUB (*c_ij, *l_is, u_sj) ;
+			/* C [i+j*d]-= L [i] * U [j] */
+			MULT_SUB (*c_ij, *l_is, u_j) ;
 			c_ij++ ;
 			l_is++ ;
 		    }
@@ -142,13 +89,77 @@ GLOBAL void UMF_blas3_update
 	    }
 	}
 
-#else
+    }
+    else
+    {
 
+	/* triangular solve to update the U block */
+
+#ifndef NBLAS
 	BLAS_TRSM_RIGHT (n, k, LU, nb, U, dc) ;
+#endif
+
+	if (!blas_ok)
+	{
+	    /* use plain C code if no BLAS at compile time, or if integer
+	     * overflow has occurred */
+	    for (s = 0 ; s < k ; s++)
+	    {
+		for (i = s+1 ; i < k ; i++)
+		{
+		    Entry l_is = LU [i+s*nb] ;
+		    if (IS_NONZERO (l_is))
+		    {
+			Entry *u_ij, *u_sj ;
+			u_ij = & U [i*dc] ;
+			u_sj = & U [s*dc] ;
+#pragma ivdep
+			for (j = 0 ; j < n ; j++)
+			{
+			    /* U [i*dc+j] -= LU [i+s*nb] * U [s*dc+j] ; */
+			    MULT_SUB (*u_ij, l_is, *u_sj) ;
+			    u_ij++ ;
+			    u_sj++ ;
+			}
+		    }
+		}
+	    }
+	}
+
+	/* rank-k outer product to update the C block */
+	/* C = C - L*U' (U is stored by rows, not columns) */
+
+#ifndef NBLAS
 	BLAS_GEMM (m, n, k, L, U, dc, C, d) ;
+#endif
 
-#endif /* USE_NO_BLAS */
+	if (!blas_ok)
+	{
+	    /* use plain C code if no BLAS at compile time, or if integer
+	     * overflow has occurred */
 
+	    for (s = 0 ; s < k ; s++)
+	    {
+		for (j = 0 ; j < n ; j++)
+		{
+		    Entry u_sj = U [j+s*dc] ;
+		    if (IS_NONZERO (u_sj))
+		    {
+			Entry *c_ij, *l_is ;
+			c_ij = & C [j*d] ;
+			l_is = & L [s*d] ;
+#pragma ivdep
+			for (i = 0 ; i < m ; i++)
+			{
+			    /* C [i+j*d]-= L [i+s*d] * U [s*dc+j] */
+			    MULT_SUB (*c_ij, *l_is, u_sj) ;
+			    c_ij++ ;
+			    l_is++ ;
+			}
+		    }
+		}
+	    }
+	}
     }
 
 #ifndef NDEBUG

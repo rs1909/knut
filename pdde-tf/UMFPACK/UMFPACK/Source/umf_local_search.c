@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -132,6 +132,12 @@ GLOBAL Int UMF_local_search
     Unit *Memory, *p ;
     Tuple *tp, *tpend, *tp1, *tp2 ;
     Element *ep ;
+
+#ifndef NBLAS
+    Int blas_ok = TRUE ;
+#else
+#define blas_ok FALSE
+#endif
 
 #ifndef NDEBUG
     Int debug_ok, n_row, n_col, *Row_degree ;
@@ -468,26 +474,25 @@ GLOBAL Int UMF_local_search
 	{
 	    /* solve Lx=b, where b = U (:,k), stored in the LU block */
 
-#ifdef USE_NO_BLAS
-
-	    /* no BLAS available - use plain C code instead */
-	    Entry *Flub = Flublock ;
-	    for (j = 0 ; j < fnpiv ; j++)
-	    {
-		Entry Fuj = Flu [j] ;
-#pragma ivdep
-		for (i = j+1 ; i < fnpiv ; i++)
-		{
-		    /* Flu [i] -= Flublock [i + j*nb] * Flu [j] ; */
-		    MULT_SUB (Flu [i], Flub [i], Fuj) ;
-		}
-		Flub += nb ;
-	    }
-
-#else
+#ifndef NBLAS
 	    BLAS_TRSV (fnpiv, Flublock, Flu, nb) ;
 #endif
-
+	    if (!blas_ok)
+	    {
+		/* use plain C code if no BLAS, or on integer overflow */
+		Entry *Flub = Flublock ;
+		for (j = 0 ; j < fnpiv ; j++)
+		{
+		    Entry Fuj = Flu [j] ;
+#pragma ivdep
+		    for (i = j+1 ; i < fnpiv ; i++)
+		    {
+			/* Flu [i] -= Flublock [i + j*nb] * Flu [j] ; */
+			MULT_SUB (Flu [i], Flub [i], Fuj) ;
+		    }
+		    Flub += nb ;
+		}
+	    }
 	}
 
 	/* ------------------------------------------------------------------ */
@@ -505,7 +510,7 @@ GLOBAL Int UMF_local_search
 
 	/* this work will be discarded if the pivcol [OUT] is chosen instead */
 
-#ifdef USE_NO_BLAS
+#ifdef NBLAS
 	/* no BLAS available - use plain C code instead */
 	for (j = 0 ; j < fnpiv ; j++)
 	{

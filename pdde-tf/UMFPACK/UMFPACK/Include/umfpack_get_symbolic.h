@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -28,23 +28,23 @@ int umfpack_di_get_symbolic
     void *Symbolic
 ) ;
 
-long umfpack_dl_get_symbolic
+UF_long umfpack_dl_get_symbolic
 (
-    long *n_row,
-    long *n_col,
-    long *n1,
-    long *nz,
-    long *nfr,
-    long *nchains,
-    long P [ ],
-    long Q [ ],
-    long Front_npivcol [ ],
-    long Front_parent [ ],
-    long Front_1strow [ ],
-    long Front_leftmostdesc [ ],
-    long Chain_start [ ],
-    long Chain_maxrows [ ],
-    long Chain_maxcols [ ],
+    UF_long *n_row,
+    UF_long *n_col,
+    UF_long *n1,
+    UF_long *nz,
+    UF_long *nfr,
+    UF_long *nchains,
+    UF_long P [ ],
+    UF_long Q [ ],
+    UF_long Front_npivcol [ ],
+    UF_long Front_parent [ ],
+    UF_long Front_1strow [ ],
+    UF_long Front_leftmostdesc [ ],
+    UF_long Chain_start [ ],
+    UF_long Chain_maxrows [ ],
+    UF_long Chain_maxcols [ ],
     void *Symbolic
 ) ;
 
@@ -68,23 +68,23 @@ int umfpack_zi_get_symbolic
     void *Symbolic
 ) ;
 
-long umfpack_zl_get_symbolic
+UF_long umfpack_zl_get_symbolic
 (
-    long *n_row,
-    long *n_col,
-    long *n1,
-    long *nz,
-    long *nfr,
-    long *nchains,
-    long P [ ],
-    long Q [ ],
-    long Front_npivcol [ ],
-    long Front_parent [ ],
-    long Front_1strow [ ],
-    long Front_leftmostdesc [ ],
-    long Chain_start [ ],
-    long Chain_maxrows [ ],
-    long Chain_maxcols [ ],
+    UF_long *n_row,
+    UF_long *n_col,
+    UF_long *n1,
+    UF_long *nz,
+    UF_long *nfr,
+    UF_long *nchains,
+    UF_long P [ ],
+    UF_long Q [ ],
+    UF_long Front_npivcol [ ],
+    UF_long Front_parent [ ],
+    UF_long Front_1strow [ ],
+    UF_long Front_leftmostdesc [ ],
+    UF_long Chain_start [ ],
+    UF_long Chain_maxrows [ ],
+    UF_long Chain_maxcols [ ],
     void *Symbolic
 ) ;
 
@@ -102,10 +102,10 @@ double int Syntax:
 	Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols,
 	Symbolic) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long status, n_row, n_col, nz, nfr, nchains, *P, *Q,
+    UF_long status, n_row, n_col, nz, nfr, nchains, *P, *Q,
 	*Front_npivcol, *Front_parent, *Front_1strow, *Front_leftmostdesc,
 	*Chain_start, *Chain_maxrows, *Chain_maxcols ;
     void *Symbolic ;
@@ -126,10 +126,10 @@ complex int Syntax:
 	Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols,
 	Symbolic) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long status, n_row, n_col, nz, nfr, nchains, *P, *Q,
+    UF_long status, n_row, n_col, nz, nfr, nchains, *P, *Q,
 	*Front_npivcol, *Front_parent, *Front_1strow, *Front_leftmostdesc,
 	*Chain_start, *Chain_maxrows, *Chain_maxcols ;
     void *Symbolic ;

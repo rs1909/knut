@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -23,18 +23,18 @@ int umfpack_di_wsolve
     double W [ ]
 ) ;
 
-long umfpack_dl_wsolve
+UF_long umfpack_dl_wsolve
 (
-    long sys,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long sys,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ],
     double X [ ],
     const double B [ ],
     void *Numeric,
     const double Control [UMFPACK_CONTROL],
     double Info [UMFPACK_INFO],
-    long Wi [ ],
+    UF_long Wi [ ],
     double W [ ]
 ) ;
 
@@ -53,18 +53,18 @@ int umfpack_zi_wsolve
     double W [ ]
 ) ;
 
-long umfpack_zl_wsolve
+UF_long umfpack_zl_wsolve
 (
-    long sys,
-    const long Ap [ ],
-    const long Ai [ ],
+    UF_long sys,
+    const UF_long Ap [ ],
+    const UF_long Ai [ ],
     const double Ax [ ], const double Az [ ],
     double Xx [ ],	 double Xz [ ],
     const double Bx [ ], const double Bz [ ],
     void *Numeric,
     const double Control [UMFPACK_CONTROL],
     double Info [UMFPACK_INFO],
-    long Wi [ ],
+    UF_long Wi [ ],
     double W [ ]
 ) ;
 
@@ -78,11 +78,11 @@ double int Syntax:
     status = umfpack_di_wsolve (sys, Ap, Ai, Ax, X, B, Numeric,
 	Control, Info, Wi, W) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status, *Ap, *Ai, *Wi, sys ;
+    UF_long status, *Ap, *Ai, *Wi, sys ;
     double *B, *X, *Ax, *W, Info [UMFPACK_INFO], Control [UMFPACK_CONTROL] ;
     status = umfpack_dl_wsolve (sys, Ap, Ai, Ax, X, B, Numeric,
 	Control, Info, Wi, W) ;
@@ -97,11 +97,11 @@ complex int Syntax:
     status = umfpack_zi_wsolve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,
 	Control, Info, Wi, W) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long status, *Ap, *Ai, *Wi, sys ;
+    UF_long status, *Ap, *Ai, *Wi, sys ;
     double *Bx, *Bz, *Xx, *Xz, *Ax, *Az, *W,
 	Info [UMFPACK_INFO], Control [UMFPACK_CONTROL] ;
     status = umfpack_zl_wsolve (sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric,

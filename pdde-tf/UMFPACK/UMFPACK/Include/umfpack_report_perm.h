@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -15,10 +15,10 @@ int umfpack_di_report_perm
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_dl_report_perm
+UF_long umfpack_dl_report_perm
 (
-    long np,
-    const long Perm [ ],
+    UF_long np,
+    const UF_long Perm [ ],
     const double Control [UMFPACK_CONTROL]
 ) ;
 
@@ -29,10 +29,10 @@ int umfpack_zi_report_perm
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_zl_report_perm
+UF_long umfpack_zl_report_perm
 (
-    long np,
-    const long Perm [ ],
+    UF_long np,
+    const UF_long Perm [ ],
     const double Control [UMFPACK_CONTROL]
 ) ;
 
@@ -44,10 +44,10 @@ double int Syntax:
     double Control [UMFPACK_CONTROL] ;
     status = umfpack_di_report_perm (np, Perm, Control) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long np, *Perm, status ;
+    UF_long np, *Perm, status ;
     double Control [UMFPACK_CONTROL] ;
     status = umfpack_dl_report_perm (np, Perm, Control) ;
 
@@ -58,10 +58,10 @@ complex int Syntax:
     double Control [UMFPACK_CONTROL] ;
     status = umfpack_zi_report_perm (np, Perm, Control) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long np, *Perm, status ;
+    UF_long np, *Perm, status ;
     double Control [UMFPACK_CONTROL] ;
     status = umfpack_zl_report_perm (np, Perm, Control) ;
 

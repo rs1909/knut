@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -26,6 +26,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* define UF_long */
+#include "UFconfig.h"
 
 /* -------------------------------------------------------------------------- */
 /* size of Info and Control arrays */
@@ -94,10 +97,10 @@ extern "C" {
 /* Version, copyright, and license */
 /* -------------------------------------------------------------------------- */
 
-#define UMFPACK_VERSION "UMFPACK V4.6 (Oct. 10, 2005)"
+#define UMFPACK_VERSION "UMFPACK V5.0.1 (Aug 31, 2006)"
 
 #define UMFPACK_COPYRIGHT \
-"UMFPACK:  Copyright (c) 2005 by Timothy A. Davis.  All Rights Reserved.\n"
+"UMFPACK:  Copyright (c) 2005-2006 by Timothy A. Davis.  All Rights Reserved.\n"
 
 #define UMFPACK_LICENSE_PART1 \
 "\nUMFPACK License:\n" \
@@ -160,11 +163,11 @@ extern "C" {
  * above.
  */
 
-#define UMFPACK_DATE "Oct. 10, 2005"
+#define UMFPACK_DATE "Aug 31, 2006"
 #define UMFPACK_VER_CODE(main,sub) ((main) * 1000 + (sub))
-#define UMFPACK_MAIN_VERSION 4
-#define UMFPACK_SUB_VERSION 6
-#define UMFPACK_SUBSUB_VERSION 0
+#define UMFPACK_MAIN_VERSION 5
+#define UMFPACK_SUB_VERSION 0
+#define UMFPACK_SUBSUB_VERSION 1
 #define UMFPACK_VER UMFPACK_VER_CODE(UMFPACK_MAIN_VERSION,UMFPACK_SUB_VERSION)
 
 /* -------------------------------------------------------------------------- */
@@ -185,7 +188,7 @@ extern "C" {
 
 /* computed in UMFPACK_*symbolic: */
 #define UMFPACK_SIZE_OF_INT 4		/* sizeof (int) */
-#define UMFPACK_SIZE_OF_LONG 5		/* sizeof (long) */
+#define UMFPACK_SIZE_OF_LONG 5		/* sizeof (UF_long) */
 #define UMFPACK_SIZE_OF_POINTER 6	/* sizeof (void *) */
 #define UMFPACK_SIZE_OF_ENTRY 7		/* sizeof (Entry), real or complex */
 #define UMFPACK_NDENSE_ROW 8		/* number of dense rows */

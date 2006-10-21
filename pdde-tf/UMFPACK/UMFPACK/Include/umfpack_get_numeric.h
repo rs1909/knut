@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -24,18 +24,18 @@ int umfpack_di_get_numeric
     void *Numeric
 ) ;
 
-long umfpack_dl_get_numeric
+UF_long umfpack_dl_get_numeric
 (
-    long Lp [ ],
-    long Lj [ ],
+    UF_long Lp [ ],
+    UF_long Lj [ ],
     double Lx [ ],
-    long Up [ ],
-    long Ui [ ],
+    UF_long Up [ ],
+    UF_long Ui [ ],
     double Ux [ ],
-    long P [ ],
-    long Q [ ],
+    UF_long P [ ],
+    UF_long Q [ ],
     double Dx [ ],
-    long *do_recip,
+    UF_long *do_recip,
     double Rs [ ],
     void *Numeric
 ) ;
@@ -56,18 +56,18 @@ int umfpack_zi_get_numeric
     void *Numeric
 ) ;
 
-long umfpack_zl_get_numeric
+UF_long umfpack_zl_get_numeric
 (
-    long Lp [ ],
-    long Lj [ ],
+    UF_long Lp [ ],
+    UF_long Lj [ ],
     double Lx [ ], double Lz [ ],
-    long Up [ ],
-    long Ui [ ],
+    UF_long Up [ ],
+    UF_long Ui [ ],
     double Ux [ ], double Uz [ ],
-    long P [ ],
-    long Q [ ],
+    UF_long P [ ],
+    UF_long Q [ ],
     double Dx [ ], double Dz [ ],
-    long *do_recip,
+    UF_long *do_recip,
     double Rs [ ],
     void *Numeric
 ) ;
@@ -82,11 +82,11 @@ double int Syntax:
     status = umfpack_di_get_numeric (Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx,
 	&do_recip, Rs, Numeric) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long *Lp, *Lj, *Up, *Ui, *P, *Q, status, do_recip ;
+    UF_long *Lp, *Lj, *Up, *Ui, *P, *Q, status, do_recip ;
     double *Lx, *Ux, *Dx, *Rs ;
     status = umfpack_dl_get_numeric (Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx,
 	&do_recip, Rs, Numeric) ;
@@ -100,16 +100,16 @@ complex int Syntax:
     status = umfpack_zi_get_numeric (Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q,
 	Dx, Dz, &do_recip, Rs, Numeric) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     void *Numeric ;
-    long *Lp, *Lj, *Up, *Ui, *P, *Q, status, do_recip ;
+    UF_long *Lp, *Lj, *Up, *Ui, *P, *Q, status, do_recip ;
     double *Lx, *Lz, *Ux, *Uz, *Dx, *Dz, *Rs ;
     status = umfpack_zl_get_numeric (Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q,
 	Dx, Dz, &do_recip, Rs, Numeric) ;
 
-packed complex int/long Syntax:
+packed complex int/UF_long Syntax:
 
     Same as above, except Lz, Uz, and Dz are all NULL.
 
@@ -226,13 +226,15 @@ Arguments:
 
     Int *do_recip ;		Output argument.
 
-	If do_recip is returned as zero (false), then the scale factors Rs [i]
-	are to be used by multiplying row i by Rs [i].  Otherwise, the entries
-	in row i are to be divided by Rs [i].
+	This argument defines how the scale factors Rs are to be interpretted.
+
+	If do_recip is TRUE (one), then the scale factors Rs [i] are to be used
+	by multiplying row i by Rs [i].  Otherwise, the entries in row i are to
+	be divided by Rs [i].
 
 	If UMFPACK has been compiled with gcc, or for MATLAB as either a
 	built-in routine or as a mexFunction, then the NRECIPROCAL flag is
-	set, and do_recip will always be zero (false).
+	set, and do_recip will always be FALSE (zero).
 
     double Rs [n_row] ;		Output argument.
 

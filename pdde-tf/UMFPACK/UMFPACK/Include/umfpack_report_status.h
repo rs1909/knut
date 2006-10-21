@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -17,7 +17,7 @@ void umfpack_di_report_status
 void umfpack_dl_report_status
 (
     const double Control [UMFPACK_CONTROL],
-    long status
+    UF_long status
 ) ;
 
 void umfpack_zi_report_status
@@ -29,7 +29,7 @@ void umfpack_zi_report_status
 void umfpack_zl_report_status
 (
     const double Control [UMFPACK_CONTROL],
-    long status
+    UF_long status
 ) ;
 
 /*
@@ -40,11 +40,11 @@ double int Syntax:
     int status ;
     umfpack_di_report_status (Control, status) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
     double Control [UMFPACK_CONTROL] ;
-    long status ;
+    UF_long status ;
     umfpack_dl_report_status (Control, status) ;
 
 complex int Syntax:
@@ -54,11 +54,11 @@ complex int Syntax:
     int status ;
     umfpack_zi_report_status (Control, status) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
     double Control [UMFPACK_CONTROL] ;
-    long status ;
+    UF_long status ;
     umfpack_zl_report_status (Control, status) ;
 
 Purpose:

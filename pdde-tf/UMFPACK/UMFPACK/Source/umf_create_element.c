@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -27,7 +27,7 @@
 PRIVATE void copy_column (Int len, Entry *X, Entry *Y)
 {
     Int i ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
     for (i = 0 ; i < len ; i++)
     {
 	Y [i] = X [i] ;
@@ -96,7 +96,7 @@ GLOBAL Int UMF_create_element
     if (!Symbolic->fixQ)
     {
 	/* but only if the column ordering is not fixed */
-/* #pragma ivdep // Robi */
+#pragma ivdep
 	for (j = 0 ; j < fncols ; j++)
 	{
 	    /* add the current frontal matrix to the degree */
@@ -109,7 +109,7 @@ GLOBAL Int UMF_create_element
     /* add the current frontal matrix to the degrees of each row */
     /* ---------------------------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
     for (i = 0 ; i < fnrows ; i++)
     {
 	/* add the current frontal matrix to the degree */
@@ -133,7 +133,7 @@ GLOBAL Int UMF_create_element
 	    /* guard against integer overflow.  This is very rare */
 	    DEBUG1 (("Integer overflow, cdeg\n")) ;
 	    Work->cdeg0 = 1 ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 	    for (e = 1 ; e <= Work->nel ; e++)
 	    {
 		if (E [e])
@@ -154,7 +154,7 @@ GLOBAL Int UMF_create_element
 	    /* guard against integer overflow.  This is very rare */
 	    DEBUG1 (("Integer overflow, rdeg\n")) ;
 	    Work->rdeg0 = 1 ;
-/* #pragma ivdep // Robi */
+#pragma ivdep
 	    for (e = 1 ; e <= Work->nel ; e++)
 	    {
 		if (E [e])
@@ -172,7 +172,7 @@ GLOBAL Int UMF_create_element
 
     if (!Work->pivrow_in_front)
     {
-/* #pragma ivdep // Robi */
+#pragma ivdep
 	for (j = 0 ; j < fncols ; j++)
 	{
 	    Fcpos [Fcols [j]] = EMPTY ;
@@ -181,7 +181,7 @@ GLOBAL Int UMF_create_element
 
     if (!Work->pivcol_in_front)
     {
-/* #pragma ivdep // Robi */
+#pragma ivdep
 	for (i = 0 ; i < fnrows ; i++)
 	{
 	    Frpos [Frows [i]] = EMPTY ;
@@ -283,12 +283,12 @@ GLOBAL Int UMF_create_element
     /* copy frontal matrix into the new element */
     /* ---------------------------------------------------------------------- */
 
-/* #pragma ivdep // Robi */
+#pragma ivdep
     for (i = 0 ; i < fnrows ; i++)
     {
 	Rows [i] = Frows [i] ;
     }
-/* #pragma ivdep // Robi */
+#pragma ivdep
     for (i = 0 ; i < fncols ; i++)
     {
 	Cols [i] = Fcols [i] ;
@@ -300,18 +300,6 @@ GLOBAL Int UMF_create_element
     for (j = 0 ; j < fncols ; j++)
     {
 	copy_column (fnrows, Fcol, C) ;
-#if 0
-#ifdef USE_NO_BLAS
-	copy_column (fnrows, Fcol, C) ;
-#else
-	could also use BLAS-COPY (fnrows, Fcol, C) here, but it is typically
-	not as fast as the inlined copy_column subroutine, above.
-#endif
-	for (i = 0 ; i < fnrows ; i++)
-	{
-	    C [i] = Fcol [i] ;
-	}
-#endif
 	Fcol += fnr_curr ;
 	C += fnrows ;
     }

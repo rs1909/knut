@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -162,7 +162,7 @@ PRIVATE Int two_by_two	    /* returns # unmatched weak diagonals */
 #endif
 	    Ri, Rp, n2, n2, Rp [n2]) ;
 #endif
-    ASSERT (AMD_valid (n2, n2, Rp, Ri)) ;
+    ASSERT (AMD_valid (n2, n2, Rp, Ri) == AMD_OK) ;
 
     /* ---------------------------------------------------------------------- */
     /* for each weak diagonal, find a pair of strong off-diagonal entries */
@@ -435,7 +435,7 @@ GLOBAL void UMF_2by2
 #ifndef NDEBUG
     /* UMF_debug += 99 ; */
     DEBUGm3 (("\n ==================================UMF_2by2: tol %g\n", tol)) ;
-    ASSERT (AMD_valid (n, n, Ap, Ai)) ;
+    ASSERT (AMD_valid (n, n, Ap, Ai) == AMD_OK) ;
     for (k = n1 ; k < n - nempty ; k++)
     {
 	ASSERT (Cperm1 [k] == Rperm1 [k]) ;
@@ -806,7 +806,7 @@ GLOBAL void UMF_2by2
 	}
     }
     Cp [n2] = pp ;
-    ASSERT (AMD_valid (n2, n2, Cp, Ci)) ;
+    ASSERT (AMD_valid (n2, n2, Cp, Ci) == AMD_OK) ;
 
     if (nweak == 0)
     {

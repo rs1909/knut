@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -12,8 +12,8 @@
    Define routine names, depending on version being compiled.
 
    DINT:	double precision, int's as integers
-   DLONG:	double precision, long's as integers
-   ZLONG:	complex double precision, long's as integers
+   DLONG:	double precision, UF_long's as integers
+   ZLONG:	complex double precision, UF_long's as integers
    ZINT:	complex double precision, int's as integers
 */
 
@@ -28,7 +28,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* integer type (Int is int or long) now defined in amd_internal.h */
+/* integer type (Int is int or UF_long) now defined in amd_internal.h */
 /* -------------------------------------------------------------------------- */
 
 #if defined (DLONG) || defined (ZLONG)
@@ -539,7 +539,7 @@ typedef struct
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* Double precision, with long's as integers */
+/* Double precision, with UF_long's as integers */
 /* -------------------------------------------------------------------------- */
 
 #ifdef DLONG
@@ -769,7 +769,7 @@ typedef struct
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* Complex double precision, with long's as integers */
+/* Complex double precision, with UF_long's as integers */
 /* -------------------------------------------------------------------------- */
 
 #ifdef ZLONG

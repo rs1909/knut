@@ -3,7 +3,7 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Version 4.6, Copyright (c) 2005 by Timothy A. Davis.  CISE Dept,   */
+/* UMFPACK Version 5.0, Copyright (c) 1995-2006 by Timothy A. Davis.  CISE,   */
 /* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
 /* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
 /* -------------------------------------------------------------------------- */
@@ -19,13 +19,13 @@ int umfpack_di_report_triplet
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_dl_report_triplet
+UF_long umfpack_dl_report_triplet
 (
-    long n_row,
-    long n_col,
-    long nz,
-    const long Ti [ ],
-    const long Tj [ ],
+    UF_long n_row,
+    UF_long n_col,
+    UF_long nz,
+    const UF_long Ti [ ],
+    const UF_long Tj [ ],
     const double Tx [ ],
     const double Control [UMFPACK_CONTROL]
 ) ;
@@ -41,13 +41,13 @@ int umfpack_zi_report_triplet
     const double Control [UMFPACK_CONTROL]
 ) ;
 
-long umfpack_zl_report_triplet
+UF_long umfpack_zl_report_triplet
 (
-    long n_row,
-    long n_col,
-    long nz,
-    const long Ti [ ],
-    const long Tj [ ],
+    UF_long n_row,
+    UF_long n_col,
+    UF_long nz,
+    const UF_long Ti [ ],
+    const UF_long Tj [ ],
     const double Tx [ ], const double Tz [ ],
     const double Control [UMFPACK_CONTROL]
 ) ;
@@ -60,10 +60,10 @@ double int Syntax:
     double *Tx, Control [UMFPACK_CONTROL] ;
     status = umfpack_di_report_triplet (n_row, n_col, nz, Ti, Tj, Tx, Control) ;
 
-double long Syntax:
+double UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, nz, *Ti, *Tj, status ;
+    UF_long n_row, n_col, nz, *Ti, *Tj, status ;
     double *Tx, Control [UMFPACK_CONTROL] ;
     status = umfpack_dl_report_triplet (n_row, n_col, nz, Ti, Tj, Tx, Control) ;
 
@@ -75,10 +75,10 @@ complex int Syntax:
     status = umfpack_zi_report_triplet (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Control) ;
 
-complex long Syntax:
+complex UF_long Syntax:
 
     #include "umfpack.h"
-    long n_row, n_col, nz, *Ti, *Tj, status ;
+    UF_long n_row, n_col, nz, *Ti, *Tj, status ;
     double *Tx, *Tz, Control [UMFPACK_CONTROL] ;
     status = umfpack_zl_report_triplet (n_row, n_col, nz, Ti, Tj, Tx, Tz,
 	Control) ;
