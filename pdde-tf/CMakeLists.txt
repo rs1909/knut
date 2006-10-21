@@ -108,10 +108,6 @@ ADD_CUSTOM_TARGET( dist
 # ENTERING SUBDIRECTORIES
 #------------------------------------------------------------------------------
 
-# fortran to C support routines
-# this is required by LAARPACK
-ADD_SUBDIRECTORY(libf2c)
-
 # LAPACK and ARPACK
 # this produces a library "liblaarpack.a"
 ADD_SUBDIRECTORY(laarpack)
