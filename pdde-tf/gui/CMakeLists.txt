@@ -29,7 +29,7 @@ TARGET_LINK_LIBRARIES( pdde-gui
 	${QT_QTCORE_LIBRARY}
 	${QT_QTGUI_LIBRARY}
 	${QT_QTXML_LIBRARY}
-	pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
+	pddelib laarpack umfpack amd cblas atlas ${CMAKE_DL_LIBS} )
 
 IF(WIN32)
   SET_TARGET_PROPERTIES( pdde-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows pdde_res.o" )

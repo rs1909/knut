@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src
 
 ADD_EXECUTABLE( pdde main.cpp )
 
-TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd cblas atlas pddef2c ${CMAKE_DL_LIBS} )
+TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd cblas atlas ${CMAKE_DL_LIBS} )
 
 IF( NOT MSVC )
 IF( PDDE_RELEASE )
