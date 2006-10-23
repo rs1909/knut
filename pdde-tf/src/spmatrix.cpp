@@ -15,22 +15,22 @@ using namespace std;
 
 extern "C" {
   // LAPACK
-  double dlamch_ (char *cmach, ftnlen cmach_len);
+  double dlamch_ (char *cmach, int cmach_len);
   /* ARPACK */
-  int dnaupd_(integer *ido, char *bmat, integer *n, char *
-      which, integer *nev, double *tol, double *resid, integer *ncv,
-      double *v, integer *ldv, integer *iparam, integer *ipntr,
-      double *workd, double *workl, integer *lworkl, integer *info,
-      ftnlen bmat_len, ftnlen which_len);
+  int dnaupd_(int *ido, char *bmat, int *n, char *
+      which, int *nev, double *tol, double *resid, int *ncv,
+      double *v, int *ldv, int *iparam, int *ipntr,
+      double *workd, double *workl, int *lworkl, int *info,
+      int bmat_len, int which_len);
 
-  int dneupd_(logical *rvec, char *howmny, logical *select,
-      double *dr, double *di, double *z__, integer *ldz,
+  int dneupd_(bool *rvec, char *howmny, bool *select,
+      double *dr, double *di, double *z__, int *ldz,
       double *sigmar, double *sigmai, double *workev, 
-      char *bmat, integer *n, char *which, integer *nev, double *tol,
-      double *resid, integer *ncv, double *v, integer *ldv, 
-      integer *iparam, integer *ipntr, double *workd, double *workl,
-      integer *lworkl, integer *info, ftnlen howmny_len, ftnlen bmat_len,
-      ftnlen which_len);
+      char *bmat, int *n, char *which, int *nev, double *tol,
+      double *resid, int *ncv, double *v, int *ldv, 
+      int *iparam, int *ipntr, double *workd, double *workl,
+      int *lworkl, int *info, int howmny_len, int bmat_len,
+      int which_len);
 }
 
 // **************************************************************************//
@@ -144,10 +144,10 @@ SpFact::~SpFact()
 
 void SpFact::Clear( )
 {
-	SpMatrix::Clear( ); 
+	SpMatrix::Clear( );
 	if( Numeric != 0 )
 	{
-		P_ASSERT_X( fact, "GEBASZ\n" );
+		P_ASSERT_X( fact, "Matrix was not factorized." );
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -159,7 +159,7 @@ void SpFact::Clear( char F )
 	SpMatrix::Clear( F );
 	if( Numeric != 0 )
 	{
-		P_ASSERT_X( fact, "GEBASZ\n" );
+		P_ASSERT_X( fact, "Matrix was not factorized." );
 		umfpack_di_free_numeric( &Numeric ); 
 		Numeric = 0;
 	}
@@ -217,14 +217,14 @@ void SpFact::Solve( Vector& x, const Vector& b, bool trans )
 	int status,sys;
 	
 	if( format == 'C' )
-	{ 
+	{
 		if( trans ) sys = UMFPACK_At; else sys = UMFPACK_A; 
 	}else
 	{
 		if( trans ) sys = UMFPACK_A; else sys = UMFPACK_At;
 		P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
 	}
-  
+	
 	status = umfpack_di_wsolve( sys, Ap, Ai, Ax, x.Pointer(), b.v, Numeric, Control, 0, Wi, W );
 }
 
@@ -251,33 +251,33 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 {
 	P_ERROR_X1( ( wr.Size() == wi.Size() )&&( wr.Size() > 1 ), "Real and imaginary vectors are not of the same size.");
 	
-	integer IDO      = 0;
+	int     IDO      = 0;
 	char    BMAT     = 'I';
-	integer N        = AI.Size() * A0.Col();
+	int     N        = AI.Size() * A0.Col();
 	char    WHICH[]  = {'L','M'};
-	integer NEV      = wr.Size()-1;
+	int     NEV      = wr.Size()-1;
 	double  TOL      = dlamch_("EPS",3);
 //	 RESID is defined in the class
-	integer NCV      = 2*NEV + 1;
+	int     NCV      = 2*NEV + 1;
 	double* V        = new double[(N+1)*(NCV+1)];
-	integer LDV      = N;
-	integer IPARAM[] = {1,     // ISHIFT
-	                    0,     // n.a.ff
-	                    300,   // MXITER
-	                    1,     // NB
-	                    0,     // NCONV (out)
-	                    0,     // IUPD n.a.
-	                    1,     // MODE
-	                    0,     // NP if there is shift ()
-	                    0,     // NUMOP
-	                    0,     // NUMOPB
-	                    0,     // NUMREO
-	                    0 };   // padding
-	integer IPNTR[14];
+	int     LDV      = N;
+	int IPARAM[] = {1,     // ISHIFT
+	                0,     // n.a.ff
+	                300,   // MXITER
+	                1,     // NB
+	                0,     // NCONV (out)
+	                0,     // IUPD n.a.
+	                1,     // MODE
+	                0,     // NP if there is shift ()
+	                0,     // NUMOP
+	                0,     // NUMOPB
+	                0,     // NUMREO
+	                0 };   // padding
+	int IPNTR[14];
 	double* WORKD     = new double[4*N+1]; //3*N
-	integer LWORKL    = 3*NCV*NCV + 6*NCV;
+	int     LWORKL    = 3*NCV*NCV + 6*NCV;
 	double* WORKL     = new double[LWORKL+1];
-	integer INFO;
+	int INFO;
 	// whether we need to create a new RESID or we can use it from a previous run
 	if( isINIT ) INFO = 1;
 	else INFO = 0;
@@ -322,13 +322,13 @@ void StabMatrix::Eigval( Vector& wr, Vector& wi )
 	delete[] tvec2;
 	delete[] tvec;
 	
-	logical  RVEC = FALSE_;
+	bool     RVEC     = false;
 	char     HOWMNY   = 'A';
-	logical* SELECT   = new logical[NCV+1];
+	bool*    SELECT   = new bool[NCV+1];
 	double*  DR       = new double[NEV+2];
 	double*  DI       = new double[NEV+2];
 	double*  Z        = new double[N*(NEV+2)];
-	integer  LDZ      = N;
+	int      LDZ      = N;
 	double   SIGMAR   = 0.0;
 	double   SIGMAI   = 0.0;
 	double*  WORKEV   = new double[4*NCV]; // 3*NCV

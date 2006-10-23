@@ -10,16 +10,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-// from f2c.h
-typedef long int integer;
-typedef long int logical;
-typedef long int ftnlen;
-typedef double doublereal;
-
-#define TRUE_ (1)
-#define FALSE_ (0)
-// end - from f2c.h
-
 #include <iostream>
 
 #ifndef PDDESYS_H
@@ -32,7 +22,7 @@ extern "C" {
 #include "cblas.h"
 
 // LAPACK random vector generator
-int dlarnv_ (integer * idist, integer * iseed, integer * n, doublereal * x);
+int dlarnv_ (int * idist, int * iseed, int * n, double * x);
 
 }
 #endif
@@ -429,9 +419,9 @@ public:
 
 	inline void Rand( )
 	{
-		static integer idist = 2;
-		static integer iseed[4] = { 1, 3, 5, 7 };
-		integer N = static_cast<integer>( n );
+		static int idist = 2;
+		static int iseed[4] = { 1, 3, 5, 7 };
+		int N = static_cast<int>( n );
 		dlarnv_ ( &idist, iseed, &N, v );
 	}
 	
@@ -565,10 +555,10 @@ class MatFact : public Matrix
 		bool     fact; // == true if factorized
 		// for factorizig
 		double*  mf;
-		integer* ipiv;
+		int* ipiv;
 		double*  work;
-		integer* iwork;
-		integer  info;
+		int* iwork;
+		int  info;
 		// for solving
 		double rcond;
 		double ferr;  // in case of Vector these are just double
@@ -580,18 +570,18 @@ class MatFact : public Matrix
 		{
 			fact = false;
 			mf = new double[r*c+1];
-			ipiv = new integer[this->r+1];
+			ipiv = new int[this->r+1];
 			work = new double[4*(this->r)];
-			iwork = new integer[this->r];
+			iwork = new int[this->r];
 		}
 		
 		inline MatFact( const Matrix& M ) : Matrix( M )
 		{
 			fact = false;
 			mf = new double[r*c+1];
-			ipiv = new integer[this->r+1];
+			ipiv = new int[this->r+1];
 			work = new double[4*(this->r)];
-			iwork = new integer[this->r];
+			iwork = new int[this->r];
 		}
 		
 		inline virtual ~MatFact(){ delete[] iwork; delete[] work; delete[] ipiv; delete[] mf; }

@@ -7,9 +7,8 @@
 #include <ctype.h>
 #include <time.h>
 
-typedef int bool;
-#define false (0)
-#define true (1)
+// for defining bool in a c++ compatible way
+#include <stdbool.h>
 
 #define max(a,b) ( (a) > b ? (a) : (b) )
 #define min(a,b) ( (a) > b ? (b) : (a) )

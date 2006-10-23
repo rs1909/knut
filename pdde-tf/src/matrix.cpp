@@ -20,21 +20,21 @@ using namespace std;
 extern "C" {
 
   /* LAPACK */
-  int dgeev_(char *jobvl, char *jobvr, integer *n, doublereal *
-      a, integer *lda, doublereal *wr, doublereal *wi, doublereal *vl,
-      integer *ldvl, doublereal *vr, integer *ldvr, doublereal *work,
-      integer *lwork, integer *info, ftnlen jobvl_len, ftnlen jobvr_len);
+  int dgeev_(char *jobvl, char *jobvr, int *n, double *
+      a, int *lda, double *wr, double *wi, double *vl,
+      int *ldvl, double *vr, int *ldvr, double *work,
+      int *lwork, int *info, int jobvl_len, int jobvr_len);
 
-  int dgesv_( integer *n, integer *nrhs, doublereal *a, integer *lda,
-      integer *ipiv, doublereal *b, integer *ldb, integer *info);
+  int dgesv_( int *n, int *nrhs, double *a, int *lda,
+      int *ipiv, double *b, int *ldb, int *info);
 
-  int dgesvx_(char *fact, char *trans, integer *n, integer *nrhs,
-              doublereal *a, integer *lda, doublereal *af, integer *ldaf,
-              integer *ipiv, char *equed, doublereal *r__, doublereal *c__,
-              const doublereal *b, integer *ldb, doublereal *x, integer *ldx,
-              doublereal *rcond, doublereal *ferr, doublereal *berr,
-              doublereal *work, integer *iwork, integer *info,
-              ftnlen fact_len, ftnlen trans_len, ftnlen equed_len);
+  int dgesvx_(char *fact, char *trans, int *n, int *nrhs,
+              double *a, int *lda, double *af, int *ldaf,
+              int *ipiv, char *equed, double *r__, double *c__,
+              const double *b, int *ldb, double *x, int *ldx,
+              double *rcond, double *ferr, double *berr,
+              double *work, int *iwork, int *info,
+              int fact_len, int trans_len, int equed_len);
 
 }
 
@@ -98,11 +98,11 @@ void Matrix::Eigval( Vector& wr, Vector& wi )
 	
 	char    jobvl = 'N', jobvr = 'N';
 	Matrix  vl(this->r,1), vr(this->r,1);
-	integer n = this->r, lda = this->r;
-	integer ldvl = 1, ldvr = 1;
+	int n = this->r, lda = this->r;
+	int ldvl = 1, ldvr = 1;
 	Matrix  work(this->r,4);
-	integer lwork = 4*(this->r);
-	integer info;
+	int lwork = 4*(this->r);
+	int info;
 
 	dgeev_( &jobvl, &jobvr, &n, this->m, &lda, 
 	        wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
@@ -127,12 +127,12 @@ void Matrix::Eigval( Vector& wr, Vector& wi, Matrix& vl, Matrix& vr )
 		return;
 	}
 	
-	char    jobvl = 'V',jobvr = 'V';
-	integer n = this->r, lda = this->r;
-	integer ldvl = vl.Row(), ldvr = vr.Row();
-	Matrix  work(this->r,10);
-	integer lwork = 10*(this->r);
-	integer info;
+	char jobvl = 'V',jobvr = 'V';
+	int  n = this->r, lda = this->r;
+	int  ldvl = vl.Row(), ldvr = vr.Row();
+	Matrix work(this->r,10);
+	int  lwork = 10*(this->r);
+	int  info;
 
 	dgeev_( &jobvl, &jobvr, &n, this->m, &lda, 
 	        wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
@@ -146,10 +146,10 @@ void MatFact::Fact()
 {
 	P_ASSERT_X( this->r == this->c, "MatFact::Fact wrong dimensions");
 
-	char FACT='N',trans='N',equed='N';
-	integer n=this->r;
-	integer nrhs=0;
-  
+	char FACT = 'N', trans = 'N', equed = 'N';
+	int n = this->r;
+	int nrhs = 0;
+	
 	dgesvx_( &FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
 	         ipiv, &equed, NULL, NULL, NULL, &n, NULL, &n, 
 	         &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
@@ -189,8 +189,8 @@ void MatFact::Solve( Vector& x, const Vector& b, bool trans )
 
 			char FACT='F', equed='N', TRANS;
 			if( trans ) TRANS = 'T'; else TRANS = 'N';
-			integer n=this->r;
-			integer nrhs=1;
+			int n=this->r;
+			int nrhs=1;
 			
 			dgesvx_( &FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
 			         ipiv, &equed, NULL, NULL, b.v, &n, x.Pointer(), &n, 
@@ -243,8 +243,8 @@ void MatFact::Solve( Matrix& x, const Matrix& b, bool trans )
 			char FACT='F', equed='N', TRANS;
 			if( trans ) TRANS = 'T'; else TRANS = 'N';
 			double *fberr = new double[2*b.Col()+1]; 
-			integer n=this->r;
-			integer nrhs=b.Col();
+			int n=this->r;
+			int nrhs=b.Col();
 			
 			dgesvx_( &FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
 			         ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n, 
