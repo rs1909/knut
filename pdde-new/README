@@ -1,0 +1,17 @@
+For istallation instructions read the manual (manual.pdf),
+which can be found in the doc/ subdirectory.
+
+Known issues:
+- On Windows(TM) under MinGW32 the Neimark-Sacker bifurcation continuation 
+  fails after some steps, which might be related to gcc 4.0.2 or the 
+  ATLAS package. (It does not happen under Linux.)
+- Fold bifurcation continuation in the traffic model is a difficult problem,
+  therefore some tweaking will be necessary to make it work.
+- There are lots of fold bifurcations in the Mackey-Glass equation, some of
+  them are easy to compute, others are difficult. The software might stop at
+  certain parameter values but this can be overcome by some manual
+  intervention.
+- Equations with rotational symmetries can be analyzed only with some
+  limitations. The fold bifurcation continuation only works if the
+  period-length is not a free parameter. (If somebody knows why, let me
+  know, please!)
