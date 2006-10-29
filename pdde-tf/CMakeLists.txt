@@ -6,7 +6,7 @@ PROJECT( PDDE )
 
 SET( PACKAGE_NAME "pdde-cont" )
 SET( PACKAGE_VERSION "1.1.1" )
-FILE( READ REVISION PACKAGE_REVISION )
+FILE( READ ${PDDE_BINARY_DIR}/REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )
 
@@ -99,11 +99,12 @@ ADD_CUSTOM_TARGET( dist
 	COMMAND ln -s ${PDDE_SOURCE_DIR} ${DIST_DIR}\;
 		ln -s ${PDDE_BINARY_DIR}/pdde.spec ${DIST_DIR}/pdde.spec\;
 		svn log -r HEAD -q ${PDDE_SOURCE_DIR} | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >REVISION\;
+		ln -s ${PDDE_BINARY_DIR}/REVISION ${DIST_DIR}/REVISION\;
 		svn list -r HEAD -R --non-interactive ${PDDE_SOURCE_DIR} | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
 		echo >>tmp_filelist \"${DIST_DIR}/pdde.spec\"\;
 		tar cjf ${DIST_DIR}.tar.bz2 --no-recursion -h -T tmp_filelist\;
-		rm tmp_filelist ${DIST_DIR}/pdde.spec ${DIST_DIR}\; )
+		rm tmp_filelist ${DIST_DIR}/pdde.spec ${DIST_DIR}/REVISION ${DIST_DIR}\; )
 
 #------------------------------------------------------------------------------
 # ENTERING SUBDIRECTORIES

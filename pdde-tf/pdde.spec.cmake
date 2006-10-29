@@ -2,7 +2,7 @@ Summary: Numerical continuation software for delay-differential equations
 Name: pdde-cont
 Version: @PACKAGE_VERSION@
 Release: 1%{?dist}
-License: GPL v2 with additions
+License: GPL v2
 Group: Application/Scientific
 Source: pdde-cont-@PACKAGE_VERSION@.tar.bz2
 URL: N/A
