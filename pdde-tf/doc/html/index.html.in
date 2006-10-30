@@ -14,18 +14,20 @@
 </head>
 
 <body>
+<table width="640" align="center"> <tr>
 <p>
 <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
 	<tr>
-		<th bgcolor="#333366" style="color: white"> <h1>PDDE-CONT: A continuation and bifurcation software for delay-differential equations<h1></th>
+		<th bgcolor="#333366" style="color: white"> <h2>PDDE-CONT: A continuation and bifurcation software for delay-differential equations</h2></th>
 	</tr>
 </table>
 
-<h2> Capabilities </h2>
-<ul>
+<p />
+<b> Capabilities </b>
+<hr size="1" width="100%" color="black" />
 <p>
 PDDE-CONT can continue periodic solutions and periodic solution bifurcations of autonomous and periodically forced delay-differential equations that are in the general form</p>
-<p align=center>
+<p align="center">
 <i>dx(t)/dt = f(t, x(t-&tau;<sub>0</sub>), x(t-&tau;<sub>1</sub>), ..., x(t-&tau;<sub>r</sub>), &lambda;).</i>
 </p>
 <p>
@@ -43,27 +45,22 @@ when looking for periodic orbits arising at Hopf bifurcations points. Hopf bifur
 are detected as Neimark-Sacker bifurcations, and the periodic solutions emanating from such points can
 be continued by switching to the periodic solution branch.
 </p>
-</ul>
 
-<h2> Documentation </h2> 
-<ul>
+<b> Documentation </b>
+<hr size="1" width="100%" color="black" />
 <p>
 See the <a href="manual.pdf"> User's Manual </a>.
 </p>
-</ul>
 
-<h2> Download </h2>
-<ul>
-<!--<p>
-Download the source code of the <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> current version (@PACKAGE_VERSION@) </a>
-</p>-->
+<b> Download </b>
+<hr size="1" width="100%" color="black" />
 
 <p>
 <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#F6F6F6">
 <tr style="color: white"><th bgcolor="#333366">Current version (@PACKAGE_VERSION@)</th> <th bgcolor="#333366"> Package </th>
 </tr>
 <tr>
-<td> Source code </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> pdde-cont-@PACKAGE_VERSION@.tar.bz2 </td>
+<td> Source code </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> pdde-cont-@PACKAGE_VERSION@.tar.bz2 </a></td>
 </tr>
 <tr>
 <td> Fedora Core 6 Source RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.src.rpm"> pdde-cont-@PACKAGE_VERSION@-1.src.rpm </a> </td></tr>
@@ -71,19 +68,12 @@ Download the source code of the <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> c
 <td> Fedora Core 6 Binary RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.i386.rpm"> pdde-cont-@PACKAGE_VERSION@-1.i386.rpm </a> </td></tr>
 <tr>
 <td> Windows XP installer </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.exe"> pdde-cont-@PACKAGE_VERSION@.exe</a> (Install the <a href="http://prdownloads.sf.net/mingw/MinGW-5.0.3.exe?download">MinGW</a> g++ compiler, too.)</td></tr>
-</td>
-</tr>
 </table>
 </p>
 
-</ul>
-
-<h2>
-Installation from the source code
-</h2>
-<ul>
-<p>
-The software can be built using the cross-platform build facility <a href="http://www.cmake.org">CMake</a>. The build also requires a C and C++ compiler, preferably <a href="http://gcc.gnu.org">GCC</a>, and the <a href="http://math-atlas.sourceforge.net/">ATLAS</a> linear algebra library. The (optional) graphical user interface requires the <a href="http://www.trolltech.com/products/qt/downloads">Qt 4.2<a> GUI toolkit.
+<b>Installation from the source code</b>
+<hr size="1" width="100%" color="black" /><p>
+The software can be built using the cross-platform build facility <a href="http://www.cmake.org">CMake</a>. The build also requires a C and C++ compiler, preferably <a href="http://gcc.gnu.org">GCC</a>, and the <a href="http://math-atlas.sourceforge.net/">ATLAS</a> linear algebra library. The (optional) graphical user interface requires the <a href="http://www.trolltech.com/products/qt/downloads">Qt 4.2</a> GUI toolkit.
 </p>
 <p>
 The compilers are usually present on Linux, BSD, Solaris or other Unix systems. For Windows the 
@@ -108,42 +98,33 @@ The required ATLAS linear algebra library is available for different platforms i
 </tr>
 </table>
 </p>
-</ul>
 
-<h2>
-License
-</h2>
-<ul>
+<b>License</b>
+<hr size="1" width="100%" color="black" />
 <p>
-	The software is available free of charge. Copying of the software is governed by the GNU General Public License <a href="http://www.gnu.org/licenses/gpl.html">(GPL)</a>.
-	In addition to the GPL, the author of any scientific or non-scientific publication who used the software is obliged to refer to the User's Manual in the publication where the software or its modified version was used <a href=#man>[1]</a>.
+	The software is available free of charge. Copying of the software is governed by the GNU General Public License <a href="http://www.gnu.org/licenses/gpl.html">(GPL)</a> version 2.
+	In addition to the GPL, the author of any scientific or non-scientific publication who used the software is required to refer to the User's Manual in the publication where the software or its modified version was used <a href="#man">[1]</a>.
 </p>
-</ul>
 
-<h2>
-Third party Licenses used in PDDE-CONT
-</h2>
-<ul>
-<p>
+<b>
+Third party Licenses used in PDDE-CONT</b>
+<hr size="1" width="100%" color="black" /><p>
 <a href="http://www.cise.ufl.edu/research/sparse/umfpack">UMFPACK</a> and <a href="http://www.cise.ufl.edu/research/sparse/amd">AMD</a> 
 can be distributed under the GNU Lesser General Public License <a href="http://www.gnu.org/licenses/lgpl.html">(LGPL)</a>
 </p>
-</ul>
 
-<h2> Related publications </h2> 
-<ul>
+<b> Related publications </b>
+<hr size="1" width="100%" color="black" />
 <p>
-<a name=man></a>[1] R. Szalai, <i> PDDE-CONT: A continuation and bifurcation software for 
+<a name="man"></a>[1] R. Szalai, <i> PDDE-CONT: A continuation and bifurcation software for 
 delay-differential equations </i> (2005)
 </p>
-<!--<p>
-<a name=extsys>[2]</a> R. Szalai, <i> Extended systems for computation of periodic solution bifurcations in delay differential equations</i>, in preparation (2006)
-</p>-->
-</ul>
 
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td width="50%">Copyright &copy; 2005, 2006 <a href="http://seis.bris.ac.uk/~rs1909">Robert Szalai</a></td>
 <td width="50%" align="right"><div align="right">PDDE-CONT @PACKAGE_VERSION@</div></td>
 </tr></table></div></address>
+</p>
+</tr></table>
 </body></html>
