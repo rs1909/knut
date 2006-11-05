@@ -21,9 +21,7 @@ extern "C"
 
 #include "cspblas.h"
 #include "cblas.h"
-
-// LAPACK random vector generator
-  int pdde_dlarnv(int * idist, int * iseed, int * n, double * x);
+#include "laarpack.h"
 
 }
 #endif

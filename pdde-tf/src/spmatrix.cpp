@@ -8,31 +8,10 @@
 // ------------------------------------------------------------------------- //
 
 #include <iostream>
-#include "spmatrix.h" // itt mar meghivtuk <vector>-t
+#include "spmatrix.h" // itt mar meghivtuk <vector>-t es "matrix.h"-t is
 #include <cmath>
 
 using namespace std;
-
-extern "C"
-{
-  // LAPACK
-  double pdde_dlamch(char *cmach, int cmach_len);
-  /* ARPACK */
-  int pdde_dnaupd(int *ido, char *bmat, int *n, char* which,
-                  int *nev, double *tol, double *resid, int *ncv,
-                  double *v, int *ldv, int *iparam, int *ipntr,
-                  double *workd, double *workl, int *lworkl, int *info,
-                  int bmat_len, int which_len);
-
-  int pdde_dneupd(bool *rvec, char *howmny, bool *select,
-                  double *dr, double *di, double *z__, int *ldz,
-                  double *sigmar, double *sigmai, double *workev,
-                  char *bmat, int *n, char *which, int *nev, double *tol,
-                  double *resid, int *ncv, double *v, int *ldv,
-                  int *iparam, int *ipntr, double *workd, double *workl,
-                  int *lworkl, int *info, int howmny_len, int bmat_len,
-                  int which_len);
-}
 
 // **************************************************************************//
 //                                                                           //

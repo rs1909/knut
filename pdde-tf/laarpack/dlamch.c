@@ -1,6 +1,5 @@
 #include "cblaswrap.h"
-
-double pdde_dlamch(char *cmach, int cmach_len);
+#include "laarpack.h"
 
 static int dlamc5_(int * beta, int * p, int * emin, bool * ieee, int * emax, double * rmax);
 static int dlamc4_(int * emin, double * start, int * base);
@@ -14,7 +13,7 @@ static int c__1 = 1;
 static double c_b507 = 0.;
 
 double
-pdde_dlamch(char *cmach, int cmach_len)
+pdde_dlamch(const char *cmach, int cmach_len)
 {
   /* Initialized data */
 

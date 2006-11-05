@@ -113,7 +113,7 @@ static inline void s_cat(char *lp, char *rpp[], int rnp[], int * np, int ll)
 }
 
 static inline bool
-lsame_(char *ca, char *cb, int ca_len, int cb_len)
+lsame_(const char *ca, const char *cb, int ca_len, int cb_len)
 {
   if (*ca == *cb)
     return true;

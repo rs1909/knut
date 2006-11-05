@@ -17,27 +17,6 @@
 #include "plot.h"
 
 using namespace std;
-extern "C"
-{
-
-  /* LAPACK */
-  int pdde_dgeev(char *jobvl, char *jobvr, int *n, double* a,
-                 int *lda, double *wr, double *wi, double *vl,
-                 int *ldvl, double *vr, int *ldvr, double *work,
-                 int *lwork, int *info, int jobvl_len, int jobvr_len);
-
-  int pdde_dgesv(int *n, int *nrhs, double *a, int *lda,
-                 int *ipiv, double *b, int *ldb, int *info);
-
-  int pdde_dgesvx(char *fact, char *trans, int *n, int *nrhs,
-                  double *a, int *lda, double *af, int *ldaf,
-                  int *ipiv, char *equed, double *r__, double *c__,
-                  const double *b, int *ldb, double *x, int *ldx,
-                  double *rcond, double *ferr, double *berr,
-                  double *work, int *iwork, int *info,
-                  int fact_len, int trans_len, int equed_len);
-
-}
 
 // **************************************************************************//
 //                                                                           //
