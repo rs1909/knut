@@ -75,7 +75,7 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 # Finding ATLAS
 #------------------------------------------------------------------------------
 
-SET( ATLAS_SEARCH_PATHS ${PDDE_SOURCE_DIR}/ATLAS/lib /usr/lib /usr/lib/atlas
+SET( ATLAS_SEARCH_PATHS ${PDDE_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
 	/usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
 
 FIND_LIBRARY( ATLAS_CBLAS NAMES cblas PATHS ${ATLAS_SEARCH_PATHS} )

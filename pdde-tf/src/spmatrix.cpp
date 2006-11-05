@@ -16,22 +16,22 @@ using namespace std;
 extern "C"
 {
   // LAPACK
-  double dlamch_(char *cmach, int cmach_len);
+  double pdde_dlamch(char *cmach, int cmach_len);
   /* ARPACK */
-  int dnaupd_(int *ido, char *bmat, int *n, char *
-              which, int *nev, double *tol, double *resid, int *ncv,
-              double *v, int *ldv, int *iparam, int *ipntr,
-              double *workd, double *workl, int *lworkl, int *info,
-              int bmat_len, int which_len);
+  int pdde_dnaupd(int *ido, char *bmat, int *n, char* which,
+                  int *nev, double *tol, double *resid, int *ncv,
+                  double *v, int *ldv, int *iparam, int *ipntr,
+                  double *workd, double *workl, int *lworkl, int *info,
+                  int bmat_len, int which_len);
 
-  int dneupd_(bool *rvec, char *howmny, bool *select,
-              double *dr, double *di, double *z__, int *ldz,
-              double *sigmar, double *sigmai, double *workev,
-              char *bmat, int *n, char *which, int *nev, double *tol,
-              double *resid, int *ncv, double *v, int *ldv,
-              int *iparam, int *ipntr, double *workd, double *workl,
-              int *lworkl, int *info, int howmny_len, int bmat_len,
-              int which_len);
+  int pdde_dneupd(bool *rvec, char *howmny, bool *select,
+                  double *dr, double *di, double *z__, int *ldz,
+                  double *sigmar, double *sigmai, double *workev,
+                  char *bmat, int *n, char *which, int *nev, double *tol,
+                  double *resid, int *ncv, double *v, int *ldv,
+                  int *iparam, int *ipntr, double *workd, double *workl,
+                  int *lworkl, int *info, int howmny_len, int bmat_len,
+                  int which_len);
 }
 
 // **************************************************************************//
@@ -269,7 +269,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   int     N        = AI.Size() * A0.Col();
   char    WHICH[]  = {'L', 'M'};
   int     NEV      = wr.Size() - 1;
-  double  TOL      = dlamch_("EPS", 3);
+  double  TOL      = pdde_dlamch("EPS", 3);
 //  RESID is defined in the class
   int     NCV      = 2 * NEV + 1;
   double* V        = new double[(N+1)*(NCV+1)];
@@ -301,8 +301,8 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   // int it=0;
   do
   {
-    dnaupd_(&IDO, &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
-            IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 2);
+    pdde_dnaupd(&IDO, &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
+                IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 2);
     if ((IDO == 1) || (IDO == -1))
     {
       double* in = &(WORKD[IPNTR[0] - 1]);
@@ -352,10 +352,10 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
 
   if (true /*IPARAM[4] >= NEV*/)
   {
-    dneupd_(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
-            &SIGMAR, &SIGMAI, WORKEV,
-            &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
-            IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 2);
+    pdde_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
+                &SIGMAR, &SIGMAI, WORKEV,
+                &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
+                IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 2);
 //   std::cout<<"INFO2:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
     wr.Clear();

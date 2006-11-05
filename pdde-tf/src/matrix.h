@@ -23,7 +23,7 @@ extern "C"
 #include "cblas.h"
 
 // LAPACK random vector generator
-  int dlarnv_(int * idist, int * iseed, int * n, double * x);
+  int pdde_dlarnv(int * idist, int * iseed, int * n, double * x);
 
 }
 #endif
@@ -500,7 +500,7 @@ class Vector : public Array1D<double>
           1, 3, 5, 7
         };
       int N = static_cast<int>(n);
-      dlarnv_(&idist, iseed, &N, v);
+      pdde_dlarnv(&idist, iseed, &N, v);
     }
 
     inline Vector& operator= (const Vector& V);

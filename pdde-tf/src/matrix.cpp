@@ -21,21 +21,21 @@ extern "C"
 {
 
   /* LAPACK */
-  int dgeev_(char *jobvl, char *jobvr, int *n, double *
-             a, int *lda, double *wr, double *wi, double *vl,
-             int *ldvl, double *vr, int *ldvr, double *work,
-             int *lwork, int *info, int jobvl_len, int jobvr_len);
+  int pdde_dgeev(char *jobvl, char *jobvr, int *n, double* a,
+                 int *lda, double *wr, double *wi, double *vl,
+                 int *ldvl, double *vr, int *ldvr, double *work,
+                 int *lwork, int *info, int jobvl_len, int jobvr_len);
 
-  int dgesv_(int *n, int *nrhs, double *a, int *lda,
-             int *ipiv, double *b, int *ldb, int *info);
+  int pdde_dgesv(int *n, int *nrhs, double *a, int *lda,
+                 int *ipiv, double *b, int *ldb, int *info);
 
-  int dgesvx_(char *fact, char *trans, int *n, int *nrhs,
-              double *a, int *lda, double *af, int *ldaf,
-              int *ipiv, char *equed, double *r__, double *c__,
-              const double *b, int *ldb, double *x, int *ldx,
-              double *rcond, double *ferr, double *berr,
-              double *work, int *iwork, int *info,
-              int fact_len, int trans_len, int equed_len);
+  int pdde_dgesvx(char *fact, char *trans, int *n, int *nrhs,
+                  double *a, int *lda, double *af, int *ldaf,
+                  int *ipiv, char *equed, double *r__, double *c__,
+                  const double *b, int *ldb, double *x, int *ldx,
+                  double *rcond, double *ferr, double *berr,
+                  double *work, int *iwork, int *info,
+                  int fact_len, int trans_len, int equed_len);
 
 }
 
@@ -106,9 +106,9 @@ void Matrix::Eigval(Vector& wr, Vector& wi)
   int lwork = 4 * (this->r);
   int info;
 
-  dgeev_(&jobvl, &jobvr, &n, this->m, &lda,
-         wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
-         work.m, &lwork, &info, 1, 1);
+  pdde_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
+             wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
+             work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
@@ -136,9 +136,9 @@ void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
   int  lwork = 10 * (this->r);
   int  info;
 
-  dgeev_(&jobvl, &jobvr, &n, this->m, &lda,
-         wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
-         work.m, &lwork, &info, 1, 1);
+  pdde_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
+             wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
+             work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
@@ -152,9 +152,9 @@ void MatFact::Fact()
   int n = this->r;
   int nrhs = 0;
 
-  dgesvx_(&FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
-          ipiv, &equed, NULL, NULL, NULL, &n, NULL, &n,
-          &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
+  pdde_dgesvx(&FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
+              ipiv, &equed, NULL, NULL, NULL, &n, NULL, &n,
+              &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
 
   // cout<<"work(1): "<<work[0]<<" rcond< "<<rcond<<"\n";
   if (info != 0) cout << "MatFact::Fact: Error code" << info << '\n';
@@ -196,9 +196,9 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
       int n = this->r;
       int nrhs = 1;
 
-      dgesvx_(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
-              ipiv, &equed, NULL, NULL, b.v, &n, x.Pointer(), &n,
-              &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
+      pdde_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
+                  ipiv, &equed, NULL, NULL, b.v, &n, x.Pointer(), &n,
+                  &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
       if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
       break;
   }
@@ -252,9 +252,9 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       int n = this->r;
       int nrhs = b.Col();
 
-      dgesvx_(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
-              ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
-              &rcond, fberr, fberr + b.Col(), work, iwork, &info, 1, 1, 1);
+      pdde_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
+                  ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
+                  &rcond, fberr, fberr + b.Col(), work, iwork, &info, 1, 1, 1);
 
       if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
       delete[] fberr;

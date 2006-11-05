@@ -62,7 +62,7 @@ static inline void *mmapFileWrite(int& file, const std::string& fileName, int si
   }
 
   void *address;
-  if ((address = mmap(0, size, PROT_WRITE, MAP_SHARED, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, size, PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
     P_ERROR_X2(false, "Unable to map the MAT file to a memory location.", strerror(errno));
   }

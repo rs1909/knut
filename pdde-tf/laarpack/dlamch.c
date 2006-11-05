@@ -1,6 +1,6 @@
 #include "cblaswrap.h"
 
-double dlamch_(char *cmach, int cmach_len);
+double pdde_dlamch(char *cmach, int cmach_len);
 
 static int dlamc5_(int * beta, int * p, int * emin, bool * ieee, int * emax, double * rmax);
 static int dlamc4_(int * emin, double * start, int * base);
@@ -14,7 +14,7 @@ static int c__1 = 1;
 static double c_b507 = 0.;
 
 double
-dlamch_(char *cmach, int cmach_len)
+pdde_dlamch(char *cmach, int cmach_len)
 {
   /* Initialized data */
 
@@ -173,7 +173,7 @@ dlamch_(char *cmach, int cmach_len)
 
   /*     End of DLAMCH */
 
-} /* dlamch_ */
+} /* pdde_dlamch */
 
 
 /* *********************************************************************** */
