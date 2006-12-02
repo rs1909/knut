@@ -14,6 +14,9 @@
 #include "matrix.h"
 #include "spmatrix.h"
 
+void meshadapt( Vector& newprofile, Vector& newmesh, const Vector& newmeshint,
+                const Vector& profile, const Vector& mesh, const Vector& meshint, int ndim );
+
 class NColloc
 {
   public:
@@ -24,6 +27,7 @@ class NColloc
     {}
 
     void Init(const Vector& par, const Vector& sol);   // computes time, kk, ee, dd, rr ...
+    void meshadapt( Vector& newsol, const Vector& sol );
 
     void Interpolate(JagMatrix3D& out, const Vector& sol);
     void InterpolateREAL(JagMatrix3D& out, const Vector& sol);

@@ -39,6 +39,7 @@ ENDIF( MSVC )
 # finding Qt4
 #------------------------------------------------------------------------------
 
+SET( QT_MIN_VERSION "4.2.0" )
 FIND_PACKAGE( Qt4 )
 
 IF(WIN32)

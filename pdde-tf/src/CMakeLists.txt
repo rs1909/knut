@@ -1,9 +1,11 @@
-ADD_LIBRARY( pddelib plot.cpp ncolloc.cpp torcolloc.cpp point.cpp torpoint.cpp 
-	matrix.cpp cspblas.c cspblas.h spmatrix.cpp testfunct.cpp
-	hypermatrix.h matrix.h ncolloc.h torcolloc.h
-	pddesys.h plot.h point.h torpoint.h spmatrix.h testfunct.h
-	system.cpp system.h pointtype.h pderror.h
-	mat4data.cpp mat4data.h constants.cpp constants.h )
+ADD_LIBRARY( pddelib 
+	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
+	mat4data.cpp mat4data.h matrix.cpp matrix.h
+	ncolloc.cpp ncolloc.h pddesys.h pderror.h
+	plot.cpp plot.h point.cpp point.h pointtype.h
+	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
+	system.cpp system.h testfunct.cpp testfunct.h
+	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h )
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include

@@ -15,6 +15,11 @@
 #include "hypermatrix.h"
 #include "ncolloc.h"
 
+#ifdef DEBUG
+#include <iomanip>
+#include <fstream>
+#endif
+
 #define NKERNITER 20
 #define KERNEPS 1.0e-12
 
@@ -108,8 +113,10 @@ void TestFunct::Init(NColloc& col, const Vector& par, const Vector& /*sol*/, con
     AHAT.getA31(0) = vv;
     AHAT.getA13(0) = uu;
     diffnorm = std::max<double>(sqrt(vvdiff * vvdiff + ggdiff * ggdiff), sqrt(uudiff * uudiff + hhdiff * hhdiff));
+#ifdef DEBUG
     std::cout << "dnor " << diffnorm << "\n";
     std::cout << "vv " << sqrt(AHAT.getA31(0)*AHAT.getA31(0)) << ", uu " << sqrt(AHAT.getA13(0)*AHAT.getA13(0)) << "\n";
+#endif
   }
   while ((++it < NKERNITER) && (diffnorm > KERNEPS));
   if (diffnorm > KERNEPS) std::cout << "TestFunct::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
@@ -143,6 +150,29 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol, cons
   hh -= hhdiff;
   AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
   AHAT.getA31(0) = (1.0 / sqrt(vv * vv)) * vv;
+#ifdef DEBUG
+  std::ofstream uufile("eigv");
+  std::ofstream vvfile("eigvstar");
+  uufile << std::scientific;
+  vvfile << std::scientific;
+  uufile.precision(12);
+  vvfile.precision(12);
+
+  for (int i = 0; i < NINT; i++)
+  {
+    for (int j = 0; j < NDEG + 1; j++)
+    {
+      const double t = col.Profile(i, j);
+      for (int p = 0; p < NDIM; p++)
+      {
+        vvfile << vv(p + (j + i*NDEG)*NDIM) << "\t";
+        uufile << uu(p + (j + i*NDEG)*NDIM) << "\t";
+      }
+      vvfile << par(0)*t << "\n";
+      uufile << par(0)*t << "\n";
+    }
+  }
+#endif
 //  std::cout<<"TF: "<<gg<<", "<<hh;
 //  if( gg > 0.0 ) std::cout<<"\t+++\n";
 //  else           std::cout<<"\t---\n";
@@ -311,11 +341,6 @@ void TestFunctCPLX::Switch(Vector& Re, Vector& Im, double& alpha)
     alpha = atan(fabs(ZRe / ZIm)) + M_PI / 2.0;
   }
 }
-
-#ifdef DEBUG
-#include <iomanip>
-#include <fstream>
-#endif
 
 void TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
 {

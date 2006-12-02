@@ -10,9 +10,11 @@
 #include "pderror.h"
 #include "ncolloc.h"
 #include "system.h"
-
 #include "matrix.h"
+#include "polynomial.h"
+
 #include <cmath>
+
 
 // #define MADD
 
@@ -110,22 +112,6 @@ static void poly_gau(Vector& roots)
       }
     }
   }
-}
-
-static void lobatto(Array1D<double>& mesh)
-{
-  const int N = mesh.Size() - 1;
-  if (mesh.Size() > 1) for (int i = 0; i < mesh.Size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((i * M_PI) / N));
-  for (int i = 0; i < mesh.Size(); i++) std::cout << mesh(i) << " ";
-  std::cout << "LOB\n";
-}
-
-static void gauss(Array1D<double>& mesh)
-{
-  const int N = mesh.Size();
-  if (mesh.Size() > 1) for (int i = 0; i < mesh.Size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((2.0 * i + 1.0) / (2.0 * N + 2) * M_PI));
-  for (int i = 0; i < mesh.Size(); i++) std::cout << mesh(i) << " ";
-  std::cout << "GAU\n";
 }
 
 inline static void repr_mesh(Vector& V)
@@ -275,6 +261,117 @@ static inline int meshlookup(const Vector& mesh, double t)
     else low = mid;
   }
   return low;
+}
+
+static inline void auto_cnt(Array1D<double>& d)
+{
+  const int n = d.Size()-1;
+  d(0) = 1.0;
+  for (int i = 0; i < n; ++i)
+  {
+    d(i+1) = 0.0;
+    for (int k = 0; k < i; ++k)
+    {
+      const int k1 = i + 1 - k;
+      d(k1) = d(k1-1) - d(k1);
+    }
+    d(0) = -d(0);
+  }
+
+  // Scale to [0,1]  :
+  int sc = 1;
+  for (int i = 0; i < n; ++i) sc *= n;
+  for (int i = 0; i < n+1; ++i) d(i) *= sc;
+}
+
+// Russel and Christiansen method I.A.
+void meshadapt( Vector& newprofile, Vector& newmesh, const Vector& newmeshint,
+                const Vector& profile, const Vector& mesh, const Vector& meshint, int ndim )
+{
+  const int ndeg = meshint.Size()-1;
+  const int nint = mesh.Size()-1;
+  // central difference
+  Array1D<double> hw(ndeg+1);
+  auto_cnt(hw);
+  // computes the largrange coefficients
+  Array1D< Array1D<double> > lgr(meshint.Size(), meshint.Size());
+  for (int i = 0; i < ndeg+1; i++)
+  {
+    poly_coeff_lgr(lgr(i), meshint, i);
+  }
+  // compute the coeff of the highest degree term in each interval
+  Matrix vkm1mat(nint, ndim);
+  for (int i = 0; i < nint; i++)
+  {
+    for (int p = 0; p < ndim; p++)
+    {
+      vkm1mat(i, p) = 0.0;
+      for (int j = 0; j < ndeg+1; j++)
+      {
+        vkm1mat(i, p) += hw(j)*profile( p + ndim*( j + ndeg*i ) );
+      }
+    }
+  }
+  Vector eqf(nint+1);
+  eqf(0) = 0.0;
+  for (int i = 0; i < nint; i++)
+  {
+    // this contains sk
+    int im = i, ip = i+1;
+    double am = 0.0, ap = 0.0;
+    if (i == 0) im = ip;
+    if (i == nint-1) ip = im;
+    for (int p = 0; p < ndim; p++)
+    {
+      am += fabs(vkm1mat(im,p)-vkm1mat(im-1,p));
+      ap += fabs(vkm1mat(ip,p)-vkm1mat(ip-1,p));
+    }
+//     std::cout<<ap<<":"<<am<<"|";
+    double sk= am/(mesh(im+1)-mesh(im-1)) + ap/(mesh(ip+1)-mesh(ip-1));
+    eqf(i+1) = eqf(i) + sk*pow(mesh(i+1)-mesh(i),ndeg);
+    std::cout<<eqf(i+1)<<"|";
+  }
+  newmesh(0) = 0.0;
+  for (int i = 1; i < newmesh.Size()-1; i++)
+  {
+    const double t = eqf(nint)*i/newmesh.Size();
+    const int idx = meshlookup( eqf, t );
+    const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
+//     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
+    newmesh(i) = mesh(idx) + d*(mesh(idx+1)-mesh(idx));
+    if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
+    if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
+  }
+  newmesh(newmesh.Size()-1) = 1.0;
+  // creating the new profile with the same old meshint
+  for (int i = 0; i < newmesh.Size()-1; i++)
+  {
+    for (int j = 0; j < ndeg; j++)
+    {
+      const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/ndeg;
+      int idx = meshlookup( mesh, t );
+      const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
+      for (int p = 0; p < ndim; p++)
+        newprofile(p+ndim*(j+i*ndeg)) = 0.0;
+      for ( int k = 0; k < ndeg+1; k++)
+      {
+        double c = poly_eval(lgr(k), d);
+        for (int p = 0; p < ndim; p++)
+        {
+          newprofile(p+ndim*(j+i*ndeg)) += c*profile(p+ndim*(k+idx*ndeg));
+        }
+      }
+    }
+  }
+  for (int p = 0; p < ndim; p++)
+    newprofile(p+ndim*(ndeg*(newmesh.Size()-1))) = profile(p+ndim*(ndeg*(mesh.Size()-1)));
+}
+
+void NColloc::meshadapt( Vector& newsol, const Vector& sol )
+{
+  Vector newmesh(mesh);
+  ::meshadapt( newsol, newmesh, meshINT, sol, mesh, meshINT, ndim );
+  mesh = newmesh;
 }
 
 #define NDIM ndim

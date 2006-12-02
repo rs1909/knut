@@ -578,6 +578,7 @@ int Point::StartTF(Eqn FN, std::ostream& out)
     {
       par(NPAR + ParAngle) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
     }
+    std::cout<<"Re: "<<zRe<<" Im: "<<zIm<<" Angle: "<<par(NPAR + ParAngle)<<"\n";
   }
   return Refine(out);
 }

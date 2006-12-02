@@ -640,7 +640,7 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-  QString fileName = QFileDialog::getSaveFileName(this, "Save constants file as", QString(), "Constants files (*.xml);;All files (*)");
+  QString fileName = QFileDialog::getSaveFileName(this, "Save constants file as", curFile, "Constants files (*.xml);;All files (*)");
   if (fileName.isEmpty())
     return false;
 
