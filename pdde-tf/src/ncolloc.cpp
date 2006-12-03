@@ -263,117 +263,6 @@ static inline int meshlookup(const Vector& mesh, double t)
   return low;
 }
 
-static inline void auto_cnt(Array1D<double>& d)
-{
-  const int n = d.Size()-1;
-  d(0) = 1.0;
-  for (int i = 0; i < n; ++i)
-  {
-    d(i+1) = 0.0;
-    for (int k = 0; k < i; ++k)
-    {
-      const int k1 = i + 1 - k;
-      d(k1) = d(k1-1) - d(k1);
-    }
-    d(0) = -d(0);
-  }
-
-  // Scale to [0,1]  :
-  int sc = 1;
-  for (int i = 0; i < n; ++i) sc *= n;
-  for (int i = 0; i < n+1; ++i) d(i) *= sc;
-}
-
-// Russel and Christiansen method I.A.
-void meshadapt( Vector& newprofile, Vector& newmesh, const Vector& newmeshint,
-                const Vector& profile, const Vector& mesh, const Vector& meshint, int ndim )
-{
-  const int ndeg = meshint.Size()-1;
-  const int nint = mesh.Size()-1;
-  // central difference
-  Array1D<double> hw(ndeg+1);
-  auto_cnt(hw);
-  // computes the largrange coefficients
-  Array1D< Array1D<double> > lgr(meshint.Size(), meshint.Size());
-  for (int i = 0; i < ndeg+1; i++)
-  {
-    poly_coeff_lgr(lgr(i), meshint, i);
-  }
-  // compute the coeff of the highest degree term in each interval
-  Matrix vkm1mat(nint, ndim);
-  for (int i = 0; i < nint; i++)
-  {
-    for (int p = 0; p < ndim; p++)
-    {
-      vkm1mat(i, p) = 0.0;
-      for (int j = 0; j < ndeg+1; j++)
-      {
-        vkm1mat(i, p) += hw(j)*profile( p + ndim*( j + ndeg*i ) );
-      }
-    }
-  }
-  Vector eqf(nint+1);
-  eqf(0) = 0.0;
-  for (int i = 0; i < nint; i++)
-  {
-    // this contains sk
-    int im = i, ip = i+1;
-    double am = 0.0, ap = 0.0;
-    if (i == 0) im = ip;
-    if (i == nint-1) ip = im;
-    for (int p = 0; p < ndim; p++)
-    {
-      am += fabs(vkm1mat(im,p)-vkm1mat(im-1,p));
-      ap += fabs(vkm1mat(ip,p)-vkm1mat(ip-1,p));
-    }
-//     std::cout<<ap<<":"<<am<<"|";
-    double sk= am/(mesh(im+1)-mesh(im-1)) + ap/(mesh(ip+1)-mesh(ip-1));
-    eqf(i+1) = eqf(i) + sk*pow(mesh(i+1)-mesh(i),ndeg);
-    std::cout<<eqf(i+1)<<"|";
-  }
-  newmesh(0) = 0.0;
-  for (int i = 1; i < newmesh.Size()-1; i++)
-  {
-    const double t = eqf(nint)*i/newmesh.Size();
-    const int idx = meshlookup( eqf, t );
-    const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
-//     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
-    newmesh(i) = mesh(idx) + d*(mesh(idx+1)-mesh(idx));
-    if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
-    if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
-  }
-  newmesh(newmesh.Size()-1) = 1.0;
-  // creating the new profile with the same old meshint
-  for (int i = 0; i < newmesh.Size()-1; i++)
-  {
-    for (int j = 0; j < ndeg; j++)
-    {
-      const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/ndeg;
-      int idx = meshlookup( mesh, t );
-      const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
-      for (int p = 0; p < ndim; p++)
-        newprofile(p+ndim*(j+i*ndeg)) = 0.0;
-      for ( int k = 0; k < ndeg+1; k++)
-      {
-        double c = poly_eval(lgr(k), d);
-        for (int p = 0; p < ndim; p++)
-        {
-          newprofile(p+ndim*(j+i*ndeg)) += c*profile(p+ndim*(k+idx*ndeg));
-        }
-      }
-    }
-  }
-  for (int p = 0; p < ndim; p++)
-    newprofile(p+ndim*(ndeg*(newmesh.Size()-1))) = profile(p+ndim*(ndeg*(mesh.Size()-1)));
-}
-
-void NColloc::meshadapt( Vector& newsol, const Vector& sol )
-{
-  Vector newmesh(mesh);
-  ::meshadapt( newsol, newmesh, meshINT, sol, mesh, meshINT, ndim );
-  mesh = newmesh;
-}
-
 #define NDIM ndim
 #define NPAR npar
 #define NTAU ntau
@@ -405,15 +294,140 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
     metricPhase(ndeg + 1, ndeg + 1),
     col(ndeg),
     out(ndeg + 1),
-    meshINT(ndeg + 1)
+    meshINT(ndeg + 1),
+    lgr(ndeg+1, ndeg+1)
 {
   sys = &_sys;
   for (int i = 0; i < NINT + 1; i++) mesh(i) = i * 1.0 / NINT;
   repr_mesh(meshINT);
 
+  // computes the largrange coefficients
+  for (int i = 0; i < ndeg+1; i++)
+  {
+    poly_coeff_lgr(lgr(i), meshINT, i);
+  }
+
   col_mesh(col);
   poly_int(metric, meshINT);   // works for any meshes
   poly_diff_int(metricPhase, meshINT);
+}
+
+void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
+{
+  // compute the coeff of the highest degree term in each interval
+  bool small = true;
+  const double hmach = 1e-6;
+  Matrix hd(NINT+1, NDIM);
+  for (int i = 0; i < NINT; i++)
+  {
+    for (int p = 0; p < NDIM; p++)
+    {
+      hd(i, p) = 0.0;
+      for (int j = 0; j < NDEG+1; j++)
+      {
+        hd(i,p) += lgr(j)(NDEG)*profile( p + NDIM*( j + NDEG*i ) );
+      }
+      // adjust by the mesh interval
+      hd(i,p) /= pow(mesh(i+1)-mesh(i),NDEG);
+      if (fabs(hd(i,p)) > hmach) small = false;
+    }
+  }
+  if (small) std::cout<<"small derivatives\n";
+  // takes care of periodicity
+  // this has to be changed when other boundary condition is used
+  for (int p = 0; p < NDIM; p++)
+  {
+    hd(NINT,p) = hd(0,p);
+  }
+  // computes the (m+1)-th derivative.
+  // The mesh modulo need not to be changed, when not periodic BC is used.
+  for (int i = 0; i < NINT; i++)
+  {
+    double dtav;
+    if ( i+2 < NINT ) dtav = 0.5*(mesh(i+2)-mesh(i));
+    else dtav = 0.5*(1.0+mesh((i+2)-NINT)-mesh(i));
+    if( dtav < 0.0 ) std::cout<<"dtav<0\n";
+    for (int p = 0; p < NDIM; p++)
+    {
+      hd(i,p) = (hd(i+1,p) - hd(i,p))/dtav;
+    }
+  }
+  // takes care of periodicity
+  // this has to be changed when other boundary condition is used
+  for (int p = 0; p < NDIM; p++)
+  {
+    hd(NINT,p) = hd(0,p);
+  }
+  // eqf contains the integral which has to be equidistributed
+  Vector eqf(NINT+1);
+  // when the derivatives are too small;
+  if (small) for (int i = 0; i < NINT+1; ++i) eqf(i) = i;
+  else eqf(0) = 0.0;
+  // computing eqf
+  const double pwr=1.0/(NDEG+1.0);
+  for (int j=0; j < NINT; ++j)
+  {
+    double EP=0;
+    if (j == 0)
+    {
+      for (int i = 0; i < NDIM; ++i)
+      {
+        EP+=pow(fabs(hd(NINT,i)),pwr);
+      }
+    } else
+    {
+      for (int i = 0; i < NDIM; ++i)
+      {
+        EP=EP+pow(abs(hd(j-1,i)),pwr);
+      }
+    }
+    double E=0;
+    for (int i = 0; i < NDIM; ++i)
+    {
+      E+=pow(fabs(hd(j,i)),pwr);
+    }
+    eqf(j+1)=eqf(j)+0.5*(mesh(j+1)-mesh(j))*(E+EP);
+  }
+//   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
+  // now computing the new mesh
+  newmesh(0) = 0.0;
+  for (int i = 1; i < newmesh.Size()-1; i++)
+  {
+    const double t = eqf(NINT)*i/(newmesh.Size()-1);
+    const int idx = meshlookup( eqf, t );
+    const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
+//     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
+    newmesh(i) = mesh(idx) + d*(mesh(idx+1)-mesh(idx));
+    if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
+    if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
+  }
+  newmesh(newmesh.Size()-1) = 1.0;
+}
+
+void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile)
+{
+  // creating the new profile with the same old meshINT
+  for (int i = 0; i < newmesh.Size()-1; i++)
+  {
+    for (int j = 0; j < NDEG; j++)
+    {
+      const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
+      int idx = meshlookup( mesh, t );
+      const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
+      for (int p = 0; p < NDIM; p++)
+        newprofile(p+NDIM*(j+i*NDEG)) = 0.0;
+      for ( int k = 0; k < NDEG+1; k++)
+      {
+        double c = poly_eval(lgr(k), d);
+        for (int p = 0; p < NDIM; p++)
+        {
+          newprofile(p+NDIM*(j+i*NDEG)) += c*profile(p+NDIM*(k+idx*NDEG));
+        }
+      }
+    }
+  }
+  for (int p = 0; p < NDIM; p++)
+    newprofile(p+NDIM*(NDEG*(newmesh.Size()-1))) = profile(p+NDIM*(NDEG*(mesh.Size()-1)));
 }
 
 void NColloc::Init(const Vector& par, const Vector& /*sol*/)
