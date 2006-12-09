@@ -1,4 +1,16 @@
-N: Robert Szalai
+N: Name
+C: contribution
+A: affiliation
+E: email address
+W: homepage
+
+N: Robert Szalai 
+C: wrote this software
 A: Budapest University of Technology and Economics
 E: szalai@mm.bme.hu
 W: http://www.mm.bme.hu/~szalai
+
+N: Zolt\'an Domb\o'v\'ari 
+C: wrote the system generator Mathematica file in demo/generator/
+A: Budapest University of Technology and Economics
+E: ddombo@gmail.com

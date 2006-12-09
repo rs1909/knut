@@ -45,6 +45,7 @@ void Point::FillSol(System& sys_)
   Vector fx(colloc.Ndim());
 
   sys_.stpar(par);
+  par(NPAR+ParPeriod) = 1.0;
 
   for (int i = 0; i < colloc.Nint(); i++)
   {
@@ -332,6 +333,7 @@ void Point::Construct()
         break;
     }
   }
+  if (testFunct) testFunct->setKernelTolerance(KernEps, KernIter);
   nTrivMul = 0;
   if (phaut) ++nTrivMul;
   if (phrot) ++nTrivMul;
@@ -744,6 +746,7 @@ void Point::SwitchTFLP(double ds)
   xxDot->getV3().Clear();
 
   TestFunct* tf = new TestFunct(colloc, 1.0);
+  tf->setKernelTolerance(KernEps, KernIter);
   tf->Funct(colloc, par, sol, solData);
   tf->Switch(xxDot->getV1());
   delete tf;
@@ -753,44 +756,20 @@ void Point::SwitchTFLP(double ds)
 
 void Point::SwitchTFPD(double ds)
 {
-  Vector qq_(NDIM);
-  MatFact DD(NDIM, NDIM);
-  Vector wr(NDIM), wi(NDIM);
-  Matrix vr(NDIM, NDIM), vl(NDIM, NDIM);
-
-  xxDot->getV1().Clear();
-  xxDot->getV3().Clear();
-
   Vector tan(xxDot->getV1().Size());
   TestFunct* tf = new TestFunct(colloc, -1.0);
+  tf->setKernelTolerance(KernEps, KernIter);
   tf->Funct(colloc, par, sol, solData);
   tf->Switch(tan);
   delete tf;
 
   // setting the period two double
   par(0) *= 2.0;
-  // only in case of period doubling and equidistant mesh
-  {
-    Vector tmp(sol);
-    for (int i = 0; i < (NDEG*NINT + 1) / 2; i++)
-    {
-      for (int j = 0; j < NDIM; j++)
-      {
-        xxDot->getV1()(NDIM*i + j)                   =  tan(NDIM * 2 * i + j);
-        xxDot->getV1()(NDIM*((NDEG*NINT + 1) / 2 + i) + j) = -tan(NDIM * 2 * i + j);
-        sol(NDIM*i + j)                   = tmp(NDIM * 2 * i + j);
-        sol(NDIM*((NDEG*NINT + 1) / 2 + i) + j) = tmp(NDIM * 2 * i + j);
-      }
-    }
-    if ((NDEG*NINT + 1) % 2 != 0)
-    {
-      for (int j = 0; j < NDIM; j++)
-      {
-        xxDot->getV1()(NDIM*NDEG*NINT + j) = xxDot->getV1()(NDIM * (NDEG * NINT - 1) + j);
-        sol(NDIM*NDEG*NINT + j) = sol(j);
-      }
-    }
-  }
+  par(NPAR+ParPeriod) *= 2.0;
+
+  solNu = sol;
+  colloc.pdMeshConvert(sol, xxDot->getV1(), solNu, tan);
+
   double norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().Clear();

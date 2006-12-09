@@ -15,9 +15,13 @@
 // forward declarations
 class NColloc;
 
+#define TF_NKERNITER 20
+#define TF_KERNEPS 1.0e-12
+
 class baseTestFunct
 {
   public:
+    baseTestFunct() { kernEps = TF_KERNEPS; kernIter = TF_NKERNITER; }
     virtual        ~baseTestFunct()
     {}
     virtual void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
@@ -37,6 +41,10 @@ class baseTestFunct
     virtual void Funct_x(Vector& func1, Vector& func2,
                          NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
     virtual void Switch(Vector& phi) = 0;
+    virtual void setKernelTolerance(double eps, int iter) { kernEps = eps; kernIter = iter; }
+  protected:
+    double kernEps;
+    int    kernIter;
 };
 
 class TestFunct : public baseTestFunct

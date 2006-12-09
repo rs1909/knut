@@ -59,7 +59,7 @@ void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in)
 
 /// evaluate the polynomial in at point c
 ///
-double poly_eval(Array1D<double>& in, double c)
+double poly_eval(const Array1D<double>& in, double c)
 {
   double tmp = in(in.Size() - 1);
   for (int i = in.Size() - 1; i > 0; --i)

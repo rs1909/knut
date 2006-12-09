@@ -20,9 +20,6 @@
 #include <fstream>
 #endif
 
-#define NKERNITER 20
-#define KERNEPS 1.0e-12
-
 #define NDIM (col.Ndim())
 #define NDEG (col.Ndeg())
 #define NINT (col.Nint())
@@ -118,8 +115,8 @@ void TestFunct::Init(NColloc& col, const Vector& par, const Vector& /*sol*/, con
     std::cout << "vv " << sqrt(AHAT.getA31(0)*AHAT.getA31(0)) << ", uu " << sqrt(AHAT.getA13(0)*AHAT.getA13(0)) << "\n";
 #endif
   }
-  while ((++it < NKERNITER) && (diffnorm > KERNEPS));
-  if (diffnorm > KERNEPS) std::cout << "TestFunct::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  while ((++it < kernIter) && (diffnorm > kernEps));
+  if (diffnorm > kernEps) std::cout << "TestFunct::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
@@ -261,8 +258,8 @@ void TestFunctCPLX::Init(NColloc& col, const Vector& par, const Vector& /*sol*/,
     conjugate(AHAT.getA13(1), AHAT.getA13(0));
     conjugate(AHAT.getA31(1), AHAT.getA31(0));
   }
-  while ((++it < NKERNITER) && (diffnorm > KERNEPS));
-  if (diffnorm > KERNEPS) std::cout << "TestFunctCPLX::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  while ((++it < kernIter) && (diffnorm > kernEps));
+  if (diffnorm > kernEps) std::cout << "TestFunctCPLX::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
@@ -449,8 +446,8 @@ void TestFunctLPAUT::Init(NColloc& col, const Vector& par, const Vector& sol, co
     AHAT.getA33(1, 0) = nrm_v * gg2(0);
     AHAT.getA33(0, 1) = nrm_v * hh2(0);
   }
-  while ((++it < NKERNITER) && (diffnorm > KERNEPS));
-  if (diffnorm > KERNEPS) std::cout << "TestFunctLPAUT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  while ((++it < kernIter) && (diffnorm > kernEps));
+  if (diffnorm > kernEps) std::cout << "TestFunctLPAUT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 }
 
 double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData)
@@ -630,7 +627,7 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol,
     AHAT.getA33(0, 2) = nrm_u * hh3(0);
     AHAT.getA33(1, 2) = nrm_u * hh3(1);
   }
-  while ((++it < NKERNITER) && (diffnorm > KERNEPS));
+  while ((++it < kernIter) && (diffnorm > kernEps));
   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
@@ -820,7 +817,7 @@ void TestFunctLPAUTROT_X::Init(NColloc& col, const Vector& par, const Vector& /*
   one1(1) = 0.0;
   one2(0) = 0.0;
   one2(1) = 1.0;
-  for (int i = 0; i < NKERNITER; i++)
+  for (int i = 0; i < kernIter; i++)
   {
     AHAT.Solve(2, vv1, gg1, rhs, one1);
     AHAT.Solve(2, vv2, gg2, rhs, one2);
@@ -849,7 +846,7 @@ void TestFunctLPAUTROT_X::Init(NColloc& col, const Vector& par, const Vector& /*
   one3(0) = 0.0;
   one3(1) = 0.0;
   one3(2) = 1.0;
-  for (int i = 0; i < NKERNITER; i++)
+  for (int i = 0; i < kernIter; i++)
   {
     AHAT.Solve(3, vv3, gg3, rhs, one3);
     AHAT.SolveTR(3, uu3, hh3, rhs, one3);

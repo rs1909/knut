@@ -63,7 +63,7 @@ enum PtType {
 
 // internal parameters, placed after the defined parameters
 
-enum Par { ParAngle = 0, ParRot = 2, ParEnd };
+enum Par { ParAngle = 0, ParPeriod = 1, ParRot = 2, ParEnd };
 
 enum BranchSW { NOSwitch = 0, TFBRSwitch = 1, TFPDSwitch = 2, TFHBSwitch = 3, TFTRSwitch = 4 };
 

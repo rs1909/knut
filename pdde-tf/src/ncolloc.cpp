@@ -312,6 +312,26 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
   poly_diff_int(metricPhase, meshINT);
 }
 
+static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& eqf)
+{
+//   for (int i = 1; i < eqf.Size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
+//   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
+  // now computing the new mesh
+  const int nint = oldmesh.Size()-1;
+  newmesh(0) = 0.0;
+  for (int i = 1; i < newmesh.Size()-1; i++)
+  {
+    const double t = eqf(nint)*i/(newmesh.Size()-1);
+    const int idx = meshlookup( eqf, t );
+    const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
+//     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
+    newmesh(i) = oldmesh(idx) + d*(oldmesh(idx+1)-oldmesh(idx));
+//     if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
+//     if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
+  }
+  newmesh(newmesh.Size()-1) = 1.0;
+}
+
 void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
 {
   // compute the coeff of the highest degree term in each interval
@@ -332,7 +352,7 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
       if (fabs(hd(i,p)) > hmach) small_deri = false;
     }
   }
-  if (small_deri) std::cout<<"small derivatives\n";
+//   if (small_deri) std::cout<<"small derivatives\n";
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
   for (int p = 0; p < NDIM; p++)
@@ -388,47 +408,43 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
     }
     eqf(j+1)=eqf(j)+0.5*(mesh(j+1)-mesh(j))*(E+EP);
   }
-//   for (int i = 1; i < eqf.Size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
-//   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
-  // now computing the new mesh
-  newmesh(0) = 0.0;
-  for (int i = 1; i < newmesh.Size()-1; i++)
-  {
-    const double t = eqf(NINT)*i/(newmesh.Size()-1);
-    const int idx = meshlookup( eqf, t );
-    const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
-//     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
-    newmesh(i) = mesh(idx) + d*(mesh(idx+1)-mesh(idx));
-//     if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
-//     if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
-  }
-  newmesh(newmesh.Size()-1) = 1.0;
+  meshConstruct(newmesh, mesh, eqf);
 }
 
-void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile)
+static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vector& profile, const Vector& mesh,
+                           const Array1D< Array1D<double> >& old_lgr, const int ndim)
 {
+  const int old_nint = mesh.Size()-1;
+  const int old_ndeg = (profile.Size()/ndim - 1)/old_nint;
+  const int new_nint = newmesh.Size()-1;
+  const int new_ndeg = (newprofile.Size()/ndim - 1)/new_nint;
   // creating the new profile with the same old meshINT
-  for (int i = 0; i < newmesh.Size()-1; i++)
+  for (int i = 0; i < new_nint; i++)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int j = 0; j < new_ndeg; j++)
     {
-      const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
+      const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/new_ndeg;
       int idx = meshlookup( mesh, t );
       const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
-      for (int p = 0; p < NDIM; p++)
-        newprofile(p+NDIM*(j+i*NDEG)) = 0.0;
-      for ( int k = 0; k < NDEG+1; k++)
+      for (int p = 0; p < ndim; p++)
+        newprofile(p+ndim*(j+i*new_ndeg)) = 0.0;
+      for ( int k = 0; k < old_ndeg+1; k++)
       {
-        double c = poly_eval(lgr(k), d);
-        for (int p = 0; p < NDIM; p++)
+        double c = poly_eval(old_lgr(k), d);
+        for (int p = 0; p < ndim; p++)
         {
-          newprofile(p+NDIM*(j+i*NDEG)) += c*profile(p+NDIM*(k+idx*NDEG));
+          newprofile(p+ndim*(j+i*new_ndeg)) += c*profile(p+ndim*(k+idx*old_ndeg));
         }
       }
     }
   }
-  for (int p = 0; p < NDIM; p++)
-    newprofile(p+NDIM*(NDEG*(newmesh.Size()-1))) = profile(p+NDIM*(NDEG*(mesh.Size()-1)));
+  for (int p = 0; p < ndim; p++)
+    newprofile(p+ndim*(new_ndeg*(newmesh.Size()-1))) = profile(p+ndim*(old_ndeg*(mesh.Size()-1)));
+}
+
+void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile)
+{
+  profileConvert(newprofile, newmesh, profile, mesh, lgr, NDIM);
 }
 
 void NColloc::Init(const Vector& par, const Vector& /*sol*/)
@@ -2441,42 +2457,56 @@ void NColloc::PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re,
   }
 }
 
-void NColloc::Import(Vector& outs, const Vector& in, const Vector& msh_, int deg_)
+void NColloc::pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent)
 {
-  const int int_ = msh_.Size() - 1;
-  Vector in_mesh(deg_ + 1);
-  Vector in_lgr(deg_ + 1);
-
-  repr_mesh(in_mesh);   /// now we can use chebyshev
-
-  for (int i = 0; i < NINT; i++)
+  Vector tmp_mesh(2*NINT+1);
+  Vector tmp_profile(NDIM*(2*NINT*NDEG+1));
+  Vector tmp_tangent(NDIM*(2*NINT*NDEG+1));
+  for (int i = 0; i < NINT; ++i)
   {
-    for (int j = 0; j < NDEG; j++)
+    tmp_mesh(i) = 0.0 + 0.5*mesh(i);
+    tmp_mesh(NINT+i) = 0.5 + 0.5*mesh(i);
+    for (int j = 0; j < NDEG; ++j)
     {
-      double t = mesh(i) + meshINT(j) * (mesh(i + 1) - mesh(i));
-      int k = meshlookup(msh_, t);
-      // std::cout<<"int "<<i<<" "<<k<<"\n";
-      double c = (t - msh_(k)) / (msh_(k + 1) - msh_(k));
-      P_ASSERT_X(c >= 0.0 && c <= 1.0, "Fatal error while importing a periodic solution.");
-
-      poly_lgr(in_mesh, in_lgr, c);
-      // in_lgr.Print();
-      for (int p = 0; p < NDIM; p++)
+      for (int p = 0; p < NDIM; ++p)
       {
-        outs(p + NDIM*(NDEG*i + j)) = 0.0;
-        for (int r = 0; r < deg_ + 1; r++)
-        {
-          outs(p + NDIM*(NDEG*i + j)) += in(p + NDIM * (deg_ * k + r)) * in_lgr(r);
-        }
+        tmp_profile(p+NDIM*(j+i*NDEG))        = oldprofile(p+NDIM*(j+i*NDEG));
+        tmp_profile(p+NDIM*(j+(i+NINT)*NDEG)) = oldprofile(p+NDIM*(j+i*NDEG));
+        tmp_tangent(p+NDIM*(j+i*NDEG))        = oldtangent(p+NDIM*(j+i*NDEG));
+        tmp_tangent(p+NDIM*(j+(i+NINT)*NDEG)) = -oldtangent(p+NDIM*(j+i*NDEG));
       }
     }
   }
-  for (int p = 0; p < NDIM; p++)
+  tmp_mesh(2*NINT) = 1.0;
+  for (int p = 0; p < NDIM; ++p)
   {
-    outs(p + NDIM*(NINT*NDEG)) = in(p + NDIM * (int_ * deg_));
+    tmp_profile(p+NDIM*(2*NINT*NDEG)) = tmp_profile(p);
+    tmp_tangent(p+NDIM*(2*NINT*NDEG)) = tmp_tangent(p);
   }
+  // constructing the new mesh
+  Vector eqf(tmp_mesh.Size());
+  for (int i = 0; i < eqf.Size(); ++i) eqf(i) = i;
+  meshConstruct(mesh, tmp_mesh, eqf);
+  profileConvert(newprofile, mesh, tmp_profile, tmp_mesh, lgr, NDIM);
+  profileConvert(newtangent, mesh, tmp_tangent, tmp_mesh, lgr, NDIM);
 }
 
+void NColloc::Import(Vector& newprofile, const Vector& oldprofile, const Vector& oldmesh, int old_ndeg)
+{
+  Vector old_meshINT(old_ndeg+1);
+  repr_mesh(old_meshINT);
+
+  Array1D< Array1D<double> > old_lgr(old_ndeg+1, old_ndeg+1);
+  for (int i = 0; i < old_ndeg+1; i++)
+  {
+    poly_coeff_lgr(old_lgr(i), old_meshINT, i);
+  }
+
+  Vector eqf(oldmesh.Size());
+  for (int i = 0; i < eqf.Size(); ++i) eqf(i) = i;
+  meshConstruct(mesh, oldmesh, eqf);
+  profileConvert(newprofile, mesh, oldprofile, oldmesh, old_lgr, NDIM);
+}
 
 // it exports for CollocTR and PointTR, so no last value is necessary
 void   NColloc::Export(Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in)

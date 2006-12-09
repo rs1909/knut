@@ -21,7 +21,7 @@ void poly_coeff_int(Array1D<double>& out, Array1D<double>& in);
 
 void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in);
 
-double poly_eval(Array1D<double>& in, double c);
+double poly_eval(const Array1D<double>& in, double c);
 
 void lobatto(Array1D<double>& mesh);
 

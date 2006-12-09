@@ -47,6 +47,7 @@ class NColloc
 
     void   Import(Vector& out, const Vector& in, const Vector& mesh, int deg_);
     void   Export(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
+    void   pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 

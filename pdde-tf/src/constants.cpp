@@ -246,7 +246,7 @@ void NConstants::printFile(std::ostream& file)
   file << getSteps() << " "
   << getIad() << " "
   << getCpMin() << " "
-  << getCpMax() << " \t\tSTEPS, CPMIN, CPMAX\n";
+  << getCpMax() << " \t\tSTEPS, IAD, CPMIN, CPMAX\n";
 
   file << getDs() << " "
   << getDsMin() << " "
