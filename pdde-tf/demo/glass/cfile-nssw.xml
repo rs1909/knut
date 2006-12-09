@@ -3,23 +3,19 @@
  <input></input>
  <output></output>
  <sysname>sys-glass.so</sysname>
- <label>66</label>
- <pointtype>52</pointtype>
+ <label>83</label>
+ <pointtype>56</pointtype>
  <cptype>P</cptype>
  <cpnum>2</cpnum>
  <switch>0</switch>
- <nparx>2</nparx>
+ <nparx>1</nparx>
  <parx>
   <par>
    <type>P</type>
    <num>0</num>
   </par>
-  <par>
-   <type>P</type>
-   <num>1</num>
-  </par>
  </parx>
- <nint>200</nint>
+ <nint>40</nint>
  <ndeg>5</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
@@ -28,14 +24,14 @@
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>1000</steps>
+ <steps>120</steps>
  <iad>3</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>
- <ds>-0.005</ds>
- <dsmin>0.005</dsmin>
+ <ds>0.001</ds>
+ <dsmin>0.001</dsmin>
  <dsmax>0.005</dsmax>
- <dsstart>-0.005</dsstart>
+ <dsstart>0.001</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
  <epsk>1e-06</epsk>

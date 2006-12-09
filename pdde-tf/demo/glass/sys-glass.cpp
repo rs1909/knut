@@ -114,12 +114,13 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 
 void sys_stpar( Vector& par )
 {
-	par(0) = 5.3918; par(1) = -1.0; par(2) = 1.74; par(3) = 2.0;
+	par(0) = 2.0; // 5.3918; 
+	par(1) = -1.0; par(2) = 1.5; par(3) = 2.0;
 }
 
 void sys_stsol( Vector& out, double t )
 {
-	out(0)   = 0.9+0.3*sin(2*M_PI*t);
+	out(0) = pow((1.0-1.5)/(-1.0), 1.0/10.0);
 }
 
 } // extern "C"

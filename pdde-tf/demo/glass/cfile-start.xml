@@ -1,21 +1,15 @@
 <!DOCTYPE cfile>
 <pdde>
  <input></input>
- <output>out-start.mat</output>
+ <output></output>
  <sysname>sys-glass.so</sysname>
  <label>0</label>
- <pointtype>50</pointtype>
+ <pointtype>40</pointtype>
  <cptype>P</cptype>
  <cpnum>2</cpnum>
  <switch>0</switch>
- <nparx>1</nparx>
- <parx>
-  <par>
-   <type>P</type>
-   <num>0</num>
-  </par>
- </parx>
- <nint>100</nint>
+ <nparx>0</nparx>
+ <nint>20</nint>
  <ndeg>4</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
@@ -25,18 +19,19 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>120</steps>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.002000</ds>
- <dsmin>0.002000</dsmin>
+ <iad>3</iad>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.002</ds>
+ <dsmin>0.002</dsmin>
  <dsmax>0.002</dsmax>
- <dsstart>-0.002000</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epss>0.000001</epss>
+ <dsstart>-0.002</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
  <nitc>12</nitc>
  <nitr>12</nitr>
- <nits>12</nits>
+ <nitk>12</nitk>
  <nsym>0</nsym>
  <sym/>
 </pdde>
