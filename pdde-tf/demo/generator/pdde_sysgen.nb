@@ -41,28 +41,20 @@ Wolfram Research.
 
 (*NotebookFileLineBreakTest
 NotebookFileLineBreakTest*)
-(*NotebookOptionsPosition[    127191,       2501]*)
-(*NotebookOutlinePosition[    127879,       2525]*)
-(*  CellTagsIndexPosition[    127835,       2521]*)
+(*NotebookOptionsPosition[     95176,       2018]*)
+(*NotebookOutlinePosition[     95863,       2042]*)
+(*  CellTagsIndexPosition[     95819,       2038]*)
 (*WindowFrame->Normal*)
 
 
 
 Notebook[{
-
-Cell[CellGroupData[{
 Cell[BoxData[{
     \(\("\<Declaration Part:\>";\)\), "\[IndentingNewLine]", 
     \(<< LinearAlgebra`MatrixManipulation`\), "\[IndentingNewLine]", 
     \(Print["\<The declaration process has been done!\>"]\)}], "Input",
   CellDingbat->"\[WatchIcon]",
   TextJustification->0.25],
-
-Cell[BoxData[
-    \("The declaration process has been done!"\)], "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[{
     RowBox[{
@@ -112,26 +104,28 @@ time delays\>\"",
         FontColor->GrayLevel[0],
         FontVariations->{"Underline"->False,
         "StrikeThrough"->False}], "\[IndentingNewLine]", 
-      " "}], "\[IndentingNewLine]", 
-    RowBox[{\(PrintResults = False;\), "\[IndentingNewLine]", 
-      StyleBox[\( (*PrintResults == 
-            True/\(False : \ 
-                The\ derivatives\ will/won' t\ be\ printed\)*) \),
-        FontWeight->"Plain",
-        FontColor->GrayLevel[0.666667]]}], "\[IndentingNewLine]", 
-    RowBox[{\(FileName = "\<./sys-tobcut-tau2x.cpp\>";\), 
-      "\[IndentingNewLine]", 
-      StyleBox[\( (*Name\ of\ the\ system\ file\ for\ PDDE - 
-            CONT\ software*) \),
-        FontWeight->"Plain",
-        FontColor->GrayLevel[0.666667]]}], "\[IndentingNewLine]", 
-    RowBox[{\(PathF = "\<\>";\), "\[IndentingNewLine]", 
-      StyleBox[\( (*\(Path\ of\ the\ aimed\ folder\ which\ will\ contain\ the\
-\ definition\ files\ \((Because\ of\ the\ syntax\ of\ Mathematica\ the\ \
+      " "}], "\[IndentingNewLine]", \(PrintResults = 
+        False;\), "\[IndentingNewLine]", 
+    StyleBox[\( (*PrintResults == 
+          True/\(False : \ The\ derivatives\ will/won' t\ be\ printed\)*) \),
+      FontWeight->"Plain",
+      FontColor->GrayLevel[
+      0.666667]], "\[IndentingNewLine]", \(FileName = \
+"\<./sys-tobcut-tau2x.cpp\>";\), "\[IndentingNewLine]", 
+    StyleBox[\( (*Name\ of\ the\ system\ file\ for\ PDDE - 
+          CONT\ software*) \),
+      FontWeight->"Plain",
+      FontColor->GrayLevel[
+      0.666667]], "\[IndentingNewLine]", \(PathF = "\<\>";\), "\
+\[IndentingNewLine]", 
+    StyleBox[\( (*\(Path\ of\ the\ aimed\ folder\ which\ will\ contain\ the\ \
+definition\ files\ \((Because\ of\ the\ syntax\ of\ Mathematica\ the\ \
 backslash\ is\ double\)\)\(\\)\)*) \),
-        FontWeight->"Plain",
-        FontColor->GrayLevel[0.666667]]}], "\[IndentingNewLine]", 
-    RowBox[{\(DeriOrder = 2;\), "\[IndentingNewLine]", 
+      FontWeight->"Plain",
+      FontColor->GrayLevel[
+      0.666667]], "\[IndentingNewLine]", \(DeriOrder = 
+        2;\), "\[IndentingNewLine]", 
+    RowBox[{
       StyleBox[\( (*order\ of\ the\ applied\ derivatives\ \((it\ only\ works\ \
 in\ case\ of\ PDDE - CONT)\)\ possible\ values\ \(are : 0\), 1, 2*) \),
         FontWeight->"Plain",
@@ -533,10 +527,11 @@ differential\ equation\ \((DDE)\)\),
                 FontColor->GrayLevel[0.666667]]}]}]}], 
         StyleBox["*)",
           FontWeight->"Plain",
-          FontColor->GrayLevel[0.666667]]}]}], "\[IndentingNewLine]", 
-    RowBox[{\(Consts = {{"\<RO1\>", "\<6.1096e9\>"}, {"\<RO2\>", \
-"\<-5.41416e13\>"}, {"\<RO3\>", "\<2.03769e17\>"}};\), "\[IndentingNewLine]", 
-      
+          FontColor->GrayLevel[
+          0.666667]]}]}], "\[IndentingNewLine]", \(Consts = {{"\<RO1\>", \
+"\<6.1096e9\>"}, {"\<RO2\>", "\<-5.41416e13\>"}, {"\<RO3\>", \
+"\<2.03769e17\>"}};\), "\[IndentingNewLine]", 
+    RowBox[{
       StyleBox[\( (*The\ useful\ constants\ for\ PDDE - CONT*) \),
         FontWeight->"Plain",
         FontColor->GrayLevel[0.666667]], 
@@ -1145,31 +1140,6 @@ h\_0\^2\);\), "\[IndentingNewLine]", \(\[Eta]\_3 = \(h\_0\^2\) \(\(\[Rho]\_32\
 \), "\[IndentingNewLine]", \(Print["\<The system has been prepared!\>"]\)}], \
 "Input"],
 
-Cell[BoxData[
-    \("The Dimensionless Equation of Motion of Orthogonal Cutting with Tobias \
-Cutting Force Characteristics the Flyover effect and two discrete time \
-delays"\)], "Output"],
-
-Cell[BoxData[
-    RowBox[{\(General::"spell1"\), \(\(:\)\(\ \)\), "\<\"Possible spelling \
-error: new symbol name \\\"\\!\\(PathF\\)\\\" is similar to existing symbol \
-\\\"\\!\\(Path\\)\\\". \\!\\(\\*ButtonBox[\\\"More\[Ellipsis]\\\", \
-ButtonStyle->\\\"RefGuideLinkText\\\", ButtonFrame->None, \
-ButtonData:>\\\"General::spell1\\\"]\\)\"\>"}]], "Message"],
-
-Cell[BoxData[
-    \("system equations"\)], "Output"],
-
-Cell[BoxData[
-    \("Parameter values at the starting point(only for the PDDE-CONT)"\)], \
-"Output"],
-
-Cell[BoxData[
-    \("The system has been prepared!"\)], "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
 Cell[BoxData[{"\"\<derivatives wrt. the state coordinates: \!\(A\_\(\*
 StyleBox[\"j\",\nFontSlant->\"Italic\"]\)\)=\!\(\(\[PartialD]\\\ \*
 StyleBox[\"f\",\nFontWeight->\"Bold\",\nFontSlant->\"Plain\",\nFontTracking->\
@@ -1686,457 +1656,6 @@ j\)]]]\[IndentingNewLine]}]\[IndentingNewLine]}];\),
     RowBox[{\(Print["\<Done!\>"]\), "\[IndentingNewLine]", 
       "\[IndentingNewLine]"}], "\[IndentingNewLine]", "Null"}], "Input"],
 
-Cell[BoxData["\<\"derivatives wrt. the state coordinates: \\!\\(A\\_\\(\\* \
-StyleBox[\\\"j\\\",\\nFontSlant->\\\"Italic\\\"]\\)\\)=\\!\\(\\(\[PartialD]\\\
-\\ \\* StyleBox[\\\"f\\\",\\nFontWeight->\\\"Bold\\\",\\nFontSlant->\\\"Plain\
-\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->\
-False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\
-\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}] \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]y \\(\\* StyleBox[\\\"(\
-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking-\
->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"\
-->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"\
-Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}\
-]\\* StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\
-\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->\
-False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\
-\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\(\[Tau]\\_k\\),\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\[Eta]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\)\\/\\(\[PartialD]\\\\ y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* StyleBox[ SubscriptBox[\\\"\[Tau]\\\",  StyleBox[\\\
-\"j\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\",\\\
-nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\
-\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\\
-n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\* StyleBox[\\\")\\\",\
-\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"\
-Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->\
-False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\
-\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\)\
-\\), \\!\\(A\\_\\(\\* \
-StyleBox[\\\"j\\\",\\nFontSlant->\\\"Italic\\\"]\\)\\)\\!\\(\\* StyleBox[\\\"\
-\[Element]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"\[Times]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[\\\" \
-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking-\
->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"\
-->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"\
-Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}\
-]\\)\\!\\(\\* StyleBox[\\\"j\\\",\\nFontSlant->\\\"Italic\\\"]\\)\\!\\(\\* \
-StyleBox[\\\"=\\\",\\nFontWeight->\\\"Plain\\\",\\nFontVariations->{\\\"\
-CompatibilityType\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"1.\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\".\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"n\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"\[Tau]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\
-\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->\
-False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\
-\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"+\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"1\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\"\>"], "Output"],
-
-Cell[BoxData[
-    \("Done!"\)], "Print"],
-
-Cell[BoxData["\<\"derivatives wrt. the parameters: \\!\\(b\\_\\(\\* StyleBox[\
-\\\"k\\\",\\nFontSlant->\\\"Italic\\\"]\\)\\)=\\!\\(\\(\[PartialD]\\\\ \\* \
-StyleBox[\\\"f\\\",\\nFontWeight->\\\"Bold\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}] \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]y \\(\\* StyleBox[\\\"(\
-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking-\
->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"\
-->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"\
-Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}\
-]\\* StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\
-\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->\
-False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\
-\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\(\[Tau]\\_k\\),\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\[Eta]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\)\\/\[PartialD]\\\\ \\* StyleBox[ \
-SubscriptBox[\\\"\[Eta]\\\",  \
-StyleBox[\\\"k\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\), \\!\\(\\* \
-StyleBox[\\\"k\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\"]\
-\\)\\!\\(\\* StyleBox[\\\"=\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\
-\"Plain\\\"]\\)\\!\\(\\* \
-StyleBox[\\\"1.\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\"]\
-\\)\\!\\(\\* StyleBox[\\\".\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\
-\"Plain\\\"]\\)\\!\\(\\* \
-StyleBox[\\\"n\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\"]\
-\\)\[Eta]\"\>"], "Output"],
-
-Cell[BoxData[
-    \("Done!"\)], "Print"],
-
-Cell[BoxData["\<\"mixed derivates wrt. the state coords and the parameters: \
-\\!\\(C\\_\\(j, k\\)\\)=\\!\\(\\(\[PartialD]\\\\ \\* \
-StyleBox[\\(f\\^2\\),\\nFontWeight->\\\"Bold\\\",\\nFontSlant->\\\"Plain\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}] \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]y \\(\\* StyleBox[\\\"(\
-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking-\
->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"\
-->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"\
-Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}\
-]\\* StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\
-\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->\
-False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\
-\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\(\[Tau]\\_n\\),\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\* StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\
-\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->\
-{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\[Eta]\\* \
-StyleBox[\\\")\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\)\\/\\(\[PartialD]\\\\ y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* StyleBox[ SubscriptBox[\\\"\[Tau]\\\",  StyleBox[\\\
-\"j\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\",\\\
-nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\
-\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\\
-n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\* StyleBox[\\\")\\\",\
-\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"\
-Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->\
-False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\
-\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\) \
-\[PartialD]\\\\ \\* StyleBox[ SubscriptBox[\\\"\[Eta]\\\",  \
-StyleBox[\\\"k\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\), \\!\\(C\\_\\(j, \
-k\\)\\)\\!\\(\\* \
-StyleBox[\\\"\[Element]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"\[Times]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\"\>"], "Output"],
-
-Cell[BoxData[
-    \("Done!"\)], "Print"],
-
-Cell[BoxData["\<\"second derivatives wrt. the state coordinates: \
-\\!\\(D\\_\\(j, k\\)\\)=\\!\\(\\(\\(\[PartialD]\\)\\(\\\\ \\)\\)\\/\\(\
-\[PartialD]\\\\ y \\(\\* \
-StyleBox[\\\"(\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"t\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* \
-StyleBox[\\\"-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Italic\\\",\
-\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\\
-n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\* StyleBox[ SubscriptBox[\\\"\[Tau]\\\",  StyleBox[\\\
-\"j\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\",\\\
-nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\
-\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\\
-n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\* StyleBox[\\\")\\\",\
-\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"\
-Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->\
-False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\
-\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\)\
-\\)(\\!\\(A\\_k\\) v(:,k)), \\!\\(C\\_\\(j, k\\)\\)\\!\\(\\* StyleBox[\\\"\
-\[Element]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"\[Times]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\",\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[\\\" \
-\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\nFontTracking-\
->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"\
-->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->False,\\n\\\"\
-Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}\
-]\\)v\\!\\(\\* \
-StyleBox[\\\"\[Element]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"]],\\nFontWeight->\\\"Plain\\\"\
-,\\nFontSlant->\\\"Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations-\
->{\\\"Underline\\\"->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\
-\\n\\\"StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"\
-CompatibilityType\\\"->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* \
-StyleBox[\\\"\[Times]\\\",\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"\
-Plain\\\",\\nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"\
-->False,\\n\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"\
-StrikeThrough\\\"->False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"\
-->0,\\n\\\"RotationAngle\\\"->0}]\\)\\!\\(\\* StyleBox[ SuperscriptBox[\\\"\
-\[DoubleStruckCapitalR]\\\",  StyleBox[ RowBox[{ \
-StyleBox[\\\"n\\\",\\nFontSlant->\\\"Italic\\\"], \
-\\\"\[Tau]\\\"}]]],\\nFontWeight->\\\"Plain\\\",\\nFontSlant->\\\"Plain\\\",\\\
-nFontTracking->\\\"Plain\\\",\\nFontVariations->{\\\"Underline\\\"->False,\\n\
-\\\"Outline\\\"->False,\\n\\\"Shadow\\\"->False,\\n\\\"StrikeThrough\\\"->\
-False,\\n\\\"Masked\\\"->False,\\n\\\"CompatibilityType\\\"->0,\\n\\\"\
-RotationAngle\\\"->0}]\\)\"\>"], "Output"],
-
-Cell[BoxData[
-    \("Done!"\)], "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-
 Cell[BoxData[{
     \("\<create the output file for PDDE-CONT\>"\), "\[IndentingNewLine]", 
     \(\("\<Substitution function\>";\)\), "\[IndentingNewLine]", 
@@ -2191,25 +1710,25 @@ Cell[BoxData[{
 \[IndentingNewLine]ToLowerCase[id5])\);\)\(\[IndentingNewLine]\)
     \)\), "\[IndentingNewLine]", 
     \(\(FileN = FileName;\)\), "\[IndentingNewLine]", 
-    \(\(\(strFile = OpenWrite[FileN];\)\(\[IndentingNewLine]\)
-    \) (*Header*) \), "\n", 
+    \(\(strFile = 
+        OpenWrite[FileN];\)\[IndentingNewLine] (*Header*) \), "\n", 
     \(\(idstr = \
 "\</**************************************************************************\
 *\[IndentingNewLine]* This system definition file was generated by \
 Mathematica                     *\n* Copyright (c) Zoltan Dombovari           \
                                              *\n* Budapest University of \
-Technology and Echonomics                        *\n* 2006                    \
-                                                *\n* e-mail: ddombo@gmail.com \
-                                                       *\n\
+Technology and Economics                        *\n* 2006                     \
+                                               *\n* e-mail: ddombo@gmail.com  \
+                                                      *\n\
 ***************************************************************************/\n\
 #include <iostream>\n#include <cmath>\n#include \"pddesys.h\"\n\n\>";\)\), "\
 \[IndentingNewLine]", 
-    \(\(\(WriteString[strFile, idstr];\)\(\[IndentingNewLine]\)
-    \) (*Title*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+    \(\(WriteString[strFile, 
+        idstr];\)\[IndentingNewLine] (*Title*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[
         strFile, "\<//\>" <> 
-          Title <> "\<\n\n//Parameters:\n\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*The\ parameter\ list*) \), "\[IndentingNewLine]", 
+          Title <> "\<\n\n//Parameters:\n\n\>"];\)\[IndentingNewLine] (*The\ \
+parameter\ list*) \), "\[IndentingNewLine]", 
     \(\(idstr = "\<\>";\)\), "\[IndentingNewLine]", 
     \(\(For[k = 1, 
         k \[LessEqual] 
@@ -2218,10 +1737,9 @@ Technology and Echonomics                        *\n* 2006                    \
               parName\[LeftDoubleBracket]k\[RightDoubleBracket] <> "\<\n\
 \>"}];\)\), "\[IndentingNewLine]", 
     \(\(WriteString[strFile, idstr];\)\), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
-        strFile, "\<\n//The state variables:\n\n\
-\>"];\)\(\[IndentingNewLine]\)
-    \) (*State\ variable\ list*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[
+        strFile, "\<\n//The state variables:\n\n\>"];\)\[IndentingNewLine] \
+(*State\ variable\ list*) \), "\[IndentingNewLine]", 
     \(\(idstr = "\<\>";\)\), "\[IndentingNewLine]", 
     \(\(For[k = 1, k \[LessEqual] \ n\[Tau] + 1, \(k++\), 
         For[l = 1, 
@@ -2231,8 +1749,9 @@ Technology and Echonomics                        *\n* 2006                    \
                 ToString[
                   k - 1] <> "\<): \n\>"\[IndentingNewLine]}]];\)\), "\
 \[IndentingNewLine]", 
-    \(\(\(WriteString[strFile, idstr <> "\<\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*Declaration\ of\ the\ constants*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[strFile, 
+        idstr <> "\<\n\>"];\)\[IndentingNewLine] (*Declaration\ of\ the\ \
+constants*) \), "\[IndentingNewLine]", 
     \(\(idstr = "\<\>";\)\), "\[IndentingNewLine]", 
     \(\(For[k = 1, k \[LessEqual] Length[Consts], \(k++\), 
         idstr = idstr <> "\<#define \>" <> 
@@ -2240,29 +1759,34 @@ Technology and Echonomics                        *\n* 2006                    \
             Consts\[LeftDoubleBracket]k, 
               2\[RightDoubleBracket] <> "\<)\n\>"];\)\), \
 "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+    \(\(WriteString[
         strFile, "\<//Constants:\n\n\>" <> 
-          idstr <> "\<\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*The\ systemdef*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
-        strFile, "\<\nextern \"C\"\n{\n\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_ndim*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+          idstr <> "\<\n\>"];\)\[IndentingNewLine] (*The\ systemdef*) \), "\
+\[IndentingNewLine]", 
+    \(\(WriteString[
+        strFile, "\<\nextern \"C\"\n{\n\n\>"];\)\[IndentingNewLine] \
+(*sys_ndim*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[
         strFile, "\<int sys_ndim(){ return \>" <> 
-          ToString[Dim] <> "\<; }\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_npar*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+          ToString[
+            Dim] <> "\<; }\n\>"];\)\[IndentingNewLine] (*sys_npar*) \), "\
+\[IndentingNewLine]", 
+    \(\(WriteString[
         strFile, "\<int sys_npar(){ return \>" <> 
-          ToString[Length[par]] <> "\<; }\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_ntau*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+          ToString[
+            Length[par]] <> "\<; }\n\>"];\)\[IndentingNewLine] (*sys_ntau*) \
+\), "\[IndentingNewLine]", 
+    \(\(WriteString[
         strFile, "\<int sys_ntau(){ return \>" <> 
-          ToString[n\[Tau] + 1] <> "\<; }\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_nderi*) \), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
+          ToString[
+            n\[Tau] + 
+              1] <> "\<; }\n\>"];\)\[IndentingNewLine] (*sys_nderi*) \), "\
+\[IndentingNewLine]", 
+    \(\(WriteString[
         strFile, "\<int sys_nderi(){ return \>" <> 
-          ToString[DeriOrder] <> "\<; }\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_tau*) \), "\[IndentingNewLine]", 
+          ToString[
+            DeriOrder] <> "\<; }\n\>"];\)\[IndentingNewLine] (*sys_tau*) \), \
+"\[IndentingNewLine]", 
     \(\(WriteString[
         strFile, "\<\nvoid sys_tau(Vector& out,double t,const Vector& par)\n{\
 \n\tout(0) = 0.0;\n\>"];\)\), "\[IndentingNewLine]", 
@@ -2273,9 +1797,9 @@ Technology and Echonomics                        *\n* 2006                    \
                 CForm[sub[
                     parDelay\[LeftDoubleBracket]k\[RightDoubleBracket]]]]] <> \
 "\<;\n\>"];\)\), "\[IndentingNewLine]", 
-    \(\(\(WriteString[strFile, 
-        idstr <> "\<}\n\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_dtau*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[strFile, 
+        idstr <> "\<}\n\n\>"];\)\[IndentingNewLine] (*sys_dtau*) \), "\
+\[IndentingNewLine]", 
     \(\(WriteString[
         strFile, "\<void sys_dtau(Vector& out,double t,const Vector& par,int \
 vp)\n{\n\>"];\)\), "\[IndentingNewLine]", 
@@ -2301,8 +1825,8 @@ vp)\n{\n\>"];\)\), "\[IndentingNewLine]",
             idstr <> "\<break;\n\>"\[IndentingNewLine]}];\)\), "\
 \[IndentingNewLine]", 
     \(\(idstr = idstr <> "\<}\n}\n\>";\)\), "\[IndentingNewLine]", 
-    \(\(\(WriteString[strFile, idstr];\)\(\[IndentingNewLine]\)
-    \) (*sys_rhs*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[strFile, 
+        idstr];\)\[IndentingNewLine] (*sys_rhs*) \), "\[IndentingNewLine]", 
     \(\(WriteString[
         strFile, "\<void sys_rhs(Vector& out,double t,const Matrix& x,const \
 Vector& par)\n{\n\>"];\)\), "\[IndentingNewLine]", 
@@ -2315,8 +1839,9 @@ Vector& par)\n{\n\>"];\)\), "\[IndentingNewLine]",
           idstr = "\<\tout(\>" <> ToString[n - 1] <> "\<)=\>" <> 
               id4 <> "\<;\n\>", \[IndentingNewLine]WriteString[strFile, 
             idstr]}];\)\), "\[IndentingNewLine]", 
-    \(\(\(WriteString[strFile, "\<}\n\n\>"];\)\(\[IndentingNewLine]\)
-    \) (*sys_deri*) \), "\[IndentingNewLine]", 
+    \(\(WriteString[
+        strFile, "\<}\n\n\>"];\)\[IndentingNewLine] (*sys_deri*) \), "\
+\[IndentingNewLine]", 
     \(\(WriteString[
         strFile, "\<void sys_deri(Matrix&out,double t,const Matrix& x,const \
 Vector& par,int nx,\n\tconst int*vx,int np,const int*vp,const Matrix& vv)\n{\n\
@@ -2422,7 +1947,6 @@ x(t),x(t-tau1),etc.\n\>"], \[IndentingNewLine]WriteString[
 \[IndentingNewLine]WriteString[
                     strFile, "\<\t\t\t\t}break;\n\>"]\[IndentingNewLine]}], \
 \[IndentingNewLine]WriteString[
-                
                 strFile, "\<\t\t}\n\t}\n\n\>"], \
 \[IndentingNewLine]WriteString[
                 strFile, "\<\t//the mixed derivatives w.r.t. the state \
@@ -2486,21 +2010,14 @@ variables and the parameters\n\>"], \[IndentingNewLine]WriteString[
           strFile, "\<\tout(\>" <> 
             ToString[
               k - 1] <> "\<) = 0.0;\n\>"]];\)\), "\[IndentingNewLine]", 
-    \(\(\(WriteString[
-        strFile, "\<}\n\n} // extern \"C\"\n\>"];\)\(\[IndentingNewLine]\)
-    \)\), "\[IndentingNewLine]", 
+    \(\(WriteString[
+        strFile, "\<}\n\n} // extern \"C\"\n\>"];\)\[IndentingNewLine]\), "\
+\[IndentingNewLine]", 
     \(\(Close[strFile];\)\), "\[IndentingNewLine]", 
-    \(Print["\<Done!\>"]\)}], "Input"],
-
-Cell[BoxData[
-    \("create the output file for PDDE-CONT"\)], "Output"],
-
-Cell[BoxData[
-    \("Done!"\)], "Print"]
-}, Open  ]]
+    \(Print["\<Done!\>"]\)}], "Input"]
 },
 FrontEndVersion->"5.2 for X",
-ScreenRectangle->{{0, 1280}, {0, 1024}},
+ScreenRectangle->{{0, 1440}, {0, 900}},
 WindowSize->{1272, 728},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
 Magnification->1.25,
@@ -2524,38 +2041,10 @@ CellTagsIndex->{}
 
 (*NotebookFileOutline
 Notebook[{
-
-Cell[CellGroupData[{
-Cell[1776, 53, 276, 5, 100, "Input"],
-Cell[2055, 60, 73, 1, 46, "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-Cell[2165, 66, 44070, 1079, 1296, "Input"],
-Cell[46238, 1147, 188, 3, 80, "Output"],
-Cell[46429, 1152, 357, 5, 27, "Message"],
-Cell[46789, 1159, 52, 1, 60, "Output"],
-Cell[46844, 1162, 100, 2, 60, "Output"],
-Cell[46947, 1166, 64, 1, 46, "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-Cell[47048, 1172, 31259, 514, 1418, "Input"],
-Cell[78310, 1688, 10936, 153, 81, "Output"],
-Cell[89249, 1843, 40, 1, 46, "Print"],
-Cell[89292, 1846, 5459, 77, 80, "Output"],
-Cell[94754, 1925, 40, 1, 46, "Print"],
-Cell[94797, 1928, 8346, 116, 84, "Output"],
-Cell[103146, 2046, 40, 1, 46, "Print"],
-Cell[103189, 2049, 5863, 82, 80, "Output"],
-Cell[109055, 2133, 40, 1, 46, "Print"]
-}, Open  ]],
-
-Cell[CellGroupData[{
-Cell[109132, 2139, 17925, 353, 3429, "Input"],
-Cell[127060, 2494, 72, 1, 60, "Output"],
-Cell[127135, 2497, 40, 1, 46, "Print"]
-}, Open  ]]
+Cell[1754, 51, 276, 5, 84, "Input"],
+Cell[2033, 58, 44028, 1082, 1281, "Input"],
+Cell[46064, 1142, 31259, 514, 1403, "Input"],
+Cell[77326, 1658, 17846, 358, 3413, "Input"]
 }
 ]
 *)

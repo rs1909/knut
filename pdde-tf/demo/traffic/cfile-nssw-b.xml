@@ -25,6 +25,7 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>160</steps>
+ <iad>3</iad>
  <cpmin>-100.000000</cpmin>
  <cpmax>100.000000</cpmax>
  <ds>0.010000</ds>
@@ -33,10 +34,10 @@
  <dsstart>0.001000</dsstart>
  <epsc>0.000100</epsc>
  <epsr>0.000010</epsr>
- <epss>0.000001</epss>
+ <epsk>0.000001</epsk>
  <nitc>32</nitc>
  <nitr>32</nitr>
- <nits>32</nits>
+ <nitk>32</nitk>
  <nsym>0</nsym>
  <sym/>
 </pdde>
