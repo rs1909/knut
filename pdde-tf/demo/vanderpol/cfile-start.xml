@@ -25,7 +25,7 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>100</steps>
- <iad>3</iad>
+ <iad>0</iad>
  <cpmin>-100.000000</cpmin>
  <cpmax>100.000000</cpmax>
  <ds>0.020000</ds>

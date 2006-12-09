@@ -3,8 +3,8 @@
  <input>out-start.mat</input>
  <output>out-pdsw-2.mat</output>
  <sysname>sys-tq.so</sysname>
- <label>167</label>
- <pointtype>44</pointtype>
+ <label>83</label>
+ <pointtype>45</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
  <switch>0</switch>
@@ -13,22 +13,22 @@
  <ndeg>4</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
- <nmat>1</nmat>
+ <nmat>2</nmat>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>200</steps>
- <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>0.010000</ds>
- <dsmin>0.010000</dsmin>
+ <iad>0</iad>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>0.01</ds>
+ <dsmin>0.01</dsmin>
  <dsmax>0.01</dsmax>
- <dsstart>0.002000</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000001</epsk>
+ <dsstart>0.002</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
  <nitc>12</nitc>
  <nitr>12</nitr>
  <nitk>12</nitk>

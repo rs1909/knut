@@ -11,6 +11,7 @@ using namespace std;
 // system definition
 // par(0) = T the period length (=tau)
 // par(1) = k1 cutting coefficient
+// par(3) = which period are we in
 // ...
 // x[0] = xdot(t)
 // x[1] = x(t)
@@ -168,8 +169,8 @@ int sys_nderi() { return 2; }
 void sys_tau( Vector& out, double t, const Vector& par )
 {
 	out(0) = 0.0;
-	out(1) = 0.5*par(0);
-	out(2) = par(0);
+	out(1) = 1.0*par(0)/par(3);
+	out(2) = 2.0*par(0)/par(3);
 }
 
 void sys_dtau( Vector& out, double t, const Vector& par, int vp )
@@ -178,8 +179,8 @@ void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 	{
 		case 0:
 			out(0) = 0.0;
-			out(1) = 0.5;
-			out(2) = 1.0;
+			out(1) = 1.0/par(3);
+			out(2) = 2.0/par(3);
 			break;
 		case 1:
 			out(0) = 0.0;
@@ -196,7 +197,7 @@ void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
 {
 	double g;
 	if( (t < 0)||(t > 1) ) cout << "rhs: t is not element of the interval\n";
-	double tt = 2*t - floor(2*t);
+	double tt = par(3)*t - floor(par(3)*t);
 	if( tt <= TAU2 )
 	{
 		g = 1.0;
@@ -214,7 +215,7 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 {
 	double g;
 	if( (t < 0)||(t > 1) ) cout << "deri: t is not element of the interval\n";
-	double tt = 2*t - floor(2*t);
+	double tt = par(3)*t - floor(par(3)*t);
 	if( tt <= TAU2 ){
 		g = 1.0;
 	}else{
@@ -398,7 +399,7 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 
 void sys_stpar( Vector& par )
 {
-	par(0) = 2.0*14.75;
+	par(0) = 14.75;
 	par(1) = 0.00;
 }
 

@@ -25,16 +25,16 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>650</steps>
- <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.005000</ds>
- <dsmin>0.001000</dsmin>
+ <iad>0</iad>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.005</ds>
+ <dsmin>0.001</dsmin>
  <dsmax>0.005</dsmax>
- <dsstart>0.002000</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000001</epsk>
+ <dsstart>0.002</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
  <nitc>12</nitc>
  <nitr>12</nitr>
  <nitk>12</nitk>

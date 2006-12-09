@@ -13,7 +13,7 @@ ADD_CUSTOM_TARGET( ${NAME}-test
 	pdde -c cfile-pdsw -i out-nssw.mat -o out-pdsw.mat -b br-pdsw )
 	
 ADD_CUSTOM_TARGET( ${NAME}-test-pd 
-    COMMAND pdde -c cfile-pd -i put-nssw.mat -o out-pd.mat -b br-pd )
+    COMMAND pdde -c cfile-pd -i out-nssw.mat -o out-pd.mat -b br-pd )
 
 ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
 ADD_DEPENDENCIES( ${NAME}-test-pd ${NAME} )
