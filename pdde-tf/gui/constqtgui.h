@@ -148,6 +148,11 @@ class NConstantsQtGui : public QObject, public NConstants
       NConstants::setSteps(i);
       emit stepsChanged(getSteps());
     }
+    void setIad(int i)
+    {
+      NConstants::setIad(i);
+      emit iadChanged(getIad());
+    }
     void setCpMin(double d)
     {
       NConstants::setCpMin(d);
@@ -188,10 +193,10 @@ class NConstantsQtGui : public QObject, public NConstants
       NConstants::setEpsR(d);
       emit epsRChanged(QString::number(getEpsR(), 'g', 12));
     }
-    void setEpsS(double d)
+    void setEpsK(double d)
     {
-      NConstants::setEpsS(d);
-      emit epsSChanged(QString::number(getEpsS(), 'g', 12));
+      NConstants::setEpsK(d);
+      emit epsKChanged(QString::number(getEpsK(), 'g', 12));
     }
     void setNItC(int i)
     {
@@ -203,10 +208,10 @@ class NConstantsQtGui : public QObject, public NConstants
       NConstants::setNItR(i);
       emit nitRChanged(getNItR());
     }
-    void setNItS(int i)
+    void setNItK(int i)
     {
-      NConstants::setNItS(i);
-      emit nitSChanged(getNItS());
+      NConstants::setNItK(i);
+      emit nitKChanged(getNItK());
     }
     void setNSym(int i)
     {
@@ -258,9 +263,9 @@ class NConstantsQtGui : public QObject, public NConstants
     {
       textEpsR = d;
     }
-    void setEpsS(const QString& d)
+    void setEpsK(const QString& d)
     {
-      textEpsS = d;
+      textEpsK = d;
     }
 
     void editedCpMin()
@@ -295,9 +300,9 @@ class NConstantsQtGui : public QObject, public NConstants
     {
       setEpsR(textEpsR.toDouble());
     }
-    void editedEpsS()
+    void editedEpsK()
     {
-      setEpsS(textEpsS.toDouble());
+      setEpsK(textEpsK.toDouble());
     }
 
   signals:
@@ -319,6 +324,7 @@ class NConstantsQtGui : public QObject, public NConstants
     void ndeg1Changed(int i);
     void ndeg2Changed(int i);
     void stepsChanged(int i);
+    void iadChanged(int i);
     void cpMinChanged(const QString& d);
     void cpMaxChanged(const QString& d);
     void dsChanged(const QString& d);
@@ -327,10 +333,10 @@ class NConstantsQtGui : public QObject, public NConstants
     void dsStartChanged(const QString& d);
     void epsCChanged(const QString& d);
     void epsRChanged(const QString& d);
-    void epsSChanged(const QString& d);
+    void epsKChanged(const QString& d);
     void nitCChanged(int i);
     void nitRChanged(int i);
-    void nitSChanged(int i);
+    void nitKChanged(int i);
     void nsymChanged(int nsym_);
     void exceptionOccured(const pddeException& ex);
 
@@ -344,7 +350,7 @@ class NConstantsQtGui : public QObject, public NConstants
     QString textDsStart;
     QString textEpsC;
     QString textEpsR;
-    QString textEpsS;
+    QString textEpsK;
 };
 
 #endif

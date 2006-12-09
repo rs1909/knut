@@ -47,8 +47,8 @@ class Point
     } // starting data for tori: solution
     void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
     int     StartTF(Eqn FN, std::ostream& out = std::cout);
-    int     Refine(std::ostream& str = std::cout);
-    void    Tangent();
+    int     Refine(std::ostream& str = std::cout, bool adapt = false);
+    int     Tangent(bool adapt = false);
     int     Continue(double ds, bool jacstep);
     void    Stability();
 
@@ -105,9 +105,9 @@ class Point
     {
       ContIter = i;
     }
-    inline void    setStartIter(int i)
+    inline void    setKernIter(int i)
     {
-      StartIter = i;
+      KernIter = i;
     }
     inline void    setRefEps(double d)
     {
@@ -117,9 +117,9 @@ class Point
     {
       ContEps = d;
     }
-    inline void    setStartEps(double d)
+    inline void    setKernEps(double d)
     {
-      StartEps = d;
+      KernEps = d;
     }
 
     inline double  Norm()
@@ -181,16 +181,17 @@ class Point
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
 
-    inline void   Update(HyperVector& X);                            // sol,   qq,   par            += X
-    inline void   ContUpdate(HyperVector& X);                        // solNu, qqNu, parNu, par(cp) += X
+    inline void   Update(HyperVector& X);                            // sol,   par              += X
+    inline void   ContUpdate(HyperVector& X);                        // solNu, parNu, parNu(cp) += X
+    inline void   AdaptUpdate(HyperVector& X);                        // sol,   par,   par(cp)   += X
 
     // convergence parameters
     double       RefEps;
     double       ContEps;
-    double       StartEps;
+    double       KernEps;
     int          RefIter;
     int          ContIter;
-    int          StartIter;
+    int          KernIter;
 
     // variables and equations
     Array1D<Var> var;

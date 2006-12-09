@@ -65,10 +65,10 @@ void MThread::run()
 
     pt.setContIter(params->getNItC());
     pt.setRefIter(params->getNItR());
-    pt.setStartIter(params->getNItS());
+    pt.setKernIter(params->getNItK());
     pt.setRefEps(params->getEpsR());
     pt.setContEps(params->getEpsC());
-    pt.setStartEps(params->getEpsS());
+    pt.setKernEps(params->getEpsK());
     pt.setCont(params->getCp() - VarPAR0);
 
     // setting the symmetric components
@@ -187,6 +187,13 @@ void MThread::run()
 
         // console output
         parValuePrint(screenout, par, params->getCp(), var, i, norm, ustab, it(itpos));
+        // adapt mesh if necessary
+        if((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
+        {
+          const int itad = pt.Refine(std::cout,true);
+          const int ittan = pt.Tangent(true);
+          screenout << " " << itad << " " << ittan;
+        }
         if (i != 0  && ustab != ustabprev)
         {
           PtType bif = SolTF;

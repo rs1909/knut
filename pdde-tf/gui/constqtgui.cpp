@@ -175,6 +175,11 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
   QDomText xml_steps_var = doc.createTextNode(QString::number(getSteps()));
   xml_steps_tag.appendChild(xml_steps_var);
 
+  QDomElement xml_iad_tag = doc.createElement("iad");
+  root.appendChild(xml_iad_tag);
+  QDomText xml_iad_var = doc.createTextNode(QString::number(getIad()));
+  xml_iad_tag.appendChild(xml_iad_var);
+
   QDomElement xml_cpmin_tag = doc.createElement("cpmin");
   root.appendChild(xml_cpmin_tag);
   QDomText xml_cpmin_var = doc.createTextNode(QString::number(getCpMin()));
@@ -215,9 +220,9 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
   QDomText xml_epsr_var = doc.createTextNode(QString::number(getEpsR()));
   xml_epsr_tag.appendChild(xml_epsr_var);
 
-  QDomElement xml_epss_tag = doc.createElement("epss");
+  QDomElement xml_epss_tag = doc.createElement("epsk");
   root.appendChild(xml_epss_tag);
-  QDomText xml_epss_var = doc.createTextNode(QString::number(getEpsS()));
+  QDomText xml_epss_var = doc.createTextNode(QString::number(getEpsK()));
   xml_epss_tag.appendChild(xml_epss_var);
 
   QDomElement xml_nitc_tag = doc.createElement("nitc");
@@ -230,9 +235,9 @@ void NConstantsQtGui::saveXmlFile(const std::string &fileName)
   QDomText xml_nitr_var = doc.createTextNode(QString::number(getNItR()));
   xml_nitr_tag.appendChild(xml_nitr_var);
 
-  QDomElement xml_nits_tag = doc.createElement("nits");
+  QDomElement xml_nits_tag = doc.createElement("nitk");
   root.appendChild(xml_nits_tag);
-  QDomText xml_nits_var = doc.createTextNode(QString::number(getNItS()));
+  QDomText xml_nits_var = doc.createTextNode(QString::number(getNItK()));
   xml_nits_tag.appendChild(xml_nits_var);
 
   QDomElement xml_nsym_tag = doc.createElement("nsym");
@@ -348,6 +353,7 @@ void NConstantsQtGui::loadXmlFile(const std::string &fileName)
   setNDeg2(root.firstChildElement("ndeg2").firstChild().toText().data().toInt());
 
   setSteps(root.firstChildElement("steps").firstChild().toText().data().toInt());
+  setIad(root.firstChildElement("iad").firstChild().toText().data().toInt());
   setCpMin(root.firstChildElement("cpmin").firstChild().toText().data().toDouble());
   setCpMax(root.firstChildElement("cpmax").firstChild().toText().data().toDouble());
   setDs(root.firstChildElement("ds").firstChild().toText().data().toDouble());
@@ -356,10 +362,10 @@ void NConstantsQtGui::loadXmlFile(const std::string &fileName)
   setDsStart(root.firstChildElement("dsstart").firstChild().toText().data().toDouble());
   setEpsC(root.firstChildElement("epsc").firstChild().toText().data().toDouble());
   setEpsR(root.firstChildElement("epsr").firstChild().toText().data().toDouble());
-  setEpsS(root.firstChildElement("epss").firstChild().toText().data().toDouble());
+  setEpsK(root.firstChildElement("epsk").firstChild().toText().data().toDouble());
   setNItC(root.firstChildElement("nitc").firstChild().toText().data().toInt());
   setNItR(root.firstChildElement("nitr").firstChild().toText().data().toInt());
-  setNItS(root.firstChildElement("nits").firstChild().toText().data().toInt());
+  setNItK(root.firstChildElement("nitk").firstChild().toText().data().toInt());
 
   setNSym(root.firstChildElement("nsym").firstChild().toText().data().toInt());
 

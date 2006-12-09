@@ -22,12 +22,15 @@
 #include <cmath>
 #include <cfloat>
 
-// specified in the constsnts file
-#define NITER 30
-#define ERRTOL 1e-4
-#define ERRTOLCONT 1e-4
-#define BIFTOL 1e-6  // only for starting bifurcations
-// not specified
+// specified in the constants file
+#define REFEPS    (1E-5)
+#define NREFITER  (20)
+#define CONTEPS   (1E-5)
+#define NCONTITER (20)
+#define KERNEPS   (1E-10)
+#define NKERNITER (20)
+
+// __not__ specified in the constants file
 #define MIN_NSIMAG 1e-4
 
 #define NDIM colloc.Ndim()
@@ -71,12 +74,12 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
     solData(ndeg*nint, sys_.ndim(), 2*sys_.ntau() + 1),
     jacStab(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1))
 {
-  RefEps    = ERRTOL;
-  ContEps   = ERRTOLCONT;
-  StartEps  = BIFTOL;
-  RefIter   = NITER;
-  ContIter  = NITER;
-  StartIter = NITER;
+  RefEps   = REFEPS;
+  RefIter  = NREFITER;
+  ContEps  = CONTEPS;
+  ContIter = NCONTITER;
+  KernEps  = KERNEPS;
+  KernIter = NKERNITER;
 
   rotRe(0) = 0;
   rotIm(0) = 1;
@@ -542,6 +545,12 @@ inline void Point::ContUpdate(HyperVector& X)
   for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
 }
 
+inline void Point::AdaptUpdate(HyperVector& X)
+{
+  sol += X.getV1();
+  for (int i = 1; i < varMapCont.Size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
+}
+
 /// --------------------------------------------------------------
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
@@ -583,33 +592,93 @@ int Point::StartTF(Eqn FN, std::ostream& out)
   return Refine(out);
 }
 
-int Point::Refine(std::ostream& out)
+
+// this will adapt the mesh whenever it is specified
+int Point::Refine(std::ostream& out, bool adapt)
 {
+  // here solNu is the previous solution
+  if (adapt)
+  {
+    // saving the solution into solNu
+    solNu = sol;
+
+    Vector newmesh(colloc.getMesh());
+    colloc.meshAdapt(newmesh, sol);
+    colloc.profileAdapt(xx->getV1(), newmesh, sol);
+    sol = xx->getV1();
+    colloc.profileAdapt(xx->getV1(), newmesh, xxDot->getV1());
+    xxDot->getV1() = xx->getV1();
+#ifdef DEBUG
+    // printing the adapted profile
+    std::ofstream file1("prof");
+    file1 << std::scientific;
+    file1.precision(12);
+    std::ofstream file2("newprof");
+    file2 << std::scientific;
+    file2.precision(12);
+
+    std::ofstream file3("gradient");
+    file3 << std::scientific;
+    file3.precision(12);
+    for (int i=0; i<NINT; ++i)
+    {
+      for (int j=0; j<NDEG+1; ++j)
+      {
+        const double t1 = colloc.getMesh()(i) + j*(colloc.getMesh()(i+1)-colloc.getMesh()(i))/NDEG;
+        const double t2 = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
+        file1<<t1<<"\t";
+        file2<<t2<<"\t";
+        file3<<t1<<"\t"<<t2<<"\t";
+        for (int p=0; p<NDIM; ++p)
+        {
+          file1<<solNu(p+NDIM*(j+NDEG*i))<<"\t";
+          file2<<sol(p+NDIM*(j+NDEG*i))<<"\t";
+        }
+        file1<<"\n";
+        file2<<"\n";
+        file3<<"\n";
+      }
+    }
+#endif //DEBUG
+    colloc.setMesh(newmesh);
+  }
+  solNu = sol;
+  parNu = par;
+
+  xx->getV3().Clear();
+
+  if(!adapt) out << "\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
+
   int it = 0;
   double Xnorm, Dnorm;
-
-  solNu = sol; // here solNu is the previous solution
-  parNu = par; // here parNu is the previous parameter
-
-  out << "\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
-
   do
   {
     colloc.Init(par, sol);
     colloc.Interpolate(solData, sol);
 
-    Jacobian(*jac, *rhs, parNu, par, solNu, sol, solData, varMap, 0.0, false);
-    jac->Solve(*xx, *rhs, dim3);
-
-    Update(*xx);
-
+    if (!adapt)
+    {
+      Jacobian(*jac, *rhs, parNu, par, solNu, sol, solData, varMap, 0.0, false);
+      jac->Solve(*xx, *rhs, dim3);
+      Update(*xx);
+    } else
+    {
+      Jacobian(*jac, *rhs, parNu, par, solNu, sol, solData, varMapCont, 0.0, true);
+      jac->Solve(*xx, *rhs, dim3+1);
+      AdaptUpdate(*xx);
+    }
     // computing norms to determine convergence
     Xnorm = sqrt(colloc.Integrate(sol, sol));
     Dnorm = sqrt(colloc.Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    out << " " << it << "\t" << Dnorm / (1.0 + Xnorm) << "\t" << Xnorm << "\t" << Dnorm << '\n';
-    out.flush();
+    if(!adapt)
+    {
+      out << " " << it << "\t" << Dnorm / (1.0 + Xnorm) << "\t" << Xnorm << "\t" << Dnorm << '\n';
+      out.flush();
+    }
   }
   while ((Dnorm / (1.0 + Xnorm) >= RefEps) && (it++ < RefIter));
+  if (it >= RefIter) std::cout << "Warning: refinement did not converge. "
+    << "CritNorm: " << Dnorm / (1.0 + Xnorm) << " SolNorm: " << Xnorm << " DiffNorm: " << Dnorm << '\n';
 
   return it;
 }
@@ -728,22 +797,22 @@ void Point::SwitchTFPD(double ds)
   sol += ds * xxDot->getV1();
 }
 
-#define NKERNITER 20
-#define KERNEPS 1.0e-12
-
-void Point::Tangent()
+int Point::Tangent(bool adapt)
 {
   double norm;
 
   colloc.Init(par, sol);
   colloc.Interpolate(solData, sol);
 
-  // setting up a random tangent
-  xxDot->getV1().Rand();
-  xxDot->getV3().Rand();
-  norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
-  xxDot->getV1() /= norm;
-  xxDot->getV3() /= norm;
+  if (!adapt)
+  {
+    // setting up a random tangent
+    xxDot->getV1().Rand();
+    xxDot->getV3().Rand();
+    norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
+    xxDot->getV1() /= norm;
+    xxDot->getV3() /= norm;
+  }
   // az RHS-t feleslegesen szamolja ki && the first qq should be qq0
   Jacobian(*jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, true);
 
@@ -764,13 +833,15 @@ void Point::Tangent()
     if (dim1 != 0) colloc.Star(jac->getA31(dim3), xxDot->getV1());
     for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
-  while ((++it < NKERNITER) && (diffnorm > KERNEPS));
-  if (diffnorm > KERNEPS) std::cout << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
-  if (xxDot->getV3()(dim3) < 0.0)
+  while ((++it < KernIter) && (diffnorm > KernEps));
+  if (diffnorm > KernEps) std::cout << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
+  if (!adapt && (xxDot->getV3()(dim3) < 0.0))
   {
     xxDot->getV1() *= -1.0;
     xxDot->getV3() *= -1.0;
   }
+
+  return it;
 }
 
 int Point::Continue(double ds, bool jacstep)
@@ -841,7 +912,6 @@ int Point::Continue(double ds, bool jacstep)
     // copying back the solution
     sol = solNu;
     par = parNu;
-
   }
   else
   {

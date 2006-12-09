@@ -253,9 +253,9 @@ class NConstants
 
     NConstants() : label(0), pttype(SolUser), cp(VarPAR0), cpMap(0, false), branchsw(NOSwitch),
         neqns(0), parxMap(0, false), varsMap(0, true), nint(0), ndeg(0), nmul(0),
-        stab(0), nmat(0), nint1(0), nint2(0), ndeg1(0), ndeg2(0), steps(0), cpMin(0.0),
-        cpMax(0.0), ds(0.0), dsMin(0.0), dsMax(0.0), dsStart(0.0),
-        epsC(0.0), epsR(0.0), epsS(0.0), nitC(0), nitR(0), nitS(0),
+        stab(0), nmat(0), nint1(0), nint2(0), ndeg1(0), ndeg2(0), steps(0), iad(0),
+        cpMin(0.0), cpMax(0.0), ds(0.0), dsMin(0.0), dsMax(0.0), dsStart(0.0),
+        epsC(0.0), epsR(0.0), epsK(0.0), nitC(0), nitR(0), nitK(0),
         nsym(0), npar(0), ndim(0)
     {  }
 
@@ -264,9 +264,10 @@ class NConstants
         branchsw(ct.branchsw), neqns(ct.neqns), parxtype(ct.parxtype), parxnum(ct.parxnum), parxMap(ct.npar, false),
         eqnstype(ct.eqnstype), eqnsnum(ct.eqnsnum), varstype(ct.varstype), varsnum(ct.varsnum), varsMap(ct.npar, true),
         nint(ct.nint), ndeg(ct.ndeg), nmul(ct.nmul), stab(ct.stab), nmat(ct.nmat),
-        nint1(ct.nint1), nint2(ct.nint2), ndeg1(ct.ndeg1), ndeg2(ct.ndeg2), steps(ct.steps),
+        nint1(ct.nint1), nint2(ct.nint2), ndeg1(ct.ndeg1), ndeg2(ct.ndeg2),
+        steps(ct.steps), iad(ct.iad),
         cpMin(ct.cpMin), cpMax(ct.cpMax), ds(ct.ds), dsMin(ct.dsMin), dsMax(ct.dsMax), dsStart(ct.dsStart),
-        epsC(ct.epsC), epsR(ct.epsR), epsS(ct.epsS), nitC(ct.nitC), nitR(ct.nitR), nitS(ct.nitS),
+        epsC(ct.epsC), epsR(ct.epsR), epsK(ct.epsK), nitC(ct.nitC), nitR(ct.nitR), nitK(ct.nitK),
         nsym(ct.nsym), symRe(ct.symRe), symIm(ct.symIm), npar(ct.npar), ndim(ct.ndim)
     {  }
 
@@ -414,6 +415,10 @@ class NConstants
     {
       return steps;
     }
+    int  getIad() const
+    {
+      return iad;
+    }
     double getCpMin() const
     {
       return cpMin;
@@ -446,9 +451,9 @@ class NConstants
     {
       return epsR;
     }
-    double getEpsS() const
+    double getEpsK() const
     {
-      return epsS;
+      return epsK;
     }
     int getNItC() const
     {
@@ -458,9 +463,9 @@ class NConstants
     {
       return nitR;
     }
-    int getNItS() const
+    int getNItK() const
     {
-      return nitS;
+      return nitK;
     }
     int getNSym() const
     {
@@ -716,6 +721,10 @@ class NConstants
     {
       steps = i;
     }
+    virtual void setIad(int i)
+    {
+      iad = i;
+    }
     virtual void setCpMin(double d)
     {
       cpMin = d;
@@ -756,11 +765,11 @@ class NConstants
       epsR = d;
     }
 //   virtual void setEpsR( const std::string& d ) { setEpsR(atof(d.c_str())); }
-    virtual void setEpsS(double d)
+    virtual void setEpsK(double d)
     {
-      epsS = d;
+      epsK = d;
     }
-//   virtual void setEpsS( const std::string& d ) { setEpsS(atof(d.c_str())); }
+//   virtual void setEpsK( const std::string& d ) { setEpsK(atof(d.c_str())); }
     virtual void setNItC(int i)
     {
       nitC = i;
@@ -769,9 +778,9 @@ class NConstants
     {
       nitR = i;
     }
-    virtual void setNItS(int i)
+    virtual void setNItK(int i)
     {
-      nitS = i;
+      nitK = i;
     }
     virtual void setNSym(int i)
     {
@@ -828,6 +837,7 @@ class NConstants
     int    ndeg1;
     int    ndeg2;
     int    steps;
+    int    iad;
     double cpMin;
     double cpMax;
     double ds;
@@ -836,10 +846,10 @@ class NConstants
     double dsStart;
     double epsC;
     double epsR;
-    double epsS;
+    double epsK;
     int    nitC;
     int    nitR;
-    int    nitS;
+    int    nitK;
     int    nsym;
     std::vector<int> symRe;
     std::vector<int> symIm;

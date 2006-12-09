@@ -315,7 +315,7 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
 void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
 {
   // compute the coeff of the highest degree term in each interval
-  bool small = true;
+  bool small_deri = true;
   const double hmach = 1e-6;
   Matrix hd(NINT+1, NDIM);
   for (int i = 0; i < NINT; i++)
@@ -329,10 +329,10 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
       }
       // adjust by the mesh interval
       hd(i,p) /= pow(mesh(i+1)-mesh(i),NDEG);
-      if (fabs(hd(i,p)) > hmach) small = false;
+      if (fabs(hd(i,p)) > hmach) small_deri = false;
     }
   }
-  if (small) std::cout<<"small derivatives\n";
+  if (small_deri) std::cout<<"small derivatives\n";
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
   for (int p = 0; p < NDIM; p++)
@@ -361,7 +361,7 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
   // eqf contains the integral which has to be equidistributed
   Vector eqf(NINT+1);
   // when the derivatives are too small;
-  if (small) for (int i = 0; i < NINT+1; ++i) eqf(i) = i;
+  if (small_deri) for (int i = 0; i < NINT+1; ++i) eqf(i) = i;
   else eqf(0) = 0.0;
   // computing eqf
   const double pwr=1.0/(NDEG+1.0);
@@ -378,7 +378,7 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
     {
       for (int i = 0; i < NDIM; ++i)
       {
-        EP=EP+pow(abs(hd(j-1,i)),pwr);
+        EP+=pow(fabs(hd(j-1,i)),pwr);
       }
     }
     double E=0;
@@ -388,6 +388,7 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
     }
     eqf(j+1)=eqf(j)+0.5*(mesh(j+1)-mesh(j))*(E+EP);
   }
+//   for (int i = 1; i < eqf.Size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
 //   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
   // now computing the new mesh
   newmesh(0) = 0.0;
@@ -398,8 +399,8 @@ void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
     const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
 //     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
     newmesh(i) = mesh(idx) + d*(mesh(idx+1)-mesh(idx));
-    if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
-    if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
+//     if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
+//     if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
   }
   newmesh(newmesh.Size()-1) = 1.0;
 }
@@ -796,7 +797,6 @@ void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const JagMa
   for (int r = 0; r < NDIM; r++)
   {
     rhs(r) = sol(r + NDIM * NDEG * NINT) - sol(r);
-    ;
   }
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point

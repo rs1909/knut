@@ -146,12 +146,13 @@ void NConstants::loadFile(const std::string &fileName)
   setNDeg1(__ndeg1__);
   setNDeg2(__ndeg2__);
 
-  int __steps__;
+  int __steps__, __iad__;
   double __cpmin__, __cpmax__;
-  file >> __steps__ >> __cpmin__ >> __cpmax__;
+  file >> __steps__ >> __iad__ >> __cpmin__ >> __cpmax__;
   inputAssert(file);
   while (file.get() != '\n');
   setSteps(__steps__);
+  setIad(__iad__);
   setCpMin(__cpmin__);
   setCpMax(__cpmax__);
 
@@ -170,14 +171,14 @@ void NConstants::loadFile(const std::string &fileName)
   while (file.get() != '\n');
   setEpsC(__epsc__);
   setEpsR(__epsr__);
-  setEpsS(__epss__);
+  setEpsK(__epss__);
 
   int __nitc__, __nitr__, __nits__;
   file >> __nitc__ >> __nitr__ >> __nits__;
   inputAssert(file);
   setNItC(__nitc__);
   setNItR(__nitr__);
-  setNItS(__nits__);
+  setNItK(__nits__);
 
   if (loadsym)
   {
@@ -243,6 +244,7 @@ void NConstants::printFile(std::ostream& file)
   << getNDeg2() << " \t\tNINT1, NINT2, NDEG1, NDEG2\n";
 
   file << getSteps() << " "
+  << getIad() << " "
   << getCpMin() << " "
   << getCpMax() << " \t\tSTEPS, CPMIN, CPMAX\n";
 
@@ -253,9 +255,9 @@ void NConstants::printFile(std::ostream& file)
 
   file << getEpsC() << " "
   << getEpsR() << " "
-  << getEpsS() << " \tEPSC, EPSR, EPSS\n";
+  << getEpsK() << " \tEPSC, EPSR, EPSK\n";
 
-  file << getNItC() << " " << getNItR() << " " << getNItS() << " \t\tNITC, NITR, NITS\n";
+  file << getNItC() << " " << getNItR() << " " << getNItK() << " \t\tNITC, NITR, NITK\n";
 
   file << getNSym() << " ";
   for (int i = 0; i < getNSym(); ++i) file << getSymRe(i) << " " << getSymIm(i) << " ";

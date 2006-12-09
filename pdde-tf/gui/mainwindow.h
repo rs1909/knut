@@ -160,6 +160,12 @@ class MainWindow : public QMainWindow
       steps->setValue(i);
       steps->blockSignals(false);
     }
+    void setIad(int i)
+    {
+      iad->blockSignals(true);
+      iad->setValue(i);
+      iad->blockSignals(false);
+    }
     void setNItC(int i)
     {
       nitC->blockSignals(true);
@@ -172,11 +178,11 @@ class MainWindow : public QMainWindow
       nitR->setValue(i);
       nitR->blockSignals(false);
     }
-    void setNItS(int i)
+    void setNItK(int i)
     {
-      nitS->blockSignals(true);
-      nitS->setValue(i);
-      nitS->blockSignals(false);
+      nitK->blockSignals(true);
+      nitK->setValue(i);
+      nitK->blockSignals(false);
     }
     void setNSym(int i)
     {
@@ -279,6 +285,7 @@ class MainWindow : public QMainWindow
     QSpinBox  *ndeg1;
     QSpinBox  *ndeg2;
     QSpinBox  *steps;
+    QSpinBox  *iad;
     QLineEdit *cpMin;
     QLineEdit *cpMax;
     QLineEdit *ds;
@@ -287,10 +294,10 @@ class MainWindow : public QMainWindow
     QLineEdit *dsStart;
     QLineEdit *epsC;
     QLineEdit *epsR;
-    QLineEdit *epsS;
+    QLineEdit *epsK;
     QSpinBox  *nitC;
     QSpinBox  *nitR;
-    QSpinBox  *nitS;
+    QSpinBox  *nitK;
     SYMTableView *sym;
     QSpinBox  *nsym;
 
