@@ -3,7 +3,7 @@
  <input>out-nssw-b.mat</input>
  <output>out-lp-b.mat</output>
  <sysname>sys-traffic3cars.so</sysname>
- <label>97</label>
+ <label>16</label>
  <pointtype>51</pointtype>
  <cptype>P</cptype>
  <cpnum>0</cpnum>

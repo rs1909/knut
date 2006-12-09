@@ -3,7 +3,7 @@
  <input>out-start.mat</input>
  <output>out-ns.mat</output>
  <sysname>sys-turn.so</sysname>
- <label>25</label>
+ <label>8</label>
  <pointtype>43</pointtype>
  <cptype>P</cptype>
  <cpnum>2</cpnum>
