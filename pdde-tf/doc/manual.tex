@@ -41,9 +41,9 @@
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.1.1}
+\newcommand{\pddever}{1.1.2}
 \version{\pddever}
-\date{9 October 2006}
+\date{9 December 2006}
 \maketitle
 
 \begin{center}
@@ -250,15 +250,15 @@ This is pdde-cont version 1.1.1 (r262 2006-10-03 03:08:22 +0100)
 
 As an example, we included one of the example problems:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so            SYSNAME
-120                     LABEL
-40 P1 0                 TYPE, CP, NPARX, PARX ....
-50 4 5 1 1              NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4               NINT1, NINT2, NDEG1, NDEG2 (for torus computations only)
-200 -100.0 100.0        STEPS, CPMIN, CPMAX
-0.01 0.01 0.01 0.01     DS, DSMIN, DSMAX, DSSTART
-1e-4 1e-4 1e-7          EPSC, EPSR, EPSS
-12 12 12                NITC, NITR, NITS
+sys-glass.so                SYSNAME
+0                           LABEL
+40 P2 0                     TYPE, P0, NPARX, PARX[NPARX]
+20 4 5 1 1                  NINT, NDEG, NMUL, STAB, NMAT
+12 12 4 4                   NINT1, NINT2, NDEG1, NDEG2
+120 3 -100 100              STEPS, IAD, P0MIN, P0MAX
+-0.002 0.002 0.002 -0.002   DS, DSMIN, DSMAX, DSSTART
+1e-05 1e-05 1e-06           EPSC, EPSR, EPSK
+12 12 12                    NITC, NITR, NITK
 \end{lstlisting} \end{quote} } \noindent
 In the first separated column are the parameter values, 
 while the second column refers to their meaning. 
@@ -364,11 +364,14 @@ the rotation number of a quasiperiodic orbit.
 specified using ordinary parameters. E.g., if \funp{NPAR} is the number of
 ordinary parameters then an internal parameter is equivalent to P(\funp{NPAR} +
 internal parameter number)). 
-These  internal parameters are
+These  internal parameters are as follows.
 \begin{description}
-\item[\funp{I0} -] the argument of the characteristic multiplier in the case of
-Neimark-Sacker bifurcation continuation and
-\item[\funp{I2} -] the rotation number of a two-torus. Usually this is kept
+\item[\funp{I0} -] represents the argument of the characteristic multiplier in the case of
+Neimark-Sacker bifurcation continuation.
+\item[\funp{I1} -] It is initialized to 1.0 when \funp{LABEL}=0. It doubles with
+every period doubling branch switch. Use this as \fun{par(sys_npar()+1)} in the
+system definition to rescale the delay or adjust the forcing if necessary.
+\item[\funp{I2} -] contains the rotation number of a two-torus. Usually this is kept
 constant in order to avoid phase-locking.
 \end{description}
 %
@@ -403,6 +406,11 @@ is the smallest integer such that $\funp{NMAT} \ge \tau_{MAX}/T_{MIN}$.
 \item[\funp{STEPS}] ~\\
 Maximum number of steps on the solution branch.
 %
+\item[\funp{IAD}] ~\\
+The software adapts the mesh after every \funp{IAD} continuation steps.
+If \funp{IAD}=0, no mesh adaptation will be performed. The recommended value is \funp{IAD}=3,
+although in some cases it might be necessary to turn off the mesh adaptation.
+%
 \item[\funp{CPMIN}, \funp{CPMAX}] ~\\
 Currently not referenced, just write two numbers.
 %
@@ -433,9 +441,9 @@ Tolerance in the refinement of periodic solutions. (Solution refinement is used
 only before continuation starts.) It should be less than or equal to
 \funp{EPSC}.
 %
-\item[\funp{EPSS}] ~\\
-Tolerance when converging to a bifurcation point. (Used at branch switching.)
-(\emph{Currently \funp{EPSR} is used instead of this.})
+\item[\funp{EPSK}] ~\\
+Tolerance when locating a singular vector of an operator. This is used when the initial tangent vector to a branch is sought,
+a tangent vector is refined after adapting the mesh and for setting up a test functional for bifurcation continuation.
 %
 \item[\funp{NITC}] ~\\
 Maximum number of Newton iteration steps in continuation.
@@ -444,9 +452,8 @@ Maximum number of Newton iteration steps in continuation.
 Maximum number of Newton iteration steps, when converging to an initial
 solution.
 %
-\item[\funp{NITS}] ~\\
-Maximum number of iteration steps, when finding a bifurcation point.
-(\emph{Currently \funp{NITR} is used instead of this.})
+\item[\funp{NITK}] ~\\
+Maximum number of iteration steps, when locating a singular vector of an operator. (See \funp{EPSK}.)
 %
 \end{description}
 
@@ -1048,60 +1055,97 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 }
 \end{lstlisting} \end{quote} } \noindent
 
-The first thing in analyzing the problem is to find periodic solution
-branches. In our case we have a supercritical Hopf bifurcation, hence we look
-for solutions around the unstable fixed points and continue them along
-parameter $b$ (\funp{P2}). The corresponding constants file
-(\filef{cfile-start}) is
+The first thing in analyzing the problem is to find a periodic solution
+branch. To do that we look for a Hopf bifurcation point of the nonzero steady state solution
+$x_2$ of (\ref{ct:glass}). This steady state is considered as a constant periodic solution of
+fixed period, hence we use the following constants file to continue this equailibrium along $b$ (\funp{P2}).
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so            SYSNAME
-0                       LABEL
-50 P2 1 P0              TYPE, CP, NPARX, PARX ....
-200 4 5 1 1             NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4               NINT1, NINT2, NDEG1, NDEG2
-120 -100.0 100.0        STEPS, CPMIN, CPMAX
--0.002 0.002 0.002 0.1  DS, DSMIN, DSMAX, DSSTART
-1e-5 1e-5 1e-6          EPSC, EPSR, EPSS
-12 12 12                NITC, NITR, NITS
+sys-glass.so                SYSNAME
+0                           LABEL
+40 P2 0                     TYPE, P0, NPARX, PARX[NPARX]
+20 4 5 1 1                  NINT, NDEG, NMUL, STAB, NMAT
+12 12 4 4                   NINT1, NINT2, NDEG1, NDEG2
+120 3 -100 100              STEPS, IAD, P0MIN, P0MAX
+-0.002 0.002 0.002 -0.002   DS, DSMIN, DSMAX, DSSTART
+1e-05 1e-05 1e-06           EPSC, EPSR, EPSK
+12 12 12                    NITC, NITR, NITK
 \end{lstlisting} \end{quote} } \noindent
-Invoke the program:
+By invoking the program
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -c cfile-start -o in-start
+$ pdde -c cfile-start -o in-start.mat
 \end{lstlisting} \end{quote} } \noindent
+we get the output
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+IT      ERR             SOLnorm         DIFFnorm
+ 0      2.600296e-16    9.330330e-01    5.026458e-16
+
+--- Starting the continuation ---
+LABEL   NORM           P2             U IT
+    0   9.330330E-01   1.500000E+00   0  0
+
+Finding the tangent.
+
+LABEL   NORM           P2             U IT
+    0   9.326655E-01   1.498034E+00   2  0
+    1   9.322967E-01   1.496068E+00   2  0
+    2   9.319267E-01   1.494103E+00   2  0 0 1
+    |        |              |         |
+   82   8.971929E-01   1.337954E+00   2  0
+   83   8.966784E-01   1.336022E+00   0  0 0 2  NS
+   84   8.961615E-01   1.334090E+00   0  0
+\end{lstlisting} \end{quote} } \noindent
+We find that at branch point 83 there is a Hopf bifurcation. Thus we can switch to the periodic solution branch at this point
+by using the constants file.
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+sys-glass.so                 SYSNAME
+83                           LABEL
+56 P2 1 P0                   TYPE, P0, NPARX, PARX[NPARX]
+80 5 5 1 1                   NINT, NDEG, NMUL, STAB, NMAT
+12 12 4 4                    NINT1, NINT2, NDEG1, NDEG2
+120 3 -100 100               STEPS, IAD, P0MIN, P0MAX
+0.0001 0.0001 0.005 0.0001   DS, DSMIN, DSMAX, DSSTART
+1e-05 1e-05 1e-06            EPSC, EPSR, EPSK
+12 12 12                     NITC, NITR, NITK
+\end{lstlisting} \end{quote} } \noindent
+
 Checking the the console output, we find that there is a change in
-stability between labels 111 and 112, marked by the ``\funp{PD}'' sign referring
+stability between labels 67 and 68, marked by the ``\funp{PD}'' sign referring
 to period doubling.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 IT      ERR             SOLnorm         DIFFnorm
- 0      2.194757e-01    9.672925e-01    4.317730e-01
- |          |               |               |
- 4      3.833364e-05    9.283690e-01    7.392141e-05
- 5      5.213321e-09    9.283690e-01    1.005321e-08
+ 0      2.881450e-15    8.966784e-01    5.465184e-15
 
---- Starting the continuation ---
+--- Finding the bifurcation point (TF) ---
+Re: -6.559948e-01 Im: 7.515199e-01 Angle: 2.288430e+00
 
 IT      ERR             SOLnorm         DIFFnorm
- 0      4.404573e-05    9.283690e-01    8.493641e-05
- 1      1.577228e-08    9.283690e-01    3.041478e-08
+ 0      5.294705e-04    8.969029e-01    1.004354e-03
+ 1      8.039219e-07    8.969027e-01    1.524962e-06
 
-LABEL      NORM            PAR(2)          PAR(0)
-  0     9.283690e-01    1.740060e+00    5.391800e+00
+--- Starting the continuation ---
+LABEL   NORM           P2             P0             U IT
+    0   8.969027E-01   1.336863E+00   2.000000E+00   0  0
 
-LABEL      NORM            PAR(2)          PAR(0)       USTAB
-  1     9.282553e-01    1.738491e+00    5.392977e+00      1
-  2     9.281415e-01    1.736923e+00    5.394156e+00      1
-  |         |               |               |             |
-  110   9.144253e-01    1.558730e+00    5.505050e+00      1
-  111   9.142811e-01    1.556917e+00    5.505700e+00      1
-  112   9.141366e-01    1.555100e+00    5.506339e+00      0  PD
-  113   9.139919e-01    1.553281e+00    5.506966e+00      0
+Switching to the periodic solution branch at the HOPF point (TF).
+SwitchHOPF: T = 5.490064E+00, angle/2PI = 3.642945E-01
+
+LABEL   NORM           P2             P0             U IT
+    0   8.969028E-01   1.336864E+00   5.490064E+00   0  2
+    1   8.969029E-01   1.336865E+00   5.490065E+00   0  1
+    2   8.969032E-01   1.336869E+00   5.490067E+00   0  1 3 2
+    3   8.969106E-01   1.336963E+00   5.490117E+00   0  1
+    |        |               |             |         |  |
+   66   9.141476E-01   1.555239E+00   5.506291E+00   0  2
+   67   9.144749E-01   1.559355E+00   5.504824E+00   1  2  PD
+   68   9.148008E-01   1.563454E+00   5.503301E+00   1  2 2 2
+   69   9.151239E-01   1.567521E+00   5.501730E+00   1  2
 \end{lstlisting} \end{quote} } \noindent
 This period doubling bifurcation can be continued in two parameters 
 by changing the solution type to \funp{12} and including an additional
 parameter.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
-112                     LABEL
+68                      LABEL
 52 P2 2 P0 P1           TYPE, CP, NPARX, PARX ....
 ...
 \end{lstlisting} \end{quote} } \noindent
@@ -1121,7 +1165,7 @@ Also, the arising period-2 orbits can be computed by switching to this new
 branch of solutions:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
-112                     LABEL
+68                      LABEL
 55 P2 1 P0              TYPE, CP, NPARX, PARX ....
 ...
 \end{lstlisting} \end{quote} } \noindent

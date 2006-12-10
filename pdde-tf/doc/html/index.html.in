@@ -63,10 +63,6 @@ See the <a href="manual.pdf"> User's Manual </a>.
 <td> Source code </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.tar.bz2"> pdde-cont-@PACKAGE_VERSION@.tar.bz2 </a></td>
 </tr>
 <tr>
-<td> Fedora Core 6 Source RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.src.rpm"> pdde-cont-@PACKAGE_VERSION@-1.src.rpm </a> </td></tr>
-<tr>
-<td> Fedora Core 6 Binary RPM </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@-1.i386.rpm"> pdde-cont-@PACKAGE_VERSION@-1.i386.rpm </a> </td></tr>
-<tr>
 <td> Windows XP installer </td> <td> <a href="pdde-cont-@PACKAGE_VERSION@.exe"> pdde-cont-@PACKAGE_VERSION@.exe</a> (Install the <a href="http://prdownloads.sf.net/mingw/MinGW-5.0.3.exe?download">MinGW</a> g++ compiler, too.)</td></tr>
 </table>
 </p><p/>
