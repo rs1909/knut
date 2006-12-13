@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output></output>
+ <input>out-start.mat</input>
+ <output>out-nssw.mat</output>
  <sysname>sys-glass.so</sysname>
  <label>83</label>
  <pointtype>56</pointtype>

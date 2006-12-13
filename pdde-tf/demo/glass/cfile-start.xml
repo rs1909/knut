@@ -1,7 +1,7 @@
 <!DOCTYPE cfile>
 <pdde>
  <input></input>
- <output></output>
+ <output>out-start.mat</output>
  <sysname>sys-glass.so</sysname>
  <label>0</label>
  <pointtype>40</pointtype>
