@@ -79,6 +79,7 @@ void NConstants::loadFile(const std::string &fileName)
     int __brswitch__;
     int __neqn__;
     file >> __brswitch__;
+    setBranchSWIdx(__brswitch__);
     inputAssert(file);
     file >> __neqn__;
     inputAssert(file);
@@ -345,17 +346,36 @@ int NConstants::toEqnVar(System& sys,
   }
   else
   {
-    eqn_refine.Init(1);
-    var_refine.Init(1);
-    eqn_refine(0) = EqnSol;
-    var_refine(0) = VarSol;
+    if (phaseRot)
+    {
+      // this happens when a steady state solution of a laser is computed
+      eqn_refine.Init(2);
+      var_refine.Init(2);
+      eqn_refine(0) = EqnSol;
+      eqn_refine(1) = EqnPhaseRot;
+      var_refine(0) = VarSol;
+      var_refine(1) = var(var.Size() - 1);
+    }
+    else
+    {
+      eqn_refine.Init(1);
+      var_refine.Init(1);
+      eqn_refine(0) = EqnSol;
+      var_refine(0) = VarSol;
+    }
   }
 
   if (getBranchSW() == TFHBSwitch)
   {
-    Array1D<Var> d(0);
-    PtToEqnVar(eqn_refine, var_refine, SolTF, d, sys.npar());
-  }// NPARX == 0
+      Array1D<Eqn> ee(eqn_refine);
+      Array1D<Var> vv(var_refine);
+      eqn_refine.Init(ee.Size()-1);
+      var_refine.Init(ee.Size()-1);
+      for (int i = 0, j = 0; i < ee.Size(); ++i)
+      {
+        if (ee(i) != EqnPhase) { eqn_refine(j) = ee(i); var_refine(j) = vv(j); ++j; }
+      }
+  }
 
   // Here, we set up the branch switching.
   // We suppose that if there is a switch we use one parameter continuation afterwards
