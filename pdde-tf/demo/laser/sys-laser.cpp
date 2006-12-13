@@ -74,12 +74,28 @@ void sys_deri( Matrix &out, double t, const Matrix& xx, const Vector& par,
 
 void sys_stpar( Vector& par )
 {
-	// par(0) = 16.0;
+  par(0) = 10.0;
+  par(1) = 5.000000000000e+00;
+  par(2) = 2.908215e-02;
+  par(3) = 1.000000000000e+02;
+  par(4) = 3.500000000000e+00;
+  par(5) = 7.000000000000e-03;
+  par(6) = 6.073745796940e+00;
+  par(7) = -7.000000000000e-03;
+  par(8) = 1.000000000000e+00;
+  par(9) = 1.000000000000e+00;
+  par(10) = 1.000000000000e+00;
+  par(11) = -3.259566e-03;
+  par(12) = 5.000000000000e+02;
 }
 
 void sys_stsol( Vector& out, double t )
 {
-	// out(0)   = 0.9+0.3*sin(2*M_PI*t);
+  out(0) = -0.24721;
+  out(1) = -1.86705;
+  out(2) = -0.005655;
+  out(3) = 1.5585;
+  out(4) = -0.573614;
 }
 
 } // extern "C"

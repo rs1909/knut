@@ -1,18 +1,22 @@
 <!DOCTYPE cfile>
 <pdde>
- <input></input>
- <output>out-start.mat</output>
+ <input>out-start.mat</input>
+ <output>out-hopfsw.mat</output>
  <sysname>sys-laser.so</sysname>
- <label>0</label>
+ <label>9</label>
  <pointtype>-1</pointtype>
  <cptype>P</cptype>
  <cpnum>2</cpnum>
- <switch>0</switch>
- <neqns>2</neqns>
+ <switch>3</switch>
+ <neqns>3</neqns>
  <eqns>
   <eqn>
    <type>E</type>
    <num>1</num>
+  </eqn>
+  <eqn>
+   <type>E</type>
+   <num>24</num>
   </eqn>
   <eqn>
    <type>E</type>
@@ -28,6 +32,10 @@
    <type>P</type>
    <num>11</num>
   </var>
+  <var>
+   <type>P</type>
+   <num>0</num>
+  </var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>
@@ -38,13 +46,13 @@
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>15</steps>
+ <steps>10</steps>
  <iad>3</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>
- <ds>-0.002</ds>
- <dsmin>0.0002</dsmin>
- <dsmax>0.002</dsmax>
+ <ds>0.02</ds>
+ <dsmin>0.002</dsmin>
+ <dsmax>0.02</dsmax>
  <dsstart>0.02</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
