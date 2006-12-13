@@ -3,7 +3,7 @@
  <input>out-start.mat</input>
  <output>out-ns.mat</output>
  <sysname>sys-laser.so</sysname>
- <label>4</label>
+ <label>39</label>
  <pointtype>-1</pointtype>
  <cptype>P</cptype>
  <cpnum>0</cpnum>

@@ -4,7 +4,7 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL( FILES sys-${NAME}.cpp
-    cfile-start cfile-hopfsw cfile-psol cfile-ns cfile-pd cfile-lp .mat
+    cfile-start cfile-hopfsw cfile-psol cfile-ns cfile-pd cfile-lp
     cfile-start.xml cfile-hopfsw.xml cfile-psol.xml cfile-ns.xml cfile-pd.xml cfile-lp.xml
     DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
