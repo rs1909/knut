@@ -1,21 +1,26 @@
 In 1.1.2
  - Mesh adaptation is included. It can be similarly controlled as in AUTO by
    using the newly introduced IAD constant. Treat this feature as
-   experimental. It seems to work with all of the examples but "tq". This
-   exception has a good reason.
+   experimental. It seems to work with all of the examples but "tq". There
+   is a good reason for this exception.
  - The EPSS, NITS constants were replaced by the EPSK, NITK constants, which
    control the computation of singular vectors. These are the tangent vector
-   and the border of the large matrices when computing the characteristic
-   functionals.
+   and the borders of the large matrices when computing the test functionals.
  - A new internal parameter I1 was introduced, which initializes to 1.0 when
-   starting a continuation the continuation with LABEL=0 and doubles at each
-   period doubling bifurcation switch. This way when a forced equation is
-   computed we can keep track of the periods, eq we can use delay = P0/I1,
-   which will stay invariant at a period doubling swith. Similarly a
-   forcing set to "sin(I1*2*pi*t)", would remain the same after branch
-   switching, since t is always scaled to [0,1]. In the system definition
-   (c++) file this parameter is "par(sys_npar()+1)". (Do not worry enough space 
-   is allocated for it in the "par" vector.)
+   starting a continuation with LABEL=0 and doubles at each period doubling 
+   bifurcation switch. This way, when a forced equation is computed we can 
+   keep track of the periods, e.g. we can use 'delay = P0/I1', which will stay 
+   invariant at a period doubling swith. Similarly a forcing set to 
+   'sin(I1*2*pi*t)', would remain the same after branch switching, since t is 
+   always scaled to [0,1]. In the system definition (c++) file this parameter 
+   is 'par(sys_npar()+1)'.
+ - The period doubling switch is rewritten to use a similar mesh on each
+   part of the solution as before switching. This way, the new mesh will be 
+   close to what the next adaptation step will produce, hence the procedure
+   will be less sensitive.
+ - Similarly, when restarting a continuation with a different number of mesh 
+   points and degree of collocation polynomial, the software tries to keep 
+   the same distribution as in the previous mesh.
 In 1.1.1
  - Windows bugfix. The Neimark-Sacker continuation is fixed. Some function
    argument had the same name as a Windows macro, so it led to a silent 
