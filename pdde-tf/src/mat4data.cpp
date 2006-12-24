@@ -23,6 +23,17 @@
 #include "pderror.h"
 #include "mat4data.h"
 
+#define MAT_BIG_ENDIAN 1000
+#define MAT_LITTLE_ENDIAN 0
+
+static int32_t byte_order()
+{
+  int32_t tmp = 0x01020304;
+  if ( ((char*)(&tmp))[0] == 1 ) return MAT_BIG_ENDIAN;
+  else if ( ((char*)(&tmp))[0] == 4 ) return MAT_LITTLE_ENDIAN;
+  else P_MESSAGE( "Fatal error. Unrecognized byte order." );
+}
+
 int mat4Data::findMatrix(const char* name, mat4Data::header* found)
 {
   struct header hd;
@@ -31,7 +42,7 @@ int mat4Data::findMatrix(const char* name, mat4Data::header* found)
   do
   {
     memcpy(&hd, (char*)address + cur_off, sizeof(struct header));
-    P_ERROR_X1(hd.type == 0, "Not a matrix of double precision elements.");
+    P_ERROR_X1(hd.type == byte_order(), "Not a matrix of double precision elements.");
     if (hd.imagf == 0)
       cur_size = sizeof(struct header) + hd.namelen * sizeof(char) + hd.mrows * hd.ncols * sizeof(double);
     else
@@ -162,7 +173,7 @@ static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::str
 // returns the size of the whole data
 static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
 {
-  hd->type = 0;
+  hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 0;
@@ -173,7 +184,7 @@ static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int
 // returns the size of the whole data
 static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
 {
-  hd->type = 0;
+  hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 1;
