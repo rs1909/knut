@@ -1,6 +1,6 @@
 <!DOCTYPE cfile>
 <pdde>
- <input>out-start.mat</input>
+ <input>out-psol.mat</input>
  <output>out-pd.mat</output>
  <sysname>sys-laser.so</sysname>
  <label>125</label>
@@ -64,7 +64,7 @@
  <dsstart>0.0001</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
- <epsk>1e-7</epsk>
+ <epsk>1e-07</epsk>
  <nitc>24</nitc>
  <nitr>24</nitr>
  <nitk>24</nitk>

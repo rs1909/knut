@@ -1,6 +1,6 @@
 <!DOCTYPE cfile>
 <pdde>
- <input>out-start.mat</input>
+ <input>out-psol.mat</input>
  <output>out-ns.mat</output>
  <sysname>sys-laser.so</sysname>
  <label>39</label>
