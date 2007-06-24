@@ -20,26 +20,33 @@
 #include <sstream>
 #include <stdio.h>
 
-class GnuPlot{
-  FILE*               prg;
-  std::ostringstream  pl;
-  std::vector<std::string> cmd;
-  std::vector<std::string> data;
-public:
-  inline GnuPlot() : cmd(), data() { prg = popen("gnuplot","w"); }
-  inline ~GnuPlot() { pclose(prg); }
-  void SetTerminal( const char *term );
-  void SetOutput( const char *term );
-  void SetPointSize( double ps );
-  void SetNoKey();
-  void SetXLabel( const char *lb );
-  void SetYLabel( const char *lb );
-  void Plot( int n, const char *style = "" );
-  void AddData( int n, double x, double y );
-  void AddSData( int n, double x, double y );
-  void Show();
-  void Save( const char * filename );
-  void Clear();
+class GnuPlot
+{
+    FILE*               prg;
+    std::ostringstream  pl;
+    std::vector<std::string> cmd;
+    std::vector<std::string> data;
+  public:
+    inline GnuPlot() : cmd(), data()
+    {
+      prg = popen("gnuplot", "w");
+    }
+    inline ~GnuPlot()
+    {
+      pclose(prg);
+    }
+    void SetTerminal(const char *term);
+    void SetOutput(const char *term);
+    void SetPointSize(double ps);
+    void SetNoKey();
+    void SetXLabel(const char *lb);
+    void SetYLabel(const char *lb);
+    void Plot(int n, const char *style = "");
+    void AddData(int n, double x, double y);
+    void AddSData(int n, double x, double y);
+    void Show();
+    void Save(const char * filename);
+    void Clear();
 };
 
 #endif

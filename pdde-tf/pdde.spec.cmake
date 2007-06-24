@@ -17,7 +17,7 @@ Numerical continuation software for delay-differential equations
 %setup
 
 %build
-cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=/usr/ -D CMAKE_BUILD_TYPE=RELEASE .
+cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=/usr/ -D CMAKE_BUILD_TYPE=RELWITHDEBINFO .
 
 %install
 cd $RPM_BUILD_DIR/%{name}-%{version}

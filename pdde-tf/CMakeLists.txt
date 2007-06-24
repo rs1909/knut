@@ -63,13 +63,13 @@ IF( NOT WIN32 )
 ENDIF( NOT WIN32 )
 
 # no debugging with release version
-IF( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
-  ADD_DEFINITIONS( -DHAVE_CONFIG_H )
-  SET(PDDE_RELEASE TRUE)
-ELSE( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
+IF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
   ADD_DEFINITIONS( -DHAVE_CONFIG_H -DDEBUG )
   SET(PDDE_RELEASE FALSE)
-ENDIF( CMAKE_BUILD_TYPE MATCHES "[R,r][E,e][L,l][E,e][A,a][S,s][E,e]" )
+ELSE( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
+  ADD_DEFINITIONS( -DHAVE_CONFIG_H )
+  SET(PDDE_RELEASE TRUE)
+ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 
 #------------------------------------------------------------------------------
 # Finding ATLAS
@@ -96,9 +96,9 @@ ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 
 SET( DIST_DIR ${PACKAGE_NAME}-${PACKAGE_VERSION} )
 ADD_CUSTOM_TARGET( dist 
-	COMMAND ln -s . ${DIST_DIR}\; 
-		svn log -r HEAD -q | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >REVISION\;
-		svn list -r HEAD -R --non-interactive | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
+	COMMAND ln -s ${PDDE_SOURCE_DIR} ${DIST_DIR}\; 
+		svn log -r HEAD -q ${PDDE_SOURCE_DIR} | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >REVISION\;
+		svn list -r HEAD -R --non-interactive ${PDDE_SOURCE_DIR} | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
 		echo >>tmp_filelist \"${DIST_DIR}/pdde.spec\"\;
 		tar cjf ${DIST_DIR}.tar.bz2 --no-recursion -h -T tmp_filelist\;

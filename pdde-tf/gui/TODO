@@ -1,7 +1,0 @@
-1. torus screen output formatting
-2. investigate neimark-sacker continuation under Windows
-6. investigate the bifurcation detection
-7. L2norm plotting has to be solved
-8. color (and line type) chooser for plotting
-9. point size choser for plotting. Smaller for the AbsMultipliers.
-10. set up the include directory properly when compiling
