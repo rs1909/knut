@@ -53,9 +53,9 @@ MainWindow::MainWindow(const QString& appDir) :
   QHBoxLayout *getInputFileLayout = new QHBoxLayout;
   QLabel* inputFileLabel = new QLabel("INPUT");
   inputFileLabel->setToolTip(QString("Input file which contains the starting point"));
-  QAction* inputFilePlotAct = new QAction(QIcon(":/res/images/cr22-action-pencil.png"), tr("&Plot"), this);
+  QAction* inputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"), this);
   inputFile = new QLineEdit();
-  QAction* inputFileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
+  QAction* inputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
   QToolButton* getInputFile = new QToolButton();
   QToolButton* getInputFilePlot = new QToolButton();
   getInputFile->setDefaultAction(inputFileAct);
@@ -75,8 +75,8 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* outputFileLabel = new QLabel("OUTPUT");
   outputFileLabel->setToolTip(QString("Output file, which contains the result of computation"));
   outputFile = new QLineEdit();
-  QAction* outputFileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
-  QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr22-action-pencil.png"), tr("&Plot"), this);
+  QAction* outputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
+  QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"), this);
   QToolButton* getOutputFile = new QToolButton();
   QToolButton* getOutputFilePlot = new QToolButton();
   getOutputFile->setDefaultAction(outputFileAct);
@@ -97,8 +97,8 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* sysnameLabel = new QLabel("SYSNAME");
   sysnameLabel->setToolTip(QString("The compiled system definition, e.g., \"sys-problem.so\""));
   sysname = new QLineEdit();
-  QAction* sysdefAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Browse..."), this);
-  QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-build.png"), tr("&Compile..."), this);
+  QAction* sysdefAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
+  QAction* compileAct = new QAction(QIcon(":/res/images/cr16-action-build.png"), tr("&Compile..."), this);
   QToolButton* getSysdef = new QToolButton();
   QToolButton* compile = new QToolButton();
   getSysdef->setDefaultAction(sysdefAct);

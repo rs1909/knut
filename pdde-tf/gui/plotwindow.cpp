@@ -62,7 +62,7 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   matfile = new QLineEdit;
   matfile->setReadOnly(true);
   matfile->setText(fname);
-  QAction *matfileAct = new QAction(QIcon(":/res/images/cr22-action-fileopen.png"), tr("&Open"), this);
+  QAction *matfileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Open"), this);
   QToolButton *matfileButton = new QToolButton();
   matfileButton->setDefaultAction(matfileAct);
   connect(matfileAct, SIGNAL(triggered()), this, SLOT(open()));
@@ -77,12 +77,12 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   QVBoxLayout *dockLayout = new QVBoxLayout;
   QHBoxLayout *buttonsLayout = new QHBoxLayout;
   QWidget     *dockWidget = new QWidget;
-  QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr22-action-eraser.png"), "Remove Selected", this);
+  QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr16-action-eraser.png"), "Remove Selected", this);
   QToolButton *removePlotButton = new QToolButton;
   removePlotButton->setDefaultAction(removePlotAct);
   connect(removePlotAct, SIGNAL(triggered()), this, SLOT(removePlot()));
 
-  QAction     *colorizePlotAct = new QAction(QIcon(":/res/images/cr22-action-colorize.png"), "Change Color", this);
+  QAction     *colorizePlotAct = new QAction(QIcon(":/res/images/cr16-action-colorize.png"), "Change Color", this);
   QToolButton *colorizePlotButton = new QToolButton;
   colorizePlotButton->setDefaultAction(colorizePlotAct);
   connect(colorizePlotAct, SIGNAL(triggered()), this, SLOT(colorizePlot()));
@@ -120,17 +120,17 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   ptlabel->setRange(0, data->getNCols() - 1);
   dim->setRange(0, data->getNDim() - 1);
 
-  QAction *addPlotAct = new QAction(QIcon(":/res/images/cr22-action-add.png"), tr("Add Plot"), this);
+  QAction *addPlotAct = new QAction(QIcon(":/res/images/cr16-action-add.png"), tr("Add Plot"), this);
   QToolButton *addPlotButton = new QToolButton();
   addPlotButton->setDefaultAction(addPlotAct);
   connect(addPlotAct, SIGNAL(triggered()), this, SLOT(addPlot()));
 
-  QAction *clearAllPlotAct = new QAction(QIcon(":/res/images/cr22-action-remove.png"), tr("Clear All"), this);
+  QAction *clearAllPlotAct = new QAction(QIcon(":/res/images/cr16-action-remove.png"), tr("Clear All"), this);
   QToolButton *clearAllPlotButton = new QToolButton();
   clearAllPlotButton->setDefaultAction(clearAllPlotAct);
   connect(clearAllPlotAct, SIGNAL(triggered()), this, SLOT(clearPlot()));
 
-  QAction *printAct = new QAction(QIcon(":/res/images/cr22-action-fileprint.png"), tr("Print"), this);
+  QAction *printAct = new QAction(QIcon(":/res/images/cr16-action-fileprint.png"), tr("Print"), this);
   QToolButton *printButton = new QToolButton();
   printButton->setDefaultAction(printAct);
   connect(printAct, SIGNAL(triggered()), this, SLOT(print()));

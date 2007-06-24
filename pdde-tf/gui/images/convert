@@ -1,0 +1,3 @@
+#!/bin/sh
+for i in *.svg; do inkscape -f $i -e cr16-`echo $i | sed s/'\\.svg'/'\\.png'/g` -h 16; done
+for i in *.svg; do inkscape -f $i -e cr22-`echo $i | sed s/'\\.svg'/'\\.png'/g` -h 22; done
