@@ -838,8 +838,7 @@ int Point::Continue(double ds, bool jacstep)
     colloc.Init(parNu, solNu);
     colloc.Interpolate(solData, solNu);
 
-    if (jacstep) Jacobian(*jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, ds, true);
-    else          Jacobian(*jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, 0.0, true);
+    Jacobian(*jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, 0.0, true);
 
     jac->Solve(*xx, *rhs);
 
@@ -851,14 +850,17 @@ int Point::Continue(double ds, bool jacstep)
     conv = (Dnorm / (1.0 + Xnorm) >= ContEps) || (Rnorm / (1.0 + Xnorm) >= ContEps);
 
     // updating the tangent
-    jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
-    rhs->getV3()(dim3) -= 1.0;
-    jac->Solve(*xx, *rhs);
-    xxDot->getV1() -= xx->getV1();
-    xxDot->getV3() -= xx->getV3();
-    Tnorm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
-    xxDot->getV1() /= Tnorm;
-    xxDot->getV3() /= Tnorm;
+    if (!jacstep)
+    {
+      jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
+      rhs->getV3()(dim3) -= 1.0;
+      jac->Solve(*xx, *rhs);
+      xxDot->getV1() -= xx->getV1();
+      xxDot->getV3() -= xx->getV3();
+      Tnorm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
+      xxDot->getV1() /= Tnorm;
+      xxDot->getV3() /= Tnorm;
+    }
     // end updating tangent
 
   }
