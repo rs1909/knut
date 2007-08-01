@@ -242,6 +242,9 @@ void MThread::run()
           P_MESSAGE("reached minimum stepsize (DSMIN)");
         }
         std::cout.flush();
+        // stop continuation if CP has reached the bounds
+        if (par(params->getCp() - VarPAR0) < params->getCpMin()) break;
+        if (par(params->getCp() - VarPAR0) > params->getCpMax()) break;
       }
     }
     else

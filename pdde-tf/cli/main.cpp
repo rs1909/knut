@@ -244,6 +244,9 @@ int main(int argc, const char** argv)
       pt.Reset(eqn, var);
       pt.setCont(params->getCp() - VarPAR0);
 
+      // if no stability computation then clear the previously computed multipliers
+      if (!(params->getStab())) pt.clearStability();
+
       std::cout << '\n';
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
@@ -324,6 +327,9 @@ int main(int argc, const char** argv)
           P_MESSAGE("No convergence. The minimum arclength step size (DSMIN) has been reached.");
         }
         std::cout.flush();
+        // stop continuation if CP has reached the bounds
+        if (par(params->getCp() - VarPAR0) < params->getCpMin()) break;
+        if (par(params->getCp() - VarPAR0) > params->getCpMax()) break;
       }
     }
     else
