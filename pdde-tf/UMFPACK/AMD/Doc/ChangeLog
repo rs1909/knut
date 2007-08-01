@@ -1,3 +1,25 @@
+May 31, 2007: version 2.2.0
+
+    * port to 64-bit MATLAB
+
+    * Makefile moved from Source/ to Lib/
+
+    * minor changes to printing routines (amd_control.c, amd_info.c)
+
+Dec 12, 2006, version 2.0.4
+
+    * minor MATLAB code cleanup
+
+Nov 29, 2006, version 2.0.3
+
+    * changed MATLAB function name to amd2, so as not to conflict with
+	the now built-in version of AMD in MATLAB (which is the same thing
+	as the AMD here...).
+
+Sept 28, 2006, version 2.0.2
+
+    * #define SIZE_T_MAX not done if already defined (Mac OSX).
+
 Aug 31, 2006:
 
     * trivial change to comments in amd.m

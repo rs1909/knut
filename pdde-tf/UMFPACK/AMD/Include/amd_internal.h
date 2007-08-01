@@ -3,7 +3,7 @@
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/* AMD Version 2.0, Copyright (c) 2006 by Timothy A. Davis,		     */
+/* AMD, Copyright (c) Timothy A. Davis,					     */
 /* Patrick R. Amestoy, and Iain S. Duff.  See ../README.txt for License.     */
 /* email: davis at cise.ufl.edu    CISE Department, Univ. of Florida.        */
 /* web: http://www.cise.ufl.edu/research/sparse/amd                          */
@@ -153,7 +153,9 @@
 #define NULL 0
 
 /* largest value of size_t */
+#ifndef SIZE_T_MAX
 #define SIZE_T_MAX ((size_t) (-1))
+#endif
 
 /* ------------------------------------------------------------------------- */
 /* integer type for AMD: int or UF_long */
