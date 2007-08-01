@@ -689,14 +689,12 @@ void Point::SwitchTFHB(double ds)
 {
   TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);
   Vector QRE(NDIM), QIM(NDIM);
-  tf->SwitchHB(QRE, QIM, colloc, par);
 
-  if (par(NPAR + ParAngle) < 0) par(NPAR + ParAngle) *= -1.0;
-  if (par(NPAR + ParAngle) < M_PI) par(0) *= 2 * M_PI / par(NPAR + ParAngle);
-  else par(0) *= 2 * M_PI / (par(NPAR + ParAngle) - M_PI);
+  par(0) = tf->SwitchHB(QRE, QIM, colloc, par);
   std::cout << "SwitchHOPF: T = " << par(0) << ", angle/2PI = " << par(NPAR + ParAngle) / (2*M_PI) << "\n";
 
 #ifdef DEBUG
+  std::cout << "Printing: neweigenvec\n";
   std::ofstream file("neweigenvec");
   file << std::scientific;
   file.precision(12);

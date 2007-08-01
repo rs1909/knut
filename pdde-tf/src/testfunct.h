@@ -114,8 +114,8 @@ class TestFunctCPLX : public baseTestFunct
                  NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
     inline void Switch(Vector&)
     {}
-    void Switch(Vector& Re, Vector& Im, double& alpha);
-    void SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par);
+    void   Switch(Vector& Re, Vector& Im, double& alpha);
+    double SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par);
 
   private:
     bool        first;

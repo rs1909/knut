@@ -14,6 +14,7 @@
 #include "spmatrix.h"
 #include "hypermatrix.h"
 #include "ncolloc.h"
+#include "pointtype.h"
 
 #ifdef DEBUG
 #include <iomanip>
@@ -339,14 +340,31 @@ void TestFunctCPLX::Switch(Vector& Re, Vector& Im, double& alpha)
   }
 }
 
-void TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
+double TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
 {
-// probably it is not the best point in the profile...
+  // computing the period of the new branch
+  double period = par(0);
+  double angle = par(NPAR + ParAngle);
+  if (par(NPAR + ParAngle) < 0) angle *= -1.0;
+  if (par(NPAR + ParAngle) < M_PI) period *= 2 * M_PI / angle;
+  else period *= 2 * M_PI / (angle - M_PI);
+
+  double norm1 = 0.0;
+  for (int i = 0; i < NDIM; i++)
+  {
+    Re(i) = vv(2 * i);
+    Im(i) = vv(2 * i + 1);
+    if (norm1 < fabs(Re(i))) norm1 = fabs(Re(i));
+  }
+
 #ifdef DEBUG
+  std::cout << "Printing: eigenvec\n";
   std::ofstream file("eigenvec");
   file << std::scientific;
   file.precision(12);
+#endif
 
+  double dist = 0.0;
   for (int i = 0; i < NINT; i++)
   {
     for (int j = 0; j < NDEG + 1; j++)
@@ -354,18 +372,22 @@ void TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector&
       const double t = col.Profile(i, j);
       for (int p = 0; p < NDIM; p++)
       {
+        const double t2 = t*par(0)/period;
+        const double d = vv(2*(p + (j + i*NDEG)*NDIM)) - (cos(2.0 * M_PI * t2) * vv(2 * p) + sin(2.0 * M_PI * t2) * vv(2 * p + 1));
+        if (dist < fabs(d)) dist = fabs(d);
+      #ifdef DEBUG
         file << vv(2*(p + (j + i*NDEG)*NDIM)) << "\t";
+      #endif
       }
+    #ifdef DEBUG
       file << par(0)*t << "\n";
+    #endif
     }
   }
-#endif
+  std::cout << "Distance between the predicted and real critial eigenfunctions: " << dist/norm1 << "\n";
+  if (dist/norm1 > 0.01) std::cout << "*** Warning: it won't be able to switch the branch! ***\n";
 
-  for (int i = 0; i < NDIM; i++)
-  {
-    Re(i) = vv(2 * i);
-    Im(i) = vv(2 * i + 1);
-  }
+  return period;
 }
 
 /// ---------------------------------------------------------
