@@ -146,6 +146,7 @@ class Point
     PtType  testBif();
     PtType  testBifAUT();
     PtType  testBifAUTRot();
+    void    clearStability() { mRe.Clear(); mIm.Clear(); }
 
     void    Plot(GnuPlot& pl);
     inline void    Print(char* file)

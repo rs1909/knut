@@ -154,6 +154,9 @@ void MThread::run()
       emit printToScreen(screenout.str());
       screenout.str("");
 
+      // if no stability computation then clear the previously computed multipliers
+      if (!(params->getStab())) pt.clearStability();
+
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
       const int ithist = 5;
