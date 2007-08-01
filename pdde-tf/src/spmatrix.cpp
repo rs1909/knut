@@ -10,6 +10,8 @@
 #include <iostream>
 #include "spmatrix.h" // itt mar meghivtuk <vector>-t es "matrix.h"-t is
 #include <cmath>
+#include <functional>
+#include <algorithm>
 
 using namespace std;
 
@@ -239,6 +241,18 @@ void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
   }
 }
 
+// for sorting the eigenvalues
+struct eigvalcomp : public std::binary_function<int, int, bool>
+{
+  const double* re;
+  const double* im;
+  eigvalcomp(double *re_, double *im_) : re(re_), im(im_) {}
+  bool operator()(int i, int j)
+  {
+    return re[i]*re[i] + im[i]*im[i] < re[j]*re[j] + im[j]*im[j];
+  }
+};
+
 void StabMatrix::Eigval(Vector& wr, Vector& wi)
 {
   P_ERROR_X1((wr.Size() == wi.Size()) && (wr.Size() > 1), "Real and imaginary vectors are not of the same size.");
@@ -345,11 +359,18 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
       std::cout.flush();
       IPARAM[4] = wr.Size();
     }
+    // sorting eigenvalues;
+    int* sortindex = new int[IPARAM[4]];
+    for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;
+    eigvalcomp aa(DR, DI);
+    std::sort(sortindex, sortindex + IPARAM[4], aa);
+    const int eigstart = wr.Size() - IPARAM[4];
     for (int i = 0; i < IPARAM[4]; i++)
     {
-      wr(i) = DR[i];
-      wi(i) = DI[i];
+      wr(eigstart+i) = DR[sortindex[i]];
+      wi(eigstart+i) = DI[sortindex[i]];
     }
+    delete[] sortindex;
   }
 
   // from the second
