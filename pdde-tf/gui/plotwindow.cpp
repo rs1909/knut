@@ -28,6 +28,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QSplitter>
+#include <QSvgGenerator>
 
 plotWindow::plotWindow(const QString& fname, QWidget *parent) :
     QMainWindow(parent), data(0)
@@ -37,7 +38,7 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   if (!data) return;
   if (data->isTorus()) return;
   //
-  QGraphicsView *plot = new QGraphicsView;
+  plot = new QGraphicsView(this);
   plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
   plot->setScene(&plotdata);
   QWidget *centralWidget = new QWidget;
@@ -135,10 +136,10 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   printButton->setDefaultAction(printAct);
   connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
 
-//  QAction *printPdfAct = new QAction(QIcon(":/res/images/cr22-mime-pdf.png"), tr("Print to Pdf"), this);
-//  QToolButton *printPdfButton = new QToolButton();
-//  printPdfButton->setDefaultAction( printPdfAct );
-//  connect( printPdfAct, SIGNAL(triggered()), this, SLOT(printPdf()) );
+  QAction *exportSvgAct = new QAction(QIcon(":/res/images/cr16-action-svg-export.png"), tr("Export to SVG"), this);
+  QToolButton *exportSvgButton = new QToolButton();
+  exportSvgButton->setDefaultAction( exportSvgAct );
+  connect( exportSvgAct, SIGNAL(triggered()), this, SLOT(exportSvg()) );
 
   QSplitter *splitter = new QSplitter;
   splitter->addWidget(dockWidget);
@@ -159,7 +160,7 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   topLayout->addWidget(addPlotButton, 1, 6);
   topLayout->addWidget(clearAllPlotButton, 1, 7);
   topLayout->addWidget(printButton, 1, 8);
-//  topLayout->addWidget( printPdfButton, 1, 9 );
+  topLayout->addWidget(exportSvgButton, 1, 9 );
 
   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
@@ -263,17 +264,16 @@ void plotWindow::print()
   }
 }
 
-// void plotWindow::printPdf()
-// {
-//  QString fileName = QFileDialog::getSaveFileName(this, "Print to Pdf", "print.pdf", "Pdf files (*.pdf);;All files (*)");
-//  if( !fileName.isEmpty() )
-//  {
-//   QPrinter printer;
-//   printer.setOutputFileName(fileName);
-//   printer.setOutputFormat(QPrinter::PdfFormat);
-//   printer.setFullPage(true);
-//   QPainter painter(&printer);
-//   painter.setRenderHint(QPainter::Antialiasing);
-//   plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
-//  }
-// }
+void plotWindow::exportSvg()
+{
+  QString fileName = QFileDialog::getSaveFileName(this, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
+  if( !fileName.isEmpty() )
+  {
+    QSvgGenerator printer;
+    printer.setFileName(fileName);
+    printer.setSize(plot->sceneRect().size().toSize());
+    QPainter painter(&printer);
+    plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
+    painter.end();
+  }
+}

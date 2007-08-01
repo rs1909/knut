@@ -30,6 +30,7 @@ class plotWindow : public QMainWindow
     // variables
     const mat4Data *data;
     PlotData plotdata;
+    QGraphicsView *plot;
     // gui elements
     QLineEdit *matfile;
     QComboBox *xvar;
@@ -48,5 +49,5 @@ class plotWindow : public QMainWindow
     void removePlot();
     void colorizePlot();
     void print();
-//  void printPdf();
+    void exportSvg();
 };

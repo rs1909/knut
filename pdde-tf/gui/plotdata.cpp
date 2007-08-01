@@ -515,7 +515,8 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, i
       }
       ++xadded;
       ++yadded;
-      addPlotPoint(--Graph.end(), style, 0);
+//       addPlotPoint(--Graph.end(), style, 0);
+      addPlotLine(--Graph.end(), style);
     }
   }
   // add stability
