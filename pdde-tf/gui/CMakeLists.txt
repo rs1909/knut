@@ -34,9 +34,16 @@ TARGET_LINK_LIBRARIES( pdde-gui
 	${QT_QTSVG_LIBRARY}
 	pddelib laarpack umfpack amd cblas atlas ${CMAKE_DL_LIBS} )
 
+QT4_WRAP_CPP( MOC_CONVERT constqtgui.h )
+ADD_EXECUTABLE( cfiletoxml cfiletoxml.cpp constqtgui.cpp constqtgui.h ${MOC_CONVERT} )
+TARGET_LINK_LIBRARIES( cfiletoxml 
+	${QT_QTCORE_LIBRARY}
+	${QT_QTXML_LIBRARY}
+	pddelib laarpack umfpack amd cblas atlas ${CMAKE_DL_LIBS} )
+
 IF(WIN32)
   SET_TARGET_PROPERTIES( pdde-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows pdde_res.o" )
   ADD_CUSTOM_COMMAND( TARGET pdde-gui PRE_LINK COMMAND windres -i pdde.rc -o pdde_res.o --include-dir=. )
 ENDIF(WIN32)
 
-INSTALL( TARGETS pdde-gui DESTINATION ${PDDE_BIN_DIR} )
+INSTALL( TARGETS pdde-gui cfiletoxml DESTINATION ${PDDE_BIN_DIR} )
