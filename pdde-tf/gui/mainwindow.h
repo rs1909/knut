@@ -216,10 +216,8 @@ class MainWindow : public QMainWindow
     void setupCp()
     {
       cp->blockSignals(true);
-      Var cp_tmp = parameters.getCp();
       cp->clear();
       for (int i = 0; i < parameters.cpSize(); ++i) cp->addItem(parameters.cpString(i).c_str());
-      parameters.setCp(cp_tmp);
       cp->blockSignals(false);
     }
     void inputPlot();

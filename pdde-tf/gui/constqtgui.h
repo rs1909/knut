@@ -64,11 +64,6 @@ class NConstantsQtGui : public QObject, public NConstants
       NConstants::setPointTypeIdx(p);
       emit pointTypeChangedIdx(getPointTypeIdx());
     }
-    void setCp(Var v)
-    {
-      NConstants::setCp(v);
-      emit cpChangedIdx(getCpIdx());
-    }
     void setCp(char tp, int n)
     {
       NConstants::setCp(tp, n);

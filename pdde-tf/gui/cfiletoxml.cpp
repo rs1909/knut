@@ -47,6 +47,7 @@ int main(int argc, const char** argv)
   if (constFile)
   {
     params.loadFile(std::string(constFile));
+//     params.printFile(std::cout);
     if (inFile) params.setInputFileText(std::string(inFile));
     if (outFile) params.setOutputFileText(std::string(outFile));
     if (xmlFile) params.saveXmlFile(std::string(xmlFile));

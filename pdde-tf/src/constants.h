@@ -251,7 +251,7 @@ class NConstants
 {
   public:
 
-    NConstants() : label(0), pttype(SolUser), cp(VarPAR0), cpMap(0, false), branchsw(NOSwitch),
+    NConstants() : label(0), pttype(SolUser), cptype('P'), cpnum(0), cpMap(0, false), branchsw(NOSwitch),
         neqns(0), parxMap(0, false), varsMap(0, true), nint(0), ndeg(0), nmul(0),
         stab(0), nmat(0), nint1(0), nint2(0), ndeg1(0), ndeg2(0), steps(0), iad(0),
         cpMin(0.0), cpMax(0.0), ds(0.0), dsMin(0.0), dsMax(0.0), dsStart(0.0),
@@ -260,7 +260,7 @@ class NConstants
     {  }
 
     NConstants(const NConstants& ct) : inputFile(ct.inputFile), outputFile(ct.outputFile), sysname(ct.sysname),
-        label(ct.label), pttype(ct.pttype), cp(ct.cp), cpMap(ct.npar, false),
+        label(ct.label), pttype(ct.pttype), cptype(ct.cptype), cpnum(ct.cpnum), cpMap(ct.npar, false),
         branchsw(ct.branchsw), neqns(ct.neqns), parxtype(ct.parxtype), parxnum(ct.parxnum), parxMap(ct.npar, false),
         eqnstype(ct.eqnstype), eqnsnum(ct.eqnsnum), varstype(ct.varstype), varsnum(ct.varsnum), varsMap(ct.npar, true),
         nint(ct.nint), ndeg(ct.ndeg), nmul(ct.nmul), stab(ct.stab), nmat(ct.nmat),
@@ -309,19 +309,19 @@ class NConstants
     }
     Var  getCp() const
     {
-      return cp;
+      return cpMap.fromTypeNum(cptype,cpnum);
     }
     char getCpType() const
     {
-      return cpMap.getType(cpMap.indexof(cp));
+      return cptype;
     }
     int  getCpNum() const
     {
-      return cpMap.getNum(cpMap.indexof(cp));
+      return cpnum;
     }
     int  getCpIdx() const
     {
-      return cpMap.indexof(cp);
+      return cpMap.indexof(cpMap.fromTypeNum(cptype,cpnum));
     }
     int  getBranchSW() const
     {
@@ -335,7 +335,6 @@ class NConstants
     {
       return neqns;
     }
-//   void getParX( std::vector<Var>& p ) const { p = parx; }
     Var  getParX(int i) const
     {
       return parxMap.fromTypeNum(parxtype[i], parxnum[i]);
@@ -348,7 +347,6 @@ class NConstants
     {
       return parxnum[i];
     }
-//   void getEqns( std::vector<Eqn>& e ) const { e = eqns; }
     Eqn  getEqns(int i) const
     {
       if (eqnstype[i] == 'E') return(Eqn)eqnsnum[i];
@@ -362,7 +360,6 @@ class NConstants
     {
       return  eqnsnum[i];
     }
-//   void getVars( std::vector<Var>& v ) const { v = vars; }
     Var  getVars(int i) const
     {
       return varsMap.fromTypeNum(varstype[i], varsnum[i]);
@@ -496,6 +493,7 @@ class NConstants
       return ndim;
     }
 
+    // Here 'i' is the index in the ComboBox
     const std::string& pointString(int i)
     {
       return pointMap.string(i);
@@ -612,17 +610,15 @@ class NConstants
     {
       pttype = pointMap.getkey(p);
     }
-    virtual void setCp(Var v)
-    {
-      cp = v;
-    }
     virtual void setCp(char tp, int n)
     {
-      cp = cpMap.fromTypeNum(tp, n);
+      cptype = tp;
+      cpnum = n;
     }
     virtual void setCpIdx(int i)
     {
-      cp = cpMap.getkey(i);
+      cptype = cpMap.getType(i);
+      cpnum = cpMap.getNum(i);
     }
     virtual void setBranchSW(BranchSW i)
     {
@@ -729,47 +725,38 @@ class NConstants
     {
       cpMin = d;
     }
-//   virtual void setCpMin( const std::string& d ) { setCpMin(atof(d.c_str())); }
     virtual void setCpMax(double d)
     {
       cpMax = d;
     }
-//   virtual void setCpMax( const std::string& d ) { setCpMax(atof(d.c_str())); }
     virtual void setDs(double d)
     {
       ds = d;
     }
-//   virtual void setDs( const std::string& d ) { setDs(atof(d.c_str())); }
     virtual void setDsMin(double d)
     {
       dsMin = d;
     }
-//   virtual void setDsMin( const std::string& d ) { setDsMin(atof(d.c_str())); }
     virtual void setDsMax(double d)
     {
       dsMax = d;
     }
-//   virtual void setDsMax( const std::string& d ) { setDsMax(atof(d.c_str())); }
     virtual void setDsStart(double d)
     {
       dsStart = d;
     }
-//   virtual void setDsStart( const std::string& d ) { setDsStart(atof(d.c_str())); }
     virtual void setEpsC(double d)
     {
       epsC = d;
     }
-//   virtual void setEpsC( const std::string& d  ) { setEpsC(atof(d.c_str())); }
     virtual void setEpsR(double d)
     {
       epsR = d;
     }
-//   virtual void setEpsR( const std::string& d ) { setEpsR(atof(d.c_str())); }
     virtual void setEpsK(double d)
     {
       epsK = d;
     }
-//   virtual void setEpsK( const std::string& d ) { setEpsK(atof(d.c_str())); }
     virtual void setNItC(int i)
     {
       nitC = i;
@@ -810,7 +797,8 @@ class NConstants
     int          label;
     PtType       pttype;
     PointType    pointMap;
-    Var          cp;
+    char         cptype;
+    int          cpnum;
     VarType      cpMap;
     BranchSW     branchsw;
     brswType     branchswMap;
