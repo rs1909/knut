@@ -18,7 +18,7 @@
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>350</steps>
+ <steps>200</steps>
  <iad>0</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>

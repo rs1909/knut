@@ -3,7 +3,7 @@
  <input>out-start-a.mat</input>
  <output>out-nssw-a.mat</output>
  <sysname>sys-traffic3cars.so</sysname>
- <label>49</label>
+ <label>48</label>
  <pointtype>56</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
@@ -24,17 +24,17 @@
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>1500</steps>
+ <steps>80</steps>
  <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>0.010000</ds>
- <dsmin>0.001000</dsmin>
- <dsmax>0.001</dsmax>
- <dsstart>0.000200</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000010</epsk>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>0.002</ds>
+ <dsmin>0.001</dsmin>
+ <dsmax>0.08</dsmax>
+ <dsstart>0.0005</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-05</epsk>
  <nitc>22</nitc>
  <nitr>22</nitr>
  <nitk>22</nitk>

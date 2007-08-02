@@ -15,7 +15,7 @@
    <num>0</num>
   </par>
  </parx>
- <nint>40</nint>
+ <nint>80</nint>
  <ndeg>5</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
@@ -28,10 +28,10 @@
  <iad>3</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>
- <ds>0.001</ds>
- <dsmin>0.001</dsmin>
+ <ds>0.0001</ds>
+ <dsmin>0.0001</dsmin>
  <dsmax>0.005</dsmax>
- <dsstart>0.001</dsstart>
+ <dsstart>0.0001</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
  <epsk>1e-06</epsk>

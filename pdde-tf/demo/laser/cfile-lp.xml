@@ -45,9 +45,9 @@
    <num>2</num>
   </var>
  </vars>
- <nint>40</nint>
- <ndeg>4</ndeg>
- <nmul>8</nmul>
+ <nint>20</nint>
+ <ndeg>5</ndeg>
+ <nmul>20</nmul>
  <stab>0</stab>
  <nmat>22</nmat>
  <nint1>12</nint1>
@@ -64,7 +64,7 @@
  <dsstart>0.0001</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
- <epsk>0</epsk>
+ <epsk>1e-07</epsk>
  <nitc>24</nitc>
  <nitr>24</nitr>
  <nitk>24</nitk>

@@ -3,7 +3,7 @@
  <input>out-start.mat</input>
  <output>out-nssw.mat</output>
  <sysname>sys-turntwo.so</sysname>
- <label>15</label>
+ <label>17</label>
  <pointtype>56</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
@@ -26,15 +26,15 @@
  <ndeg2>4</ndeg2>
  <steps>500</steps>
  <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.001000</ds>
- <dsmin>0.000100</dsmin>
- <dsmax>0.010000</dsmax>
- <dsstart>-0.001000</dsstart>
- <epsc>0.000100</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000001</epsk>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.001</ds>
+ <dsmin>0.0001</dsmin>
+ <dsmax>0.01</dsmax>
+ <dsstart>-0.001</dsstart>
+ <epsc>0.0001</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
  <nitc>22</nitc>
  <nitr>22</nitr>
  <nitk>22</nitk>

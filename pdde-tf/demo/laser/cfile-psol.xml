@@ -53,7 +53,7 @@
  <ds>0.02</ds>
  <dsmin>0.002</dsmin>
  <dsmax>0.02</dsmax>
- <dsstart>0.02</dsstart>
+ <dsstart>0.002</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
  <epsk>1e-06</epsk>

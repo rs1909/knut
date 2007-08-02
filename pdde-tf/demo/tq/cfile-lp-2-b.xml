@@ -1,6 +1,6 @@
 <!DOCTYPE cfile>
 <pdde>
- <input>out-pdsw-2.mat</input>
+ <input>out-pdsw-1.mat</input>
  <output>out-lp-2-b.mat</output>
  <sysname>sys-tq.so</sysname>
  <label>66</label>
@@ -25,7 +25,7 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>2000</steps>
- <iad>0</iad>
+ <iad>3</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>
  <ds>-0.001</ds>

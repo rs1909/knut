@@ -3,7 +3,7 @@
  <input>out-pdsw-1.mat</input>
  <output>out-lp-1-a.mat</output>
  <sysname>sys-tq.so</sysname>
- <label>70</label>
+ <label>71</label>
  <pointtype>41</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
@@ -25,7 +25,7 @@
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>650</steps>
- <iad>0</iad>
+ <iad>3</iad>
  <cpmin>-100</cpmin>
  <cpmax>100</cpmax>
  <ds>0.005</ds>

@@ -3,7 +3,7 @@
  <input>out-start.mat</input>
  <output>out-ns.mat</output>
  <sysname>sys-turn.so</sysname>
- <label>8</label>
+ <label>15</label>
  <pointtype>43</pointtype>
  <cptype>P</cptype>
  <cpnum>2</cpnum>
@@ -26,15 +26,15 @@
  <ndeg2>4</ndeg2>
  <steps>300</steps>
  <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.020000</ds>
- <dsmin>0.000100</dsmin>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.02</ds>
+ <dsmin>0.0001</dsmin>
  <dsmax>0.02</dsmax>
- <dsstart>-0.020000</dsstart>
- <epsc>0.000010</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000001</epsk>
+ <dsstart>-0.02</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
  <nitc>22</nitc>
  <nitr>22</nitr>
  <nitk>22</nitk>

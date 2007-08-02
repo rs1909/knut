@@ -72,7 +72,7 @@
  <dsstart>0.0001</dsstart>
  <epsc>1e-05</epsc>
  <epsr>1e-05</epsr>
- <epsk>1e-06</epsk>
+ <epsk>1e-07</epsk>
  <nitc>24</nitc>
  <nitr>24</nitr>
  <nitk>24</nitk>
