@@ -373,7 +373,8 @@ void PlotData::dataToGraphics()
   PlotPaint();
 }
 
-bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int dim, const char* style)
+bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, 
+  int pt, int dim, const char* style, const char* stabstyle)
 {
   int xadded = 0;
   int yadded = 0;
@@ -381,7 +382,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, i
   int startnumber = 0;
   if (Graph.begin() != Graph.end()) startnumber = Graph.rbegin()->number;
   // mindig az Y utan kovetkezik csak addPlot...()
-  if (x >= XParameter0)
+  if (x >= XParameter0 && y != YAbsMultiplier && y != YProfile)
   {
     Graph.push_back(PlotItem());
     Graph.rbegin()->x.Init(data->getNPoints());
@@ -501,7 +502,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, i
     ++yadded;
     addPlotPoint(--Graph.end(), style, 1);
   }
-  if (x == XLabel && y == YAbsMultiplier)
+  if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
     for (int r = 0; r < data->getNMul(); r++)
     {
@@ -510,7 +511,8 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, i
       Graph.rbegin()->y.Init(data->getNPoints());
       for (int i = 0; i < data->getNPoints(); i++)
       {
-        Graph.rbegin()->x(i) = i;
+        if (x >= XParameter0) Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
+        else Graph.rbegin()->x(i) = i;
         Graph.rbegin()->y(i) = sqrt(data->getMulRe(i, r) * data->getMulRe(i, r) + data->getMulIm(i, r) * data->getMulIm(i, r));
       }
       ++xadded;
@@ -545,10 +547,11 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, i
         Graph.rbegin()->x.Init(1);
         Graph.rbegin()->y.Init(1);
         Graph.rbegin()->x(0) = (it->x(bifidx[i] - 1) + it->x(bifidx[i])) / 2.0;
-        Graph.rbegin()->y(0) = (it->y(bifidx[i] - 1) + it->y(bifidx[i])) / 2.0;
+        if (y == YAbsMultiplier) Graph.rbegin()->y(0) = 1.0;
+        else Graph.rbegin()->y(0) = (it->y(bifidx[i] - 1) + it->y(bifidx[i])) / 2.0;
         ++xadded;
         ++yadded;
-        addPlotPoint(--Graph.end(), style, biftype[i]);
+        addPlotPoint(--Graph.end(), stabstyle, biftype[i]);
       }
     }
   }

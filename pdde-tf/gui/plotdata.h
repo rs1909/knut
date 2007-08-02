@@ -114,7 +114,9 @@ class PlotData : public QGraphicsScene
     ~PlotData();
     void makeBox();
     void PlotPaint();
-    bool addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, int pt, int d, const char* style);
+    bool addPlot(const mat4Data* data, 
+      PlotXVariable x, PlotYVariable y, int pt, int dim,
+      const char* style, const char* stabstyle);
     void clearAll();
     void clear(int n);
     int  nplots();

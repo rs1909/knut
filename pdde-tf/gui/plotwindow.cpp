@@ -212,7 +212,7 @@ void plotWindow::addPlot()
       try
       {
         added = plotdata.addPlot(data, (PlotXVariable)xvar->currentIndex(),
-                                 (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "r");
+                                 (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b", "r");
       }
       catch (pddeException ex)
       {
