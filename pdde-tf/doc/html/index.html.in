@@ -92,6 +92,9 @@ The required ATLAS linear algebra library is available for different platforms i
 <tr>
 <td>Solaris, UltraSparc II and newer </td> <td> <a href="atlas3.5.0beta_SunOS_SunUS2_2.tar.gz"> atlas3.5.0beta_SunOS_SunUS2_2.tar.gz  </a> </td>
 </tr>
+<tr>
+<td>Linux Itanium 2 </td> <td> <a href="atlas3.7.33-Linux_IA64.tar.gz">
+atlas3.7.33-Linux_IA64.tar.gz </a> </td> </tr>
 </table>
 </p><p />
 
@@ -122,7 +125,7 @@ SIAM Journal on Scientific Computing, 28(4):1301-1317, 2006.
 
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
-<td width="50%">Copyright &copy; 2005, 2006 <a href="http://seis.bris.ac.uk/~rs1909">Robert Szalai</a></td>
+<td width="50%">Copyright &copy; 2005, 2006, 2007 <a href="http://seis.bris.ac.uk/~rs1909">Robert Szalai</a></td>
 <td width="50%" align="right"><div align="right">PDDE-CONT @PACKAGE_VERSION@</div></td>
 </tr></table></div></address>
 </p>

@@ -178,7 +178,7 @@ void MThread::run()
         }
         itpos = (itpos + 1) % ithist;
         //
-        it(itpos) = pt.Continue(ds, (i == 0) && (params->getBranchSW() == TFHBSwitch));
+        it(itpos) = pt.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
         //
         if (params->getStab()) pt.Stability();
         ustabprev = ustab;
