@@ -2,17 +2,18 @@ SET( NAME milloneup )
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
+SET( CFILEDIR ${PDDE_SOURCE_DIR}/demo/${NAME} )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL( FILES sys-${NAME}.cpp 
-    cfile-start cfile-ns cfile-tr
-    cfile-start.xml cfile-ns.xml cfile-tr.xml DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
+INSTALL( FILES sys-${NAME}.cpp
+	cfile-start     cfile-ns     cfile-tr
+	cfile-start.xml cfile-ns.xml cfile-tr.xml
+	DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
-ADD_CUSTOM_TARGET( ${NAME}-test
-    COMMAND pdde -c cfile-start -o out-start.mat -b br-start \;
-	pdde -c cfile-ns -i out-start.mat -o out-ns.mat -b br-ns )
-	
-ADD_CUSTOM_TARGET( ${NAME}-test-tr
-    COMMAND pdde -c cfile-tr -i out-start.mat -o out-tr.mat -b br-tr )
+ADD_CUSTOM_TARGET( ${NAME}-test-1
+	COMMAND pdde -c ${CFILEDIR}/cfile-start -o out-start.mat -b out-start.br )
+ADD_CUSTOM_TARGET( ${NAME}-test-2
+	COMMAND pdde -c ${CFILEDIR}/cfile-ns -i out-start.mat -o out-ns.mat -b out-ns.br )
+ADD_CUSTOM_TARGET( ${NAME}-test-3
+	COMMAND pdde -c ${CFILEDIR}/cfile-tr -i out-start.mat -o out-tr.mat -b out-tr.br )
 
-ADD_DEPENDENCIES( ${NAME}-test ${NAME} )
-ADD_DEPENDENCIES( ${NAME}-test-tr ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
