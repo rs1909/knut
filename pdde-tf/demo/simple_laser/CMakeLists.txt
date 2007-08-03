@@ -5,7 +5,8 @@ ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET( CFILEDIR ${PDDE_SOURCE_DIR}/demo/${NAME} )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL( FILES sys-${NAME}.cpp
-    cfile-start cfile-hbsw cfile-hbct
+    cfile-start     cfile-hbsw     cfile-hbct
+    cfile-start.xml cfile-hbsw.xml cfile-hbct.xml
     DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-1
