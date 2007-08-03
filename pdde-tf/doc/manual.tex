@@ -17,21 +17,21 @@
 \def\pdde{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
 
 
-\def\iconAdd{\includegraphics[scale=0.5]{fig/r22-action-add.eps}}
-\def\iconEraser{\includegraphics[scale=0.5]{fig/cr22-action-eraser.eps}}
-\def\iconPrint{\includegraphics[scale=0.5]{fig/cr22-action-fileprint.eps}}
-\def\iconRun{\includegraphics[scale=0.5]{fig/cr22-action-launch.eps}}
-\def\iconStop{\includegraphics[scale=0.5]{fig/cr22-action-stop.eps}}
-\def\iconBuild{\includegraphics[scale=0.5]{fig/cr22-action-build.eps}}
-\def\iconExit{\includegraphics[scale=0.5]{fig/cr22-action-exit.eps}}
-\def\iconSaveAs{\includegraphics[scale=0.5]{fig/cr22-action-filesaveas.eps}}
-\def\iconPencil{\includegraphics[scale=0.5]{fig/cr22-action-pencil.eps}}
-\def\iconText{\includegraphics[scale=0.5]{fig/cr22-action-view_text.eps}}
-\def\iconColorize{\includegraphics[scale=0.5]{fig/cr22-action-colorize.eps}}
-\def\iconOpen{\includegraphics[scale=0.5]{fig/cr22-action-fileopen.eps}}
-\def\iconSave{\includegraphics[scale=0.5]{fig/cr22-action-filesave.eps}}
-\def\iconRemove{\includegraphics[scale=0.5]{fig/cr22-action-remove.eps}}
-\def\iconPdf{\includegraphics[scale=0.5]{fig/cr22-mime-pdf.eps}}
+%\def\iconAdd{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-add}}
+%\def\iconEraser{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-eraser}}
+%\def\iconPrint{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileprint}}
+\def\iconRun{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-launch}}
+\def\iconStop{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-stop}}
+\def\iconBuild{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-build}}
+%\def\iconExit{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-exit}}
+\def\iconSaveAs{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesaveas}}
+\def\iconPencil{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-pencil}}
+\def\iconText{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-view_text}}
+%\def\iconColorize{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-colorize}}
+\def\iconOpen{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileopen}}
+\def\iconSave{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesave}}
+%\def\iconRemove{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-remove}}
+\def\iconSvg{\includegraphics[height=0.8\baselineskip]{fig/cr32-svg-export}}
 
 \begin{document}
 \lstset{language=C++,tabsize=3,columns=flexible,breaklines=true,escapechar=\%}
@@ -41,9 +41,9 @@
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.1.2}
+\newcommand{\pddever}{1.1.3}
 \version{\pddever}
-\date{9 December 2006}
+\date{3 August 2007}
 \maketitle
 
 \begin{center}
@@ -114,13 +114,13 @@ bifurcations are minimally extended and use test-functionals. Moreover, a
 limited number of codimension-two bifurcations can be continued, when two
 different test-functionals are selected.
 
-Fixed points of autonomous systems can also be continued as constant periodic
+Equilibria of autonomous systems can also be continued as constant periodic
 orbits with fixed period. In this case the Hopf bifurcation is detected as
 Neimark-Sacker bifurcation, and the periodic solution, emanating from the Hopf
 point, can be continued by switching to the periodic solution branch.
-Although, continuing fixed points in this way is very inefficient, it might help
+Although, continuing equilibria in this way is very inefficient, it might help
 in avoiding the hassle of producing starting points using some other numerical
-package like DDE-BIFTOOL \cite{DDEBIF} or by simulation.
+package like DDE-BIFTOOL \cite{DDEBIF} or simulation.
 
 \section{Installation}
 
@@ -144,8 +144,8 @@ pre-compiled versions, which contain the necessary files (\filef{libatlas.a} and
 in the \filef{ATLAS/lib} subdirectory of the source tree, \filef{/usr/lib}, \filef{/usr/lib/atlas} 
 and some additional directories in this order.
 
-The (optional) graphical user interface requires the Qt\footnote{\url{www.trolltech.com}} 
-toolkit (version 4.2). CMake looks for the \filef{qmake} utility to find the Qt
+The (optional) graphical user interface requires the Qt\footnote{\url{http://www.trolltech.com}} 
+toolkit (version 4.3). CMake looks for the \filef{qmake} utility to find the Qt
 installation, so make sure that \filef{qmake} is in your \filef{\$PATH}.
 
 On Unix and Linux systems the \filef{pcompile} script uses
@@ -157,16 +157,16 @@ The software comes in a compressed source archive form
 \filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be uncompressed first into a
 convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
-$ bzip2 -d pdde-cont-%\@version%.tar.bz2
-$ tar xvf pdde-cont-%\@version%.tar
+$ bzip2 -d pdde-cont-%\pddever%.tar.bz2
+$ tar xvf pdde-cont-%\pddever%.tar
 \end{lstlisting} \end{quote} } \noindent
 The second step is to copy the compiled ATLAS library files (\filef{libatlas.a}
 and \filef{libcblas.a}) into the
-\filef{pdde-cont-\@version/ATLAS/lib} subdirectory.
+\filef{pdde-cont-\pddever/ATLAS/lib} subdirectory.
 
 Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ cd pdde-cont-%\@version%
+$ cd pdde-cont-%\pddever%
 $ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
 This configures and builds software after which it installs into the
@@ -196,9 +196,9 @@ compiler and the GNU make utility, the other components are not required.
 Installing from source requires more effort. Four other pieces of software has
 to be downloaded and installed:
 \begin{itemize}
-\item[-] MinGW v.\ 5.0.3 or newer as described above,
-\item[-] CMake v.\ 2.4.3 or newer from \url{http://www.cmake.org},
-\item[-] Qt v.\ 4.2.0 or newer from
+\item[-] MinGW v.\ 5.1.3 or newer as described above,
+\item[-] CMake v.\ 2.4.6 or newer from \url{http://www.cmake.org},
+\item[-] Qt v.\ 4.3.0 or newer from
 \url{http://www.trolltech.com/developer/downloads/qt/windows} (optional, but strongly recommended),
 \item[-] and the ATLAS library.
 \end{itemize}
@@ -241,7 +241,7 @@ $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -v
-This is pdde-cont version 1.1.1 (r262 2006-10-03 03:08:22 +0100)
+This is pdde-cont version 1.1.3 (r330 2007-08-02 02:26:31 +0100)
 \end{lstlisting} \end{quote} } \noindent
 
 
@@ -412,7 +412,7 @@ If \funp{IAD}=0, no mesh adaptation will be performed. The recommended value is 
 although in some cases it might be necessary to turn off the mesh adaptation.
 %
 \item[\funp{CPMIN}, \funp{CPMAX}] ~\\
-Currently not referenced, just write two numbers.
+These are the minimal and maximal values of the continuation parameter. The continuation stops if one them is reached.
 %
 \item[\funp{DS}] ~\\
 Starting value of the stepsize in the pseudo-arclength continuation.
@@ -425,10 +425,10 @@ the continuation is stopped.
 The minimum and maximum value of \funp{DS}.
 %
 \item[\funp{DSSTART}] ~\\
-Used when branch switching is specified from fixed points to periodic solutions
+Used when branch switching is specified from equilibria to periodic solutions
 or from periodic solutions to quasi-periodic tori. The initial solution is
 approximated linearly, by adding the unit norm tangent of the new branch
-multiplied by \funp{DSSTART} to the fixed point or periodic solution.
+multiplied by \funp{DSSTART} to the equilibrium or periodic solution.
 %
 \item[\funp{EPSC}] ~\\
 Tolerance of convergence to a periodic solution during continuation. For
@@ -514,8 +514,8 @@ necessary.
 \item[\funp{E64} -] Test functional of fold bifurcation in forced systems.
 \item[\funp{E65} -] Test functional of period doubling bifurcation.
 \item[\funp{E66} -] Test functional of fold bifurcation in autonomous systems.
-%\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
-%with symmetry. Note: It is working only if the period is not continued.
+\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
+with symmetry. This is an experimental feature, probaly will not work.
 \item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker
 bifurcation.
 \item[\funp{E69} -] Imaginary part of the complex test functional for
@@ -613,72 +613,72 @@ To export results out of DDE-BIFTOOL and produce a \pdde{} MAT file, issue the c
 where \funp{NMUL} is the same number as in the constants file where the exported data 
 will be used as a starting solution.
 
-\subsection{Structure of the ASCII input/output file}
-[Note: This section is no longer valid, because ASCII output files are not used anymore.]
-
-The output file contains all the computed information of a periodic solution 
-branch. Also, this file can be used to restart the continuation from a point 
-on a branch. The above defined restart \funp{LABEL} refers 
-to the number of a line in this file. The structure of a line is described 
-in Table \ref{iostruct}.
-\begin{table}
-\begin{tabular}{|c|c|l|}
-\hline
-Starting & Length & Content\\
-Column & & \\
-\hline
-1             & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NPAR}, the
-number of parameters plus the number of internal parameters, which is 3.
-\end{minipage}\\
-\hline
-2             & \funp{NPAR} & Values of parameters\\
-\hline
-\funp{NPAR}+2  & 1       & \funp{NMUL}: number of Floquet multipliers\\
-\hline
-\funp{NPAR}+3  & $2\times$\funp{NMUL} & \begin{minipage}[c]{0.5\linewidth} The
-Floquet multipliers. ( Re($\lambda_1$), Im($\lambda_1$), ...,
-Re($\lambda_{NMUL}$), Im($\lambda_{NMUL}$) ) \end{minipage} \\
-\hline
-\funp{NPAR}+$2\times$\funp{NMUL}+3
-              & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NDIM}:
-dimesion of the right-hand-side function $f$ \end{minipage}\\
-\hline
-\funp{NPAR}+$2\times$\funp{NMUL}+4 & 1       & \funp{NINT}: number of
-collocation intervals\\
-\hline
-\funp{NPAR}+$2\times$\funp{NMUL}+5 & 1       & \funp{NDEG}: degree of
-collocational polynomials\\
-\hline
-\funp{NPAR}+$2\times$\funp{NMUL}+6 & \funp{NINT}$\times$\funp{NDEG}+1 & Mesh of
-the $[0,1]$ interval. \\
-\hline
-\begin{minipage}{0.2\linewidth} \begin{center}
-\funp{NPAR}+$2\times$\funp{NMUL}+\\
-\funp{NINT}$\times$\funp{NDEG}+7
-\end{center} \end{minipage} & 
-\funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) & 
-\begin{minipage}[c]{0.5\linewidth} The solution profile, a sequence of
-\funp{NDIM}-tuples \end{minipage} \\
-\hline
-\end{tabular}
-\caption{The structure of a line in the ASCII input/output files.}
-\label{iostruct}
-\end{table}
-
-It is possible to convert the solution profile from DDE-BIFTOOL to this format
-and back. For this use the matlab scripts \filef{dde2pdde.m} or
-\filef{pdde2dde.m} in the \filef{matlab} subdirectory in the following way.
-Assume that there is branch of periodic solutions (\funp{psbr}). This branch can
-be exported using the command
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
->> dde2pdde( 'output-file', psbr.point, NMUL );
-\end{lstlisting} \end{quote} } \noindent
-Here, \funp{NMUL} is the same number what is specified in the constants file
-under the same name.
-Similarly, the results can be converted back into DDE-BIFTOOL using the command
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
->> psbr.point = pdde2dde( 'output-file' );
-\end{lstlisting} \end{quote} } \noindent
+% \subsection{Structure of the ASCII input/output file}
+% [Note: This section is no longer valid, because ASCII output files are not used anymore.]
+% 
+% The output file contains all the computed information of a periodic solution 
+% branch. Also, this file can be used to restart the continuation from a point 
+% on a branch. The above defined restart \funp{LABEL} refers 
+% to the number of a line in this file. The structure of a line is described 
+% in Table \ref{iostruct}.
+% \begin{table}
+% \begin{tabular}{|c|c|l|}
+% \hline
+% Starting & Length & Content\\
+% Column & & \\
+% \hline
+% 1             & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NPAR}, the
+% number of parameters plus the number of internal parameters, which is 3.
+% \end{minipage}\\
+% \hline
+% 2             & \funp{NPAR} & Values of parameters\\
+% \hline
+% \funp{NPAR}+2  & 1       & \funp{NMUL}: number of Floquet multipliers\\
+% \hline
+% \funp{NPAR}+3  & $2\times$\funp{NMUL} & \begin{minipage}[c]{0.5\linewidth} The
+% Floquet multipliers. ( Re($\lambda_1$), Im($\lambda_1$), ...,
+% Re($\lambda_{NMUL}$), Im($\lambda_{NMUL}$) ) \end{minipage} \\
+% \hline
+% \funp{NPAR}+$2\times$\funp{NMUL}+3
+%               & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NDIM}:
+% dimesion of the right-hand-side function $f$ \end{minipage}\\
+% \hline
+% \funp{NPAR}+$2\times$\funp{NMUL}+4 & 1       & \funp{NINT}: number of
+% collocation intervals\\
+% \hline
+% \funp{NPAR}+$2\times$\funp{NMUL}+5 & 1       & \funp{NDEG}: degree of
+% collocational polynomials\\
+% \hline
+% \funp{NPAR}+$2\times$\funp{NMUL}+6 & \funp{NINT}$\times$\funp{NDEG}+1 & Mesh of
+% the $[0,1]$ interval. \\
+% \hline
+% \begin{minipage}{0.2\linewidth} \begin{center}
+% \funp{NPAR}+$2\times$\funp{NMUL}+\\
+% \funp{NINT}$\times$\funp{NDEG}+7
+% \end{center} \end{minipage} & 
+% \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) & 
+% \begin{minipage}[c]{0.5\linewidth} The solution profile, a sequence of
+% \funp{NDIM}-tuples \end{minipage} \\
+% \hline
+% \end{tabular}
+% \caption{The structure of a line in the ASCII input/output files.}
+% \label{iostruct}
+% \end{table}
+% 
+% It is possible to convert the solution profile from DDE-BIFTOOL to this format
+% and back. For this use the matlab scripts \filef{dde2pdde.m} or
+% \filef{pdde2dde.m} in the \filef{matlab} subdirectory in the following way.
+% Assume that there is branch of periodic solutions (\funp{psbr}). This branch can
+% be exported using the command
+% { \small \begin{quote} \begin{lstlisting}[frame=single]
+% >> dde2pdde( 'output-file', psbr.point, NMUL );
+% \end{lstlisting} \end{quote} } \noindent
+% Here, \funp{NMUL} is the same number what is specified in the constants file
+% under the same name.
+% Similarly, the results can be converted back into DDE-BIFTOOL using the command
+% { \small \begin{quote} \begin{lstlisting}[frame=single]
+% >> psbr.point = pdde2dde( 'output-file' );
+% \end{lstlisting} \end{quote} } \noindent
 
 \subsection{Defining an equation}
 
@@ -1156,7 +1156,7 @@ $ pdde -c cfile-pdbif -i in-start
 The period doubling curve can be seen in Fig.\ \ref{pdbif}.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.6]{fig/pdbif2.eps}
+\includegraphics[scale=0.6]{fig/pdbif2}
 \end{center}
 \caption{Period doubling bifurcation curve of the period-1 solution.}
 \label{pdbif}
@@ -1172,7 +1172,7 @@ sys-glass.so            SYSNAME
 %
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.6]{fig/pdsw.eps}
+\includegraphics[scale=0.6]{fig/pdsw}
 \end{center}
 \caption{The period-2 branch. Period doublings are denoted by $\times$, while
 $\circ$ refers to fold bifurcation. }
@@ -1185,7 +1185,7 @@ bifurcation diagram can be seen in Fig.\ \ref{pdfold}, which shows the
 complicated orbit structure.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.6,angle=270]{fig/fold3d-2.eps}
+\includegraphics[scale=0.6]{fig/fold3d-2}
 \end{center}
 \caption{Fold bifurcations of the period-2 orbits. Black curves are periodic
 solutions continued along $b=$ constant lines. Red curves refer to fold
@@ -1221,7 +1221,7 @@ either using the \filef{Save} \iconSave{} button or the \filef{Save As...}
 \iconSaveAs{} menu item in the \filef{File} menu.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.5]{fig/mainwindow.eps}
+\includegraphics[scale=0.5]{fig/mainwindow-anno}
 \caption{The main window of the software.}
 \label{mainwindow}
 \end{center}
@@ -1307,7 +1307,7 @@ will pop up the text window (see Fig.\ \ref{textwindow}) that constains almost
 the same output as the terminal output of the CLI.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.5]{fig/textwindow.eps}
+\includegraphics[scale=0.5]{fig/textwindow}
 \caption{Textual output view.}
 \label{textwindow}
 \end{center}
@@ -1321,7 +1321,7 @@ possible to plot the results in the middle of a computation. On Linux it is not
 a restriction.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.5]{fig/plotwindow.eps}
+\includegraphics[scale=0.5]{fig/plotwindow-anno}
 \caption{Plotting window.}
 \label{plotwindow}
 \end{center}
@@ -1360,7 +1360,7 @@ the author of any
 publication containing results obtained using \pdde{} or any of its modified
 version is required to refer to the present User's Manual.
 \begin{quote}
-Robert Szalai, \pdde{}: A continuation and bifurcation software for 
+R\'obert Szalai, \pdde{}: A continuation and bifurcation software for 
 delay-differential equations, Tech.\ Rep., Budapest University of Technology
 and Economics (2005)
 \end{quote}
@@ -1373,7 +1373,7 @@ License.
 \begin{quote}
 PDDE-CONT. A continuation and bifurcation software for delay-differential
 equations \\
-Copyright (C) 2005 by Robert Szalai \\
+Copyright (C) 2005 by R\'obert Szalai \\
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 2 as published by
