@@ -26,10 +26,10 @@ ADD_CUSTOM_TARGET( ${NAME}-test-5
     COMMAND pdde -c ${CFILEDIR}/cfile-lp-1-b -i out-pdsw-1.mat -o out-lp-1-b.mat -b out-lp-1-b.br )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-6
-    COMMAND pdde -c ${CFILEDIR}/cfile-lp-2-a -i out-pdsw-1.mat -o out-lp-2-a.mat -b out-lp-2-a.br )
+    COMMAND pdde -c ${CFILEDIR}/cfile-lp-2-a -i out-pdsw-2.mat -o out-lp-2-a.mat -b out-lp-2-a.br )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-7
-    COMMAND pdde -c ${CFILEDIR}/cfile-lp-2-b -i out-pdsw-1.mat -o out-lp-2-b.mat -b out-lp-2-b.br )
+    COMMAND pdde -c ${CFILEDIR}/cfile-lp-2-b -i out-pdsw-2.mat -o out-lp-2-b.mat -b out-lp-2-b.br )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-8
     COMMAND pdde -c ${CFILEDIR}/cfile-ns -i out-start.mat -o out-ns.mat -b out-ns.br )
