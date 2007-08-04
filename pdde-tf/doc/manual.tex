@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper]{ddedoc}
 
-\usepackage{graphicx}
+\usepackage{graphics,graphicx}
 \usepackage{amsmath,amssymb}
 \usepackage{url}
 \usepackage{listings}
@@ -17,21 +17,21 @@
 \def\pdde{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
 
 
-%\def\iconAdd{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-add}}
-%\def\iconEraser{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-eraser}}
-%\def\iconPrint{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileprint}}
-\def\iconRun{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-launch}}
-\def\iconStop{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-stop}}
-\def\iconBuild{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-build}}
-%\def\iconExit{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-exit}}
-\def\iconSaveAs{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesaveas}}
-\def\iconPencil{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-pencil}}
-\def\iconText{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-view_text}}
-%\def\iconColorize{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-colorize}}
-\def\iconOpen{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileopen}}
-\def\iconSave{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesave}}
-%\def\iconRemove{\includegraphics[height=0.8\baselineskip]{fig/cr32-action-remove}}
-\def\iconSvg{\includegraphics[height=0.8\baselineskip]{fig/cr32-svg-export}}
+\newcommand{\iconAdd}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-add}}
+\newcommand{\iconEraser}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-eraser}}
+\newcommand{\iconPrint}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileprint}}
+\newcommand{\iconRun}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-launch}}
+\newcommand{\iconStop}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-stop}}
+\newcommand{\iconBuild}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-build}}
+%\newcommand{\iconExit}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-exit}}
+\newcommand{\iconSaveAs}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesaveas}}
+\newcommand{\iconPencil}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-pencil}}
+\newcommand{\iconText}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-view_text}}
+\newcommand{\iconColorize}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-colorize}}
+\newcommand{\iconOpen}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-fileopen}}
+\newcommand{\iconSave}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-filesave}}
+\newcommand{\iconRemove}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-remove}}
+\newcommand{\iconSvg}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-svg-export}}
 
 \begin{document}
 \lstset{language=C++,tabsize=3,columns=flexible,breaklines=true,escapechar=\%}
@@ -56,9 +56,14 @@ Economics \\
     \hline Sept.\ 2004 -- June 2005 & 0.9.2 -- 0.9.8 & Massachusetts Institute
 of Technology \\
     \hline July 2005 -- Sept. 2005 & 0.9.9 -- 0.9.17 & N.A. \\
-    \hline Sept. 2005 -- Apr. 2006 & 0.9.18 -- 1.0.3 & Budapest University of
-Technology and Economics \\
-    \hline May 2006 -- & 1.0.4 -- & University of Bristol \\
+    \hline 27 December 2005 & 0.9.21 (r83) & Budapest University of Technology and Economics \\
+    \hline 16 March 2006 & 1.0.1 (r119) & Budapest University of Technology and Economics \\
+    \hline 16 May 2006 & 1.0.2 (r139) & University of Bristol \\
+    \hline 19 June 2006 & 1.0.3 (r153) & University of Bristol \\
+    \hline 24 September 2006 & 1.1.0 (r245) & University of Bristol \\
+    \hline 10 October 2006 & 1.1.1 (r260) & University of Bristol \\
+    \hline 24 December 2006 & 1.1.2 (r315) & University of Bristol \\
+    \hline 4 August 2007 & 1.1.3 (r344) & University of Bristol \\
     \hline
   \end{tabular}
 \end{center}
@@ -235,8 +240,7 @@ This file can be selected by the \funp{-b} option if this data is not intended
 to be written into the \filef{pdde.br} file. The syntax of the command line
 arguments is illustrated as
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b
-<branch-file>]]
+$ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
 \end{lstlisting} \end{quote} } \noindent
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -248,7 +252,7 @@ This is pdde-cont version 1.1.3 (r330 2007-08-02 02:26:31 +0100)
 \subsection{The constants file}
 \label{constfile}
 
-As an example, we included one of the example problems:
+As an example, we included the constants file of the Mackey-Galss equation:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so                SYSNAME
 0                           LABEL
@@ -260,8 +264,8 @@ sys-glass.so                SYSNAME
 1e-05 1e-05 1e-06           EPSC, EPSR, EPSK
 12 12 12                    NITC, NITR, NITK
 \end{lstlisting} \end{quote} } \noindent
-In the first separated column are the parameter values, 
-while the second column refers to their meaning. 
+This file corresponds to continuation of equilibria. In the first separated column 
+of the file are the parameter values and the second column refers to their names. 
 When this file is read the program interprets only the first half of each line,
 that is, it moves to the next line after all the necessary parameters are read.
 Although the rest of the line is simply ignored, 
@@ -280,7 +284,7 @@ in the system definition file.
 %
 \item[\funp{TYPE}] ~\\
 Specifies the type of the solution to be continued. It can be one of the following numbers.
-The number surronded by parantheses refers to how many additional free
+The number surrounded by parantheses refers to how many additional free
 parameters are required.
 
 Algorithms for time-periodic (non-autonomous) systems:
@@ -291,7 +295,7 @@ Algorithms for time-periodic (non-autonomous) systems:
 input is a periodic solution at a fold bifurcation point. The software first
 generates a starting point, that is, it tries to converge to the fold point
 using a secant method. After the fold point is found with a good accuracy (see
-\funp{EPSS}), the tangent of the fold curve is computed so that the continuation
+\funp{EPSR}), the tangent of the fold curve is computed so that the continuation
 can start. All the bifurcations are started in this way.
 %
 \item[\funp{42} -] Continuation of period-doubling bifurcations. (1)
@@ -299,15 +303,15 @@ can start. All the bifurcations are started in this way.
 \item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (1)
 %
-\item[\funp{44} -] Switches to the other solution at a branching point and
-follows the orbits. Similar to \funp{TYPE=1}, first the software converges to
+\item[\funp{44} -] The software switches to the other solution at a branching point and
+follows the new branch. Similar to \funp{TYPE=41}, first the software converges to
 the critical solution. Then it computes the critical eigenfunction
 $\varphi^{cr}$, which will become the tangent of the new branch, so that the
 continuation can start. (0)
 %
 \item[\funp{45} -] The software first switches to the period-2 branch at a
 period doubling bifurcation point
-(-1 multiplier) and then follows the arising orbits. (0)
+(-1 multiplier) and then follows the new branch. The internal parameter \funp{I0} is multiplied by two. (0)
 \end{description}
 In the case of autonomous systems the above continuations can be carried out in
 the same way. The important difference is that the software will use a phase
@@ -325,8 +329,8 @@ additional parameter is usually the period length \funp{P0}. (1)
 \item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (2)
 %
-\item[\funp{54} -] Switches to the other solution at a branching point and
-follows the orbits. (1)
+\item[\funp{54} -] Switches to the other solution branch at a branching point and
+follows the periodic orbits. (1)
 %
 \item[\funp{55} -] The software first switches to the period-2 branch at a
 period doubling bifurcation point
@@ -338,14 +342,16 @@ point. The failure or success of the switch depends on the choice of the period
 length for the fixed point and the starting solution amplitude \funp{DSSTART}.
 As a rule of thumb, the period of the constant solution should be chosen as
 small as possible to reliably detect the period of the arising periodic orbit.
-If the period is chosen to be large, the detected period will be some integer
-multiple of the actual period. (1)
+If chosen period is too large, the period on the new branch will not be reliably detected. 
+Therefore, the software will not be able to find the new branch. The software will warn 
+the user if this is the case. (1)
 \end{description}
 The software can also continue invariant tori arising at Neimark-Sacker
 bifurcation points. To continue these quasi-periodic orbits use the following
 parameters when restarting from Neimark-Sacker points. This is an experimental
-feature. Since the output format was designed for periodic orbits the
-quasiperiodic solutions are not written there.
+feature and  it is tested for non-autonomous systems only. The output has a different format
+than specified in section \ref{matformat}, but it can be plotted using the matlab script 
+\filef{matlab/torplot.m}.
 \begin{description}
 \item[\funp{20} -] In the case of time-periodic systems
 %
@@ -357,7 +363,7 @@ equations and variables used in continuation, by setting the \funp{TYPE} to
 %
 \item[\funp{CP}] ~\\
 It defines the main continuation parameter. The parameters always start with the
-letter `\funp{P}', if they are user defined or with `\funp{I}' if they are
+letter `\funp{P}', if they are defined by the user or with `\funp{I}' if they are
 internal parameters, such as the argument of the characteristic multiplier or
 the rotation number of a quasiperiodic orbit.
 % (Recognition of internal parameters is not yet implemented, however the can be
@@ -369,10 +375,10 @@ These  internal parameters are as follows.
 \item[\funp{I0} -] represents the argument of the characteristic multiplier in the case of
 Neimark-Sacker bifurcation continuation.
 \item[\funp{I1} -] It is initialized to 1.0 when \funp{LABEL}=0. It doubles with
-every period doubling branch switch. Use this as \fun{par(sys_npar()+1)} in the
+every period doubling branch switch (\funp{TYPE=45,55}). Use this as \fun{par(sys_npar()+1)} in the
 system definition to rescale the delay or adjust the forcing if necessary.
 \item[\funp{I2} -] contains the rotation number of a two-torus. Usually this is kept
-constant in order to avoid phase-locking.
+constant in order to avoid strong resonances.
 \end{description}
 %
 \item[\funp{NPARX}] ~\\
@@ -388,7 +394,8 @@ the case of autonomous problems either \funp{CP} or this should include
 Number of collocation intervals; heavily depends on the problem.
 %
 \item[\funp{NDEG}] ~\\
-Degree of polynomials used in collocation. Usually 4 or 5.
+Degree of polynomials used in collocation. Usually 4 or 5. 
+5 is recommended because colloation for delay equations is worse than for ordinary differential equations.
 %
 \item[\funp{NMUL}] ~\\
 The number of Floquet multipliers to be computed.
@@ -404,7 +411,7 @@ This is the ratio of the maximum delay and the period length. More precisely, it
 is the smallest integer such that $\funp{NMAT} \ge \tau_{MAX}/T_{MIN}$.
 %
 \item[\funp{STEPS}] ~\\
-Maximum number of steps on the solution branch.
+Maximum number of steps on the solution branch. The size of the output file is proportional to this number.
 %
 \item[\funp{IAD}] ~\\
 The software adapts the mesh after every \funp{IAD} continuation steps.
@@ -422,13 +429,11 @@ method exceeds \funp{NITC} iterations and \funp{DS} reached its minimum value,
 the continuation is stopped.
 %
 \item[\funp{DSMIN}, \funp{DSMAX}] ~\\
-The minimum and maximum value of \funp{DS}.
+The minimum and maximum values of \funp{DS}.
 %
 \item[\funp{DSSTART}] ~\\
-Used when branch switching is specified from equilibria to periodic solutions
-or from periodic solutions to quasi-periodic tori. The initial solution is
-approximated linearly, by adding the unit norm tangent of the new branch
-multiplied by \funp{DSSTART} to the equilibrium or periodic solution.
+Specifies the $L^2$ distance of the first point on the new branch from the bifurcation 
+point at branch switching (\funp{TYPE=20,30,44,45,54,55,56}).
 %
 \item[\funp{EPSC}] ~\\
 Tolerance of convergence to a periodic solution during continuation. For
@@ -439,14 +444,14 @@ reasonable stepsizes (\funp{DS}).
 \item[\funp{EPSR}] ~\\
 Tolerance in the refinement of periodic solutions. (Solution refinement is used
 only before continuation starts.) It should be less than or equal to
-\funp{EPSC}.
+\funp{EPSC}. This constant is also used when finding bifurcation points.
 %
 \item[\funp{EPSK}] ~\\
 Tolerance when locating a singular vector of an operator. This is used when the initial tangent vector to a branch is sought,
-a tangent vector is refined after adapting the mesh and for setting up a test functional for bifurcation continuation.
+and when a tangent vector is refined after adapting the mesh. It is also used for setting up a test functional for bifurcation continuation.
 %
 \item[\funp{NITC}] ~\\
-Maximum number of Newton iteration steps in continuation.
+Maximum number of Newton iteration steps within a continuation step.
 %
 \item[\funp{NITR}] ~\\
 Maximum number of Newton iteration steps, when converging to an initial
@@ -474,7 +479,7 @@ phase condition of autonomous systems while the second variable is the period
 the test functionals. If more than one, but different test functionals are used,
 some codimension-two bifurcations can be continued. The other variables can be
 either parameters or one of the internal variables. When a quasi-periodic torus
-is computed there is no need to use this extended system definition since the
+is computed there is no need to use this specification since the
 software is only capable of continuing tori of forced or autonomous systems.
 
 The meaning of the system definition line is described below.
@@ -486,8 +491,7 @@ The meaning of the system definition line is described below.
 	The software switches to another branch of solutions if it is non-zero.
 \begin{description}
 \item[\funp{0} -] No switch.
-\item[\funp{1} -] Switches to the other branch at a branching point. %(I hope it
-knows which one is which...)
+\item[\funp{1} -] Switches to the other branch at a branching point. \funp{I0} is doubled.
 \item[\funp{2} -] Switches to the period-two branch at a period doubling
 bifurcation.
 \item[\funp{3} -] Switches to the periodic solution branch at a Hopf
@@ -502,25 +506,25 @@ bifurcation.
 \begin{description}
 \item[\funp{E0} -] No equation is used.
 \item[\funp{E1} -] Periodic solution. This is always the first equation and can
-occur only there.
+only occur there.
 \item[\funp{E24} -] Phase condition for autonomous systems.
 \item[\funp{E25} -] Phase condition for systems with additional symmetry. (For
-details, see \cite{haegeman}.)
+details, see \cite{haegeman,roose-szalai}.)
 \item[\funp{E32} -] Quasiperiodic solution on a torus.
 \item[\funp{E40} -] The first phase condition for the torus. This is applied
 only in the case of autonomous equations.
 \item[\funp{E41} -] The second phase condition for the torus. It is always
 necessary.
-\item[\funp{E64} -] Test functional of fold bifurcation in forced systems.
-\item[\funp{E65} -] Test functional of period doubling bifurcation.
-\item[\funp{E66} -] Test functional of fold bifurcation in autonomous systems.
+\item[\funp{E64} -] Test functional for fold bifurcation in forced systems.
+\item[\funp{E65} -] Test functional for period doubling bifurcation.
+\item[\funp{E66} -] Test functional for fold bifurcation in autonomous systems.
 \item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
-with symmetry. This is an experimental feature, probaly will not work.
+with symmetry. This is an experimental feature, probably will not work.
 \item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker
 bifurcation.
 \item[\funp{E69} -] Imaginary part of the complex test functional for
 Neimark-Sacker bifurcation. This imaginary part should directly follow the real
-part in the equation list, otherwise the program will not start the
+part in the list of equation, otherwise the software will not start the
 continuation.
 \end{description}
 \item[\funp{NVAR}] ~\\
@@ -530,7 +534,7 @@ first variable is always the periodic solution.
 	A sequence of numbers, specifying the free variables. A variable can be one
 of the three types. The starting letters are \funp{S}, \funp{P} or \funp{I},
 referring to a system variable, parameter or internal variable, respectively.
-(For parameters and internal variables see the description of \funp{CP}.) The
+(For the distinction between parameters and internal variables see the description of \funp{CP}.) The
 system variables are defined as follows.
 \begin{description}
 \item[\funp{S0} -] No variable is used.
@@ -541,8 +545,7 @@ In the case of an equation with additional symmetry, when \funp{E25} is
 specified, also the symmetric components of the solution has to be declared.
 The declaration is the last line of the constants file and contains which parts
 of the solution are complex. The first number is the number of complex
-solutions,
-while the further numbers are the real and imaginary components in the solution
+solutions components and the following numbers are the real and imaginary components in the solution
 vector. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 ...
@@ -552,61 +555,62 @@ vector. For example
 specifies two symmetric components, where the first complex variable has its
 real and imaginary parts in the zeroth and first component of the solution
 vector.
-Similarly the second rotational symmetric complex solution component has its
+Similarly, the second rotational symmetric complex solution component has its
 real and imaginary part in the third and fourth component of the solution
 vector.
 \end{description}
 
 \subsection{Input/output file format}
+\label{matformat}
 
-The software uses MAT files to store the results of continuation.
+The software uses {\sc{}mat} files to store the results of continuation.
 The inner structure of these files are documented in \cite{matfile}. 
 These files can be read also by the GNU octave \cite{octave}.
-A \pdde{} MAT file contains several matrices, describing a branch of solutions.
+A \pdde{} {\sc{}mat} file contains several matrices, describing a branch of solutions.
 The structure of these matrices are defined in Table \ref{matstruct}.
 \begin{table}[bth!]
 \begin{tabular}{|c|c|c|l|}
 \hline
 Matrix name & Rows & Columns & Content\\
 \hline 
-\fun{pdde_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
+\funp{pdde\_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
 computed in the branch of solutions. \end{minipage}\\
 \hline
-\fun{pdde_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
+\funp{pdde\_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
 \hline
-\fun{pdde_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
+\funp{pdde\_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
 \hline
-\fun{pdde_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
+\funp{pdde\_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
 \hline
-\fun{pdde_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
+\funp{pdde\_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
 \funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
 \hline
-\fun{pdde_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
+\funp{pdde\_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
 interval. \\
 \hline
-\fun{pdde_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
+\funp{pdde\_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
 profile. \\
 \hline
-\fun{pdde_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
+\funp{pdde\_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
 \funp{STEPS} & The solution profile. \\
 \hline
 \end{tabular}
-\caption{The contents of the MAT files.}
+\caption{The contents of the {\sc{}mat} files.}
 \label{matstruct}
 \end{table}
-If the computation stops for some reason, \fun{pdde_npoints} will be less than
-\funp{STEPS}, but the size of the MAT file will not be smaller, so only the first
-\fun{pdde_npoints} columns will contain valid data.
+If the computation stops for some reason, \funp{pdde\_npoints} will be less than
+\funp{STEPS}, but the size of the {\sc{}mat} file will not be smaller, so only the first
+\funp{pdde\_npoints} columns will contain valid data.
 
-To convert the input and output MAT files to the format of DDE-BIFTOOL use the
-\funp{pmat2branch.m} and \filef{branch2pmat.m} MATLAB scripts found in the \filef{matlab}
+To convert the input and output {\sc{}mat} files to the format of DDE-BIFTOOL use the
+\funp{pmat2branch.m} and \filef{branch2pmat.m} {\sc{}matlab} scripts found in the \filef{matlab}
 subdirectory of the package. The function \funp{pmat2branch.m} takes only one 
-input argument, which is the name of a Level 4 MAT file, and returns a periodic 
+input argument, which is the name of a Level 4 {\sc{}mat} file, and returns a periodic 
 solution branch structure of DDE-BIFTOOL:
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 >> psbr = pmat2branch( 'input-file' );
 \end{lstlisting} \end{quote} } \noindent
-To export results out of DDE-BIFTOOL and produce a \pdde{} MAT file, issue the command
+To export results out of DDE-BIFTOOL and produce a \pdde{} {\sc{}mat} file, issue the command
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 >> branch2pmat( 'output-file', psbr, NMUL );
 \end{lstlisting} \end{quote} } \noindent
@@ -688,8 +692,8 @@ these arrays, parentheses are used, that is, the first element of a
 \fun{Vector} \fun{v} is always \fun{v(0)}, the size of the \fun{Vector} is
 \fun{v.Size()} and its last
 element is \fun{v(v.Size()-1)}. A \fun{Matrix} is indexed similarly, e.g., in
-the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}-th element in the
-\fun{(i-1)}-th row of the matrix. The number of columns and rows of \fun{m} can
+the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}th element in the
+\fun{(i-1)}th row of the matrix. The number of columns and rows of \fun{m} can
 be can be queried by calling \fun{m.Col()} and \fun{m.Row()}, respectively.
 
 \subsubsection{System definition}\label{sysdef}
@@ -701,7 +705,7 @@ compilation is done typically by issuing the command%
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pcompile sys-<problem>.cpp
 \end{lstlisting} \end{quote} } \noindent
-which produces the file \filef{sys-$<$problem$>$.so}.
+that produces the file \filef{sys-$<$problem$>$.so}.
 The system definition should include the header file \filef{pddesys.h}
 (\fun{#include pddesys.h}), which defines the syntax of the functions. Also, all
 the functions must be declared as \fun{extern "C"}, to make their names
@@ -710,13 +714,14 @@ independent of the C++ name mangling. The definition of a system of equations in
 are passed to the user defined functions are
 \begin{itemize}
   \item[-] \fun{t} (\fun{double}) is the time instance within a period. It is
-  scaled into $[ 0, 1 ]$ by the period length $T$, i.e., \fun{t}$ = t/T$.
+  scaled into $[ 0, 1 ]$ by the period length $T$, i.e., \fun{t}$ = t/T$. In forced systems
+  it can be scaled by \funp{I1}\fun{=par(sys_npar()+1)} to account for period doubling.
   \item[-] \fun{par} (\fun{Vector}) is a vector and contains the parameters of
   the system. \fun{par(0)} is always the period ($T$) of the actual orbit,
   while others can be chosen.
   \item[-] \fun{xx} (\fun{Matrix}) contains the solution values at $t -
-  \tau_i$, that is, \fun{xx( j, i )}$= [ x ( t - \tau_i ) ]_{(j+1)}$, where
-$\tau_0$ is generally zero.
+  \tau_i$, that is, \fun{xx(j, i)}$= [ x ( t - \tau_i ) ]_{(j+1)}$, where
+$\tau_0$ is generally zero, hence, \fun{xx(j,0)}$=[x(t)]_{j+1}$.
 \end{itemize}
 The required functions are
 \begin{itemize}
@@ -744,33 +749,32 @@ calculated using the first order derivatives.
   
   \item[-] \fun{ void sys_tau( Vector\& out, double t, const Vector\& par ); }
 \\
-  \fun{out} is the output variable and contains the vector of delays
+  The output vector \fun{out} is the output variable and contains the vector of delays
   including a zero for the non-delayed term. For example for $\dot{x} ( t ) =
   f ( t, x ( t ), x ( t - T ) )$ \fun{out} is a vector with 2 elements:
   \fun{out(0)}$=0.0$, \fun{out(1) = par(0)}.
   
   \item[-] \fun{void sys_dtau( Vector\& out, double t, const Vector\& par, int p
 );} \\
-  \fun{out} contains the derivatives of delays with respect to the parameter
+  The output vector \fun{out} contains the derivatives of delays with respect to the parameter
   \fun{p}. If \fun{p==0} in the above example, the result is
   \fun{out(0)=0.0} and \fun{out(1)=1.0}.
   
   \item[-] \fun{void sys_rhs( Vector\& out, double t, const Matrix\& xx, const
 Vector\& par );} \\ 
-  The output \fun{out} is simply $f ( t, x ( t ), \ldots, x ( t - \tau_i ),
-\ldots )$.
+  The output vector \fun{out} is simply the right-hand side $f ( t, x ( t ), \ldots, x ( t - \tau_i ),
+\ldots )$ of the equation.
   
   \item[-] \fun{void sys_deri( Matrix\& out, double t, const Matrix\& xx, const
 Vector\& par, int nx, int* vx, int np, int* vp, const Matrix\& v );} \\
   This function supplies the derivatives of $f$ with respect to variables and
 parameters. As mentioned before, this function can be empty or can supply some
 or all the necessary derivatives.
-  \fun{nx} is the queried order (0, 1 or 2) of derivatives with respect to $x( t
--
-  \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies which argument(s) of $f$
+  \fun{nx} is the order (0, 1 or 2) of derivatives with respect to $x( t
+- \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies the delayed state as the which argument(s) of $f$
 is used in
-  the differentiation. For example if \fun{nx==1}, \fun{vx[0]} tells which
-delayed value of the state variable is used in the differentiation. 
+  the differentiation. For example, if \fun{nx==1} then the first order derivatives of $f$ has to be supplied 
+  in the matrix \fun{out} with respect to the \fun{vx[0]}th vector argument of $f$. 
   If \fun{nx==2}, the second derivative is calculated with respect to $x( t -
   \tau_{\mathrm{vx[0]}} )$ and $x( t - \tau_{\mathrm{vx[1]}} )$ resulting in a 3
 index tensor, which is finally multiplied by the \fun{vx[1]} the column of
@@ -820,7 +824,7 @@ continuation starts:
 \begin{enumerate}
 \item The software starts a Newton iteration to converge to a more precise
 solution.
-\item If there is a bifurcation involved, e.g., in case of a bifurcation
+\item If there is a bifurcation involved, e.g., in the case of a bifurcation
 continuation or branch switching, the software tries to find the bifurcation
 point using a Newton method. Clearly, if there is no bifurcation point in a
 sufficiently small neighborhood of the specified solution, this step will fail.
@@ -828,7 +832,7 @@ In very rare cases and for `difficult' problems, if the first and second
 derivatives of the right hand side are computed numerically (\fun{sys_nderi}
 returns zero or one), the search for a bifurcation can fail even when the
 starting solution is the bifurcation point with high accuracy.
-\item It finds the tangent of the solution branch at its first point. In
+\item The software finds the tangent of the solution branch at its first point. In
 general, it computes the tangent as a kernel vector of the linearized defining
 system. In the case of branch switching, the critical eigenfunctions are used to
 construct the tangent vector.
@@ -879,23 +883,23 @@ LABEL      NORM         P2              P0              USTAB   IT
   2     9.143658e-01    1.557164e+00    1.101898e+01      0     1
   3     9.144963e-01    1.558277e+00    1.102330e+01      0     1
 \end{lstlisting} \end{quote} } \noindent
-The first column, \funp{LABEL} is the solution label in the output file, while
+The first column, \funp{LABEL} is the solution label in the output file, and
 the second column is the $L^2$ norm of the solution. From the third column on,
 the free parameters are displayed. The column denoted by \funp{USTAB} refers to
 the number of unstable characteristic roots, if stability computation is turned
-on (see \funp{STAB} below), otherwise it is meaningless. The last column is the
-number of the Newton iterations, within each continuation step.
+on (see \funp{STAB} below), otherwise it is constantly zero regardless of the actual stability. 
+The last column is the number of the Newton iterations, within each continuation step.
 
 \subsection{Example: Mackey-Glass equation}
 
-Here we discuss the continuation steps in the case of a simple one dimensional
+Here, we discuss the continuation steps in the case of a simple one dimensional
 delay-differential equation. Although the equation is simple, it shows quite
 complicated dynamics including chaos. Our equation reads
 \begin{equation}
   \dot{x} ( t ) = ax ( t ) + b \frac{x ( t - \tau )}{1 + x^{10} ( t - \tau )}.
 \label{ct:glass}
 \end{equation}
-This equation describes proliferation of white blood cells and was first
+This equation models proliferation of white blood cells and was first
 introduced by Mackey and Glass in {\cite{mackey}}. Equation (\ref{ct:glass})
 has three equilibrium solutions $x_1 = 0$ and $x_{2, 3} = \sqrt[10]{- ( a + b
 ) / a}$, which connect to each other at $a = - b$ by a supercritical pitchfork
@@ -909,7 +913,7 @@ where $|d| \ge 1$. Hopf bifurcations for $d > 1$ are supercritical, which give
 rise to stable periodic orbits. These periodic orbits bifurcate further by
 several period doublings leading to chaotic motion. It was demonstrated by
 Hale and Sternberg {\cite{sternberg}} that chaos arises due to the transverse
-intersection of the two dimensional unstable and infinite dimensional stable
+intersection of the two-dimensional unstable and infinite dimensional stable
 manifold of this periodic orbit.
 
 The system definition file can be found in the directory
@@ -1207,13 +1211,11 @@ It has a menu and toolbar which
 contains the \filef{Open} \iconOpen{}, \filef{Save} \iconSave{},
 \filef{Run} \iconRun{}, \filef{Stop} \iconStop{} and
 \filef{Text} \iconText{} buttons. The \filef{Open} \iconOpen{} button pops up a
-file chooser so that an XML-formatted constants file can be chosen. This
-XML-file contains the same parameters as the plain constants file (see section
-\ref{constfile}). Note that, when opening a constants file an error message will pop up if
+file chooser so that an XML-formatted constants file can be chosen. Note that, when opening a constants file an error message will pop up if
 the system definition is not compiled yet. To resolve the problem compile the C++ source
-of the system definition using the \filef{Compile} \iconBuild{} button.
+of the system definition using the \filef{Compile} \iconBuild{} button and reopen the constants file.
 
-The constants file is an XML-file, which contains the same parameters as the
+The XML formatted constants file contains the same parameters as the
 plain constants file of the CLI, for details see section \ref{constfile}. 
 The contents of this XML file can be edited in the four tabs \filef{System},
 \filef{Numerics}, \filef{Symmetry} and \filef{Torus} and then can be saved
@@ -1221,15 +1223,22 @@ either using the \filef{Save} \iconSave{} button or the \filef{Save As...}
 \iconSaveAs{} menu item in the \filef{File} menu.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.5]{fig/mainwindow-anno}
-\caption{The main window of the software.}
+\includegraphics[scale=0.5]{fig/mainwindow}
+\caption{The main window of the software. In the toolbar \iconOpen{} opens a constants file, 
+\iconSave{} saves the constants file, \iconRun{} starts the continuation, \iconStop{} stops the continuation 
+and \iconText{} opens a viewer that contains the same type of output what the command line interface produces. 
+There are four tabs: System, Numerics, Symmetry and Torus; these contain the numerical constants. In the line of \filef{INPUT} 
+and \filef{OUTPUT} \iconOpen{} opens a {\sc{}mat} file used for obtaining the starting solution and writing 
+the results. Toolbutton \iconPencil{} raises a plotting window (see Fig.\ \ref{plotwindow}) that can visualize the results.
+In the line of \filef{SYSNAME} \iconOpen{} opens a \filef{sys-problem.so} shared object file and \iconBuild{} compiles 
+a system definition file \filef{sys-problem.cpp} . }
 \label{mainwindow}
 \end{center}
 \end{figure}
 
 The \filef{System} tab contains the parameters of the defining system and the
 input/output. The \filef{INPUT} and \filef{OUTPUT} labels refer to the input and
-output MAT files. These files can be opened using the \filef{Browse} \iconOpen{}
+output {\sc{}mat} files. These files can be opened using the \filef{Browse} \iconOpen{}
 buttons and their contents can be visualized using the \filef{Plot}
 \iconPencil{}
 buttons. As before, the \filef{LABEL} spinbox contains the solution label in
@@ -1308,7 +1317,8 @@ the same output as the terminal output of the CLI.
 \begin{figure}[bth!]
 \begin{center}
 \includegraphics[scale=0.5]{fig/textwindow}
-\caption{Textual output view.}
+\caption{Textual output view is the same as the command line interface produces. The columns refer to the label,
+norm, parameter values, etc.\ of the solution.}
 \label{textwindow}
 \end{center}
 \end{figure}
@@ -1321,8 +1331,13 @@ possible to plot the results in the middle of a computation. On Linux it is not
 a restriction.
 \begin{figure}[bth!]
 \begin{center}
-\includegraphics[scale=0.5]{fig/plotwindow-anno}
-\caption{Plotting window.}
+\includegraphics[scale=0.5]{fig/plotwindow}
+\caption{The plotting window displays the results of continuation. The {\sc{}mat} file field is the file from where the data is taken.
+The X and Y coordinates select the two axis of the planar diagram. If a solution profile is plotted \filef{LABEL} select the solution 
+and \filef{DIM} selects one of its components. Toolbutton \iconAdd{} add the selected graph to the diagram and 
+\iconRemove{} removes all curves from the diagram.
+The left side of the window contains the list of curves. If a graph is selected from the list \iconEraser{} removes a graph and \iconColorize{} can change its color.
+The right mouse button can zoom into the diagram and pressing button P takes back to the previous view.}
 \label{plotwindow}
 \end{center}
 \end{figure}
@@ -1338,7 +1353,7 @@ bifurcations are computed using the test functionals. The arising bordered
 sparse linear systems are solved using the BEMW method developed by Govaerts and
 Pryce \cite{Gov1993}. The sparse part of the linear system is factorized by
 UMFPACK \cite{umfpack}. Quasiperidic orbits are computed using the spectral
-method mentioned above \cite{kopriva}.
+method mentioned above \cite{kopriva,roose-szalai}.
 
 \subsection*{Acknowledgments}
 

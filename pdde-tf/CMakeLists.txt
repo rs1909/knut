@@ -103,7 +103,7 @@ ADD_CUSTOM_TARGET( dist
 		svn list -r HEAD -R --non-interactive ${PDDE_SOURCE_DIR} | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
 		echo >>tmp_filelist \"${DIST_DIR}/pdde.spec\"\;
-		tar cjf ${DIST_DIR}.tar.bz2 --no-recursion -h -T tmp_filelist\;
+		tar cjf ${DIST_DIR}.tar.bz2 --exclude *.svg --no-recursion -h -T tmp_filelist\;
 		rm tmp_filelist ${DIST_DIR}/pdde.spec ${DIST_DIR}\; )
 
 #------------------------------------------------------------------------------
