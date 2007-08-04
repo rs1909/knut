@@ -63,7 +63,7 @@ of Technology \\
     \hline 24 September 2006 & 1.1.0 (r245) & University of Bristol \\
     \hline 10 October 2006 & 1.1.1 (r260) & University of Bristol \\
     \hline 24 December 2006 & 1.1.2 (r315) & University of Bristol \\
-    \hline 4 August 2007 & 1.1.3 (r344) & University of Bristol \\
+    \hline 4 August 2007 & 1.1.3 (r343) & University of Bristol \\
     \hline
   \end{tabular}
 \end{center}
@@ -109,7 +109,7 @@ finitely many Floquet multipliers of the largest magnitude. Codimension-one
 bifurcations are detected along the solution branch using the Floquet
 multipliers, and bifurcation points can be calculated using test-functionals.
 When a branching point of periodic orbits is encountered the software can be
-directed to continue the other branch. Similarly, when a period-doubling
+directed to continue the other branch. Similarly, when a period doubling
 bifurcation point is found, the period-two branch can be selected for
 continuation.
 
@@ -298,7 +298,7 @@ using a secant method. After the fold point is found with a good accuracy (see
 \funp{EPSR}), the tangent of the fold curve is computed so that the continuation
 can start. All the bifurcations are started in this way.
 %
-\item[\funp{42} -] Continuation of period-doubling bifurcations. (1)
+\item[\funp{42} -] Continuation of period doubling bifurcations. (1)
 %
 \item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (1)
@@ -309,7 +309,7 @@ the critical solution. Then it computes the critical eigenfunction
 $\varphi^{cr}$, which will become the tangent of the new branch, so that the
 continuation can start. (0)
 %
-\item[\funp{45} -] The software first switches to the period-2 branch at a
+\item[\funp{45} -] The software first switches to the period-two branch at a
 period doubling bifurcation point
 (-1 multiplier) and then follows the new branch. The internal parameter \funp{I0} is multiplied by two. (0)
 \end{description}
@@ -324,7 +324,7 @@ additional parameter is usually the period length \funp{P0}. (1)
 %
 \item[\funp{51} -] Continuation of fold bifurcations in two parameters. (2)
 %
-\item[\funp{52} -] Continuation of period-doubling bifurcations. (2)
+\item[\funp{52} -] Continuation of period doubling bifurcations. (2)
 %
 \item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (2)
@@ -332,7 +332,7 @@ additional parameter is usually the period length \funp{P0}. (1)
 \item[\funp{54} -] Switches to the other solution branch at a branching point and
 follows the periodic orbits. (1)
 %
-\item[\funp{55} -] The software first switches to the period-2 branch at a
+\item[\funp{55} -] The software first switches to the period-two branch at a
 period doubling bifurcation point
 (-1 multiplier) and then follows the arising orbits. (1)
 %
@@ -1100,6 +1100,15 @@ LABEL   NORM           P2             U IT
 \end{lstlisting} \end{quote} } \noindent
 We find that at branch point 83 there is a Hopf bifurcation. Thus we can switch to the periodic solution branch at this point
 by using the constants file.
+\begin{figure}[t!]
+\begin{center}
+\includegraphics{fig/plot-pd-ns}
+\end{center}
+\caption{The bifurcation at the Hopf bifurcation curve (HB) is supercritical. 
+The periodic solution loses stability at the doubling bifurcation curve (PD).}
+\label{pdbif}
+\end{figure}
+
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so                 SYSNAME
 83                           LABEL
@@ -1158,14 +1167,7 @@ The continuation starts with the following command
 $ pdde -c cfile-pdbif -i in-start
 \end{lstlisting} \end{quote} } \noindent
 The period doubling curve can be seen in Fig.\ \ref{pdbif}.
-\begin{figure}[bth!]
-\begin{center}
-\includegraphics[scale=0.6]{fig/pdbif2}
-\end{center}
-\caption{Period doubling bifurcation curve of the period-1 solution.}
-\label{pdbif}
-\end{figure}
-Also, the arising period-2 orbits can be computed by switching to this new
+Also, the arising period-two orbits can be computed by switching to this new
 branch of solutions:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 sys-glass.so            SYSNAME
@@ -1174,27 +1176,27 @@ sys-glass.so            SYSNAME
 ...
 \end{lstlisting} \end{quote} } \noindent
 %
-\begin{figure}[bth!]
+\begin{figure}[t!]
 \begin{center}
-\includegraphics[scale=0.6]{fig/pdsw}
+\includegraphics{fig/plot-pdsw}
 \end{center}
-\caption{The period-2 branch. Period doublings are denoted by $\times$, while
-$\circ$ refers to fold bifurcation. }
+\caption{The period-two branch (a). Period doublings are denoted by $\bigtriangledown$ and
+$\Box$ refers to fold bifurcation. Solution profiles at the bifurcation points are plotted in subfigures (b)-(e).}
 \label{pdsw}
 \end{figure}
-Figure \ref{pdsw} shows the bifurcation diagram of the period-2 orbit. Using the
-previous methods we continue the bifurcations on this period-2 branch, which
+Figure \ref{pdsw} shows the bifurcation diagram of the period-two orbit. Using the
+previous methods we continue the bifurcations on this period-two branch, which
 gives a more detailed information about the solutions. A three dimensional
 bifurcation diagram can be seen in Fig.\ \ref{pdfold}, which shows the
 complicated orbit structure.
-\begin{figure}[bth!]
+\begin{figure}[t!]
 \begin{center}
-\includegraphics[scale=0.6]{fig/fold3d-2}
+\includegraphics{fig/plot-lp3d}
 \end{center}
-\caption{Fold bifurcations of the period-2 orbits. Black curves are periodic
-solutions continued along $b=$ constant lines. Red curves refer to fold
-bifurcations, while the blue line is the period doubling curve, where the
-period-2 orbits arise. }
+\caption{Fold bifurcations of the period-two orbits. Black curves are periodic
+solutions continued along $b=$constant lines. Red curves refer to fold
+bifurcations, and the blue line is the period doubling curve, where the
+period-two orbits arise. }
 \label{pdfold}
 \end{figure}
 
@@ -1221,7 +1223,7 @@ The contents of this XML file can be edited in the four tabs \filef{System},
 \filef{Numerics}, \filef{Symmetry} and \filef{Torus} and then can be saved
 either using the \filef{Save} \iconSave{} button or the \filef{Save As...}
 \iconSaveAs{} menu item in the \filef{File} menu.
-\begin{figure}[bth!]
+\begin{figure}
 \begin{center}
 \includegraphics[scale=0.5]{fig/mainwindow}
 \caption{The main window of the software. In the toolbar \iconOpen{} opens a constants file, 
@@ -1314,7 +1316,7 @@ The result of the computation can be viewed in textual form. Pressing the
 \filef{Text} \iconText{} button in the main window
 will pop up the text window (see Fig.\ \ref{textwindow}) that constains almost
 the same output as the terminal output of the CLI.
-\begin{figure}[bth!]
+\begin{figure}
 \begin{center}
 \includegraphics[scale=0.5]{fig/textwindow}
 \caption{Textual output view is the same as the command line interface produces. The columns refer to the label,
@@ -1329,7 +1331,7 @@ denoted by square, triangle and cross signs in the case of fold, period doubling
 and Neimark-Sacker bifurcations, respectively. Note that on Microsoft Windows it is not
 possible to plot the results in the middle of a computation. On Linux it is not
 a restriction.
-\begin{figure}[bth!]
+\begin{figure}
 \begin{center}
 \includegraphics[scale=0.5]{fig/plotwindow}
 \caption{The plotting window displays the results of continuation. The {\sc{}mat} file field is the file from where the data is taken.
