@@ -207,6 +207,7 @@ to be downloaded and installed:
 \url{http://www.trolltech.com/developer/downloads/qt/windows} (optional, but strongly recommended),
 \item[-] and the ATLAS library.
 \end{itemize}
+Note that \filef{PATH} should be set up in order to be able to use MinGW, CMake and Qt. 
 To compile the software, first uncompress the \pdde{} package file
 \filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
 Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and
@@ -222,7 +223,7 @@ command, which will build and install the software into \filef{Program
 Files$\backslash$PDDE}. The program then can be started from the \filef{bin}
 subdirectory. Note that no \filef{Start Menu} entries, no shortcuts are made to
 the software, so these steps have to be performed manually if required. To
-uninstall, simply delete the PDDE directory.
+uninstall, simply delete the \filef{PDDE} directory from \filef{Program Files}.
 
 \section{Command line inferface (CLI)}
 
@@ -273,9 +274,9 @@ it is useful to keep the mnemonics of the parameters there. The meaning of the
 parameters are as follows.
 \begin{description}
 \item[\funp{SYSNAME}] ~\\
-The name of the shared object file,
+The name of the shared object file (\filef{sys-$<$problem$>$.so}),
 which contains the system definition. It is the compiled version of a C++
-code. For details see section \ref{sysdef}.
+code. The compilation can be performed using \filef{pcompile} or the \iconBuild{} button in the GUI. For details see section \ref{sysdef}.
 %
 \item[\funp{LABEL}] ~\\
 The solution label in the input file. The program continues this
@@ -293,8 +294,7 @@ Algorithms for time-periodic (non-autonomous) systems:
 %
 \item[\funp{41} -] Continuation of fold bifurcations in two parameters (1). The
 input is a periodic solution at a fold bifurcation point. The software first
-generates a starting point, that is, it tries to converge to the fold point
-using a secant method. After the fold point is found with a good accuracy (see
+generates a starting point, that is, it tries to converge to the fold point. After the fold point is found with a good accuracy (see
 \funp{EPSR}), the tangent of the fold curve is computed so that the continuation
 can start. All the bifurcations are started in this way.
 %
@@ -359,7 +359,7 @@ than specified in section \ref{matformat}, but it can be plotted using the matla
 \end{description}
 If none of the above applies to a problem, it is possible to specify the set of
 equations and variables used in continuation, by setting the \funp{TYPE} to
-\funp{-1}. For details, see the end of this section.
+\funp{-1}. For details, see section \ref{extendedsys}.
 %
 \item[\funp{CP}] ~\\
 It defines the main continuation parameter. The parameters always start with the
@@ -367,16 +367,15 @@ letter `\funp{P}', if they are defined by the user or with `\funp{I}' if they ar
 internal parameters, such as the argument of the characteristic multiplier or
 the rotation number of a quasiperiodic orbit.
 % (Recognition of internal parameters is not yet implemented, however the can be
-specified using ordinary parameters. E.g., if \funp{NPAR} is the number of
-ordinary parameters then an internal parameter is equivalent to P(\funp{NPAR} +
-internal parameter number)). 
+The internal parameters can also be specified using the \funp{P} prefix. If \funp{NPAR} is the number of
+ordinary parameters then an internal parameter is equivalent to P(\funp{NPAR} +internal parameter number)). 
 These  internal parameters are as follows.
 \begin{description}
 \item[\funp{I0} -] represents the argument of the characteristic multiplier in the case of
 Neimark-Sacker bifurcation continuation.
 \item[\funp{I1} -] It is initialized to 1.0 when \funp{LABEL}=0. It doubles with
 every period doubling branch switch (\funp{TYPE=45,55}). Use this as \fun{par(sys_npar()+1)} in the
-system definition to rescale the delay or adjust the forcing if necessary.
+system definition to rescale the delay or adjust the forcing if necessary. (See \filef{demo/tq} as an example.)
 \item[\funp{I2} -] contains the rotation number of a two-torus. Usually this is kept
 constant in order to avoid strong resonances.
 \end{description}
@@ -395,7 +394,7 @@ Number of collocation intervals; heavily depends on the problem.
 %
 \item[\funp{NDEG}] ~\\
 Degree of polynomials used in collocation. Usually 4 or 5. 
-5 is recommended because colloation for delay equations is worse than for ordinary differential equations.
+5 is recommended because superconvergence is lost for delay equations.
 %
 \item[\funp{NMUL}] ~\\
 The number of Floquet multipliers to be computed.
@@ -417,6 +416,7 @@ Maximum number of steps on the solution branch. The size of the output file is p
 The software adapts the mesh after every \funp{IAD} continuation steps.
 If \funp{IAD}=0, no mesh adaptation will be performed. The recommended value is \funp{IAD}=3,
 although in some cases it might be necessary to turn off the mesh adaptation.
+Here, the same adaptation technique is used as in AUTO, hence, it is not optimal for delay equations. Nevertheless it is sufficiently good.
 %
 \item[\funp{CPMIN}, \funp{CPMAX}] ~\\
 These are the minimal and maximal values of the continuation parameter. The continuation stops if one them is reached.
@@ -463,6 +463,8 @@ Maximum number of iteration steps, when locating a singular vector of an operato
 \end{description}
 
 \subsubsection{User defined equations}
+\label{extendedsys}
+
 If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants
 file is different. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -491,7 +493,7 @@ The meaning of the system definition line is described below.
 	The software switches to another branch of solutions if it is non-zero.
 \begin{description}
 \item[\funp{0} -] No switch.
-\item[\funp{1} -] Switches to the other branch at a branching point. \funp{I0} is doubled.
+\item[\funp{1} -] Switches to the other branch at a branching point. \funp{I1} is doubled.
 \item[\funp{2} -] Switches to the period-two branch at a period doubling
 bifurcation.
 \item[\funp{3} -] Switches to the periodic solution branch at a Hopf
@@ -515,9 +517,9 @@ details, see \cite{haegeman,roose-szalai}.)
 only in the case of autonomous equations.
 \item[\funp{E41} -] The second phase condition for the torus. It is always
 necessary.
-\item[\funp{E64} -] Test functional for fold bifurcation in forced systems.
-\item[\funp{E65} -] Test functional for period doubling bifurcation.
-\item[\funp{E66} -] Test functional for fold bifurcation in autonomous systems.
+\item[\funp{E64} -] Test functional for fold bifurcations in forced systems.
+\item[\funp{E65} -] Test functional for period doubling bifurcations.
+\item[\funp{E66} -] Test functional for fold bifurcations in autonomous systems.
 \item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
 with symmetry. This is an experimental feature, probably will not work.
 \item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker
@@ -545,11 +547,11 @@ In the case of an equation with additional symmetry, when \funp{E25} is
 specified, also the symmetric components of the solution has to be declared.
 The declaration is the last line of the constants file and contains which parts
 of the solution are complex. The first number is the number of complex
-solutions components and the following numbers are the real and imaginary components in the solution
+solution components and the following numbers are the real and imaginary components in the solution
 vector. For example
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 ...
-12 12 12            NITC, NITR, NITS
+12 12 12            NITC, NITR, NITK
 2 0 1 3 4           NSYM, R0, I0, R1, I1
 \end{lstlisting} \end{quote} } \noindent
 specifies two symmetric components, where the first complex variable has its
@@ -693,22 +695,21 @@ these arrays, parentheses are used, that is, the first element of a
 \fun{v.Size()} and its last
 element is \fun{v(v.Size()-1)}. A \fun{Matrix} is indexed similarly, e.g., in
 the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}th element in the
-\fun{(i-1)}th row of the matrix. The number of columns and rows of \fun{m} can
-be can be queried by calling \fun{m.Col()} and \fun{m.Row()}, respectively.
+\fun{(i-1)}th row of the matrix. The number of columns and rows of \fun{m} is returned by \fun{m.Col()} and \fun{m.Row()}, respectively.
 
 \subsubsection{System definition}\label{sysdef}
 
 The system definition file is a C++ source file, which is compiled by the user
 and then loaded by the main program \filef{pdde} as a shared object. The
 compilation is done typically by issuing the command%
-\footnote{Note that \filef{pcompile} is not available on Microsoft Windows.}
+\footnote{Note that \filef{pcompile} is not available on Microsoft Windows. Use the GUI instead.}
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pcompile sys-<problem>.cpp
 \end{lstlisting} \end{quote} } \noindent
 that produces the file \filef{sys-$<$problem$>$.so}.
 The system definition should include the header file \filef{pddesys.h}
 (\fun{#include pddesys.h}), which defines the syntax of the functions. Also, all
-the functions must be declared as \fun{extern "C"}, to make their names
+the functions must be declared as \fun{extern "C"}, to make their exported names
 independent of the C++ name mangling. The definition of a system of equations in
 \pdde{} is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that
 are passed to the user defined functions are
@@ -738,7 +739,7 @@ The required functions are
 t )$, too.
   
   \item[-] \fun{ int sys_nderi(); } \\ 
-  This function returns the order of supplied derivatives. In case of $0$ the
+  This function returns the order of supplied derivatives. In the case of $0$
 \fun{sys_deri(...)} can be empty, although should be defined. For $1$ only the
 first order derivatives with respect to the state variables and the parameters
 need to be supplied. If the returned value is $2$ all the required derivatives
@@ -749,7 +750,7 @@ calculated using the first order derivatives.
   
   \item[-] \fun{ void sys_tau( Vector\& out, double t, const Vector\& par ); }
 \\
-  The output vector \fun{out} is the output variable and contains the vector of delays
+  The output vector \fun{out} contains the vector of delays
   including a zero for the non-delayed term. For example for $\dot{x} ( t ) =
   f ( t, x ( t ), x ( t - T ) )$ \fun{out} is a vector with 2 elements:
   \fun{out(0)}$=0.0$, \fun{out(1) = par(0)}.
@@ -766,25 +767,22 @@ Vector\& par );} \\
 \ldots )$ of the equation.
   
   \item[-] \fun{void sys_deri( Matrix\& out, double t, const Matrix\& xx, const
-Vector\& par, int nx, int* vx, int np, int* vp, const Matrix\& v );} \\
+Vector\& par, int nx, const int* vx, int np, const int* vp, const Matrix\& v );} \\
   This function supplies the derivatives of $f$ with respect to variables and
 parameters. As mentioned before, this function can be empty or can supply some
 or all the necessary derivatives.
   \fun{nx} is the order (0, 1 or 2) of derivatives with respect to $x( t
-- \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies the delayed state as the which argument(s) of $f$
-is used in
-  the differentiation. For example, if \fun{nx==1} then the first order derivatives of $f$ has to be supplied 
-  in the matrix \fun{out} with respect to the \fun{vx[0]}th vector argument of $f$. 
-  If \fun{nx==2}, the second derivative is calculated with respect to $x( t -
-  \tau_{\mathrm{vx[0]}} )$ and $x( t - \tau_{\mathrm{vx[1]}} )$ resulting in a 3
+- \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies the delayed state(s) that is(are) used to differentiate $f$.
+If \fun{nx==1} the first order derivatives of $f$ has to be supplied 
+in the matrix \fun{out} with respect its \fun{vx[0]}th vector argument.
+If \fun{nx==2}, the second derivative is calculated with respect to $x(t -
+\tau_{\mathrm{vx[0]}} )$ and $x( t - \tau_{\mathrm{vx[1]}} )$ resulting in a 3
 index tensor, which is finally multiplied by the \fun{vx[1]} the column of
-\fun{v} to get a matrix.
+\fun{v} to get a matrix, see table \ref{deritable}.
   Derivatives with respect to parameters are requested if \fun{np==1}. If
 \fun{nx==0} the output is a vector, because it is the derivative of the
 right-hand side only with respect to the scalar \fun{par(vp[0])}. However, if
-\fun{nx==1}, the first order derivative w.r.t. the state variables is
-differentiated further with respect to the \fun{par(vp[0])} resulting in a
-matrix.
+\fun{nx==1} and \fun{np=1}, the first order derivative w.r.t. the state variables is differentiated further with respect to the \fun{par(vp[0])} resulting in a matrix.
   \begin{table}
   \begin{center}
   \begin{tabular}{ c c c|c }
@@ -801,7 +799,7 @@ A_{\mathrm{vx[0]}} \in \mathbb{R}^{n \times n}$ \\
 v(\,.,\mathrm{vx[0]}) \right) $
   \end{tabular}
   \end{center}
-  \caption{Possible outputs of \fun{void sys_deri(...)}. }
+  \caption{Possible outputs of \fun{void sys_deri(...)}. }\label{deritable}
   \end{table}
   
   \item \fun{void sys_stpar( Vector\& par );} \\
@@ -888,7 +886,7 @@ the second column is the $L^2$ norm of the solution. From the third column on,
 the free parameters are displayed. The column denoted by \funp{USTAB} refers to
 the number of unstable characteristic roots, if stability computation is turned
 on (see \funp{STAB} below), otherwise it is constantly zero regardless of the actual stability. 
-The last column is the number of the Newton iterations, within each continuation step.
+The last column is the number of Newton iterations in a continuation step.
 
 \subsection{Example: Mackey-Glass equation}
 
@@ -1105,7 +1103,7 @@ by using the constants file.
 \includegraphics{fig/plot-pd-ns}
 \end{center}
 \caption{The bifurcation at the Hopf bifurcation curve (HB) is supercritical. 
-The periodic solution loses stability at the doubling bifurcation curve (PD).}
+The periodic solution loses stability at the period doubling bifurcation curve (PD).}
 \label{pdbif}
 \end{figure}
 
@@ -1247,7 +1245,7 @@ buttons. As before, the \filef{LABEL} spinbox contains the solution label in
 the input file that is used as a starting point in the numerical continuation.
 
 The system definition file can be selected in the \filef{SYSNAME} line by
-opening a shared object (\filef{.so}) file of compiling it from a C++ source
+opening a shared object (\filef{.so}) file or compiling it from a C++ source
 (\filef{.cpp}) file.
 
 The \filef{POINT TYPE} can be selected from the following choices
@@ -1305,7 +1303,7 @@ Chebyshev collocation method when computing quasi-periodic tori.
 \subsection{Computing a branch of solutions}
 
 If all the parameters are set up it is recommended to \filef{Save} \iconSave{}
-(or \filef{Save As...} \iconSaveAs{} the settings. To start the computation
+(or \filef{Save as...}) \iconSaveAs{} the settings. To start the computation
 press the \filef{Run} \iconRun{} button. Pressing the \filef{Stop} \iconStop{}
 button will stop the computation after the approximation of the current point on
 the branch is finished.
@@ -1314,7 +1312,7 @@ the branch is finished.
 
 The result of the computation can be viewed in textual form. Pressing the
 \filef{Text} \iconText{} button in the main window
-will pop up the text window (see Fig.\ \ref{textwindow}) that constains almost
+will pop up the text window (see Fig.\ \ref{textwindow}) that contains almost
 the same output as the terminal output of the CLI.
 \begin{figure}
 \begin{center}

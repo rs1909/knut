@@ -8,14 +8,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="313.59262"
+   height="201.03127"
    id="svg3032"
    sodipodi:version="0.32"
    inkscape:version="0.45.1"
    sodipodi:docbase="/home/robbie/comp/pdde/doc/fig"
    sodipodi:docname="plot-lp3d.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.0">
   <defs
      id="defs3034" />
   <sodipodi:namedview
@@ -28,15 +29,15 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="375"
-     inkscape:cy="520"
+     inkscape:zoom="3.1338409"
+     inkscape:cx="156.79632"
+     inkscape:cy="100.51563"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     inkscape:window-width="812"
-     inkscape:window-height="622"
+     inkscape:window-width="1440"
+     inkscape:window-height="830"
      inkscape:window-x="0"
-     inkscape:window-y="0" />
+     inkscape:window-y="23" />
   <metadata
      id="metadata3037">
     <rdf:RDF>
@@ -51,7 +52,8 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-197.4894,-211.84655)">
     <g
        id="g2913"
        transform="matrix(1.1829801,0,0,1.1829801,-129.75833,292.06591)">
