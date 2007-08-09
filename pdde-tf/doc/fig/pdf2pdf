@@ -1,0 +1,10 @@
+#!/bin/sh
+# Steps to convert SVG to PDF
+# 1) fit the page to the drawing in inkscape
+# 1a) select all the drawings and CTRL-C (copy)
+# 1b) Fit page to drawing. This will rescale the image
+# 1c) CTRL-V (paste) and align the drawing to the borders
+# 1d) remove the original (wrongfully scaled) drawing
+# 2) Save as... PDF X.svg.pdf
+# 3) pdf2pdf X.svg.pdf X.pdf
+gs -dEPSCrop -sDEVICE=pdfwrite -dBATCH -dNOPAUSE -dSAFER -sOutputFile=$2 $1
