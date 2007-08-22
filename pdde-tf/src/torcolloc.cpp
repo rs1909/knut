@@ -221,7 +221,7 @@ void CollocTR::interpolate(Matrix& xx, Array1D<double>& sol, int* kk, double* t1
       for (int j1 = 0; j1 < ndeg1 + 1; j1++)
       {
         const int idxK = idxkk(j1, j2, k);
-        const double cf = poly_eval(lgr1(j1), c1) * poly_eval(lgr2(j2), c2);
+        const double cf = poly_lgr_eval(mesh1, j1, c1) * poly_lgr_eval(mesh2, j2, c2);
         for (int p = 0; p < NDIM; p++)
         {
           xx(p, k - 1) += cf * sol(p + NDIM * kk[idxK]);
@@ -239,8 +239,8 @@ void CollocTR::interpolate(Matrix& xx, Array1D<double>& sol, int* kk, double* t1
       for (int j1 = 0; j1 < ndeg1 + 1; j1++)
       {
         const int idx = idxkk(j1, j2, k);
-        const double cf1 = poly_eval(dlg1(j1), c1) * nint1 * poly_eval(lgr2(j2), c2);
-        const double cf2 = poly_eval(lgr1(j1), c1) * poly_eval(dlg2(j2), c2) * nint2;
+        const double cf1 = poly_dlg_eval(mesh1, j1, c1) * nint1 * poly_lgr_eval(mesh2, j2, c2);
+        const double cf2 = poly_lgr_eval(mesh1, j1, c1) * poly_dlg_eval(mesh2, j2, c2) * nint2;
         for (int p = 0; p < NDIM; p++)
         {
           xx(p, NTAU + 2*k)   += cf1 * sol(p + NDIM * kk[idx]);
@@ -411,7 +411,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
                 const int idxK = idxkk(l1, l2, k);
                 if (k != 0)
                 {
-                  const double cf = poly_eval(lgr1(l1), c1) * poly_eval(lgr2(l2), c2);
+                  const double cf = poly_lgr_eval(mesh1, l1, c1) * poly_lgr_eval(mesh2, l2, c2);
                   for (int p = 0; p < NDIM; p++)
                   {
                     for (int q = 0; q < NDIM; q++)
@@ -424,8 +424,8 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
                 }
                 else
                 {
-                  const double cf1 = poly_eval(dlg1(l1), c1) * nint1 * poly_eval(lgr2(l2), c2);
-                  const double cf2 = poly_eval(lgr1(l1), c1) * poly_eval(dlg2(l2), c2) * nint2;
+                  const double cf1 = poly_dlg_eval(mesh1, l1, c1) * nint1 * poly_lgr_eval(mesh2, l2, c2);
+                  const double cf2 = poly_lgr_eval(mesh1, l1, c1) * poly_dlg_eval(mesh2, l2, c2) * nint2;
                   for (int p = 0; p < NDIM; p++)
                   {
                     for (int q = 0; q < NDIM; q++)

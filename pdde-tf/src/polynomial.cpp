@@ -86,3 +86,38 @@ void gauss(Array1D<double>& mesh)
   const int N = mesh.Size();
   if (mesh.Size() > 1) for (int i = 0; i < mesh.Size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((2.0 * i + 1.0) / (2.0 * N + 2) * M_PI));
 }
+
+double poly_lgr_eval( const Array1D<double>& t, int i, double c)
+{
+  double res = 1.0;
+  for (int j = 0; j < t.Size(); j++)
+  {
+    if (j != i)
+    {
+      res *= (c-t(j))/(t(i)-t(j));
+    }
+  }
+  return res;
+}
+
+double poly_dlg_eval( const Array1D<double>& t, int i, double c)
+{
+  double res = 0.0;
+  for (int k = 0; k < t.Size(); ++k)
+  {
+    if (k != i)
+    {
+      double prod = 1.0/(t(i)-t(k));
+      for (int j = 0; j < t.Size(); ++j)
+      {
+        if ((j != i)&&(j != k))
+        {
+          prod *= (c-t(j))/(t(i)-t(j));
+        }
+      }
+      res += prod;
+    }
+  }
+  return res;
+}
+

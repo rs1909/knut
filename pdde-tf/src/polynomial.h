@@ -26,3 +26,7 @@ double poly_eval(const Array1D<double>& in, double c);
 void lobatto(Array1D<double>& mesh);
 
 void gauss(Array1D<double>& mesh);
+
+double poly_lgr_eval( const Array1D<double>& t, int i, double c);
+
+double poly_dlg_eval( const Array1D<double>& t, int i, double c);
