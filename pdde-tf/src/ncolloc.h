@@ -27,10 +27,10 @@ class NColloc
     void meshAdapt(Vector& newmesh, const Vector& profile);
     void profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile);
 
-    void Interpolate(JagMatrix3D& out, const Vector& sol);
-    void InterpolateREAL(JagMatrix3D& out, const Vector& sol);
-    void InterpolateCPLX(JagMatrix3D& out, const Vector& sol);
-    void InterpolateMSH(JagMatrix3D& out, const Vector& sol);
+    void Interpolate(Array3D<double>& out, const Vector& sol);
+    void InterpolateREAL(Array3D<double>& out, const Vector& sol);
+    void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
+    void InterpolateMSH(Array3D<double>& out, const Vector& sol);
 
     static void   getMetric(Matrix& mt, const Vector& t);
     static void   getDiffMetric(Matrix& mt, const Vector& t);
@@ -53,38 +53,41 @@ class NColloc
 
     // continuation of solution
 
-    void RHS(Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int p);   // sol is currently not needed
-    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol, const JagMatrix3D& solData);          // sol is currently not needed
+    void RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData, int p);   // sol is currently not needed
+    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol, const Array3D<double>& solData);          // sol is currently not needed
 
     // for stability computation
-    void StabJac(StabMatrix& AB, const Vector& par, const JagMatrix3D& solData);
+    void StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& solData);
     // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
     // However, the variables will be contained within the NColloc class
 
     // continuation of bifurcations -> characteristic matrices
 
-    void CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z);
-    void CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double ZRe, double ZIm);
+    void CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z);
+    void CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double ZRe, double ZIm);
 
-    void CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int p);
-    void CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double ZRe, double ZIm, int p);
+    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int p);
+    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData,
+      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double ZRe, double ZIm, int p);
 
-    void CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z);
-    void CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im);
+    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z);
+    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData,
+      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
 
-    void CharJac_x_z(Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi, const JagMatrix3D& phiData, double Re, double Im);
+    void CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi,
+      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
     // we do need Re, Im
 
     // for the autonomous FOLD bifurcation
-    void CharJac_mB(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z);
-    void CharJac_mB_p(Vector& V,   const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha);
-    void CharJac_mB_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z);
+    void CharJac_mB(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z);
+    void CharJac_mB_p(Vector& V,   const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha);
+    void CharJac_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z);
 
     // autonoumous trivial eigenvector
-    void CharJac_MSHphi(Vector& V, const Vector& par, const JagMatrix3D& solData);
-    template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi);
-    void CharJac_MSHphi_p(Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha);
+    void CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solData);
+    template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi);
+    void CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solData, int alpha);
 
     // supplementary
     inline int Ndim() const
@@ -220,8 +223,9 @@ class NColloc
     Array2D<int> szI;
 
     // it stores all the collocation data
-    Array3D<double> tt;     // interpolation at the collocation points
-    Array3D<double> ttMSH;  // interpolation at the representation points
+    Array3D<double> tt;       // interpolation at the collocation points
+    Array1D<double> timeMSH;  // the representation points
+    Array3D<double> ttMSH;    // interpolation at the representation points
     Array2D<int>    kkMSH;
 
     // matrix for integration
@@ -237,6 +241,21 @@ class NColloc
 
     // for rhs, and derivatives
     // Matrix fx, dfx, t_dfx, dummy
+    Array2D<double>  p_tau;
+    Array2D<double>  p_dtau;
+    Array2D<double>  p_fx;
+    Array3D<double>  p_dfx;
+    Array3D<double>  p_dfp;
+    Array2D<double>& p_fxRe;
+    Array2D<double>  p_fxIm;
+    Array3D<double>& p_dfxRe;
+    Array3D<double>  p_dfxIm;
+    Array2D<double>  p_tauMSH;
+    Array2D<double>  p_dtauMSH;
+    Array2D<double>  p_fxMSH;
+    Array3D<double>  p_dfxMSH;
+    Array3D<double>  p_dfpMSH;
+    Array3D<double>  p_dummy;
 };
 
 #define NDIM ndim
@@ -246,24 +265,20 @@ class NColloc
 #define NDEG ndeg
 #define NMAT nmat
 
-template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par, const JagMatrix3D& solMSHData, const Vector& phi)
+template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
+//   Matrix dfx(NDIM, NDIM);
+//   Matrix dummy(0, 0);
+//   std::cout << "NColloc::CharJac_MSHphi_x NOT IMPLEMENTED YET\n"; throw(-1);
 
   V.Clear(); /// it is not cleared otherwise!!!!
 
-  for (int idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
+  for (int k = 0; k < NTAU; k++)
   {
-    const int i = (idx / NDEG) % NINT;
-    const int j = idx % NDEG;
-    const double h = mesh(i + 1) - mesh(i);
-
-    int nx = 1, vx, np = 0, vp;
-    for (int k = 0; k < NTAU; k++)
+    int nx = 1, vx = k, np = 0, vp;
+    sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, nx, &vx, np, &vp, p_dummy);
+    for (int idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
     {
-      vx = k;
-      sys->deri(dfx, mesh(i) + j*h / (double)NDEG, solMSHData(idx), par, nx, &vx, np, &vp, dummy);
       for (int l = 0; l < NDEG + 1; l++) // degree
       {
         for (int p = 0; p < NDIM; p++)   // row
@@ -271,9 +286,9 @@ template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par
           for (int q = 0; q < NDIM; q++)   //column
           {
             if (trans) V(q + NDIM*(l + NDEG*kkMSH(k, idx))) -=
-                dfx(p, q) * ttMSH(k, l, idx) * phi(p + NDIM * idx);
+                p_dfxMSH(p, q, idx) * ttMSH(k, l, idx) * phi(p + NDIM * idx);
             else      V(p + NDIM*idx) -=
-                dfx(p, q) * ttMSH(k, l, idx) * phi(q + NDIM * (l + NDEG * kkMSH(k, idx)));
+                p_dfxMSH(p, q, idx) * ttMSH(k, l, idx) * phi(q + NDIM * (l + NDEG * kkMSH(k, idx)));
           }
         }
       }

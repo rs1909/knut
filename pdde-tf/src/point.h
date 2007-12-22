@@ -177,7 +177,7 @@ class Point
     (
       HyperMatrix& AA, HyperVector& RHS,                      // output
       Vector& parPrev, Vector& par,                           // parameters
-      Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
+      Vector& solPrev, Vector& sol, Array3D<double>& solData, // solution
       Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
@@ -235,13 +235,13 @@ class Point
     NColloc      colloc;
 
     // the solutions interpolated values
-    JagMatrix3D  solData;
+    Array3D<double> solData;
 
     // stability matrix
     StabMatrix   jacStab;
 
     // test functionals
-    baseTestFunct* testFunct;
+    Array1D<baseTestFunct*> testFunct;
 };
 
 //-------------------------------------------------------//

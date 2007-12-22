@@ -72,7 +72,7 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
     mRe(nmul), mIm(nmul),
     rotRe(2), rotIm(2),                  // !!!only for Hartmut's equation!!!!
     colloc(sys_, nint, ndeg, nmat),
-    solData(ndeg*nint, sys_.ndim(), 2*sys_.ntau() + 1),
+    solData(sys_.ndim(), 2*sys_.ntau() + 1, ndeg*nint),
     jacStab(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1))
 {
   RefEps   = REFEPS;
@@ -290,7 +290,7 @@ void Point::Construct()
   dim1 = NDIM * (NINT * NDEG + 1);
 
   // a) setting th etest functional b) determining the number of trivial multipliers
-  testFunct = 0;
+  testFunct.Init(eqn.Size());
   bool phaut = false;
   bool phrot = false;
   for (int i = 1; i < eqn.Size(); i++)
@@ -298,26 +298,26 @@ void Point::Construct()
     switch (eqn(i))
     {
       case EqnTFLP:
-        P_ERROR(testFunct == 0);
-        testFunct = new TestFunct(colloc, 1.0);
+        P_ERROR(testFunct(i) == 0);
+        testFunct(i) = new TestFunct(colloc, 1.0);
         break;
       case EqnTFPD:
-        P_ERROR(testFunct == 0);
-        testFunct = new TestFunct(colloc, -1.0);
+        P_ERROR(testFunct(i) == 0);
+        testFunct(i) = new TestFunct(colloc, -1.0);
         break;
       case EqnTFLPAUT:
-        P_ERROR(testFunct == 0);
-        testFunct = new TestFunctLPAUT(colloc, 1.0);
+        P_ERROR(testFunct(i) == 0);
+        testFunct(i) = new TestFunctLPAUT(colloc, 1.0);
         break;
       case EqnTFLPAUTROT:
-        P_ERROR(testFunct == 0);
-        testFunct = new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0);
+        P_ERROR(testFunct(i) == 0);
+        testFunct(i) = new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0);
         break;
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test funtional are not paired.");
-        P_ERROR(testFunct == 0);
-        testFunct = new TestFunctCPLX(colloc);
+        P_ERROR(testFunct(i) == 0);
+        testFunct(i) = new TestFunctCPLX(colloc);
         break;
       case EqnTFCPLX_IM:
         P_ERROR_X1(eqn(i - 1) == EqnTFCPLX_RE,
@@ -332,8 +332,8 @@ void Point::Construct()
       default:
         break;
     }
+    if (testFunct(i)) testFunct(i)->setKernelTolerance(KernEps, KernIter);
   }
-  if (testFunct) testFunct->setKernelTolerance(KernEps, KernIter);
   nTrivMul = 0;
   if (phaut) ++nTrivMul;
   if (phrot) ++nTrivMul;
@@ -357,7 +357,7 @@ void Point::Construct()
 // private
 void Point::Dispose()
 {
-  delete testFunct;
+  for (int i=0; i<testFunct.Size(); ++i) delete testFunct(i);
   delete jac;
 
   delete rhs;
@@ -375,7 +375,7 @@ void Point::Dispose()
 void Point::Jacobian(
   HyperMatrix& AA, HyperVector& RHS,                      // output
   Vector& parPrev, Vector& par,                           // parameters
-  Vector& solPrev, Vector& sol, JagMatrix3D& solData,     // solution
+  Vector& solPrev, Vector& sol, Array3D<double>& solData, // solution
   Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
   double ds, bool cont)                                              // cont: true if continuation
 {
@@ -463,13 +463,13 @@ void Point::Jacobian(
       case EqnTFPD:
       case EqnTFLPAUT:
       case EqnTFLPAUTROT:
-        RHS.getV3()(i - 1) = testFunct->Funct(colloc, par, sol, solData);
-        testFunct->Funct_x(AA.getA31(i - 1), colloc, par, sol, solData);
+        RHS.getV3()(i - 1) = testFunct(i)->Funct(colloc, par, sol, solData);
+        testFunct(i)->Funct_x(AA.getA31(i - 1), colloc, par, sol, solData);
         for (int j = 1; j < varMap.Size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            AA.getA33()(i - 1, j - 1) = testFunct->Funct_p(colloc, par, sol, solData, varMap(j));
+            AA.getA33()(i - 1, j - 1) = testFunct(i)->Funct_p(colloc, par, sol, solData, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
@@ -484,18 +484,18 @@ void Point::Jacobian(
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test funtional are not paired.");
-        testFunct->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), colloc, par, sol, solData,
+        testFunct(i)->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), colloc, par, sol, solData,
                          cos(par(NPAR + ParAngle)), sin(par(NPAR + ParAngle)));
-        testFunct->Funct_x(AA.getA31(i - 1), AA.getA31(i), colloc, par, sol, solData);
+        testFunct(i)->Funct_x(AA.getA31(i - 1), AA.getA31(i), colloc, par, sol, solData);
         for (int j = 1; j < varMap.Size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            testFunct->Funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData, varMap(j));
+            testFunct(i)->Funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
-            testFunct->Funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData);
+            testFunct(i)->Funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData);
           }
           else
           {
@@ -687,7 +687,9 @@ int Point::Refine(std::ostream& out, bool adapt)
 
 void Point::SwitchTFHB(double ds)
 {
-  TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct);
+  int idx = 0;
+  for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
   Vector QRE(NDIM), QIM(NDIM);
 
   par(0) = tf->SwitchHB(QRE, QIM, colloc, par);
@@ -1164,7 +1166,9 @@ void Point::ReadNull(std::ifstream& file)
 void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg)   // starting data for tori: tangent
 {
   Vector TRe(sol.Size()), TIm(sol.Size());
-  TestFunctCPLX* tf = dynamic_cast< TestFunctCPLX* >(testFunct);
+  int idx = 0;
+  for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct(idx));
   if (tf)
   {
     tf->Switch(TRe, TIm, alpha);

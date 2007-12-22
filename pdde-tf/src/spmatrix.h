@@ -356,7 +356,8 @@ inline int SpMatrix::NewL(int size_)
 inline int& SpMatrix::WrLi(int l, int e)
 {
 #ifdef DEBUG
-  P_ASSERT_X((l < n) && (Ap[l] + e < Ap[l+1]) && (e >= 0) && (l >= 0) && (Ap[l] + e < size), "WrLi bound ");
+//   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
+  P_ASSERT_X((l < n) && (e < Ap[l+1]-Ap[l]) && (e >= 0) && (l >= 0) && (Ap[l] + e < size), "WrLi bound ");
 #endif
   return Ai[Ap[l] + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";

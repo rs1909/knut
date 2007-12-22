@@ -24,22 +24,22 @@ class baseTestFunct
     baseTestFunct() { kernEps = TF_KERNEPS; kernIter = TF_NKERNITER; }
     virtual        ~baseTestFunct()
     {}
-    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
-    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
-    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha) = 0;
-    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const JagMatrix3D& solData) = 0;
+    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) = 0;
+    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) = 0;
+    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha) = 0;
+    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const Array3D<double>& solData) = 0;
 
-    virtual void Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+    virtual void Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
                       double Re, double Im) = 0;
     virtual void Funct(double& f1, double& f2,
-                       NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im) = 0;
+                       NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, double Re, double Im) = 0;
     virtual void Funct_p(double& f1, double& f2,
-                         NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
                          int alpha) = 0;
     virtual void Funct_z(double& f1, double& f2,
-                         NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) = 0;
     virtual void Funct_x(Vector& func1, Vector& func2,
-                         NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData) = 0;
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) = 0;
     virtual void Switch(Vector& phi) = 0;
     virtual void setKernelTolerance(double eps, int iter) { kernEps = eps; kernIter = iter; }
   protected:
@@ -52,20 +52,20 @@ class TestFunct : public baseTestFunct
   public:
     TestFunct(NColloc& col, double Z);
     ~TestFunct();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
+    void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
 
-    void Init(NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Init(NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int)
+    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
     void Switch(Vector& phi);
 
@@ -80,7 +80,7 @@ class TestFunct : public baseTestFunct
     Vector      vv;
     Vector      uudiff;
     Vector      vvdiff;
-    JagMatrix3D vvData;
+    Array3D<double> vvData;
 };
 
 class TestFunctCPLX : public baseTestFunct
@@ -88,30 +88,30 @@ class TestFunctCPLX : public baseTestFunct
   public:
     TestFunctCPLX(NColloc& col);
     ~TestFunctCPLX();
-    void   Init(NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void   Init(NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
-    double Funct(NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    double Funct(NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {
       return 0.0;
     }
-    double Funct_p(NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int)
+    double Funct_p(NColloc&, const Vector&, const Vector&, const Array3D<double>&, int)
     {
       return 0.0;
     }
-    void   Funct_x(Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void   Funct_x(Vector&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
 
-    void Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+    void Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
               double Re, double Im);
     void Funct(double& f1, double& f2,
-               NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, double Re, double Im);
+               NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, double Re, double Im);
     void Funct_p(double& f1, double& f2,
-                 NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData,
+                 NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
                  int alpha);
     void Funct_z(double& f1, double& f2,
-                 NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
+                 NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
     void Funct_x(Vector& func1, Vector& func2,
-                 NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
+                 NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
     inline void Switch(Vector&)
     {}
     void   Switch(Vector& Re, Vector& Im, double& alpha);
@@ -129,7 +129,8 @@ class TestFunctCPLX : public baseTestFunct
     Vector      vv;
     Vector      gg;
     Vector      hh;
-    JagMatrix3D vvData;
+    Array3D<double> vvDataRe;
+    Array3D<double> vvDataIm;
 };
 
 class TestFunctLPAUT : public baseTestFunct
@@ -137,20 +138,20 @@ class TestFunctLPAUT : public baseTestFunct
   public:
     TestFunctLPAUT(NColloc& col, double Z);
     ~TestFunctLPAUT();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const JagMatrix3D& solData);
+    void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const Array3D<double>& solData);
 
-    void Init(NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Init(NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int)
+    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
     void Switch(Vector& phi);
 
@@ -173,9 +174,9 @@ class TestFunctLPAUT : public baseTestFunct
     Vector      gg2;
     Vector      hh2;
     Vector      one2;  // this is ( 0.0, 1.0 )
-    JagMatrix3D phiData;
-    JagMatrix3D vv2Data;
-    JagMatrix3D solMSHData;
+    Array3D<double> phiData;
+    Array3D<double> vv2Data;
+    Array3D<double> solMSHData;
 };
 
 class TestFunctLPAUTROT : public baseTestFunct
@@ -183,20 +184,20 @@ class TestFunctLPAUTROT : public baseTestFunct
   public:
     TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
+    void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
 
-    void Init(NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Init(NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int)
+    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
     void Switch(Vector& phi);
 
@@ -222,10 +223,10 @@ class TestFunctLPAUTROT : public baseTestFunct
     Vector       rhs3;
     Vector       one3;  // this is ( 0.0, 1.0 )
     Vector       temp;
-    JagMatrix3D  phiData;
-    JagMatrix3D  LAMData;
-    JagMatrix3D  vv3Data;
-    JagMatrix3D  solMSHData;
+    Array3D<double>  phiData;
+    Array3D<double>  LAMData;
+    Array3D<double>  vv3Data;
+    Array3D<double>  solMSHData;
 };
 
 
@@ -234,20 +235,20 @@ class TestFunctLPAUTROT_X : public baseTestFunct
   public:
     TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT_X();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const JagMatrix3D& solData);
+    void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
 
-    void Init(NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Init(NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, double, double)
+    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&, int)
+    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const JagMatrix3D&)
+    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&, const Array3D<double>&)
     {}
     void Switch(Vector& phi);
 
@@ -283,10 +284,70 @@ class TestFunctLPAUTROT_X : public baseTestFunct
     Vector       one2;  // this is ( 0.0, 1.0 )
     Vector       rhs;   // this is always zero, so one instance is enogh
     Vector       temp;
-    JagMatrix3D  vv1Data;
-    JagMatrix3D  vv2Data;
-    JagMatrix3D  vv3Data;
-    JagMatrix3D  solMSHData;
+    Array3D<double>  vv1Data;
+    Array3D<double>  vv2Data;
+    Array3D<double>  vv3Data;
+    Array3D<double>  solMSHData;
+};
+
+class TestFunctIntersect : public baseTestFunct
+{
+  public:
+    TestFunctIntersect() { }
+    virtual        ~TestFunctIntersect()
+    {}
+    // only first derivatives
+    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    // return value
+    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    // derivative w.r.t. alpha
+    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    // derivative w.r.t. state variables
+    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const Array3D<double>& solData);
+
+    // these are not implemented
+    virtual void Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
+                      double Re, double Im) { }
+    virtual void Funct(double& f1, double& f2,
+                       NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, double Re, double Im) { }
+    virtual void Funct_p(double& f1, double& f2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
+                         int alpha) { }
+    virtual void Funct_z(double& f1, double& f2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) { }
+    virtual void Funct_x(Vector& func1, Vector& func2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) { }
+    virtual void Switch(Vector& phi) { }
+};
+
+class TestFunctGrazing : public baseTestFunct
+{
+  public:
+    TestFunctGrazing() { }
+    virtual        ~TestFunctGrazing()
+    {}
+    // set up second derivatives
+    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    // return value
+    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData);
+    // derivative w.r.t. alpha
+    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, int alpha);
+    // derivative w.r.t. state variables
+    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par, const Array3D<double>& solData);
+
+    // these are not implemented
+    virtual void Init(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
+                      double Re, double Im) { }
+    virtual void Funct(double& f1, double& f2,
+                       NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData, double Re, double Im) { }
+    virtual void Funct_p(double& f1, double& f2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData,
+                         int alpha) { }
+    virtual void Funct_z(double& f1, double& f2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) { }
+    virtual void Funct_x(Vector& func1, Vector& func2,
+                         NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData) { }
+    virtual void Switch(Vector& phi) { }
 };
 
 #endif

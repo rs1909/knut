@@ -166,6 +166,38 @@ static void poly_dlg(const Vector& t, Vector& out, double c)
   }
 }
 
+static void poly_d2lg(const Vector& t, Vector& out, double c)
+{
+  int i, j, k, l;
+  double f;
+
+  P_ASSERT_X(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
+
+  for (i = 0; i < t.Size(); i++)
+  {
+    out(i) = 0.0;
+    for (l = 0; l < t.Size(); l++)
+    {
+      if (l==i) continue;
+      for (k = 0; k < t.Size(); k++)
+      {
+        if (k==l) continue;
+        if (k==i) continue;
+        f = 1.0;
+        for (j = 0; j < t.Size(); j++)
+        {
+          if (j==k) continue;
+          if (j==l) continue;
+          if (j==i) continue;
+          f *= (c - t(j)) / (t(i) - t(j));
+        }
+        out(i) += f / (t(i) - t(k)) / (t(i) - t(l));
+      }
+    }
+  }
+}
+
+
 static inline void poly_mul(Vector& pp, double bb, double aa)
 {
   // pp * ( aa + bb*x )
@@ -288,6 +320,7 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
     mmI(ntau + 1, nint*ndeg), szI(nmat + 1, nint*ndeg),
 
     tt(2*ntau + 1, ndeg + 1, ndeg*nint),
+    timeMSH(ndeg*nint + 1),
     ttMSH(2*ntau, ndeg + 1, ndeg*nint + 1),
     kkMSH(ntau, nint*ndeg + 1),
     metric(ndeg + 1, ndeg + 1),
@@ -295,7 +328,14 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
     col(ndeg),
     out(ndeg + 1),
     meshINT(ndeg + 1),
-    lgr(ndeg+1, ndeg+1)
+    lgr(ndeg+1, ndeg+1),
+    p_tau(ntau, nint*ndeg), p_dtau(ntau, nint*ndeg),
+    p_fx(ndim, nint*ndeg), p_dfx(ndim,ndim, nint*ndeg), p_dfp(ndim,1, nint*ndeg),
+    p_fxRe(p_fx), p_fxIm(ndim, nint*ndeg),
+    p_dfxRe(p_dfx), p_dfxIm(ndim,ndim, nint*ndeg),
+    p_tauMSH(ntau, nint*ndeg+1), p_dtauMSH(ntau, nint*ndeg+1),
+    p_fxMSH(ndim, nint*ndeg+1), p_dfxMSH(ndim,ndim, nint*ndeg+1), p_dfpMSH(ndim,1, nint*ndeg+1),
+    p_dummy(0,0,nint*ndeg+1)
 {
   sys = &_sys;
   for (int i = 0; i < NINT + 1; i++) mesh(i) = i * 1.0 / NINT;
@@ -447,11 +487,46 @@ void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vect
   profileConvert(newprofile, newmesh, profile, mesh, lgr, NDIM);
 }
 
+
+/// Determines the structure of the sparse matrices
+/// Input:
+///    mesh    : the mesh [0,1]
+///    meshINT : internal mesh of the collocation subinterval (repr. points) [0,1]
+///    col     : the collocation points in [0,1]
+/// Output:
+///    time(i)  : (double) all the collocation point
+///    kk(j,i)  : (int) the collocation interval into which the delayed time falls
+///               this must be in [0,NDEG*NINT)
+///               j == 0   for the derivative d/dt x(t)
+///               j == k+1 for x(t - \tau_k) (most of the time \tau_0 = 0)
+///    ee(j,i)  : kk(ee(j,i),i) is in increasing order
+///    dd(j,i)  : if there are neighbouring subintervals, then this increases by one
+///    rr(j,i)  : counts the real number of intervals. If i & i+1 overlap they have the same rr number.
+///    kkS(j,i) : the kk for two separate matrices, e.g., when calculating the; NOT used
+///    eeS(j,i) : see ee
+///    ddS(j,i) : see dd
+///    rrS(j,i) : see rr
+///    mmS(j,i) : if == 0 then matrix A, if == 1 the \Sum_k B_k; NOT used
+///    szS(0,i) : size of A
+///    szS(1,i) : size of \Sum B_k ; used in CharJac_mB
+///    kkI(j,i) : kk without the mod operation
+///    eeI(j,i) : sorting kkI
+///    ddI(j,i) : see dd
+///    rrI(j,i) : see rr
+///    mmI(j,i) : the exponent of \mu in (A - \Sum_k \mu^k B_k)
+///    szI(j,i) : in Stability
+///    kkMSH(j,i) : j = k, the delay. Here, we don't shift as in others
+///                 this is same as kk, but at the representation points
+///    tt(j,l,i) : j == 0, interp derivative
+///                j == k+1, interp at the k-th delay;
+///                j == k+NDEG+1; interp of derivative at the k-th delay
+///    ttMSH(j,l,i) : j = k, the delay. Here, we don't shift as in others
+///                   it contains only the middle of tt j=1...NDEG at indices j=0...NDEG-1
+///
 void NColloc::Init(const Vector& par, const Vector& /*sol*/)
 {
   double *t = new double[NTAU+1];
   double *tMSH = new double[NTAU];
-  Vector ttau(NTAU);
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -463,6 +538,7 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
       /* first, the derivative: x'(t)*/
       t[0] = mesh(i) + h0 * col(j); // xdot(c_i,j)
       time(idx) = t[0];
+      timeMSH(idx) = mesh(i) + h0 * meshINT(j);
       kk(0, idx) = i;
       kkS(0, idx) = i;
       kkI(0, idx) = i;
@@ -474,22 +550,22 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
       }
 
       /* second, the right-hand side */
-      sys->tau(ttau, t[0], par);
+      sys->p_tau(p_tau, time, par);
       for (int k = 0; k < NTAU; k++)
       {
-        ttau(k) /= par(0);
-        P_ERROR_X2(ttau(k) <= NMAT, "\n NColloc::Init: DELAY > NMAT*PERIOD ", k);
-        P_ERROR_X2(ttau(k) >= 0.0, "\n NColloc::Init: Negative DELAY ", k);
-        t[1+k] = (t[0] - ttau(k)) - floor(t[0] - ttau(k));  // nem szetvalasztott
+        p_tau(k,idx) /= par(0);
+        P_ERROR_X2(p_tau(k,idx) <= NMAT, "\n NColloc::Init: DELAY > NMAT*PERIOD ", k);
+        P_ERROR_X2(p_tau(k,idx) >= 0.0, "\n NColloc::Init: Negative DELAY ", k);
+        t[1+k] = (t[0] - p_tau(k,idx)) - floor(t[0] - p_tau(k,idx));  // nem szetvalasztott
 
-        // binary search for in which interval is t-tau(k)
+        // binary search for in which interval is t-p_tau(k,idx)
         const int low = meshlookup(mesh, t[1+k]);
         kk(k + 1, idx) = low;
 
-        if (t[0] - ttau(k) >= 0) kkS(k + 1, idx) = low;
+        if (t[0] - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low;
         else kkS(k + 1, idx) = low - NINT;
 
-        kkI(k + 1, idx) = low + NINT * static_cast<int>(floor(t[0] - ttau(k)));
+        kkI(k + 1, idx) = low + NINT * static_cast<int>(floor(t[0] - p_tau(k,idx)));
 
         const double hk = mesh(low + 1) - mesh(low);
         // x(t-\tau_i)
@@ -505,7 +581,7 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
           tt(NTAU + 1 + k, l, idx) = out(l) / hk;
         }
         // creating interpolation at the representation points
-        tMSH[k] = mesh(i) + h0 * meshINT(j) - ttau(k) - floor(mesh(i) + h0 * meshINT(j) - ttau(k));
+        tMSH[k] = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx));
         const int lowMSH = meshlookup(mesh, tMSH[k]);
         kkMSH(k, idx) = lowMSH;
         const double hkMSH = mesh(lowMSH + 1) - mesh(lowMSH);
@@ -562,80 +638,82 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
       // filter out elements at the same position and find adjacent elements
       // for one matrix
       int idp = 0, del = 0;
-      rr(0, idx) = 0;
-      dd(0, idx) = 0;
+      rr(ee(0, idx), idx) = 0;
+      dd(ee(0, idx), idx) = 0;
 
       // for two separate matrices
       for (int r = 0; r < 2; r++) szS(r, idx) = 0;
-      for (int r = 0; r < NTAU + 1; r++) mmS(r, idx) = (-kkS(eeS(r, idx), idx) + NINT - 1) / NINT;
+      for (int r = 0; r < NTAU + 1; r++) mmS(r, idx) = (-kkS(r, idx) + NINT - 1) / NINT;
       int idpS = 0, delS = 0;
-      rrS(0, idx) = 0;
-      ddS(0, idx) = 0;
-      szS(mmS(0, idx), idx) = NDEG + 1;
+      rrS(eeS(0, idx), idx) = 0;
+      ddS(eeS(0, idx), idx) = 0;
+      szS(mmS(eeS(0, idx), idx), idx) = NDEG + 1;
 
       // for many separate matrices
       for (int r = 0; r < NMAT; r++) szI(r, idx) = 0;
-      for (int r = 0; r < NTAU + 1; r++) mmI(r, idx) = (-kkI(eeI(r, idx), idx) + NINT - 1) / NINT;
+      for (int r = 0; r < NTAU + 1; r++) mmI(r, idx) = (-kkI(r, idx) + NINT - 1) / NINT;
       int idpI = 0, delI = 0;
-      rrI(0, idx) = 0;
-      ddI(0, idx) = 0;
-      szI(mmI(0, idx), idx) = NDEG + 1;
+      rrI(eeI(0, idx), idx) = 0;
+      ddI(eeI(0, idx), idx) = 0;
+      szI(mmI(eeI(0, idx), idx), idx) = NDEG + 1;
 
       for (int r = 1; r < NTAU + 1; r++)
       {
         // for one matrix
         if (kk(ee(r - 1, idx), idx) != kk(ee(r, idx), idx)) idp++;
-        rr(r, idx) = idp;
+        rr(ee(r, idx), idx) = idp;
         if (kk(ee(r, idx), idx) - kk(ee(r - 1, idx), idx) == 1) del++;
-        dd(r, idx) = del;
+        dd(ee(r, idx), idx) = del;
 
         // for two separate matrices
-        if (mmS(r - 1, idx) != mmS(r, idx))
+        if (mmS(eeS(r - 1, idx), idx) != mmS(eeS(r, idx), idx))
         {
           idpS = 0, delS = 0;
-          szS(mmS(r, idx), idx) = NDEG + 1;
+          szS(mmS(eeS(r, idx), idx), idx) = NDEG + 1;
         }
         else
         {
           if (kkS(eeS(r - 1, idx), idx) != kkS(eeS(r, idx), idx))
           {
             idpS++;
-            szS(mmS(r, idx), idx) += NDEG + 1;
+            szS(mmS(eeS(r, idx), idx), idx) += NDEG + 1;
           }
           if (kkS(eeS(r, idx), idx) - kkS(eeS(r - 1, idx), idx) == 1)
           {
             delS++;
-            szS(mmS(r, idx), idx) -= 1;
+            szS(mmS(eeS(r, idx), idx), idx) -= 1;
           }
         }
-        rrS(r, idx) = idpS;
-        ddS(r, idx) = delS;
+        rrS(eeS(r, idx), idx) = idpS;
+        ddS(eeS(r, idx), idx) = delS;
 
         // for many separate matrices
-        if (mmI(r - 1, idx) != mmI(r, idx))
+        if (mmI(eeI(r - 1, idx), idx) != mmI(eeI(r, idx), idx))
         {
           idpI = 0, delI = 0;
-          szI(mmI(r, idx), idx) = NDEG + 1;
+          szI(mmI(eeI(r, idx), idx), idx) = NDEG + 1;
         }
         else
         {
           if (kkI(eeI(r - 1, idx), idx) != kkI(eeI(r, idx), idx))
           {
             idpI++;
-            szI(mmI(r, idx), idx) += NDEG + 1;
+            szI(mmI(eeI(r, idx), idx), idx) += NDEG + 1;
           }
           if (kkI(eeI(r, idx), idx) - kkI(eeI(r - 1, idx), idx) == 1)
           {
             delI++;
-            szI(mmI(r, idx), idx) -= 1;
+            szI(mmI(eeI(r, idx), idx), idx) -= 1;
           }
         }
-        rrI(r, idx) = idpI;
-        ddI(r, idx) = delI;
+        rrI(eeI(r, idx), idx) = idpI;
+        ddI(eeI(r, idx), idx) = delI;
+
       }
     }
   }
   // making periodic
+  timeMSH(NDEG*NINT) = 1.0;
   for (int k = 0; k < NTAU; k++)
   {
     kkMSH(k, NDEG*NINT) = kkMSH(k, 0);
@@ -649,7 +727,7 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
   delete[] t;
 }
 
-void NColloc::Interpolate(JagMatrix3D& jag, const Vector& sol)
+void NColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -661,20 +739,20 @@ void NColloc::Interpolate(JagMatrix3D& jag, const Vector& sol)
       {
         for (int k = 0; k < NDIM; k++)
         {
-          jag(idx)(k, p) = 0.0;
+          solData(k, p, idx) = 0.0;
           for (int l = 0; l < NDEG + 1; l++)
           {
-            jag(idx)(k, p) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
+            solData(k, p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
           }
         }
       }
       // x'(t)
       for (int k = 0; k < NDIM; k++)
       {
-        jag(idx)(k, NTAU) = 0.0;
+        solData(k, NTAU, idx) = 0.0;
         for (int l = 0; l < NDEG + 1; l++)
         {
-          jag(idx)(k, NTAU) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
+          solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
         }
       }
       // x'(t-\tau_i)
@@ -682,10 +760,10 @@ void NColloc::Interpolate(JagMatrix3D& jag, const Vector& sol)
       {
         for (int k = 0; k < NDIM; k++)
         {
-          jag(idx)(k, NTAU + 1 + p) = 0.0;
+          solData(k, NTAU + 1 + p, idx) = 0.0;
           for (int l = 0; l < NDEG + 1; l++)
           {
-            jag(idx)(k, NTAU + 1 + p) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(NTAU + 1 + p, l, idx);
+            solData(k, NTAU + 1 + p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(NTAU + 1 + p, l, idx);
           }
         }
       }
@@ -693,7 +771,7 @@ void NColloc::Interpolate(JagMatrix3D& jag, const Vector& sol)
   }
 }
 
-void NColloc::InterpolateREAL(JagMatrix3D& jag, const Vector& sol)
+void NColloc::InterpolateREAL(Array3D<double>& solData, const Vector& sol)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -706,27 +784,27 @@ void NColloc::InterpolateREAL(JagMatrix3D& jag, const Vector& sol)
         for (int k = 0; k < NDIM; k++)
         {
           // std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
-          jag(idx)(k, p) = 0.0;
+          solData(k, p, idx) = 0.0;
           for (int l = 0; l < NDEG + 1; l++)
           {
-            jag(idx)(k, p) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
+            solData(k, p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
           }
         }
       }
       // x'(t)
       for (int k = 0; k < NDIM; k++)
       {
-        jag(idx)(k, NTAU) = 0.0;
+        solData(k, NTAU, idx) = 0.0;
         for (int l = 0; l < NDEG + 1; l++)
         {
-          jag(idx)(k, NTAU) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
+          solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
         }
       }
     }
   }
 }
 
-void NColloc::InterpolateMSH(JagMatrix3D& jag, const Vector& sol)
+void NColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -739,12 +817,12 @@ void NColloc::InterpolateMSH(JagMatrix3D& jag, const Vector& sol)
         for (int k = 0; k < NDIM; k++)
         {
           // std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
-          jag(idx)(k, p)      = 0.0;
-          jag(idx)(k, NTAU + p) = 0.0;
+          solData(k, p, idx)      = 0.0;
+          solData(k, NTAU + p, idx) = 0.0;
           for (int l = 0; l < NDEG + 1; l++)
           {
-            jag(idx)(k, p)      += sol(k + NDIM * (l + kkMSH(p, idx) * NDEG)) * ttMSH(p, l, idx);
-            jag(idx)(k, NTAU + p) += sol(k + NDIM * (l + kkMSH(p, idx) * NDEG)) * ttMSH(NTAU + p, l, idx);
+            solData(k, p, idx)      += sol(k + NDIM * (l + kkMSH(p, idx) * NDEG)) * ttMSH(p, l, idx);
+            solData(k, NTAU + p, idx) += sol(k + NDIM * (l + kkMSH(p, idx) * NDEG)) * ttMSH(NTAU + p, l, idx);
           }
         }
       }
@@ -755,12 +833,12 @@ void NColloc::InterpolateMSH(JagMatrix3D& jag, const Vector& sol)
     for (int k = 0; k < NDIM; k++)
     {
       // std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
-      jag(NDEG*NINT)(k, p)        = 0.0;
-      jag(NDEG*NINT)(k, NTAU + p) = 0.0;
+      solData(k, p, NDEG*NINT)        = 0.0;
+      solData(k, NTAU + p, NDEG*NINT) = 0.0;
       for (int l = 0; l < NDEG + 1; l++)
       {
-        jag(NDEG*NINT)(k, p)      += sol(k + NDIM * (l + kkMSH(p, NDEG * NINT) * NDEG)) * ttMSH(p, l, NDEG * NINT);
-        jag(NDEG*NINT)(k, NTAU + p) += sol(k + NDIM * (l + kkMSH(p, NDEG * NINT) * NDEG)) * ttMSH(NTAU + p, l, NDEG * NINT);
+        solData(k, p, NDEG*NINT)      += sol(k + NDIM * (l + kkMSH(p, NDEG * NINT) * NDEG)) * ttMSH(p, l, NDEG * NINT);
+        solData(k, NTAU + p, NDEG*NINT) += sol(k + NDIM * (l + kkMSH(p, NDEG * NINT) * NDEG)) * ttMSH(NTAU + p, l, NDEG * NINT);
       }
     }
   }
@@ -768,142 +846,151 @@ void NColloc::InterpolateMSH(JagMatrix3D& jag, const Vector& sol)
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void NColloc::InterpolateCPLX(JagMatrix3D& jag, const Vector& sol)
+void NColloc::InterpolateCPLX(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
     for (int j = 0; j < NDEG; j++)
     {
       const int idx = j + i * NDEG;
-      const int idxRe = 2 * (j + i * NDEG);
-      const int idxIm = 2 * (j + i * NDEG) + 1;
 
       for (int p = 0; p < NTAU; p++)
       {
         for (int k = 0; k < NDIM; k++)
         {
-          jag(idxRe)(k, p) = 0.0;
-          jag(idxIm)(k, p) = 0.0;
+          solDataRe(k, p, idx) = 0.0;
+          solDataIm(k, p, idx) = 0.0;
           for (int l = 0; l < NDEG + 1; l++)
           {
-            jag(idxRe)(k, p) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG))) * tt(p + 1, l, idx);
-            jag(idxIm)(k, p) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG)) + 1) * tt(p + 1, l, idx);
+            solDataRe(k, p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG))) * tt(p + 1, l, idx);
+            solDataIm(k, p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG)) + 1) * tt(p + 1, l, idx);
           }
         }
       }
       for (int k = 0; k < NDIM; k++)
       {
-        jag(idxRe)(k, NTAU) = 0.0;
-        jag(idxIm)(k, NTAU) = 0.0;
+        solDataRe(k, NTAU, idx) = 0.0;
+        solDataIm(k, NTAU, idx) = 0.0;
         for (int l = 0; l < NDEG + 1; l++)
         {
-          jag(idxRe)(k, NTAU) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG))) * tt(0, l, idx);
-          jag(idxIm)(k, NTAU) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG)) + 1) * tt(0, l, idx);
+          solDataRe(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG))) * tt(0, l, idx);
+          solDataIm(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG)) + 1) * tt(0, l, idx);
         }
       }
     }
   }
 }
 
-void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const JagMatrix3D& solData)
+void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData)
 {
-  Vector fx(NDIM); // it should be a variable in the class itself
-
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
     rhs(r) = sol(r + NDIM * NDEG * NINT) - sol(r);
   }
 
+  sys->p_rhs(p_fx, time, solData, par);
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
     for (int j = 0; j < NDEG; j++)
     {
       const int idx = j + i * NDEG;
 
-      sys->rhs(fx, time(idx), solData(idx), par);
       for (int k = 0; k < NDIM; k++)
-        rhs(NDIM + k + NDIM*(j + NDEG*i)) = par(0) * fx(k) - solData(idx)(k, NTAU);
+        rhs(NDIM + k + NDIM*idx) = par(0) * p_fx(k, idx) - solData(k, NTAU, idx);
     }
   }
 }
 
-void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData, int alpha)
+void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData, int alpha)
 {
-
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Vector fx(NDIM);
-  Matrix dfx(NDIM, NDIM);
-  Matrix dfx2(NDIM, 1);
-  Matrix dummy(0, 0);
-
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
     rhs(r) = 0.0;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  if (alpha == 0)
   {
-    for (int j = 0; j < NDEG; j++)
+    sys->p_tau(p_tau, time, par);
+    sys->p_dtau(p_dtau, time, par, alpha);
+    sys->p_rhs(p_fx, time, solData, par);
+
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
     {
-      const int idx = j + i * NDEG;
-
-      sys->tau(tau, time(idx), par);
-      sys->dtau(dtau, time(idx), par, alpha);
-
-      int nx, vx, np, vp;
-
-      if (alpha == 0)
+      for (int j = 0; j < NDEG; j++)
       {
-        sys->rhs(fx, time(idx), solData(idx), par);
+        const int idx = j + i * NDEG;
+
         for (int p = 0; p < NDIM; p++)
         {
-          rhs(NDIM + p + NDIM*idx) = -fx(p);
-          // if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
+          rhs(NDIM + p + NDIM*idx) = -p_fx(p, idx);
         }
+      }
+    }
 
-        nx = 1;
-        np = 0;
-        for (int r = 0; r < NTAU; r++)
+    for (int r = 0; r < NTAU; r++)
+    {
+      int nx=1, vx=r, np=0, vp;
+
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+      {
+        for (int j = 0; j < NDEG; j++)
         {
-          double d = (dtau(r) - tau(r) / par(0));
+          const int idx = j + i * NDEG;
+          const double d = (p_dtau(r,idx) - p_tau(r,idx) / par(0));
           if (d != 0.0)
           {
-//       std::cout<<"P0"; // working for the glass an logistic eqns
-            vx = r;
-            sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
             for (int p = 0; p < NDIM; p++)
             {
               for (int q = 0; q < NDIM; q++)
               {
-                rhs(NDIM + p + NDIM*idx) += d * dfx(p, q) * solData(idx)(q, NTAU + 1 + r);
+                rhs(NDIM + p + NDIM*idx) += d * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
               }
             }
           }
         }
       }
-      else
-      {
-        nx = 0, np = 1;
-        vp = alpha;
-        sys->deri(dfx2, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-        for (int k = 0; k < NDIM; k++) rhs(NDIM + k + NDIM*idx) = -par(0) * dfx2(k);
+    }
+  }
+  else
+  {
+    sys->p_tau(p_tau, time, par);
+    sys->p_dtau(p_dtau, time, par, alpha);
+    int nx, vx, np, vp;
+    nx = 0, np = 1;
+    vp = alpha;
 
-        nx = 1, np = 0;
-        for (int r = 0; r < NTAU; r++)
+    sys->p_deri(p_dfp, time, solData, par, nx, &vx, np, &vp, p_dummy);
+
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
+      {
+        const int idx = j + i * NDEG;
+
+        for (int k = 0; k < NDIM; k++) rhs(NDIM + k + NDIM*idx) = -par(0) * p_dfp(k, 0, idx);
+      }
+    }
+
+    for (int r = 0; r < NTAU; r++)
+    {
+      nx = 1; np = 0; vx = r;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+      {
+        for (int j = 0; j < NDEG; j++)
         {
-          if (dtau(r) != 0.0)
+          const int idx = j + i * NDEG;
+          if (p_dtau(r, idx) != 0.0)
           {
-//       std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
-            vx = r;
-            sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
+            std::cout<<"P"<<alpha; // it is workng for the Glass and logistic eqns
             for (int p = 0; p < NDIM; p++)
             {
               for (int q = 0; q < NDIM; q++)
               {
-                rhs(NDIM + p + NDIM*idx) += dtau(r) * dfx(p, q) * solData(idx)(q, NTAU + 1 + r);
+                rhs(NDIM + p + NDIM*idx) += p_dtau(r, idx) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
               }
             }
           }
@@ -914,11 +1001,8 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const
 }
 
 
-void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const JagMatrix3D& solData)
+void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData)
 {
-
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   A.Clear('R');
 
@@ -932,39 +1016,42 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const
     A.WrLx(r, 1) = -1.0;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
+      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU,idx), idx) + 1) - dd(ee(NTAU,idx), idx))); // check the line
+    }
+  }
 
-      for (int r = 0; r < NDIM; r++)
+  for (int k = 0; k < NTAU + 1; k++)
+  {
+    int nx = 1, vx, np = 0, vp;
+    if (k != 0)
+    {
+      vx = k - 1;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    }
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
-        A.NewL(NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // check the line
-      }
+        const int idx = j + i * NDEG;
 
-      int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
-      {
-        if (ee(k, idx) != 0)
-        {
-          vx = ee(k, idx) - 1;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-        }
         for (int l = 0; l < NDEG + 1; l++) // degree
         {
           for (int p = 0; p < NDIM; p++)   // row
           {
             for (int q = 0; q < NDIM; q++)   //column
             {
-              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(ee(k, idx), idx));
-              if (ee(k, idx) == 0)
+              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+              if (k == 0)
               {
                 if (p == q) WRDAT(A, idx, i, j, p, k, l, q) += tt(0, l, idx);
               }
               else
               {
-                WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
+                WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
               }
             }
           }
@@ -976,11 +1063,9 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const
 }
 
 
-//! its very differnt from all of them
-void NColloc::StabJac(StabMatrix& AB, const Vector& par, const JagMatrix3D& solData)
+//! its very different from all of them
+void NColloc::StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& solData)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   AB.getA0().Clear('R');
   for (int s = 0; s < NMAT; s++) AB.getAI(s).Clear('R');
@@ -1007,32 +1092,35 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par, const JagMatrix3D& solD
     }
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
-
+      AB.getA0().NewL(NDIM*szI(0, idx));
+    }
+    for (int s = 0; s < NMAT; s++)
+    {
       for (int r = 0; r < NDIM; r++)
       {
-        AB.getA0().NewL(NDIM*szI(0, idx));
+        AB.getAI(s).NewL(NDIM*szI(s + 1, idx));
       }
-      for (int s = 0; s < NMAT; s++)
-      {
-        for (int r = 0; r < NDIM; r++)
-        {
-          AB.getAI(s).NewL(NDIM*szI(s + 1, idx));
-        }
-      }
+    }
+  }
 
-      int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
+  for (int k = 0; k < NTAU + 1; k++)
+  {
+    int nx = 1, vx, np = 0, vp;
+    if (k != 0)
+    {
+      vx = k - 1;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    }
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
-        if (eeI(k, idx) != 0)
-        {
-          vx = eeI(k, idx) - 1;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-        }
+        const int idx = j + i * NDEG;
+
         for (int l = 0; l < NDEG + 1; l++)
         {
           for (int p = 0; p < NDIM; p++)
@@ -1041,26 +1129,27 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par, const JagMatrix3D& solD
             {
               if (mmI(k, idx) == 0)  // A matrix -- kkS(eeS(k,idx),idx) >= 0
               {
-                WRIDXI(AB.getA0(), idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(eeI(k, idx), idx));
-                if (eeI(k, idx) == 0)
+                WRIDXI(AB.getA0(), idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+                if (k == 0)
                 {
                   if (p == q) WRDATI(AB.getA0(), idx, i, j, p, k, l, q) += tt(0, l, idx);
                 }
                 else
                 {
-                  WRDATI(AB.getA0(), idx, i, j, p, k, l, q) -= par(0) * dfx(p, q) * tt(eeI(k, idx), l, idx);
+                  WRDATI(AB.getA0(), idx, i, j, p, k, l, q) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
               }
               else // B matrices
               {
-                WRIDXI(AB.getAI(mmI(k, idx) - 1), idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(eeI(k, idx), idx));
-                if (eeS(k, idx) == 0)
+//                 std::cout<<"m"<<mmI(k, idx)<<" ";
+                WRIDXI(AB.getAI(mmI(k, idx) - 1), idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+                if (k == 0)
                 {
 //          if( p == q ) WRDATSB(B,idx, i,j,p, k,l,q) -= tt(0,l,idx);
                 }
                 else
                 {
-                  WRDATI(AB.getAI(mmI(k, idx) - 1), idx, i, j, p, k, l, q) += par(0) * dfx(p, q) * tt(eeI(k, idx), l, idx);
+                  WRDATI(AB.getAI(mmI(k, idx) - 1), idx, i, j, p, k, l, q) += par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
               }
             }
@@ -1072,11 +1161,8 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par, const JagMatrix3D& solD
 }
 
 // similar to RHS_x but with one boundary condition only and multiplied by Z
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Z)
+void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z)
 {
-
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   A.Clear('R');
 
@@ -1091,36 +1177,39 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
     A.WrLx(r, 1) = - 1.0 * Z;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
+      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
+    }
+  }
 
-      for (int r = 0; r < NDIM; r++)
-      {
-        A.NewL(NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // check the line
-      }
-
+  for (int k = 0; k < NTAU + 1; k++)
+  {
+    if (k != 0)
+    {
       int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
+      vx = k - 1;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    }
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
-        const int zpow = (-kkI(ee(k, idx), idx) + NINT - 1) / NINT;
+        const int idx = j + i * NDEG;
+
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
         const double ZP = pow(Z, zpow);
-//     std::cout<<kkI(ee(k,idx),idx)<<" Z "<<Z<<" zpow "<<zpow<<" ZP "<<ZP<<"\n";
-        if (ee(k, idx) != 0)
-        {
-          vx = ee(k, idx) - 1;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-        }
+
         for (int l = 0; l < NDEG + 1; l++) // degree
         {
           for (int p = 0; p < NDIM; p++)   // row
           {
             for (int q = 0; q < NDIM; q++)   //column
             {
-              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(ee(k, idx), idx));
-              if (ee(k, idx) == 0)             // A
+              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+              if (k == 0)             // A
               {
                 if (p == q) WRDAT(A, idx, i, j, p, k, l, q) += tt(0, l, idx);
               }
@@ -1128,11 +1217,11 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
               {
                 if (zpow > 0)   // -zB0 - z^2*B1 ... - z^n*BN
                 {
-                  WRDAT(A, idx, i, j, p, k, l, q) -= ZP * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
+                  WRDAT(A, idx, i, j, p, k, l, q) -= ZP * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
                 else                         // A
                 {
-                  WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
+                  WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
               }
             }
@@ -1145,10 +1234,8 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
 
 
 // this has to be changed only to packed complex.
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, double Re, double Im)
+void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Re, double Im)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   A.Clear('R');
 
@@ -1187,38 +1274,41 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
     ZImP(r) = Re * ZImP(r - 1) + Im * ZReP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
+      A.NewL(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
+      A.NewL(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
+    }
+  }
 
-      for (int r = 0; r < NDIM; r++)
-      {
-        A.NewL(2*NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // Re
-        A.NewL(2*NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // Im
-      }
-
+  for (int k = 0; k < NTAU + 1; k++)
+  {
+    if (k != 0)
+    {
       int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
+      vx = k - 1;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    }
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
-        const int zpow = (-kkI(ee(k, idx), idx) + NINT - 1) / NINT;
-        if (ee(k, idx) != 0)
-        {
-          vx = ee(k, idx) - 1;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-        }
+        const int idx = j + i * NDEG;
+
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
         for (int l = 0; l < NDEG + 1; l++) // degree
         {
           for (int p = 0; p < NDIM; p++)   // row
           {
             for (int q = 0; q < NDIM; q++)   //column
             {
-              WRIDXCPLX(A, idx, i, j, p, 0, k, l, q, 0) = 2 * (q + NDIM * (l + NDEG * kk(ee(k, idx), idx)));
-              WRIDXCPLX(A, idx, i, j, p, 0, k, l, q, 1) = 2 * (q + NDIM * (l + NDEG * kk(ee(k, idx), idx))) + 1;
-              WRIDXCPLX(A, idx, i, j, p, 1, k, l, q, 0) = 2 * (q + NDIM * (l + NDEG * kk(ee(k, idx), idx)));
-              WRIDXCPLX(A, idx, i, j, p, 1, k, l, q, 1) = 2 * (q + NDIM * (l + NDEG * kk(ee(k, idx), idx))) + 1;
-              if (ee(k, idx) == 0)             // A
+              WRIDXCPLX(A, idx, i, j, p, 0, k, l, q, 0) = 2 * (q + NDIM * (l + NDEG * kk(k, idx)));
+              WRIDXCPLX(A, idx, i, j, p, 0, k, l, q, 1) = 2 * (q + NDIM * (l + NDEG * kk(k, idx))) + 1;
+              WRIDXCPLX(A, idx, i, j, p, 1, k, l, q, 0) = 2 * (q + NDIM * (l + NDEG * kk(k, idx)));
+              WRIDXCPLX(A, idx, i, j, p, 1, k, l, q, 1) = 2 * (q + NDIM * (l + NDEG * kk(k, idx))) + 1;
+              if (k == 0)             // A
               {
                 if (p == q)
                 {
@@ -1230,15 +1320,15 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
               { //kkS(ee(k,idx),idx) < 0
                 if (zpow > 0)   // -zB0 - z^2*B1 ... - z^n*BN
                 {
-                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 0) -= ZReP(zpow) * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 1) += ZImP(zpow) * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 0) -= ZImP(zpow) * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 1) -= ZReP(zpow) * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 0) -= ZReP(zpow) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 1) += ZImP(zpow) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 0) -= ZImP(zpow) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 1) -= ZReP(zpow) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
                 else                         // A
                 {
-                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 0) -= par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 1) -= par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 0, k, l, q, 0) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
+                  WRDATCPLX(A, idx, i, j, p, 1, k, l, q, 1) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
                 }
               }
             }
@@ -1251,17 +1341,8 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solDa
 
 // REAL
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha)
+void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
 {
-#ifdef DEBUG
-  bool sig = false;
-#endif
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Vector fx(NDIM);
-  Matrix dfx(NDIM, NDIM);
-  Matrix t_dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   V.Clear();
 
@@ -1271,131 +1352,131 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solDa
     V(r) = 0.0;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  if (alpha == 0)   // a periodusido szerint deriv...
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int k = 0; k < NTAU; k++)
     {
-      const int idx = j + i * NDEG;
-
-      sys->tau(tau, time(idx), par);
-      sys->dtau(dtau, time(idx), par, alpha);
-
-      if (alpha == 0)   // a periodusido szerint deriv...
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fx.Clear(); //OK this is cleared, but why here?
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int p = 0; p < NDIM; p++)
         {
-          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-          const double ZP = pow(Z, zpow);
-          nx = 1;
-          np = 0;
-          vx[0] = k;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
-          fx.Clear(); //OK this is cleared, but why here?
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fx(p, idx) -= p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k;
+        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
           for (int p = 0; p < NDIM; p++)
           {
             for (int q = 0; q < NDIM; q++)
             {
-              fx(p) -= dfx(p, q) * phiData(idx)(q, k);
-            }
-          }
-
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            double d = (dtau(r) - tau(r) / par(0));
-            if (d != 0.0)
-            {
-#ifdef DEBUG
-              if (!sig)
-              {
-                std::cout << " _P0 ";
-                sig = true;
-              }
-#endif
-              vx[1] = r;
-              vx[0] = k; // CHANGE THIS 0 1
-              sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fx(p) += d * dfx(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
-
-          for (int p = 0; p < NDIM; p++)
-          {
-            if (zpow > 0)
-            {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += ZP * fx(p);
-            }
-            else
-            {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += fx(p);
+              p_fx(p, idx) += (p_dtau(r,idx) - p_tau(r,idx) / par(0)) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
             }
           }
         }
       }
-      else
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int j = 0; j < NDEG; j++)
         {
+          const int idx = j + i * NDEG;
+
           const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
           const double ZP = pow(Z, zpow);
-          nx = 1;
-          np = 1;
-          vx[0] = k;
-          vp = alpha; // though, this last is never changed...
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
-          fx.Clear();
-          for (int p = 0; p < NDIM; p++)
-          {
-            for (int q = 0; q < NDIM; q++)
-            {
-              fx(p) -= par(0) * dfx(p, q) * phiData(idx)(q, k);
-            }
-          }
-
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            if (dtau(r) != 0.0)
-            {
-#ifdef DEBUG
-              if (!sig)
-              {
-                std::cout << " _Px ";
-                sig = true;
-              }
-#endif
-              vx[1] = r;
-              vx[0] = k; // CHANGE THIS to 0, 1
-              sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fx(p) += dtau(r) * dfx(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
 
           for (int p = 0; p < NDIM; p++)
           {
             if (zpow > 0)
             {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += ZP * fx(p);
+              V(NDIM + p + NDIM*(j + NDEG*i)) += ZP * p_fx(p,idx);
             }
             else
             {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += fx(p);
+              V(NDIM + p + NDIM*(j + NDEG*i)) += p_fx(p,idx);
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    for (int k = 0; k < NTAU; k++)
+    {
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 1;
+      vx[0] = k;
+      vp = alpha; // though, this last is never changed...
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fx.Clear();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (int p = 0; p < NDIM; p++)
+        {
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fx(p,idx) -= par(0) * p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k; // CHANGE THIS to 0, 1
+        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
+          for (int p = 0; p < NDIM; p++)
+          {
+            for (int q = 0; q < NDIM; q++)
+            {
+              p_fx(p, idx) += p_dtau(r, idx) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+            }
+          }
+        }
+      }
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+      {
+        for (int j = 0; j < NDEG; j++)
+        {
+          const int idx = j + i * NDEG;
+          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
+          const double ZP = pow(Z, zpow);
+
+          for (int p = 0; p < NDIM; p++)
+          {
+            if (zpow > 0)
+            {
+              V(NDIM + p + NDIM*(j + NDEG*i)) += ZP * p_fx(p,idx);
+            }
+            else
+            {
+              V(NDIM + p + NDIM*(j + NDEG*i)) += p_fx(p,idx);
             }
           }
         }
@@ -1406,16 +1487,10 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solDa
 
 // COMPLEX
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im, int alpha)
+void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData,
+                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
+                          double Re, double Im, int alpha)
 {
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Matrix dfx(NDIM, NDIM);
-  Matrix dfxRe(NDIM, NDIM);
-  Matrix dfxIm(NDIM, NDIM);
-  Vector fxRe(NDIM);
-  Vector fxIm(NDIM);
-  Matrix dummy(0, 0);
 
   V.Clear();
 
@@ -1438,130 +1513,144 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solDa
     ZImP(r) = Re * ZImP(r - 1) + Im * ZReP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  if (alpha == 0)   // a periodusido szerint deriv...
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int k = 0; k < NTAU; k++)
     {
-      const int idx = j + i * NDEG;
-      const int idxRe = 2 * (j + i * NDEG);
-      const int idxIm = 2 * (j + i * NDEG) + 1;
-
-      sys->tau(tau, time(idx), par);
-      sys->dtau(dtau, time(idx), par, alpha);
-
-      if (alpha == 0)   // a periodusido szerint deriv...
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fxRe.Clear(); //OK this is cleared, but why here?
+      p_fxIm.Clear();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int p = 0; p < NDIM; p++)
         {
-          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-          nx = 1;
-          np = 0;
-          vx[0] = k;
-          fxRe.Clear();
-          fxIm.Clear();
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fxRe(p, idx) -= p_dfx(p, q, idx) * phiDataRe(q, k, idx);
+            p_fxIm(p, idx) -= p_dfx(p, q, idx) * phiDataIm(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k;
+        sys->p_deri(p_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
           for (int p = 0; p < NDIM; p++)
           {
             for (int q = 0; q < NDIM; q++)
             {
-              fxRe(p) -= dfx(p, q) * phiData(idxRe)(q, k);
-              fxIm(p) -= dfx(p, q) * phiData(idxIm)(q, k);
-            }
-          }
-
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            double d = (dtau(r) - tau(r) / par(0));
-            if (d != 0.0)
-            {
-              // std::cout<<"cP0";  // NOT TESTED !!!
-              vx[1] = r;
-              vx[0] = k; // CHANGE THIS to 0, 1
-              sys->deri(dfxRe, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxRe));
-              sys->deri(dfxIm, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxIm));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fxRe(p) += d * dfxRe(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                  fxIm(p) += d * dfxIm(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
-
-          for (int p = 0; p < NDIM; p++)
-          {
-            if (zpow > 0)
-            {
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += ZReP(zpow) * fxRe(p) - ZImP(zpow) * fxIm(p);
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += ZImP(zpow) * fxRe(p) + ZReP(zpow) * fxIm(p);
-            }
-            else
-            {
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += fxRe(p);
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += fxIm(p);
+              p_fxRe(p, idx) += (p_dtau(r,idx) - p_tau(r,idx) / par(0)) * p_dfxRe(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+              p_fxIm(p, idx) += (p_dtau(r,idx) - p_tau(r,idx) / par(0)) * p_dfxIm(p, q, idx) * solData(q, NTAU + 1 + r, idx);
             }
           }
         }
       }
-      else
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int j = 0; j < NDEG; j++)
         {
-          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-          nx = 1;
-          np = 1;
-          vx[0] = k;
-          vp = alpha;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
-          fxRe.Clear();
-          fxIm.Clear();
-          for (int p = 0; p < NDIM; p++)
-          {
-            for (int q = 0; q < NDIM; q++)
-            {
-              fxRe(p) -= par(0) * dfx(p, q) * phiData(idxRe)(q, k);
-              fxIm(p) -= par(0) * dfx(p, q) * phiData(idxIm)(q, k);
-            }
-          }
+          const int idx = j + i * NDEG;
 
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            if (dtau(r) != 0.0)
-            {
-              // std::cout<<"cP"<<alpha; // NOT TESTED !!!
-              vx[1] = r;
-              vx[0] = k; // CHANGE THIS to 0, 1
-              sys->deri(dfxRe, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxRe));
-              sys->deri(dfxIm, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxIm));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fxRe(p) += dtau(r) * dfxRe(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                  fxIm(p) += dtau(r) * dfxIm(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
+          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
+
           for (int p = 0; p < NDIM; p++)
           {
             if (zpow > 0)
             {
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += ZReP(zpow) * fxRe(p) - ZImP(zpow) * fxIm(p);
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += ZImP(zpow) * fxRe(p) + ZReP(zpow) * fxIm(p);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += ZReP(zpow) * p_fxRe(p,idx) - ZImP(zpow) * p_fxIm(p,idx);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += ZImP(zpow) * p_fxRe(p,idx) + ZReP(zpow) * p_fxIm(p,idx);
             }
             else
             {
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += fxRe(p);
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += fxIm(p);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += p_fxRe(p,idx);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += p_fxIm(p,idx);
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    for (int k = 0; k < NTAU; k++)
+    {
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 1;
+      vx[0] = k;
+      vp = alpha; // though, this last is never changed...
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fxRe.Clear();
+      p_fxIm.Clear();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (int p = 0; p < NDIM; p++)
+        {
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fxRe(p,idx) -= par(0) * p_dfx(p, q, idx) * phiDataRe(q, k, idx);
+            p_fxIm(p,idx) -= par(0) * p_dfx(p, q, idx) * phiDataIm(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k; // CHANGE THIS to 0, 1
+        sys->p_deri(p_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
+          for (int p = 0; p < NDIM; p++)
+          {
+            for (int q = 0; q < NDIM; q++)
+            {
+              p_fxRe(p, idx) += p_dtau(r, idx) * p_dfxRe(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+              p_fxIm(p, idx) += p_dtau(r, idx) * p_dfxIm(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+            }
+          }
+        }
+      }
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+      {
+        for (int j = 0; j < NDEG; j++)
+        {
+          const int idx = j + i * NDEG;
+          const int idxRe = 2 * (j + i * NDEG);
+          const int idxIm = 2 * (j + i * NDEG) + 1;
+
+          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
+
+          for (int p = 0; p < NDIM; p++)
+          {
+            if (zpow > 0)
+            {
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += ZReP(zpow) * p_fxRe(p,idx) - ZImP(zpow) * p_fxIm(p,idx);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += ZImP(zpow) * p_fxRe(p,idx) + ZReP(zpow) * p_fxIm(p,idx);
+            }
+            else
+            {
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     += p_fxRe(p,idx);
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) += p_fxIm(p,idx);
             }
           }
         }
@@ -1570,11 +1659,9 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const JagMatrix3D& solDa
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z)
+void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix t_dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
+  Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   A.Clear('R');
 
@@ -1586,60 +1673,61 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
     A.WrLx(r, 0) = 0.0;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
+      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
+    }
+  }
 
-      for (int r = 0; r < NDIM; r++)
-      {
-        A.NewL(NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // check the line
-      }
+  for (int k = 1; k < NTAU + 1; k++)
+  {
+    int nx = 2, vx[2], np = 0, vp;
+    vx[1] = k - 1;  // CHANGE THIS to 1
 
-      int nx = 2, vx[2], np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
+    p_dfx.Clear();
+    p_t_dfx.Clear();
+    for (int r = 0; r < NTAU; r++)
+    {
+      vx[0] = r;        // CHANGE THIS to 0
+      sys->p_deri(p_t_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+      //std::cout<<"t_dfx "; t_dfx.Print();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
-        const int zpow = (-kkI(ee(k, idx), idx) + NINT - 1) / NINT;
-        const double ZP = pow(Z, zpow);
-        if (ee(k, idx) != 0)
+        for (int ra = 0; ra < NDIM; ra++)
         {
-          vx[1] = ee(k, idx) - 1;  // CHANGE THIS to 1
-
-          dfx.Clear();
-          t_dfx.Clear();
-          for (int r = 0; r < NTAU; r++)
+          for (int rb = 0; rb < NDIM; rb++)
           {
-            vx[0] = r;        // CHANGE THIS to 0
-            sys->deri(t_dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-            //std::cout<<"t_dfx "; t_dfx.Print();
-            for (int ra = 0; ra < NDIM; ra++)
-            {
-              for (int rb = 0; rb < NDIM; rb++)
-              {
-                dfx(ra, rb) += t_dfx(ra, rb);
-              }
-            }
+            p_dfx(ra, rb, idx) += p_t_dfx(ra, rb, idx);
           }
-          //std::cout<<"dfx "; dfx.Print();
         }
+      }
+    }
+
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
+      {
+        const int idx = j + i * NDEG;
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
+        const double ZP = pow(Z, zpow);
+
         for (int l = 0; l < NDEG + 1; l++) // degree
         {
           for (int p = 0; p < NDIM; p++)   // row
           {
             for (int q = 0; q < NDIM; q++)   //column
             {
-              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(ee(k, idx), idx));
-              if (ee(k, idx) != 0)
+              WRIDX(A, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+              // This is valid only for k != 0
+              if (zpow > 0)   // -zB
               {
-                if (zpow > 0)   // -zB
-                {
-                  WRDAT(A, idx, i, j, p, k, l, q) -= ZP * par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                }
-                else                         // A
-                {
-                  WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * dfx(p, q) * tt(ee(k, idx), l, idx);
-                }
+                WRDAT(A, idx, i, j, p, k, l, q) -= ZP * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
+              }
+              else                         // A
+              {
+                WRDAT(A, idx, i, j, p, k, l, q) -= par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
               }
             }
           }
@@ -1649,12 +1737,12 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Re, double Im)
+void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData,
+                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
+                          double Re, double Im)
 {
-  Matrix dfxRe(NDIM, NDIM);
-  Matrix dfxIm(NDIM, NDIM);
-  Matrix t_dfxRe(NDIM, NDIM);
-  Matrix t_dfxIm(NDIM, NDIM);
+  Array3D<double> p_t_dfxRe(NDIM, NDIM, NDEG*NINT);
+  Array3D<double> p_t_dfxIm(NDIM, NDIM, NDEG*NINT);
 
   A.Clear('R');
 
@@ -1669,6 +1757,15 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
     A.WrLx(2*r + 1, 0) = 0.0;
   }
 
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
+  {
+    for (int r = 0; r < NDIM; r++)
+    {
+      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
+      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
+    }
+  }
+
   // computing the powers of the multiplier
   Vector ZReP(NMAT + 1), ZImP(NMAT + 1);
   ZReP(0) = 1.0;
@@ -1681,56 +1778,55 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
     ZImP(r) = Re * ZImP(r - 1) + Im * ZReP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int k = 0; k < NTAU + 1; k++)
   {
-    for (int j = 0; j < NDEG; j++)
+    int nx = 2, vx[2], np = 0, vp;
+    if (k != 0)
     {
-      const int idx = j + i * NDEG;
-      const int idxRe = 2 * (j + i * NDEG);
-      const int idxIm = 2 * (j + i * NDEG) + 1;
+      vx[1] = k - 1;  // CHANGE THIS to 1
 
-      for (int r = 0; r < NDIM; r++)
+      p_dfxRe.Clear();
+      p_t_dfxRe.Clear();
+      p_dfxIm.Clear();
+      p_t_dfxIm.Clear();
+      for (int r = 0; r < NTAU; r++)
       {
-        A.NewL(NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // Re
-        A.NewL(NDIM*((NDEG + 1)*(rr(NTAU, idx) + 1) - dd(NTAU, idx))); // Im
-      }
-
-      int nx = 2, vx[2], np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
-      {
-        const int zpow = (-kkI(ee(k, idx), idx) + NINT - 1) / NINT;
-        if (ee(k, idx) != 0)
+        vx[0] = r;        // CHANGE THIS to 0
+        sys->p_deri(p_t_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_t_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        //std::cout<<"t_dfx "; t_dfx.Print();
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
         {
-          vx[1] = ee(k, idx) - 1; // CHANGE THIS to 1
-
-          dfxRe.Clear();
-          dfxIm.Clear();
-          for (int r = 0; r < NTAU; r++)
+          for (int ra = 0; ra < NDIM; ra++)
           {
-            vx[0] = r;       // CHANGE THIS to 0
-            sys->deri(t_dfxRe, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxRe));
-            sys->deri(t_dfxIm, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idxIm));
-            //t_dfx.Print();
-            for (int ra = 0; ra < NDIM; ra++)
+            for (int rb = 0; rb < NDIM; rb++)
             {
-              for (int rb = 0; rb < NDIM; rb++)
-              {
-                dfxRe(ra, rb) += t_dfxRe(ra, rb);
-                dfxIm(ra, rb) += t_dfxIm(ra, rb);
-              }
+              p_dfxRe(ra, rb, idx) += p_t_dfxRe(ra, rb, idx);
+              p_dfxIm(ra, rb, idx) += p_t_dfxIm(ra, rb, idx);
             }
           }
-          //std::cout<<"dfx "; dfx.Print();
         }
+      }
+      //std::cout<<"dfx "; dfx.Print();
+    }
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
+      {
+        const int idx = j + i * NDEG;
+        const int idxRe = 2 * (j + i * NDEG);
+        const int idxIm = 2 * (j + i * NDEG) + 1;
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
+
         for (int l = 0; l < NDEG + 1; l++) // degree
         {
           for (int p = 0; p < NDIM; p++)   // row
           {
             for (int q = 0; q < NDIM; q++)   //column
             {
-              WRIDXCPLXM(A, idx, i, j, p, 0, k, l, q) = q + NDIM * (l + NDEG * kk(ee(k, idx), idx));
-              WRIDXCPLXM(A, idx, i, j, p, 1, k, l, q) = q + NDIM * (l + NDEG * kk(ee(k, idx), idx));
-              if (ee(k, idx) == 0)             // A
+              WRIDXCPLXM(A, idx, i, j, p, 0, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+              WRIDXCPLXM(A, idx, i, j, p, 1, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+              if (k == 0)             // A
               {
                 // WRDATCPLX(A,idx, i,j,p,0, k,l,q,0) += tt(0,l,idx); // no derivative !!!!!!
                 // WRDATCPLX(A,idx, i,j,p,1, k,l,q,1) += tt(0,l,idx);
@@ -1740,14 +1836,14 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
                 if (zpow > 0)   // -zB
                 {
                   WRDATCPLXM(A, idx, i, j, p, 0, k, l, q) -=
-                    ZReP(zpow) * par(0) * dfxRe(p, q) * tt(ee(k, idx), l, idx) - ZImP(zpow) * par(0) * dfxIm(p, q) * tt(ee(k, idx), l, idx);
+                    ZReP(zpow) * par(0) * p_dfxRe(p, q, idx) * tt(k, l, idx) - ZImP(zpow) * par(0) * p_dfxIm(p, q, idx) * tt(k, l, idx);
                   WRDATCPLXM(A, idx, i, j, p, 1, k, l, q) -=
-                    ZImP(zpow) * par(0) * dfxRe(p, q) * tt(ee(k, idx), l, idx) + ZReP(zpow) * par(0) * dfxIm(p, q) * tt(ee(k, idx), l, idx);
+                    ZImP(zpow) * par(0) * p_dfxRe(p, q, idx) * tt(k, l, idx) + ZReP(zpow) * par(0) * p_dfxIm(p, q, idx) * tt(k, l, idx);
                 }
                 else                         // A
                 {
-                  WRDATCPLXM(A, idx, i, j, p, 0, k, l, q) -= par(0) * dfxRe(p, q) * tt(ee(k, idx), l, idx);
-                  WRDATCPLXM(A, idx, i, j, p, 1, k, l, q) -= par(0) * dfxIm(p, q) * tt(ee(k, idx), l, idx);
+                  WRDATCPLXM(A, idx, i, j, p, 0, k, l, q) -= par(0) * p_dfxRe(p, q, idx) * tt(k, l, idx);
+                  WRDATCPLXM(A, idx, i, j, p, 1, k, l, q) -= par(0) * p_dfxIm(p, q, idx) * tt(k, l, idx);
                 }
               }
             }
@@ -1760,10 +1856,9 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const JagMatrix3D& sol
 
 // this is for CharmatCPLX
 
-void NColloc::CharJac_x_z(Vector& V, const Vector& par, const JagMatrix3D& solData, const Vector& phi, const JagMatrix3D& phiData, double Re, double Im)
+void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi,
+                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   V.Clear();
 
@@ -1786,30 +1881,29 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const JagMatrix3D& solDa
     ZImP(r) = Re * ZImP(r - 1) + Im * ZReP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int k = 0; k < NTAU; k++)
   {
-    for (int j = 0; j < NDEG; j++)
-    {
-      const int idx = j + i * NDEG;
-      const int idxRe = 2 * (j + i * NDEG);
-      const int idxIm = 2 * (j + i * NDEG) + 1;
+    int nx = 1, vx, np = 0, vp;
+    vx = k;
+    sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
 
-      int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU; k++)
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
+        const int idx = j + i * NDEG;
         const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-        vx = k;
-        sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
+
         for (int p = 0; p < NDIM; p++)
         {
           for (int q = 0; q < NDIM; q++)
           {
             if (zpow > 0)
             {
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     -= zpow * (ZReP(zpow - 1) * par(0) * dfx(p, q) * phiData(idxRe)(q, k) -
-                                                                 ZImP(zpow - 1) * par(0) * dfx(p, q) * phiData(idxIm)(q, k));
-              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) -= zpow * (ZImP(zpow - 1) * par(0) * dfx(p, q) * phiData(idxRe)(q, k) +
-                                                                 ZReP(zpow - 1) * par(0) * dfx(p, q) * phiData(idxIm)(q, k));
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)))     -= zpow * (ZReP(zpow - 1) * par(0) * p_dfx(p, q, idx) * phiDataRe(q, k, idx) -
+                                                                 ZImP(zpow - 1) * par(0) * p_dfx(p, q, idx) * phiDataIm(q, k, idx));
+              V(2*(NDIM + p + NDIM*(j + NDEG*i)) + 1) -= zpow * (ZImP(zpow - 1) * par(0) * p_dfx(p, q, idx) * phiDataRe(q, k, idx) +
+                                                                 ZReP(zpow - 1) * par(0) * p_dfx(p, q, idx) * phiDataIm(q, k, idx));
             }
           }
         }
@@ -1822,11 +1916,8 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const JagMatrix3D& solDa
 //! from now CharmatLPAUT
 //!
 
-void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const JagMatrix3D& solData, double Z)
+void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const Array3D<double>& solData, double Z)
 {
-
-  Matrix dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   B.Clear('R');
 
@@ -1845,37 +1936,37 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const JagMatrix3D& solD
     B.WrLx(r, 0) = -1.0;
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NDIM; r++)
     {
-      const int idx = j + i * NDEG;
+      B.NewL(NDIM*szS(1, idx));
+    }
+  }
 
-      for (int r = 0; r < NDIM; r++)
+  for (int k = 1; k < NTAU + 1; k++)
+  {
+    int nx = 1, vx, np = 0, vp;
+    vx = k - 1;
+    sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
       {
-        B.NewL(NDIM*szS(1, idx));
-      }
+        const int idx = j + i * NDEG;
 
-      int nx = 1, vx, np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
-      {
-        const int zpow = (-kkI(eeS(k, idx), idx) + NINT - 1) / NINT;
-        if (eeS(k, idx) != 0)
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
+
+        for (int l = 0; l < NDEG + 1; l++)
         {
-          vx = eeS(k, idx) - 1;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx, np, &vp, dummy);
-
-          for (int l = 0; l < NDEG + 1; l++)
+          for (int p = 0; p < NDIM; p++)
           {
-            for (int p = 0; p < NDIM; p++)
+            for (int q = 0; q < NDIM; q++)
             {
-              for (int q = 0; q < NDIM; q++)
+              if (zpow > 0)  // B matrix -- kkS(eeS(k,idx),idx) < 0
               {
-                if (zpow > 0)  // B matrix -- kkS(eeS(k,idx),idx) < 0
-                {
-                  WRIDXS(B, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(eeS(k, idx), idx));
-                  WRDATS(B, idx, i, j, p, k, l, q) -= zpow * ZP(zpow - 1) * par(0) * dfx(p, q) * tt(eeS(k, idx), l, idx);
-                }
+                WRIDXS(B, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+                WRDATS(B, idx, i, j, p, k, l, q) -= zpow * ZP(zpow - 1) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
               }
             }
           }
@@ -1887,17 +1978,9 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const JagMatrix3D& solD
 
 // same as CharJac_x_p, but only writes the B part
 
-void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z, int alpha)
+void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
 {
-#ifdef DEBUG
-  bool sig = false;
-#endif
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Vector fx(NDIM);
-  Matrix dfx(NDIM, NDIM);
   Matrix t_dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
 
   V.Clear();
 
@@ -1914,120 +1997,124 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const JagMatrix3D& solD
     ZP(r) = Z * ZP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  if (alpha == 0)   // a periodusido szerint deriv...
   {
-    for (int j = 0; j < NDEG; j++)
+    for (int k = 0; k < NTAU; k++)
     {
-      const int idx = j + i * NDEG;
-
-      sys->tau(tau, time(idx), par);
-      sys->dtau(dtau, time(idx), par, alpha);
-
-      if (alpha == 0)   // a periodusido szerint deriv...
+      // START verbatim from CharJac_x_p
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fx.Clear(); //OK this is cleared, but why here?
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int p = 0; p < NDIM; p++)
         {
-          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-          nx = 1;
-          np = 0;
-          vx[0] = k;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
-          fx.Clear();
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fx(p, idx) -= p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k;
+        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
           for (int p = 0; p < NDIM; p++)
           {
             for (int q = 0; q < NDIM; q++)
             {
-              fx(p) -= dfx(p, q) * phiData(idx)(q, k);
-            }
-          }
-
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            double d = (dtau(r) - tau(r) / par(0));
-            if (d != 0.0)
-            {
-#ifdef DEBUG
-              if (!sig)
-              {
-                std::cout << " mB_P0 ";
-                sig = true;
-              }// working for the glass and logistic eqn
-#endif
-              vx[1] = r;
-              vx[0] = k;
-              sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fx(p) += d * dfx(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
-
-          for (int p = 0; p < NDIM; p++)
-          {
-            if (zpow > 0)
-            {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += zpow * ZP(zpow - 1) * fx(p);
+              p_fx(p, idx) += (p_dtau(r,idx) - p_tau(r,idx) / par(0)) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
             }
           }
         }
       }
-      else
+      // END verbatim from CharJac_x_p
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
       {
-        int nx = 1, vx[2], np = 1, vp = alpha;
-        for (int k = 0; k < NTAU; k++)
+        for (int j = 0; j < NDEG; j++)
         {
+          const int idx = j + i * NDEG;
           const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
-          nx = 1;
-          np = 1;
-          vx[0] = k;
-          sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, dummy);
-          fx.Clear();
-          for (int p = 0; p < NDIM; p++)
-          {
-            for (int q = 0; q < NDIM; q++)
-            {
-              fx(p) -= par(0) * dfx(p, q) * phiData(idx)(q, k);
-            }
-          }
-
-          nx = 2;
-          np = 0;
-          for (int r = 0; r < NTAU; r++)
-          {
-            if (dtau(r) != 0.0)
-            {
-#ifdef DEBUG
-              if (!sig)
-              {
-                std::cout << " mB_Px ";
-                sig = true;
-              }
-#endif
-              vx[1] = r;
-              vx[0] = k;
-              sys->deri(dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-              for (int p = 0; p < NDIM; p++)
-              {
-                for (int q = 0; q < NDIM; q++)
-                {
-                  fx(p) += dtau(r) * dfx(p, q) * solData(idx)(q, NTAU + 1 + r); // this MUST be k, was r
-                }
-              }
-            }
-          }
 
           for (int p = 0; p < NDIM; p++)
           {
             if (zpow > 0)
             {
-              V(NDIM + p + NDIM*(j + NDEG*i)) += zpow * ZP(zpow - 1) * fx(p);
+              V(NDIM + p + NDIM*(j + NDEG*i)) += zpow * ZP(zpow - 1) * p_fx(p, idx);
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    for (int k = 0; k < NTAU; k++)
+    {
+      // START verbatim from CharJac_x_p
+      sys->p_tau(p_tau, time, par);
+      sys->p_dtau(p_dtau, time, par, alpha);
+
+      int nx = 1, vx[2], np = 1, vp = alpha;
+      nx = 1;
+      np = 1;
+      vx[0] = k;
+      vp = alpha; // though, this last is never changed...
+      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      p_fx.Clear();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (int p = 0; p < NDIM; p++)
+        {
+          for (int q = 0; q < NDIM; q++)
+          {
+            p_fx(p,idx) -= par(0) * p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+
+      nx = 2;
+      np = 0;
+      for (int r = 0; r < NTAU; r++)
+      {
+        vx[1] = r;
+        vx[0] = k; // CHANGE THIS to 0, 1
+        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        for (int idx = 0; idx < NDEG*NINT; ++idx)
+        {
+          for (int p = 0; p < NDIM; p++)
+          {
+            for (int q = 0; q < NDIM; q++)
+            {
+              p_fx(p, idx) += p_dtau(r, idx) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+            }
+          }
+        }
+      }
+      // END verbatim from CharJac_x_p
+      for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+      {
+        for (int j = 0; j < NDEG; j++)
+        {
+          const int idx = j + i * NDEG;
+          const int zpow = (-kkI(k + 1, idx) + NINT - 1) / NINT;
+
+          for (int p = 0; p < NDIM; p++)
+          {
+            if (zpow > 0)
+            {
+              V(NDIM + p + NDIM*(j + NDEG*i)) += zpow * ZP(zpow - 1) * p_fx(p, idx);
             }
           }
         }
@@ -2037,12 +2124,9 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const JagMatrix3D& solD
 }
 
 // like x_x but write bpart only
-
-void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const JagMatrix3D& solData, const JagMatrix3D& phiData, double Z)
+void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
 {
-  Matrix dfx(NDIM, NDIM);
-  Matrix t_dfx(NDIM, NDIM);
-  Matrix dummy(0, 0);
+  Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   B.Clear('R');
 
@@ -2054,6 +2138,14 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const JagMatrix3D& so
 //   B.WrLx(r,0) = 0.0;
   }
 
+  for (int idx = 0; idx < NDEG*NINT; ++idx)
+  {
+    for (int r = 0; r < NDIM; r++)
+    {
+      B.NewL(NDIM*szS(1, idx));
+    }
+  }
+
   Vector ZP(NMAT + 1);
   ZP(0) = 1.0;
   for (int r = 1; r < NMAT + 1; r++)
@@ -2061,52 +2153,48 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const JagMatrix3D& so
     ZP(r) = Z * ZP(r - 1);
   }
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int k = 1; k < NTAU + 1; k++)
   {
-    for (int j = 0; j < NDEG; j++)
+    // START verbatim from CharJac_x_x
+    int nx = 2, vx[2], np = 0, vp;
+    vx[1] = k - 1;  // CHANGE THIS to 1
+
+    p_dfx.Clear();
+    p_t_dfx.Clear();
+    for (int r = 0; r < NTAU; r++)
     {
-      const int idx = j + i * NDEG;
-
-      for (int r = 0; r < NDIM; r++)
+      vx[0] = r;        // CHANGE THIS to 0
+      sys->p_deri(p_t_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+      //std::cout<<"t_dfx "; t_dfx.Print();
+      for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
-        B.NewL(NDIM*szS(1, idx));
-      }
-
-      int nx = 2, vx[2], np = 0, vp;
-      for (int k = 0; k < NTAU + 1; k++)
-      {
-        const int zpow = (-kkI(eeS(k, idx), idx) + NINT - 1) / NINT;
-        if (eeS(k, idx) != 0)
+        for (int ra = 0; ra < NDIM; ra++)
         {
-          vx[1] = eeS(k, idx) - 1; // CHANGE THIS to 1
-
-          dfx.Clear();
-          t_dfx.Clear();
-          for (int r = 0; r < NTAU; r++)
+          for (int rb = 0; rb < NDIM; rb++)
           {
-            vx[0] = r; // CHANGE THIS to 0
-            sys->deri(t_dfx, time(idx), solData(idx), par, nx, &vx[0], np, &vp, phiData(idx));
-            //std::cout<<"t_dfx "; t_dfx.Print();
-            for (int ra = 0; ra < NDIM; ra++)
-            {
-              for (int rb = 0; rb < NDIM; rb++)
-              {
-                dfx(ra, rb) += t_dfx(ra, rb);
-              }
-            }
+            p_dfx(ra, rb, idx) += p_t_dfx(ra, rb, idx);
           }
-          //std::cout<<"dfx "; dfx.Print();
-          for (int l = 0; l < NDEG + 1; l++) // degree
+        }
+      }
+    }
+    // END verbatim from CharJac_x_x
+    for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+    {
+      for (int j = 0; j < NDEG; j++)
+      {
+        const int idx = j + i * NDEG;
+        const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
+
+        for (int l = 0; l < NDEG + 1; l++) // degree
+        {
+          for (int p = 0; p < NDIM; p++)   // row
           {
-            for (int p = 0; p < NDIM; p++)   // row
+            for (int q = 0; q < NDIM; q++)   //column
             {
-              for (int q = 0; q < NDIM; q++)   //column
+              if (zpow > 0)  // A matrix -- kkS(eeS(k,idx),idx) >= 0
               {
-                if (zpow > 0)  // A matrix -- kkS(eeS(k,idx),idx) >= 0
-                {
-                  WRIDXS(B, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(eeS(k, idx), idx));
-                  WRDATS(B, idx, i, j, p, k, l, q) -= zpow * ZP(zpow - 1) * par(0) * dfx(p, q) * tt(eeS(k, idx), l, idx);
-                }
+                WRIDXS(B, idx, i, j, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
+                WRDATS(B, idx, i, j, p, k, l, q) -= zpow * ZP(zpow - 1) * par(0) * p_dfx(p, q, idx) * tt(k, l, idx);
               }
             }
           }
@@ -2124,126 +2212,75 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const JagMatrix3D& so
 //! this is also for CharmatLPAUT: for computing q_0 and its derivatives: q_0, D_x q_0, D_p q_0
 //!
 
-void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const JagMatrix3D& solData)
+void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solData)
 {
-  Vector fx(NDIM); // it should be a variable in the class itself
+  sys->p_rhs(p_fxMSH, timeMSH, solData, par);
 
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
   {
-    const double h = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < NDEG; j++)
-    {
-      const int idx = j + i * NDEG;
-
-      sys->rhs(fx, mesh(i) + h*meshINT(j), solData(idx), par);
-      for (int k = 0; k < NDIM; k++) V(k + NDIM*(j + NDEG*i)) = - fx(k);
-    }
-  }
-  // make it periodic
-  for (int r = 0; r < NDIM; r++)
-  {
-    V(NDIM*NDEG*NINT + r) = V(r);
+    for (int k = 0; k < NDIM; k++) V(k + NDIM*idx) = - p_fxMSH(k, idx);
   }
 }
 
-void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const JagMatrix3D& solData, int alpha)
+void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solData, int alpha)
 {
-#ifdef DEBUG
-  bool sig = false;
-#endif
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Vector fx(NDIM);
-  Matrix dfx(NDIM, NDIM);
-  Matrix dfx2(NDIM, 1);
-  Matrix dummy(0, 0);
-
   V.Clear(); /// it is not cleared otherwise!!!!
 
   // boundary conditions
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  if (alpha == 0)
   {
-    const double h = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < NDEG; j++)
+    for (int r = 0; r < NTAU; r++)
     {
-      const int idx = j + i * NDEG;
-
-      sys->tau(tau, time(idx), par);
-      sys->dtau(dtau, time(idx), par, alpha);
-
+      sys->p_tau(p_tauMSH, timeMSH, par);
+      sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
       int nx, vx, np, vp;
+      nx = 1;
+      np = 0;
+      vx = r;
+      sys->p_deri(p_dfxMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
 
-      if (alpha == 0)
+      for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
       {
-//     sys->rhs( fx, time(idx), solData(idx), par );
-//     for( int p = 0; p < NDIM; p++ )
-//     {
-//      V( p + NDIM*idx ) = -fx(p);
-//      // if( fabs(fx(p)) >= 1e-4 ) std::cout<<"Bb";
-//     }
-        nx = 1;
-        np = 0;
-        for (int r = 0; r < NTAU; r++)
+        for (int p = 0; p < NDIM; p++)
         {
-          const double d = (dtau(r) - tau(r) / par(0)) / par(0);
-          if (d != 0.0)
+          for (int q = 0; q < NDIM; q++)
           {
-#ifdef DEBUG
-            if (!sig)
-            {
-              std::cout << " phi_P0 ";
-              sig = true;
-            }
-#endif
-            vx = r;
-            sys->deri(dfx, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy);
-            for (int p = 0; p < NDIM; p++)
-            {
-              for (int q = 0; q < NDIM; q++)
-              {
-                V(p + NDIM*idx) += d * dfx(p, q) * solData(idx)(q, NTAU + r);
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        nx = 0, np = 1;
-        vp = alpha;
-        sys->deri(dfx2, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy);
-        for (int k = 0; k < NDIM; k++) V(k + NDIM*idx) = - dfx2(k);
-
-        nx = 1, np = 0;
-        for (int r = 0; r < NTAU; r++)
-        {
-          const double d = dtau(r) / par(0);
-          if (d != 0.0)
-          {
-#ifdef DEBUG
-            if (!sig)
-            {
-              std::cout << " phi_P0 ";
-              sig = true;
-            }
-#endif
-            vx = r;
-            sys->deri(dfx, mesh(i) + h*meshINT(j), solData(idx), par, nx, &vx, np, &vp, dummy);
-            for (int p = 0; p < NDIM; p++)
-            {
-              for (int q = 0; q < NDIM; q++)
-              {
-                V(p + NDIM*idx) += d * dfx(p, q) * solData(idx)(q, NTAU + r);
-              }
-            }
+            V(p + NDIM*idx) += ((p_dtauMSH(r,idx) - p_tauMSH(r,idx) / par(0)) / par(0)) * p_dfxMSH(p, q, idx) * solData(q, NTAU + r, idx);
           }
         }
       }
     }
   }
-  for (int r = 0; r < NDIM; r++)
+  else
   {
-    V(r + NDIM*NDEG*NINT) = V(r);
+    for (int r = 0; r < NTAU; r++)
+    {
+      sys->p_tau(p_tauMSH, timeMSH, par);
+      sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
+
+      int nx, vx, np, vp;
+      nx = 0, np = 1;
+      vp = alpha;
+
+      sys->p_deri(p_dfpMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
+
+      nx = 1, np = 0;
+      vx = r;
+      sys->p_deri(p_dfxMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
+
+      for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
+      {
+        for (int k = 0; k < NDIM; k++) V(k + NDIM*idx) = - p_dfpMSH(k,0,idx);
+
+        for (int p = 0; p < NDIM; p++)
+        {
+          for (int q = 0; q < NDIM; q++)
+          {
+            V(p + NDIM*idx) += (p_dtauMSH(r,idx) / par(0)) * p_dfxMSH(p, q, idx) * solData(q, NTAU + r, idx);
+          }
+        }
+      }
+    }
   }
 }
 

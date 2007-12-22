@@ -30,6 +30,11 @@ extern "C"
   SYSEXPORT void   sys_deri(Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v);
   SYSEXPORT void   sys_stpar(Vector& par);
   SYSEXPORT void   sys_stsol(Vector& out, double t);
+  // Vectorized version of each function
+  SYSEXPORT void   sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par );
+  SYSEXPORT void   sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par, int vp );
+  SYSEXPORT void   sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
+  SYSEXPORT void   sys_p_deri( Array3D<double>& out, Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
 };
 
 #endif

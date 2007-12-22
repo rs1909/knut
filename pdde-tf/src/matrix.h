@@ -11,6 +11,7 @@
 #define MATRIX_H
 
 #include <iostream>
+#include <iterator>
 
 #ifndef PDDESYS_H
 #include "plot.h"
@@ -34,6 +35,9 @@ extern "C"
 #  define P_ASSERT_X(cond,msg) do{ if(!(cond)) { std::cout<<#cond<<msg; std::cout.flush(); abort(); } }while(0)
 #endif
 
+template<class T> class Array2D;
+template<class T> class Array3D;
+
 template<class T>
 class Array1D
 {
@@ -43,7 +47,7 @@ class Array1D
     int n;
     T  *v;
   private:
-    bool destructable;
+    const bool destructable;
   public:
 
     inline Array1D() : n(0), v(0), destructable(true)
@@ -74,6 +78,8 @@ class Array1D
     inline Array1D(T *data, int i) : n(i), v(data), destructable(false)
     { }
 
+    inline Array1D(const Array2D<T>& v, int i);
+
     inline virtual ~Array1D()
     {
       if (destructable) delete[] v;
@@ -81,26 +87,33 @@ class Array1D
 
     inline void Init(int i)
     {
-      if (destructable) delete[] v;
-      n = i;
-      v = new T[i];
-      Clear();
+      if (destructable)
+      {
+        delete[] v;
+        n = i;
+        v = new T[i];
+        Clear();
+      } else throw(-1);
     }
 
     inline void Init(const Array1D<T>& V_)
     {
-      if (destructable) delete[] v;
-      n = V_.n;
-      v = new T[V_.n];
-      *this = V_;
+      if (destructable)
+      {
+        delete[] v;
+        n = V_.n;
+        v = new T[V_.n];
+        *this = V_;
+      } else throw(-1);
     }
 
     inline void Init(T *data, int i)
     {
-      if (destructable) delete[] v;
-      n = i;
-      v = data;
-      destructable = false;
+      if (destructable)
+      {
+        n = i;
+        v = data;
+      } else throw(-1);
     }
 
     inline void Clear()
@@ -137,6 +150,35 @@ class Array1D
 #endif
       return v[i];
     }
+    class iterator
+    {
+      private:
+        T *pt;
+      public:
+        iterator() : pt(0) {}
+        iterator( const Array1D<T>::iterator& it ) : pt(it.pt) {}
+        iterator& operator= (const iterator& it) { pt = it.pt; return *this; }
+        iterator  operator+ ( int i ) const { iterator it; it.pt = pt+i; return it; }
+        iterator  operator- ( int i ) const { iterator it; it.pt = pt-i; return it; }
+        int       operator- (const iterator& it) const { return pt - it.pt; }
+        bool      operator!= (const iterator& it) const { return pt != it.pt; }
+        bool      operator== (const iterator& it) const { return pt == it.pt; }
+        const T&  operator*() const { return *pt; }
+        T&  operator*() { return *pt; }
+        iterator& operator++() { ++pt; return *this; }
+        iterator& operator--() { --pt; return *this; }
+        iterator& operator++(int) { ++pt; return *this; }
+        iterator& operator--(int) { --pt; return *this; }
+        bool      operator< (const iterator& it) const { return pt < it.pt; }
+        friend class Array1D<T>;
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef T                        value_type;
+        typedef std::ptrdiff_t           difference_type;
+        typedef T*                       pointer;
+        typedef T&                       reference;
+    };
+    iterator begin() { iterator it; it.pt = v; return it; }
+    iterator end() { iterator it; it.pt = v+n; return it; }
 };
 
 
@@ -148,34 +190,40 @@ class Array2D
 
     T* m;
     int r, c;
-
+  private:
+    const bool destructable;
   public:
-    inline Array2D()
+    inline Array2D() : destructable(true)
     {
       r = 0;
       c = 0;
       m = 0;
     }
 
-    inline Array2D(int _r, int _c) : r(_r), c(_c)
+    inline Array2D(int _r, int _c) : r(_r), c(_c), destructable(true)
     {
       m = new T[r*c+1];
       Clear();
     }
 
-    inline Array2D(const Array2D<T>& M) : r(M.r), c(M.c)
+    inline Array2D(const Array2D<T>& M) : r(M.r), c(M.c), destructable(true)
     {
       m = new T[r*c+1];
       for (int i = 0; i < r*c; i++) m[i] = M.m[i];
     }
 
+    inline Array2D(const Array3D<T>& v, int i);
+
     inline virtual ~Array2D()
     {
-      delete[] m;
+      if (destructable) delete[] m;
     }
+    inline int dim1() const { return r; }
+    inline int dim2() const { return c; }
 
     inline void Init(int _r, int _c)
     {
+      P_ASSERT_X(destructable, "Array2D<T>::Init : trying to resize a non-destructable a");
       delete[] m;
       r = _r;
       c = _c;
@@ -232,7 +280,7 @@ class Array2D
 #endif
       return m[i];
     }
-
+    friend class Array1D<T>;
 };
 
 template<class T>
@@ -268,6 +316,9 @@ class Array3D
       delete[] m;
     }
 
+    inline int dim1() const { return d1; }
+    inline int dim2() const { return d2; }
+    inline int dim3() const { return d3; }
     inline void Init(int _d1, int _d2, int _d3)
     {
       delete[] m;
@@ -309,8 +360,27 @@ class Array3D
 #endif
       return m[i + d1*(j + d2*k)];
     }
-
+    friend class Array2D<T>;
 };
+
+template<class T> inline Array1D<T>::Array1D(const Array2D<T>& vec, int i) : destructable(false)
+{
+#ifdef DEBUG
+  P_ASSERT_X((i < vec.c), "bound\n");
+#endif
+  v = &vec.m[vec.r*i];
+  n = vec.r;
+}
+
+template<class T> inline Array2D<T>::Array2D(const Array3D<T>& vec, int i) : destructable(false)
+{
+#ifdef DEBUG
+  P_ASSERT_X((i < vec.d3), "bound\n");
+#endif
+  m = &vec.m[vec.d1*vec.d2*i];
+  r = vec.d1;
+  c = vec.d2;
+}
 
 #ifndef PDDESYS_H
 
@@ -474,6 +544,9 @@ class Vector : public Array1D<double>
     inline Vector(const Vector& V) : Array1D<double>(V)
     { }
 
+    inline Vector(const Array2D<double>& m, int i) : Array1D<double>(m,i)
+    { }
+
     inline virtual ~Vector()
     { }
 
@@ -560,6 +633,9 @@ class Matrix : public Array2D<double>
     { }
 
     inline Matrix(const Matrix& M) : Array2D<double>(M)
+    { }
+
+    inline Matrix(const Array3D<double>& m, int i) : Array2D<double>(m,i)
     { }
 
     inline virtual ~Matrix()
@@ -762,7 +838,7 @@ template< > inline void Array1D< Matrix >::Clear()
   for (int i = 0; i < n; i++) v[i].Clear();
 }
 
-template< > inline Array1D< Vector >::Array1D(const Array1D< Vector >& V_)
+template< > inline Array1D< Vector >::Array1D(const Array1D< Vector >& V_) : destructable(true)
 {
   n = V_.n;
   v = new Vector[V_.n];

@@ -46,19 +46,19 @@ System::System(const std::string& shobj)
 
   tdlerror();    /* Clear any existing error */
   v_tau = (tp_sys_tau) fptr(tdlsym(handle, "sys_tau"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_tau(): ", error);
+  found_tau = ((error = tdlerror()) == 0);
 
   tdlerror();    /* Clear any existing error */
   v_dtau = (tp_sys_dtau) fptr(tdlsym(handle, "sys_dtau"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_dtau(): ", error);
+  found_dtau = ((error = tdlerror()) == 0);
 
   tdlerror();    /* Clear any existing error */
   v_rhs = (tp_sys_rhs) fptr(tdlsym(handle, "sys_rhs"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_rhs(): ", error);
+  found_rhs = ((error = tdlerror()) == 0);
 
   tdlerror();    /* Clear any existing error */
   v_deri = (tp_sys_deri) fptr(tdlsym(handle, "sys_deri"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_deri(): ", error);
+  found_deri = ((error = tdlerror()) == 0);
 
   tdlerror();    /* Clear any existing error */
   v_stpar = (tp_sys_stpar) fptr(tdlsym(handle, "sys_stpar"));
@@ -68,8 +68,30 @@ System::System(const std::string& shobj)
   v_stsol = (tp_sys_stsol) fptr(tdlsym(handle, "sys_stsol"));
   P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error);
 
+  /* Vectorized versions */
+  tdlerror();    /* Clear any existing error */
+  v_p_tau = (tp_sys_p_tau) fptr(tdlsym(handle, "sys_p_tau"));
+  found_p_tau = ((error = tdlerror()) == 0);
+  if (!found_tau && !found_p_tau) P_ERROR_X2(false, "Cannot find either sys_tau() or sys_p_tau(): ", error);
+
+  tdlerror();    /* Clear any existing error */
+  v_p_dtau = (tp_sys_p_dtau) fptr(tdlsym(handle, "sys_p_dtau"));
+  found_p_dtau = ((error = tdlerror()) == 0);
+  if (!found_dtau && !found_p_dtau) P_ERROR_X2(false, "Cannot find either sys_dtau() or sys_p_dtau(): ", error);
+
+  tdlerror();    /* Clear any existing error */
+  v_p_rhs = (tp_sys_p_rhs) fptr(tdlsym(handle, "sys_p_rhs"));
+  found_p_rhs = ((error = tdlerror()) == 0);
+  if (!found_rhs && !found_p_rhs) P_ERROR_X2(false, "Cannot find either sys_rhs() or sys_p_rhs(): ", error);
+
+  tdlerror();    /* Clear any existing error */
+  v_p_deri = (tp_sys_p_deri) fptr(tdlsym(handle, "sys_p_deri"));
+  found_p_deri = ((error = tdlerror()) == 0);
+  if (!found_deri && !found_p_deri) P_ERROR_X2(false, "Cannot find either sys_deri() or sys_p_deri(): ", error);
+
   nderi = (*v_nderi)();
 //  std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
+
   f.Init(ndim()), f_eps.Init(ndim());
   f2.Init(ndim()), f_eps2.Init(ndim());
   xx_eps.Init(ndim(), 2 * ntau() + 1);
