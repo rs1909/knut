@@ -133,56 +133,57 @@ class NColloc
 
     // helper functions
 
-    inline int& WRIDX(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    // rINT and rDEG is included in idx. Only rDIM is necessary
+    inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDAT(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDAT(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     // for CharJac_x
-    inline int& WRIDXCPLX(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline int& WRIDXCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLi(rIM + 2*(ndim + ndim*(rDEG + ndeg*rINT) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
+      return A.WrLi(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
-    inline double& WRDATCPLX(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline double& WRDATCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLx(rIM + 2*(ndim + ndim*(rDEG + ndeg*rINT) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
+      return A.WrLx(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
     // for CharJac_x_x
-    inline int& WRIDXCPLXM(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(rIM + 2*(ndim + ndim*(rDEG + ndeg*rINT) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.WrLi(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATCPLXM(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(rIM + 2*(ndim + ndim*(rDEG + ndeg*rINT) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.WrLx(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXS(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
+      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    double& WRDATS(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    double& WRDATS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
+      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXI(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
+      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATI(SpMatrix& A, int idx, int rINT, int rDEG, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(rDEG + ndeg*rINT) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
+      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
     // the equations
@@ -256,6 +257,57 @@ class NColloc
     Array3D<double>  p_dfxMSH;
     Array3D<double>  p_dfpMSH;
     Array3D<double>  p_dummy;
+
+    // DIAGNOSTICS
+    int count_RHS;
+    int count_RHS_p;
+    int count_RHS_x;
+    int count_StabJac;
+    int count_CharJac_x;
+    int count_CharJac_x_p;
+    int count_CharJac_x_x;
+    int count_CharJac_x_z;
+    int count_CharJac_mB;
+    int count_CharJac_mB_p;
+    int count_CharJac_mB_x;
+    int count_CharJac_MSHphi;
+    int count_CharJac_MSHphi_p;
+    int count_CharJac_MSHphi_x;
+    // DIAG FUNCTIONS
+    void count_reset()
+    {
+      count_RHS = 0;
+      count_RHS_p = 0;
+      count_RHS_x = 0;
+      count_StabJac = 0;
+      count_CharJac_x = 0;
+      count_CharJac_x_p = 0;
+      count_CharJac_x_x = 0;
+      count_CharJac_x_z = 0;
+      count_CharJac_mB = 0;
+      count_CharJac_mB_p = 0;
+      count_CharJac_mB_x = 0;
+      count_CharJac_MSHphi = 0;
+      count_CharJac_MSHphi_p = 0;
+      count_CharJac_MSHphi_x = 0;
+    }
+    void count_print()
+    {
+      std::cout << "count_RHS " << count_RHS << "\n";
+      std::cout << "count_RHS_p " << count_RHS_p << "\n";
+      std::cout << "count_RHS_x " << count_RHS_x << "\n";
+      std::cout << "count_StabJac " << count_StabJac << "\n";
+      std::cout << "count_CharJac_x " << count_CharJac_x << "\n";
+      std::cout << "count_CharJac_x_p " << count_CharJac_x_p << "\n";
+      std::cout << "count_CharJac_x_x " << count_CharJac_x_x << "\n";
+      std::cout << "count_CharJac_x_z " << count_CharJac_x_z << "\n";
+      std::cout << "count_CharJac_mB " << count_CharJac_mB << "\n";
+      std::cout << "count_CharJac_mB_p " << count_CharJac_mB_p << "\n";
+      std::cout << "count_CharJac_mB_x " << count_CharJac_mB_x << "\n";
+      std::cout << "count_CharJac_MSHphi " << count_CharJac_MSHphi << "\n";
+      std::cout << "count_CharJac_MSHphi_p " << count_CharJac_MSHphi_p << "\n";
+      std::cout << "count_CharJac_MSHphi_x " << count_CharJac_MSHphi_x << "\n";
+    }
 };
 
 #define NDIM ndim
@@ -270,7 +322,7 @@ template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par
 //   Matrix dfx(NDIM, NDIM);
 //   Matrix dummy(0, 0);
 //   std::cout << "NColloc::CharJac_MSHphi_x NOT IMPLEMENTED YET\n"; throw(-1);
-
+  count_CharJac_MSHphi_x++;
   V.Clear(); /// it is not cleared otherwise!!!!
 
   for (int k = 0; k < NTAU; k++)
