@@ -99,7 +99,13 @@ class System
     }
     void   p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
     {
-      if (found_p_deri) (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+      if (found_p_deri)
+      {
+        if (nderi == 2) (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+        else if (nderi == 0) p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
+        else if (nderi == 1 && ((nx == 1 && np == 0) || (nx == 0 && np == 1))) (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+        else p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
+      }
       else
       {
         for (int i=0; i<time.Size(); ++i)
@@ -122,8 +128,26 @@ class System
     }
 
   private:
-    void   discrderi(Matrix &out, double t, const Matrix& xx, const Vector& par,
-                     int nx, const int* vx, int np, const int* vp, const Matrix& vv);
+    void   discrderi( Matrix &out, double t, const Matrix& xx, const Vector& par,
+                      int nx, const int* vx, int np, const int* vp, const Matrix& vv);
+    void   p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, 
+                        int nx, const int* vx, int np, const int* vp, const Array3D<double>& p_vv );
+
+    void   p_resize(int sz)
+    {
+      if ( sz > p_size )
+      {
+        p_size = sz;
+        p_fx.Init(ndim(), p_size);
+        p_fx_eps.Init(ndim(), p_size);
+        p_dfx.Init(ndim(), ndim(), p_size);
+        p_dfx_eps.Init(ndim(), ndim(), p_size);
+        p_xx_eps.Init(ndim(), 2*ntau()+1, p_size);
+        p2_dfx.Init(ndim(), ndim(), p_size);
+        p2_dfx_eps.Init(ndim(), ndim(), p_size);
+        p2_xx_eps.Init(ndim(), 2*ntau()+1, p_size);
+      }
+    }
 
     typedef int(*tp_sys_ndim)();
     typedef int(*tp_sys_npar)();
@@ -171,6 +195,14 @@ class System
     Vector  par_eps;
     Matrix  dxx2, dxx_eps2;
     Vector  vt;
+
+    int             p_size;
+    Array2D<double> p_fx,  p_fx_eps;
+    Array3D<double> p_dfx, p_dfx_eps;
+    Array3D<double> p_xx_eps;
+    Array3D<double> p2_dfx, p2_dfx_eps;
+    Array3D<double> p2_xx_eps;
+
 
     tp_sys_ndim    v_ndim;
     tp_sys_npar    v_npar;
