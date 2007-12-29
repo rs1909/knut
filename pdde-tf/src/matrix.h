@@ -53,6 +53,9 @@ class Array1D
     inline Array1D() : n(0), v(0), destructable(true)
     { }
 
+    inline Array1D(bool b) : n(0), v(0), destructable(false)
+    { }
+
     inline Array1D(int i) : n(i), v(new T[i]), destructable(true)
     {
       Clear();
@@ -109,7 +112,7 @@ class Array1D
 
     inline void Init(T *data, int i)
     {
-      if (destructable)
+      if (!destructable)
       {
         n = i;
         v = data;
@@ -120,6 +123,19 @@ class Array1D
     {
       for (int j = 0; j < n; j++) v[j] = T();
     } // it was T(0), but for built in types it must be the same
+
+    inline T *Pointer()
+    {
+      return v;
+    }
+
+    inline T *Pointer(const int i)
+    {
+#ifdef DEBUG
+      P_ASSERT_X(i < n && i >= 0, "Array1D::bound11&");
+#endif
+      return &v[i];
+    }
 
     inline int Size() const
     {
@@ -229,6 +245,20 @@ class Array2D
       c = _c;
       m = new T[r*c+1];
       Clear();
+    }
+
+    inline T *Pointer()
+    {
+      return m;
+    }
+
+    inline T *Pointer(const int i, const int j)
+    {
+#ifdef DEBUG
+      P_ASSERT_X(i < r && j < c, "bound& ");
+      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
+#endif
+      return &m[i + r*j];
     }
 
     inline void Clear()
@@ -541,6 +571,9 @@ class Vector : public Array1D<double>
     inline Vector(int i) : Array1D<double>(i)
     { }
 
+    inline Vector(bool b) : Array1D<double>(b)
+    { }
+
     inline Vector(const Vector& V) : Array1D<double>(V)
     { }
 
@@ -549,11 +582,6 @@ class Vector : public Array1D<double>
 
     inline virtual ~Vector()
     { }
-
-    inline double *Pointer()
-    {
-      return v;
-    }
 
     inline void Print() const
     {
