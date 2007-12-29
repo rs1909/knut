@@ -462,11 +462,11 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   }
   if (y == YL2Norm && (x != XMesh && x != XRealMultiplier))
   {
-    Vector elem;
+    Vector elem(false);
     const_cast<mat4Data*>(data)->getElemRef(0, elem);
     Matrix metric(elem.Size(), elem.Size());
     NColloc::getMetric(metric, elem);
-    Vector prof, msh;
+    Vector prof(false), msh(false);
     for (int i = 0; i < data->getNPoints(); i++)
     {
       const_cast<mat4Data*>(data)->getMeshRef(i, msh);
