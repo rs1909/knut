@@ -258,6 +258,7 @@ class NColloc
     Array3D<double>  p_dfpMSH;
     Array3D<double>  p_dummy;
 
+#ifdef DEBUG
     // DIAGNOSTICS
     int count_RHS;
     int count_RHS_p;
@@ -308,6 +309,7 @@ class NColloc
       std::cout << "count_CharJac_MSHphi_p " << count_CharJac_MSHphi_p << "\n";
       std::cout << "count_CharJac_MSHphi_x " << count_CharJac_MSHphi_x << "\n";
     }
+#endif // DEBUG
 };
 
 #define NDIM ndim
@@ -319,11 +321,10 @@ class NColloc
 
 template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi)
 {
-//   Matrix dfx(NDIM, NDIM);
-//   Matrix dummy(0, 0);
-//   std::cout << "NColloc::CharJac_MSHphi_x NOT IMPLEMENTED YET\n"; throw(-1);
+#ifdef DEBUG
   count_CharJac_MSHphi_x++;
-  V.Clear(); /// it is not cleared otherwise!!!!
+#endif
+  V.Clear(); // it is not cleared otherwise!!!!
 
   for (int k = 0; k < NTAU; k++)
   {

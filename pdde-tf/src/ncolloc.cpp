@@ -350,8 +350,10 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
   col_mesh(col);
   poly_int(metric, meshINT);   // works for any meshes
   poly_diff_int(metricPhase, meshINT);
-  // idagnostcs
+  // diagnostcs
+#ifdef DEBUG
   count_reset();
+#endif
 }
 
 static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& eqf)
@@ -542,8 +544,7 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
   }
   timeMSH(NDEG*NINT) = 1.0;
 
-  sys->p_tau(p_tau, time, par);
-  sys->p_tau(p_tauMSH, timeMSH, par);
+  sys->p_tau(p_tau, time, par); // this will be rescaled, so have to call it again
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -738,9 +739,14 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
   }
   delete[] tMSH;
   delete[] t;
+  // all the delays. the previous was rescaled and we need unscaled
+  sys->p_tau(p_tau, time, par);
+  sys->p_tau(p_tauMSH, timeMSH, par);
   // diagnostics
-//   count_print();
+#ifdef DEBUG
+  count_print();
   count_reset();
+#endif
 }
 
 void NColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
@@ -865,7 +871,9 @@ void NColloc::InterpolateCPLX(Array3D<double>& solDataRe, Array3D<double>& solDa
 
 void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData)
 {
+#ifdef DEBUG
   count_RHS++;
+#endif
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
@@ -884,7 +892,9 @@ void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array
 
 void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData, int alpha)
 {
+#ifdef DEBUG
   count_RHS_p++;
+#endif
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
@@ -893,7 +903,6 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const
 
   if (alpha == 0)
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     sys->p_rhs(p_fx, time, solData, par);
 
@@ -925,7 +934,6 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const
   }
   else
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     int nx, vx, np, vp;
     nx = 0, np = 1;
@@ -962,8 +970,9 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const
 
 void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData)
 {
+#ifdef DEBUG
   count_RHS_x++;
-
+#endif
   A.Clear('R');
 
   // boundary conditions
@@ -1022,8 +1031,9 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const
 //! its very different from all of them
 void NColloc::StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& solData)
 {
+#ifdef DEBUG
   count_StabJac++;
-
+#endif
   AB.getA0().Clear('R');
   for (int s = 0; s < NMAT; s++) AB.getAI(s).Clear('R');
 
@@ -1115,8 +1125,9 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& 
 // similar to RHS_x but with one boundary condition only and multiplied by Z
 void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z)
 {
+#ifdef DEBUG
   count_CharJac_x++;
-
+#endif
   A.Clear('R');
 
   // boundary conditions
@@ -1184,8 +1195,9 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& s
 // this has to be changed only to packed complex.
 void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Re, double Im)
 {
+#ifdef DEBUG
   count_CharJac_x++;
-
+#endif
   A.Clear('R');
 
   // boundary conditions
@@ -1287,8 +1299,9 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& s
 
 void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
 {
+#ifdef DEBUG
   count_CharJac_x_p++;
-
+#endif
   V.Clear();
 
   // boundary conditions
@@ -1299,7 +1312,6 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
 
   if (alpha == 0)   // a periodusido szerint deriv...
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -1359,7 +1371,6 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
   }
   else
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -1426,8 +1437,9 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im, int alpha)
 {
+#ifdef DEBUG
   count_CharJac_x_p++;
-
+#endif
   V.Clear();
 
   // boundary conditions
@@ -1451,7 +1463,6 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
 
   if (alpha == 0)   // a periodusido szerint deriv...
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -1516,7 +1527,6 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
   }
   else
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -1584,7 +1594,9 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
 
 void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
 {
+#ifdef DEBUG
   count_CharJac_x_x++;
+#endif
   Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   A.Clear('R');
@@ -1661,7 +1673,9 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im)
 {
+#ifdef DEBUG
   count_CharJac_x_x++;
+#endif
   Array3D<double> p_t_dfxRe(NDIM, NDIM, NDEG*NINT);
   Array3D<double> p_t_dfxIm(NDIM, NDIM, NDEG*NINT);
 
@@ -1774,8 +1788,9 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
 void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im)
 {
+#ifdef DEBUG
   count_CharJac_x_z++;
-
+#endif
   V.Clear();
 
   // boundary conditions
@@ -1830,8 +1845,9 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& s
 
 void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const Array3D<double>& solData, double Z)
 {
+#ifdef DEBUG
   count_CharJac_mB++;
-
+#endif
   B.Clear('R');
 
   Vector ZP(NMAT + 1);
@@ -1888,7 +1904,9 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const Array3D<double>& 
 
 void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
 {
+#ifdef DEBUG
   count_CharJac_mB_p++;
+#endif
   Matrix t_dfx(NDIM, NDIM);
 
   V.Clear();
@@ -1908,7 +1926,6 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
 
   if (alpha == 0)   // a periodusido szerint deriv...
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -1965,7 +1982,6 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
   }
   else
   {
-    sys->p_tau(p_tau, time, par);
     sys->p_dtau(p_dtau, time, par, alpha);
     for (int k = 0; k < NTAU; k++)
     {
@@ -2026,7 +2042,9 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
 // like x_x but write bpart only
 void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
 {
+#ifdef DEBUG
   count_CharJac_mB_x++;
+#endif
   Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   B.Clear('R');
@@ -2111,7 +2129,9 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
 
 void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solData)
 {
+#ifdef DEBUG
   count_CharJac_MSHphi++;
+#endif
   sys->p_rhs(p_fxMSH, timeMSH, solData, par);
 
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
@@ -2122,13 +2142,14 @@ void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>
 
 void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solData, int alpha)
 {
+#ifdef DEBUG
   count_CharJac_MSHphi_p++;
+#endif
   V.Clear(); /// it is not cleared otherwise!!!!
 
   // boundary conditions
   if (alpha == 0)
   {
-    sys->p_tau(p_tauMSH, timeMSH, par);
     sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
     for (int r = 0; r < NTAU; r++)
     {
@@ -2152,7 +2173,6 @@ void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<doubl
   }
   else
   {
-    sys->p_tau(p_tauMSH, timeMSH, par);
     sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
     for (int r = 0; r < NTAU; r++)
     {
