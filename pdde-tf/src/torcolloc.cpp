@@ -39,9 +39,9 @@ struct comp : public std::binary_function<int, int, bool>
 //
 //-----------------------------------------------------------------------------------------------
 
-#define NTAU sys->ntau()
-#define NDIM sys->ndim()
-#define NPAR sys->npar()
+#define NTAU ntau
+#define NDIM ndim
+#define NPAR npar
 
 #define RHO (NPAR+ParRot)
 
@@ -50,6 +50,7 @@ struct comp : public std::binary_function<int, int, bool>
 
 CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_) :
     sys(&sys_),
+    ndim(sys_.ndim()), ntau(sys_.ntau()), npar(sys_.npar()),
     ndeg1(ndeg1_), ndeg2(ndeg2_), nint1(nint1_), nint2(nint2_),
     col1(ndeg1_),    col2(ndeg2_),
     mesh1(ndeg1_ + 1), mesh2(ndeg2_ + 1),
@@ -66,7 +67,17 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
     ilg1((ndeg1_ + 1)*(ndeg1_ + 1) + 1),
     ilg2((ndeg2_ + 1)*(ndeg2_ + 1) + 1),
     ilgd1((ndeg1_ + 1)*(ndeg1_ + 1) + 1),
-    ilgd2((ndeg2_ + 1)*(ndeg2_ + 1) + 1)
+    ilgd2((ndeg2_ + 1)*(ndeg2_ + 1) + 1),
+    time1(ndeg1*ndeg2*nint1*nint2), time2(ndeg1*ndeg2*nint1*nint2),
+    kk((ntau+1)*(ndeg1+1)*(ndeg2+1), ndeg1*ndeg2*nint1*nint2),
+    ee((ntau+1)*(ndeg1+1)*(ndeg2+1), ndeg1*ndeg2*nint1*nint2),
+    rr((ntau+1)*(ndeg1+1)*(ndeg2+1), ndeg1*ndeg2*nint1*nint2),
+    p_tau(ntau, ndeg1*ndeg2*nint1*nint2), p_dtau(ntau, ndeg1*ndeg2*nint1*nint2),
+    p_xx(ndim, ntau+2*(ntau+1), ndeg1*ndeg2*nint1*nint2),
+    p_fx(ndim, ndeg1*ndeg2*nint1*nint2),
+    p_dfp(ndim, 1, ndeg1*ndeg2*nint1*nint2),
+    p_dfx(ndim, ndim, ndeg1*ndeg2*nint1*nint2),
+    p_dummy(0, 0, ndeg1*ndeg2*nint1*nint2)
 {
   lobatto(mesh1);
   lobatto(mesh2);
@@ -120,135 +131,116 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   }
 }
 
-void CollocTR::index(int* kk, int* ee, int* rr, Vector& par, Vector& tau, double* t1, double* t2)
+void CollocTR::init(const Array1D<double>& sol, const Vector& par)
 {
-  sys->tau(tau, t1[0], par);
-
-  for (int k = 0; k < NTAU; k++)
+  double* t1 = new double[NTAU+1];
+  double* t2 = new double[NTAU+1];
+  for (int i2 = 0; i2 < nint2; i2++)
   {
-    t1[1+k] = (t1[0] - tau(k) / par(0)) - floor(t1[0] - tau(k) / par(0));
-    t2[1+k] = (t2[0] - par(RHO) * tau(k) / par(0)) - floor(t2[0] - par(RHO) * tau(k) / par(0));
-  }
-
-  for (int k = 0; k < NTAU + 1; k++)
-  {
-    int i1 = static_cast<int>(floor(nint1 * t1[k]));
-    int i2 = static_cast<int>(floor(nint2 * t2[k]));
-    // some error checking
-    if ((t1[k] > 1.0) || (t2[k] > 1.0) ||
-        (t1[k] < 0.0) || (t2[k] < 0.0)) std::cout << "Er ";
-    if ((i1 >= nint1) || (i2 >= nint2)) std::cout << "Ei ";
-    // end error checking
-    for (int j2 = 0; j2 < ndeg2 + 1; j2++)
+    for (int i1 = 0; i1 < nint1; i1++)
     {
-      for (int j1 = 0; j1 < ndeg1 + 1; j1++)
+      for (int j2 = 0; j2 < ndeg2; j2++)
       {
-        const int idx = idxkk(j1, j2, k);
-        kk[idx] = idxmap(j1, j2, i1, i2);
-        ee[idx] = idx;
-      }
-    }
-  }
-
-  // sorting
-  comp aa(kk);
-  std::sort(ee, ee + (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1), aa);
-
-  // filtering same indices
-  rr[ee[0]] = 0;
-  int nz = 0;
-  for (int i = 1; i < (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1); i++)
-  {
-    if (kk[ee[i-1]] != kk[ee[i]]) nz++;
-    rr[ee[i]] = nz;
-  }
-}
-
-void CollocTR::indexSep(int* kk, int* ee, int* rr, Vector& par, Vector& tau, double* t1, double* t2)
-{
-  sys->tau(tau, t1[0], par);
-
-  for (int k = 0; k < NTAU; k++)
-  {
-    t1[1+k] = (t1[0] - tau(k) / par(0));
-    t2[1+k] = (t2[0] - par(RHO) * tau(k) / par(0)) - floor(t2[0] - par(RHO) * tau(k) / par(0));
-  }
-
-  for (int k = 0; k < NTAU + 1; k++)
-  {
-    int i1 = static_cast<int>(floor(nint1 * t1[k]));
-    int i2 = static_cast<int>(floor(nint2 * t2[k]));
-    // some error checking
-    if ((t1[k] > 1.0) || (t2[k] > 1.0) ||
-        (t1[k] < -1.0) || (t2[k] < 0.0)) std::cout << "Er ";
-    if ((i1 >= nint1) || (i2 >= nint2)) std::cout << "Ei ";
-    // end error checking
-    for (int j2 = 0; j2 < ndeg2 + 1; j2++)
-    {
-      for (int j1 = 0; j1 < ndeg1 + 1; j1++)
-      {
-        const int idx = idxkk(j1, j2, k);
-        kk[idx] = idxmapSep(j1, j2, i1, i2);
-        ee[idx] = idx;
-      }
-    }
-  }
-
-  // sorting
-  comp aa(kk);
-  std::sort(ee, ee + (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1), aa);
-
-  // filtering same indices
-  rr[ee[0]] = 0;
-  int nz = 0;
-  for (int i = 1; i < (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1); i++)
-  {
-    if (kk[ee[i-1]] != kk[ee[i]]) nz++;
-    rr[ee[i]] = nz;
-  }
-}
-
-//seems to be right
-void CollocTR::interpolate(Matrix& xx, Array1D<double>& sol, int* kk, double* t1, double* t2)
-{
-  xx.Clear();
-  for (int k = 1; k < NTAU + 1; k++)
-  {
-    const double c1 = nint1 * t1[k] - floor(nint1 * t1[k]);
-    const double c2 = nint2 * t2[k] - floor(nint2 * t2[k]);
-    for (int j2 = 0; j2 < ndeg2 + 1; j2++)
-    {
-      for (int j1 = 0; j1 < ndeg1 + 1; j1++)
-      {
-        const int idxK = idxkk(j1, j2, k);
-        const double cf = poly_lgr_eval(mesh1, j1, c1) * poly_lgr_eval(mesh2, j2, c2);
-        for (int p = 0; p < NDIM; p++)
+        for (int j1 = 0; j1 < ndeg1; j1++)
         {
-          xx(p, k - 1) += cf * sol(p + NDIM * kk[idxK]);
+          const int idx = idxmap(j1, j2, i1, i2); // this is a unique
+
+          time1(idx) = ((double)i1 + col1(j1)) / nint1;
+          time2(idx) = ((double)i2 + col2(j2)) / nint2;
         }
       }
     }
   }
-  // derivatives at all delays
-  for (int k = 0; k < NTAU + 1; k++)
+
+  sys->p_tau(p_tau, time1, par);
+
+  p_xx.Clear();
+  for (int idx = 0; idx < time1.Size(); ++idx)
   {
-    const double c1 = nint1 * t1[k] - floor(nint1 * t1[k]);
-    const double c2 = nint2 * t2[k] - floor(nint2 * t2[k]);
-    for (int j2 = 0; j2 < ndeg2 + 1; j2++)
+    t1[0] = time1(idx);
+    t2[0] = time2(idx);
+    for (int k = 0; k < NTAU; k++)
     {
-      for (int j1 = 0; j1 < ndeg1 + 1; j1++)
+      t1[1+k] = (t1[0] - p_tau(k,idx) / par(0)) - floor(t1[0] - p_tau(k,idx) / par(0));
+      t2[1+k] = (t2[0] - par(RHO) * p_tau(k,idx) / par(0)) - floor(t2[0] - par(RHO) * p_tau(k,idx) / par(0));
+    }
+
+    for (int k = 0; k < NTAU + 1; k++)
+    {
+      int i1 = static_cast<int>(floor(nint1 * t1[k]));
+      int i2 = static_cast<int>(floor(nint2 * t2[k]));
+      // some error checking
+      if ((t1[k] > 1.0) || (t2[k] > 1.0) ||
+          (t1[k] < 0.0) || (t2[k] < 0.0)) std::cout << "Er ";
+      if ((i1 >= nint1) || (i2 >= nint2)) std::cout << "Ei ";
+      // end error checking
+      for (int j2 = 0; j2 < ndeg2 + 1; j2++)
       {
-        const int idx = idxkk(j1, j2, k);
-        const double cf1 = poly_dlg_eval(mesh1, j1, c1) * nint1 * poly_lgr_eval(mesh2, j2, c2);
-        const double cf2 = poly_lgr_eval(mesh1, j1, c1) * poly_dlg_eval(mesh2, j2, c2) * nint2;
-        for (int p = 0; p < NDIM; p++)
+        for (int j1 = 0; j1 < ndeg1 + 1; j1++)
         {
-          xx(p, NTAU + 2*k)   += cf1 * sol(p + NDIM * kk[idx]);
-          xx(p, NTAU + 2*k + 1) += cf2 * sol(p + NDIM * kk[idx]);
+          const int idxKK = idxkk(j1, j2, k);
+          kk(idxKK,idx) = idxmap(j1, j2, i1, i2);
+          ee(idxKK,idx) = idxKK;
+        }
+      }
+    }
+
+    // sorting
+    comp aa(kk.Pointer(0,idx));
+    std::sort(ee.Pointer(0,idx), ee.Pointer(0,idx) + (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1), aa);
+
+    // filtering same indices
+    rr(ee(0,idx),idx) = 0;
+    int nz = 0;
+    for (int i = 1; i < (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1); i++)
+    {
+      if (kk(ee(i-1,idx),idx) != kk(ee(i,idx),idx)) nz++;
+      rr(ee(i,idx),idx) = nz;
+    }
+
+    // interpolate the solution
+    for (int k = 1; k < NTAU + 1; k++)
+    {
+      const double c1 = nint1 * t1[k] - floor(nint1 * t1[k]);
+      const double c2 = nint2 * t2[k] - floor(nint2 * t2[k]);
+      for (int j2 = 0; j2 < ndeg2 + 1; j2++)
+      {
+        for (int j1 = 0; j1 < ndeg1 + 1; j1++)
+        {
+          const int idxKK = idxkk(j1, j2, k);
+          const double cf = poly_lgr_eval(mesh1, j1, c1) * poly_lgr_eval(mesh2, j2, c2);
+          for (int p = 0; p < NDIM; p++)
+          {
+            p_xx(p, k - 1, idx) += cf * sol(p + NDIM * kk(idxKK, idx));
+          }
+        }
+      }
+    }
+    // derivatives at all delays
+    for (int k = 0; k < NTAU + 1; k++)
+    {
+      const double c1 = nint1 * t1[k] - floor(nint1 * t1[k]);
+      const double c2 = nint2 * t2[k] - floor(nint2 * t2[k]);
+      for (int j2 = 0; j2 < ndeg2 + 1; j2++)
+      {
+        for (int j1 = 0; j1 < ndeg1 + 1; j1++)
+        {
+          const int idxKK = idxkk(j1, j2, k);
+          const double cf1 = poly_dlg_eval(mesh1, j1, c1) * nint1 * poly_lgr_eval(mesh2, j2, c2);
+          const double cf2 = poly_lgr_eval(mesh1, j1, c1) * poly_dlg_eval(mesh2, j2, c2) * nint2;
+          for (int p = 0; p < NDIM; p++)
+          {
+            p_xx(p, NTAU + 2*k, idx)   += cf1 * sol(p + NDIM * kk(idxKK, idx));
+            p_xx(p, NTAU + 2*k + 1, idx) += cf2 * sol(p + NDIM * kk(idxKK, idx));
+          }
         }
       }
     }
   }
+//   for (int idx = 0; idx < time1.Size(); ++idx) std::cout<<p_xx(0, NTAU, idx)<<"\t";
+//   std::cout<<"\np_xx(0,...) was\n";
+  delete[] t2;
+  delete[] t1;
 }
 
 //***************************************************************************
@@ -263,79 +255,62 @@ void CollocTR::interpolate(Matrix& xx, Array1D<double>& sol, int* kk, double* t1
 
 void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
 {
-  Vector tau(NTAU);
-  Vector dtau(NTAU);
-  Matrix dfx(NDIM, NDIM);
-  Matrix dfp(NDIM, 1);
-  Vector fx(NDIM);
-  Matrix dummy(0, 0);
-  Matrix xx(NDIM, NTAU + 2*(NTAU + 1));
-
-  double* t1 = new double[NTAU+1];
-  double* t2 = new double[NTAU+1];
-  int*    kk = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
-  int*    ee = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
-  int*    rr = new int[(NTAU+1)*(ndeg1+1)*(ndeg2+1)];
-
   A.Clear();
   for (int r = 0; r < var.Size(); r++) Avar(r)->Clear();
   // rhs doesn't need to be cleared
 
-  // fill the matrix
-  for (int i2 = 0; i2 < nint2; i2++)
+  // creates kk, ee, rr & interpolates p_xx & gets p_tau
+  init(sol, par);
+  // builds up the structure of the sparse matrix
+  for (int idx = 0; idx < time1.Size(); ++idx)
   {
-    for (int i1 = 0; i1 < nint1; i1++)
+    const int lend = NDIM * (rr(ee((NTAU+1)*(ndeg1+1)*(ndeg2+1)-1,idx),idx) + 1);
+    for (int p = 0; p < NDIM; p++) A.NewL(lend);
+  }
+
+  // the right-hand side
+  sys->p_rhs(p_fx, time1, p_xx, par);
+  for (int idx = 0; idx < time1.Size(); ++idx)
+  {
+    for (int p = 0; p < NDIM; p++) 
     {
-      for (int j2 = 0; j2 < ndeg2; j2++)
-      {
-        for (int j1 = 0; j1 < ndeg1; j1++)
-        {
-          const int idx1 = idxmap(j1, j2, i1, i2);
-          if (idx1 >= (ndeg1*nint1)*(ndeg2*nint2)) std::cout << "IDXOVERFLOW\n";
+      rhs(p + NDIM*idx) = par(0) * p_fx(p,idx) - p_xx(p, NTAU, idx) - par(RHO) * p_xx(p, NTAU + 1, idx);
+    }
+  }
 
-          t1[0] = ((double)i1 + col1(j1)) / nint1;
-          t2[0] = ((double)i2 + col2(j2)) / nint2;
-
-          index(kk, ee, rr, par, tau, t1, t2);
-          const int lend = NDIM * (rr[ee[(NTAU+1)*(ndeg1+1)*(ndeg2+1)-1]] + 1);
-
-          for (int p = 0; p < NDIM; p++) A.NewL(lend);
-
-          interpolate(xx, sol, kk, t1, t2);
-          // righ-hand side
-          sys->rhs(fx, t1[0], xx, par);
-          for (int p = 0; p < NDIM; p++) rhs(p + NDIM*idx1) = par(0) * fx(p) - xx(p, NTAU) - par(RHO) * xx(p, NTAU + 1);
-
-          // derivatives w.r.t the parameters
-          for (int r = 0; r < var.Size(); r++)
-          {
-            Vector& deri = *Avar(r);
+  // derivatives w.r.t the parameters
+  for (int r = 0; r < var.Size(); r++)
+  {
+    Vector& deri = *Avar(r);
+    deri.Clear();
 //!!!!!!!!!!!!!!!!!
 //!BEGIN w.r.t the period
 //!!!!!!!!!!!!!!!!!
-            if (var(r) == 0)
+    if (var(r) == 0)
+    {
+      for (int idx = 0; idx < time1.Size(); ++idx)
+      {
+        for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = -p_fx(p,idx);
+      }
+      sys->p_dtau(p_dtau, time1, par, 0);
+      for (int k = 0; k < NTAU; k++)
+      {
+        int nx = 1, vx = k, np = 0, vp = 0;
+        sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+        for (int idx = 0; idx < time1.Size(); ++idx)
+        {
+          for (int p = 0; p < NDIM; p++)
+          {
+            for (int q = 0; q < NDIM; q++)
             {
-              for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx1) = -fx(p);
-              sys->dtau(dtau, t1[0], par, 0);
-              for (int k = 0; k < NTAU; k++)
-              {
-                const double d = tau(k) / par(0) - dtau(k);
-                if (d != 0)
-                {
-                  dfx.Clear();
-                  int nx = 1, vx = k, np = 0, vp = 0;
-                  sys->deri(dfx, t1[0], xx, par, nx, &vx, np, &vp, dummy);
-                  for (int p = 0; p < NDIM; p++)
-                  {
-                    for (int q = 0; q < NDIM; q++)
-                    {
-                      deri(p + NDIM*idx1) -= dfx(p, q) * d * (xx(q, NTAU + 2 * (k + 1)) + par(RHO) * xx(q, NTAU + 2 * (k + 1) + 1));
-                    }
-                  }
-                }
-              }
+              const double d = p_tau(k,idx) / par(0) - p_dtau(k,idx);
+              deri(p + NDIM*idx) -= p_dfx(p, q, idx) * d * (p_xx(q, NTAU + 2 * (k + 1), idx) + par(RHO) * p_xx(q, NTAU + 2 * (k + 1) + 1, idx));
             }
-            else
+          }
+        }
+      }
+    }
+    else
 //!!!!!!!!!!!!!!!!!
 //!END w.r.t the period
 //!!!!!!!!!!!!!!!!!
@@ -343,16 +318,17 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 //!!!!!!!!!!!!!!!!!
 //!BEGIN w.r.t the ordinary parameters
 //!!!!!!!!!!!!!!!!!
-              // derivatives w.r.t. the real parameters
-              // assuming that delays do not depend on parameters
-              if (var(r) < NPAR)
-              {
-                dfp.Clear();
-                int nx = 0, vx = 0, np = 1, vp = var(r);
-                sys->deri(dfp, t1[0], xx, par, nx, &vx, np, &vp, dummy);
-                for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx1) = - par(0) * dfp(p);
-              }
-              else
+    // derivatives w.r.t. the real parameters
+    if (var(r) < NPAR)
+    {
+      int nx = 0, vx = 0, np = 1, vp = var(r);
+      sys->p_deri(p_dfp, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+      for (int idx = 0; idx < time1.Size(); ++idx)
+      {
+        for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = - par(0) * p_dfp(p, 0, idx);
+      }
+    }
+    else
 //!!!!!!!!!!!!!!!!!
 //!END w.r.t the ordinary parameters
 //!!!!!!!!!!!!!!!!!
@@ -360,97 +336,100 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 //!!!!!!!!!!!!!!!!!
 //!BEGIN w.r.t the rotation number
 //!!!!!!!!!!!!!!!!!
-                if (var(r) == RHO)
-                {
-                  // the derivatives for the phase condition
-                  // it is much more difficult
-                  // the first frequency, which is the inverse of the period
-                  // std::cout<<"JAC:OM0\n";
-                  for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx1) = xx(p, NTAU + 1);
-                  sys->dtau(dtau, t1[0], par, 0);
-                  for (int k = 0; k < NTAU; k++)
-                  {
-                    const double d = -tau(k);
-
-                    dfx.Clear();
-                    const int nx = 1, vx = k, np = 0, vp = 0;
-                    sys->deri(dfx, t1[0], xx, par, nx, &vx, np, &vp, dummy);
-                    for (int p = 0; p < NDIM; p++)
-                    {
-                      for (int q = 0; q < NDIM; q++)
-                      {
-                        deri(p + NDIM*idx1) -= dfx(p, q) * d * xx(q, NTAU + 2 * (k + 1) + 1);
-                      }
-                    }
-                  }
-                }
-//!!!!!!!!!!!!!!!!!
-//!END w.r.t the rotation number
-//!!!!!!!!!!!!!!!!!
-                else std::cout << "Jac:NNN\n";
-          }
-          // the matrix
-          for (int k = 0; k < NTAU + 1; k++)
+    if (var(r) == RHO)
+    {
+      for (int idx = 0; idx < time1.Size(); ++idx)
+      {
+        for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = p_xx(p, NTAU + 1, idx);
+      }
+      sys->p_dtau(p_dtau, time1, par, 0);
+      for (int k = 0; k < NTAU; k++)
+      {
+        const int nx = 1, vx = k, np = 0, vp = 0;
+        sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+        for (int idx = 0; idx < time1.Size(); ++idx)
+        {
+          const double d = -p_tau(k, idx);
+          for (int p = 0; p < NDIM; p++)
           {
-            if (k != 0)
+            for (int q = 0; q < NDIM; q++)
             {
-              // evaluate the solution
-              dfx.Clear();
-              const int nx = 1, vx = k - 1, np = 0, vp = 0;
-              sys->deri(dfx, t1[0], xx, par, nx, &vx, np, &vp, dummy);
-            }
-
-            const double c1 = nint1 * t1[k] - floor(nint1 * t1[k]);
-            const double c2 = nint2 * t2[k] - floor(nint2 * t2[k]);
-
-            // the real jacobian
-            for (int l2 = 0; l2 < ndeg2 + 1; l2++)
-            {
-              for (int l1 = 0; l1 < ndeg1 + 1; l1++)
-              {
-                const int idxK = idxkk(l1, l2, k);
-                if (k != 0)
-                {
-                  const double cf = poly_lgr_eval(mesh1, l1, c1) * poly_lgr_eval(mesh2, l2, c2);
-                  for (int p = 0; p < NDIM; p++)
-                  {
-                    for (int q = 0; q < NDIM; q++)
-                    {
-                      // jacobian of rhs
-                      A.WrLi(p + NDIM*idx1, q + NDIM*rr[idxK]) = q + NDIM * kk[idxK];
-                      A.WrLx(p + NDIM*idx1, q + NDIM*rr[idxK]) -= cf * par(0) * dfx(p, q);
-                    }
-                  }
-                }
-                else
-                {
-                  const double cf1 = poly_dlg_eval(mesh1, l1, c1) * nint1 * poly_lgr_eval(mesh2, l2, c2);
-                  const double cf2 = poly_lgr_eval(mesh1, l1, c1) * poly_dlg_eval(mesh2, l2, c2) * nint2;
-                  for (int p = 0; p < NDIM; p++)
-                  {
-                    for (int q = 0; q < NDIM; q++)
-                    {
-                      // derivative part of the jacobian
-                      A.WrLi(p + NDIM*idx1, q + NDIM*rr[idxK]) = q + NDIM * kk[idxK];
-                      if (p == q)
-                        A.WrLx(p + NDIM*idx1, q + NDIM*rr[idxK]) += cf1 + par(RHO) * cf2;
-                    }
-                  }
-                }
-                // error check
-                if (kk[idxK] > (ndeg1*nint1)*(ndeg2*nint2)) std::cout << "D" << kk[idxK];
-              }
+              deri(p + NDIM*idx) -= p_dfx(p, q, idx) * d * p_xx(q, NTAU + 2 * (k + 1) + 1, idx);
             }
           }
         }
       }
     }
+//!!!!!!!!!!!!!!!!!
+//!END w.r.t the rotation number
+//!!!!!!!!!!!!!!!!!
+    else std::cout << "Jac:NNN\n";
   }
-  delete[] rr;
-  delete[] ee;
-  delete[] kk;
-  delete[] t2;
-  delete[] t1;
+  // fill the matrix
+  for (int k = 0; k < NTAU + 1; k++)
+  {
+    if (k != 0)
+    {
+      // evaluate the solution
+      const int nx = 1, vx = k - 1, np = 0, vp = 0;
+      sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+    }
+
+    for (int idx = 0; idx < time1.Size(); ++idx)
+    {
+      double tk1, tk2;
+      if (k != 0)
+      {
+        tk1 = time1(idx) - p_tau(k-1,idx) / par(0);
+        tk2 = time2(idx) - par(RHO) * p_tau(k-1,idx) / par(0);
+      } else
+      {
+        tk1 = time1(idx);
+        tk2 = time2(idx);
+      }
+      const double c1 = nint1 * tk1 - floor(nint1 * tk1);
+      const double c2 = nint2 * tk2 - floor(nint2 * tk2);
+
+      // the real jacobian
+      for (int l2 = 0; l2 < ndeg2 + 1; l2++)
+      {
+        for (int l1 = 0; l1 < ndeg1 + 1; l1++)
+        {
+          const int idxK = idxkk(l1, l2, k);
+          if (k != 0)
+          {
+            const double cf = poly_lgr_eval(mesh1, l1, c1) * poly_lgr_eval(mesh2, l2, c2);
+            for (int p = 0; p < NDIM; p++)
+            {
+              for (int q = 0; q < NDIM; q++)
+              {
+                // jacobian of rhs
+                A.WrLi(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
+                A.WrLx(p + NDIM*idx, q + NDIM*rr(idxK, idx)) -= cf * par(0) * p_dfx(p, q, idx);
+              }
+            }
+          }
+          else
+          {
+            const double cf1 = poly_dlg_eval(mesh1, l1, c1) * nint1 * poly_lgr_eval(mesh2, l2, c2);
+            const double cf2 = poly_lgr_eval(mesh1, l1, c1) * poly_dlg_eval(mesh2, l2, c2) * nint2;
+            for (int p = 0; p < NDIM; p++)
+            {
+              for (int q = 0; q < NDIM; q++)
+              {
+                // derivative part of the jacobian
+                A.WrLi(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
+                if (p == q)
+                  A.WrLx(p + NDIM*idx, q + NDIM*rr(idxK, idx)) += cf1 + par(RHO) * cf2;
+              }
+            }
+          }
+          // error check
+          if (kk(idxK, idx) > (ndeg1*nint1)*(ndeg2*nint2)) std::cout << "D" << kk(idxK, idx);
+        }
+      }
+    }
+  }
 }
 
 //***************************************************************************************

@@ -62,7 +62,6 @@ class CollocTR
 
     //utils
     inline int idxmap(int j1, int j2, int i1, int i2);
-    inline int idxmapSep(int j1, int j2, int i1, int i2);
     inline int idxkk(int j1, int j2, int k);
     inline System& Sys()
     {
@@ -71,8 +70,9 @@ class CollocTR
 
   private:
     System* sys;
-    int ndeg1, ndeg2;
-    int nint1, nint2;
+    const int ndim, ntau, npar;
+    const int ndeg1, ndeg2;
+    const int nint1, nint2;
     Vector col1,  col2;
     Vector mesh1, mesh2;
     Array1D< Array1D<double> > lgr1, lgr2; // 1. meshpoint 2. polynom
@@ -80,10 +80,17 @@ class CollocTR
 
     Matrix I1, ID1, I2, ID2;
     Vector mlg1, mlg2, mlgd1, mlgd2, ilg1, ilg2, ilgd1, ilgd2;
+    // for the vectorization
+    Vector          time1, time2;   // ndeg1*ndeg2*nint1*nint2
+    Array2D<int>    kk, ee, rr;     // (ntau+1)*(ndeg1+1)*(ndeg2+1) X ndeg1*ndeg2*nint1*nint2
+    Array2D<double> p_tau, p_dtau;  // ntau X ndeg1*ndeg2*nint1*nint2
+    Array3D<double> p_xx;           // ndim X ntau+1 X ndeg1*ndeg2*nint1*nint2
+    Array2D<double> p_fx;           // ndim X ndeg1*ndeg2*nint1*nint2
+    Array3D<double> p_dfp;          // ndim X 1 X ndeg1*ndeg2*nint1*nint2
+    Array3D<double> p_dfx;          // ndim X ndim X ndeg1*ndeg2*nint1*nint2
+    Array3D<double> p_dummy;
     // functions
-    void index(int* kk, int* ee, int* rr, Vector& par, Vector& tau, double* t1, double* t2);
-    void indexSep(int* kk, int* ee, int* rr, Vector& par, Vector& tau, double* t1, double* t2);
-    void interpolate(Matrix& xx, Array1D<double>& sol, int* kk, double* t1, double* t2);
+    void init(const Array1D<double>& sol, const Vector& par);
 };
 
 inline int CollocTR::idxmap(int j1, int j2, int i1, int i2)
@@ -117,41 +124,6 @@ inline int CollocTR::idxmap(int j1, int j2, int i1, int i2)
       // j2 = NDEG2
       if ((i1 == nint1 - 1) && (i2 == nint2 - 1)) return 0;
       else return 0 + 0*ndeg1 + ((i1 + 1) % nint1)*ndeg1*ndeg2 + ((i2 + 1) % nint2)*ndeg1*ndeg2*nint1;
-    }
-  }
-}
-
-inline int CollocTR::idxmapSep(int j1, int j2, int i1, int i2)
-{
-  if (j1 < ndeg1)
-  {
-    if (j2 < ndeg2)
-    {
-      // j1 < NDEG1
-      // j2 < NDEG2
-      return j1 + j2*ndeg1 + i1*ndeg1*ndeg2 + i2*ndeg1*ndeg2*nint1;
-    }
-    else
-    {
-      // j1 < NDEG1
-      // j2 = NDEG2
-      return j1 + 0*ndeg1 + i1*ndeg1*ndeg2 + ((i2 + 1) % nint2)*ndeg1*ndeg2*nint1;
-    }
-  }
-  else
-  {
-    if (j2 < ndeg2)
-    {
-      // j1 = NDEG1
-      // j2 < NDEG2
-      return 0 + j2*ndeg1 + (i1 + 1)*ndeg1*ndeg2 + i2*ndeg1*ndeg2*nint1;
-    }
-    else
-    {
-      // j1 = NDEG1
-      // j2 = NDEG2
-      if ((i1 == nint1 - 1) && (i2 == nint2 - 1)) return 0;
-      else return 0 + 0*ndeg1 + (i1 + 1)*ndeg1*ndeg2 + ((i2 + 1) % nint2)*ndeg1*ndeg2*nint1;
     }
   }
 }
