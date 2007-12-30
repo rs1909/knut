@@ -3,7 +3,7 @@
  <input>out-nssw.mat</input>
  <output>out-lp-2.mat</output>
  <sysname>sys-turntwo.so</sysname>
- <label>95</label>
+ <label>89</label>
  <pointtype>51</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
