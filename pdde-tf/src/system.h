@@ -101,10 +101,19 @@ class System
     {
       if (found_p_deri)
       {
-        if (nderi == 2) (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+        if (nderi == 2)
+        {
+          (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+        }
         else if (nderi == 0) p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
-        else if (nderi == 1 && ((nx == 1 && np == 0) || (nx == 0 && np == 1))) (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
-        else p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
+        else if ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1)))
+        {
+          (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+        }
+        else
+        {
+          p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
+        }
       }
       else
       {
