@@ -600,7 +600,7 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol,
   col.CharJac_MSHphi(phi, par, solMSHData);
 
   temp = AHAT.getA11() * phi;
-  std::cout << "temp: " << temp*temp << " phi: " << phi*phi << "\n";
+//   std::cout << "temp: " << temp*temp << " phi: " << phi*phi << "\n";
   col.Star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
@@ -639,7 +639,7 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol,
     g31diff = AHAT.getA33(2, 1) - gg3(1);
     diffnorm = std::max<double>(sqrt(u3diff * u3diff + h30diff * h30diff + h31diff * h31diff),
                                 sqrt(v3diff * v3diff + g30diff * g30diff + g31diff * g31diff));
-    std::cout << "std::max(u3diff, v3diff) " << diffnorm << "\n";
+//     std::cout << "std::max(u3diff, v3diff) " << diffnorm << "\n";
     const double nrm_v = (1.0 / sqrt(vv3 * vv3 + gg3(0) * gg3(0) + gg3(1) * gg3(1)));
     const double nrm_u = (1.0 / sqrt(uu3 * uu3 + hh3(0) * hh3(0) + hh3(1) * hh3(1)));
     AHAT.getA31(2)   = nrm_v * vv3;
@@ -650,7 +650,7 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol,
     AHAT.getA33(1, 2) = nrm_u * hh3(1);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
-  std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
+//   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
 double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& sol, const Array3D<double>& solData)
@@ -697,8 +697,8 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
   col.Interpolate(vv3Data, vv3);
 //  std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
-  if (gg3(2) > 0.0) std::cout << "\t+++\n";
-  else               std::cout << "\t---\n";
+//   if (gg3(2) > 0.0) std::cout << "\t+++\n";
+//   else               std::cout << "\t---\n";
   return gg3(2);
 }
 
@@ -724,7 +724,7 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
   gg_p += gg3(1) * (uu3 * mB_p);
 
 //  if( alpha==0 ) gg_p *= 22.0;
-  std::cout << "\nGP " << alpha << ":" << gg_p;
+//   std::cout << "\nGP " << alpha << ":" << gg_p;
   return gg_p;
 }
 
