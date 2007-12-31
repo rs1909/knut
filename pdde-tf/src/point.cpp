@@ -349,6 +349,7 @@ void Point::Construct()
   for (int i = 0; i < var.Size(); i++) varMapCont(i) = varMap(i);
 
   xxDot   = new HyperVector(dim1, 0, dim3 + 1);
+  xxDotNu = new HyperVector(dim1, 0, dim3 + 1);
 
   xx      = new HyperVector(dim1, 0, dim3 + 1);
 
@@ -367,6 +368,7 @@ void Point::Dispose()
   delete xx;
 
   delete xxDot;
+  delete xxDotNu;
 }
 
 // **************************************************************************************************************** //
@@ -833,6 +835,8 @@ int Point::Continue(double ds, bool jacstep)
   parNu = par;
   for (int i = 0; i < solNu.Size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
   for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
+  xxDotNu->getV1() = xxDot->getV1();
+  xxDotNu->getV3() = xxDot->getV3();
 
   int  it = 0;
   bool conv;
@@ -855,14 +859,14 @@ int Point::Continue(double ds, bool jacstep)
     // updating the tangent
     if (!jacstep)
     {
-      jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
+      jac->Multiply<false>(*rhs, *xxDotNu, dim3 + 1);
       rhs->getV3()(dim3) -= 1.0;
       jac->Solve(*xx, *rhs);
-      xxDot->getV1() -= xx->getV1();
-      xxDot->getV3() -= xx->getV3();
-      Tnorm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
-      xxDot->getV1() /= Tnorm;
-      xxDot->getV3() /= Tnorm;
+      xxDotNu->getV1() -= xx->getV1();
+      xxDotNu->getV3() -= xx->getV3();
+      Tnorm = sqrt(colloc.Integrate(xxDotNu->getV1(), xxDotNu->getV1()) + (xxDotNu->getV3()) * (xxDotNu->getV3()));
+      xxDotNu->getV1() /= Tnorm;
+      xxDotNu->getV3() /= Tnorm;
     }
     // end updating tangent
 
@@ -872,10 +876,10 @@ int Point::Continue(double ds, bool jacstep)
   {
 #ifdef DEBUG
     /// checking the tangent and the secant
-    double Pnorm = sqrt(xxDot->getV3()(dim3) * xxDot->getV3()(dim3));
-    double Xnorm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1())), Onorm = sqrt((xxDot->getV3()) * (xxDot->getV3()));
+    double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
+    double Xnorm = sqrt(colloc.Integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
     std::cout << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xxDot->getV3()(i - 1);
+    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
     std::cout << '\n';
 
     xx->getV1() = solNu;
@@ -896,6 +900,8 @@ int Point::Continue(double ds, bool jacstep)
     // copying back the solution
     sol = solNu;
     par = parNu;
+    xxDot->getV1() = xxDotNu->getV1();
+    xxDot->getV3() = xxDotNu->getV3();
   }
   else
   {

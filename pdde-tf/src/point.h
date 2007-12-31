@@ -203,13 +203,12 @@ class Point
     // solutions
     Vector       sol;
     Vector       par;
+    HyperVector* xxDot;
 
     // solution in the continuation
     Vector       solNu;
     Vector       parNu;
-
-    // tangents
-    HyperVector* xxDot;  // -> solDot, qqDot, parDot
+    HyperVector* xxDotNu;
 
     // multipliers
     Vector       mRe;
