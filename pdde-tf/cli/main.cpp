@@ -220,26 +220,27 @@ int main(int argc, const char** argv)
       std::cout << "\n";
 
       // making tangents
-      if (params->getBranchSW() == TFPDSwitch)
+      switch (params->getBranchSW())
       {
-        std::cout << "\nSwitching to the period two branch (TF).\n";
-        pt.SwitchTFPD(params->getDsStart());
-      }
-      else if (params->getBranchSW() == TFBRSwitch)
-      {
-        std::cout << "\nSwitching to the other branch (TF).\n";
-        pt.SwitchTFLP(params->getDsStart());
-      }
-      else if (params->getBranchSW() == TFHBSwitch)
-      {
-        std::cout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
-        pt.SwitchTFHB(params->getDsStart());
-      }
-      else
-      {
-        std::cout << "\nFinding the tangent.\n";
-        pt.setCont(params->getCp() - VarPAR0);
-        pt.Tangent();
+        case TFPDSwitch:
+          std::cout << "\nSwitching to the period two branch (TF).\n";
+          pt.SwitchTFPD(params->getDsStart());
+          break;
+        case TFHBSwitch:
+          std::cout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
+          pt.SwitchTFHB(params->getDsStart());
+          break;
+        case TFBRSwitch:
+        case TFBRAUTSwitch:
+        case TFBRAUTROTSwitch:
+          std::cout << "\nSwitching to the other branch (TF).\n";
+          pt.SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart());
+          break;
+        default:
+          std::cout << "\nFinding the tangent.\n";
+          pt.setCont(params->getCp() - VarPAR0);
+          pt.Tangent();
+          break;
       }
       pt.Reset(eqn, var);
       pt.setCont(params->getCp() - VarPAR0);

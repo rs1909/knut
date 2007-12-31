@@ -91,6 +91,10 @@ class brswType : public genMap<BranchSW>
       dsc.push_back("Hopf (aut)");
       key.push_back(TFTRSwitch);
       dsc.push_back("Torus");
+      key.push_back(TFBRAUTSwitch);
+      dsc.push_back("Branch (aut)");
+      key.push_back(TFBRAUTROTSwitch);
+      dsc.push_back("Branch (sym)");
     }
 };
 

@@ -39,7 +39,7 @@ class Point
 
     // algorithms
     void    Reset(Array1D<Eqn>& eqn_, Array1D<Var>& var_);
-    void    SwitchTFLP(double ds);   // switches branch with testFunct
+    void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
     void    SwitchTFPD(double ds);   // switches branch with testFunct
     void    SwitchTFHB(double ds);   // switches branch with testFunct
     void    SwitchTRSol(Vector& Sol, const Vector& mshint, const Vector& mshdeg)

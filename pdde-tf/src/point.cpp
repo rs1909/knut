@@ -740,21 +740,34 @@ void Point::SwitchTFHB(double ds)
 
 /// Switching with the test functionals!!!
 
-void Point::SwitchTFLP(double ds)
+void Point::SwitchTFLP(BranchSW type, double ds)
 {
-  Vector qq_(NDIM);
-  MatFact DD(NDIM, NDIM);
-  Vector wr(NDIM), wi(NDIM);
-  Matrix vr(NDIM, NDIM), vl(NDIM, NDIM);
-
   xxDot->getV1().Clear();
   xxDot->getV3().Clear();
 
-  TestFunct* tf = new TestFunct(colloc, 1.0);
+  baseTestFunct* tf = 0;
+  switch (type)
+  {
+    case TFBRSwitch:
+      tf = static_cast<baseTestFunct*>(new TestFunct(colloc, 1.0));
+      break;
+    case TFBRAUTSwitch:
+      tf = static_cast<baseTestFunct*>(new TestFunctLPAUT(colloc, 1.0));
+      break;
+    case TFBRAUTROTSwitch:
+      tf = static_cast<baseTestFunct*>(new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0));
+      break;
+    default:
+      return;
+      break;
+  }
   tf->setKernelTolerance(KernEps, KernIter);
   tf->Funct(colloc, par, sol, solData);
   tf->Switch(xxDot->getV1());
   delete tf;
+  double norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()));
+  xxDot->getV1() /= norm;
+  xxDot->getV3().Clear();
 
   sol += ds * xxDot->getV1();
 }

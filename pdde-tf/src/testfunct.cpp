@@ -650,6 +650,7 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol,
     AHAT.getA33(1, 2) = nrm_u * hh3(1);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
+  if (diffnorm > kernEps) std::cout << "TestFunctLPAUTROT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 

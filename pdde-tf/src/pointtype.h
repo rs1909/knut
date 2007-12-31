@@ -65,7 +65,16 @@ enum PtType {
 
 enum Par { ParAngle = 0, ParPeriod = 1, ParRot = 2, ParEnd };
 
-enum BranchSW { NOSwitch = 0, TFBRSwitch = 1, TFPDSwitch = 2, TFHBSwitch = 3, TFTRSwitch = 4 };
+enum BranchSW
+{
+  NOSwitch = 0,
+  TFBRSwitch = 1,
+  TFPDSwitch = 2,
+  TFHBSwitch = 3,
+  TFTRSwitch = 4,
+  TFBRAUTSwitch = 5,
+  TFBRAUTROTSwitch = 6
+};
 
 inline char parType(int npar, int p)
 {
