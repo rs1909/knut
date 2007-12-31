@@ -156,7 +156,7 @@ int main(int argc, const char** argv)
   // just a block to contain pt, which eats too much memory
   try
   {
-    int trivial = params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
+    params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
     const int npar = sys.npar();
 
 //  for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
@@ -268,9 +268,7 @@ int main(int argc, const char** argv)
         //
         if (params->getStab()) pt.Stability();
         ustabprev = ustab;
-        if (trivial == 0) ustab = pt.UStab();
-        else if (trivial == 1) ustab = pt.UStabAUT();
-        else ustab = pt.UStabAUTRot();
+        pt.UStab();
         for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
         // console output
@@ -285,9 +283,7 @@ int main(int argc, const char** argv)
         if (i != 0  && ustab != ustabprev)
         {
           PtType bif = SolTF;
-          if (trivial == 0) bif = pt.testBif();
-          else if (trivial == 1) bif = pt.testBifAUT();
-          else pt.testBifAUTRot();
+          bif = pt.testBif();
           switch (bif)
           {
             case BifTFLP:

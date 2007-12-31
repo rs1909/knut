@@ -5,7 +5,8 @@ ADD_LIBRARY( pddelib
 	plot.cpp plot.h point.cpp point.h pointtype.h
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
 	system.cpp system.h testfunct.cpp testfunct.h
-	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h )
+	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h 
+	multipliers.cpp multipliers.h)
 
 INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
 	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include

@@ -50,6 +50,14 @@ enum PlotType
   PlotPolygonType
 };
 
+enum PlotMarkerStyle
+{
+  PlotMarkerCircle,
+  PlotMarkerSquare,
+  PlotMarkerTriangle,
+  PlotMarkerCross
+};
+
 class PlotLine
 {
   public:
@@ -132,7 +140,7 @@ class PlotData : public QGraphicsScene
 
   private:
     void addPlotLine(std::list<PlotItem>::iterator& it, const char* style);
-    void addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, int type);
+    void addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, PlotMarkerStyle type);
     void dataToGraphics();
     void getScale(qreal& transx, qreal& transy, qreal& scale);
     void plotStyle(QPen& pen, const char* style);

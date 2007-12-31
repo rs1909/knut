@@ -22,6 +22,7 @@
 #include "matrix.h"
 #include "pderror.h"
 #include "mat4data.h"
+#include "multipliers.h"
 
 #define MAT_BIG_ENDIAN 1000
 #define MAT_LITTLE_ENDIAN 0
@@ -225,7 +226,7 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
 
   char ntrivmul_string[] = "pdde_ntrivmul";
   ntrivmul_offset = mul_offset + mul_size;
-  int ntrivmul_size = createMatrixHeader(&ntrivmul_header, ntrivmul_string, 1, 1);
+  int ntrivmul_size = createMatrixHeader(&ntrivmul_header, ntrivmul_string, 3, 1);
 
   char ndim_string[] = "pdde_ndim";
   ndim_offset = ntrivmul_offset + ntrivmul_size;
@@ -372,7 +373,7 @@ void mat4Data::openReadOnly(const std::string& fileName)
     if (mul_header.imagf != 1) P_MESSAGE("err5");
 
     if ((ntrivmul_offset = findMatrix("pdde_ntrivmul", &ntrivmul_header)) == -1) P_MESSAGE("err6");
-    P_ERROR_X1(ntrivmul_header.mrows == 1, "err7");
+    P_ERROR_X1(ntrivmul_header.mrows == 3, "err7");
     P_ERROR_X1(ntrivmul_header.ncols == 1, "err8");
     P_ERROR_X1(ntrivmul_header.imagf == 0, "err9");
 
@@ -718,97 +719,33 @@ void mat4Data::getProfile(int n, Vector& prof) const
   }
 }
 
-inline void mat4Data::findTrivialIndices(int n, int aut, int *imin, double* dmin) const
-{
-  for (int i = 0; i < aut; ++i)
-  {
-    imin[i] = -1;
-    dmin[i] = DBL_MAX;
-  }
-  for (int i = 0; i < getNMul(); ++i)
-  {
-    const double mabs = fabs(sqrt((getMulRe(n, i) - 1.0) * (getMulRe(n, i) - 1.0) + getMulIm(n, i) * getMulIm(n, i)));
-    for (int j = 0; j < aut; ++j)
-    {
-      if (dmin[j] > mabs)
-      {
-        dmin[j] = mabs;
-        imin[j] = i;
-        break;
-      }
-    }
-  }
-}
-
-int mat4Data::countUnstable(int n) const
-{
-  const int aut = getNTrivMul();
-  P_ERROR(aut < 4);
-  int imin[4];
-  double dmin[4];
-  findTrivialIndices(n, aut, imin, dmin);
-  int ustab = 0;
-  for (int i = 0; i < getNMul(); ++i)
-  {
-    const double mabs = (getMulRe(n, i) * getMulRe(n, i) + getMulIm(n, i) * getMulIm(n, i));
-    bool ok = true;
-    for (int j = 0; j < aut; ++j) if (i == imin[j]) ok = false;
-    if (ok && mabs >= 1.0)  ++ustab;
-  }
-  return ustab;
-}
-
 int mat4Data::getNextBifurcation(int n) const
 {
-  int p_ustab = countUnstable(n);
+  Vector mulRe(false), mulIm(false);
+  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
+  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  const int lp = getNTrivMul(0);
+  const int pd = getNTrivMul(1);
+  const int ns = getNTrivMul(2);
+  int p_ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns);
   for (int i = n + 1; i < getNPoints(); ++i)
   {
-    int ustab = countUnstable(i);
+    const_cast<mat4Data*>(this)->getMulReRef(i, mulRe);
+    const_cast<mat4Data*>(this)->getMulImRef(i, mulIm);
+    int ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns);
     if (ustab != p_ustab) return i;
     p_ustab = ustab;
   }
   return -1;
 }
 
-int mat4Data::getBifurcationType(int n) const
+PtType  mat4Data::getBifurcationType(int n) const
 {
-  const int aut = getNTrivMul();
-  P_ERROR(aut < 4);
-  int imin[4];
-  double dmin[4];
-  findTrivialIndices(n, aut, imin, dmin);
-  double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
-  int iminLP = -1, iminPD = -1, iminNS = -1;
-  for (int i = 0; i < getNMul(); ++i)
-  {
-    const double mre = getMulRe(n, i);
-    const double mim = getMulIm(n, i);
-    bool ok = true;
-    for (int j = 0; j < aut; ++j) if (i == imin[j]) ok = false;
-    if (ok)
-    {
-      const double LPabs = fabs(sqrt((mre - 1.0) * (mre - 1.0) + mim * mim));
-      const double PDabs = fabs(sqrt((mre + 1.0) * (mre + 1.0) + mim * mim));
-      const double NSabs = fabs(sqrt(mre * mre + mim * mim) - 1.0);
-      if ((dminLP > LPabs) && (mim == 0.0))
-      {
-        dminLP = LPabs;
-        iminLP = i;
-      }
-      if ((dminPD > PDabs) && (mim == 0.0))
-      {
-        dminPD = PDabs;
-        iminPD = i;
-      }
-      if ((dminNS > NSabs) && (mim != 0.0))
-      {
-        dminNS = NSabs;
-        iminNS = i;
-      }
-    }
-  }
-  if ((dminLP < dminPD) && (dminLP < dminNS)) return 1;  // BifTFLP;
-  else if ((dminPD < dminLP) && (dminPD < dminNS)) return 2;  // BifTFPD;
-  else if ((dminNS < dminPD) && (dminNS < dminLP)) return 3;  // BifTFNS;
-  else return 0; //SolTF;
+  Vector mulRe(false), mulIm(false);
+  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
+  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  const int lp = getNTrivMul(0);
+  const int pd = getNTrivMul(1);
+  const int ns = getNTrivMul(2);
+  return bifurcationType(mulRe, mulIm, lp, pd, ns);
 }

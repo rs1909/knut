@@ -49,7 +49,7 @@ void MThread::run()
     Array1D<Eqn> eqn_start;
     Array1D<Var> var_start;
     Eqn          testFN;
-    int trivial = params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
+    params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
     const int npar = params->getNPar();
     Point* pt_ptr;
     try
@@ -182,9 +182,7 @@ void MThread::run()
         //
         if (params->getStab()) pt.Stability();
         ustabprev = ustab;
-        if (trivial == 0) ustab = pt.UStab();
-        else if (trivial == 1) ustab = pt.UStabAUT();
-        else ustab = pt.UStabAUTRot();
+        ustab = pt.UStab();
         for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
 
@@ -200,9 +198,7 @@ void MThread::run()
         if (i != 0  && ustab != ustabprev)
         {
           PtType bif = SolTF;
-          if (trivial == 0) bif = pt.testBif();
-          else if (trivial == 1) bif = pt.testBifAUT();
-          else pt.testBifAUTRot();
+          bif = pt.testBif();
           switch (bif)
           {
             case BifTFLP:

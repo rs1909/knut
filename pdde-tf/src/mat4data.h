@@ -11,6 +11,7 @@
 #define MAT4DATA_H
 
 #include "matrix.h"
+#include "pointtype.h"
 #include <string>
 // HANDLE is defined here
 #ifdef WIN32
@@ -92,13 +93,22 @@ class mat4Data
     {
       return elem_im(mul_offset, j, n);
     }
-    int    getNTrivMul() const
+    void getMulReRef(int n, Vector& el)
     {
-      return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0]);
+      el.Init(&elem(mul_offset, 0, n), nmul);
     }
-    void   setNTrivMul(int i)
+    void getMulImRef(int n, Vector& el)
     {
-      ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[0] = i;
+      el.Init(&elem_im(mul_offset, 0, n), nmul);
+    }
+    // j == 0 : LP, j == 1 : PD, j == 2, NS
+    int    getNTrivMul(const int j) const
+    {
+      return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j]);
+    }
+    void   setNTrivMul(const int j, int i)
+    {
+      ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j] = i;
     }
     void   getElem(int n, Vector& el) const;
     double getElem(int n, int j) const
@@ -164,9 +174,8 @@ class mat4Data
     {
       return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
     }
-    int  countUnstable(int n) const;
-    int  getNextBifurcation(int n) const;
-    int  getBifurcationType(int n) const;
+    int    getNextBifurcation(int n) const;
+    PtType getBifurcationType(int n) const;
     bool isTorus() const
     {
       return torus;
@@ -198,7 +207,6 @@ class mat4Data
     }
 
   private:
-    inline void findTrivialIndices(int n, int aut, int *imin, double* dmin) const;
 
 #ifdef WIN32
     HANDLE file;

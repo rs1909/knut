@@ -290,11 +290,11 @@ void PlotData::addPlotLine(std::list<PlotItem>::iterator& it, const char* style)
   plotStyle(it->data.line->pen, style);
 }
 
-void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, int type)
+void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, PlotMarkerStyle type)
 {
-  switch (type % 4)
+  switch (type)
   {
-    case 0:  // CIRCLE
+    case PlotMarkerCircle:  // CIRCLE
       {
         it->type = PlotCircleType;
         it->data.circle = new PlotCircle(QPen(QColor("blue")), QRectF(-3.0, -3.0, 6.0 , 6.0));
@@ -302,7 +302,7 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         plotStyle(it->data.circle->pen, style);
       }
       break;
-    case 1:  // SQUARE
+    case PlotMarkerSquare:  // SQUARE
       {
         it->type = PlotPolygonType;
         QPolygonF pl(4);
@@ -315,7 +315,7 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         plotStyle(it->data.polygon->pen, style);
       }
       break;
-    case 2: // TRIANGLE
+    case PlotMarkerTriangle: // TRIANGLE
       {
         it->type = PlotPolygonType;
         QPolygonF pl(3);
@@ -327,15 +327,16 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         plotStyle(it->data.polygon->pen, style);
       }
       break;
-    case 3: // CROSS
+    case PlotMarkerCross: // CROSS
       {
         it->type = PlotPolygonType;
-        QPolygonF pl(5);
-        pl[0] = QPointF(-3.0, 0.0);
-        pl[1] = QPointF(3.0, 0.0);
+        QPolygonF pl(6);
+        pl[0] = QPointF(-3.0, 3.0);
+        pl[1] = QPointF(3.0, -3.0);
         pl[2] = QPointF(0.0, 0.0);
-        pl[3] = QPointF(0.0, -3.0);
-        pl[4] = QPointF(0.0, 3.0);
+        pl[3] = QPointF(-3.0, -3.0);
+        pl[4] = QPointF(3.0, 3.0);
+        pl[5] = QPointF(0.0, 0.0);
         it->data.polygon = new PlotPolygon(QPen(QColor("blue")), pl);
         it->data.polygon->pen.setWidthF(1);
         plotStyle(it->data.polygon->pen, style);
@@ -500,7 +501,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     }
     ++xadded;
     ++yadded;
-    addPlotPoint(--Graph.end(), style, 1);
+    addPlotPoint(--Graph.end(), style, PlotMarkerCross);
   }
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
@@ -522,8 +523,8 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     }
   }
   // add stability
-  std::vector<int> bifidx;
-  std::vector<int> biftype;
+  std::vector<int>    bifidx;
+  std::vector<PtType> biftype;
   if ((x == XLabel || x >= XParameter0) && xadded != 0 && xadded == yadded)
   {
     int k, k_p = 0;
@@ -551,7 +552,21 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
         else Graph.rbegin()->y(0) = (it->y(bifidx[i] - 1) + it->y(bifidx[i])) / 2.0;
         ++xadded;
         ++yadded;
-        addPlotPoint(--Graph.end(), stabstyle, biftype[i]);
+        switch (biftype[i])
+        {
+          case BifTFLP:
+            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerSquare);
+            break;
+          case BifTFPD:
+            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerTriangle);
+            break;
+          case BifTFNS:
+            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerCircle);
+            break;
+          default:
+            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerCross);
+            break;
+        } 
       }
     }
   }

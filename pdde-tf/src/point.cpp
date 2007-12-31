@@ -291,8 +291,9 @@ void Point::Construct()
 
   // a) setting th etest functional b) determining the number of trivial multipliers
   testFunct.Init(eqn.Size());
-  bool phaut = false;
-  bool phrot = false;
+  nTrivMulLP = 0;
+  nTrivMulPD = 0;
+  nTrivMulNS = 0;
   for (int i = 1; i < eqn.Size(); i++)
   {
     switch (eqn(i))
@@ -300,43 +301,45 @@ void Point::Construct()
       case EqnTFLP:
         P_ERROR(testFunct(i) == 0);
         testFunct(i) = new TestFunct(colloc, 1.0);
+        ++nTrivMulLP;
         break;
       case EqnTFPD:
         P_ERROR(testFunct(i) == 0);
         testFunct(i) = new TestFunct(colloc, -1.0);
+        ++nTrivMulPD;
         break;
       case EqnTFLPAUT:
         P_ERROR(testFunct(i) == 0);
         testFunct(i) = new TestFunctLPAUT(colloc, 1.0);
+        ++nTrivMulLP;
         break;
       case EqnTFLPAUTROT:
         P_ERROR(testFunct(i) == 0);
         testFunct(i) = new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0);
+        ++nTrivMulLP;
         break;
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test funtional are not paired.");
         P_ERROR(testFunct(i) == 0);
         testFunct(i) = new TestFunctCPLX(colloc);
+        nTrivMulNS += 2;
         break;
       case EqnTFCPLX_IM:
         P_ERROR_X1(eqn(i - 1) == EqnTFCPLX_RE,
                    "The real and imaginary parts of the complex test funtional are not paired.");
         break;
       case EqnPhase:
-        phaut = true;
+        ++nTrivMulLP;
         break;
       case EqnPhaseRot:
-        phrot = true;
+        ++nTrivMulLP;
         break;
       default:
         break;
     }
     if (testFunct(i)) testFunct(i)->setKernelTolerance(KernEps, KernIter);
   }
-  nTrivMul = 0;
-  if (phaut) ++nTrivMul;
-  if (phrot) ++nTrivMul;
 
   for (int i = 1; i < var.Size(); i++)
   {
@@ -918,136 +921,6 @@ void Point::Stability()
 //  mIm.Print();
 }
 
-static inline int instab(Vector& mRe, Vector& mIm, int aut)
-{
-  double dmin1 = DBL_MAX, dmin2 = DBL_MAX;
-  int imin1 = -1, imin2 = -1;
-  if (aut > 0)
-  {
-    for (int i = 0; i < mRe.Size(); i++)
-    {
-      const double mabs = fabs(sqrt((mRe(i) - 1.0) * (mRe(i) - 1.0) + mIm(i) * mIm(i)));
-      if (dmin1 > mabs)
-      {
-        dmin1 = mabs;
-        imin1 = i;
-      }
-    }
-  }
-  if (aut > 1)
-  {
-    for (int i = 0; i < mRe.Size(); i++)
-    {
-      const double mabs = fabs(sqrt((mRe(i) - 1.0) * (mRe(i) - 1.0) + mIm(i) * mIm(i)));
-      if ((dmin2 > mabs) && (i != imin1))
-      {
-        dmin2 = mabs;
-        imin2 = i;
-      }
-    }
-  }
-
-  int ustab = 0;
-  for (int i = 0; i < mRe.Size(); i++)
-  {
-    if ((mRe(i)*mRe(i) + mIm(i)*mIm(i) >= 1.0) && (i != imin1) && (i != imin2)) ++ustab;
-  }
-  return ustab;
-}
-
-static inline PtType testbif(Vector& mRe, Vector& mIm, int aut)
-{
-  double dmin1 = 0.1, dmin2 = 0.1;
-  int imin1 = -1, imin2 = -1;
-  if (aut > 0)
-  {
-    for (int i = 0; i < mRe.Size(); i++)
-    {
-      const double mabs = fabs(sqrt((mRe(i) - 1.0) * (mRe(i) - 1.0) + mIm(i) * mIm(i)));
-      if (dmin1 > mabs)
-      {
-        dmin1 = mabs;
-        imin1 = i;
-      }
-    }
-    if (imin1 == -1) std::cout << "testbif-1: Accuracy problem?\n";
-  }
-  if (aut > 1)
-  {
-    for (int i = 0; i < mRe.Size(); i++)
-    {
-      const double mabs = fabs(sqrt((mRe(i) - 1.0) * (mRe(i) - 1.0) + mIm(i) * mIm(i)));
-      if ((dmin2 > mabs) && (i != imin1))
-      {
-        dmin2 = mabs;
-        imin2 = i;
-      }
-    }
-    if (imin2 == -1) std::cout << "testbif-2: Accuracy problem?\n";
-  }
-
-  double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
-  int iminLP = -1, iminPD = -1, iminNS = -1;
-  for (int i = 0; i < mRe.Size(); i++)
-  {
-    if ((i != imin1) && (i != imin2))
-    {
-      const double LPabs = fabs(sqrt((mRe(i) - 1.0) * (mRe(i) - 1.0)));
-      const double PDabs = fabs(sqrt((mRe(i) + 1.0) * (mRe(i) + 1.0)));
-      const double NSabs = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
-      if ((dminLP > LPabs) && (mIm(i) == 0.0))
-      {
-        dminLP = LPabs;
-        iminLP = i;
-      }
-      if ((dminPD > PDabs) && (mIm(i) == 0.0))
-      {
-        dminPD = PDabs;
-        iminPD = i;
-      }
-      if ((dminNS > NSabs) && (mIm(i) != 0.0))
-      {
-        dminNS = NSabs;
-        iminNS = i;
-      }
-    }
-  }
-  if ((dminLP < dminPD) && (dminLP < dminNS)) return BifTFLP;
-  else if ((dminPD < dminLP) && (dminPD < dminNS)) return BifTFPD;
-  else if ((dminNS < dminPD) && (dminNS < dminLP)) return BifTFNS;
-  else return SolTF;
-}
-
-int  Point::UStab()
-{
-  return instab(mRe, mIm, 0);
-}
-
-int  Point::UStabAUT()
-{
-  return instab(mRe, mIm, 1);
-}
-
-int  Point::UStabAUTRot()
-{
-  return instab(mRe, mIm, 2);
-}
-
-PtType Point::testBif()
-{
-  return testbif(mRe, mIm, 0);
-}
-
-PtType Point::testBifAUT()
-{
-  return testbif(mRe, mIm, 1);
-}
-
-PtType Point::testBifAUTRot()
-{
-  return testbif(mRe, mIm, 2);
-}
-
 void Point::Plot(GnuPlot& pl)
 {
   pl.SetPointSize(0.8);
@@ -1183,9 +1056,12 @@ void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& m
 
 void Point::BinaryWrite(mat4Data& data, int n)
 {
+  data.setNTrivMul(0, nTrivMulLP);
+  data.setNTrivMul(1, nTrivMulPD);
+  data.setNTrivMul(2, nTrivMulNS);
+  //
   data.setPar(n, par);
   data.setMul(n, mRe, mIm);
-  data.setNTrivMul(nTrivMul);
   data.setElem(n, colloc.getElem());
   data.setMesh(n, colloc.getMesh());
   data.setProfile(n, sol);

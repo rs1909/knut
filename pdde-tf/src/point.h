@@ -27,6 +27,7 @@
 
 #include "pointtype.h"
 #include "mat4data.h"
+#include "multipliers.h"
 
 class Point
 {
@@ -140,12 +141,8 @@ class Point
       }
       return max -min;
     }
-    int     UStab();
-    int     UStabAUT();
-    int     UStabAUTRot();
-    PtType  testBif();
-    PtType  testBifAUT();
-    PtType  testBifAUTRot();
+    int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
+    PtType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
     void    clearStability() { mRe.Clear(); mIm.Clear(); }
 
     void    Plot(GnuPlot& pl);
@@ -218,7 +215,7 @@ class Point
     Vector       mRe;
     Vector       mIm;
     // number of trivial multipliers
-    int   nTrivMul;
+    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
 
     // for the rotation phase conditions
     Array1D<int> rotRe;
