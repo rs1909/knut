@@ -41,9 +41,9 @@
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.1.3}
+\newcommand{\pddever}{1.2.0}
 \version{\pddever}
-\date{3 August 2007}
+\date{31 December 2007}
 \maketitle
 
 \begin{center}
@@ -777,7 +777,7 @@ If \fun{nx==1} the first order derivatives of $f$ has to be supplied
 in the matrix \fun{out} with respect its \fun{vx[0]}th vector argument.
 If \fun{nx==2}, the second derivative is calculated with respect to $x(t -
 \tau_{\mathrm{vx[0]}} )$ and $x( t - \tau_{\mathrm{vx[1]}} )$ resulting in a 3
-index tensor, which is finally multiplied by the \fun{vx[1]} the column of
+index tensor, which is finally multiplied by the \fun{vx[0]} the column of
 \fun{v} to get a matrix, see table \ref{deritable}.
   Derivatives with respect to parameters are requested if \fun{np==1}. If
 \fun{nx==0} the output is a vector, because it is the derivative of the
