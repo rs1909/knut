@@ -1,4 +1,5 @@
 ADD_LIBRARY( pddelib 
+	basecolloc.h basepoint.h basepoint.cpp
 	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
 	mat4data.cpp mat4data.h matrix.cpp matrix.h
 	ncolloc.cpp ncolloc.h pddesys.h pderror.h
