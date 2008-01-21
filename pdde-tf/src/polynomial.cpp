@@ -28,7 +28,7 @@ void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>&
   {
     for (int j = 0; j < in2.Size(); j++)
     {
-      out(i + j) = in1(i) * in2(j);
+      out(i + j) += in1(i) * in2(j);
     }
   }
 }
@@ -38,11 +38,11 @@ void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>&
 void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
 {
   out.Clear();
-  out(0) = 0.0;
   for (int i = 0; i < in.Size() - 1; i++)
   {
-    out(i + 1) += in(i) / (i + 1);
+    out(i + 1) = in(i) / (i + 1);
   }
+  if (in(in.Size() - 1) != 0.0) std::cout << "poly_coeff_int overflow " ;
 }
 
 /// differentiate the polynomial in and write to out
@@ -50,10 +50,9 @@ void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
 void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in)
 {
   out.Clear();
-  out(in.Size() - 1) = 0.0;
   for (int i = 1; i < in.Size(); i++)
   {
-    out(i - 1) += in(i) * i;
+    out(i - 1) = in(i) * i;
   }
 }
 
