@@ -50,9 +50,9 @@ static inline void findTrivialIndices(const Vector& mulRe, const Vector& mulIm,
 
 int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
 {
-  P_ERROR(lp + pd + ns < 4);
-  int imin[4];
-  double dmin[4];
+  P_ERROR(lp + pd + ns < 6);
+  int imin[6];
+  double dmin[6];
   findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin);
   int ustab = 0;
   for (int i = 0; i < mulRe.Size(); ++i)
