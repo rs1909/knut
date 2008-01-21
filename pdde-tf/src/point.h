@@ -10,6 +10,7 @@
 #ifndef NPOINT_H
 #define NPOINT_H
 
+#include "basepoint.h"
 #include "matrix.h"
 #include "hypermatrix.h"
 #include "testfunct.h"
@@ -29,7 +30,8 @@
 #include "mat4data.h"
 #include "multipliers.h"
 
-class Point
+
+class Point : public BasePoint
 {
   public:
 
@@ -37,45 +39,18 @@ class Point
     Point(System& sys, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS, int nmat = BMATRICES);
     ~Point();
 
+    void    Stability();
+
     // algorithms
-    void    Reset(Array1D<Eqn>& eqn_, Array1D<Var>& var_);
     void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
     void    SwitchTFPD(double ds);   // switches branch with testFunct
     void    SwitchTFHB(double ds);   // switches branch with testFunct
     void    SwitchTRSol(Vector& Sol, const Vector& mshint, const Vector& mshdeg)
     {
-      colloc.Export(Sol, mshint, mshdeg, sol);
+      colloc->Export(Sol, mshint, mshdeg, sol);
     } // starting data for tori: solution
     void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
     int     StartTF(Eqn FN, std::ostream& out = std::cout);
-    int     Refine(std::ostream& str = std::cout, bool adapt = false);
-    int     Tangent(bool adapt = false);
-    int     Continue(double ds, bool jacstep);
-    void    Stability();
-
-    // supplementary
-    inline void    setSol(Vector& s)
-    {
-      sol = s;
-    }
-    inline Vector& getSol()
-    {
-      return sol;
-    }
-
-    inline void    setPar(Vector& p)
-    {
-      for (int i = 0; (i < p.Size()) && (i < par.Size()); i++) par(i) = p(i);
-    }
-    inline Vector& getPar()
-    {
-      return par;
-    }
-
-    inline void    setCont(int p)
-    {
-      varMapCont(varMap.Size()) = p;
-    }
     inline void    setSym(int n, int* sRe, int* sIm)
     {
       rotRe.Init(n);
@@ -98,44 +73,14 @@ class Point
       }
     }
 
-    inline void    setRefIter(int i)
-    {
-      RefIter = i;
-    }
-    inline void    setContIter(int i)
-    {
-      ContIter = i;
-    }
-    inline void    setKernIter(int i)
-    {
-      KernIter = i;
-    }
-    inline void    setRefEps(double d)
-    {
-      RefEps = d;
-    }
-    inline void    setContEps(double d)
-    {
-      ContEps = d;
-    }
-    inline void    setKernEps(double d)
-    {
-      KernEps = d;
-    }
 
-    inline double  Norm()
-    {
-      // double e=0;
-      // for( int j=0; j<colloc.Ndim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
-      return sqrt(colloc.Integrate(sol, sol));
-    }
     inline double  NormMX()
     {
       double max = 0.0, min = 1.0e32;
-      for (int i = 0; i < colloc.Nint()*colloc.Ndeg() + 1; i++)
+      for (int i = 0; i < colloc->Nint()*colloc->Ndeg() + 1; i++)
       {
         double e = 0.0;
-        for (int j = 0; j < colloc.Ndim(); j++) e += sqrt(sol(colloc.Ndim() * i + j) * sol(colloc.Ndim() * i + j));
+        for (int j = 0; j < colloc->Ndim(); j++) e += sqrt(sol(colloc->Ndim() * i + j) * sol(colloc->Ndim() * i + j));
         if (e > max) max = e;
         if (e < min) min = e;
       }
@@ -149,9 +94,9 @@ class Point
     inline void    Print(char* file)
     {
       std::ofstream ff(file);
-      for (int i = 0; i < colloc.Nint()*colloc.Ndeg() + 1; i++)
+      for (int i = 0; i < colloc->Nint()*colloc->Ndeg() + 1; i++)
       {
-        for (int j = 0; j < colloc.Ndim(); j++) ff << sol(colloc.Ndim()*i + j) << "\t";
+        for (int j = 0; j < colloc->Ndim(); j++) ff << sol(colloc->Ndim()*i + j) << "\t";
         ff << "\n";
       }
     }
@@ -164,51 +109,22 @@ class Point
   private:
 
     void    Construct();
-    void    Dispose();
+    void    Destruct();
     void    FillSol(System& sys_);
 
     // internal member-functions
 //   inline double SolNorm( Vector& sol, Vector& par );
 
+/// MAKE IT VIRTUAL
     void Jacobian
     (
       HyperMatrix& AA, HyperVector& RHS,                      // output
       Vector& parPrev, Vector& par,                           // parameters
-      Vector& solPrev, Vector& sol, Array3D<double>& solData, // solution
+      Vector& solPrev, Vector& sol,                           // solution
       Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
 
-    inline void   Update(HyperVector& X);                            // sol,   par              += X
-    inline void   ContUpdate(HyperVector& X);                        // solNu, parNu, parNu(cp) += X
-    inline void   AdaptUpdate(HyperVector& X);                        // sol,   par,   par(cp)   += X
-
-    // convergence parameters
-    double       RefEps;
-    double       ContEps;
-    double       KernEps;
-    int          RefIter;
-    int          ContIter;
-    int          KernIter;
-
-    // variables and equations
-    Array1D<Var> var;
-    Array1D<Eqn> eqn;
-    Array1D<int> varMap;
-    Array1D<int> varMapCont;
-
-    int          dim1;
-    int          dim3;
-
-    // solutions
-    Vector       sol;
-    Vector       par;
-    HyperVector* xxDot;
-
-    // solution in the continuation
-    Vector       solNu;
-    Vector       parNu;
-    HyperVector* xxDotNu;
 
     // multipliers
     Vector       mRe;
@@ -220,24 +136,13 @@ class Point
     Array1D<int> rotRe;
     Array1D<int> rotIm;
 
-    // int the Newton iterations
-    HyperVector* xx;     // -> sol,   --- this will be the solution in the iterations i.e., Dxx
-    HyperVector* rhs;
-
-    // store the Jacobian
-    HyperMatrix* jac;
-
-    // for collocation
-    NColloc      colloc;
-
-    // the solutions interpolated values
-    Array3D<double> solData;
-
     // stability matrix
     StabMatrix   jacStab;
 
     // test functionals
     Array1D<baseTestFunct*> testFunct;
+    // for collocation
+    NColloc*     colloc;
 };
 
 //-------------------------------------------------------//

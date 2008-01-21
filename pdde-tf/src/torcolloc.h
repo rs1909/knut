@@ -11,28 +11,31 @@
 #define TORCOLLOC_H
 
 #include "matrix.h"
+#include "basecolloc.h"
 
 class System;
 class SpMatrix;
 
-class CollocTR
+class CollocTR : public BaseColloc
 {
   public:
     CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
+    void Init(const Vector& sol, const Vector& par);
     void Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var);
     // not yet implemented
     // these are easy
     void PhaseONE(Vector& ph, Vector& presol);                                       // implemented
     void PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol);                        // implemented
-    double Integrate(Vector& ph1, Vector& ph2);
+    double Integrate(const Vector& ph1, const Vector& ph2);
     double IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3);
-    void Star(Vector& ph1, Vector& ph2);
+    void Star(Vector& ph1, const Vector& ph2);
 
     void ImportSol(Vector& out, Vector& in);
     void ImportTan(Vector& out, Vector& Re, Vector& Im, double alpha);
     void Save(const char* dat, const char* idx, const Vector& in);
+    void meshAdapt(Vector& newsol, const Vector& sol, Vector& newtan, const Vector& tan) { newsol = sol; newtan = tan; }
 
     inline const Vector& getMesh1() const
     {
@@ -90,7 +93,6 @@ class CollocTR
     Array3D<double> p_dfx;          // ndim X ndim X ndeg1*ndeg2*nint1*nint2
     Array3D<double> p_dummy;
     // functions
-    void init(const Array1D<double>& sol, const Vector& par);
 };
 
 inline int CollocTR::idxmap(int j1, int j2, int i1, int i2)

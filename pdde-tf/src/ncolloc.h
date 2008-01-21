@@ -10,11 +10,12 @@
 #ifndef NCOLLOC_H
 #define NCOLLOC_H
 
+#include "basecolloc.h"
 #include "system.h"
 #include "matrix.h"
 #include "spmatrix.h"
 
-class NColloc
+class NColloc : public BaseColloc
 {
   public:
 
@@ -23,9 +24,8 @@ class NColloc
     ~NColloc()
     {}
 
-    void Init(const Vector& par, const Vector& sol);   // computes time, kk, ee, dd, rr ...
-    void meshAdapt(Vector& newmesh, const Vector& profile);
-    void profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile);
+    void Init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
+    void meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent);
 
     void Interpolate(Array3D<double>& out, const Vector& sol);
     void InterpolateREAL(Array3D<double>& out, const Vector& sol);
@@ -53,41 +53,41 @@ class NColloc
 
     // continuation of solution
 
-    void RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData);
-    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData, int p);   // sol is currently not needed
-    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol, const Array3D<double>& solData);          // sol is currently not needed
+    void RHS(Vector& rhs, const Vector& par, const Vector& sol);
+    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
+    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
 
     // for stability computation
-    void StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& solData);
+    void StabJac(StabMatrix& AB, const Vector& par);
     // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
     // However, the variables will be contained within the NColloc class
 
     // continuation of bifurcations -> characteristic matrices
 
-    void CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z);
-    void CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double ZRe, double ZIm);
+    void CharJac_x(SpMatrix& A, const Vector& par, double Z);
+    void CharJac_x(SpMatrix& A, const Vector& par, double ZRe, double ZIm);
 
-    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int p);
-    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData,
+    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int p);
+    void CharJac_x_p(Vector& V, const Vector& par,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double ZRe, double ZIm, int p);
 
-    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z);
-    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData,
+    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
+    void CharJac_x_x(SpMatrix& A, const Vector& par,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
 
-    void CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi,
+    void CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
     // we do need Re, Im
 
     // for the autonomous FOLD bifurcation
-    void CharJac_mB(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z);
-    void CharJac_mB_p(Vector& V,   const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha);
-    void CharJac_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z);
+    void CharJac_mB(SpMatrix& A, const Vector& par, double Z);
+    void CharJac_mB_p(Vector& V,   const Vector& par, const Array3D<double>& phiData, double Z, int alpha);
+    void CharJac_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
 
-    // autonoumous trivial eigenvector
-    void CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solData);
-    template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi);
-    void CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solData, int alpha);
+    // autonomous trivial eigenvector
+    void CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solMSHData);
+    template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi);
+    void CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha);
 
     // supplementary
     inline int Ndim() const
@@ -132,6 +132,7 @@ class NColloc
   private:
 
     // helper functions
+    void meshAdapt_internal( Vector& newmesh, const Vector& profile );
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
     inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
@@ -242,6 +243,7 @@ class NColloc
 
     // for rhs, and derivatives
     // Matrix fx, dfx, t_dfx, dummy
+    Array3D<double>  solData;
     Array2D<double>  p_tau;
     Array2D<double>  p_dtau;
     Array2D<double>  p_fx;

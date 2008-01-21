@@ -22,66 +22,57 @@
 #include <cmath>
 #include <cfloat>
 
-// specified in the constants file
-#define REFEPS    (1E-5)
-#define NREFITER  (20)
-#define CONTEPS   (1E-5)
-#define NCONTITER (20)
-#define KERNEPS   (1E-10)
-#define NKERNITER (20)
-
 // __not__ specified in the constants file
 #define MIN_NSIMAG 1e-4
 
-#define NDIM colloc.Ndim()
-#define NTAU colloc.Ntau()
-#define NPAR colloc.Npar()
-#define NINT colloc.Nint()
-#define NDEG colloc.Ndeg()
+#define NDIM colloc->Ndim()
+#define NTAU colloc->Ntau()
+#define NPAR colloc->Npar()
+#define NINT colloc->Nint()
+#define NDEG colloc->Ndeg()
+
+
+
+
+
+
+
+
 
 // private
 void Point::FillSol(System& sys_)
 {
-  Vector fx(colloc.Ndim());
+  Vector fx(colloc->Ndim());
 
   sys_.stpar(par);
   par(NPAR+ParPeriod) = 1.0;
 
-  for (int i = 0; i < colloc.Nint(); i++)
+  for (int i = 0; i < colloc->Nint(); i++)
   {
-    for (int d = 0; d <  colloc.Ndeg(); d++)
+    for (int d = 0; d <  colloc->Ndeg(); d++)
     {
-      sys_.stsol(fx, colloc.Profile(i, d));
-      for (int j = 0; j < colloc.Ndim(); j++)
+      sys_.stsol(fx, colloc->Profile(i, d));
+      for (int j = 0; j < colloc->Ndim(); j++)
       {
         sol(NDIM*(i*NDEG + d) + j) = fx(j);
       }
     }
   }
-  for (int j = 0; j < colloc.Ndim(); j++)
+  for (int j = 0; j < colloc->Ndim(); j++)
   {
     sol(NDIM*NDEG*NINT + j) = sol(j);
   }
 }
 
 
-Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) :
-    var(var_), eqn(eqn_), varMap(var_.Size()), varMapCont(var_.Size() + 1),
-    sol(sys_.ndim()*(nint*ndeg + 1)), par(sys_.npar() + ParEnd),
-    solNu(sys_.ndim()*(nint*ndeg + 1)), parNu(sys_.npar() + ParEnd),
+Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : BasePoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1)),
     mRe(nmul), mIm(nmul),
     rotRe(2), rotIm(2),                  // !!!only for Hartmut's equation!!!!
-    colloc(sys_, nint, ndeg, nmat),
-    solData(sys_.ndim(), 2*sys_.ntau() + 1, ndeg*nint),
-    jacStab(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1))
+//     colloc(sys_, nint, ndeg, nmat),
+    jacStab(nmat, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg + 1))
 {
-  RefEps   = REFEPS;
-  RefIter  = NREFITER;
-  ContEps  = CONTEPS;
-  ContIter = NCONTITER;
-  KernEps  = KERNEPS;
-  KernIter = NKERNITER;
-
+  colloc = new NColloc(sys_, nint, ndeg, nmat);
+  basecolloc = colloc;
   rotRe(0) = 0;
   rotIm(0) = 1;
   rotRe(1) = 3;
@@ -95,27 +86,8 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
 
 Point::~Point()
 {
-  Dispose();
-}
-
-// public
-// remember that this ereases the state variables except sol, qq, par xxDot
-void Point::Reset(Array1D<Eqn>& eqn_, Array1D<Var>& var_)
-{
-  HyperVector* xxDot_temp = 0;
-  if (xxDot) xxDot_temp = new HyperVector(*xxDot);
-  Dispose();
-  eqn.Init(eqn_.Size());
-  eqn = eqn_;
-  var.Init(var_.Size());
-  var = var_;
-  varMap.Init(var_.Size());
-  varMapCont.Init(var_.Size() + 1);
-  Construct();
-  xxDot->getV1() = xxDot_temp->getV1();
-  for (int i = 0; i < std::min<int>(xxDot_temp->getV3().Size(), xxDot->getV3().Size()); ++i)
-    xxDot->getV3()(i) = xxDot_temp->getV3()(i);
-  delete xxDot_temp;
+  Destruct();
+  delete colloc;
 }
 
 struct PtTab
@@ -283,13 +255,11 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
 // xxDot, xx, rhs, jac
 void Point::Construct()
 {
-  P_ERROR_X1((eqn.Size() != 0) && (var.Size() != 0) && (eqn.Size() == var.Size()), "Number of equations and variables do not agree.");
-  dim3 = eqn.Size() - 1;
-
   P_ERROR_X1((eqn(0) == EqnSol) && (var(0) == VarSol), "The first equation must the boundary value problem of the periodic solution.");
-  dim1 = NDIM * (NINT * NDEG + 1);
 
-  // a) setting th etest functional b) determining the number of trivial multipliers
+  BasePoint::Construct();
+
+  // a) setting the test functionals b) determining the number of trivial multipliers
   testFunct.Init(eqn.Size());
   nTrivMulLP = 0;
   nTrivMulPD = 0;
@@ -300,29 +270,29 @@ void Point::Construct()
     {
       case EqnTFLP:
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunct(colloc, 1.0);
+        testFunct(i) = new TestFunct(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFPD:
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunct(colloc, -1.0);
+        testFunct(i) = new TestFunct(*colloc, -1.0);
         ++nTrivMulPD;
         break;
       case EqnTFLPAUT:
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunctLPAUT(colloc, 1.0);
+        testFunct(i) = new TestFunctLPAUT(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFLPAUTROT:
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0);
+        testFunct(i) = new TestFunctLPAUTROT(*colloc, rotRe, rotIm, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test funtional are not paired.");
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunctCPLX(colloc);
+        testFunct(i) = new TestFunctCPLX(*colloc);
         nTrivMulNS += 2;
         break;
       case EqnTFCPLX_IM:
@@ -340,35 +310,13 @@ void Point::Construct()
     }
     if (testFunct(i)) testFunct(i)->setKernelTolerance(KernEps, KernIter);
   }
-
-  for (int i = 1; i < var.Size(); i++)
-  {
-    P_ERROR_X4((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < NPAR + ParEnd), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i);
-    varMap(i) = var(i) - VarPAR0;
-  }
-  for (int i = 0; i < var.Size(); i++) varMapCont(i) = varMap(i);
-
-  xxDot   = new HyperVector(dim1, 0, dim3 + 1);
-  xxDotNu = new HyperVector(dim1, 0, dim3 + 1);
-
-  xx      = new HyperVector(dim1, 0, dim3 + 1);
-
-  rhs     = new HyperVector(dim1, 0, dim3 + 1);
-
-  jac     = new HyperMatrix(dim1, 0, dim3 + 1, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
 }
 
 // private
-void Point::Dispose()
+void Point::Destruct()
 {
   for (int i=0; i<testFunct.Size(); ++i) delete testFunct(i);
-  delete jac;
-
-  delete rhs;
-  delete xx;
-
-  delete xxDot;
-  delete xxDotNu;
+  BasePoint::Destruct();
 }
 
 // **************************************************************************************************************** //
@@ -380,11 +328,11 @@ void Point::Dispose()
 void Point::Jacobian(
   HyperMatrix& AA, HyperVector& RHS,                      // output
   Vector& parPrev, Vector& par,                           // parameters
-  Vector& solPrev, Vector& sol, Array3D<double>& solData, // solution
+  Vector& solPrev, Vector& sol,                           // solution
   Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
   double ds, bool cont)                                              // cont: true if continuation
 {
-// uses also: eqn, var
+// uses also: eqn, var, varMapCont
 // ---------------------------------------------------------------------------------------------------------------- //
 //
 //                           The periodic solution part
@@ -393,14 +341,14 @@ void Point::Jacobian(
 
   if (eqn(0) == EqnSol)
   {
-    colloc.RHS_x(AA.getA11(), par, sol, solData);
-    colloc.RHS(RHS.getV1(), par, sol, solData);
+    colloc->RHS_x(AA.getA11(), par, sol);
+    colloc->RHS(RHS.getV1(), par, sol);
 
     for (int i = 1; i < varMap.Size(); i++)
     {
       if (varMap(i) < NPAR)
       {
-        colloc.RHS_p(AA.getA13(i - 1), par, sol, solData, varMap(i));
+        colloc->RHS_p(AA.getA13(i - 1), par, sol, varMap(i));
       }
       else if (varMap(i) - NPAR == ParAngle)
       {
@@ -425,7 +373,7 @@ void Point::Jacobian(
     {
         // Phase conditions.
       case EqnPhase:
-        colloc.PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
+        colloc->PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
         for (int j = 1; j < varMap.Size(); j++)
         {
@@ -445,7 +393,7 @@ void Point::Jacobian(
         RHS.getV3()(i - 1) = -(AA.getA31(i - 1) * sol);
         break;
       case EqnPhaseRot:
-        colloc.PhaseRotStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
+        colloc->PhaseRotStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
         // other variables
         for (int j = 1; j < varMap.Size(); j++)
         {
@@ -468,13 +416,13 @@ void Point::Jacobian(
       case EqnTFPD:
       case EqnTFLPAUT:
       case EqnTFLPAUTROT:
-        RHS.getV3()(i - 1) = testFunct(i)->Funct(colloc, par, sol, solData);
-        testFunct(i)->Funct_x(AA.getA31(i - 1), colloc, par, sol, solData);
+        RHS.getV3()(i - 1) = testFunct(i)->Funct(*colloc, par, sol);
+        testFunct(i)->Funct_x(AA.getA31(i - 1), *colloc, par, sol);
         for (int j = 1; j < varMap.Size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            AA.getA33()(i - 1, j - 1) = testFunct(i)->Funct_p(colloc, par, sol, solData, varMap(j));
+            AA.getA33()(i - 1, j - 1) = testFunct(i)->Funct_p(*colloc, par, sol, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
@@ -489,18 +437,18 @@ void Point::Jacobian(
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test funtional are not paired.");
-        testFunct(i)->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), colloc, par, sol, solData,
+        testFunct(i)->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
                          cos(par(NPAR + ParAngle)), sin(par(NPAR + ParAngle)));
-        testFunct(i)->Funct_x(AA.getA31(i - 1), AA.getA31(i), colloc, par, sol, solData);
+        testFunct(i)->Funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
         for (int j = 1; j < varMap.Size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            testFunct(i)->Funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData, varMap(j));
+            testFunct(i)->Funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
-            testFunct(i)->Funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), colloc, par, sol, solData);
+            testFunct(i)->Funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol);
           }
           else
           {
@@ -520,11 +468,11 @@ void Point::Jacobian(
   if (cont)
   {
     // copying the tangent
-    if (dim1 != 0) colloc.Star(AA.getA31(dim3), xxDot->getV1());
+    if (dim1 != 0) colloc->Star(AA.getA31(dim3), xxDot->getV1());
     for (int i = 0; i < xxDot->getV3().Size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
-      RHS.getV3()(dim3) = ds - colloc.IntegrateCont(xxDot->getV1(), sol, solPrev);
+      RHS.getV3()(dim3) = ds - colloc->IntegrateCont(xxDot->getV1(), sol, solPrev);
       for (int j = 1; j < varMapCont.Size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
@@ -539,24 +487,6 @@ void Point::Jacobian(
 //                          !END! THE JACOBIAN !END!
 //
 // **************************************************************************************************************** //
-
-inline void Point::Update(HyperVector& X)
-{
-  sol += X.getV1();
-  for (int i = 1; i < varMap.Size(); i++) par(varMap(i)) += X.getV3()(i - 1);
-}
-
-inline void Point::ContUpdate(HyperVector& X)
-{
-  solNu += X.getV1();
-  for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
-}
-
-inline void Point::AdaptUpdate(HyperVector& X)
-{
-  sol += X.getV1();
-  for (int i = 1; i < varMapCont.Size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
-}
 
 /// --------------------------------------------------------------
 /// Starting bifurcation continuation using TEST FUNCTIONS
@@ -600,104 +530,16 @@ int Point::StartTF(Eqn FN, std::ostream& out)
 }
 
 
-// this will adapt the mesh whenever it is specified
-int Point::Refine(std::ostream& out, bool adapt)
-{
-  // here solNu is the previous solution
-  if (adapt)
-  {
-    // saving the solution into solNu
-    solNu = sol;
-
-    Vector newmesh(colloc.getMesh());
-    colloc.meshAdapt(newmesh, sol);
-    colloc.profileAdapt(xx->getV1(), newmesh, sol);
-    sol = xx->getV1();
-    colloc.profileAdapt(xx->getV1(), newmesh, xxDot->getV1());
-    xxDot->getV1() = xx->getV1();
-#ifdef DEBUG
-    // printing the adapted profile
-    std::ofstream file1("prof");
-    file1 << std::scientific;
-    file1.precision(12);
-    std::ofstream file2("newprof");
-    file2 << std::scientific;
-    file2.precision(12);
-
-    std::ofstream file3("gradient");
-    file3 << std::scientific;
-    file3.precision(12);
-    for (int i=0; i<NINT; ++i)
-    {
-      for (int j=0; j<NDEG+1; ++j)
-      {
-        const double t1 = colloc.getMesh()(i) + j*(colloc.getMesh()(i+1)-colloc.getMesh()(i))/NDEG;
-        const double t2 = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
-        file1<<t1<<"\t";
-        file2<<t2<<"\t";
-        file3<<t1<<"\t"<<t2<<"\t";
-        for (int p=0; p<NDIM; ++p)
-        {
-          file1<<solNu(p+NDIM*(j+NDEG*i))<<"\t";
-          file2<<sol(p+NDIM*(j+NDEG*i))<<"\t";
-        }
-        file1<<"\n";
-        file2<<"\n";
-        file3<<"\n";
-      }
-    }
-#endif //DEBUG
-    colloc.setMesh(newmesh);
-  }
-  solNu = sol;
-  parNu = par;
-
-  xx->getV3().Clear();
-
-  if(!adapt) out << "\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
-
-  int it = 0;
-  double Xnorm, Dnorm;
-  do
-  {
-    colloc.Init(par, sol);
-    colloc.Interpolate(solData, sol);
-
-    if (!adapt)
-    {
-      Jacobian(*jac, *rhs, parNu, par, solNu, sol, solData, varMap, 0.0, false);
-      jac->Solve(*xx, *rhs, dim3);
-      Update(*xx);
-    } else
-    {
-      Jacobian(*jac, *rhs, parNu, par, solNu, sol, solData, varMapCont, 0.0, true);
-      jac->Solve(*xx, *rhs, dim3+1);
-      AdaptUpdate(*xx);
-    }
-    // computing norms to determine convergence
-    Xnorm = sqrt(colloc.Integrate(sol, sol));
-    Dnorm = sqrt(colloc.Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    if(!adapt)
-    {
-      out << " " << it << "\t" << Dnorm / (1.0 + Xnorm) << "\t" << Xnorm << "\t" << Dnorm << '\n';
-      out.flush();
-    }
-  }
-  while ((Dnorm / (1.0 + Xnorm) >= RefEps) && (it++ < RefIter));
-  if (it >= RefIter) std::cout << "Warning: refinement did not converge. "
-    << "CritNorm: " << Dnorm / (1.0 + Xnorm) << " SolNorm: " << Xnorm << " DiffNorm: " << Dnorm << '\n';
-
-  return it;
-}
 
 void Point::SwitchTFHB(double ds)
 {
-  int idx = 0;
+  int idx = -1;
   for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  P_ERROR_X1 (idx != -1, "No such test functional!" );
   TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
   Vector QRE(NDIM), QIM(NDIM);
 
-  par(0) = tf->SwitchHB(QRE, QIM, colloc, par);
+  par(0) = tf->SwitchHB(QRE, QIM, *colloc, par);
   std::cout << "SwitchHOPF: T = " << par(0) << ", angle/2PI = " << par(NPAR + ParAngle) / (2*M_PI) << "\n";
 
 #ifdef DEBUG
@@ -711,7 +553,7 @@ void Point::SwitchTFHB(double ds)
   {
     for (int j = 0; j < NDEG + 1; j++)
     {
-      const double t = colloc.Profile(i, j);
+      const double t = colloc->Profile(i, j);
       for (int p = 0; p < NDIM; p++)
       {
         xxDot->getV1()(p + (j + i*NDEG)*NDIM) = cos(2.0 * M_PI * t) * QRE(p) + sin(2.0 * M_PI * t) * QIM(p);
@@ -724,7 +566,7 @@ void Point::SwitchTFHB(double ds)
 #endif
     }
   }
-  const double norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()));
+  const double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().Clear();
   Vector eql(NDIM);
@@ -749,23 +591,23 @@ void Point::SwitchTFLP(BranchSW type, double ds)
   switch (type)
   {
     case TFBRSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunct(colloc, 1.0));
+      tf = static_cast<baseTestFunct*>(new TestFunct(*colloc, 1.0));
       break;
     case TFBRAUTSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunctLPAUT(colloc, 1.0));
+      tf = static_cast<baseTestFunct*>(new TestFunctLPAUT(*colloc, 1.0));
       break;
     case TFBRAUTROTSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunctLPAUTROT(colloc, rotRe, rotIm, 1.0));
+      tf = static_cast<baseTestFunct*>(new TestFunctLPAUTROT(*colloc, rotRe, rotIm, 1.0));
       break;
     default:
       return;
       break;
   }
   tf->setKernelTolerance(KernEps, KernIter);
-  tf->Funct(colloc, par, sol, solData);
+  tf->Funct(*colloc, par, sol);
   tf->Switch(xxDot->getV1());
   delete tf;
-  double norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()));
+  double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().Clear();
 
@@ -775,9 +617,9 @@ void Point::SwitchTFLP(BranchSW type, double ds)
 void Point::SwitchTFPD(double ds)
 {
   Vector tan(xxDot->getV1().Size());
-  TestFunct* tf = new TestFunct(colloc, -1.0);
+  TestFunct* tf = new TestFunct(*colloc, -1.0);
   tf->setKernelTolerance(KernEps, KernIter);
-  tf->Funct(colloc, par, sol, solData);
+  tf->Funct(*colloc, par, sol);
   tf->Switch(tan);
   delete tf;
 
@@ -786,154 +628,23 @@ void Point::SwitchTFPD(double ds)
   par(NPAR+ParPeriod) *= 2.0;
 
   solNu = sol;
-  colloc.pdMeshConvert(sol, xxDot->getV1(), solNu, tan);
+  colloc->pdMeshConvert(sol, xxDot->getV1(), solNu, tan);
 
-  double norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()));
+  double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().Clear();
   sol += ds * xxDot->getV1();
 }
 
-int Point::Tangent(bool adapt)
-{
-  double norm;
-
-  colloc.Init(par, sol);
-  colloc.Interpolate(solData, sol);
-
-  if (!adapt)
-  {
-    // setting up a random tangent
-    xxDot->getV1().Rand();
-    xxDot->getV3().Rand();
-    norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
-    xxDot->getV1() /= norm;
-    xxDot->getV3() /= norm;
-  }
-  // az RHS-t feleslegesen szamolja ki && the first qq should be qq0
-  Jacobian(*jac, *rhs, par, par, sol, sol, solData, varMapCont, 0.0, true);
-
-  double diffnorm = 1.0;
-  int it = 0;
-  do
-  {
-    jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
-    rhs->getV3()(dim3) -= 1.0;
-    jac->Solve(*xx, *rhs);
-    xxDot->getV1() -= xx->getV1();
-    xxDot->getV3() -= xx->getV3();
-    diffnorm = sqrt(colloc.Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    norm = sqrt(colloc.Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
-    xxDot->getV1() /= norm;
-    xxDot->getV3() /= norm;
-    // putting back the tangent...
-    if (dim1 != 0) colloc.Star(jac->getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
-  }
-  while ((++it < KernIter) && (diffnorm > KernEps));
-  if (diffnorm > KernEps) std::cout << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
-  if (!adapt && (xxDot->getV3()(dim3) < 0.0))
-  {
-    xxDot->getV1() *= -1.0;
-    xxDot->getV3() *= -1.0;
-  }
-
-  return it;
-}
-
-int Point::Continue(double ds, bool jacstep)
-{
-  double Xnorm, Dnorm, Rnorm, Tnorm;
-
-  parNu = par;
-  for (int i = 0; i < solNu.Size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
-  for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
-  xxDotNu->getV1() = xxDot->getV1();
-  xxDotNu->getV3() = xxDot->getV3();
-
-  int  it = 0;
-  bool conv;
-  do
-  {
-    colloc.Init(parNu, solNu);
-    colloc.Interpolate(solData, solNu);
-
-    Jacobian(*jac, *rhs, par, parNu, sol, solNu, solData, varMapCont, 0.0, true);
-
-    jac->Solve(*xx, *rhs);
-
-    ContUpdate(*xx);
-
-    Rnorm = sqrt(colloc.Integrate(rhs->getV1(), rhs->getV1()) + (rhs->getV3()) * (rhs->getV3()));
-    Xnorm = sqrt(colloc.Integrate(solNu, solNu));
-    Dnorm = sqrt(colloc.Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    conv = (Dnorm / (1.0 + Xnorm) >= ContEps) || (Rnorm / (1.0 + Xnorm) >= ContEps);
-
-    // updating the tangent
-    if (!jacstep)
-    {
-      jac->Multiply<false>(*rhs, *xxDotNu, dim3 + 1);
-      rhs->getV3()(dim3) -= 1.0;
-      jac->Solve(*xx, *rhs);
-      xxDotNu->getV1() -= xx->getV1();
-      xxDotNu->getV3() -= xx->getV3();
-      Tnorm = sqrt(colloc.Integrate(xxDotNu->getV1(), xxDotNu->getV1()) + (xxDotNu->getV3()) * (xxDotNu->getV3()));
-      xxDotNu->getV1() /= Tnorm;
-      xxDotNu->getV3() /= Tnorm;
-    }
-    // end updating tangent
-
-  }
-  while (conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/ && (++it < ContIter));
-  if (!conv)
-  {
-#ifdef DEBUG
-    /// checking the tangent and the secant
-    double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
-    double Xnorm = sqrt(colloc.Integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
-    std::cout << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
-    std::cout << '\n';
-
-    xx->getV1() = solNu;
-    xx->getV1() -= sol;
-    for (int i = 1; i < varMapCont.Size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
-
-    Pnorm = sqrt(xx->getV3()(dim3) * xx->getV3()(dim3)) / ds;
-    Xnorm = sqrt(colloc.Integrate(xx->getV1(), xx->getV1())) / ds;
-    Onorm = 0;
-    for (int i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
-    Onorm = sqrt(Onorm) / ds;
-    std::cout << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
-    std::cout << '\n';
-    /// END OF CHECKING
-#endif
-
-    // copying back the solution
-    sol = solNu;
-    par = parNu;
-    xxDot->getV1() = xxDotNu->getV1();
-    xxDot->getV3() = xxDotNu->getV3();
-  }
-  else
-  {
-    std::cout << "\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
-    // P_MESSAGE("");
-  }
-
-  return it;
-}
 
 void Point::Stability()
 {
   mRe.Clear();
   mIm.Clear();
 
-  colloc.Init(par, sol);
-  colloc.Interpolate(solData, sol);
+  colloc->Init(sol, par);
 
-  colloc.StabJac(jacStab, par, solData);
+  colloc->StabJac(jacStab, par);
 
   jacStab.Eigval(mRe, mIm);
 //  mRe.Print();
@@ -962,7 +673,7 @@ void Point::Plot(GnuPlot& pl)
 
 void Point::Write(std::ofstream& file)
 {
-  Vector msh(colloc.getMesh());
+  Vector msh(colloc->getMesh());
 
   file << NPAR + ParEnd << "\t";
   for (int i = 0; i < NPAR + ParEnd; i++) file << par(i) << "\t";
@@ -977,10 +688,10 @@ void Point::Write(std::ofstream& file)
   {
     for (int j = 0; j < NDEG; j++)
     {
-      file << colloc.Profile(i, j) << "\t";
+      file << colloc->Profile(i, j) << "\t";
     }
   }
-  file << colloc.getMesh()(NINT) << "\t";
+  file << colloc->getMesh()(NINT) << "\t";
   for (int i = 0; i < NDIM*(NINT*NDEG + 1); i++) file << sol(i) << "\t";
   file << "\n";
   file.flush();
@@ -1017,7 +728,7 @@ void Point::Read(std::ifstream& file)
 
   if ((NINT == nint_) && (NDEG == ndeg_))
   {
-    colloc.setMesh(msh);
+    colloc->setMesh(msh);
     for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> sol(i);
   }
   else
@@ -1025,7 +736,7 @@ void Point::Read(std::ifstream& file)
     Vector in(NDIM*(nint_*ndeg_ + 1));
 
     for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
-    colloc.Import(sol, in, msh, ndeg_);
+    colloc->Import(sol, in, msh, ndeg_);
   }
 }
 
@@ -1064,8 +775,8 @@ void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& m
   if (tf)
   {
     tf->Switch(TRe, TIm, alpha);
-    colloc.Export(Re, mshint, mshdeg, TRe);
-    colloc.Export(Im, mshint, mshdeg, TIm);
+    colloc->Export(Re, mshint, mshdeg, TRe);
+    colloc->Export(Im, mshint, mshdeg, TIm);
   }
   else
   {
@@ -1081,8 +792,8 @@ void Point::BinaryWrite(mat4Data& data, int n)
   //
   data.setPar(n, par);
   data.setMul(n, mRe, mIm);
-  data.setElem(n, colloc.getElem());
-  data.setMesh(n, colloc.getMesh());
+  data.setElem(n, colloc->getElem());
+  data.setMesh(n, colloc->getMesh());
   data.setProfile(n, sol);
 }
 
@@ -1096,13 +807,13 @@ void Point::BinaryRead(mat4Data& data, int n)
   P_ERROR_X1(data.getNDim() == NDIM, "Wrong number of dimensions in the input MAT file.");
   if (data.getNInt() == NINT && data.getNDeg() == NDEG)
   {
-    colloc.setMesh(msh);
+    colloc->setMesh(msh);
     data.getProfile(n, sol);
   }
   else
   {
     Vector tmp(data.getNDim()*(data.getNDeg()*data.getNInt() + 1));
     data.getProfile(n, tmp);
-    colloc.Import(sol, tmp, msh, data.getNDeg());
+    colloc->Import(sol, tmp, msh, data.getNDeg());
   }
 }

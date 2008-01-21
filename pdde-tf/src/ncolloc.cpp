@@ -15,6 +15,10 @@
 
 #include <cmath>
 
+#ifdef DEBUG
+#include <iostream>
+#include <fstream>
+#endif /*DEBUG*/
 
 // #define MADD
 
@@ -329,6 +333,7 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat)
     out(ndeg + 1),
     meshINT(ndeg + 1),
     lgr(ndeg+1, ndeg+1),
+    solData(ndim, 2*ntau + 1, ndeg*nint),
     p_tau(ntau, nint*ndeg), p_dtau(ntau, nint*ndeg),
     p_fx(ndim, nint*ndeg), p_dfx(ndim,ndim, nint*ndeg), p_dfp(ndim,1, nint*ndeg),
     p_fxRe(p_fx), p_fxIm(ndim, nint*ndeg),
@@ -376,7 +381,7 @@ static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& 
   newmesh(newmesh.Size()-1) = 1.0;
 }
 
-void NColloc::meshAdapt( Vector& newmesh, const Vector& profile )
+void NColloc::meshAdapt_internal( Vector& newmesh, const Vector& profile )
 {
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
@@ -486,9 +491,50 @@ static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vect
     newprofile(p+ndim*(new_ndeg*(newmesh.Size()-1))) = profile(p+ndim*(old_ndeg*(mesh.Size()-1)));
 }
 
-void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vector& profile)
+void NColloc::meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent)
 {
+  // saving the solution into solNu
+#ifdef DEBUG
+  Vector profile_tmp(profile);
+#endif
+
+  Vector newmesh(mesh);
+  meshAdapt_internal(newmesh, profile);
   profileConvert(newprofile, newmesh, profile, mesh, lgr, NDIM);
+  profileConvert(newtangent, newmesh, tangent, mesh, lgr, NDIM);
+#ifdef DEBUG
+  // printing the adapted profile
+  std::ofstream file1("prof");
+  file1 << std::scientific;
+  file1.precision(12);
+  std::ofstream file2("newprof");
+  file2 << std::scientific;
+  file2.precision(12);
+
+  std::ofstream file3("gradient");
+  file3 << std::scientific;
+  file3.precision(12);
+  for (int i=0; i<NINT; ++i)
+  {
+    for (int j=0; j<NDEG+1; ++j)
+    {
+      const double t1 = mesh(i) + j*(mesh(i+1)-mesh(i))/NDEG;
+      const double t2 = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
+      file1<<t1<<"\t";
+      file2<<t2<<"\t";
+      file3<<t1<<"\t"<<t2<<"\t";
+      for (int p=0; p<NDIM; ++p)
+      {
+	file1<<profile_tmp(p+NDIM*(j+NDEG*i))<<"\t";
+	file2<<profile(p+NDIM*(j+NDEG*i))<<"\t";
+      }
+      file1<<"\n";
+      file2<<"\n";
+      file3<<"\n";
+    }
+  }
+#endif //DEBUG
+  mesh = newmesh;
 }
 
 
@@ -527,7 +573,7 @@ void NColloc::profileAdapt(Vector& newprofile, const Vector& newmesh, const Vect
 ///    ttMSH(j,l,i) : j = k, the delay. Here, we don't shift as in others
 ///                   it contains only the middle of tt j=1...NDEG at indices j=0...NDEG-1
 ///
-void NColloc::Init(const Vector& par, const Vector& /*sol*/)
+void NColloc::Init(const Vector& sol, const Vector& par)
 {
   double *t = new double[NTAU+1];
   double *tMSH = new double[NTAU];
@@ -742,6 +788,8 @@ void NColloc::Init(const Vector& par, const Vector& /*sol*/)
   // all the delays. the previous was rescaled and we need unscaled
   sys->p_tau(p_tau, time, par);
   sys->p_tau(p_tauMSH, timeMSH, par);
+  // evaluate the solution and its derivatives at the collocation points
+  Interpolate(solData, sol);
   // diagnostics
 #ifdef DEBUG
   count_print();
@@ -869,7 +917,7 @@ void NColloc::InterpolateCPLX(Array3D<double>& solDataRe, Array3D<double>& solDa
   }
 }
 
-void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array3D<double>& solData)
+void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
 {
 #ifdef DEBUG
   count_RHS++;
@@ -890,7 +938,7 @@ void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol, const Array
   }
 }
 
-void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData, int alpha)
+void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
 {
 #ifdef DEBUG
   count_RHS_p++;
@@ -968,7 +1016,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, const
 }
 
 
-void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const Array3D<double>& solData)
+void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 {
 #ifdef DEBUG
   count_RHS_x++;
@@ -1029,7 +1077,7 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/, const
 
 
 //! its very different from all of them
-void NColloc::StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& solData)
+void NColloc::StabJac(StabMatrix& AB, const Vector& par)
 {
 #ifdef DEBUG
   count_StabJac++;
@@ -1123,7 +1171,7 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par, const Array3D<double>& 
 }
 
 // similar to RHS_x but with one boundary condition only and multiplied by Z
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Z)
+void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -1193,7 +1241,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& s
 
 
 // this has to be changed only to packed complex.
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, double Re, double Im)
+void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Re, double Im)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -1297,7 +1345,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, const Array3D<double>& s
 
 // REAL
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
+void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_x_p++;
@@ -1433,7 +1481,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
 
 // COMPLEX
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& solData,
+void NColloc::CharJac_x_p(Vector& V, const Vector& par,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im, int alpha)
 {
@@ -1592,7 +1640,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& s
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
+void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x_x++;
@@ -1669,7 +1717,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& solData,
+void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im)
 {
@@ -1785,7 +1833,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
 
 // this is for CharmatCPLX
 
-void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& solData, const Vector& phi,
+void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im)
 {
 #ifdef DEBUG
@@ -1843,7 +1891,7 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Array3D<double>& s
 //! from now CharmatLPAUT
 //!
 
-void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const Array3D<double>& solData, double Z)
+void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB++;
@@ -1902,7 +1950,7 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, const Array3D<double>& 
 
 // same as CharJac_x_p, but only writes the B part
 
-void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z, int alpha)
+void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_mB_p++;
@@ -2040,7 +2088,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
 }
 
 // like x_x but write bpart only
-void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& solData, const Array3D<double>& phiData, double Z)
+void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB_x++;
@@ -2127,7 +2175,7 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
 //! this is also for CharmatLPAUT: for computing q_0 and its derivatives: q_0, D_x q_0, D_p q_0
 //!
 
-void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solData)
+void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solMSHData)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi++;
@@ -2140,7 +2188,7 @@ void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>
   }
 }
 
-void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solData, int alpha)
+void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi_p++;

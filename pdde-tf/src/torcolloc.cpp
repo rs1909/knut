@@ -109,7 +109,7 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
       poly_coeff_mul(mlgd1, dlg1(i), lgr1(k));
       poly_coeff_int(ilg1,  mlg1);
       poly_coeff_int(ilgd1,  mlgd1);
-      I1(i, k) = poly_eval(ilg1, 1.0) / nint1;
+      I1(i, k) = (poly_eval(ilg1, 1.0)-poly_eval(ilg1, 0.0)) / nint1;
       ID1(i, k) = poly_eval(ilgd1, 1.0);
     }
   }
@@ -125,13 +125,13 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
       poly_coeff_mul(mlgd2, dlg2(j), lgr2(l));
       poly_coeff_int(ilg2,  mlg2);
       poly_coeff_int(ilgd2,  mlgd2);
-      I2(j, l) = poly_eval(ilg2, 1.0) / nint2;
+      I2(j, l) = (poly_eval(ilg2, 1.0) - poly_eval(ilg2, 0.0))/ nint2;
       ID2(j, l) = poly_eval(ilgd2, 1.0);
     }
   }
 }
 
-void CollocTR::init(const Array1D<double>& sol, const Vector& par)
+void CollocTR::Init(const Vector& sol, const Vector& par)
 {
   double* t1 = new double[NTAU+1];
   double* t2 = new double[NTAU+1];
@@ -256,11 +256,12 @@ void CollocTR::init(const Array1D<double>& sol, const Vector& par)
 void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
 {
   A.Clear();
+  rhs.Clear();
   for (int r = 0; r < var.Size(); r++) Avar(r)->Clear();
   // rhs doesn't need to be cleared
 
   // creates kk, ee, rr & interpolates p_xx & gets p_tau
-  init(sol, par);
+//   Init(sol, par);
   // builds up the structure of the sparse matrix
   for (int idx = 0; idx < time1.Size(); ++idx)
   {
@@ -500,7 +501,7 @@ void CollocTR::PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol)
   }
 }
 
-double CollocTR::Integrate(Vector& ph1, Vector& ph2)
+double CollocTR::Integrate(const Vector& ph1, const Vector& ph2)
 {
   double res = 0.0;
   for (int i2 = 0; i2 < nint2; i2++)
@@ -531,7 +532,7 @@ double CollocTR::Integrate(Vector& ph1, Vector& ph2)
   return res;
 }
 
-void CollocTR::Star(Vector& ph1, Vector& ph2)
+void CollocTR::Star(Vector& ph1, const Vector& ph2)
 {
   ph1.Clear();
   for (int i2 = 0; i2 < nint2; i2++)
