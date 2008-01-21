@@ -159,10 +159,10 @@ int main(int argc, const char** argv)
     params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
     const int npar = sys.npar();
 
-//  for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
-//  std::cout<<'\n';
-//  for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
-//  std::cout<<'\n';
+//     for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
+//     std::cout<<'\n';
+//     for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
+//     std::cout<<'\n';
 
     Point* pt_ptr = new Point(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
     Point& pt = *pt_ptr;
@@ -269,7 +269,7 @@ int main(int argc, const char** argv)
         //
         if (params->getStab()) pt.Stability();
         ustabprev = ustab;
-        pt.UStab();
+        ustab = pt.UStab();
         for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
         // console output
@@ -369,22 +369,23 @@ int main(int argc, const char** argv)
       pttr.setCont(params->getCp() - VarPAR0);
 
       double ds = params->getDs();
-      std::ostringstream fdata, fidx;
       for (int i = 0; i < params->getSteps(); i++)
       {
-        pttr.Continue(ds, false);
-
-        // write out the results
-        for (int j = 0; j < npar; j++) std::cout << par(j) << "\t";
-        std::cout << std::endl;
-        for (int j = 0; j < npar; j++) par(j) = pttr.getPar()(j);
-        for (int j = 0; j < npar; j++) ff << par(j) << "\t";
-        ff << pttr.Norm() << "\n";
+        // same as for periodic orbits
+        int it = pttr.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
+        for (int j = 0; j < par.Size(); j++) par(j) = pttr.getPar()(j);
+        double norm = pttr.Norm();
+        if (i % 24 == 0)
+        {
+          parNamePrint(std::cout, npar, params->getCp(), var);
+          std::cout << "\n";
+        }
+        // console output
+        parValuePrint(std::cout, par, params->getCp(), var, i, norm, 0, it);
+        std::cout << "\n";
+        for (int j = 0; j < par.Size(); j++) ff << par(j) << "\t";
+        ff << norm << "\n";
         ff.flush();
-//     std::ostringstream fdata, fidx;
-//     fdata << "sol-" << i << ".dat";
-//     fidx << "sol-" << i << ".idx";
-        pttr.SaveSol(fdata.str().c_str(), fidx.str().c_str());
         pttr.WriteBinary(out, i);
       }
     }
