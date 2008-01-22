@@ -1,2 +1,3 @@
 #! /bin/sh
-svn log -r HEAD -q | sed -e s/' |.*.|'// -e s/' (.*)'// -e /'---'/d | awk -- '/r/ { printf "%s", $0 }' >REVISION
+git log -n1 HEAD | grep commit | sed -e s/'commit '// | awk -- '// { printf "%s", $$0 }' >REVISION
+git log -n1 HEAD | grep 'Date' | sed -e s/'Date: '/','/ | awk -- '// { printf "%s", $$0 }' >>REVISION

@@ -99,6 +99,11 @@ SET( DIST_DIR ${PACKAGE_NAME}-${PACKAGE_VERSION} )
 ADD_CUSTOM_TARGET( dist 
 	COMMAND ln -s ${PDDE_SOURCE_DIR} ${DIST_DIR}\;
 		ln -s ${PDDE_BINARY_DIR}/pdde.spec ${DIST_DIR}/pdde.spec\;
+		pushd ${PDDE_SOURCE_DIR}\;
+                git log -n1 HEAD | grep commit | sed -e s/'commit '// | awk -- '// { printf \"%s\", $$0 }' >${PDDE_SOURCE_DIR}/REVISION\;
+                git log -n1 HEAD | grep 'Date' | sed -e s/'Date: '/','/ | awk -- '// { printf \"%s\", $$0 }' >>${PDDE_SOURCE_DIR}/REVISION\;
+                git-ls-files | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >${PDDE_BINARY_DIR}/tmp_filelist\;
+                popd\;
 		svn log -r HEAD -q ${PDDE_SOURCE_DIR} | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >${PDDE_SOURCE_DIR}/REVISION\;
 		svn list -r HEAD -R --non-interactive ${PDDE_SOURCE_DIR} | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
