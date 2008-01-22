@@ -1,10 +1,28 @@
+In 1.2.0
+ - The collocation routines are vectorized. This reduces the number of
+   function calls to the system definition.
+ - There is a speed regression for bifurcation continuation.
+   The traffic3cars-test-5 took 5m39.422 with rev 349 now it takes
+   9m48.851 on a Core 2 Duo 2.16GHz Macbook Pro.
+   There is nothing that can be done about it. In the old code we could
+   eliminate some constructions by checking if they are zero, but it is not
+   possible anymore.
+ - For periodic orbits there is a slight speedup, but not noticeable
+ - It is still possible to use the old system definition, but it is little
+   slower because of the wrapper.
+ - Improved bifurcation detection. The program properly disregards the trivial
+   characteristic multipliers.
+ - Branch switching at pitchfork or transcritical bifurcations is implemented 
+   for autonomous and symmetric equations.
+ - Continuation routines are the same for periodic orbits and tori. The base
+   algorithms can be easily reused for other types of systems.
 In 1.1.3
  - The Hopf switch bug is fixed. Now it is possible to detect that the
    switch is expected to be succesful or not. This is based on the
    comparison between the analytical and the numerical eigenfunction.
  - The Haegemen et al. laser model (Lang-Kobayashi equation)
    with optical feedback is included as "simple_laser" example.
- - Zero out the Floquet multipleirs if STAB=0. This prevents some users from
+ - Zero out the Floquet multipliers if STAB=0. This prevents some users from
    misinterpreting the results.
  - Stop continuation if CPMAX or CPMIN has been reached.
  - Floquet multipliers are sorted and now they are plotted as lines instead

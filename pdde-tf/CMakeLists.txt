@@ -5,7 +5,7 @@ PROJECT( PDDE )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "pdde-cont" )
-SET( PACKAGE_VERSION "1.1.3" )
+SET( PACKAGE_VERSION "1.2.0" )
 FILE( READ ${PDDE_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )

@@ -40,7 +40,7 @@ void sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<doubl
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
-    out(0,idx) = par(1)*x(0,0,idx) + par(2)*x(0,1,idx)/(1+pow(x(0,1,idx), 10.0));
+    out(0,idx) = par(1)*x(0,0,idx) + par(2)*x(0,1,idx)/(1+pow(x(0,1,idx), 10));
   }
 }
 
@@ -56,7 +56,7 @@ void sys_p_deri( Array3D<double>& out, Array1D<double>& time, const Array3D<doub
           out(0,0,idx) = par(1);
           break;
         case 1:
-          out(0,0,idx) = par(2)*(1.0 - 9.0*pow(x(0,1,idx), 10.0) )/( (1+pow(x(0,1,idx), 10.0))*(1+pow(x(0,1,idx), 10.0)) );
+          out(0,0,idx) = par(2)*(1.0/(1+pow(x(0,1,idx), 10)) - 10.0*pow(x(0,1,idx), 10)/( (1+pow(x(0,1,idx), 10))*(1+pow(x(0,1,idx), 10)) ) );
           break;
       }
     }
@@ -88,8 +88,8 @@ void sys_p_deri( Array3D<double>& out, Array1D<double>& time, const Array3D<doub
             case 0:
               out(0,0,idx) = 0.0; break;
             case 1:
-              out(0,0,idx) = 10.0*par(2)*pow(x(0,1,idx), 9.0)*(9.0*pow(x(0,1,idx), 10.0) - 11.0)/
-                                    pow((1.0+pow(x(0,1,idx), 10.0)), 3.0) * vv(0,1,idx); break;
+              out(0,0,idx) = 10.0*par(2)*pow(x(0,1,idx), 9)*(9.0*pow(x(0,1,idx), 10) - 11.0)/
+                                    pow((1.0+pow(x(0,1,idx), 10)), 3) * vv(0,1,idx); break;
           } break;
       }
     }
