@@ -104,8 +104,6 @@ ADD_CUSTOM_TARGET( dist
                 git log -n1 HEAD | grep 'Date' | sed -e s/'Date: '/','/ | awk -- '// { printf \"%s\", $$0 }' >>${PDDE_SOURCE_DIR}/REVISION\;
                 git-ls-files | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >${PDDE_BINARY_DIR}/tmp_filelist\;
                 popd\;
-		svn log -r HEAD -q ${PDDE_SOURCE_DIR} | sed -e s/' |.*.|'// -e s/' \(.*\)'// -e /'---'/d | awk -- '/r/ { printf \"%s\", $$0 }' >${PDDE_SOURCE_DIR}/REVISION\;
-		svn list -r HEAD -R --non-interactive ${PDDE_SOURCE_DIR} | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >tmp_filelist\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
 		echo >>tmp_filelist \"${DIST_DIR}/pdde.spec\"\;
 		tar cjf ${DIST_DIR}.tar.bz2 --exclude *.svg --no-recursion -h -T tmp_filelist\;
