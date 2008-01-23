@@ -583,6 +583,19 @@ void mat4Data::setProfile(int n, const Vector& prof)
   }
 }
 
+void mat4Data::getBlanket(int n, Vector& blanket)
+{
+  const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
+  if ((blanket.Size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
+  {
+    for (int i = 0; i < ndim*(ndeg1*nint1*ndeg2*nint2); ++i) blanket(i) = elem(blanket_offset, i, n);
+  }
+  else
+  {
+    P_MESSAGE("Error while reading the MAT file.");
+  }
+}
+
 // write in order size() = [ ndeg1*nint1, ndeg2*nint2, ndim ]
 void mat4Data::setBlanket(int n, const Vector& blanket)
 {

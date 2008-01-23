@@ -1,7 +1,8 @@
 #include <QDialog>
 #include <QTextEdit>
-#include <string>
+#include <QScrollBar>
 #include <QVBoxLayout>
+#include <string>
 #include <iostream>
 
 class screenDialog : public QDialog
@@ -18,6 +19,7 @@ class screenDialog : public QDialog
       display->setLineWrapMode(QTextEdit::NoWrap);
       display->setReadOnly(true);
       display->setFontFamily("Courier");
+      setText(" ");
 //  QFontMetricsF metrics( display->document()->defaultFont() );
 //  display->document()->rootFrame()->setWidth( 60*metrics.maxWidth()+2*display->frameWidth() );
 //  display->document()->rootFrame()->setHeight( 20*metrics.lineSpacing()+2*display->frameWidth() );
@@ -29,7 +31,12 @@ class screenDialog : public QDialog
     }
     void append(const std::string& str)
     {
-      display->append(QString(str.c_str()));
+      QTextCursor cur = display->textCursor ();
+      cur.movePosition(QTextCursor::End);
+      QScrollBar* bar = display->verticalScrollBar();
+      const bool atEnd = (bar->maximum() == bar->value());
+      cur.insertText(QString(str.c_str()));
+      if (atEnd) bar->setValue(bar->maximum());
     }
     void setText(const QString& str)
     {

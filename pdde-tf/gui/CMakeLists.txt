@@ -22,7 +22,7 @@ ADD_EXECUTABLE( pdde-gui main.cpp
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
     constqtgui.cpp constqtgui.h
-    compthread.cpp compthread.h
+    compthread.h
     screendialog.h
     ${MOC_SRCS} ${ICONS} )
 

@@ -43,7 +43,9 @@ enum PtType {
   SolUser      = -1,
   /// TORUS
   SolTor       = 20,
+  SolTorNS     = 21,
   SolAUTTor    = 30,
+  SolAUTTorNS  = 31,
   /// TIME-PERIODIC TEST-FUNCTIONAL
   SolTF        = 40,
   BifTFLP      = 41,

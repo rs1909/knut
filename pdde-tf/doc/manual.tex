@@ -353,9 +353,11 @@ feature and  it is tested for non-autonomous systems only. The output has a diff
 than specified in section \ref{matformat}, but it can be plotted using the matlab script 
 \filef{matlab/torplot.m}.
 \begin{description}
-\item[\funp{20} -] In the case of time-periodic systems
+\item[\funp{20} -] Continuation of tori in time-periodic systems. Start from a torus in the input file.
+\item[\funp{21} -] Start at a Neimark-Sacker bifurcation point.
 %
-\item[\funp{30} -] In the case of autonomous systems.
+\item[\funp{30} -] Continuation of tori in autonomous systems. Start from a torus in the input file.
+\item[\funp{31} -] Start at a Neimark-Sacker bifurcation point.
 \end{description}
 If none of the above applies to a problem, it is possible to specify the set of
 equations and variables used in continuation, by setting the \funp{TYPE} to

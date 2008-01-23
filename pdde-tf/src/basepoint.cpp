@@ -104,7 +104,7 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
 
   xx->getV3().Clear();
 
-  if(!adapt) out << "\nIT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
+  if(!adapt) out << "IT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
 
   int it = 0;
   double Xnorm, Dnorm;

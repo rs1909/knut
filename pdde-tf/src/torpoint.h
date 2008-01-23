@@ -51,6 +51,7 @@ class PointTR : public BasePoint
 //     {
 //       return colloc->Sys().npar();
 //     }
+    void           ReadBinary(mat4Data& data, int n);
     void           WriteBinary(mat4Data& data, int n);
 
   private:

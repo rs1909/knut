@@ -4,7 +4,7 @@
  <output>out-tr.mat</output>
  <sysname>sys-tq.so</sysname>
  <label>95</label>
- <pointtype>20</pointtype>
+ <pointtype>21</pointtype>
  <cptype>P</cptype>
  <cpnum>1</cpnum>
  <switch>0</switch>

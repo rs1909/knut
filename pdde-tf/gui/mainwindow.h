@@ -228,7 +228,7 @@ class MainWindow : public QMainWindow
     void terminalViewDestroyed();
     void terminalTextAppend(const std::string& str)
     {
-      terminalText.append(QString(str.c_str()).append("\n"));
+      terminalText.append(QString(str.c_str()));
     }
     void compileSystem();
 

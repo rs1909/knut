@@ -125,6 +125,12 @@ void PointTR::Jacobian
 #define NINT1 colloc->Nint1()
 #define NINT2 colloc->Nint2()
 
+void PointTR::ReadBinary(mat4Data& data, int n)
+{
+  data.getBlanket(n, sol);
+  data.getPar(n, par);
+}
+
 void PointTR::WriteBinary(mat4Data& data, int n)
 {
   data.setPar(n, par);
@@ -142,5 +148,6 @@ void PointTR::WriteBinary(mat4Data& data, int n)
       data.setMesh2(n, i*NDEG2 + j, (getMesh2()(j) + i) / ((double)NINT2));
     }
   }
-  data.setBlanket(n, xx->getV1());
+  data.setBlanket(n, sol);
 }
+

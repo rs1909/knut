@@ -8,39 +8,25 @@
 // ------------------------------------------------------------------------- //
 
 #include "constqtgui.h"
+#include "basecomp.h"
 #include <string>
+#include <sstream>
 #include <QThread>
 
-class MThread : public QThread
+class MThread : public QThread, public BaseComp
 {
     Q_OBJECT
   public:
-    MThread(const NConstantsQtGui& constants, QObject* parent = 0) : QThread(parent), stopFlag(false)
-    {
-      params = new NConstantsQtGui(constants, this);
-    }
-    ~MThread()
-    {
-      delete params;
-    }
-    void setConstants(const NConstantsQtGui& constants)
-    {
-      delete params;
-      params = new NConstantsQtGui(constants, this);
-    }
-    void run();
-    void setStopFlag(bool flag)
-    {
-      stopFlag = flag;
-    }
+    MThread(const NConstants& constants, QObject* parent = 0) 
+    : BaseComp(constants), QThread(parent)
+    { }
+    ~MThread() { }
+    void run() { BaseComp::run(); }
+    void print(std::ostringstream& str) { emit printToScreen(str.str()); str.str(""); }
+    void raiseException(const pddeException& ex) { emit exceptionOccured(ex); }
   public slots:
 
   signals:
     void exceptionOccured(const pddeException& ex);
     void printToScreen(const std::string& str);
-  private:
-
-    NConstantsQtGui* params;
-    bool             stopFlag;
-
 };

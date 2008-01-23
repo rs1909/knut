@@ -31,14 +31,6 @@
 #define NINT colloc->Nint()
 #define NDEG colloc->Ndeg()
 
-
-
-
-
-
-
-
-
 // private
 void Point::FillSol(System& sys_)
 {
@@ -216,6 +208,14 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     /// TORUS
     case SolTor:
     {
+      PtTab tmp = { SolTor, NOSwitch, 2, 1,
+                    { EqnTORSol, EqnTORPhase1 },
+                    { VarTORSol, parx(0) } };
+      tab = tmp;
+    }
+    break;
+    case SolTorNS:
+    {
       PtTab tmp = { SolTor, TFTRSwitch, 2, 1,
                     { EqnTORSol, EqnTORPhase1 },
                     { VarTORSol, parx(0) } };
@@ -223,6 +223,14 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     }
     break;
     case SolAUTTor:
+    {
+      PtTab tmp = { SolAUTTor, NOSwitch, 2, 2,
+                    { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
+                    { VarTORSol, parx(0),      parx(1) } };
+      tab = tmp;
+    }
+    break;
+    case SolAUTTorNS:
     {
       PtTab tmp = { SolAUTTor, TFTRSwitch, 2, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },

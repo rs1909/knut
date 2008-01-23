@@ -77,6 +77,7 @@ class mat4Data
     {
       elem(mesh2_offset, j, n) = d;
     }
+    void   getBlanket(int n, Vector& blanket);
     void   setBlanket(int n, const Vector& blanket);
 
     void   getPar(int n, Vector& par) const;

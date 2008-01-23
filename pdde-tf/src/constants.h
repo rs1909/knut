@@ -132,10 +132,14 @@ class PointType : public genMap<PtType>
       key.push_back(SolTFAUTPDSW);
       dsc.push_back("Hopf switch (aut)");
       key.push_back(SolTFAUTHBSW);
-      dsc.push_back("Torus from NS");
+      dsc.push_back("Torus");
       key.push_back(SolTor);
-      dsc.push_back("Torus from NS (aut)");
+      dsc.push_back("Torus from NS");
+      key.push_back(SolTorNS);
+      dsc.push_back("Torus (aut)");
       key.push_back(SolAUTTor);
+      dsc.push_back("Torus from NS (aut)");
+      key.push_back(SolAUTTorNS);
     }
 };
 
