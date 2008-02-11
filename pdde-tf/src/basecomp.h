@@ -37,7 +37,7 @@ class CLIComp : public BaseComp
   public:
     CLIComp(const NConstants& constants) : BaseComp(constants) { }
     ~CLIComp() { }
-    void print(std::ostringstream& str) { std::cout<<str.str(); }
+    void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
     void raiseException(const pddeException& ex)
     {
       std::cout << ex.file << ":" << ex.line << " " << ex.message.message;

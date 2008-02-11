@@ -276,6 +276,7 @@ void BaseComp::run(const char* branchFile)
         for (int i = 0; i < meshdeg.Size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
 
         // getting the sol and tangents
+        screenout << "\nSwitching to the torus.\n"; print(screenout);
         pt.SwitchTRSol(Sol, meshint, meshdeg);
         pt.SwitchTFTRTan(TRe, TIm, alpha, meshint, meshdeg);
 
@@ -304,7 +305,7 @@ void BaseComp::run(const char* branchFile)
         {
           mat4Data istr(params->getInputFile());
           pttr.ReadBinary(istr, params->getLabel());
-          std::cout << "\nFinding the tangent.\n";
+          screenout << "\nFinding the tangent.\n"; print(screenout);
           pttr.setCont(params->getCp() - VarPAR0);
           pttr.Tangent();
         } else
