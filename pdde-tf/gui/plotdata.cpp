@@ -876,7 +876,7 @@ bool PlotData::event(QEvent* ev)
 
 void PlotData::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
-  if (event->button() == Qt::RightButton)
+  if (event->button() == Qt::LeftButton)
   {
     mouseBegin = QPointF(event->scenePos());
     mouseMove = mouseBegin;
@@ -886,7 +886,7 @@ void PlotData::mousePressEvent(QGraphicsSceneMouseEvent * event)
 
 void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
-  if (event->button() == Qt::RightButton)
+  if (event->button() == Qt::LeftButton)
   {
     mouseEnd = QPointF(event->scenePos());
     if (mouseEnd == mouseBegin)
@@ -920,7 +920,7 @@ void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 
 void PlotData::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-  if (event->buttons() == Qt::RightButton)
+  if (event->buttons() == Qt::LeftButton)
   {
     mouseMove = QPointF(event->scenePos());
     if (sceneRect().contains(mouseMove))
