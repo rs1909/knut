@@ -10,6 +10,7 @@
 #include <string>
 #include <cmath>
 #include <cfloat>
+#include <cstring>
 
 #ifndef WIN32
 #  include <sys/types.h>

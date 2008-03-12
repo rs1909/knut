@@ -9,6 +9,7 @@
 
 #include "plot.h"
 #include <iostream>
+#include <cstdlib>
 
 void GnuPlot::SetTerminal(const char *term)
 {

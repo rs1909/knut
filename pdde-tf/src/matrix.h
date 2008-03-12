@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <iterator>
+#include <cstdlib>
 
 #ifndef PDDESYS_H
 #include "plot.h"
