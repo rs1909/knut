@@ -43,7 +43,7 @@ equations}
 \author{R\'obert Szalai}
 \newcommand{\pddever}{1.2.0}
 \version{\pddever}
-\date{31 December 2007}
+\date{14 March 2008}
 \maketitle
 
 \begin{center}
@@ -64,6 +64,7 @@ of Technology \\
     \hline 10 October 2006 & 1.1.1 (r260) & University of Bristol \\
     \hline 24 December 2006 & 1.1.2 (r315) & University of Bristol \\
     \hline 4 August 2007 & 1.1.3 (r343) & University of Bristol \\
+    \hline 14 March 2008 & 1.2.0 (?) & University of Bristol \\
     \hline
   \end{tabular}
 \end{center}
@@ -246,7 +247,7 @@ $ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-fi
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pdde -v
-This is pdde-cont version 1.1.3 (r330 2007-08-02 02:26:31 +0100)
+This is pdde-cont version 1.2.0 (1a5157b8d1e7c53fdb39e0295295f2401daf1169, Wed Mar 12 13:20:30 2008 +0000)
 \end{lstlisting} \end{quote} } \noindent
 
 
@@ -804,14 +805,40 @@ v(\,.,\mathrm{vx[0]}) \right) $
   \caption{Possible outputs of \fun{void sys_deri(...)}. }\label{deritable}
   \end{table}
   
-  \item \fun{void sys_stpar( Vector\& par );} \\
+  \item[-] \fun{void sys_stpar( Vector\& par );} \\
   This function returns the parameter values at the starting point, which is a
 known periodic solution of the system.
   
-  \item \fun{void sys_stsol( Vector\& out, double t );} \\
+  \item[-] \fun{void sys_stsol( Vector\& out, double t );} \\
   This function returns the value of the known periodic solution at time
 \fun{t}.
 \end{itemize}
+
+\subsubsection{Vectorized system definition}\label{vecsysdef}
+
+In order to reduce the number of function calls to the system definition one can 
+use a vectorized version of \fun{sys_tau(...)}, \fun{sys_dtau(...)}, \fun{sys_rhs(...)} and \fun{sys_deri(...)}. These replacement functions are defined as
+\begin{itemize}
+  \item[-] \fun{void sys_p_tau( Array2D<double>\& out, Array1D<double>\& time, const Array1D<double>\& par );}
+  \item[-] \fun{void sys_p_dtau( Array2D<double>\& out, Array1D<double>\& time, const Array1D<double>\& par, int vp );}
+  \item[-] \fun{void sys_p_rhs( Array2D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par );}
+  \item[-] \fun{void sys_p_deri( Array3D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>\& vv );}
+\end{itemize}
+These functions are almost the same as the non-vectorized one, except that some arguments have one more dimension, that signifies tha dependence of time. The function body looks like
+{ \small \begin{quote} \begin{lstlisting}[frame=single]
+{
+  for (int idx=0; idx < time.Size(); ++idx)
+  {
+    const double t = time(idx);
+    // Same as the body of the non-vectorized version
+    // with the following replacements
+    //     out(i)   by out(i,idx)
+    //     out(i,j) by out(i,j,idx)
+    //     xx(i,j)  by xx(i,j,idx)
+    //     vv(i,j)  by vv(i,j,idx)
+  }
+}
+\end{lstlisting} \end{quote} } \noindent
 
 \subsection{Running the software}
 

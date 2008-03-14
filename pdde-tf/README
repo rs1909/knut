@@ -1,5 +1,10 @@
-For istallation instructions read the manual (manual.pdf),
-which can be found in the doc/ subdirectory.
+For istallation instructions compile and the manual (manual.pdf),
+which can be found in the doc/ subdirectory and compiled with the following
+commands:
+  pdflatex manual
+  bibtex manual
+  pdflatex manual
+  pdflatex manual
 
 Known issues:
 - Fold bifurcation continuation in the traffic model is a difficult problem,
@@ -8,7 +13,6 @@ Known issues:
   them are easy to compute, others are difficult. The software might stop at
   certain parameter values but this can be overcome by some manual
   intervention.
-- Equations with rotational symmetries can be analyzed only with some
-  limitations. The fold bifurcation continuation only works if the
-  period-length is not a free parameter. (If somebody knows why, let me
-  know, please!)
+- The fold bifurcation in the laser example is rather stiff and it can be
+  continued if the period-length is not a free parameter. Apparently this
+  continuation works with other symmetric equations reasonably well.
