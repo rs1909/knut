@@ -1,10 +1,11 @@
-For istallation instructions compile and the manual (manual.pdf),
-which can be found in the doc/ subdirectory and compiled with the following
+For istallation instructions first compile and then read the manual (manual.tex) in the doc/
+subdirectory using the following
 commands:
   pdflatex manual
   bibtex manual
   pdflatex manual
   pdflatex manual
+This will produce the file "manual.pdf" that can be printed.
 
 Known issues:
 - Fold bifurcation continuation in the traffic model is a difficult problem,
