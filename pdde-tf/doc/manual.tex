@@ -824,7 +824,7 @@ use a vectorized version of \fun{sys_tau(...)}, \fun{sys_dtau(...)}, \fun{sys_rh
   \item[-] \fun{void sys_p_rhs( Array2D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par );}
   \item[-] \fun{void sys_p_deri( Array3D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>\& vv );}
 \end{itemize}
-These functions are almost the same as the non-vectorized one, except that some arguments have one more dimension, that signifies tha dependence of time. The function body looks like
+These functions are almost the same as the non-vectorized one, except that some arguments have one more dimension. This additional dimension corresponds to the variation along the solution profile. The body of each vectorized function looks like the following.
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 {
   for (int idx=0; idx < time.Size(); ++idx)
