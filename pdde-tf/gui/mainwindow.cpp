@@ -555,6 +555,10 @@ void MainWindow::terminalView()
     terminalDialog->raise();
     connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
     connect(terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()));
+  } else
+  {
+	delete terminalDialog;
+	terminalDialog = 0;
   }
 }
 
@@ -575,7 +579,7 @@ void MainWindow::compileSystem()
                     .arg(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS)
                     .arg("\"" + QDir::cleanPath(executableDir + "/../include/") + "\"")
                     .arg("\"" + fileName + "\"").arg("\"" + newfile + "\""));
-    std::cout << "The command line:\n\t" << cmdLine.toStdString() << "\n";
+    // std::cout << "The command line:\n\t" << cmdLine.toStdString() << "\n";
     compilerProcess->start(cmdLine);
     bool finished = compilerProcess->waitForFinished();
     QErrorMessage *errorPopup = new QErrorMessage(this);
@@ -660,9 +664,9 @@ void MainWindow::about()
   QMessageBox::about(this, tr("About PDDE-CONT"),
                      QString(tr(
                                "<h3>%1: A continuation software for delay-differential equations</h3>"
-                               "<p>Version %2 (%3), Copyright (c) 2002-2006 Robert Szalai</p>"
-                               "<p>Available at <a href=http://www.mm.bme.hu/~szalai/pdde>"
-                               "http://www.mm.bme.hu/~szalai/pdde</a></p>"
+                               "<p>Version %2 (%3), Copyright (c) 2002-2008 Robert Szalai</p>"
+                               "<p>Available at <a href=http://seis.bris.ac.uk/~rs1909/pdde>"
+                               "http://seis.bris.ac.uk/~rs1909/pdde</a></p>"
                                "<p>This program is free software; you can redistribute it and/or "
                                "modify it under the terms of the "
                                "<a href=http://www.gnu.org/copyleft/gpl.html>GNU General Public License</a> "
@@ -746,6 +750,7 @@ void MainWindow::createToolBars()
   fileToolBar = addToolBar(tr("File"));
   fileToolBar->addAction(openAct);
   fileToolBar->addAction(saveAct);
+  fileToolBar->addAction(saveAsAct);
   fileToolBar->addAction(runAct);
   fileToolBar->addAction(stopAct);
   fileToolBar->addAction(terminalAct);

@@ -2,6 +2,7 @@
 #include <QTextEdit>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QSettings>
 #include <string>
 #include <iostream>
 
@@ -18,12 +19,21 @@ class screenDialog : public QDialog
       this->setLayout(layout);
       display->setLineWrapMode(QTextEdit::NoWrap);
       display->setReadOnly(true);
-      display->setFontFamily("Courier");
-      setText(" ");
-//  QFontMetricsF metrics( display->document()->defaultFont() );
-//  display->document()->rootFrame()->setWidth( 60*metrics.maxWidth()+2*display->frameWidth() );
-//  display->document()->rootFrame()->setHeight( 20*metrics.lineSpacing()+2*display->frameWidth() );
+      display->setPlainText(" ");
+	  display->setFontFamily("Courier");
+
+	  QSettings settings("pdde-cont", "text window");
+      QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
+	  QSize size = settings.value("size", QSize(400, 400)).toSize();
+	  resize(size);
+      move(pos);
     }
+	~screenDialog()
+	{
+	  QSettings settings("pdde-cont", "text window");
+	  settings.setValue("pos", pos());
+      settings.setValue("size", size());
+	}
   public slots:
     void setTitle(const std::string& str)
     {
