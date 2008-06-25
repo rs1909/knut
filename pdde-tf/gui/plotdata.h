@@ -136,7 +136,6 @@ class PlotData : public QGraphicsScene
     void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
     void keyPressEvent(QKeyEvent * event);
-    bool event(QEvent* event);
 
   private:
     void addPlotLine(std::list<PlotItem>::iterator& it, const char* style);

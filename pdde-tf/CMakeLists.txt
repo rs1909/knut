@@ -5,7 +5,7 @@ PROJECT( PDDE )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "pdde-cont" )
-SET( PACKAGE_VERSION "1.2.0" )
+SET( PACKAGE_VERSION "1.2.1" )
 FILE( READ ${PDDE_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )
@@ -39,7 +39,7 @@ ENDIF( MSVC )
 # finding Qt4
 #------------------------------------------------------------------------------
 
-SET( QT_MIN_VERSION "4.3.0" )
+SET( QT_MIN_VERSION "4.4.0" )
 FIND_PACKAGE( Qt4 )
 
 IF(WIN32)

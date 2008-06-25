@@ -1,3 +1,7 @@
+In 1.2.1
+ - The GUI now works with Qt 4.4.0. Previous versions of Qt had a bug so
+   that they needed a workaround, but now causes a bug with Qt 4.4.
+   The workaround is now removed and plotting became more robust.
 In 1.2.0
  - The collocation routines are vectorized. This reduces the number of
    function calls to the system definition.

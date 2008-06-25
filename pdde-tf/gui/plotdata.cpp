@@ -33,9 +33,10 @@ PlotData::PlotData(QObject *parent) :
     };
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
-  this->addItem(&selection);
+  addItem(&selection);
   selection.setVisible(false);
   makeBox();
+  setSceneRect(itemsBoundingRect());
 }
 
 PlotData::~PlotData()
@@ -96,7 +97,7 @@ void PlotData::clear(int n)
       ++i;
     }
   }
-  this->update();
+//   update();
 }
 
 QColor PlotData::getColor(int n)
@@ -176,7 +177,7 @@ void PlotData::setColor(int n, QColor& color)
       }
     }
   }
-  this->update();
+//   update();
 }
 
 void PlotData::clearAll()
@@ -209,7 +210,7 @@ void PlotData::clearAll()
   ZoomHistory.clear();
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
-  this->update();
+//   update();
 }
 
 /// this computes the minimum and maximum value of an axis
@@ -844,36 +845,6 @@ void PlotData::rescaleData()
   }
 }
 
-bool PlotData::event(QEvent* ev)
-{
-  QGraphicsSceneMouseEvent *event;
-  if ((event = dynamic_cast<QGraphicsSceneMouseEvent*>(ev)) != 0)
-  {
-    if (event->type() == QEvent::GraphicsSceneMousePress)
-    {
-      mousePressEvent(event);
-    }
-    if (event->type() == QEvent::GraphicsSceneMouseRelease)
-    {
-      mouseReleaseEvent(event);
-    }
-    if (event->type() == QEvent::GraphicsSceneMouseMove)
-    {
-      mouseMoveEvent(event);
-    }
-  }
-  QKeyEvent *key;
-  if ((key = dynamic_cast<QKeyEvent*>(ev)) != 0)
-  {
-    if (key->type() == QEvent::KeyPress)
-    {
-      keyPressEvent(key);
-    }
-  }
-  if (ev->isAccepted()) return true;
-  else return false;
-}
-
 void PlotData::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
   if (event->button() == Qt::LeftButton)
@@ -927,7 +898,7 @@ void PlotData::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
     {
       selection.setRect(QRectF(mouseBegin.x(), mouseBegin.y(), mouseMove.x() - mouseBegin.x() , mouseMove.y() - mouseBegin.y()).normalized());
       selection.setVisible(true);
-      selection.update();
+//       selection.update();
     }
     event->accept();
   }
@@ -964,9 +935,9 @@ void PlotData::makeBox()
   // drawing the ticks and tickmarks
   for (unsigned int i = 0; i < HText.size(); i++)
   {
-    this->removeItem(BottomTicks[i]);
-    this->removeItem(TopTicks[i]);
-    this->removeItem(HText[i]);
+    removeItem(BottomTicks[i]);
+    removeItem(TopTicks[i]);
+    removeItem(HText[i]);
     delete BottomTicks[i];
     delete TopTicks[i];
     delete HText[i];
@@ -987,15 +958,15 @@ void PlotData::makeBox()
     HText[i]->setFont(QFont("Arial", FontSize));
     QRectF b = HText[i]->boundingRect().normalized();
     HText[i]->setPos(plotXSize * i / cvb.xticks - b.width() / 2.0, plotYSize /*- b.height()*/);
-    this->addItem(TopTicks[i]);
-    this->addItem(BottomTicks[i]);
-    this->addItem(HText[i]);
+    addItem(TopTicks[i]);
+    addItem(BottomTicks[i]);
+    addItem(HText[i]);
   }
   for (unsigned int i = 0; i < VText.size(); i++)
   {
-    this->removeItem(LeftTicks[i]);
-    this->removeItem(RightTicks[i]);
-    this->removeItem(VText[i]);
+    removeItem(LeftTicks[i]);
+    removeItem(RightTicks[i]);
+    removeItem(VText[i]);
     delete LeftTicks[i];
     delete RightTicks[i];
     delete VText[i];
@@ -1016,9 +987,9 @@ void PlotData::makeBox()
     VText[i]->setFont(QFont("Arial", FontSize));
     QRectF b = VText[i]->boundingRect().normalized();
     VText[i]->setPos(-b.width(), plotYSize - plotYSize*i / cvb.yticks - b.height() / 2.0);
-    this->addItem(LeftTicks[i]);
-    this->addItem(RightTicks[i]);
-    this->addItem(VText[i]);
+    addItem(LeftTicks[i]);
+    addItem(RightTicks[i]);
+    addItem(VText[i]);
   }
 }
 
@@ -1032,14 +1003,14 @@ void PlotData::PlotPaint()
     if ((*i).type == PlotLineType)
     {
       delete(*i).data.line->item;
-      (*i).data.line->item = this->addPath((*i).data.line->line, (*i).data.line->pen);
+      (*i).data.line->item = addPath((*i).data.line->line, (*i).data.line->pen);
     }
     if ((*i).type == PlotCircleType)
     {
       for (unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j)
       {
         delete(*i).data.circle->item[j];
-        (*i).data.circle->item[j] = this->addEllipse((*i).data.circle->point, (*i).data.circle->pen);
+        (*i).data.circle->item[j] = addEllipse((*i).data.circle->point, (*i).data.circle->pen);
         (*i).data.circle->item[j]->setPos((*i).data.circle->pos[j]);
       }
     }
@@ -1048,10 +1019,10 @@ void PlotData::PlotPaint()
       for (unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j)
       {
         delete(*i).data.polygon->item[j];
-        (*i).data.polygon->item[j] = this->addPolygon((*i).data.polygon->point, (*i).data.polygon->pen);
+        (*i).data.polygon->item[j] = addPolygon((*i).data.polygon->point, (*i).data.polygon->pen);
         (*i).data.polygon->item[j]->setPos((*i).data.polygon->pos[j]);
       }
     }
   }
-  this->update();
+//   update();
 }
