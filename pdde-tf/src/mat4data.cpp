@@ -82,14 +82,6 @@ static inline void *mmapFileWrite(int& file, const std::string& fileName, int si
   return address;
 }
 
-// static inline void shrinkMap( void* address, int old_size, int new_size )
-// {
-//  P_ERROR_X1( old_size <= new_size, "mmappedPointData::mmappedPointData: larger new_size" );
-//  void* new_address;
-//  if( ( new_address = mremap( address, old_size, new_size, 0 ) ) != address )
-//  { P_ERROR_X2( false, "mmappedPointData::mmappedPointData: unable remap file\n", strerror( errno ) ); }
-// }
-
 static inline void *mmapFileRead(int& file, const std::string& fileName, int& size)
 {
   if ((file = open(fileName.c_str(), O_RDONLY)) == -1)
@@ -173,7 +165,7 @@ static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::str
 #endif
 
 // returns the size of the whole data
-static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
+inline int mat4Data::createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
@@ -184,7 +176,7 @@ static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int
 }
 
 // returns the size of the whole data
-static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
+inline int mat4Data::createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
@@ -194,9 +186,9 @@ static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* na
   return sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * sizeof(double);
 }
 
-static inline int writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name)
+inline int mat4Data::writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name)
 {
-  strncpy((char*)address + offset + sizeof(mat4Data::header), name, 20);
+  strncpy((char*)address + offset + sizeof(mat4Data::header), name, hd->namelen);
   *((mat4Data::header*)((char*)address + offset)) = *hd;
 }
 
@@ -341,6 +333,39 @@ mat4Data::mat4Data(const std::string& fileName)
   this->openReadOnly(fileName);
 }
 
+void mat4Data::resizeMatrix(const char* name, int newcol)
+{
+  header mathead;
+  int matoffset;
+  if ((matoffset = findMatrix(name, &mathead)) == -1) P_MESSAGE("No such matrix");
+  P_ASSERT_X1(mathead.ncols >= newcol, "Cannot increase the size of a matrix");
+  char* to = (char*)address + matoffset + mathead.enddata(newcol);
+  char* from = (char*)address + matoffset + mathead.enddata(mathead.ncols);
+  size_t count = size - matoffset - mathead.enddata(mathead.ncols);
+  memmove(to, from, count);
+  size -= mathead.enddata(mathead.ncols) - mathead.enddata(newcol);
+  mathead.ncols = newcol;
+  writeMatrixHeader(address, matoffset, &mathead, name);
+}
+
+void mat4Data::condenseData()
+{
+  // condense the fields so that it is only the size of npoints, where it counts
+  if (wperm)
+  {
+    const int npoints = getNPoints();
+    if (!torus)
+    {
+      resizeMatrix("pdde_prof", npoints);
+      resizeMatrix("pdde_mesh", npoints);
+      resizeMatrix("pdde_elem", npoints);
+      resizeMatrix("pdde_ndim", npoints);
+      resizeMatrix("pdde_mul", npoints);
+      resizeMatrix("pdde_par", npoints);
+    }
+  }
+}
+
 void mat4Data::openReadOnly(const std::string& fileName)
 {
 #ifndef WIN32
@@ -438,19 +463,25 @@ void mat4Data::openReadOnly(const std::string& fileName)
   }
 }
 
+// WARNING This creates a large file and then shrinks it
+// Use mmremap instead so that only the smaller file is written.
 mat4Data::~mat4Data()
 {
 #ifndef WIN32
-  if (munmap(address, size) != 0)
+  int oldsize = size;
+  condenseData();
+  if (munmap(address, oldsize) != 0)
   {
     P_ERROR_X2(false, "Unable to munmap the MAT file.", strerror(errno));
   }
-// at the moment it won't be truncated
-//  if( wperm )
-//  {
-//   if( ftruncate( file, size) != 0 )
-//   { P_ERROR_X2( false, "Unable to truncate the MAT file.", strerror( errno ) ); }
-//  }
+  // at the moment we try to truncate the file
+  if( wperm )
+  {
+    if( ftruncate( file, size) != 0 )
+    {
+      P_ERROR_X2( false, "Unable to truncate the MAT file.", strerror( errno ) );
+    }
+  }
   if (close(file) != 0)
   {
     P_ERROR_X2(false, "Unable to close the MAT file.", strerror(errno));
@@ -569,7 +600,7 @@ void mat4Data::setProfile(int n, const Vector& prof)
     if (prof.Size() == ndim*(ndeg*nint + 1))
     {
       const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
-      if (n > curr_npoints) elem(npoints_offset, 0, 0) = n;
+      if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
       elem(ndim_offset, 0, n) = ndim;
       for (int i = 0; i < ndim*(ndeg*nint + 1); ++i) elem(prof_offset, i, n) = prof(i);
     }
@@ -605,7 +636,7 @@ void mat4Data::setBlanket(int n, const Vector& blanket)
     if (blanket.Size() == ndim*(ndeg1*nint1*ndeg2*nint2))
     {
       const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
-      if (n > curr_npoints) elem(npoints_offset, 0, 0) = n;
+      if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
       elem(ndim_offset, 0, n) = ndim;
       elem(nint1_offset, 0, n) = nint1;
       elem(nint2_offset, 0, n) = nint2;

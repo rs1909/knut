@@ -28,41 +28,15 @@ class mat4Data
 {
   public:
 
-    struct header
-    {
-      int32_t type;
-      int32_t mrows;
-      int32_t ncols;
-      int32_t imagf;
-      int32_t namelen;
-
-      const char* name(const void* offset) const
-      {
-        return (char*)offset + namelen;
-      }
-      int size() const
-      {
-        return sizeof(struct header) + namelen;
-      }
-      int col_off(int i) const
-      {
-        return size() + i*mrows*sizeof(double);
-      }
-      int col_off_im(int i) const
-      {
-        return size() + (mrows*ncols + i*mrows)*sizeof(double);
-      }
-    };
-
     // opens the file, determines its size, maps the memory from file, sets up variables
+    // Constructor for periodic orbits
     mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
+    // Constructor for quasi-periodic orbits
     mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
+    // Constructor for opening an existing file
     mat4Data(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
     ~mat4Data();
-
-    int  findMatrix(const char* name, mat4Data::header* found);
-    void openReadOnly(const std::string& fileName);
 
     void   setPar(int n, const Vector& par);
     void   setMul(int n, const Vector& real, const Vector& imag);
@@ -182,6 +156,47 @@ class mat4Data
       return torus;
     }
 
+  private:
+    struct header
+    {
+      int32_t type;
+      int32_t mrows;
+      int32_t ncols;
+      int32_t imagf;
+      int32_t namelen;
+
+      const char* name(const void* offset) const
+      {
+        return (char*)offset + namelen;
+      }
+      int size() const
+      {
+        return sizeof(struct header) + namelen;
+      }
+      int col_off(int i) const
+      {
+        return size() + i*mrows*sizeof(double);
+      }
+      int col_off_im(int i) const
+      {
+        return size() + (mrows*ncols + i*mrows)*sizeof(double);
+      }
+      int enddata(int i)
+      {
+        if (imagf == 0) return size() + i*mrows*sizeof(double);
+        else return size() + 2*i*mrows*sizeof(double);
+      }
+    };
+    static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
+    static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
+    static inline int writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name);
+
+    int  findMatrix(const char* name, mat4Data::header* found);
+    void openReadOnly(const std::string& fileName);
+
+    void resizeMatrix(const char* name, int newcol);
+    void condenseData();
+
     struct header *getHeader(int offset)
     {
       return (struct header*)((char*)address + offset);
@@ -206,8 +221,6 @@ class mat4Data
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-
-  private:
 
 #ifdef WIN32
     HANDLE file;
