@@ -61,7 +61,14 @@ Section "Dummy Section" SecDummy
   
   ;ADD YOUR OWN FILES HERE...
   File "COPYING"
-  File /r "@CMAKE_INSTALL_PREFIX@\bin"
+  SetOutPath "$INSTDIR\bin"
+  File "@CMAKE_INSTALL_PREFIX@\bin\pdde-gui.exe"
+  File "C:\MinGW\bin\mingwm10.dll"
+  File "@QT_BINARY_DIR@\QtCore4.dll"
+  File "@QT_BINARY_DIR@\QtGui4.dll"
+  File "@QT_BINARY_DIR@\QtSvg4.dll"
+  File "@QT_BINARY_DIR@\QtXml4.dll"
+  SetOutPath "$INSTDIR"
   File /r "@CMAKE_INSTALL_PREFIX@\include"
   File /r "@CMAKE_INSTALL_PREFIX@\demo"
   File /r "@CMAKE_INSTALL_PREFIX@\matlab"
