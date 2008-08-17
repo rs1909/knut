@@ -342,6 +342,13 @@ void mat4Data::resizeMatrix(const char* name, int newcol)
   char* to = (char*)address + matoffset + mathead.enddata(newcol);
   char* from = (char*)address + matoffset + mathead.enddata(mathead.ncols);
   size_t count = size - matoffset - mathead.enddata(mathead.ncols);
+  if (mathead.imagf!= 0)
+  {
+    // copy the imaginary part
+    char* to_im = (char*)address + matoffset + mathead.col_off(newcol);
+    char* from_im = (char*)address + matoffset + mathead.col_off(mathead.ncols);
+    memmove(to_im, from_im, mathead.col_off(newcol));
+  }
   memmove(to, from, count);
   size -= mathead.enddata(mathead.ncols) - mathead.enddata(newcol);
   mathead.ncols = newcol;
