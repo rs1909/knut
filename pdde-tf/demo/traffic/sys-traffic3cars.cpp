@@ -32,7 +32,7 @@ int sys_npar() { return 5; }
 int sys_ntau() { return 2; }
 int sys_nderi() { return 0; }
 
-void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
   for (int idx = 0; idx < time.Size(); ++idx)
   {
@@ -41,7 +41,7 @@ void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<doubl
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par, int vp )
+void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
 {
   for (int idx = 0; idx < time.Size(); ++idx)
   {
@@ -56,7 +56,7 @@ static inline double V( double x )
   return pow( ( x - 1 ) / 1, 3.0 ) / ( pow( ( x - 1 ) / 1, 3.0 ) + 1);
 }
 
-void sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par )
+void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par )
 {
 #define xx(i,j) yy(i-1,j-1,idx)
 #define f(i,j) out(i-1,idx)
@@ -94,7 +94,7 @@ void sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<doubl
   }
 }
 
-void sys_p_deri( Array3D<double>&, Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, 
+void sys_p_deri( Array3D<double>&, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, 
                  int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
 {
 

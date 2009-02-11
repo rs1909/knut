@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.6)
 PROJECT( PDDE )
 
 #------------------------------------------------------------------------------
@@ -102,7 +103,7 @@ ADD_CUSTOM_TARGET( dist
 		pushd ${PDDE_SOURCE_DIR}\;
                 git log -n1 HEAD | grep commit | sed -e s/'commit '// | awk -- '// { printf \"%s\", $$0 }' >${PDDE_SOURCE_DIR}/REVISION\;
                 git log -n1 HEAD | grep 'Date' | sed -e s/'Date: '/','/ | awk -- '// { printf \"%s\", $$0 }' >>${PDDE_SOURCE_DIR}/REVISION\;
-                git-ls-files | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >${PDDE_BINARY_DIR}/tmp_filelist\;
+                git ls-files | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >${PDDE_BINARY_DIR}/tmp_filelist\;
                 popd\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;
 		echo >>tmp_filelist \"${DIST_DIR}/pdde.spec\"\;

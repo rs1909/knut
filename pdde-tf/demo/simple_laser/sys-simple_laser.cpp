@@ -15,7 +15,7 @@ int sys_nderi(){ return 2; }
 
 // VECTORIZED DEF.
 
-void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
@@ -24,7 +24,7 @@ void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<doubl
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par,                       const int vp )
+void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par,                       const int vp )
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
@@ -35,7 +35,7 @@ void sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<doub
   }
 }
 
-void sys_p_rhs( Array2D<double>& out, Array1D<double>& time,
+void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
                 const Array3D<double>& xx, const Array1D<double>& par )
 {
   // parameters
@@ -64,7 +64,7 @@ void sys_p_rhs( Array2D<double>& out, Array1D<double>& time,
   }
 }
 
-void sys_p_deri( Array3D<double>& mout, Array1D<double>& time,
+void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time,
                  const Array3D<double>& xx, const Array1D<double>& par,
                  const int nx, const int* vx, const int np, const int* vp,
                  const Array3D<double>& vv )

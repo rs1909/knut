@@ -11,7 +11,7 @@ int sys_npar(){ return 4; }
 int sys_ntau(){ return 2; }
 int sys_nderi(){ return 2; }
 
-void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
@@ -19,7 +19,7 @@ void sys_p_tau( Array2D<double>& out, Array1D<double>& time, const Array1D<doubl
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<double>& par, int vp )
+void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
@@ -36,7 +36,7 @@ void sys_p_dtau( Array2D<double>& out, Array1D<double>& time, const Array1D<doub
   }
 }
 
-void sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par )
+void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par )
 {
   for (int idx=0; idx < time.Size(); ++idx)
   {
@@ -44,7 +44,7 @@ void sys_p_rhs( Array2D<double>& out, Array1D<double>& time, const Array3D<doubl
   }
 }
 
-void sys_p_deri( Array3D<double>& out, Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par,
+void sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par,
          int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
 {
   for (int idx=0; idx < time.Size(); ++idx)
