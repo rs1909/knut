@@ -63,6 +63,9 @@ class pddeException
 };
 
 #define P_MESSAGE(msg) throw(pddeException( __FILE__, __LINE__, pddeMessage(msg) ))
+#define P_MESSAGE1(msg,arg1) throw(pddeException( __FILE__, __LINE__, pddeMessage(msg)<<arg1 ))
+#define P_MESSAGE2(msg,arg1,arg2) throw(pddeException( __FILE__, __LINE__, pddeMessage(msg)<<arg1<<arg2 ))
+#define P_MESSAGE3(msg,arg1,arg2,arg3) throw(pddeException( __FILE__, __LINE__, pddeMessage(msg)<<arg1<<arg2<<arg3 ))
 
 #ifdef DEBUG
 #  define P_ASSERT(cond) do{ if(!(cond) ) \

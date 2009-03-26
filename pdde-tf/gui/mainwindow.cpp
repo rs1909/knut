@@ -112,7 +112,7 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(sysdefAct, SIGNAL(triggered()), this, SLOT(setSysName()));
   connect(compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
   // sets up a bidirectional connection
-  connect(sysname, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setSysNameText(const QString&)));
+  connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameTextParameter()));
   connect(&parameters, SIGNAL(sysnameChanged(const std::string&)), this, SLOT(setSysNameText(const std::string&)));
 
   // setting LABEL
@@ -569,50 +569,14 @@ void MainWindow::compileSystem()
   {
     QString newfile(fileName);
     newfile.replace(QString(".cpp"), QString(".so"));
-    QFileInfo compiler(CMAKE_CXX_COMPILER);
-    compilerProcess = new QProcess();
-    compilerProcess->setProcessChannelMode(QProcess::MergedChannels);
-    QString cmdLine(QString("%1 %2 %3 %4 -I%5 %6 -o %7")
-                    .arg(compiler.fileName())
-                    .arg(CMAKE_CXX_FLAGS)
-                    .arg(CMAKE_SHARED_LIBRARY_C_FLAGS)
-                    .arg(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS)
-                    .arg("\"" + QDir::cleanPath(executableDir + "/../include/") + "\"")
-                    .arg("\"" + fileName + "\"").arg("\"" + newfile + "\""));
-    // std::cout << "The command line:\n\t" << cmdLine.toStdString() << "\n";
-    compilerProcess->start(cmdLine);
-    bool finished = compilerProcess->waitForFinished();
-    QErrorMessage *errorPopup = new QErrorMessage(this);
-    if (finished)
-    {
-      if (compilerProcess->exitCode() == 0)
-      {
-        if (!compilerProcess->readAll().isEmpty())
-        {
-          errorPopup->setWindowTitle("Successful compilation");
-          errorPopup->showMessage(QString(compilerProcess->readAll().constData()));
-          errorPopup->show();
-          errorPopup->raise();
-        }
-        sysname->setText(newfile);
-      }
-      else
-      {
-        errorPopup->setWindowTitle("Compilation failed");
-        errorPopup->showMessage(QString(compilerProcess->readAll().constData()));
-        errorPopup->show();
-        errorPopup->raise();
-      }
+    try {
+      System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
+      sysname->setText(newfile);
     }
-    else
+    catch (pddeException ex)
     {
-      errorPopup->setWindowTitle("Compilation timed out");
-      errorPopup->showMessage(compilerProcess->errorString());
-      errorPopup->show();
-      errorPopup->raise();
+      externalException(ex);
     }
-    delete compilerProcess;
-    compilerProcess = 0;
   }
 }
 
@@ -633,7 +597,6 @@ void MainWindow::open()
   QString fileName = QFileDialog::getOpenFileName(this, "Open constants file", QString(), "Constants files (*.xml);;All files (*)");
   if (!fileName.isEmpty())
   {
-    QDir::setCurrent(QFileInfo(fileName).absolutePath());
     loadFile(fileName);
   }
 }
@@ -780,8 +743,10 @@ void MainWindow::writeSettings()
 
 void MainWindow::loadFile(const QString &fileName)
 {
+  bool success = true;
   try
   {
+    QDir::setCurrent(QFileInfo(fileName).absolutePath());
     parameters.loadXmlFile(fileName.toStdString());
   }
   catch (pddeException ex)

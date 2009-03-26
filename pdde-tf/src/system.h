@@ -27,6 +27,8 @@ class System
 
     System(const std::string& shobj);
     ~System();
+    static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
+    static void makeSystem(const std::string& shobj, const std::string& executableDir);
 
     int    ndim()
     {

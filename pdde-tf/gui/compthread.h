@@ -25,6 +25,7 @@ class MThread : public QThread, public BaseComp
     void print(std::ostringstream& str) { emit printToScreen(str.str()); str.str(""); }
     void raiseException(const pddeException& ex) { emit exceptionOccured(ex); }
   public slots:
+    void consolePrint(const std::string& str) { std::cout << str; }
 
   signals:
     void exceptionOccured(const pddeException& ex);

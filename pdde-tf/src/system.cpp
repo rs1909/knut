@@ -11,20 +11,64 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+#include <sys/stat.h>
+#include <sstream>
 
 #include "system.h"
 #include "matrix.h"
 #include "pointtype.h"
+#include "config.h"
+
+#ifdef __APPLE__
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFString.h>
+#include <CoreFoundation/CFBundle.h>
+#endif
 
 System::System(const std::string& shobj)
 {
-  std::string objname(shobj);
-  if (objname.find('/') == std::string::npos) objname.insert(0, "./");
+  std::string objname;
+  if (shobj.find('/') == std::string::npos) objname = "./" + shobj;
 #ifdef WIN32
   std::string::size_type index = 0;
   while ((index = objname.find('/', index)) != std::string::npos) objname.at(index) = '\\';
 #endif
 
+  // Finding the executable directory
+  std::string executableFile;
+#ifdef __APPLE__
+  CFURLRef bundleURL = CFBundleCopyExecutableURL(CFBundleGetMainBundle());
+  if(bundleURL)
+  {
+    CFStringRef cfPath = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
+    const int ssize = CFStringGetLength(cfPath)+1;
+    char *buf = new char[ssize];
+    if(cfPath) CFStringGetCString(cfPath, buf, 512, kCFStringEncodingASCII);
+    executableFile = buf;
+    delete[] buf;
+  }
+#elif __linux__
+  std::string workingDir;
+  std::ostringstream procf;
+  procf << "/proc/" << getpid() << "/exe";
+  char *buf = new char[512];
+  const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
+  if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
+//   procf.str("");
+//   procf << "/proc/" << getpid() << "/cwd";
+//   const ssize_t bswd = readlink(procf.str().c_str(), buf, 511);
+//   if ( bswd != -1) { buf[bswd] = '\0'; workingDir = buf; }
+//   std::cout << procf.str() << " WorkingDir: " << workingDir << "\n";
+  delete[] buf;
+#endif
+
+//   std::cout << executableFile << "\n";
+  std::string executableDir(executableFile);
+  std::string::size_type sidx = executableDir.find_last_of('/');
+  if (sidx != std::string::npos) executableDir.erase(sidx,std::string::npos);
+//   std::cout << executableDir << "\n";
+  
+  makeSystem(shobj, executableDir);
   handle = tdlopen(objname.c_str());
   P_ERROR_X2(handle != 0, "Cannot open system definition file: ", tdlerror());
 
@@ -117,6 +161,70 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
     {
       res(i) = 0.0;
       res(i) += M(i, j) * v(j);
+    }
+  }
+}
+
+void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
+{
+  std::string compiler(CMAKE_CXX_COMPILER);
+  std::string::size_type slashpos = compiler.find_last_of('/');
+  // truncate the string
+  if (slashpos != std::string::npos) compiler = compiler.substr(slashpos+1);
+  std::string cmdline(compiler);
+#ifdef __APPLE__ 
+  cmdline += " -arch " CMAKE_OSX_ARCHITECTURES;
+#endif
+  cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
+              CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" + executableDir;
+#ifdef __APPLE__
+  cmdline += "/../Headers/\"";
+#else
+  cmdline += "/../include/\"";
+#endif
+  cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
+  
+//   std::cout << "The command line: " << cmdline << "\n";
+  // want to see the results if possible...
+  FILE* fd = popen(cmdline.c_str(),"r");
+  std::string result;
+  char* buf = new char[1024];
+  char* str = 0;
+  do{
+    str = std::fgets(buf, 1024, fd);
+    if (str != 0) result.append(str);
+  } while (str != 0);
+  delete[] buf;
+  int cres = pclose(fd);
+  if (cres != 0)  P_MESSAGE3("Cannot compile the file \"", cxxfile, "\" The output is:\n", result);
+}
+
+// Static member. Compile if necessary
+void System::makeSystem(const std::string& shobj, const std::string& executableDir)
+{
+  // convert the name first from .so to .cpp
+  std::string cxxfile(shobj);
+  if (cxxfile.substr(cxxfile.size()-3,cxxfile.size()) == ".so")
+  {
+    cxxfile.erase(cxxfile.size()-3); cxxfile.append(".cpp");
+//     std::cout << cxxfile << "\n";
+  } else {
+    P_MESSAGE2("The name \" ", shobj ,"\" does not have the '.so' extension.");
+  }
+  // It is not portable to Windows!!!
+  struct stat *sbuf = new struct stat;
+  int res_so = stat(shobj.c_str(), sbuf);
+  int res_cxx = stat(cxxfile.c_str(), sbuf);
+  delete sbuf;
+  
+  if (res_so != 0)
+  {
+    if (res_cxx == 0)
+    {
+      compileSystem(cxxfile, shobj, executableDir);
+    } else
+    {
+      P_MESSAGE2("The file \" ", cxxfile ,"\" doesn't exist.");
     }
   }
 }

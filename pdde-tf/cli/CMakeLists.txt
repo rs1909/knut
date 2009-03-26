@@ -10,7 +10,12 @@ INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src
 
 ADD_EXECUTABLE( pdde main.cpp )
 
-TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd cblas atlas ${CMAKE_DL_LIBS} )
+
+IF(APPLE)
+  TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd ${ATLAS_ATLAS} ${ATLAS_CBLAS} ${CMAKE_DL_LIBS} ${COREFOUNDATION_LIBRARY})
+ELSE(APPLE)
+  TARGET_LINK_LIBRARIES( pdde pddelib laarpack umfpack amd ${ATLAS_ATLAS} ${ATLAS_CBLAS} ${CMAKE_DL_LIBS})
+ENDIF(APPLE)
 
 IF( WIN32 )
 IF( NOT MSVC )

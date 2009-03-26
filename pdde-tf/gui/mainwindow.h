@@ -35,7 +35,6 @@ class plotWindow;
 
 class EqnVarTableView;
 
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -44,6 +43,9 @@ class MainWindow : public QMainWindow
     MainWindow(const QString& appDir);
 
   public slots:
+    // We need to be able to load a file from the outside
+    // and also from an event on MacOS
+    void loadFile(const QString& fileName);
 
     void setOutputFileText(const std::string& st)
     {
@@ -68,6 +70,10 @@ class MainWindow : public QMainWindow
       sysname->setText(st.c_str());
       sysname->setCursorPosition(cpos);
       sysname->blockSignals(false);
+    }
+    void setSysNameTextParameter()
+    {
+      parameters.setSysNameText(sysname->text());
     }
     void setLabel(int i)
     {
@@ -199,8 +205,11 @@ class MainWindow : public QMainWindow
   protected:
     void closeEvent(QCloseEvent *event);
 
-  private slots:
+  // We need to be able to run from the outside
+  public slots:
     void run();
+
+  private slots:
     void stopped();
     void stop();
     void newFile();
@@ -242,7 +251,6 @@ class MainWindow : public QMainWindow
     void readSettings();
     void writeSettings();
     bool maybeSave();
-    void loadFile(const QString &fileName);
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);

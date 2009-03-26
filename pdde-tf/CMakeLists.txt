@@ -6,7 +6,7 @@ PROJECT( PDDE )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "pdde-cont" )
-SET( PACKAGE_VERSION "1.2.1" )
+SET( PACKAGE_VERSION "1.2.2" )
 FILE( READ ${PDDE_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 
 SET( PDDE_GUI TRUE )
@@ -23,9 +23,15 @@ IF( NOT WIN32 )
   ELSE( EXISTS ${SHELL} )
     MESSAGE( SEND_ERROR "Cannot find a shell program" )
   ENDIF( EXISTS ${SHELL} )
-  SET( PDDE_DEMO_DIR share/${PACKAGE_NAME}/demo/ CACHE INTERNAL "demo dir" )
-  SET( PDDE_MATLAB_DIR share/${PACKAGE_NAME}/matlab/ CACHE INTERNAL "matlab dir" )
-  SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
+  IF(APPLE)
+    SET( PDDE_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
+    SET( PDDE_MATLAB_DIR matlab/ CACHE INTERNAL "matlab dir" )
+    SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
+  ELSE(APPLE)
+    SET( PDDE_DEMO_DIR share/${PACKAGE_NAME}/demo/ CACHE INTERNAL "demo dir" )
+    SET( PDDE_MATLAB_DIR share/${PACKAGE_NAME}/matlab/ CACHE INTERNAL "matlab dir" )
+    SET( PDDE_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
+  ENDIF(APPLE)
 ELSE( NOT WIN32 )
   SET( PDDE_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
   SET( PDDE_MATLAB_DIR matlab/ CACHE INTERNAL "matlab dir" )
@@ -77,17 +83,21 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 # Finding ATLAS
 #------------------------------------------------------------------------------
 
-SET( ATLAS_SEARCH_PATHS ${PDDE_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
-	/usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
-
-FIND_LIBRARY( ATLAS_CBLAS NAMES cblas PATHS ${ATLAS_SEARCH_PATHS} )
-
-FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
+IF(APPLE)
+  # We need to search for ATLAS in MacPorts' location, too: /opt/local/lib
+  SET( ATLAS_SEARCH_PATHS ${PDDE_SOURCE_DIR}/ATLAS/lib /opt/local/lib /usr/lib )
+  FIND_LIBRARY( ATLAS_CBLAS NAMES libcblas.a cblas PATHS ${ATLAS_SEARCH_PATHS} )
+  FIND_LIBRARY( ATLAS_ATLAS NAMES libatlas.a atlas PATHS ${ATLAS_SEARCH_PATHS} )
+ELSE(APPLE)
+  # For Linux distributions ATLAS can be located in many places
+  SET( ATLAS_SEARCH_PATHS ${PDDE_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
+    /usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
+  FIND_LIBRARY( ATLAS_CBLAS NAMES cblas PATHS ${ATLAS_SEARCH_PATHS} )
+  FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
+ENDIF(APPLE)
 
 IF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
-	GET_FILENAME_COMPONENT( CBLAS_PATH ${ATLAS_CBLAS} PATH )
-	GET_FILENAME_COMPONENT( ATLAS_PATH ${ATLAS_ATLAS} PATH )
-	MESSAGE( STATUS "ATLAS was found in ${CBLAS_PATH} and ${ATLAS_PATH}" )
+	MESSAGE( STATUS "ATLAS was found as ${ATLAS_CBLAS} and ${ATLAS_ATLAS}" )
 ELSE( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
         MESSAGE( SEND_ERROR "ATLAS was NOT found!" )
 ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
@@ -111,6 +121,61 @@ ADD_CUSTOM_TARGET( dist
 		rm tmp_filelist ${DIST_DIR}/pdde.spec ${DIST_DIR}\; )
 
 #------------------------------------------------------------------------------
+# CREATING A MAC OSX DISK IMAGE
+#------------------------------------------------------------------------------
+
+IF(APPLE)
+  # FOR DETERMINING THE APPLICATION FILE PATH
+  FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation )
+  # CREATING A MAC OSX DISK IMAGE  
+  ADD_CUSTOM_TARGET( dmg
+    COMMAND pushd ${CMAKE_INSTALL_PREFIX}\;
+    rm -f "${PDDE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
+    hdiutil create -volname "PDDE-Cont" -srcfolder PDDE-Cont.app/ -srcfolder matlab/ -srcfolder demo/ "${PDDE_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
+    popd\;)
+  # CREATING A MAC OSX BUNDLE
+  ADD_CUSTOM_TARGET( frameworks
+    COMMAND rm -rf "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    mkdir -p "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    rm -rf "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Plugins"\;
+    mkdir -p "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Plugins"\;
+    cp -R ${QT_QTCORE_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    cp -R ${QT_QTGUI_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    cp -R ${QT_QTXML_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    cp -R ${QT_QTSVG_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks"\;
+    cp -R ${QT_PLUGINS_DIR}/imageformats "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Plugins"\;
+    "LIBNAMES=(QtCore.framework/Versions/4/QtCore" "QtGui.framework/Versions/4/QtGui" "QtXml.framework/Versions/4/QtXml" "QtSvg.framework/Versions/4/QtSvg)"\;
+    rm `find "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks" -type f | grep Headers`\;
+    for ix in \$\${!LIBNAMES[*]}\; do
+      LOCNAMES[\$\$ix]=`otool -L gui/PDDE-Cont.app/Contents/MacOS/PDDE-Cont | grep \$\${LIBNAMES[\$\$ix]} | sed -e s/\\\(.*\\\)//g -e s/\\ //g`\;
+      # CHANGING THE LIBRARY IDS
+      install_name_tool -id "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}" "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}"\;
+      # CHANGING THE DEPENDENCIES in PDDE-CONT
+      install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}" "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/MacOS/PDDE-Cont"\;
+      # REMOVING UNNECESSARY ARCHS
+      lipo "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}" -thin ${CMAKE_OSX_ARCHITECTURES} -output "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}"\;
+    done\;
+    for ix in \$\${!LIBNAMES[*]}\; do
+      for iy in \$\${!LIBNAMES[*]}\; do
+        # CHANGING THE DEPENDENCIES IN THE LIBRARIES
+        install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}" "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Frameworks/\$\${LIBNAMES[\$\$iy]}"\;
+      done\;
+      # COPYING THE PLUGINS AND CHANGING THE DEPENDENCIES
+      for plg in "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Plugins/imageformats/*.dylib"\; do
+        install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}" "\$\$plg"\;
+      done\;
+    done\;
+    #
+    for plg in "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Plugins/imageformats/*.dylib"\; do
+      lipo "\$\$plg" -thin ${CMAKE_OSX_ARCHITECTURES} -output "\$\$plg"\;
+    done\;
+    # SETTING UP THE PLUGIN LOCATIONS
+    rm -f "${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Resources/qt.conf"\;
+    echo "[Paths]" >"${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Resources/qt.conf"\;
+    echo "Plugins = Plugins" >"${CMAKE_INSTALL_PREFIX}/PDDE-Cont.app/Contents/Resources/qt.conf"\;)
+ENDIF(APPLE)
+
+#------------------------------------------------------------------------------
 # ENTERING SUBDIRECTORIES
 #------------------------------------------------------------------------------
 
@@ -126,7 +191,10 @@ ADD_SUBDIRECTORY(UMFPACK)
 ADD_SUBDIRECTORY(src)
 
 # The command line interface
-ADD_SUBDIRECTORY(cli)
+IF(NOT APPLE)
+  # NO NEED FOR THE CLI
+  ADD_SUBDIRECTORY(cli)
+ENDIF(NOT APPLE)
 
 # graphical user interface
 IF(QT4_QMAKE_FOUND)
