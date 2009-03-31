@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -10,6 +10,46 @@
 #include "constants.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
+// For loading XML constant files
+#include <mxml.h>
+static const char *knut_whitespace_cb(mxml_node_t *node, int where)	
+{
+  const unsigned int max_levels = 12;
+  const unsigned int tab = 1;
+  static char spaces[tab*max_levels+2];
+  const char *name = node->value.element.name;
+
+  bool chc = false;
+  if (node->child) if (node->child->child) chc = true;
+  if (strncmp(name,"?xml",4) == 0)
+  {
+  	if (where == MXML_WS_AFTER_OPEN) return "\n";
+  	else return 0;
+  }
+  if ((where == MXML_WS_BEFORE_OPEN)||(chc&&(where == MXML_WS_BEFORE_CLOSE)))
+  {
+    unsigned int level = 0;
+    mxml_node_t *parent = node->parent;
+    while (parent) { ++level; parent = parent->parent; }
+
+	level -= 1;
+    if (level > max_levels) level = max_levels;
+    else if (level < 0) level = 0;
+    for (unsigned int i = 0; i < level*tab; ++i ) spaces[i] = ' ';
+    spaces[level*tab] = '\0';
+    return spaces;
+  }
+  else if ((where == MXML_WS_AFTER_CLOSE)||(chc&&(where == MXML_WS_AFTER_OPEN)))
+  {
+  	return "\n";
+  } else if ((node->child == 0)&&(where == MXML_WS_AFTER_OPEN))
+  {
+  	return "\n";
+  }
+  return (0);
+}
+
 
 inline bool NConstants::inputAssert(std::istream& is)
 {
@@ -38,234 +78,405 @@ inline bool NConstants::inputAssert(std::istream& is)
   return false;
 }
 
-void NConstants::loadFile(const std::string &fileName)
+static inline const char *getNodeText(mxml_node_t* nd)
 {
-  std::ifstream file;
-
-  file.open(fileName.c_str());
-  P_ERROR_X2(file, "Cannot open ", fileName);
-
-  std::string __sysname__;
-  file >> __sysname__;
-  inputAssert(file);
-  while (file.get() != '\n');
-  inputAssert(file);
-
-//  if( __sysname__.find('/') == std::string::npos )
-//  {
-//   __sysname__ = QFileInfo( fileName.c_str() ).absolutePath( ).toStdString() + "/" + __sysname__;
-//  }
-  setSysNameText(std::string(__sysname__.c_str()));
-
-  int __ptlabel__;
-  file >> __ptlabel__;
-  inputAssert(file);
-  setLabel(__ptlabel__);
-  while (file.get() != '\n');
-  inputAssert(file);
-
-  int __pttype__;
-  char __cptype__;
-  int __cp__;
-  file >> __pttype__ >> __cptype__ >> __cp__;
-  inputAssert(file);
-  P_ERROR_X1((__cptype__ == 'P') || (__cptype__ == 'I'), "Error: CP: Bad parameter type.");
-  setPointType((PtType)__pttype__);
-  setCp(__cptype__, __cp__);
-
-  bool loadsym = false;
-  if (__pttype__ == SolUser)
+  if (nd != 0)
   {
-    int __brswitch__;
-    int __neqn__;
-    file >> __brswitch__;
-    setBranchSWIdx(__brswitch__);
-    inputAssert(file);
-    file >> __neqn__;
-    inputAssert(file);
-    setNEqns(__neqn__);
-    for (int i = 0; i < __neqn__; i++)
+    if (nd->child != 0)
     {
-      char __eqntype__;
-      int  __eqnnum__;
-      file >> __eqntype__ >> __eqnnum__;
-      inputAssert(file);
-      P_ERROR_X1(__eqntype__ == 'E', "Error: EQN: Bad equation type.");
-      setEqns(i, 'E', __eqnnum__);
-      if (__eqnnum__ == EqnPhaseRot) loadsym = true;
-    }
-    int __nvar__;
-    file >> __nvar__;
-    inputAssert(file);
-    P_ERROR_X1(__nvar__ == __neqn__, "Error: NVAR: Number of equations and variables are not the same.");
-    for (int i = 0; i < __neqn__; i++)
-    {
-      char __vartype__;
-      int  __varnum__;
-      file >> __vartype__ >> __varnum__;
-      inputAssert(file);
-      P_ERROR_X1((__vartype__ == 'S') || (__vartype__ == 'P') || (__vartype__ == 'I'), "Error: VAR: Bad variable/parameter type.");
-      setVars(i, __vartype__, __varnum__);
-    }
-    while (file.get() != '\n');
-  }
-  else
+      if (nd->child == nd->last_child)
+      {
+        if (nd->child->type == MXML_TEXT)
+        {
+          return nd->child->value.text.string; 
+        } else std::cout << "XML wrong element type.";
+      } else std::cout << "XML node has too many children.";
+    } else return "";
+  } else std::cout << "XML node could not be found.";
+  return "";
+}
+
+static inline const char getNodeChar(mxml_node_t* nd)
+{
+  const char* str = getNodeText(nd);
+  return str[0];
+}
+
+static inline int getNodeInteger(mxml_node_t* nd)
+{
+  const char* str = getNodeText(nd);
+  return strtol(str, 0, 10);
+}
+
+static inline double getNodeReal(mxml_node_t* nd)
+{
+  std::istringstream str(getNodeText(nd));
+  double val;
+  str >> val;
+  return val;  
+}
+
+static inline const char* c2s(char *buf, char c)
+{
+  buf[0] = c;
+  buf[1] = '\0';
+  return buf;
+}
+
+void NConstants::loadXmlFile(const std::string &fileName)
+{
+  FILE *fp;
+  mxml_node_t *tree;
+
+  fp = fopen(fileName.c_str(), "r");
+  tree = mxmlLoadFile(0, fp, MXML_TEXT_CALLBACK);
+  fclose(fp);
+
+  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  
+  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
+  setInputFileText(getNodeText(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
+  setOutputFileText(getNodeText(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
+  setSysNameText(getNodeText(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
+  setLabel(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
+  setPointType(static_cast<PtType>(getNodeInteger(nd)));
+    
+  nd_a = mxmlFindElement(root_nd, root_nd, "cptype", 0, 0, MXML_DESCEND_FIRST);
+  nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", 0, 0, MXML_DESCEND_FIRST);
+  setCp(getNodeChar(nd_a), getNodeInteger(nd_b));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
+  setBranchSWIdx(getNodeInteger(nd));
+
+  if (getPointType() != SolUser)
   {
-    int __nvarx__;
-    file >> __nvarx__;
-    inputAssert(file);
-    setNEqns(__nvarx__);
-    for (int i = 0; i < __nvarx__; i++)
+    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
+    setNEqns(getNodeInteger(nd));
+    if (getNEqns() != 0)
     {
-      char __vartype__;
-      int  __varnum__;
-      file >> __vartype__ >> __varnum__;
-      inputAssert(file);
-      P_ERROR_X1((__vartype__ == 'P') || (__vartype__ == 'I'), "Error: PARX: Bad parameter type.");
-      setParX(i, __vartype__, __varnum__);
-    }
-    while (file.get() != '\n');
-  }
-
-  int __nint__, __ndeg__, __nmul__, __stab__, __nmat__;
-  file >> __nint__ >> __ndeg__ >> __nmul__ >> __stab__ >> __nmat__;
-  inputAssert(file);
-  while (file.get() != '\n');
-  setNInt(__nint__);
-  setNDeg(__ndeg__);
-  setNMul(__nmul__);
-
-  setStab(__stab__ != 0);
-  setNMat(__nmat__);
-
-  int __nint1__, __nint2__, __ndeg1__, __ndeg2__;
-  inputAssert(file);
-  file >> __nint1__ >> __nint2__ >> __ndeg1__ >> __ndeg2__;
-  while (file.get() != '\n');
-  setNInt1(__nint1__);
-  setNInt2(__nint2__);
-  setNDeg1(__ndeg1__);
-  setNDeg2(__ndeg2__);
-
-  int __steps__, __iad__;
-  double __cpmin__, __cpmax__;
-  file >> __steps__ >> __iad__ >> __cpmin__ >> __cpmax__;
-  inputAssert(file);
-  while (file.get() != '\n');
-  setSteps(__steps__);
-  setIad(__iad__);
-  setCpMin(__cpmin__);
-  setCpMax(__cpmax__);
-
-  double __ds__, __dsmin__, __dsmax__, __dsstart__;
-  file >> __ds__ >> __dsmin__ >> __dsmax__ >> __dsstart__;
-  inputAssert(file);
-  while (file.get() != '\n');
-  setDs(__ds__);
-  setDsMin(__dsmin__);
-  setDsMax(__dsmax__);
-  setDsStart(__dsstart__);
-
-  double __epsc__, __epsr__, __epss__;
-  file >> __epsc__ >> __epsr__ >> __epss__;
-  inputAssert(file);
-  while (file.get() != '\n');
-  setEpsC(__epsc__);
-  setEpsR(__epsr__);
-  setEpsK(__epss__);
-
-  int __nitc__, __nitr__, __nits__;
-  file >> __nitc__ >> __nitr__ >> __nits__;
-  inputAssert(file);
-  setNItC(__nitc__);
-  setNItR(__nitr__);
-  setNItK(__nits__);
-
-  if (loadsym)
+      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
+      
+      int it = 0;
+      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
+      	   nd != 0;
+      	   nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
+      {
+      	mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+      	mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+      	setParX(it, getNodeChar(nd_type), getNodeInteger(nd_num));
+      	++it;
+      }
+    } 
+  } else
   {
-    while (file.get() != '\n');
-    int __nsym__;
-    file >> __nsym__;
-    inputAssert(file);
-    setNSym(__nsym__);
-    int __re__, __im__;
-    for (int i = 0; i < __nsym__; ++i)
+    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
+    setNEqns(getNodeInteger(nd));
+    if (getNEqns() != 0)
     {
-      file >> __re__ >> __im__;
-      inputAssert(file);
-      setSymRe(i, __re__);
-      setSymIm(i, __im__);
+      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
+      int it = 0;
+      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
+      	   nd != 0;
+      	   nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
+      {
+      	mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+      	mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+      	setEqns(it, getNodeChar(nd_type), getNodeInteger(nd_num));
+      	++it;
+      }
+      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
+      it = 0;
+      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
+      	   nd != 0;
+      	   nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
+      {
+      	mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+      	mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+      	setVars(it, getNodeChar(nd_type), getNodeInteger(nd_num));
+      	++it;
+      }
     }
   }
-  else
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
+  setNInt(getNodeInteger(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
+  setNMul(getNodeInteger(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
+  setStab(getNodeInteger(nd) != 0);
+
+  nd = mxmlFindElement(root_nd, root_nd, "nmat", 0, 0, MXML_DESCEND_FIRST);
+  setNMat(getNodeInteger(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
+  setNInt1(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
+  setNInt2(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg1(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg2(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
+  setSteps(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
+  setIad(getNodeInteger(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
+  setCpMin(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
+  setCpMax(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
+  setDs(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
+  setDsMin(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
+  setDsMax(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
+  setDsStart(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
+  setEpsC(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
+  setEpsR(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
+  setEpsK(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
+  setNItC(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
+  setNItR(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
+  setNItK(getNodeInteger(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
+  setNSym(getNodeInteger(nd));
+
+  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
+  int it = 0;
+  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
+  	   nd != 0;
+  	   nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
   {
-    setNSym(0);
+  	mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
+  	mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
+  	setSymRe(it, getNodeInteger(nd_real));
+    setSymIm(it, getNodeInteger(nd_imag));
+    ++it; 
   }
 }
 
-void NConstants::saveFile(const std::string &fileName)
+void NConstants::saveXmlFile(const std::string &fileName)
 {
   std::ofstream file(fileName.c_str());
-  printFile(file);
+  printXmlFile(file);
 }
 
-void NConstants::printFile(std::ostream& file)
+void NConstants::printXmlFile(std::ostream& file)
 {
+  char cbuf[2];
+  mxml_node_t *node = 0;
+  
+  mxml_node_t *xml = mxmlNewXML("cfile 1.0");
+  mxml_node_t *data = mxmlNewElement(xml, "knut");
+  
+  node = mxmlNewElement(data, "input");
+  mxmlNewText(node, 0, getInputFile().c_str());
+  
+  node = mxmlNewElement(data, "output");
+  mxmlNewText(node, 0, getOutputFile().c_str());
+  
+  node = mxmlNewElement(data, "sysname");
+  mxmlNewText(node, 0, getSysName().c_str());
+  
+  node = mxmlNewElement(data, "label");
+  mxmlNewInteger(node, getLabel());
+  
+  node = mxmlNewElement(data, "pointtype");
+  mxmlNewInteger(node, getPointType());
+  
+  node = mxmlNewElement(data, "cptype");
+  mxmlNewText(node, 0, c2s(cbuf,getCpType()));
 
-  file << getSysName() << " \t\tSYSNAME\n";
-
-  file << getLabel() << " \t\t\tLABEL\n";
-
-  const PtType __pttype__ = getPointType();
-  if (__pttype__ != SolUser)
+  node = mxmlNewElement(data, "cpnum");
+  mxmlNewInteger(node, getCpNum());
+  
+  node = mxmlNewElement(data, "switch");
+  mxmlNewInteger(node, getBranchSW());
+ 
+  if (getPointType() != SolUser)
   {
-    file << (int)__pttype__ << " " << getCpType() << getCpNum() << " " << getNEqns() << " ";
-    for (int i = 0; i < getNEqns(); ++i) file << getParXType(i) << getParXNum(i) << " ";
-    file << "\t\tTYPE, CP, NPARX, PARX[NPARX]\n";
+    node = mxmlNewElement(data, "nparx");
+    mxmlNewInteger(node, getNEqns());
+
+    if (getNEqns() != 0)
+    {
+      mxml_node_t *group_parx = mxmlNewElement(data, "parx");
+      for (int i = 0; i < getNEqns(); ++i)
+      {
+        mxml_node_t *group_par = mxmlNewElement(group_parx, "par");
+        
+        node = mxmlNewElement(group_par, "type");
+        mxmlNewText(node, 0, c2s(cbuf,getParXType(i)));
+        
+        node = mxmlNewElement(group_par, "num");
+        mxmlNewInteger(node, getParXNum(i));
+      }
+    }
   }
   else
   {
-    file << (int)__pttype__ << " " << getCpType() << getCpNum() << " "
-    << 0 /*switch */ << " " << getNEqns() << " ";
-    for (int i = 0; i < getNEqns(); i++) file << getEqnsType(i) << getEqnsNum(i) << " ";
-    file << getNEqns() << " ";
-    for (int i = 0; i < getNEqns(); i++) file << getVarsType(i) << getVarsNum(i) << " ";
-    file << "\tTYPE, CP, SWITCH, NEQN, EQN[NEQN], NVAR, VAR[NVAR]\n";
+    node = mxmlNewElement(data, "neqns");
+    mxmlNewInteger(node, getNEqns());
+
+    if (getNEqns() != 0)
+    {
+      mxml_node_t *group_eqns = mxmlNewElement(data, "eqns");
+      mxml_node_t *group_vars = mxmlNewElement(data, "vars");
+
+      for (int i = 0; i < getNEqns(); ++i)
+      {
+        mxml_node_t *group_eqn = mxmlNewElement(group_eqns, "eqn");
+        
+        node = mxmlNewElement(group_eqn, "type");
+        mxmlNewText(node, 0, c2s(cbuf,getEqnsType(i)));
+        
+        node = mxmlNewElement(group_eqn, "num");
+        mxmlNewInteger(node, getEqnsNum(i));
+      }
+      for (int i = 0; i < getNEqns(); ++i)
+      {        
+        mxml_node_t *group_var = mxmlNewElement(group_vars, "var");
+
+        node = mxmlNewElement(group_var, "type");
+        mxmlNewText(node, 0, c2s(cbuf,getVarsType(i)));
+
+        node = mxmlNewElement(group_var, "num");
+        mxmlNewInteger(node, getVarsNum(i));
+      }
+    }
   }
+  node = mxmlNewElement(data, "nint");
+  mxmlNewInteger(node, getNInt());
 
-  file << getNInt() << " "
-  << getNDeg() << " "
-  << getNMul() << " "
-  << getStab() << " "
-  << getNMat() << " \t\tNINT, NDEG, NMUL, STAB, NMAT\n";
+  node = mxmlNewElement(data, "ndeg");
+  mxmlNewInteger(node, getNDeg());
+  
+  node = mxmlNewElement(data, "nmul");
+  mxmlNewInteger(node, getNMul());
+  
+  node = mxmlNewElement(data, "stab");
+  mxmlNewInteger(node, getStab());
 
-  file << getNInt1() << " "
-  << getNInt2() << " "
-  << getNDeg2() << " "
-  << getNDeg2() << " \t\tNINT1, NINT2, NDEG1, NDEG2\n";
+  node = mxmlNewElement(data, "nmat");
+  mxmlNewInteger(node, getNMat());
+  
+  node = mxmlNewElement(data, "nint1");
+  mxmlNewInteger(node, getNInt1());
 
-  file << getSteps() << " "
-  << getIad() << " "
-  << getCpMin() << " "
-  << getCpMax() << " \t\tSTEPS, IAD, CPMIN, CPMAX\n";
+  node = mxmlNewElement(data, "nint2");
+  mxmlNewInteger(node, getNInt2());
+  
+  node = mxmlNewElement(data, "ndeg1");
+  mxmlNewInteger(node, getNDeg1());
+  
+  node = mxmlNewElement(data, "ndeg2");
+  mxmlNewInteger(node, getNDeg2());
+  
+  node = mxmlNewElement(data, "steps");
+  mxmlNewInteger(node, getSteps());
 
-  file << getDs() << " "
-  << getDsMin() << " "
-  << getDsMax() << " "
-  << getDsStart() << " \tDS, DSMIN, DSMAX, DSSTART \n";
+  node = mxmlNewElement(data, "iad");
+  mxmlNewInteger(node, getIad());
+  
+  node = mxmlNewElement(data, "cpmin");
+  mxmlNewReal(node, getCpMin());
+  
+  node = mxmlNewElement(data, "cpmax");
+  mxmlNewReal(node, getCpMax());
+  
+  node = mxmlNewElement(data, "ds");
+  mxmlNewReal(node, getDs());
+  
+  node = mxmlNewElement(data, "dsmin");
+  mxmlNewReal(node, getDsMin());
+  
+  node = mxmlNewElement(data, "dsmax");
+  mxmlNewReal(node, getDsMax());
+  
+  node = mxmlNewElement(data, "dsstart");
+  mxmlNewReal(node, getDsStart());
 
-  file << getEpsC() << " "
-  << getEpsR() << " "
-  << getEpsK() << " \tEPSC, EPSR, EPSK\n";
+  node = mxmlNewElement(data, "epsc");
+  mxmlNewReal(node, getEpsC());
+  
+  node = mxmlNewElement(data, "epsr");
+  mxmlNewReal(node, getEpsR());
+  
+  node = mxmlNewElement(data, "epsk");
+  mxmlNewReal(node, getEpsK());
 
-  file << getNItC() << " " << getNItR() << " " << getNItK() << " \t\tNITC, NITR, NITK\n";
+  node = mxmlNewElement(data, "nitc");
+  mxmlNewInteger(node, getNItC());
+  
+  node = mxmlNewElement(data, "nitr");
+  mxmlNewInteger(node, getNItR());
+  
+  node = mxmlNewElement(data, "nitk");
+  mxmlNewInteger(node, getNItK());
 
-  file << getNSym() << " ";
-  for (int i = 0; i < getNSym(); ++i) file << getSymRe(i) << " " << getSymIm(i) << " ";
-  file << "\t\tNSYM";
-  for (int i = 0; i < getNSym(); ++i) file << ", R" << i << ", I" << i;
-  file << "\n";
+  node = mxmlNewElement(data, "nsym");
+  mxmlNewInteger(node, getNSym());
 
+  if (getNSym() != 0)
+  {
+    mxml_node_t *group_sym = mxmlNewElement(data, "sym");
+    for (int i = 0; i < getNSym(); ++i)
+    {
+      mxml_node_t *group_dim = mxmlNewElement(group_sym, "dim");
+      
+      node = mxmlNewElement(group_dim, "real");
+      mxmlNewInteger(node, getSymRe(i));
+      
+      node = mxmlNewElement(group_dim, "imag");
+      mxmlNewInteger(node, getSymIm(i));
+    }
+  }
+  
+  char *xmlString = mxmlSaveAllocString (xml, knut_whitespace_cb);
+  if (xmlString)
+  {
+   file << xmlString;
+   free(xmlString);
+  }
+  mxmlDelete(xml);
 }
 
 int NConstants::toEqnVar(System& sys,

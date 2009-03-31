@@ -1,5 +1,5 @@
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 // xx:  Ax Ay    N
 //      0  1     2  3     4  5  6   7

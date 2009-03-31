@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -287,9 +287,9 @@ class NConstants
                  Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
                  Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, Eqn& testFN);
     inline bool inputAssert(std::istream& is);
-    void loadFile(const std::string &fileName);
-    void saveFile(const std::string &fileName);
-    void printFile(std::ostream& file);
+    void loadXmlFile(const std::string &fileName);
+    void saveXmlFile(const std::string &fileName);
+    void printXmlFile(std::ostream& file);
 
     const std::string& getInputFile() const
     {
@@ -590,7 +590,7 @@ class NConstants
       {
         sys = new System(sysname);
       }
-      catch (pddeException ex)
+      catch (knutException ex)
       {
         npar = 0;
         ndim = 0;

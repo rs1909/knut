@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -390,8 +390,8 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(&parameters, SIGNAL(iadChanged(int)), this, SLOT(setIad(int)));
 
   // connecting exceptions
-  connect(&compThread, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)));
-  connect(&parameters, SIGNAL(exceptionOccured(const pddeException&)), this, SLOT(externalException(const pddeException&)));
+  connect(&compThread, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
+  connect(&parameters, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
   // text output
   connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
 
@@ -573,7 +573,7 @@ void MainWindow::compileSystem()
       System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
       sysname->setText(newfile);
     }
-    catch (pddeException ex)
+    catch (knutException ex)
     {
       externalException(ex);
     }
@@ -594,7 +594,7 @@ void MainWindow::newFile()
 
 void MainWindow::open()
 {
-  QString fileName = QFileDialog::getOpenFileName(this, "Open constants file", QString(), "Constants files (*.xml);;All files (*)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open constants file", QString(), "Constants files (*.knut);;All files (*)");
   if (!fileName.isEmpty())
   {
     loadFile(fileName);
@@ -615,7 +615,7 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-  QString fileName = QFileDialog::getSaveFileName(this, "Save constants file as", curFile, "Constants files (*.xml);;All files (*)");
+  QString fileName = QFileDialog::getSaveFileName(this, "Save constants file as", curFile, "Constants files (*.knut);;All files (*)");
   if (fileName.isEmpty())
     return false;
 
@@ -624,12 +624,12 @@ bool MainWindow::saveAs()
 
 void MainWindow::about()
 {
-  QMessageBox::about(this, tr("About PDDE-CONT"),
+  QMessageBox::about(this, tr("About Knut"),
                      QString(tr(
                                "<h3>%1: A continuation software for delay-differential equations</h3>"
                                "<p>Version %2 (%3), Copyright (c) 2002-2008 Robert Szalai</p>"
-                               "<p>Available at <a href=http://seis.bris.ac.uk/~rs1909/pdde>"
-                               "http://seis.bris.ac.uk/~rs1909/pdde</a></p>"
+                               "<p>Available at <a href=http://seis.bris.ac.uk/~rs1909/knut>"
+                               "http://seis.bris.ac.uk/~rs1909/knut</a></p>"
                                "<p>This program is free software; you can redistribute it and/or "
                                "modify it under the terms of the "
                                "<a href=http://www.gnu.org/copyleft/gpl.html>GNU General Public License</a> "
@@ -682,7 +682,7 @@ void MainWindow::createActions()
   exitAct->setStatusTip(tr("Exit the application"));
   connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-  aboutAct = new QAction(QIcon(":/res/images/icon-pdde-cont.png"), tr("&About"), this);
+  aboutAct = new QAction(QIcon(":/res/images/icon-knut.png"), tr("&About"), this);
   aboutAct->setStatusTip(tr("Show the application's About box"));
   connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -726,7 +726,7 @@ void MainWindow::createStatusBar()
 
 void MainWindow::readSettings()
 {
-  QSettings settings("pdde-cont", "main window");
+  QSettings settings("Knut", "main window");
   QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
   QSize size = settings.value("size", QSize(400, 400)).toSize();
   resize(size);
@@ -735,7 +735,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-  QSettings settings("pdde-cont", "main window");
+  QSettings settings("Knut", "main window");
   settings.setValue("pos", pos());
   settings.setValue("size", size());
 }
@@ -749,7 +749,7 @@ void MainWindow::loadFile(const QString &fileName)
     QDir::setCurrent(QFileInfo(fileName).absolutePath());
     parameters.loadXmlFile(fileName.toStdString());
   }
-  catch (pddeException ex)
+  catch (knutException ex)
   {
     externalException(ex);
   }
@@ -778,7 +778,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
   else
     shownName = strippedName(curFile);
 
-  setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("PDDE-CONT")));
+  setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("Knut")));
 }
 
 QString MainWindow::strippedName(const QString &fullFileName)

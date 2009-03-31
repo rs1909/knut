@@ -22,7 +22,7 @@ class screenDialog : public QDialog
       display->setPlainText(" ");
 	  display->setFontFamily("Courier");
 
-	  QSettings settings("pdde-cont", "text window");
+	  QSettings settings("Knut", "text window");
       QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
 	  QSize size = settings.value("size", QSize(400, 400)).toSize();
 	  resize(size);
@@ -30,7 +30,7 @@ class screenDialog : public QDialog
     }
 	~screenDialog()
 	{
-	  QSettings settings("pdde-cont", "text window");
+	  QSettings settings("Knut", "text window");
 	  settings.setValue("pos", pos());
       settings.setValue("size", size());
 	}

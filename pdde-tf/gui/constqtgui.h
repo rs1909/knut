@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -22,8 +22,6 @@ class NConstantsQtGui : public QObject, public NConstants
     { }
     NConstantsQtGui(const NConstants& ct, QObject *parent = 0) : QObject(parent), NConstants(ct)
     { }
-    void loadXmlFile(const std::string &fileName);
-    void saveXmlFile(const std::string &fileName);
 
   public slots:
     void setInputFileText(const std::string& str)
@@ -42,7 +40,7 @@ class NConstantsQtGui : public QObject, public NConstants
       {
         NConstants::setSysNameText(str);
       }
-      catch (pddeException ex)
+      catch (knutException ex)
       {
         emit exceptionOccured(ex);
         return;
@@ -333,8 +331,7 @@ class NConstantsQtGui : public QObject, public NConstants
     void nitRChanged(int i);
     void nitKChanged(int i);
     void nsymChanged(int nsym_);
-    void exceptionOccured(const pddeException& ex);
-
+    void exceptionOccured(const knutException& ex);
 
   private:
     QString textCpMin;

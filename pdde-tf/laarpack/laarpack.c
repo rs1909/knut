@@ -859,7 +859,7 @@ L120:
 
   /*     Iterative loop for norm reduction */
 
-  sfmin1 = pdde_dlamch ("S", (int) 1) / pdde_dlamch ("P", (int) 1);
+  sfmin1 = knut_dlamch ("S", (int) 1) / knut_dlamch ("P", (int) 1);
   sfmax1 = 1. / sfmin1;
   sfmin2 = sfmin1 * 8.;
   sfmax2 = 1. / sfmin2;
@@ -1121,7 +1121,7 @@ dgecon_ (char *norm, int *n, double *a, int *lda, double *anorm, double *rcond,
     return 0;
   }
 
-  smlnum = pdde_dlamch ("Safe minimum", (int) 12);
+  smlnum = knut_dlamch ("Safe minimum", (int) 12);
 
   /*     Estimate the norm of inv(A). */
 
@@ -1342,7 +1342,7 @@ dgeequ_ (int *m, int *n, double *a, int *lda, double *r__, double *c__,
 
   /*     Get machine constants. */
 
-  smlnum = pdde_dlamch ("S", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
 
   /*     Compute row scale factors. */
@@ -1510,7 +1510,7 @@ dgeequ_ (int *m, int *n, double *a, int *lda, double *r__, double *c__,
 }				/* dgeequ_ */
 
 int
-pdde_dgeev (char *jobvl, char *jobvr, int *n, double *a, int *lda, double *wr,
+knut_dgeev (char *jobvl, char *jobvr, int *n, double *a, int *lda, double *wr,
 	double *wi, double *vl, int *ldvl, double *vr, int *ldvr, double *work,
 	int *lwork, int *info, int jobvl_len, int jobvr_len)
 {
@@ -1812,8 +1812,8 @@ pdde_dgeev (char *jobvl, char *jobvr, int *n, double *a, int *lda, double *wr,
 
   /*     Get machine constants */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1);
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
   dlabad_ (&smlnum, &bignum);
   smlnum = sqrt (smlnum) / eps;
@@ -2071,10 +2071,10 @@ L50:
 
   /*     End of DGEEV */
 
-}				/* pdde_dgeev */
+}				/* knut_dgeev */
 
 int
-pdde_dgeevx (char *balanc, char *jobvl, char *jobvr, char *sense, int *n, double *a,
+knut_dgeevx (char *balanc, char *jobvl, char *jobvr, char *sense, int *n, double *a,
 	 int *lda, double *wr, double *wi, double *vl, int *ldvl, double *vr,
 	 int *ldvr, int *ilo, int *ihi, double *scale, double *abnrm,
 	 double *rconde, double *rcondv, double *work, int *lwork, int *iwork,
@@ -2511,8 +2511,8 @@ pdde_dgeevx (char *balanc, char *jobvl, char *jobvr, char *sense, int *n, double
 
   /*     Get machine constants */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1);
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
   dlabad_ (&smlnum, &bignum);
   smlnum = sqrt (smlnum) / eps;
@@ -2804,7 +2804,7 @@ L50:
 
   /*     End of DGEEVX */
 
-}				/* pdde_dgeevx */
+}				/* knut_dgeevx */
 
 static int
 dgehd2_ (int *n, int *ilo, int *ihi, double *a, int *lda, double *tau,
@@ -3665,8 +3665,8 @@ dgerfs_ (char *trans, int *n, int *nrhs, double *a, int *lda, double *af,
   /*     NZ = maximum number of nonzero elements in each row of A, plus 1 */
 
   nz = *n + 1;
-  eps = pdde_dlamch ("Epsilon", (int) 7);
-  safmin = pdde_dlamch ("Safe minimum", (int) 12);
+  eps = knut_dlamch ("Epsilon", (int) 7);
+  safmin = knut_dlamch ("Safe minimum", (int) 12);
   safe1 = nz * safmin;
   safe2 = safe1 / eps;
 
@@ -3880,7 +3880,7 @@ dgerfs_ (char *trans, int *n, int *nrhs, double *a, int *lda, double *af,
 }				/* dgerfs_ */
 
 int
-pdde_dgesv (int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *ldb,
+knut_dgesv (int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *ldb,
 	int *info)
 {
   /* System generated locals */
@@ -4009,10 +4009,10 @@ pdde_dgesv (int *n, int *nrhs, double *a, int *lda, int *ipiv, double *b, int *l
 
   /*     End of DGESV */
 
-}				/* pdde_dgesvx */
+}				/* knut_dgesvx */
 
 int
-pdde_dgesvx (char *fact, char *trans, int *n, int *nrhs, double *a, int *lda,
+knut_dgesvx (char *fact, char *trans, int *n, int *nrhs, double *a, int *lda,
 	 double *af, int *ldaf, int *ipiv, char *equed, double *r__,
 	 double *c__, double *b, int *ldb, double *x, int *ldx, double *rcond,
 	 double *ferr, double *berr, double *work, int *iwork, int *info,
@@ -4328,7 +4328,7 @@ pdde_dgesvx (char *fact, char *trans, int *n, int *nrhs, double *a, int *lda,
       || lsame_ (equed, "B", (int) 1, (int) 1);
     colequ = lsame_ (equed, "C", (int) 1, (int) 1)
       || lsame_ (equed, "B", (int) 1, (int) 1);
-    smlnum = pdde_dlamch ("Safe minimum", (int) 12);
+    smlnum = knut_dlamch ("Safe minimum", (int) 12);
     bignum = 1. / smlnum;
   }
 
@@ -4566,7 +4566,7 @@ pdde_dgesvx (char *fact, char *trans, int *n, int *nrhs, double *a, int *lda,
 
   /*     Set INFO = N+1 if the matrix is singular to working precision. */
 
-  if (*rcond < pdde_dlamch ("Epsilon", (int) 7))
+  if (*rcond < knut_dlamch ("Epsilon", (int) 7))
   {
     *info = *n + 1;
   }
@@ -4636,7 +4636,7 @@ pdde_dgesvx (char *fact, char *trans, int *n, int *nrhs, double *a, int *lda,
 
   /*     End of DGESVX */
 
-}				/* pdde_dgesvx */
+}				/* knut_dgesvx */
 
 static int
 dgetf2_ (int *m, int *n, double *a, int *lda, int *ipiv, int *info)
@@ -5487,10 +5487,10 @@ dhseqr_ (char *job, char *compz, int *n, int *ilo, int *ihi, double *h__,
   /*     Set machine-dependent constants for the stopping criterion. */
   /*     If norm(H) <= sqrt(OVFL), overflow should not occur. */
 
-  unfl = pdde_dlamch ("Safe minimum", (int) 12);
+  unfl = knut_dlamch ("Safe minimum", (int) 12);
   ovfl = 1. / unfl;
   dlabad_ (&unfl, &ovfl);
-  ulp = pdde_dlamch ("Precision", (int) 9);
+  ulp = knut_dlamch ("Precision", (int) 9);
   smlnum = unfl * (nh / ulp);
 
   /*     I1 and I2 are the indices of the first row and last column of H */
@@ -6492,8 +6492,8 @@ dlaexc_ (bool * wantq, int *n, double *t, int *ldt, double *q, int *ldq,
     /*        Compute machine-dependent threshold for test for accepting */
     /*        swap. */
 
-    eps = pdde_dlamch ("P", (int) 1);
-    smlnum = pdde_dlamch ("S", (int) 1) / eps;
+    eps = knut_dlamch ("P", (int) 1);
+    smlnum = knut_dlamch ("S", (int) 1) / eps;
     /* Computing MAX */
     d__1 = eps * 10. * dnorm;
     thresh = max (d__1, smlnum);
@@ -6919,10 +6919,10 @@ dlahqr_ (bool * wantt, bool * wantz, int *n, int *ilo, int *ihi, double *h__,
   /*     Set machine-dependent constants for the stopping criterion. */
   /*     If norm(H) <= sqrt(OVFL), overflow should not occur. */
 
-  unfl = pdde_dlamch ("Safe minimum", (int) 12);
+  unfl = knut_dlamch ("Safe minimum", (int) 12);
   ovfl = 1. / unfl;
   dlabad_ (&unfl, &ovfl);
-  ulp = pdde_dlamch ("Precision", (int) 9);
+  ulp = knut_dlamch ("Precision", (int) 9);
   smlnum = unfl * (nh / ulp);
 
   /*     I1 and I2 are the indices of the first row and last column of H */
@@ -7760,7 +7760,7 @@ dlaln2_ (bool * ltrans, int *na, int *nw, double *smin, double *ca, double *a,
 
   /*     Compute BIGNUM */
 
-  smlnum = 2. * pdde_dlamch ("Safe minimum", (int) 12);
+  smlnum = 2. * knut_dlamch ("Safe minimum", (int) 12);
   bignum = 1. / smlnum;
   smini = max (*smin, smlnum);
 
@@ -9129,7 +9129,7 @@ dlanv2_ (double *a, double *b, double *c__, double *d__, double *rt1r,
   /*     .. */
   /*     .. Executable Statements .. */
 
-  eps = pdde_dlamch ("P", (int) 1);
+  eps = knut_dlamch ("P", (int) 1);
   if (*c__ == 0.)
   {
     *cs = 1.;
@@ -9460,7 +9460,7 @@ dlaqge_ (int *m, int *n, double *a, int *lda, double *r__, double *c__,
 
   /*     Initialize LARGE and SMALL. */
 
-  small = pdde_dlamch ("Safe minimum", (int) 12) / pdde_dlamch ("Precision", (int) 9);
+  small = knut_dlamch ("Safe minimum", (int) 12) / knut_dlamch ("Precision", (int) 9);
   large = 1. / small;
 
   if (*rowcnd >= .1 && *amax >= small && *amax <= large)
@@ -9694,8 +9694,8 @@ dlaqtr_ (bool * ltran, bool * lfloat, int *n, double *t, int *ldt, double *b,
 
   /*     Set constants to control overflow */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1) / eps;
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1) / eps;
   bignum = 1. / smlnum;
 
   xnorm = dlange_ ("M", n, n, &t[t_offset], ldt, d__, (int) 1);
@@ -11430,7 +11430,7 @@ dlarfg_ (int *n, double *alpha, double *x, int *incx, double *tau)
 
     d__1 = dlapy2_ (alpha, &xnorm);
     beta = -d_sign (&d__1, alpha);
-    safmin = pdde_dlamch ("S", (int) 1) / pdde_dlamch ("E", (int) 1);
+    safmin = knut_dlamch ("S", (int) 1) / knut_dlamch ("E", (int) 1);
     if (abs (beta) < safmin)
     {
 
@@ -12573,7 +12573,7 @@ L410:
 }				/* dlarfx_ */
 
 int
-pdde_dlarnv (int *idist, int *iseed, int *n, double *x)
+knut_dlarnv (int *idist, int *iseed, int *n, double *x)
 {
   /* System generated locals */
   int i__1, i__2, i__3;
@@ -12712,7 +12712,7 @@ pdde_dlarnv (int *idist, int *iseed, int *n, double *x)
 
   /*     End of DLARNV */
 
-}				/* pdde_dlarnv */
+}				/* knut_dlarnv */
 
 static int
 dlartg_ (double *f, double *g, double *cs, double *sn, double *r__)
@@ -12799,10 +12799,10 @@ dlartg_ (double *f, double *g, double *cs, double *sn, double *r__)
   if (first)
   {
     first = false;
-    safmin = pdde_dlamch ("S", (int) 1);
-    eps = pdde_dlamch ("E", (int) 1);
-    d__1 = pdde_dlamch ("B", (int) 1);
-    i__1 = (int) (log (safmin / eps) / log (pdde_dlamch ("B", (int) 1)) / 2.);
+    safmin = knut_dlamch ("S", (int) 1);
+    eps = knut_dlamch ("E", (int) 1);
+    d__1 = knut_dlamch ("B", (int) 1);
+    i__1 = (int) (log (safmin / eps) / log (knut_dlamch ("B", (int) 1)) / 2.);
     safmn2 = pow_di (&d__1, &i__1);
     safmx2 = 1. / safmn2;
   }
@@ -13309,7 +13309,7 @@ dlascl_ (char *type__, int *kl, int *ku, double *cfrom, double *cto, int *m,
 
   /*     Get machine parameters */
 
-  smlnum = pdde_dlamch ("S", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
 
   cfromc = *cfrom;
@@ -14075,8 +14075,8 @@ dlasy2_ (bool * ltranl, bool * ltranr, int *isgn, int *n1, int *n2, double *tl,
 
   /*     Set constants to control overflow */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1) / eps;
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1) / eps;
   sgn = (double) (*isgn);
 
   k = *n1 + *n1 + *n2 - 2;
@@ -14671,7 +14671,7 @@ dlatrs_ (char *uplo, char *trans, char *diag, char *normin, int *n, double *a,
 
   /*     Determine machine dependent parameters to control overflow. */
 
-  smlnum = pdde_dlamch ("Safe minimum", (int) 12) / pdde_dlamch ("Precision", (int) 9);
+  smlnum = knut_dlamch ("Safe minimum", (int) 12) / knut_dlamch ("Precision", (int) 9);
   bignum = 1. / smlnum;
   *scale = 1.;
 
@@ -16294,7 +16294,7 @@ drscl_ (int *n, double *sa, double *sx, int *incx)
 
   /*     Get machine parameters */
 
-  smlnum = pdde_dlamch ("S", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
   dlabad_ (&smlnum, &bignum);
 
@@ -16685,10 +16685,10 @@ dtrevc_ (char *side, char *howmny, bool * select, int *n, double *t, int *ldt,
 
   /*     Set the constants to control overflow. */
 
-  unfl = pdde_dlamch ("Safe minimum", (int) 12);
+  unfl = knut_dlamch ("Safe minimum", (int) 12);
   ovfl = 1. / unfl;
   dlabad_ (&unfl, &ovfl);
-  ulp = pdde_dlamch ("Precision", (int) 9);
+  ulp = knut_dlamch ("Precision", (int) 9);
   smlnum = unfl * (*n / ulp);
   bignum = (1. - ulp) / smlnum;
 
@@ -19116,8 +19116,8 @@ dtrsna_ (char *job, char *howmny, bool * select, int *n, double *t, int *ldt,
 
   /*     Get machine constants */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1) / eps;
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1) / eps;
   bignum = 1. / smlnum;
   dlabad_ (&smlnum, &bignum);
 
@@ -19590,8 +19590,8 @@ dtrsyl_ (char *trana, char *tranb, int *isgn, int *m, int *n, double *a,
 
   /*     Set constants to control overflow */
 
-  eps = pdde_dlamch ("P", (int) 1);
-  smlnum = pdde_dlamch ("S", (int) 1);
+  eps = knut_dlamch ("P", (int) 1);
+  smlnum = knut_dlamch ("S", (int) 1);
   bignum = 1. / smlnum;
   dlabad_ (&smlnum, &bignum);
   smlnum = smlnum * (double) (*m * *n) / eps;
@@ -22160,7 +22160,7 @@ dgetv0_ (int *ido, char *bmat, int *itry, bool * initv, int *n, int *j,
     if (!(*initv))
     {
       idist = 2;
-      pdde_dlarnv (&idist, iseed, n, &resid[1]);
+      knut_dlarnv (&idist, iseed, n, &resid[1]);
     }
 
     /*        %----------------------------------------------------------% */
@@ -22597,10 +22597,10 @@ dlaqrb_ (bool * wantt, int *n, int *ilo, int *ihi, double *h__, int *ldh,
   /*     | If norm(H) <= sqrt(OVFL), overflow should not occur.        | */
   /*     %-------------------------------------------------------------% */
 
-  unfl = pdde_dlamch ("safe minimum", (int) 12);
+  unfl = knut_dlamch ("safe minimum", (int) 12);
   ovfl = 1. / unfl;
   dlabad_ (&unfl, &ovfl);
-  ulp = pdde_dlamch ("precision", (int) 9);
+  ulp = knut_dlamch ("precision", (int) 9);
   smlnum = unfl * (nh / ulp);
 
   /*     %---------------------------------------------------------------% */
@@ -23372,10 +23372,10 @@ dnaitr_ (int *ido, char *bmat, int *n, int *k, int *np, int *nb, double *resid,
     /*        | REFERENCE: LAPACK subroutine dlahqr     | */
     /*        %-----------------------------------------% */
 
-    unfl = pdde_dlamch ("safe minimum", (int) 12);
+    unfl = knut_dlamch ("safe minimum", (int) 12);
     ovfl = 1. / unfl;
     dlabad_ (&unfl, &ovfl);
-    ulp = pdde_dlamch ("precision", (int) 9);
+    ulp = knut_dlamch ("precision", (int) 9);
     smlnum = unfl * (*n / ulp);
     first = false;
   }
@@ -24261,10 +24261,10 @@ dnapps_ (int *n, int *kev, int *np, double *shiftr, double *shifti, double *v,
     /*        | REFERENCE: LAPACK subroutine dlahqr           | */
     /*        %-----------------------------------------------% */
 
-    unfl = pdde_dlamch ("safe minimum", (int) 12);
+    unfl = knut_dlamch ("safe minimum", (int) 12);
     ovfl = 1. / unfl;
     dlabad_ (&unfl, &ovfl);
-    ulp = pdde_dlamch ("precision", (int) 9);
+    ulp = knut_dlamch ("precision", (int) 9);
     smlnum = unfl * (*n / ulp);
     first = false;
   }
@@ -25100,7 +25100,7 @@ dnaup2_ (int *ido, char *bmat, int *n, char *which, int *nev, int *np,
     /*        | Get the machine dependent constant. | */
     /*        %-------------------------------------% */
 
-    eps23 = pdde_dlamch ("Epsilon-Machine", (int) 15);
+    eps23 = knut_dlamch ("Epsilon-Machine", (int) 15);
     eps23 = pow_dd (&eps23, &c_b2616);
 
     nev0 = *nev;
@@ -26205,7 +26205,7 @@ L9000:
 /* ----------------------------------------------------------------------- */
 
 int
-pdde_dnaupd (int *ido, char *bmat, int *n, char *which, int *nev, double *tol,
+knut_dnaupd (int *ido, char *bmat, int *n, char *which, int *nev, double *tol,
 	 double *resid, int *ncv, double *v, int *ldv, int *iparam, int *ipntr,
 	 double *workd, double *workl, int *lworkl, int *info, int bmat_len,
 	 int which_len)
@@ -26388,7 +26388,7 @@ pdde_dnaupd (int *ido, char *bmat, int *n, char *which, int *nev, double *tol,
     }
     if (*tol <= 0.)
     {
-      *tol = pdde_dlamch ("EpsMach", (int) 7);
+      *tol = knut_dlamch ("EpsMach", (int) 7);
     }
 
     /*        %----------------------------------------------% */
@@ -26551,7 +26551,7 @@ L9000:
   /*     | End of dnaupd | */
   /*     %---------------% */
 
-}				/* pdde_dnaupd */
+}				/* knut_dnaupd */
 
 /* ----------------------------------------------------------------------- */
 /* \BeginDoc */
@@ -26700,7 +26700,7 @@ dnconv_ (int *n, double *ritzr, double *ritzi, double *bounds, double *tol,
   /*     | Get machine dependent constant. | */
   /*     %---------------------------------% */
 
-  eps23 = pdde_dlamch ("Epsilon-Machine", (int) 15);
+  eps23 = knut_dlamch ("Epsilon-Machine", (int) 15);
   eps23 = pow_dd (&eps23, &c_b2616);
 
   *nconv = 0;
@@ -27400,7 +27400,7 @@ L9000:
 
 /* ----------------------------------------------------------------------- */
 int
-pdde_dneupd (bool * rvec, char *howmny, bool * select, double *dr, double *di,
+knut_dneupd (bool * rvec, char *howmny, bool * select, double *dr, double *di,
 	 double *z__, int *ldz, double *sigmar, double *sigmai, double *workev,
 	 char *bmat, int *n, char *which, int *nev, double *tol, double *resid,
 	 int *ncv, double *v, int *ldv, int *iparam, int *ipntr, double *workd,
@@ -27526,7 +27526,7 @@ pdde_dneupd (bool * rvec, char *howmny, bool * select, double *dr, double *di,
   /*     | Get machine dependent constant. | */
   /*     %---------------------------------% */
 
-  eps23 = pdde_dlamch ("Epsilon-Machine", (int) 15);
+  eps23 = knut_dlamch ("Epsilon-Machine", (int) 15);
   eps23 = pow_dd (&eps23, &c_b2616);
 
   /*     %--------------% */
@@ -28307,7 +28307,7 @@ L9000:
   /*     | End of DNEUPD  | */
   /*     %---------------% */
 
-}				/* pdde_dneupd */
+}				/* knut_dneupd */
 
 /* ----------------------------------------------------------------------- */
 /* \BeginDoc */

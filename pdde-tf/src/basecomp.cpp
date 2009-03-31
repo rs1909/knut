@@ -1,5 +1,5 @@
 #include "basecomp.h"
-#include "pderror.h"
+#include "knerror.h"
 #include "point.h"
 #include "system.h"
 #include "torpoint.h"
@@ -350,7 +350,7 @@ void BaseComp::run(const char* branchFile)
     // **********************************************************************************************************
     delete pt_ptr;
   }
-  catch (pddeException ex)
+  catch (knutException ex)
   {
     raiseException(ex);
     return;

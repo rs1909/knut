@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -23,11 +23,11 @@ class MThread : public QThread, public BaseComp
     ~MThread() { }
     void run() { BaseComp::run(); }
     void print(std::ostringstream& str) { emit printToScreen(str.str()); str.str(""); }
-    void raiseException(const pddeException& ex) { emit exceptionOccured(ex); }
+    void raiseException(const knutException& ex) { emit exceptionOccured(ex); }
   public slots:
     void consolePrint(const std::string& str) { std::cout << str; }
 
   signals:
-    void exceptionOccured(const pddeException& ex);
+    void exceptionOccured(const knutException& ex);
     void printToScreen(const std::string& str);
 };

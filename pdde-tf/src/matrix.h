@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
 // For license, see the file COPYING in the root package's directory
@@ -14,9 +14,9 @@
 #include <iterator>
 #include <cstdlib>
 
-#ifndef PDDESYS_H
+#ifndef KNUTSYS_H
 #include "plot.h"
-#include "pderror.h"
+#include "knerror.h"
 
 extern "C"
 {
@@ -413,7 +413,7 @@ template<class T> inline Array2D<T>::Array2D(const Array3D<T>& vec, int i) : des
   c = vec.d2;
 }
 
-#ifndef PDDESYS_H
+#ifndef KNUTSYS_H
 
 class SpMatrix;
 class Matrix;
@@ -559,7 +559,7 @@ template< class MT, class VT > class __op_mul_vec_plus_vec : public __op_mul_vec
     const __scal_vec_trans<VT> vecB;
 };
 
-#endif // PDDESYS_H
+#endif // KNUTSYS_H
 
 class Vector : public Array1D<double>
 {
@@ -590,7 +590,7 @@ class Vector : public Array1D<double>
       std::cout << '\n';
     }
 
-#ifndef PDDESYS_H
+#ifndef KNUTSYS_H
 
     inline void Rand()
     {
@@ -600,7 +600,7 @@ class Vector : public Array1D<double>
           1, 3, 5, 7
         };
       int N = static_cast<int>(n);
-      pdde_dlarnv(&idist, iseed, &N, v);
+      knut_dlarnv(&idist, iseed, &N, v);
     }
 
     inline Vector& operator= (const Vector& V);
@@ -642,7 +642,7 @@ class Vector : public Array1D<double>
       return __scal_vec_trans_rng<Vector>(*this, r);
     }
 
-#endif // PDDESYS_H
+#endif // KNUTSYS_H
 
     friend class SpMatrix;
     friend class SpFact;
@@ -691,7 +691,7 @@ class Matrix : public Array2D<double>
       }
     }
 
-#ifndef PDDESYS_H
+#ifndef KNUTSYS_H
 
     inline Matrix& operator= (const __scal_vec_trans<Matrix>);
     inline Matrix& operator= (const __op_mul_vec<Matrix, Matrix>);
@@ -744,7 +744,7 @@ class Matrix : public Array2D<double>
       return __scal_vec_trans_rng<Matrix>(*this, r_);
     }
 
-#endif // PDDESYS_H
+#endif // KNUTSYS_H
 
     inline void Print()
     {
@@ -767,7 +767,7 @@ class Matrix : public Array2D<double>
     friend class SpFact;
 };
 
-#ifndef PDDESYS_H
+#ifndef KNUTSYS_H
 
 class MatFact : public Matrix
 {
@@ -1254,6 +1254,6 @@ inline Matrix& Matrix::operator=(const __op_mul_vec_plus_vec_rng<Matrix, Matrix>
 
 // End of implementation of Matrix
 
-#endif // PDDESYS_H
+#endif // KNUTSYS_H
 
 #endif

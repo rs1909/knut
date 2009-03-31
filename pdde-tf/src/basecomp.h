@@ -26,7 +26,7 @@ class BaseComp
       stopFlag = flag;
     }
     virtual void print(std::ostringstream& str) = 0;
-    virtual void raiseException(const pddeException& ex) = 0;
+    virtual void raiseException(const knutException& ex) = 0;
   protected:
     NConstants* params;
     bool        stopFlag;
@@ -38,7 +38,7 @@ class CLIComp : public BaseComp
     CLIComp(const NConstants& constants) : BaseComp(constants) { }
     ~CLIComp() { }
     void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
-    void raiseException(const pddeException& ex)
+    void raiseException(const knutException& ex)
     {
       std::cout << ex.file << ":" << ex.line << " " << ex.message.message;
       exit(-1);

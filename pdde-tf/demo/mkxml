@@ -1,9 +1,0 @@
-#!/bin/sh
-for i in `sed <CMakeLists.txt -e s/ADD_SUBDIRECTORY\(//g -e s/\)//g`;
-do
-	grep <$i/CMakeLists.txt COMMAND | sed -e s/.*COMMAND.*pdde/cfiletoxml/g -e s/$\{CFILEDIR\}'\/'//g -e s/\)//g >$i/toxml
-	pushd $i
-	/bin/sh toxml
-	rm toxml
-	popd
-done

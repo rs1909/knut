@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
 // For license, see the file COPYING in the root package's directory
@@ -85,7 +85,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi)
   int lwork = 4 * (this->r);
   int info;
 
-  pdde_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
+  knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
              wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
              work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
@@ -115,7 +115,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
   int  lwork = 10 * (this->r);
   int  info;
 
-  pdde_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
+  knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
              wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
              work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
@@ -131,7 +131,7 @@ void MatFact::Fact()
   int n = this->r;
   int nrhs = 0;
 
-  pdde_dgesvx(&FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
+  knut_dgesvx(&FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
               ipiv, &equed, NULL, NULL, NULL, &n, NULL, &n,
               &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
 
@@ -175,7 +175,7 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
       int n = this->r;
       int nrhs = 1;
 
-      pdde_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
+      knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
                   ipiv, &equed, NULL, NULL, b.v, &n, x.Pointer(), &n,
                   &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
       if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
@@ -231,7 +231,7 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       int n = this->r;
       int nrhs = b.Col();
 
-      pdde_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
+      knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
                   ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
                   &rcond, fberr, fberr + b.Col(), work, iwork, &info, 1, 1, 1);
 

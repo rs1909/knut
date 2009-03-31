@@ -5,7 +5,7 @@
  ***************************************************************************/
 #include <iostream>
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 // system definition for the turning process
 // par(0) = T the period length 

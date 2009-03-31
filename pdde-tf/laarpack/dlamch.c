@@ -13,7 +13,7 @@ static int c__1 = 1;
 static double c_b507 = 0.;
 
 double
-pdde_dlamch(const char *cmach, int cmach_len)
+knut_dlamch(const char *cmach, int cmach_len)
 {
   /* Initialized data */
 
@@ -172,7 +172,7 @@ pdde_dlamch(const char *cmach, int cmach_len)
 
   /*     End of DLAMCH */
 
-} /* pdde_dlamch */
+} /* knut_dlamch */
 
 
 /* *********************************************************************** */

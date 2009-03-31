@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   } else
   {
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/res/images/icon-pdde-cont.png"));
+    app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
     MainWindow mainWin(app.applicationDirPath());
 
 #ifdef Q_WS_MAC
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     QObject::connect(openEvent, SIGNAL(open(const QString&)), &mainWin, SLOT(loadFile(const QString&)));
 #endif
 
-    qRegisterMetaType<pddeException>("pddeException");
+    qRegisterMetaType<knutException>("knutException");
     qRegisterMetaType<std::string>("std::string");
     mainWin.show();
     return app.exec();

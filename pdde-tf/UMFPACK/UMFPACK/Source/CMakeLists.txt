@@ -56,11 +56,11 @@ SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 #-------------------------------------------------------------------------------
 
 INCLUDE_DIRECTORIES( 
-	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Include
-	${PDDE_SOURCE_DIR}/UMFPACK/AMD/Source
-	${PDDE_SOURCE_DIR}/UMFPACK/UMFPACK/Include
-	${PDDE_SOURCE_DIR}/UMFPACK/UFconfig 
-	${PDDE_SOURCE_DIR}/ATLAS/include )
+	${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
+	${KNUT_SOURCE_DIR}/UMFPACK/AMD/Source
+	${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include
+	${KNUT_SOURCE_DIR}/UMFPACK/UFconfig 
+	${KNUT_SOURCE_DIR}/ATLAS/include )
 
 SET( FLT DINT ) # form DINT DLONG ZINT ZLONG 
 

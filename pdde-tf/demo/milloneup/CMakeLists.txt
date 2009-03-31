@@ -1,19 +1,18 @@
 SET( NAME milloneup )
 
-INCLUDE_DIRECTORIES( ${PDDE_SOURCE_DIR}/src )
+INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
-SET( CFILEDIR ${PDDE_SOURCE_DIR}/demo/${NAME} )
+SET( CFILEDIR ${KNUT_SOURCE_DIR}/demo/${NAME} )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL( FILES sys-${NAME}.cpp
-	cfile-start     cfile-ns     cfile-tr
-	cfile-start.xml cfile-ns.xml cfile-tr.xml
-	DESTINATION ${PDDE_DEMO_DIR}/${NAME} )
+	cfile-start.knut cfile-ns.knut cfile-tr.knut
+	DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-1
-	COMMAND pdde -c ${CFILEDIR}/cfile-start -o out-start.mat -b out-start.br )
+	COMMAND knut -c ${CFILEDIR}/cfile-start.knut )
 ADD_CUSTOM_TARGET( ${NAME}-test-2
-	COMMAND pdde -c ${CFILEDIR}/cfile-ns -i out-start.mat -o out-ns.mat -b out-ns.br )
+	COMMAND knut -c ${CFILEDIR}/cfile-ns.knut )
 ADD_CUSTOM_TARGET( ${NAME}-test-3
-	COMMAND pdde -c ${CFILEDIR}/cfile-tr -i out-start.mat -o out-tr.mat -b out-tr.br )
+	COMMAND knut -c ${CFILEDIR}/cfile-tr.knut )
 
 ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )

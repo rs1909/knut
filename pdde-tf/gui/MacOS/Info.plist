@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>PDDE-Cont</string>
+	<string>Knut</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -14,7 +14,7 @@
 				<string>xml</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>PDDE-Cont Constants File</string>
+			<string>Knut Constants File</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
@@ -24,19 +24,19 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>PDDE-Cont</string>
+	<string>Knut</string>
 	<key>CFBundleGetInfoString</key>
 	<string>A numerical continuation software</string>
 	<key>CFBundleIconFile</key>
-	<string>pdde.icns</string>
+	<string>knut.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>uk.ac.bristol.PDDE-Cont</string>
+	<string>uk.ac.bristol.knut</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
 	<string>1.2.2</string>
 	<key>CFBundleName</key>
-	<string>PDDE-Cont</string>
+	<string>Knut</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

@@ -1,2 +1,2 @@
-INSTALL( FILES branch2pmat.m pmat2branch.m dde2pdde.m pdde2dde.m torplot.m
-         DESTINATION ${PDDE_MATLAB_DIR} )
+INSTALL( FILES branch2knmat.m knmat2branch.m dde2knut.m knut2dde.m torplot.m
+         DESTINATION ${KNUT_MATLAB_DIR} )

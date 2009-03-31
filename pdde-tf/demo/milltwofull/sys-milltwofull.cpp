@@ -4,7 +4,7 @@
  *                                                                         *
  ***************************************************************************/
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 using namespace std;
 

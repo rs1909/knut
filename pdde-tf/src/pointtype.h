@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
 // For license, see the file COPYING in the packages package's root directory

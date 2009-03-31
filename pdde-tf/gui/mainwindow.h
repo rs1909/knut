@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -197,7 +197,7 @@ class MainWindow : public QMainWindow
       nsym->blockSignals(false);
     }
 
-    void externalException(const pddeException& ex)
+    void externalException(const knutException& ex)
     {
       QMessageBox::critical(this, "MainWindow::externalException()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
     }

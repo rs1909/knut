@@ -14,6 +14,7 @@
 #define CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "@CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS@"
 #define CMAKE_INSTALL_PREFIX                "@CMAKE_INSTALL_PREFIX@"
 #define CMAKE_OSX_ARCHITECTURES             "@CMAKE_OSX_ARCHITECTURES@"
+#define KNUT_INCLUDE_DIR                    "@KNUT_INCLUDE_DIR@"
 
 /* whether build the GUI */
-#cmakedefine PDDE_GUI
+#cmakedefine KNUT_GUI

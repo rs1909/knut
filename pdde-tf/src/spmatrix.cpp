@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
 // For license, see the file COPYING in the packages packages root directory
@@ -262,7 +262,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   int     N        = AI.Size() * A0.Col();
   char    WHICH[]  = {'L', 'M'};
   int     NEV      = wr.Size() - 1;
-  double  TOL      = pdde_dlamch("EPS", 3);
+  double  TOL      = knut_dlamch("EPS", 3);
 //  RESID is defined in the class
   int     NCV      = 2 * NEV + 1;
   double* V        = new double[(N+1)*(NCV+1)];
@@ -294,7 +294,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   // int it=0;
   do
   {
-    pdde_dnaupd(&IDO, &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
+    knut_dnaupd(&IDO, &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
                 IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 2);
     if ((IDO == 1) || (IDO == -1))
     {
@@ -345,7 +345,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
 
   if (true /*IPARAM[4] >= NEV*/)
   {
-    pdde_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
+    knut_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
                 &SIGMAR, &SIGMAI, WORKEV,
                 &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
                 IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 2);

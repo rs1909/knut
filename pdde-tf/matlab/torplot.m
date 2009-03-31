@@ -1,23 +1,23 @@
 function torplot(fname,n)
     load(fname)
-    if pdde_npoints+1 < n
+    if knut_npoints+1 < n
         disp 'Error: The specified point does not exist in the file'
         return
     end
-    idxA = pdde_mesh1(:,n);
-    idxB = pdde_mesh2(:,n);
+    idxA = knut_mesh1(:,n);
+    idxB = knut_mesh2(:,n);
     idxA(end+1)=1.0;
     idxB(end+1)=1.0;
     
-    ndim  = pdde_ndim(n);
-    nint1 = pdde_nint1(n);
-    nint2 = pdde_nint2(n);
-    ndeg1 = pdde_ndeg1(n);
-    ndeg2 = pdde_ndeg2(n);
+    ndim  = knut_ndim(n);
+    nint1 = knut_nint1(n);
+    nint2 = knut_nint2(n);
+    ndeg1 = knut_ndeg1(n);
+    ndeg2 = knut_ndeg2(n);
 %    when already reshaped in the software
-%    sol_t = pdde_blanket(:,n);
+%    sol_t = knut_blanket(:,n);
 %    when it is not reshaped in the software
-    sol_t = reshape(pdde_blanket(:,n),ndim,ndeg1,ndeg2,nint1,nint2);
+    sol_t = reshape(knut_blanket(:,n),ndim,ndeg1,ndeg2,nint1,nint2);
     sol = reshape(permute(sol_t,[2,4,3,5,1]),ndeg1*nint1,ndeg2*nint2,ndim);
     sol(end+1,:,:) = sol(1,:,:);
     sol(:,end+1,:) = sol(:,1,:);

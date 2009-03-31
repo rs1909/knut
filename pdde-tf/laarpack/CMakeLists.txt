@@ -1,5 +1,5 @@
-SET( BLASINC  ${PDDE_SOURCE_DIR}/ATLAS/include )
-SET( F2CINC ${PDDE_SOURCE_DIR}/libf2c )
+SET( BLASINC  ${KNUT_SOURCE_DIR}/ATLAS/include )
+SET( F2CINC ${KNUT_SOURCE_DIR}/libf2c )
 INCLUDE_DIRECTORIES( ${BLASINC} ${F2CINC} )
 
 ADD_LIBRARY( laarpack laarpack.c cblaswrap.h dlamch.c )

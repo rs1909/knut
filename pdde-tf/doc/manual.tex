@@ -14,7 +14,7 @@
 
 \input{macros}
 
-\def\pdde{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
+\def\knut{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
 
 
 \newcommand{\iconAdd}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-add}}
@@ -37,12 +37,12 @@
 \lstset{language=C++,tabsize=3,columns=flexible,breaklines=true,escapechar=\%}
 \makeatother
 %
-\title{\pdde{}}
+\title{\knut{}}
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\pddever}{1.2.0}
-\version{\pddever}
+\newcommand{\knutver}{1.2.0}
+\version{\knutver}
 \date{14 March 2008}
 \maketitle
 
@@ -160,39 +160,39 @@ the \filef{sed} command, which is necessary to compile system definition files.
 \subsection{Linux and Unix}
 
 The software comes in a compressed source archive form
-\filef{pdde-cont-{\pddever}.tar.bz2}, so it has to be uncompressed first into a
+\filef{KNUT-{\knutver}.tar.bz2}, so it has to be uncompressed first into a
 convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
-$ bzip2 -d pdde-cont-%\pddever%.tar.bz2
-$ tar xvf pdde-cont-%\pddever%.tar
+$ bzip2 -d KNUT-%\knutver%.tar.bz2
+$ tar xvf KNUT-%\knutver%.tar
 \end{lstlisting} \end{quote} } \noindent
 The second step is to copy the compiled ATLAS library files (\filef{libatlas.a}
 and \filef{libcblas.a}) into the
-\filef{pdde-cont-\pddever/ATLAS/lib} subdirectory.
+\filef{KNUT-\knutver/ATLAS/lib} subdirectory.
 
 Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ cd pdde-cont-%\pddever%
+$ cd KNUT-%\knutver%
 $ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
 This configures and builds software after which it installs into the
-\filef{pdde-cont/} folder in the user's home directory.
+\filef{KNUT/} folder in the user's home directory.
 In order to make the software work, the \filef{PATH} environment variable has
 to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-export PATH=$PATH:$HOME/pdde-cont/bin
+export PATH=$PATH:$HOME/KNUT/bin
 \end{lstlisting} \end{quote} } \noindent
 line into the \filef{.bash\_profile} configuration file in your \filef{HOME}
 directory. For the C shell (\filef{csh}) insert the following line
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-setenv PATH $PATH:$HOME/pdde-cont/bin
+setenv PATH $PATH:$HOME/KNUT/bin
 \end{lstlisting} \end{quote} } \noindent
 into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
 The simplest way of installing the software is to run the
-\filef{pdde-cont-{\pddever}.exe}, which will extract the package into a
+\filef{KNUT-{\knutver}.exe}, which will extract the package into a
 preferred directory and set up a \filef{Start Menu} shortcut. In order to be
 able to compile system definition files a recent version of MinGW (at the time
 of writing 5.0.3) should be installed from \url{http://www.mingw.org/} first.
@@ -209,22 +209,22 @@ to be downloaded and installed:
 \item[-] and the ATLAS library.
 \end{itemize}
 Note that \filef{PATH} should be set up in order to be able to use MinGW, CMake and Qt. 
-To compile the software, first uncompress the \pdde{} package file
-\filef{pdde-cont-{\pddever}.tar.bz2} into a convenient directory.
+To compile the software, first uncompress the \knut{} package file
+\filef{KNUT-{\knutver}.tar.bz2} into a convenient directory.
 Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and
-\filef{libcblas.a}) into the \filef{pdde-cont-{\pddever}/ATLAS/lib} subdirectory.
+\filef{libcblas.a}) into the \filef{KNUT-{\knutver}/ATLAS/lib} subdirectory.
 Then start a command prompt (Start Menu $\rightarrow$ Run, type ``cmd'' into the
-box) and enter the directory \filef{pdde-cont-{\pddever}} where the package was
+box) and enter the directory \filef{KNUT-{\knutver}} where the package was
 extracted. If all the requirements are installed and the ATLAS files are in
 place, issue the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
  > build-windows
 \end{lstlisting} \end{quote} } \noindent
 command, which will build and install the software into \filef{Program
-Files$\backslash$PDDE}. The program then can be started from the \filef{bin}
+Files$\backslash$KNUT}. The program then can be started from the \filef{bin}
 subdirectory. Note that no \filef{Start Menu} entries, no shortcuts are made to
 the software, so these steps have to be performed manually if required. To
-uninstall, simply delete the \filef{PDDE} directory from \filef{Program Files}.
+uninstall, simply delete the \filef{KNUT} directory from \filef{Program Files}.
 
 \section{Command line inferface (CLI)}
 
@@ -233,21 +233,21 @@ that contains instructions about all the operations done by the software and
 also specifies the parameters of the numerical method.
 The name of a constants file can be given to the software using the \funp{-c} option.
 If a previous run is continued, an input file should be specified using the \funp{-i} option. 
-The output - as a default choice - is written into \filef{pdde.mat} unless it is specified
+The output - as a default choice - is written into \filef{knut.mat} unless it is specified
 by the \funp{-o} option. The format of the input and output files will
 be described later in this manual. The software also generates an auxiliary file,
 which contains the parameter values and the solution norms along the computed
 solution branch.
 This file can be selected by the \funp{-b} option if this data is not intended
-to be written into the \filef{pdde.br} file. The syntax of the command line
+to be written into the \filef{knut.br} file. The syntax of the command line
 arguments is illustrated as
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
+$ knut -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
 \end{lstlisting} \end{quote} } \noindent
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -v
-This is pdde-cont version 1.2.0 (1a5157b8d1e7c53fdb39e0295295f2401daf1169, Wed Mar 12 13:20:30 2008 +0000)
+$ knut -v
+This is KNUT version 1.2.0 (1a5157b8d1e7c53fdb39e0295295f2401daf1169, Wed Mar 12 13:20:30 2008 +0000)
 \end{lstlisting} \end{quote} } \noindent
 
 
@@ -571,41 +571,41 @@ vector.
 The software uses {\sc{}mat} files to store the results of continuation.
 The inner structure of these files are documented in \cite{matfile}. 
 These files can be read also by the GNU octave \cite{octave}.
-A \pdde{} {\sc{}mat} file contains several matrices, describing a branch of solutions.
+A \knut{} {\sc{}mat} file contains several matrices, describing a branch of solutions.
 The structure of these matrices are defined in Table \ref{matstruct}.
 \begin{table}[bth!]
 \begin{tabular}{|c|c|c|l|}
 \hline
 Matrix name & Rows & Columns & Content\\
 \hline 
-\funp{pdde\_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
+\funp{knut\_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
 computed in the branch of solutions. \end{minipage}\\
 \hline
-\funp{pdde\_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
+\funp{knut\_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
 \hline
-\funp{pdde\_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
+\funp{knut\_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
 \hline
-\funp{pdde\_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
+\funp{knut\_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
 \hline
-\funp{pdde\_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
+\funp{knut\_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
 \funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
 \hline
-\funp{pdde\_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
+\funp{knut\_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
 interval. \\
 \hline
-\funp{pdde\_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
+\funp{knut\_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
 profile. \\
 \hline
-\funp{pdde\_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
+\funp{knut\_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
 \funp{STEPS} & The solution profile. \\
 \hline
 \end{tabular}
 \caption{The contents of the {\sc{}mat} files.}
 \label{matstruct}
 \end{table}
-If the computation stops for some reason, \funp{pdde\_npoints} will be less than
+If the computation stops for some reason, \funp{knut\_npoints} will be less than
 \funp{STEPS}, but the size of the {\sc{}mat} file will not be smaller, so only the first
-\funp{pdde\_npoints} columns will contain valid data.
+\funp{knut\_npoints} columns will contain valid data.
 
 To convert the input and output {\sc{}mat} files to the format of DDE-BIFTOOL use the
 \funp{pmat2branch.m} and \filef{branch2pmat.m} {\sc{}matlab} scripts found in the \filef{matlab}
@@ -615,7 +615,7 @@ solution branch structure of DDE-BIFTOOL:
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 >> psbr = pmat2branch( 'input-file' );
 \end{lstlisting} \end{quote} } \noindent
-To export results out of DDE-BIFTOOL and produce a \pdde{} {\sc{}mat} file, issue the command
+To export results out of DDE-BIFTOOL and produce a \knut{} {\sc{}mat} file, issue the command
 { \small \begin{quote} \begin{lstlisting}[frame=single]
 >> branch2pmat( 'output-file', psbr, NMUL );
 \end{lstlisting} \end{quote} } \noindent
@@ -675,18 +675,18 @@ will be used as a starting solution.
 % \end{table}
 % 
 % It is possible to convert the solution profile from DDE-BIFTOOL to this format
-% and back. For this use the matlab scripts \filef{dde2pdde.m} or
-% \filef{pdde2dde.m} in the \filef{matlab} subdirectory in the following way.
+% and back. For this use the matlab scripts \filef{dde2knut.m} or
+% \filef{knut2dde.m} in the \filef{matlab} subdirectory in the following way.
 % Assume that there is branch of periodic solutions (\funp{psbr}). This branch can
 % be exported using the command
 % { \small \begin{quote} \begin{lstlisting}[frame=single]
-% >> dde2pdde( 'output-file', psbr.point, NMUL );
+% >> dde2knut( 'output-file', psbr.point, NMUL );
 % \end{lstlisting} \end{quote} } \noindent
 % Here, \funp{NMUL} is the same number what is specified in the constants file
 % under the same name.
 % Similarly, the results can be converted back into DDE-BIFTOOL using the command
 % { \small \begin{quote} \begin{lstlisting}[frame=single]
-% >> psbr.point = pdde2dde( 'output-file' );
+% >> psbr.point = knut2dde( 'output-file' );
 % \end{lstlisting} \end{quote} } \noindent
 
 \subsection{Defining an equation}
@@ -703,18 +703,18 @@ the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}th element in the
 \subsubsection{System definition}\label{sysdef}
 
 The system definition file is a C++ source file, which is compiled by the user
-and then loaded by the main program \filef{pdde} as a shared object. The
+and then loaded by the main program \filef{knut} as a shared object. The
 compilation is done typically by issuing the command%
 \footnote{Note that \filef{pcompile} is not available on Microsoft Windows. Use the GUI instead.}
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ pcompile sys-<problem>.cpp
 \end{lstlisting} \end{quote} } \noindent
 that produces the file \filef{sys-$<$problem$>$.so}.
-The system definition should include the header file \filef{pddesys.h}
-(\fun{#include pddesys.h}), which defines the syntax of the functions. Also, all
+The system definition should include the header file \filef{knutsys.h}
+(\fun{#include knutsys.h}), which defines the syntax of the functions. Also, all
 the functions must be declared as \fun{extern "C"}, to make their exported names
 independent of the C++ name mangling. The definition of a system of equations in
-\pdde{} is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that
+\knut{} is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that
 are passed to the user defined functions are
 \begin{itemize}
   \item[-] \fun{t} (\fun{double}) is the time instance within a period. It is
@@ -842,7 +842,7 @@ These functions are almost the same as the non-vectorized one, except that some 
 
 \subsection{Running the software}
 
-After invoking the software \filef{pdde}, it either loads a solution profile
+After invoking the software \filef{knut}, it either loads a solution profile
 from the input file (see Sect.\ \ref{constfile}) or uses the 
 \fun{sys_stpar} and \fun{sys_stsol} functions (see Sect.\ \ref{sysdef})
 depending on the value of \funp{LABEL} to obtain an approximate solution at a
@@ -946,7 +946,7 @@ manifold of this periodic orbit.
 The system definition file can be found in the directory
 \filef{demo/glass/sys-glass.cpp}. The first few functions are trivial:
 { \small \begin{quote} \begin{lstlisting}[frame=single]
-#include "pddesys.h"
+#include "knutsys.h"
 #include <cmath>
 
 extern "C" {
@@ -1103,7 +1103,7 @@ sys-glass.so                SYSNAME
 \end{lstlisting} \end{quote} } \noindent
 By invoking the program
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -c cfile-start -o in-start.mat
+$ knut -c cfile-start -o in-start.mat
 \end{lstlisting} \end{quote} } \noindent
 we get the output
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -1191,7 +1191,7 @@ sys-glass.so            SYSNAME
 \end{lstlisting} \end{quote} } \noindent
 The continuation starts with the following command
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pdde -c cfile-pdbif -i in-start
+$ knut -c cfile-pdbif -i in-start
 \end{lstlisting} \end{quote} } \noindent
 The period doubling curve can be seen in Fig.\ \ref{pdbif}.
 Also, the arising period-two orbits can be computed by switching to this new
@@ -1230,12 +1230,12 @@ period-two orbits arise. }
 \section{The graphical user interface (GUI)}
 
 The graphical user interface of the software is a front-end to the computation
-library of \pdde{}. It can do the same operations as the CLI, however many things are
+library of \knut{}. It can do the same operations as the CLI, however many things are
 hidden from the user, so it might appeal to non-expert users. It includes a plotting
 facility which can be used to preview the results.
 
 The main window in Fig.\ \ref{mainwindow} appears
-when the program \filef{pdde-gui} is started.
+when the program \filef{knut-gui} is started.
 It has a menu and toolbar which 
 contains the \filef{Open} \iconOpen{}, \filef{Save} \iconSave{},
 \filef{Run} \iconRun{}, \filef{Stop} \iconStop{} and
@@ -1397,14 +1397,14 @@ and a Fulbright grant.
 
 \section{Licenses}
 
-\subsection{PDDE-CONT}
+\subsection{KNUT}
 
 In addition to the GNU General Public License below the user of the software or
 the author of any
-publication containing results obtained using \pdde{} or any of its modified
+publication containing results obtained using \knut{} or any of its modified
 version is required to refer to the present User's Manual.
 \begin{quote}
-R\'obert Szalai, \pdde{}: A continuation and bifurcation software for 
+R\'obert Szalai, \knut{}: A continuation and bifurcation software for 
 delay-differential equations, Tech.\ Rep., Budapest University of Technology
 and Economics (2005)
 \end{quote}
@@ -1415,7 +1415,7 @@ contains code which can and will be distributed under the GNU General Public
 License.
 
 \begin{quote}
-PDDE-CONT. A continuation and bifurcation software for delay-differential
+KNUT. A continuation and bifurcation software for delay-differential
 equations \\
 Copyright (C) 2005 by R\'obert Szalai \\
 

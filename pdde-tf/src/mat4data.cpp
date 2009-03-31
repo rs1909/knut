@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -21,7 +21,7 @@
 #endif
 
 #include "matrix.h"
-#include "pderror.h"
+#include "knerror.h"
 #include "mat4data.h"
 #include "multipliers.h"
 
@@ -205,35 +205,35 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   nmul = nmul_;
 
   // creating the matrices
-  char npoints_string[] = "pdde_npoints";
+  char npoints_string[] = "knut_npoints";
   npoints_offset = 0;
   int npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
 
-  char par_string[] = "pdde_par";
+  char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
   int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
 
-  char mul_string[] = "pdde_mul";
+  char mul_string[] = "knut_mul";
   mul_offset = par_offset + par_size;
   int mul_size = createComplexMatrixHeader(&mul_header, mul_string, nmul, ncols);
 
-  char ntrivmul_string[] = "pdde_ntrivmul";
+  char ntrivmul_string[] = "knut_ntrivmul";
   ntrivmul_offset = mul_offset + mul_size;
   int ntrivmul_size = createMatrixHeader(&ntrivmul_header, ntrivmul_string, 3, 1);
 
-  char ndim_string[] = "pdde_ndim";
+  char ndim_string[] = "knut_ndim";
   ndim_offset = ntrivmul_offset + ntrivmul_size;
   int ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
 
-  char elem_string[] = "pdde_elem";
+  char elem_string[] = "knut_elem";
   elem_offset = ndim_offset + ndim_size;
   int elem_size = createMatrixHeader(&elem_header, elem_string, ndeg + 1, ncols);
 
-  char mesh_string[] = "pdde_mesh";
+  char mesh_string[] = "knut_mesh";
   mesh_offset = elem_offset + elem_size;
   int mesh_size = createMatrixHeader(&mesh_header, mesh_string, nint + 1, ncols);
 
-  char prof_string[] = "pdde_prof";
+  char prof_string[] = "knut_prof";
   prof_offset = mesh_offset + mesh_size;
   int prof_size = createMatrixHeader(&prof_header, prof_string, ndim * (ndeg * nint + 1), ncols);
   size = prof_offset + prof_size;
@@ -269,43 +269,43 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   ndeg2 = ndeg2_;
 
   // creating the matrices
-  char npoints_string[] = "pdde_npoints";
+  char npoints_string[] = "knut_npoints";
   npoints_offset = 0;
   int npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
 
-  char par_string[] = "pdde_par";
+  char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
   int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
 
-  char ndim_string[] = "pdde_ndim";
+  char ndim_string[] = "knut_ndim";
   ndim_offset = par_offset + par_size;
   int ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
 
-  char nint1_string[] = "pdde_nint1";
+  char nint1_string[] = "knut_nint1";
   nint1_offset = ndim_offset + ndim_size;
   int nint1_size = createMatrixHeader(&nint1_header, nint1_string, 1, ncols);
 
-  char nint2_string[] = "pdde_nint2";
+  char nint2_string[] = "knut_nint2";
   nint2_offset = nint1_offset + nint1_size;
   int nint2_size = createMatrixHeader(&nint2_header, nint2_string, 1, ncols);
 
-  char ndeg1_string[] = "pdde_ndeg1";
+  char ndeg1_string[] = "knut_ndeg1";
   ndeg1_offset = nint2_offset + nint2_size;
   int ndeg1_size = createMatrixHeader(&ndeg1_header, ndeg1_string, 1, ncols);
 
-  char ndeg2_string[] = "pdde_ndeg2";
+  char ndeg2_string[] = "knut_ndeg2";
   ndeg2_offset = ndeg1_offset + ndeg1_size;
   int ndeg2_size = createMatrixHeader(&ndeg2_header, ndeg2_string, 1, ncols);
 
-  char mesh1_string[] = "pdde_mesh1";
+  char mesh1_string[] = "knut_mesh1";
   mesh1_offset = ndeg2_offset + ndeg2_size;
   int mesh1_size = createMatrixHeader(&mesh1_header, mesh1_string, nint1 * ndeg1, ncols);
 
-  char mesh2_string[] = "pdde_mesh2";
+  char mesh2_string[] = "knut_mesh2";
   mesh2_offset = mesh1_offset + mesh1_size;
   int mesh2_size = createMatrixHeader(&mesh2_header, mesh2_string, nint2 * ndeg2, ncols);
 
-  char blanket_string[] = "pdde_blanket";
+  char blanket_string[] = "knut_blanket";
   blanket_offset = mesh2_offset + mesh2_size;
   int blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
@@ -363,12 +363,12 @@ void mat4Data::condenseData()
     const int npoints = getNPoints();
     if (!torus)
     {
-      resizeMatrix("pdde_prof", npoints);
-      resizeMatrix("pdde_mesh", npoints);
-      resizeMatrix("pdde_elem", npoints);
-      resizeMatrix("pdde_ndim", npoints);
-      resizeMatrix("pdde_mul", npoints);
-      resizeMatrix("pdde_par", npoints);
+      resizeMatrix("knut_prof", npoints);
+      resizeMatrix("knut_mesh", npoints);
+      resizeMatrix("knut_elem", npoints);
+      resizeMatrix("knut_ndim", npoints);
+      resizeMatrix("knut_mul", npoints);
+      resizeMatrix("knut_par", npoints);
     }
   }
 }
@@ -381,23 +381,23 @@ void mat4Data::openReadOnly(const std::string& fileName)
   address = mmapFileRead(file, mapHandle, fileName, size);
 #endif
 
-  if ((npoints_offset = findMatrix("pdde_npoints", &npoints_header)) == -1) P_MESSAGE("err-4");
+  if ((npoints_offset = findMatrix("knut_npoints", &npoints_header)) == -1) P_MESSAGE("err-4");
   P_ERROR_X1(npoints_header.mrows == 1, "err-3");
   P_ERROR_X1(npoints_header.ncols == 1, "err-2");
   P_ERROR_X1(npoints_header.imagf == 0, "err-1");
 
-  if ((par_offset = findMatrix("pdde_par", &par_header)) == -1) P_MESSAGE("err1");
+  if ((par_offset = findMatrix("knut_par", &par_header)) == -1) P_MESSAGE("err1");
   npar = par_header.mrows;
   ncols = par_header.ncols;
   if (par_header.imagf != 0) P_MESSAGE("err2");
 
-  if ((ndim_offset = findMatrix("pdde_ndim", &ndim_header)) == -1) P_MESSAGE("err6");
+  if ((ndim_offset = findMatrix("knut_ndim", &ndim_header)) == -1) P_MESSAGE("err6");
   if (ndim_header.mrows != 1) P_MESSAGE("err7 ");
   if (ndim_header.ncols != ncols) P_MESSAGE("err9");
   if (ndim_header.imagf != 0) P_MESSAGE("err9");
   ndim = static_cast<int>(*((double*)((char*)address + ndim_offset + ndim_header.col_off(0))));
 
-  if ((mul_offset = findMatrix("pdde_mul", &mul_header)) != -1)
+  if ((mul_offset = findMatrix("knut_mul", &mul_header)) != -1)
   {
     torus = false;
     // periodic solutions
@@ -405,22 +405,22 @@ void mat4Data::openReadOnly(const std::string& fileName)
     if (mul_header.ncols != ncols) P_MESSAGE("err4");
     if (mul_header.imagf != 1) P_MESSAGE("err5");
 
-    if ((ntrivmul_offset = findMatrix("pdde_ntrivmul", &ntrivmul_header)) == -1) P_MESSAGE("err6");
+    if ((ntrivmul_offset = findMatrix("knut_ntrivmul", &ntrivmul_header)) == -1) P_MESSAGE("err6");
     P_ERROR_X1(ntrivmul_header.mrows == 3, "err7");
     P_ERROR_X1(ntrivmul_header.ncols == 1, "err8");
     P_ERROR_X1(ntrivmul_header.imagf == 0, "err9");
 
-    if ((elem_offset = findMatrix("pdde_elem", &elem_header)) == -1) P_MESSAGE("err18.1");
+    if ((elem_offset = findMatrix("knut_elem", &elem_header)) == -1) P_MESSAGE("err18.1");
     if (elem_header.ncols != ncols) P_MESSAGE("err20.1");
     if (elem_header.imagf != 0) P_MESSAGE("err21.1");
     ndeg = elem_header.mrows - 1;
 
-    if ((mesh_offset = findMatrix("pdde_mesh", &mesh_header)) == -1) P_MESSAGE("err18");
+    if ((mesh_offset = findMatrix("knut_mesh", &mesh_header)) == -1) P_MESSAGE("err18");
     if (mesh_header.ncols != ncols) P_MESSAGE("err20");
     if (mesh_header.imagf != 0) P_MESSAGE("err21");
     nint = mesh_header.mrows - 1;
 
-    if ((prof_offset = findMatrix("pdde_prof", &prof_header)) == -1) P_MESSAGE("err22");
+    if ((prof_offset = findMatrix("knut_prof", &prof_header)) == -1) P_MESSAGE("err22");
     if (prof_header.mrows != ndim*(ndeg*nint + 1)) P_MESSAGE("err23");
     if (prof_header.ncols != ncols) P_MESSAGE("err24");
     if (prof_header.imagf != 0) P_MESSAGE("err25");
@@ -429,41 +429,41 @@ void mat4Data::openReadOnly(const std::string& fileName)
   {
     torus = true;
     // quasiperiodic solutions
-    if ((nint1_offset = findMatrix("pdde_nint1", &nint1_header)) == -1) P_MESSAGE("err26");
+    if ((nint1_offset = findMatrix("knut_nint1", &nint1_header)) == -1) P_MESSAGE("err26");
     if (nint1_header.mrows != 1) P_MESSAGE("err27");
     if (nint1_header.ncols != ncols) P_MESSAGE("err28");
     if (nint1_header.imagf != 0) P_MESSAGE("err29");
     nint1 = static_cast<int>(*((double*)((char*)address + nint1_offset + nint1_header.col_off(0))));
 
-    if ((nint2_offset = findMatrix("pdde_nint2", &nint2_header)) == -1) P_MESSAGE("err30");
+    if ((nint2_offset = findMatrix("knut_nint2", &nint2_header)) == -1) P_MESSAGE("err30");
     if (nint2_header.mrows != 1) P_MESSAGE("err31");
     if (nint2_header.ncols != ncols) P_MESSAGE("err32");
     if (nint2_header.imagf != 0) P_MESSAGE("err33");
     nint2 = static_cast<int>(*((double*)((char*)address + nint2_offset + nint2_header.col_off(0))));
 
-    if ((ndeg1_offset = findMatrix("pdde_ndeg2", &ndeg1_header)) == -1) P_MESSAGE("err34");
+    if ((ndeg1_offset = findMatrix("knut_ndeg2", &ndeg1_header)) == -1) P_MESSAGE("err34");
     if (ndeg1_header.mrows != 1) P_MESSAGE("err35");
     if (ndeg1_header.ncols != ncols) P_MESSAGE("err36");
     if (ndeg1_header.imagf != 0) P_MESSAGE("err37");
     ndeg1 = static_cast<int>(*((double*)((char*)address + ndeg1_offset + ndeg1_header.col_off(0))));
 
-    if ((ndeg2_offset = findMatrix("pdde_ndeg2", &ndeg2_header)) == -1) P_MESSAGE("err38");
+    if ((ndeg2_offset = findMatrix("knut_ndeg2", &ndeg2_header)) == -1) P_MESSAGE("err38");
     if (ndeg2_header.mrows != 1) P_MESSAGE("err39");
     if (ndeg2_header.ncols != ncols) P_MESSAGE("err40");
     if (ndeg2_header.imagf != 0) P_MESSAGE("err41");
     ndeg2 = static_cast<int>(*((double*)((char*)address + ndeg2_offset + ndeg2_header.col_off(0))));
 
-    if ((mesh1_offset = findMatrix("pdde_mesh1", &mesh1_header)) == -1) P_MESSAGE("err42");
+    if ((mesh1_offset = findMatrix("knut_mesh1", &mesh1_header)) == -1) P_MESSAGE("err42");
     if (mesh1_header.mrows != nint1*ndeg1) P_MESSAGE("err43");
     if (mesh1_header.ncols != ncols) P_MESSAGE("err44");
     if (mesh1_header.imagf != 0) P_MESSAGE("err45");
 
-    if ((mesh2_offset = findMatrix("pdde_mesh2", &mesh2_header)) == -1) P_MESSAGE("err46");
+    if ((mesh2_offset = findMatrix("knut_mesh2", &mesh2_header)) == -1) P_MESSAGE("err46");
     if (mesh2_header.mrows != nint2*ndeg2) P_MESSAGE("err47");
     if (mesh2_header.ncols != ncols) P_MESSAGE("err48");
     if (mesh2_header.imagf != 0) P_MESSAGE("err49");
 
-    if ((blanket_offset = findMatrix("pdde_blanket", &blanket_header)) == -1) P_MESSAGE("err50");
+    if ((blanket_offset = findMatrix("knut_blanket", &blanket_header)) == -1) P_MESSAGE("err50");
     if (blanket_header.mrows != ndim*nint1*ndeg1*nint2*ndeg2) P_MESSAGE("err51");
     if (blanket_header.ncols != ncols) P_MESSAGE("err52");
     if (blanket_header.imagf != 0) P_MESSAGE("err53");

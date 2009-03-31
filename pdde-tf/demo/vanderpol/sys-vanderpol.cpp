@@ -5,7 +5,7 @@
  ***************************************************************************/
 
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 extern "C"
 {

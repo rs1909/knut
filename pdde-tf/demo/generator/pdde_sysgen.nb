@@ -112,7 +112,7 @@ time delays\>\"",
       FontColor->GrayLevel[
       0.666667]], "\[IndentingNewLine]", \(FileName = \
 "\<./sys-tobcut-tau2x.cpp\>";\), "\[IndentingNewLine]", 
-    StyleBox[\( (*Name\ of\ the\ system\ file\ for\ PDDE - 
+    StyleBox[\( (*Name\ of\ the\ system\ file\ for\ KNUT - 
           CONT\ software*) \),
       FontWeight->"Plain",
       FontColor->GrayLevel[
@@ -127,7 +127,7 @@ backslash\ is\ double\)\)\(\\)\)*) \),
         2;\), "\[IndentingNewLine]", 
     RowBox[{
       StyleBox[\( (*order\ of\ the\ applied\ derivatives\ \((it\ only\ works\ \
-in\ case\ of\ PDDE - CONT)\)\ possible\ values\ \(are : 0\), 1, 2*) \),
+in\ case\ of\ KNUT - CONT)\)\ possible\ values\ \(are : 0\), 1, 2*) \),
         FontWeight->"Plain",
         FontColor->GrayLevel[0.666667]], 
       "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
@@ -350,7 +350,7 @@ differential\ equation\ \((DDE)\)\),
                     
                     StyleBox[\(\(\[DoubleStruckCapitalN]\^+\) : \ 
                         number\ of\ the\ parameters\ including\ the\ period\ \
-T\ \((to\ PDDE - CONT)\)\),
+T\ \((to\ KNUT - CONT)\)\),
                       FontWeight->"Plain",
                       FontColor->GrayLevel[0.666667]]}]}]}]}]}]}], 
         StyleBox["*)",
@@ -532,7 +532,7 @@ differential\ equation\ \((DDE)\)\),
 "\<6.1096e9\>"}, {"\<RO2\>", "\<-5.41416e13\>"}, {"\<RO3\>", \
 "\<2.03769e17\>"}};\), "\[IndentingNewLine]", 
     RowBox[{
-      StyleBox[\( (*The\ useful\ constants\ for\ PDDE - CONT*) \),
+      StyleBox[\( (*The\ useful\ constants\ for\ KNUT - CONT*) \),
         FontWeight->"Plain",
         FontColor->GrayLevel[0.666667]], 
       "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
@@ -1124,7 +1124,7 @@ h\_0\^2\);\), "\[IndentingNewLine]", \(\[Eta]\_3 = \(h\_0\^2\) \(\(\[Rho]\_32\
       "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
     RowBox[{
       StyleBox[
-        "\"\<Parameter values at the starting point(only for the PDDE-CONT)\>\
+        "\"\<Parameter values at the starting point(only for the KNUT)\>\
 \"",
         FontFamily->"Times New Roman",
         FontSize->12,
@@ -1657,7 +1657,7 @@ j\)]]]\[IndentingNewLine]}]\[IndentingNewLine]}];\),
       "\[IndentingNewLine]"}], "\[IndentingNewLine]", "Null"}], "Input"],
 
 Cell[BoxData[{
-    \("\<create the output file for PDDE-CONT\>"\), "\[IndentingNewLine]", 
+    \("\<create the output file for KNUT\>"\), "\[IndentingNewLine]", 
     \(\("\<Substitution function\>";\)\), "\[IndentingNewLine]", 
     \(\(\(sub[expr_] := \((id3 = expr; 
           For[subj = 1, 
@@ -1721,7 +1721,7 @@ Technology and Economics                        *\n* 2006                     \
                                                *\n* e-mail: ddombo@gmail.com  \
                                                       *\n\
 ***************************************************************************/\n\
-#include <iostream>\n#include <cmath>\n#include \"pddesys.h\"\n\n\>";\)\), "\
+#include <iostream>\n#include <cmath>\n#include \"knutsys.h\"\n\n\>";\)\), "\
 \[IndentingNewLine]", 
     \(\(WriteString[strFile, 
         idstr];\)\[IndentingNewLine] (*Title*) \), "\[IndentingNewLine]", 

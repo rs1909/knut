@@ -1,5 +1,5 @@
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 extern "C"
 int sys_ndim(){ return 1; }

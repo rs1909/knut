@@ -1,0 +1,37 @@
+<!DOCTYPE cfile>
+<knut>
+ <input></input>
+ <output>out-start-b.mat</output>
+ <sysname>sys-traffic3cars.so</sysname>
+ <label>0</label>
+ <pointtype>40</pointtype>
+ <cptype>P</cptype>
+ <cpnum>1</cpnum>
+ <switch>0</switch>
+ <nparx>0</nparx>
+ <nint>40</nint>
+ <ndeg>5</ndeg>
+ <nmul>5</nmul>
+ <stab>1</stab>
+ <nmat>1</nmat>
+ <nint1>12</nint1>
+ <nint2>12</nint2>
+ <ndeg1>4</ndeg1>
+ <ndeg2>4</ndeg2>
+ <steps>80</steps>
+ <iad>3</iad>
+ <cpmin>-100</cpmin>
+ <cpmax>100</cpmax>
+ <ds>-0.02</ds>
+ <dsmin>0.02</dsmin>
+ <dsmax>0.02</dsmax>
+ <dsstart>0.02</dsstart>
+ <epsc>1e-05</epsc>
+ <epsr>1e-05</epsr>
+ <epsk>1e-06</epsk>
+ <nitc>12</nitc>
+ <nitr>12</nitr>
+ <nitk>12</nitk>
+ <nsym>0</nsym>
+ <sym/>
+</knut>

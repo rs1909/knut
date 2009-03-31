@@ -5,7 +5,7 @@
  ***************************************************************************/
 #include <iostream>
 #include <cmath>
-#include "pddesys.h"
+#include "knutsys.h"
 
 // system definition
 // par(0) = T the period length 

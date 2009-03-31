@@ -62,7 +62,7 @@ Section "Dummy Section" SecDummy
   ;ADD YOUR OWN FILES HERE...
   File "COPYING"
   SetOutPath "$INSTDIR\bin"
-  File "@CMAKE_INSTALL_PREFIX@\bin\pdde-gui.exe"
+  File "@CMAKE_INSTALL_PREFIX@\bin\knut-gui.exe"
   File "C:\MinGW\bin\mingwm10.dll"
   File "@QT_BINARY_DIR@\QtCore4.dll"
   File "@QT_BINARY_DIR@\QtGui4.dll"
@@ -83,7 +83,7 @@ Section "Dummy Section" SecDummy
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
-    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\pdde-gui.lnk" "$INSTDIR\bin\pdde-gui.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\knut-gui.lnk" "$INSTDIR\bin\knut-gui.exe"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_END
@@ -120,7 +120,7 @@ Section "Uninstall"
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
     
   Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
-  Delete "$SMPROGRAMS\$MUI_TEMP\pdde-gui.lnk"
+  Delete "$SMPROGRAMS\$MUI_TEMP\knut-gui.lnk"
   
   ;Delete empty start menu parent diretories
   StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"

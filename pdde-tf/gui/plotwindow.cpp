@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2006 by Robert Szalai
 //
 // For license, see the file COPYING in the root directory of the package
@@ -178,7 +178,7 @@ void plotWindow::openFile(const QString& fileName)
   {
     t_data = new mat4Data(fileName.toStdString());
   }
-  catch (pddeException ex)
+  catch (knutException ex)
   {
     QMessageBox::critical(this, "PlotWindow::openFile()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
     return;
@@ -214,7 +214,7 @@ void plotWindow::addPlot()
         added = plotdata.addPlot(data, (PlotXVariable)xvar->currentIndex(),
                                  (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b", "r");
       }
-      catch (pddeException ex)
+      catch (knutException ex)
       {
         QMessageBox::critical(this, "plotWindow::addPlot()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
       }

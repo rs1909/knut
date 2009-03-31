@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------- //
 //
-// This is part of PDDE-CONT
+// This is part of KNUT
 // Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
 //
 // For license, see the file COPYING in the package's root directory
@@ -177,11 +177,7 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
 #endif
   cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
               CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" + executableDir;
-#ifdef __APPLE__
-  cmdline += "/../Headers/\"";
-#else
-  cmdline += "/../include/\"";
-#endif
+  cmdline += "/../" KNUT_INCLUDE_DIR "\"";
   cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
   
 //   std::cout << "The command line: " << cmdline << "\n";
@@ -196,7 +192,7 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
   } while (str != 0);
   delete[] buf;
   int cres = pclose(fd);
-  if (cres != 0)  P_MESSAGE3("Cannot compile the file \"", cxxfile, "\" The output is:\n", result);
+  if (cres != 0)  P_MESSAGE3("The output of the compile command \"", cmdline, "\" is: ", result);
 }
 
 // Static member. Compile if necessary
