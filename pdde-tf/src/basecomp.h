@@ -38,9 +38,13 @@ class CLIComp : public BaseComp
     CLIComp(const NConstants& constants) : BaseComp(constants) { }
     ~CLIComp() { }
     void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
+    static void printException(const knutException& ex)
+    {
+      std::cerr << ex.getMessage().str() << " This has occured in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
+    }
     void raiseException(const knutException& ex)
     {
-      std::cout << ex.file << ":" << ex.line << " " << ex.message.message;
+      printException(ex);
       exit(-1);
     }
 };

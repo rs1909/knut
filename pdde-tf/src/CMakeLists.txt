@@ -3,7 +3,7 @@ ADD_LIBRARY( knutlib
 	basecomp.h basecomp.cpp
 	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
 	mat4data.cpp mat4data.h matrix.cpp matrix.h
-	ncolloc.cpp ncolloc.h knutsys.h knerror.h
+	ncolloc.cpp ncolloc.h knutsys.h knerror.h knerror.cpp
 	plot.cpp plot.h point.cpp point.h pointtype.h
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
 	system.cpp system.h testfunct.cpp testfunct.h

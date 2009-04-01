@@ -58,19 +58,19 @@ int main(int argc, const char** argv)
             exit(0);
             break;
           default:
-            P_MESSAGE("Unexpected command line argument.\n");
+            P_MESSAGE1("Unexpected command line argument.");
             break;
         }
       }
       else
       {
-        P_MESSAGE("Unexpected command line argument.\n");
+        P_MESSAGE1("Unexpected command line argument.");
       }
     }
   
     if (params == 0)
     {
-      std::cout << "Error: missing constants file.\n";
+      P_MESSAGE1("Missing constants file.");
       exit(1);
     }
   
@@ -80,8 +80,8 @@ int main(int argc, const char** argv)
   }
   catch (knutException ex)
   {
-    std::cerr << "Error occured in " << ex.file << " at line " << ex.line 
-              << ":\n\t" << ex.message.message << "\n";
+    CLIComp::printException(ex);
+    exit(-1);
   }
 
   delete params;

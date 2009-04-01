@@ -41,6 +41,15 @@ class MainWindow : public QMainWindow
 
   public:
     MainWindow(const QString& appDir);
+        
+    static void showException(QWidget* parent, const knutException& ex)
+    {
+      QMessageBox::critical(parent, "Critical error", 
+        QString("%1\nThis has occured in file '%2' at line %3.")
+          .arg(ex.getMessage().str().c_str())
+          .arg(ex.getFile().c_str()).arg(ex.getLine()), 
+        QMessageBox::Ok, 0, 0);
+    }
 
   public slots:
     // We need to be able to load a file from the outside
@@ -196,10 +205,9 @@ class MainWindow : public QMainWindow
       nsym->setValue(i);
       nsym->blockSignals(false);
     }
-
     void externalException(const knutException& ex)
     {
-      QMessageBox::critical(this, "MainWindow::externalException()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
+      showException(this, ex);
     }
 
   protected:

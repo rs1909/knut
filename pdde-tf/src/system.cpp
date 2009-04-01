@@ -70,23 +70,23 @@ System::System(const std::string& shobj)
   
   makeSystem(shobj, executableDir);
   handle = tdlopen(objname.c_str());
-  P_ERROR_X2(handle != 0, "Cannot open system definition file: ", tdlerror());
+  P_ERROR_X3(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ".");
 
   tdlerror();    /* Clear any existing error */
   v_ndim = (tp_sys_ndim) fptr(tdlsym(handle, "sys_ndim"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_npar = (tp_sys_npar) fptr(tdlsym(handle, "sys_npar"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_ntau = (tp_sys_ntau) fptr(tdlsym(handle, "sys_ntau"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_nderi = (tp_sys_nderi) fptr(tdlsym(handle, "sys_nderi"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_tau = (tp_sys_tau) fptr(tdlsym(handle, "sys_tau"));
@@ -106,32 +106,32 @@ System::System(const std::string& shobj)
 
   tdlerror();    /* Clear any existing error */
   v_stpar = (tp_sys_stpar) fptr(tdlsym(handle, "sys_stpar"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_stsol = (tp_sys_stsol) fptr(tdlsym(handle, "sys_stsol"));
-  P_ERROR_X2((error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error);
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error, ".");
 
   /* Vectorized versions */
   tdlerror();    /* Clear any existing error */
   v_p_tau = (tp_sys_p_tau) fptr(tdlsym(handle, "sys_p_tau"));
   found_p_tau = ((error = tdlerror()) == 0);
-  if (!found_tau && !found_p_tau) P_ERROR_X2(false, "Cannot find either sys_tau() or sys_p_tau(): ", error);
+  if (!found_tau && !found_p_tau) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_dtau = (tp_sys_p_dtau) fptr(tdlsym(handle, "sys_p_dtau"));
   found_p_dtau = ((error = tdlerror()) == 0);
-  if (!found_dtau && !found_p_dtau) P_ERROR_X2(false, "Cannot find either sys_dtau() or sys_p_dtau(): ", error);
+  if (!found_dtau && !found_p_dtau) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_rhs = (tp_sys_p_rhs) fptr(tdlsym(handle, "sys_p_rhs"));
   found_p_rhs = ((error = tdlerror()) == 0);
-  if (!found_rhs && !found_p_rhs) P_ERROR_X2(false, "Cannot find either sys_rhs() or sys_p_rhs(): ", error);
+  if (!found_rhs && !found_p_rhs) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_deri = (tp_sys_p_deri) fptr(tdlsym(handle, "sys_p_deri"));
   found_p_deri = ((error = tdlerror()) == 0);
-  if (!found_deri && !found_p_deri) P_ERROR_X2(false, "Cannot find either sys_deri() or sys_p_deri(): ", error);
+  if (!found_deri && !found_p_deri) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
 
   nderi = (*v_nderi)();
 //  std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
@@ -192,7 +192,7 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
   } while (str != 0);
   delete[] buf;
   int cres = pclose(fd);
-  if (cres != 0)  P_MESSAGE3("The output of the compile command \"", cmdline, "\" is: ", result);
+  if (cres != 0)  P_MESSAGE4("The output of the compile command '", cmdline, "' is ", result);
 }
 
 // Static member. Compile if necessary
@@ -205,7 +205,7 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
     cxxfile.erase(cxxfile.size()-3); cxxfile.append(".cpp");
 //     std::cout << cxxfile << "\n";
   } else {
-    P_MESSAGE2("The name \" ", shobj ,"\" does not have the '.so' extension.");
+    P_MESSAGE3("The file name '", shobj, "' does not have the '.so' extension.");
   }
   // It is not portable to Windows!!!
   struct stat *sbuf = new struct stat;
@@ -220,7 +220,7 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
       compileSystem(cxxfile, shobj, executableDir);
     } else
     {
-      P_MESSAGE2("The file \" ", cxxfile ,"\" doesn't exist.");
+      P_MESSAGE3("The file '", cxxfile ,"' doesn't exist.");
     }
   }
 }

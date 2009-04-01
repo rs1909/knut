@@ -191,7 +191,7 @@ class mat4Data
     static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
     static inline int writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name);
 
-    int  findMatrix(const char* name, mat4Data::header* found);
+    int  findMatrix(const char* name, mat4Data::header* found, bool test=false, int r=-1, int c=-1, int imag=-1, const char* fileName="");
     void openReadOnly(const std::string& fileName);
 
     void resizeMatrix(const char* name, int newcol);

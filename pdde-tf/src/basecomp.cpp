@@ -14,7 +14,7 @@
 void BaseComp::run(const char* branchFile)
 {
   System sys(params->getSysName());
-  if (sys.ndim() == 0) P_MESSAGE("Number of dimensions are set to zero.");
+  if (sys.ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
 
   Vector par(sys.npar() + ParEnd);
   std::ofstream ff;
@@ -93,7 +93,9 @@ void BaseComp::run(const char* branchFile)
         mat4Data istr(params->getInputFile());
         pt.BinaryRead(istr, params->getLabel());
       }
-  
+
+      screenout   << "\n---      Refine supplied solution      ---\n";
+      print(screenout);
       pt.Refine(screenout);
       print(screenout);
       if (testFN != EqnNone)
@@ -113,7 +115,7 @@ void BaseComp::run(const char* branchFile)
                    params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
                    params->getNInt(), params->getNDeg(), params->getNMul());
 
-      screenout << "\n--- Starting the continuation ---\n";
+      screenout   << "\n---     Starting the continuation      ---\n";
 
       for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
       //
@@ -132,7 +134,7 @@ void BaseComp::run(const char* branchFile)
           break;
         case TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
-          pt.SwitchTFHB(params->getDsStart());
+          pt.SwitchTFHB(params->getDsStart(), screenout);
           break;
         case TFBRSwitch:
         case TFBRAUTSwitch:
@@ -243,7 +245,7 @@ void BaseComp::run(const char* branchFile)
         if (decr && (fabs(ds)*1.414 > params->getDsMin()) && (fabs(ds)*1.414 < params->getDsMax())) ds *= 1.414;
         if ((itc >= params->getNItC()) && (fabs(ds) / 2.0 < params->getDsMin()))
         {
-          P_MESSAGE("No convergence. The minimum arclength step size (DSMIN) has been reached.");
+          P_MESSAGE1("No convergence. The minimum arclength step size (DSMIN) has been reached.");
         }
         // stop continuation if CP has reached the bounds
         if (par(params->getCp() - VarPAR0) < params->getCpMin()) break;
@@ -310,11 +312,11 @@ void BaseComp::run(const char* branchFile)
           pttr.Tangent();
         } else
         {
-          P_MESSAGE("A torus cannot be started from scratch.");
+          P_MESSAGE1("A torus cannot be started from scratch.");
         }
       } else
       {
-        P_MESSAGE("Invalid barnch switch.");
+        P_MESSAGE1("Invalid barnch switch.");
       }
 
       double ds = params->getDs();

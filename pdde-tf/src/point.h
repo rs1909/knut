@@ -44,7 +44,7 @@ class Point : public BasePoint
     // algorithms
     void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
     void    SwitchTFPD(double ds);   // switches branch with testFunct
-    void    SwitchTFHB(double ds);   // switches branch with testFunct
+    void    SwitchTFHB(double ds, std::ostream& out);   // switches branch with testFunct
     void    SwitchTRSol(Vector& Sol, const Vector& mshint, const Vector& mshdeg)
     {
       colloc->Export(Sol, mshint, mshdeg, sol);

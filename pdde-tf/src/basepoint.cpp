@@ -62,7 +62,7 @@ void BasePoint::Construct()
 
   for (int i = 1; i < var.Size(); i++)
   {
-    P_ERROR_X4((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < par.Size()), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i);
+    P_ERROR_X5((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < par.Size()), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i, ".");
     varMap(i) = var(i) - VarPAR0;
   }
   for (int i = 0; i < var.Size(); i++) varMapCont(i) = varMap(i);
@@ -133,7 +133,7 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
     }
   }
   while ((Dnorm / (1.0 + Xnorm) >= RefEps) && (it++ < RefIter));
-  if (it >= RefIter) std::cout << "Warning: refinement did not converge. "
+  if (it >= RefIter) std::cerr << "Warning: refinement did not converge. "
     << "CritNorm: " << Dnorm / (1.0 + Xnorm) << " SolNorm: " << Xnorm << " DiffNorm: " << Dnorm << '\n';
 
   return it;
@@ -175,7 +175,7 @@ int BasePoint::Tangent(bool adapt)
     for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
   while ((++it < KernIter) && (diffnorm > KernEps));
-  if (diffnorm > KernEps) std::cout << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
+  if (diffnorm > KernEps) std::cerr << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
   if (!adapt && (xxDot->getV3()(dim3) < 0.0))
   {
     xxDot->getV1() *= -1.0;
@@ -262,11 +262,11 @@ int BasePoint::Continue(double ds, bool jacstep)
     xxDot->getV1() = xxDotNu->getV1();
     xxDot->getV3() = xxDotNu->getV3();
   }
-  else
-  {
-    std::cout << "\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
-    // P_MESSAGE("");
-  }
+//  else
+//  {
+//    std::cout << "\n\n\n ------------------- NO CONVERGENCE -------------------\n\n\n\n";
+    // P_MESSAGE1("");
+//  }
 
   return it;
 }

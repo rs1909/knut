@@ -15,6 +15,7 @@
 #define CMAKE_INSTALL_PREFIX                "@CMAKE_INSTALL_PREFIX@"
 #define CMAKE_OSX_ARCHITECTURES             "@CMAKE_OSX_ARCHITECTURES@"
 #define KNUT_INCLUDE_DIR                    "@KNUT_INCLUDE_DIR@"
+#define KNUT_SOURCE_DIR                     "@KNUT_SOURCE_DIR@"
 
 /* whether build the GUI */
 #cmakedefine KNUT_GUI

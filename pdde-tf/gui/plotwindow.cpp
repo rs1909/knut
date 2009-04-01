@@ -8,6 +8,7 @@
 // ------------------------------------------------------------------------- //
 
 #include "plotwindow.h"
+#include "mainwindow.h"
 #include <vector>
 #include <cmath>
 
@@ -180,7 +181,7 @@ void plotWindow::openFile(const QString& fileName)
   }
   catch (knutException ex)
   {
-    QMessageBox::critical(this, "PlotWindow::openFile()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
+    MainWindow::showException(this, ex);
     return;
   }
   if (t_data)
@@ -216,7 +217,7 @@ void plotWindow::addPlot()
       }
       catch (knutException ex)
       {
-        QMessageBox::critical(this, "plotWindow::addPlot()", QString("%1:%2 %3").arg(ex.file.c_str()).arg(ex.line).arg(ex.message.message.c_str()), QMessageBox::Ok, 0, 0);
+        MainWindow::showException(this, ex);
       }
       if (added)
       {

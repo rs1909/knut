@@ -50,9 +50,10 @@ static inline void findTrivialIndices(const Vector& mulRe, const Vector& mulIm,
 
 int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
 {
-  P_ERROR(lp + pd + ns < 6);
-  int imin[6];
-  double dmin[6];
+#define NCRIT 6
+  P_ERROR_X1(lp + pd + ns < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
+  int imin[NCRIT];
+  double dmin[NCRIT];
   findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin);
   int ustab = 0;
   for (int i = 0; i < mulRe.Size(); ++i)
@@ -63,14 +64,16 @@ int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, 
     if (ok && mabs >= 1.0)  ++ustab;
   }
   return ustab;
+#undef NCRIT
 }
 
 PtType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
 {
+#define NCRIT 6
   const int aut = lp+pd+ns;
-  P_ERROR(aut < 4);
-  int imin[4];
-  double dmin[4];
+  P_ERROR_X1(aut < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
+  int imin[NCRIT];
+  double dmin[NCRIT];
   findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin);
   double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
   int iminLP = -1, iminPD = -1, iminNS = -1;
@@ -106,4 +109,5 @@ PtType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, c
   else if ((dminPD < dminLP) && (dminPD < dminNS)) return BifTFPD;
   else if ((dminNS < dminPD) && (dminNS < dminLP)) return BifTFNS;
   else return SolTF;
+#undef NCRIT
 }

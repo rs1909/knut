@@ -81,7 +81,7 @@ static void poly_gau(Vector& roots)
       a(0, 6) = 0;
       break;
     default:
-      P_MESSAGE("Unsupported degree of collocation polinomial is selected.");
+      P_MESSAGE1("Unsupported degree of collocation polinomial is selected.");
       return;
       break;
   }
@@ -615,8 +615,8 @@ void NColloc::Init(const Vector& sol, const Vector& par)
       for (int k = 0; k < NTAU; k++)
       {
         p_tau(k,idx) /= par(0);
-        P_ERROR_X2(p_tau(k,idx) <= NMAT, "\n NColloc::Init: DELAY > NMAT*PERIOD ", k);
-        P_ERROR_X2(p_tau(k,idx) >= 0.0, "\n NColloc::Init: Negative DELAY ", k);
+        P_ERROR_X3(p_tau(k,idx) <= NMAT, "The scaled delay became greater then NMAT times the period. k=", k, ".");
+        P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
         t[1+k] = (t[0] - p_tau(k,idx)) - floor(t[0] - p_tau(k,idx));  // nem szetvalasztott
 
         // binary search for in which interval is t-p_tau(k,idx)

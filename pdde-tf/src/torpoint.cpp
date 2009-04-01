@@ -97,7 +97,7 @@ void PointTR::Jacobian
         // nothing happens
         break;
       default:
-        P_ERROR_X2(false, "An unknown type of equation is encountered:", eqn(i));
+        P_MESSAGE3("An unknown type of equation is encountered: ", eqn(i), ".");
         break;
     }
   }

@@ -159,21 +159,21 @@ void SpFact::Fact()
     P_ASSERT_X(Numeric == 0, "This is a bug. The sparse matrix was already factorized.");
 
     int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
-    P_ERROR_X2(status == 0, "Error report from \"umfpack_di_symbolic()\":", status);
+    P_ERROR_X3(status == 0, "Error report from 'umfpack_di_symbolic()': ", status, ".");
     status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
     fact = true;
     if (status != 0)
     {
       if (status == 1)
       {
-        std::cout << "The matrix is singular. "
+        std::cerr << "The matrix is singular. "
         << "The diagonal of the factorized matrix is being dumped: "
         << status << "\n";
         Vector DX(n);
         GetDX(DX);
         DX.Print();
       }
-      P_ERROR_X2(status == 0, "Error report from \"umfpack_di_numeric()\":", status);
+      P_ERROR_X3(status == 0, "Error report from 'umfpack_di_numeric()': ", status, ".");
     }
     umfpack_di_free_symbolic(&Symbolic);
     Symbolic = 0;
@@ -325,7 +325,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
     }
   }
   while ((IDO == 1) || (IDO == -1));
-  P_ERROR_X3(IDO == 99, "IDO = ", (int)IDO, " is not expected\n");
+  P_ERROR_X3(IDO == 99, "IDO=", (int)IDO, " is not expected.");
   delete[] tvec2;
   delete[] tvec;
 

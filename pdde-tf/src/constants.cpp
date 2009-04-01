@@ -58,19 +58,19 @@ inline bool NConstants::inputAssert(std::istream& is)
     switch (is.rdstate())
     {
       case std::istream::eofbit:
-        P_MESSAGE("Unexpected end of file");
+        P_MESSAGE1("std::istream: unexpected end of file.");
         return true;
         break;
       case std::istream::failbit:
-        P_MESSAGE("Input failed\n");
+        P_MESSAGE1("std::istream: Input failed.");
         return true;
         break;
       case std::istream::badbit:
-        P_MESSAGE("Bad input\n");
+        P_MESSAGE1("std::istream: bad input.");
         return true;
         break;
       default:
-        P_MESSAGE("Unexpected error");
+        P_MESSAGE1("std::istream: unexpected error.");
         return true;
         break;
     }
@@ -89,10 +89,10 @@ static inline const char *getNodeText(mxml_node_t* nd)
         if (nd->child->type == MXML_TEXT)
         {
           return nd->child->value.text.string; 
-        } else std::cout << "XML wrong element type.";
-      } else std::cout << "XML node has too many children.";
+        } else P_MESSAGE1("MXML: wrong element type.");
+      } else P_MESSAGE1("MXML: node has too many children.");
     } else return "";
-  } else std::cout << "XML node could not be found.";
+  } else P_MESSAGE1("MXML: node could not be found.");
   return "";
 }
 
@@ -525,7 +525,7 @@ int NConstants::toEqnVar(System& sys,
         testFN = eqn(i);
         testFN_idx = i;
       }
-      else P_MESSAGE("Too many test functionals.");
+      else P_MESSAGE1("Too many test functionals.");
     }
   }
 
