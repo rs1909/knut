@@ -11,8 +11,10 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>xml</string>
+				<string>knut</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>knut.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Knut Constants File</string>
 			<key>CFBundleTypeRole</key>

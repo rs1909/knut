@@ -23,12 +23,16 @@ MainWindow::MainWindow(const QString& appDir) :
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), compilerProcess(0)
 {
+  // QTabWidget
+  // a) files + equations b) numerics c) symmetry d) torus
   QTabWidget* tabWidget = new QTabWidget();
+  
   // the container widgets
   QWidget* systemWidget = new QWidget();
   QWidget* numericsWidget = new QWidget();
   QWidget* symmetryWidget = new QWidget();
   QWidget* torusWidget = new QWidget();
+  
   // the layout widgets
   QGridLayout* systemGrid = new QGridLayout();
   QGridLayout* numericsGrid = new QGridLayout();
@@ -47,9 +51,7 @@ MainWindow::MainWindow(const QString& appDir) :
 
   setCentralWidget(tabWidget);
 
-  /// QTabWidget
-  /// a) files + equations b) numerics c) symmetry d) torus
-
+  // Lable for the input file
   QHBoxLayout *getInputFileLayout = new QHBoxLayout;
   QLabel* inputFileLabel = new QLabel("INPUT");
   inputFileLabel->setToolTip(QString("Input file which contains the starting point"));
@@ -66,10 +68,9 @@ MainWindow::MainWindow(const QString& appDir) :
   systemGrid->addWidget(inputFileLabel, 0, 0, Qt::AlignLeft | Qt::AlignVCenter);
   systemGrid->addWidget(inputFile, 0, 1, 1, 3);
   systemGrid->addLayout(getInputFileLayout, 0, 4);
-  connect(inputFileAct, SIGNAL(triggered()), this, SLOT(setInputFile()));
-  connect(inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot()));
-  connect(inputFile, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setInputFileText(const QString&)));
-  connect(&parameters, SIGNAL(inputFileChanged(const std::string&)), this, SLOT(setInputFileText(const std::string&)));
+  connect(inputFileAct, SIGNAL(triggered()), this, SLOT(setInputFile())); // opening an input file
+  connect(inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot())); // plotting the input file
+  connect(inputFile, SIGNAL(editingFinished()), this, SLOT(setInputFileParameter()));
 
   QHBoxLayout *getOutputFileLayout = new QHBoxLayout;
   QLabel* outputFileLabel = new QLabel("OUTPUT");
@@ -89,8 +90,7 @@ MainWindow::MainWindow(const QString& appDir) :
   systemGrid->addLayout(getOutputFileLayout, 1, 4);
   connect(outputFileAct, SIGNAL(triggered()), this, SLOT(setOutputFile()));
   connect(outputFilePlotAct, SIGNAL(triggered()), this, SLOT(outputPlot()));
-  connect(outputFile, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setOutputFileText(const QString&)));
-  connect(&parameters, SIGNAL(outputFileChanged(const std::string&)), this, SLOT(setOutputFileText(const std::string&)));
+  connect(outputFile, SIGNAL(editingFinished()), this, SLOT(setOutputFileParameter()));
 
   // this only for setting SYSNAME
   QHBoxLayout *sysnameLayout = new QHBoxLayout;
@@ -112,8 +112,7 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(sysdefAct, SIGNAL(triggered()), this, SLOT(setSysName()));
   connect(compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
   // sets up a bidirectional connection
-  connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameTextParameter()));
-  connect(&parameters, SIGNAL(sysnameChanged(const std::string&)), this, SLOT(setSysNameText(const std::string&)));
+  connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
 
   // setting LABEL
   QLabel* labelLabel = new QLabel("LABEL");
@@ -122,44 +121,33 @@ MainWindow::MainWindow(const QString& appDir) :
   label->setRange(0, 0xffff);
   systemGrid->addWidget(labelLabel, 3, 0, Qt::AlignLeft | Qt::AlignBottom);
   systemGrid->addWidget(label, 4, 0);
-  connect(label, SIGNAL(valueChanged(int)), &parameters, SLOT(setLabel(int)));
-  connect(&parameters, SIGNAL(labelChanged(int)), this, SLOT(setLabel(int)));
+  connect(label, SIGNAL(valueChanged(int)), this, SLOT(setLabelParameter(int)));
 
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
-  for (int i = 0; i < parameters.pointSize(); ++i)
+  for (int i = 0; i < parameters.pointTypeSize(); ++i)
   {
-    pttype->addItem(parameters.pointString(i).c_str());
+    pttype->addItem(parameters.pointTypeString(i).c_str());
   }
   // thes set the values
-  connect(pttype, SIGNAL(currentIndexChanged(int)), &parameters, SLOT(setPointTypeIdx(int)));
-  connect(&parameters, SIGNAL(pointTypeChangedIdx(int)), this, SLOT(setPointTypeIdx(int)));
-  // arranges some widget changes
-  connect(&parameters, SIGNAL(pointTypeChangedIdx(int)), this, SLOT(setPointType()));
+  connect(pttype, SIGNAL(currentIndexChanged(int)), this, SLOT(setPointTypeIdxParameter(int)));
 
   QLabel* cpLabel = new QLabel("CP");
   cpLabel->setToolTip(QString("The continuation parameter."));
   cp = new QComboBox();
-  setupCp();
-  // this sets up the indices
-  connect(&parameters, SIGNAL(sysnameChanged(const std::string&)), this, SLOT(setupCp()));
-  // this is the bidirectional connection
-  connect(cp, SIGNAL(currentIndexChanged(int)), &parameters, SLOT(setCpIdx(int)));
-  connect(&parameters, SIGNAL(cpChangedIdx(int)), this, SLOT(setCpIdx(int)));
+  connect(cp, SIGNAL(currentIndexChanged(int)), this, SLOT(setCpIdxParameter(int)));
 
   QLabel* branchswLabel = new QLabel("SWITCH");
   branchswLabel->setToolTip("Switches to another branch at the bifurcation point.");
   branchsw = new QComboBox();
-  for (int i = 0; i < parameters.branchswSize(); ++i)
+  for (int i = 0; i < parameters.branchSWSize(); ++i)
   {
-    branchsw->addItem(parameters.branchswString(i).c_str());
+    branchsw->addItem(parameters.branchSWString(i).c_str());
   }
   systemGrid->addWidget(branchswLabel, 3, 4, Qt::AlignHCenter | Qt::AlignBottom);
   systemGrid->addWidget(branchsw, 4, 4);
-  // this is the bidirectional connection
-  connect(branchsw, SIGNAL(currentIndexChanged(int)), &parameters, SLOT(setBranchSWIdx(int)));
-  connect(&parameters, SIGNAL(branchswChangedIdx(int)), this, SLOT(setBranchSWIdx(int)));
+  connect(branchsw, SIGNAL(currentIndexChanged(int)), this, SLOT(setBranchSWIdxParameter(int)));
 
   eqnsLabel = new QLabel("NEQNS");
   eqnsLabel->setToolTip(QString("NPARX: Number of additional parameters to be used in the continuation.\n"
@@ -176,8 +164,7 @@ MainWindow::MainWindow(const QString& appDir) :
   table = new EqnVarTableView(&parameters);
   systemGrid->addWidget(table, 5, 1, 2, 4, Qt::AlignVCenter);
   // this has to reconfigure the table
-  connect(eqns, SIGNAL(valueChanged(int)), &parameters, SLOT(setNEqns(int)));
-  connect(&parameters, SIGNAL(neqnsChanged(int)), this, SLOT(setNEqns(int)));
+  connect(eqns, SIGNAL(valueChanged(int)), this, SLOT(setNEqnsParameter(int)));
 
   // setting NINT, NDEG, NMUL, STAB, NMAT
   QLabel* nintLabel = new QLabel("NINT");
@@ -210,16 +197,11 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(nmul, 1, 2);
   numericsGrid->addWidget(stab, 1, 4, Qt::AlignHCenter);
   numericsGrid->addWidget(nmat, 1, 3);
-  connect(nint, SIGNAL(valueChanged(int)), &parameters, SLOT(setNInt(int)));
-  connect(ndeg, SIGNAL(valueChanged(int)), &parameters, SLOT(setNDeg(int)));
-  connect(nmul, SIGNAL(valueChanged(int)), &parameters, SLOT(setNMul(int)));
-  connect(stab, SIGNAL(stateChanged(int)), &parameters, SLOT(setStab(int)));
-  connect(nmat, SIGNAL(valueChanged(int)), &parameters, SLOT(setNMat(int)));
-  connect(&parameters, SIGNAL(nintChanged(int)), this, SLOT(setNInt(int)));
-  connect(&parameters, SIGNAL(ndegChanged(int)), this, SLOT(setNDeg(int)));
-  connect(&parameters, SIGNAL(nmulChanged(int)), this, SLOT(setNMul(int)));
-  connect(&parameters, SIGNAL(stabChanged(bool)), this, SLOT(setStab(bool)));
-  connect(&parameters, SIGNAL(nmatChanged(int)), this, SLOT(setNMat(int)));
+  connect(nint, SIGNAL(valueChanged(int)), this, SLOT(setNIntParameter(int)));
+  connect(ndeg, SIGNAL(valueChanged(int)), this, SLOT(setNDegParameter(int)));
+  connect(nmul, SIGNAL(valueChanged(int)), this, SLOT(setNMulParameter(int)));
+  connect(stab, SIGNAL(stateChanged(int)), this, SLOT(setStabParameter(int)));
+  connect(nmat, SIGNAL(valueChanged(int)), this, SLOT(setNMatParameter(int)));
 
   QLabel* nint1Label = new QLabel("NINT1");
   QLabel* nint2Label = new QLabel("NINT2");
@@ -241,14 +223,10 @@ MainWindow::MainWindow(const QString& appDir) :
   torusGrid->addWidget(nint2, 1, 1);
   torusGrid->addWidget(ndeg1, 1, 2);
   torusGrid->addWidget(ndeg2, 1, 3);
-  connect(nint1, SIGNAL(valueChanged(int)), &parameters, SLOT(setNInt1(int)));
-  connect(nint2, SIGNAL(valueChanged(int)), &parameters, SLOT(setNInt2(int)));
-  connect(ndeg1, SIGNAL(valueChanged(int)), &parameters, SLOT(setNDeg1(int)));
-  connect(ndeg2, SIGNAL(valueChanged(int)), &parameters, SLOT(setNDeg2(int)));
-  connect(&parameters, SIGNAL(nint1Changed(int)), this, SLOT(setNInt1(int)));
-  connect(&parameters, SIGNAL(nint2Changed(int)), this, SLOT(setNInt2(int)));
-  connect(&parameters, SIGNAL(ndeg1Changed(int)), this, SLOT(setNDeg1(int)));
-  connect(&parameters, SIGNAL(ndeg2Changed(int)), this, SLOT(setNDeg2(int)));
+  connect(nint1, SIGNAL(valueChanged(int)), this, SLOT(setNInt1Parameter(int)));
+  connect(nint2, SIGNAL(valueChanged(int)), this, SLOT(setNInt2Parameter(int)));
+  connect(ndeg1, SIGNAL(valueChanged(int)), this, SLOT(setNDeg1Parameter(int)));
+  connect(ndeg2, SIGNAL(valueChanged(int)), this, SLOT(setNDeg2Parameter(int)));
 
   QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
 
@@ -282,20 +260,11 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(dsMin, 3, 2);
   numericsGrid->addWidget(dsMax, 3, 3);
   numericsGrid->addWidget(dsStart, 3, 4);
-  connect(steps, SIGNAL(valueChanged(int)), &parameters, SLOT(setSteps(int)));
-  connect(ds, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDs(const QString &)));
-  connect(dsMin, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsMin(const QString &)));
-  connect(dsMax, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsMax(const QString &)));
-  connect(dsStart, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setDsStart(const QString &)));
-  connect(ds, SIGNAL(editingFinished()), &parameters, SLOT(editedDs()));
-  connect(dsMin, SIGNAL(editingFinished()), &parameters, SLOT(editedDsMin()));
-  connect(dsMax, SIGNAL(editingFinished()), &parameters, SLOT(editedDsMax()));
-  connect(dsStart, SIGNAL(editingFinished()), &parameters, SLOT(editedDsStart()));
-  connect(&parameters, SIGNAL(stepsChanged(int)), this, SLOT(setSteps(int)));
-  connect(&parameters, SIGNAL(dsChanged(const QString&)), ds, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(dsMinChanged(const QString&)), dsMin, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(dsMaxChanged(const QString&)), dsMax, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(dsStartChanged(const QString&)), dsStart, SLOT(setText(const QString&)));
+  connect(steps, SIGNAL(valueChanged(int)), this, SLOT(setStepsParameter(int)));
+  connect(ds, SIGNAL(editingFinished()), this, SLOT(setDsParameter()));
+  connect(dsMin, SIGNAL(editingFinished()), this, SLOT(setDsMinParameter()));
+  connect(dsMax, SIGNAL(editingFinished()), this, SLOT(setDsMaxParameter()));
+  connect(dsStart, SIGNAL(editingFinished()), this, SLOT(setDsStartParameter()));
 
   QLabel* epsCLabel = new QLabel("EPSC");
   QLabel* epsRLabel = new QLabel("EPSR");
@@ -327,21 +296,11 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(epsK, 5, 2);
   numericsGrid->addWidget(cpMin, 5, 3);
   numericsGrid->addWidget(cpMax, 5, 4);
-  connect(epsC, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setEpsC(const QString &)));
-  connect(epsR, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setEpsR(const QString &)));
-  connect(epsK, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setEpsK(const QString &)));
-  connect(cpMin, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setCpMin(const QString &)));
-  connect(cpMax, SIGNAL(textChanged(const QString&)), &parameters, SLOT(setCpMax(const QString &)));
-  connect(epsC, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsC()));
-  connect(epsR, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsR()));
-  connect(epsK, SIGNAL(editingFinished()), &parameters, SLOT(editedEpsK()));
-  connect(cpMin, SIGNAL(editingFinished()), &parameters, SLOT(editedCpMin()));
-  connect(cpMax, SIGNAL(editingFinished()), &parameters, SLOT(editedCpMax()));
-  connect(&parameters, SIGNAL(epsCChanged(const QString&)), epsC, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(epsRChanged(const QString&)), epsR, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(epsKChanged(const QString&)), epsK, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(cpMinChanged(const QString&)), cpMin, SLOT(setText(const QString&)));
-  connect(&parameters, SIGNAL(cpMaxChanged(const QString&)), cpMax, SLOT(setText(const QString&)));
+  connect(epsC, SIGNAL(editingFinished()), this, SLOT(setEpsCParameter()));
+  connect(epsR, SIGNAL(editingFinished()), this, SLOT(setEpsRParameter()));
+  connect(epsK, SIGNAL(editingFinished()), this, SLOT(setEpsKParameter()));
+  connect(cpMin, SIGNAL(editingFinished()), this, SLOT(setCpMinParameter()));
+  connect(cpMax, SIGNAL(editingFinished()), this, SLOT(setCpMaxParameter()));
 
   QLabel* nitCLabel = new QLabel("NITC");
   QLabel* nitRLabel = new QLabel("NITR");
@@ -378,16 +337,14 @@ MainWindow::MainWindow(const QString& appDir) :
   sym = new SYMTableView(&parameters);
 
   symmetryGrid->addWidget(sym, 3, 0, 2, 5);
-  connect(nsym, SIGNAL(valueChanged(int)), &parameters, SLOT(setNSym(int)));
-  connect(nitC, SIGNAL(valueChanged(int)), &parameters, SLOT(setNItC(int)));
-  connect(nitR, SIGNAL(valueChanged(int)), &parameters, SLOT(setNItR(int)));
-  connect(nitK, SIGNAL(valueChanged(int)), &parameters, SLOT(setNItK(int)));
-  connect(iad, SIGNAL(valueChanged(int)), &parameters, SLOT(setIad(int)));
-  connect(&parameters, SIGNAL(nsymChanged(int)), this, SLOT(setNSym(int)));
-  connect(&parameters, SIGNAL(nitCChanged(int)), this, SLOT(setNItC(int)));
-  connect(&parameters, SIGNAL(nitRChanged(int)), this, SLOT(setNItR(int)));
-  connect(&parameters, SIGNAL(nitKChanged(int)), this, SLOT(setNItK(int)));
-  connect(&parameters, SIGNAL(iadChanged(int)), this, SLOT(setIad(int)));
+  connect(nsym, SIGNAL(valueChanged(int)), this, SLOT(setNSymParameter(int)));
+  connect(nitC, SIGNAL(valueChanged(int)), this, SLOT(setNItCParameter(int)));
+  connect(nitR, SIGNAL(valueChanged(int)), this, SLOT(setNItRParameter(int)));
+  connect(nitK, SIGNAL(valueChanged(int)), this, SLOT(setNItKParameter(int)));
+  connect(iad, SIGNAL(valueChanged(int)), this, SLOT(setIadParameter(int)));
+
+  // update parameters in the GUI, when `parameters' have changed.
+  connect(&parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
 
   // connecting exceptions
   connect(&compThread, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));

@@ -79,13 +79,13 @@ void BaseComp::run(const char* branchFile)
       pt.setCont(params->getCp() - VarPAR0);
   
       // setting the symmetric components
-      Array1D<int> sre(params->getNSym()), sim(params->getNSym());
+      Array1D<int> sre(params->getSymReSize()), sim(params->getSymReSize());
       for (int i = 0; i < sre.Size(); ++i)
       {
         sre(i) = params->getSymRe(i);
         sim(i) = params->getSymIm(i);
       }
-      if (params->getNSym() != 0) pt.setSym(sre, sim);
+      if (params->getSymReSize() != 0) pt.setSym(sre, sim);
 
       // load the initial guess
       if (params->getLabel() != 0)

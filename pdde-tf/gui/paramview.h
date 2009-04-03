@@ -34,7 +34,7 @@ class ParamsModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &/*parent = QModelIndex()*/) const
     {
-      return parameters->getNEqns();
+      return parameters->getEqnsNumSize();
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -83,6 +83,20 @@ class EqnVarTableView : public QTableView
 
   private slots:
 
+    void setConstant(const char* name)
+    {
+      bool call = false;
+      if (!strcmp(name,"parxNum")) call = true;
+      else if (!strcmp(name,"eqnsNum")) call = true;
+      else if (!strcmp(name,"varsNum")) call = true;
+      else if (!strcmp(name,"translationMaps")) call = true;
+      if (call)
+      {
+        model->dataUpdated();
+        this->resetSize();
+      }
+    }
+    
     void resetSize();
 
   private:
@@ -113,7 +127,7 @@ class SYMModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &/*parent = QModelIndex()*/) const
     {
-      return parameters->getNSym();
+      return parameters->getSymReSize();
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -163,7 +177,18 @@ class SYMTableView : public QTableView
   public:
     SYMTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
 
-  public slots:
+  private slots:
+
+    void setConstant(const char* name)
+    {
+      bool call = false;
+      if (!strcmp(name,"symIm")) call = true;
+      if (call)
+      {
+        model->dataUpdated();
+        this->resetSize();
+      }
+    }
 
     void resetSize();
 
