@@ -68,7 +68,7 @@ ENDIF(WIN32)
 
 CONFIGURE_FILE( src/config.h.cmake src/config.h )
 CONFIGURE_FILE( knut.spec.cmake knut.spec )
-CONFIGURE_FILE( doc/html/index.html.in doc/html/index.html )
+CONFIGURE_FILE( doc/html/index.html.cmake doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 IF(WIN32)
   CONFIGURE_FILE( wininstaller.nsi.cmake wininstaller.nsi )
