@@ -19,13 +19,14 @@ class screenDialog : public QDialog
       this->setLayout(layout);
       display->setLineWrapMode(QTextEdit::NoWrap);
       display->setReadOnly(true);
-      display->setPlainText(" ");
-	  display->setFontFamily("Courier");
+      QFont font("Courier");
+      font.setFixedPitch(true);
+      display->setFont(font);
 
-	  QSettings settings("Knut", "text window");
+      QSettings settings("Knut", "text window");
       QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
-	  QSize size = settings.value("size", QSize(400, 400)).toSize();
-	  resize(size);
+      QSize size = settings.value("size", QSize(400, 400)).toSize();
+      resize(size);
       move(pos);
     }
 	~screenDialog()

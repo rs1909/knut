@@ -1,5 +1,7 @@
+#include <cstring>
 #include "knerror.h"
 #include "config.h"
+
 
 void knutException::removePath()
 {

@@ -66,14 +66,11 @@ class NConstants
     KN_CONSTANT(       pointType,  PtType,   getPointType,  setPointType)
     KN_CONSTANT(       cpType,     char,     getCpType,     setCpType)
     KN_CONSTANT(       cpNum,      int,      getCpNum,      setCpNum)
-    KN_CONSTANT(       branchSW,   BranchSW, getBranchSW,   setBranchSW)//    KN_CONSTANT(       neqns,      int,      getNEqns,      setNEqns)
-//   std::vector<Var> parx;
+    KN_CONSTANT(       branchSW,   BranchSW, getBranchSW,   setBranchSW)
     KN_ARRAY_CONSTANT( parxType,   char,     getParxType,   setParxType, getParxTypeSize, setParxTypeSize, 'P')
     KN_ARRAY_CONSTANT( parxNum,    int,      getParxNum,    setParxNum,  getParxNumSize,  setParxNumSize, 0)
-//   std::vector<Eqn> eqns;
     KN_ARRAY_CONSTANT( eqnsType,   char,     getEqnsType,   setEqnsType, getEqnsTypeSize, setEqnsTypeSize, 'E')
     KN_ARRAY_CONSTANT( eqnsNum,    int,      getEqnsNum,    setEqnsNum,  getEqnsNumSize,  setEqnsNumSize, 0)
-//   std::vector<Var> vars;
     KN_ARRAY_CONSTANT( varsType,   char,     getVarsType,   setVarsType, getVarsTypeSize, setVarsTypeSize, 'P')
     KN_ARRAY_CONSTANT( varsNum,    int,      getVarsNum,    setVarsNum,  getVarsNumSize,  setVarsNumSize, 0)
     KN_CONSTANT(       nInt,       int,      getNInt,       setNInt)
@@ -99,7 +96,6 @@ class NConstants
     KN_CONSTANT(       nItC,       int,      getNItC,       setNItC)
     KN_CONSTANT(       nItR,       int,      getNItR,       setNItR)
     KN_CONSTANT(       nItK,       int,      getNItK,       setNItK)
-//    KN_CONSTANT(       nSym,       int,      getnsym,       setNsym)
     KN_ARRAY_CONSTANT( symRe,      int,      getSymRe,      setSymRe, getSymReSize, setSymReSize, 0)
     KN_ARRAY_CONSTANT( symIm,      int,      getSymIm,      setSymIm, getSymImSize, setSymImSize, 0)
     // from sysname
@@ -108,11 +104,11 @@ class NConstants
  
   public:
     // for double, int, char
-    // for i in `g++ -E -DEXTRACT_NAMES test.cpp | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
+    // for i in `g++ -E -DEXTRACT_NAMES constants.h | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
     NConstants() : label(0), cpType(0), cpNum(0), nInt(0), nDeg(0), nMul(0), nMat(0), nInt1(0), nInt2(0), nDeg1(0), nDeg2(0), steps(0), iad(0), cpMin(0), cpMax(0), ds(0), dsMin(0), dsMax(0), dsStart(0), epsC(0), epsR(0), epsK(0), nItC(0), nItR(0), nItK(0), nPar(0), nDim(0)
     {}
     // to extract the dependencies run:
-    // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES test.cpp | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
+    // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
     NConstants(const NConstants& src) : inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), steps(src.steps), iad(src.iad), cpMin(src.cpMin), cpMax(src.cpMax), ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), epsC(src.epsC), epsR(src.epsR), epsK(src.epsK), nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), nPar(src.nPar), nDim(src.nDim) {}
     ~NConstants() {}
     // for setting up the continuation

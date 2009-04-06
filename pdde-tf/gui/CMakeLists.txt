@@ -85,7 +85,7 @@ IF(NOT APPLE)
   	knutlib laarpack umfpack amd mxml
   	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS})
 
-  INSTALL( TARGETS knut-gui cfiletoxml DESTINATION ${KNUT_BIN_DIR} )
+  INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
 
   IF(WIN32)
     SET_TARGET_PROPERTIES( cfiletoxml PROPERTIES LINK_FLAGS "-Wl,-s" )

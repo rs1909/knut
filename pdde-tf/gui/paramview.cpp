@@ -16,7 +16,6 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid()) return QVariant();
 
-  if (index.column() >= parameters->getEqnsNumSize()) return QVariant();
   if (index.row() >= 2) return QVariant();
 
   if (role == Qt::DisplayRole)
@@ -24,16 +23,32 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
     if (index.row() == 0)
     {
       if (parameters->getPointType() == SolUser)
+      {
         // Find the equation NAME based on its index in the list
+//        std::cerr << "at " << index.row() << "," << index.column() << " E "
+//                  << parameters->getEqnsType(index.column()) 
+//                  << parameters->getEqnsNum(index.column()) << "\n";
         return QVariant(parameters->findEqnsString(parameters->getEqns(index.column())).c_str());
+      }
+      else
+      {
         // Find the parameter NAME based on its index in the list
-      else return QVariant(parameters->findParXString(parameters->getParx(index.column())).c_str());
+//        std::cerr << "at " << index.row() << "," << index.column() << " Px "
+//                  << parameters->getParxType(index.column()) 
+//                  << parameters->getParxNum(index.column()) << "\n";
+        return QVariant(parameters->findParxString(parameters->getParx(index.column())).c_str());
+      }
     }
     if (index.row() == 1)
     {
       if (parameters->getPointType() == SolUser)
-         // Find the variable NAME based on its index in the list
+      {
+        // Find the variable NAME based on its index in the list
+//        std::cerr << "at " << index.row() << "," << index.column() << " V "
+//                  << parameters->getVarsType(index.column()) 
+//                  << parameters->getVarsNum(index.column()) << "\n";
         return QVariant(parameters->findVarsString(parameters->getVars(index.column())).c_str());
+      }
     }
   }
   return QVariant();
@@ -53,13 +68,21 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
   {
     if (index.row() == 0)
     {
-      // set the equation at position index.column() by its index
-      if (parameters->getPointType() == SolUser) parameters->setEqnsIdx(index.column(), value.toInt());
-      // set the extra parameter at position index.column() by its index
-      else parameters->setParxIdx(index.column(), value.toInt());
+      if (parameters->getPointType() == SolUser)
+      {
+        // set the equation at position index.column() by its index
+      	parameters->setEqnsIdx(index.column(), value.toInt());
+      } else
+      {
+      	// set the extra parameter at position index.column() by its index
+   		parameters->setParxIdx(index.column(), value.toInt());
+      }
     }
-    // set the variable at position index.column() by its index
-    if ((index.row() == 1) && (parameters->getPointType() == SolUser)) parameters->setVarsIdx(index.column(), value.toInt());
+    if ((index.row() == 1) && (parameters->getPointType() == SolUser))
+    {
+      // set the variable at position index.column() by its index
+   	  parameters->setVarsIdx(index.column(), value.toInt());
+    }
     emit dataChanged(index, index);
     return true;
   }
@@ -250,11 +273,6 @@ EqnVarTableView::EqnVarTableView(NConstantsQtGui* params, QWidget* parent_) : QT
   setModel(model);
   resetSize();
   connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
-//  connect(parameters, SIGNAL(sysnameChanged(const std::string&)), model, SLOT(dataUpdated()));
-//  connect(parameters, SIGNAL(neqnsChanged(int)), model, SLOT(dataUpdated()));
-//  connect(parameters, SIGNAL(neqnsChanged(int)), this, SLOT(resetSize()));
-//  connect(parameters, SIGNAL(pointTypeChangedIdx(int)), model, SLOT(dataUpdated()));
-//  connect(parameters, SIGNAL(pointTypeChangedIdx(int)), this, SLOT(resetSize()));
 }
 
 void EqnVarTableView::resetSize()
@@ -292,8 +310,6 @@ SYMTableView::SYMTableView(NConstantsQtGui* params, QWidget* parent_) : QTableVi
   setModel(model);
   resetSize();
   connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
-//  connect(parameters, SIGNAL(nsymChanged(int)), model, SLOT(dataUpdated()));
-//  connect(parameters, SIGNAL(nsymChanged(int)), this, SLOT(resetSize()));
 }
 
 void SYMTableView::resetSize()

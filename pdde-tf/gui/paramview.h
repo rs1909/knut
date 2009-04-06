@@ -34,7 +34,8 @@ class ParamsModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &/*parent = QModelIndex()*/) const
     {
-      return parameters->getEqnsNumSize();
+      if (parameters->getPointType() == SolUser) return parameters->getEqnsNumSize();
+      else return parameters->getParxNumSize();
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -86,7 +87,8 @@ class EqnVarTableView : public QTableView
     void setConstant(const char* name)
     {
       bool call = false;
-      if (!strcmp(name,"parxNum")) call = true;
+      if (!strcmp(name,"pointType")) call = true;
+      else if (!strcmp(name,"parxNum")) call = true;
       else if (!strcmp(name,"eqnsNum")) call = true;
       else if (!strcmp(name,"varsNum")) call = true;
       else if (!strcmp(name,"translationMaps")) call = true;

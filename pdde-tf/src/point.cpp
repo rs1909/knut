@@ -246,7 +246,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     P_MESSAGE3("Invalid point type ", Pt, ".");
     break;
   }
-  P_ERROR_X1(tab.nparx == parx.Size(), "Wrong number of additional continuation parameters (NPARX).");
+  P_ERROR_X4(tab.nparx == parx.Size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.Size());
   eqnr.Init(tab.neqn);
   varr.Init(tab.neqn);
   for (int i = 0; i < tab.neqn; i++)

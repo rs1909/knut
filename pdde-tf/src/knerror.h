@@ -14,6 +14,7 @@
 # define snprintf sprintf_s
 #endif
 
+#include <cstdio>
 #include <string>
 
 class knutMessage

@@ -11,8 +11,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
 // For loading XML constant files
-#include <mxml.h>
+#include "mxml.h"
+
 static const char *knut_whitespace_cb(mxml_node_t *node, int where)	
 {
   const unsigned int max_levels = 12;
@@ -512,8 +514,8 @@ int NConstants::toEqnVar(System& sys,
   }
   else
   {
-    Array1D<Var> L_PARX(getEqnsNumSize());
-    for (int i = 0; i < getEqnsNumSize(); i++)
+    Array1D<Var> L_PARX(getParxNumSize());
+    for (int i = 0; i < getParxNumSize(); i++)
     {
       L_PARX(i) = getParx(i);
     }

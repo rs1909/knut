@@ -385,8 +385,10 @@ double TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vecto
     #endif
     }
   }
-  std::cout << "Distance between the predicted and real critial eigenfunctions: " << dist/norm1 << "\n";
-  if (dist/norm1 > 0.01) std::cout << "*** Warning: it won't be able to switch the branch! ***\n";
+//   std::cerr << "Distance between the predicted and real critial eigenfunctions: " << dist/norm1 << "\n";
+  P_ERROR_X3(dist/norm1 < 0.01, "Cannot switch branches."
+    " The predicted and the computed eigenfunctions are not close enough."
+    " Check your selection of P0, perhaps it is not small enough, that is, ", dist/norm1, ".");
 
   return period;
 }
