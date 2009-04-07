@@ -1,10 +1,10 @@
 Summary: Numerical continuation software for delay-differential equations
-Name: KNUT
+Name: Knut
 Version: @PACKAGE_VERSION@
 Release: 1%{?dist}
 License: GPL v2
 Group: Application/Scientific
-Source: KNUT-@PACKAGE_VERSION@.tar.bz2
+Source: Knut-@PACKAGE_VERSION@.tar.bz2
 URL: N/A
 Vendor: Unknown
 Packager: Robert Szalai <s z a l a i _at_ m m . b m e . h u>

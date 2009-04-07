@@ -836,34 +836,6 @@ void NColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
   }
 }
 
-void NColloc::InterpolateREAL(Array3D<double>& solData, const Vector& sol)
-{
-  for (int idx = 0; idx < NDEG*NINT; ++idx)   // i: interval; j: which collocation point
-  {
-    for (int p = 0; p < NTAU; p++)
-    {
-      for (int k = 0; k < NDIM; k++)
-      {
-        // std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
-        solData(k, p, idx) = 0.0;
-        for (int l = 0; l < NDEG + 1; l++)
-        {
-          solData(k, p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
-        }
-      }
-    }
-    // x'(t)
-    for (int k = 0; k < NDIM; k++)
-    {
-      solData(k, NTAU, idx) = 0.0;
-      for (int l = 0; l < NDEG + 1; l++)
-      {
-        solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
-      }
-    }
-  }
-}
-
 void NColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)

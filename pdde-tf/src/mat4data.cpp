@@ -422,15 +422,16 @@ void mat4Data::openReadOnly(const std::string& fileName)
     nint2_offset = findMatrix("knut_nint2", &nint2_header, true, 1, ncols, 0, fileName.c_str());
     nint2 = static_cast<int>(*((double*)((char*)address + nint2_offset + nint2_header.col_off(0))));
 
-    ndeg1_offset = findMatrix("knut_ndeg2", &ndeg1_header, true, 1, ncols, 0, fileName.c_str());
+    ndeg1_offset = findMatrix("knut_ndeg1", &ndeg1_header, true, 1, ncols, 0, fileName.c_str());
     ndeg1 = static_cast<int>(*((double*)((char*)address + ndeg1_offset + ndeg1_header.col_off(0))));
 
-    ndeg2_offset = findMatrix("knut_mesh1", &ndeg2_header, true, 1, ncols, 0, fileName.c_str());
+    ndeg2_offset = findMatrix("knut_ndeg2", &ndeg2_header, true, 1, ncols, 0, fileName.c_str());
     ndeg2 = static_cast<int>(*((double*)((char*)address + ndeg2_offset + ndeg2_header.col_off(0))));
 
     mesh1_offset = findMatrix("knut_mesh1", &mesh1_header, true, nint1*ndeg1, ncols, 0, fileName.c_str());
 
     mesh2_offset = findMatrix("knut_mesh2", &mesh2_header, true, nint2*ndeg2, ncols, 0, fileName.c_str());
+
     blanket_offset = findMatrix("knut_blanket", &blanket_header, true, ndim*nint1*ndeg1*nint2*ndeg2, ncols, 0, fileName.c_str());
   }
 }

@@ -28,7 +28,6 @@ class NColloc : public BaseColloc
     void meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent);
 
     void Interpolate(Array3D<double>& out, const Vector& sol);
-    void InterpolateREAL(Array3D<double>& out, const Vector& sol);
     void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
     void InterpolateMSH(Array3D<double>& out, const Vector& sol);
 

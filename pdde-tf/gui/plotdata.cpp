@@ -391,7 +391,10 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     Graph.rbegin()->y.Init(data->getNPoints());
     for (int i = 0; i < data->getNPoints(); i++)
     {
-      Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
+      if (x != XParameter0) 
+        Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
+      else
+        Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
     }
     ++xadded;
   }
