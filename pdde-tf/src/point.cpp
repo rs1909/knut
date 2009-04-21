@@ -22,53 +22,20 @@
 #include <cmath>
 #include <cfloat>
 
-// __not__ specified in the constants file
-#define MIN_NSIMAG 1e-4
-
 #define NDIM colloc->Ndim()
 #define NTAU colloc->Ntau()
 #define NPAR colloc->Npar()
 #define NINT colloc->Nint()
 #define NDEG colloc->Ndeg()
 
-// private
-void Point::FillSol(System& sys_)
-{
-  Vector fx(colloc->Ndim());
 
-  sys_.stpar(par);
-  par(NPAR+ParPeriod) = 1.0;
-
-  for (int i = 0; i < colloc->Nint(); i++)
-  {
-    for (int d = 0; d <  colloc->Ndeg(); d++)
-    {
-      sys_.stsol(fx, colloc->Profile(i, d));
-      for (int j = 0; j < colloc->Ndim(); j++)
-      {
-        sol(NDIM*(i*NDEG + d) + j) = fx(j);
-      }
-    }
-  }
-  for (int j = 0; j < colloc->Ndim(); j++)
-  {
-    sol(NDIM*NDEG*NINT + j) = sol(j);
-  }
-}
-
-
-Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : BasePoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1)),
-    mRe(nmul), mIm(nmul),
-    rotRe(2), rotIm(2),                  // !!!only for Hartmut's equation!!!!
+Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
 //     colloc(sys_, nint, ndeg, nmat),
     jacStab(nmat, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg + 1))
 {
   colloc = new NColloc(sys_, nint, ndeg, nmat);
   basecolloc = colloc;
-  rotRe(0) = 0;
-  rotIm(0) = 1;
-  rotRe(1) = 3;
-  rotIm(1) = 4;
+  persolcolloc = colloc;
 
   Construct();
   FillSol(sys_);
@@ -82,181 +49,6 @@ Point::~Point()
   delete colloc;
 }
 
-struct PtTab
-{
-  PtType   type;
-  BranchSW sw;
-  int      neqn;
-  int      nparx;
-  Eqn      eqns[5];
-  Var      vars[5];
-};
-
-// not even member function public
-BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_)
-{
-  PtTab tab;
-  const Var PANGLE = (Var)(VarPAR0 + npar_ + ParAngle);
-  switch (Pt)
-  {
-      /// TIME-PERIODIC TEST-FUNCTIONAL
-    case SolTF:
-    {
-      PtTab tmp = { SolTF, NOSwitch,   1, 0,
-                    { EqnSol },
-                    { VarSol } };
-      tab = tmp;
-    }
-    break;
-    case SolTFBRSW:
-    {
-      PtTab tmp = { SolTFBRSW, TFBRSwitch, 1, 0,
-                    { EqnSol },
-                    { VarSol } };
-      tab = tmp;
-    }
-    break;
-    case SolTFPDSW:
-    {
-      PtTab tmp = { SolTFPDSW, TFPDSwitch, 1, 0,
-                    { EqnSol },
-                    { VarSol } };
-      tab = tmp;
-    }
-    break;
-    case BifTFLP:
-    {
-      PtTab tmp = { BifTFLP, NOSwitch,   2, 1,
-                    { EqnSol, EqnTFLP },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case BifTFPD:
-    {
-      PtTab tmp = { BifTFPD, NOSwitch,   2, 1,
-                    { EqnSol, EqnTFPD },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case BifTFNS:
-    {
-      PtTab tmp = { BifTFNS, NOSwitch,   3, 1,
-                    { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
-                    { VarSol, PANGLE,        parx(0) } };
-      tab = tmp;
-    }
-    break;
-    /// AUTONOMOUS TEST-FUNCTIONAL
-    case SolTFAUT:
-    {
-      PtTab tmp = { SolTFAUT, NOSwitch,   2, 1,
-                    { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case SolTFAUTBRSW:
-    {
-      PtTab tmp = { SolTFAUTBRSW, TFBRSwitch, 2, 1,
-                    { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case SolTFAUTPDSW:
-    {
-      PtTab tmp = { SolTFAUTPDSW, TFPDSwitch, 2, 1,
-                    { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case SolTFAUTHBSW:
-    {
-      PtTab tmp = { SolTFAUTHBSW, TFHBSwitch, 2, 1,
-                    { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case BifTFAUTLP:
-    {
-      PtTab tmp = { BifTFAUTLP, NOSwitch,   3, 2,
-                    { EqnSol, EqnPhase,      EqnTFLPAUT },
-                    { VarSol, parx(0),       parx(1) } };
-      tab = tmp;
-    }
-    break;
-    case BifTFAUTPD:
-    {
-      PtTab tmp = { BifTFAUTPD, NOSwitch,   3, 2,
-                    { EqnSol, EqnPhase,      EqnTFPD },
-                    { VarSol, parx(0),       parx(1) } };
-      tab = tmp;
-    }
-    break;
-    case BifTFAUTNS:
-    {
-      PtTab tmp = { BifTFAUTNS, NOSwitch,   4, 2,
-                    { EqnSol, EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
-                    { VarSol, PANGLE,        parx(0),       parx(1) } };
-      tab = tmp;
-    }
-    break;
-    /// TORUS
-    case SolTor:
-    {
-      PtTab tmp = { SolTor, NOSwitch, 2, 1,
-                    { EqnTORSol, EqnTORPhase1 },
-                    { VarTORSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case SolTorNS:
-    {
-      PtTab tmp = { SolTor, TFTRSwitch, 2, 1,
-                    { EqnTORSol, EqnTORPhase1 },
-                    { VarTORSol, parx(0) } };
-      tab = tmp;
-    }
-    break;
-    case SolAUTTor:
-    {
-      PtTab tmp = { SolAUTTor, NOSwitch, 2, 2,
-                    { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-                    { VarTORSol, parx(0),      parx(1) } };
-      tab = tmp;
-    }
-    break;
-    case SolAUTTorNS:
-    {
-      PtTab tmp = { SolAUTTor, TFTRSwitch, 2, 2,
-                    { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-                    { VarTORSol, parx(0),      parx(1) } };
-      tab = tmp;
-    }
-    break;
-    default:
-    {
-      PtTab tmp = { SolUser, NOSwitch,  0, 0, { EqnNone }, { VarNone } };
-      tab = tmp;
-    }
-    P_MESSAGE3("Invalid point type ", Pt, ".");
-    break;
-  }
-  P_ERROR_X4(tab.nparx == parx.Size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.Size());
-  eqnr.Init(tab.neqn);
-  varr.Init(tab.neqn);
-  for (int i = 0; i < tab.neqn; i++)
-  {
-    eqnr(i) = tab.eqns[i];
-    varr(i) = tab.vars[i];
-  }
-  return tab.sw;
-}
-
 // private
 // What does it construct?
 // charMat
@@ -266,7 +58,7 @@ void Point::Construct()
   P_ERROR_X1((eqn(0) == EqnSol) && (var(0) == VarSol), "The first equation must be the boundary value problem of the periodic solution.");
 
   BasePoint::Construct();
-
+  
   // a) setting the test functionals b) determining the number of trivial multipliers
   testFunct.Init(eqn.Size());
   nTrivMulLP = 0;
@@ -500,49 +292,11 @@ void Point::Jacobian(
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
 
-/// It only computes the critical characteristic multiplier and refines the solution
-
-int Point::StartTF(Eqn FN, std::ostream& out)
-{
-  if ((FN == EqnTFCPLX_RE) || (FN == EqnTFCPLX_IM))
-  {
-    Stability();
-    double dmin = 10.0;
-    int imin = 0;
-    for (int i = 0; i < mRe.Size(); i++)
-    {
-      if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
-      {
-        if (fabs(mIm(i)) > MIN_NSIMAG)
-        {
-          dmin = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
-          imin = i;
-        }
-      }
-    }
-    double zRe = mRe(imin);
-    double zIm = fabs(mIm(imin));
-    double nrm = sqrt(zRe * zRe + zIm * zIm);
-
-    if (zRe > 0)
-    {
-      par(NPAR + ParAngle) = atan(zIm / zRe);
-    }
-    else
-    {
-      par(NPAR + ParAngle) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
-    }
-    out << "    Z = " << zRe << " + I*" << zIm << "\n" 
-           "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
-  }
-  return Refine(out);
-}
-
 void Point::SwitchTFHB(double ds, std::ostream& out)
 {
   int idx = -1;
   for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
-  P_ERROR_X1 (idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
+  P_ERROR_X1(idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
   TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
   Vector QRE(NDIM), QIM(NDIM);
 
@@ -788,39 +542,5 @@ void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& m
   else
   {
     P_MESSAGE1("Cannot compute the initial tangent to the torus branch, because no complex test functional was defined.");
-  }
-}
-
-void Point::BinaryWrite(mat4Data& data, int n)
-{
-  data.setNTrivMul(0, nTrivMulLP);
-  data.setNTrivMul(1, nTrivMulPD);
-  data.setNTrivMul(2, nTrivMulNS);
-  //
-  data.setPar(n, par);
-  data.setMul(n, mRe, mIm);
-  data.setElem(n, colloc->getElem());
-  data.setMesh(n, colloc->getMesh());
-  data.setProfile(n, sol);
-}
-
-void Point::BinaryRead(mat4Data& data, int n)
-{
-  Vector msh(data.getNInt() + 1);
-  P_ERROR_X1(data.getNPar() == (NPAR + ParEnd), "Wrong number of parameters in the input MAT file.");
-  data.getPar(n, par);
-  data.getMul(n, mRe, mIm);
-  data.getMesh(n, msh);
-  P_ERROR_X1(data.getNDim() == NDIM, "Wrong number of dimensions in the input MAT file.");
-  if (data.getNInt() == NINT && data.getNDeg() == NDEG)
-  {
-    colloc->setMesh(msh);
-    data.getProfile(n, sol);
-  }
-  else
-  {
-    Vector tmp(data.getNDim()*(data.getNDeg()*data.getNInt() + 1));
-    data.getProfile(n, tmp);
-    colloc->Import(sol, tmp, msh, data.getNDeg());
   }
 }

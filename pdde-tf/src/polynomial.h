@@ -1,5 +1,18 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of KNUT
+// Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
+//
+// For license, see the file COPYING in the package's root directory
+//
+// ------------------------------------------------------------------------- //
+
 #include <iostream>
 #include "matrix.h"
+
+void poly_lgr(const Vector& t, Vector &out, double c);
+void poly_dlg(const Vector& t, Vector& out, double c);
+void poly_d2lg(const Vector& t, Vector& out, double c);
 
 /// returns (pp(0) + pp(1)*x + ... + pp(n)*x^n) * (aa + bb*x)
 ///

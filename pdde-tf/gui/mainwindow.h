@@ -47,7 +47,7 @@ class MainWindow : public QMainWindow
     static void showException(QWidget* parent, const knutException& ex)
     {
       QMessageBox::critical(parent, "Critical error", 
-        QString("%1\nThis has occured in file '%2' at line %3.")
+        QString("%1\nThis has occurred in file '%2' at line %3.")
           .arg(ex.getMessage().str().c_str())
           .arg(ex.getFile().c_str()).arg(ex.getLine()), 
         QMessageBox::Ok, 0, 0);

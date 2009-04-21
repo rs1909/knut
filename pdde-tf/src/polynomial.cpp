@@ -1,5 +1,87 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of KNUT
+// Copyright (c) 2002, 2003, 2004, 2005 by Robert Szalai
+//
+// For license, see the file COPYING in the package's root directory
+//
+// ------------------------------------------------------------------------- //
+
 #include "polynomial.h"
 #include <cmath>
+
+void poly_lgr(const Vector& t, Vector &out, double c)
+{
+
+  P_ASSERT_X(t.Size() == out.Size(), "poly_lgr: wrong dimensions");
+  for (int i = 0; i < t.Size(); i++)
+  {
+    out(i) = 1.0;
+    for (int j = 0; j < t.Size(); j++)
+    {
+      if (i != j)
+      {
+        out(i) *= (c - t(j)) / (t(i) - t(j));
+      }
+    }
+  }
+}
+
+void poly_dlg(const Vector& t, Vector& out, double c)
+{
+  int j, k, l;
+  double f;
+
+  P_ASSERT_X(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
+
+  for (j = 0; j < t.Size(); j++)
+  {
+    out(j) = 0.0;
+    for (k = 0; k < t.Size(); k++)
+    {
+      if (k != j)
+      {
+        f = 1.0;
+        for (l = 0; l < t.Size(); l++)
+        {
+          if ((l != k) && (l != j)) f *= (c - t(l)) / (t(j) - t(l));
+        }
+        out(j) += f / (t(j) - t(k));
+      }
+    }
+  }
+}
+
+void poly_d2lg(const Vector& t, Vector& out, double c)
+{
+  int i, j, k, l;
+  double f;
+
+  P_ASSERT_X(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
+
+  for (i = 0; i < t.Size(); i++)
+  {
+    out(i) = 0.0;
+    for (l = 0; l < t.Size(); l++)
+    {
+      if (l==i) continue;
+      for (k = 0; k < t.Size(); k++)
+      {
+        if (k==l) continue;
+        if (k==i) continue;
+        f = 1.0;
+        for (j = 0; j < t.Size(); j++)
+        {
+          if (j==k) continue;
+          if (j==l) continue;
+          if (j==i) continue;
+          f *= (c - t(j)) / (t(i) - t(j));
+        }
+        out(i) += f / (t(i) - t(k)) / (t(i) - t(l));
+      }
+    }
+  }
+}
 
 /// returns the coefficient of the lagrangian interpolation of a
 /// function at the i-th point on the mesh t

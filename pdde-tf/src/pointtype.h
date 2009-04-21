@@ -15,6 +15,7 @@
 enum Eqn {
   EqnNone           = 0,
   EqnSol            = 1,
+  EqnODESol         = 2,
   EqnPhase          = 24,
   EqnPhaseRot       = 25,
   EqnTORSol         = 32,
@@ -33,6 +34,7 @@ enum Eqn {
 enum Var {
   VarNone      = 0,
   VarSol       = 1,
+  VarODESol    = 2,
   VarTORSol    = 32,
   VarPAR0      = 64
 };
@@ -41,19 +43,22 @@ enum Var {
 
 enum PtType {
   SolUser      = -1,
-  /// TORUS
+  /// ODE
+  SolODE       = 0,
+  SolAUTODE    = 10,
+  /// TORUS for DDE
   SolTor       = 20,
   SolTorNS     = 21,
   SolAUTTor    = 30,
   SolAUTTorNS  = 31,
-  /// TIME-PERIODIC TEST-FUNCTIONAL
+  /// TIME-PERIODIC TEST-FUNCTIONAL for DDE
   SolTF        = 40,
   BifTFLP      = 41,
   BifTFPD      = 42,
   BifTFNS      = 43,
   SolTFBRSW    = 44,
   SolTFPDSW    = 45,
-  /// AUTONOMOUS TEST-FUNCTIONAL
+  /// AUTONOMOUS TEST-FUNCTIONAL for DDE
   SolTFAUT     = 50,
   BifTFAUTLP   = 51,
   BifTFAUTPD   = 52,
@@ -100,6 +105,9 @@ inline const char* EqnToStr(Eqn eqn)
     case EqnSol:
       return "EqnSol";
       break;
+    case EqnODESol:
+      return "EqnODESol";
+      break;
     case EqnPhase:
       return "EqnPhase";
       break;
@@ -133,6 +141,9 @@ inline const char* VarToStr(Var var)
     case VarSol:
       return "VarSol";
       break;
+    case VarODESol:
+      return "VarODESol";
+      break;
     case VarTORSol:
       return "VarTORSol";
       break;
@@ -144,7 +155,7 @@ inline const char* VarToStr(Var var)
 
 template< class T > class Array1D;
 
-// helper function, implemented in point.cpp
+// helper function, implemented in basepoint.cpp
 BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_);
 
 #endif

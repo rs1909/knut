@@ -1,7 +1,8 @@
 #include "basecomp.h"
 #include "knerror.h"
-#include "point.h"
 #include "system.h"
+#include "point.h"
+#include "odepoint.h"
 #include "torpoint.h"
 
 #include <iostream>
@@ -64,11 +65,13 @@ void BaseComp::run(const char* branchFile)
 
     // If it is a periodic solution OR switching from per. solotion to torus
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
-    Point* pt_ptr = 0;
+    PerSolPoint* pt_ptr = 0;
     if (eqn_start(0) != EqnTORSol)
     {
-      pt_ptr = new Point(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
-      Point& pt = *pt_ptr;
+      if (eqn_start(0) == EqnSol) pt_ptr = new Point(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
+      else if (eqn_start(0) == EqnODESol) pt_ptr = new ODEPoint(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
+      PerSolPoint& pt = *pt_ptr;
   
       pt.setContIter(params->getNItC());
       pt.setRefIter(params->getNItR());
@@ -110,7 +113,7 @@ void BaseComp::run(const char* branchFile)
     // start the continuation!
     if (eqn(0) != EqnTORSol)
     {
-      Point& pt = *pt_ptr;
+      PerSolPoint& pt = *pt_ptr;
       mat4Data out(params->getOutputFile(),
                    params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
                    params->getNInt(), params->getNDeg(), params->getNMul());
@@ -130,25 +133,28 @@ void BaseComp::run(const char* branchFile)
       {
         case TFPDSwitch:
           screenout << "\nSwitching to the period two branch (TF).\n";
+          print(screenout);
           pt.SwitchTFPD(params->getDsStart());
           break;
         case TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
+          print(screenout);
           pt.SwitchTFHB(params->getDsStart(), screenout);
           break;
         case TFBRSwitch:
         case TFBRAUTSwitch:
         case TFBRAUTROTSwitch:
           screenout << "\nSwitching to the other branch (TF).\n";
+          print(screenout);
           pt.SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart());
           break;
         default:
           screenout << "\nFinding the tangent.\n";
           pt.setCont(params->getCp() - VarPAR0);
+          print(screenout);
           pt.Tangent();
           break;
       }
-      print(screenout);
       pt.Reset(eqn, var);
       pt.setCont(params->getCp() - VarPAR0);
 
@@ -267,7 +273,8 @@ void BaseComp::run(const char* branchFile)
       Vector TRe, TIm;
       if (params->getBranchSW() == TFTRSwitch)
       {
-        Point& pt = *pt_ptr;
+        if (dynamic_cast<Point*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
+        Point& pt = *dynamic_cast<Point*>(pt_ptr);
         Sol.Init(pt.getSol().Size());
         TRe.Init(pt.getSol().Size());
         TIm.Init(pt.getSol().Size());

@@ -40,7 +40,7 @@ class CLIComp : public BaseComp
     void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
     static void printException(const knutException& ex)
     {
-      std::cerr << ex.getMessage().str() << " This has occured in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
+      std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
     }
     void raiseException(const knutException& ex)
     {

@@ -14,6 +14,8 @@
 #include "hypermatrix.h"
 #include "pointtype.h"
 #include "basecolloc.h"
+#include "multipliers.h"
+
 class System;
 
 class BasePoint
@@ -160,5 +162,81 @@ inline void BasePoint::AdaptUpdate(HyperVector& X)
   sol += X.getV1();
   for (int i = 1; i < varMapCont.Size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
 }
+
+class mat4Data;
+class PerSolColloc;
+
+class PerSolPoint : public BasePoint
+{
+  public:
+    PerSolPoint(System& sys, const Array1D<Eqn>& eqn_, const Array1D<Var>& var_, const int solsize, const int nz_jac_, const int nmul) 
+      : BasePoint(sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul) { }
+    virtual ~PerSolPoint() {}
+    
+    virtual void Stability() = 0;
+    virtual void SwitchTFLP(BranchSW type, double ds) = 0;   // switches branch with testFunct
+    virtual void SwitchTFPD(double ds) = 0;   // switches branch with testFunct
+    virtual void SwitchTFHB(double ds, std::ostream& out) = 0;   // switches branch with testFunct
+    
+    int StartTF(Eqn FN, std::ostream& out);
+    inline void    setSym(int n, int* sRe, int* sIm)
+    {
+      rotRe.Init(n);
+      rotIm.Init(n);
+      for (int i = 0; i < n; i++)
+      {
+        rotRe(i) = sRe[i];
+        rotIm(i) = sIm[i];
+      }
+    }
+
+    inline void    setSym(Array1D<int>& sRe, Array1D<int>& sIm)
+    {
+      P_ASSERT(sRe.Size() == sIm.Size());
+      rotRe.Init(sRe.Size());
+      rotIm.Init(sRe.Size());
+      for (int i = 0; i < sRe.Size(); i++)
+      {
+        rotRe(i) = sRe(i);
+        rotIm(i) = sIm(i);
+      }
+    }
+
+    int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
+    PtType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
+    void    clearStability() { mRe.Clear(); mIm.Clear(); }
+    inline double  NormMX()
+    {
+      double max = 0.0, min = 1.0e32;
+      for (int i = 0; i < persolcolloc->Nint()*persolcolloc->Ndeg() + 1; i++)
+      {
+        double e = 0.0;
+        for (int j = 0; j < persolcolloc->Ndim(); j++) e += sqrt(sol(persolcolloc->Ndim() * i + j) * sol(persolcolloc->Ndim() * i + j));
+        if (e > max) max = e;
+        if (e < min) min = e;
+      }
+      return max -min;
+    }
+    
+    void BinaryRead(mat4Data& data, int n);
+    void BinaryWrite(mat4Data& data, int n);
+
+  protected:
+//    virtual void Construct();
+//    virtual void Destruct();
+    void         FillSol(System& sys_);
+
+    // multipliers
+    Vector       mRe;
+    Vector       mIm;
+    // number of trivial multipliers
+    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
+
+    // for the rotation phase conditions
+    Array1D<int> rotRe;
+    Array1D<int> rotIm;
+    
+    PerSolColloc* persolcolloc;
+};
 
 #endif /*BASEPOINT_H*/

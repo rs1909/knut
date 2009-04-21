@@ -27,7 +27,7 @@ void SpMatrix::Check()
   {
     for (int k = Ap[j] + 1; k < Ap[j+1]; k++)
     {
-      if (Ai[k-1] >= Ai[k]) cout << "SpMatrix::Check(): " << j << "," << Ai[k-1] << "\n";
+      if (Ai[k-1] >= Ai[k]) cout << "SpMatrix::Check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
     }
   }
 }
@@ -150,6 +150,53 @@ void SpFact::Clear(char F)
   fact = false;
 }
 
+static const char* sp_umf_error(int status)
+{
+  switch (status)
+  {
+    case UMFPACK_OK:
+      return "No problem.";
+      break; 
+    case UMFPACK_WARNING_singular_matrix:
+      return "Singular matrix.";
+      break;
+    case UMFPACK_ERROR_out_of_memory:
+      return "Out of memory.";
+      break;
+    case UMFPACK_ERROR_invalid_Numeric_object:
+      return "Invalid Numeric object.";
+      break;
+    case UMFPACK_ERROR_invalid_Symbolic_object:
+      return "Invalid Symbolic object.";
+      break;
+    case UMFPACK_ERROR_argument_missing:
+      return "Missing argument.";
+      break;
+    case UMFPACK_ERROR_n_nonpositive:
+      return "n is less than or equal to zero.";
+      break;
+    case UMFPACK_ERROR_invalid_matrix:
+      return "Invalid matrix.";
+      break;
+    case UMFPACK_ERROR_different_pattern:
+      return "Sparsity pattern has changed between calls.";
+      break; 
+    case UMFPACK_ERROR_invalid_system:
+      return "Invalid system.";
+      break;
+    case UMFPACK_ERROR_invalid_permutation:
+      return "Invalid permutation.";
+      break;
+    case UMFPACK_ERROR_internal_error:
+      return "Internal Error.";
+    case UMFPACK_ERROR_file_IO:
+      return "File input/output error.";
+      break;
+    default:
+      return "Unknown error.";
+      break;
+  }
+}
 
 void SpFact::Fact()
 {
@@ -159,21 +206,19 @@ void SpFact::Fact()
     P_ASSERT_X(Numeric == 0, "This is a bug. The sparse matrix was already factorized.");
 
     int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
-    P_ERROR_X3(status == 0, "Error report from 'umfpack_di_symbolic()': ", status, ".");
+    P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_symbolic()': ", sp_umf_error(status));
     status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
     fact = true;
-    if (status != 0)
+    if (status != UMFPACK_OK)
     {
-      if (status == 1)
+      if (status == UMFPACK_WARNING_singular_matrix)
       {
-        std::cerr << "The matrix is singular. "
-        << "The diagonal of the factorized matrix is being dumped: "
-        << status << "\n";
+        std::cerr << "The diagonal of the factorized matrix is being dumped:\n";
         Vector DX(n);
         GetDX(DX);
         DX.Print();
       }
-      P_ERROR_X3(status == 0, "Error report from 'umfpack_di_numeric()': ", status, ".");
+      P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
     }
     umfpack_di_free_symbolic(&Symbolic);
     Symbolic = 0;
@@ -217,6 +262,7 @@ void SpFact::Solve(Vector& x, const Vector& b, bool trans)
   }
 
   status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.Pointer(), b.v, Numeric, Control, 0, Wi, W);
+  P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
 }
 
 void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
@@ -238,6 +284,7 @@ void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
   for (int i = 0; i < b.c; i++)
   {
     status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.m + i * x.r, b.m + i * b.r, Numeric, Control, 0, Wi, W);
+    P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
   }
 }
 

@@ -554,10 +554,10 @@ int NConstants::toEqnVar(System& sys,
       // std::cout<<"Phase and PhaseRot\n";
       eqn_refine.Init(3);
       var_refine.Init(3);
-      eqn_refine(0) = EqnSol;
+      eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhase;
       eqn_refine(2) = EqnPhaseRot;
-      var_refine(0) = VarSol;
+      var_refine(0) = var(0);
       var_refine(1) = var(var.Size() - 2);
       var_refine(2) = var(var.Size() - 1);
     }
@@ -566,9 +566,9 @@ int NConstants::toEqnVar(System& sys,
       // std::cout<<"Phase\n";
       eqn_refine.Init(2);
       var_refine.Init(2);
-      eqn_refine(0) = EqnSol;
+      eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhase;
-      var_refine(0) = VarSol;
+      var_refine(0) = var(0);
       var_refine(1) = var(var.Size() - 1);
     }
   }
@@ -579,17 +579,17 @@ int NConstants::toEqnVar(System& sys,
       // this happens when a steady state solution of a laser is computed
       eqn_refine.Init(2);
       var_refine.Init(2);
-      eqn_refine(0) = EqnSol;
+      eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhaseRot;
-      var_refine(0) = VarSol;
+      var_refine(0) = var(0);
       var_refine(1) = var(var.Size() - 1);
     }
     else
     {
       eqn_refine.Init(1);
       var_refine.Init(1);
-      eqn_refine(0) = EqnSol;
-      var_refine(0) = VarSol;
+      eqn_refine(0) = eqn(0);
+      var_refine(0) = var(0);
     }
   }
 

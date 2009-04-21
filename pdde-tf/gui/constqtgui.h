@@ -87,6 +87,10 @@ class PointType : public genMap<PtType>
     {
       dsc.push_back("User");
       key.push_back(SolUser);
+      dsc.push_back("ODE limit cycle");
+      key.push_back(SolODE);
+      dsc.push_back("ODE limit cycle (aut)");
+      key.push_back(SolAUTODE);
       dsc.push_back("Limit cycle");
       key.push_back(SolTF);
       dsc.push_back("Limit point");
@@ -137,6 +141,8 @@ class EqnType : public genMap<Eqn>
       key.push_back(EqnNone);
       dsc.push_back("Limit cycle");
       key.push_back(EqnSol);
+      dsc.push_back("ODE limit cycle");
+      key.push_back(EqnODESol);
       dsc.push_back("PHCND (transl)");
       key.push_back(EqnPhase);
       dsc.push_back("PHCND (rot)");
@@ -196,6 +202,8 @@ class VarType : public genMap<Var>
       {
         dsc.push_back("Limit cycle");
         key.push_back(VarSol);
+        dsc.push_back("ODE limit cycle");
+        key.push_back(VarODESol);
         dsc.push_back("Torus");
         key.push_back(VarTORSol);
       }

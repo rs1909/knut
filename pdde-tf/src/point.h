@@ -28,16 +28,14 @@
 
 #include "pointtype.h"
 #include "mat4data.h"
-#include "multipliers.h"
 
-
-class Point : public BasePoint
+class Point : public PerSolPoint
 {
   public:
 
     // constructor
     Point(System& sys, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS, int nmat = BMATRICES);
-    ~Point();
+    virtual ~Point();
 
     void    Stability();
 
@@ -50,46 +48,7 @@ class Point : public BasePoint
       colloc->Export(Sol, mshint, mshdeg, sol);
     } // starting data for tori: solution
     void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
-    int     StartTF(Eqn FN, std::ostream& out = std::cout);
-    inline void    setSym(int n, int* sRe, int* sIm)
-    {
-      rotRe.Init(n);
-      rotIm.Init(n);
-      for (int i = 0; i < n; i++)
-      {
-        rotRe(i) = sRe[i];
-        rotIm(i) = sIm[i];
-      }
-    }
-    inline void    setSym(Array1D<int>& sRe, Array1D<int>& sIm)
-    {
-      P_ASSERT(sRe.Size() == sIm.Size());
-      rotRe.Init(sRe.Size());
-      rotIm.Init(sRe.Size());
-      for (int i = 0; i < sRe.Size(); i++)
-      {
-        rotRe(i) = sRe(i);
-        rotIm(i) = sIm(i);
-      }
-    }
-
-
-    inline double  NormMX()
-    {
-      double max = 0.0, min = 1.0e32;
-      for (int i = 0; i < colloc->Nint()*colloc->Ndeg() + 1; i++)
-      {
-        double e = 0.0;
-        for (int j = 0; j < colloc->Ndim(); j++) e += sqrt(sol(colloc->Ndim() * i + j) * sol(colloc->Ndim() * i + j));
-        if (e > max) max = e;
-        if (e < min) min = e;
-      }
-      return max -min;
-    }
-    int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
-    PtType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
-    void    clearStability() { mRe.Clear(); mIm.Clear(); }
-
+ 
     void    Plot(GnuPlot& pl);
     inline void    Print(char* file)
     {
@@ -103,14 +62,11 @@ class Point : public BasePoint
     void ReadNull(std::ifstream& file);
     void Read(std::ifstream& file);
     void Write(std::ofstream& file);
-    void BinaryRead(mat4Data& data, int n);
-    void BinaryWrite(mat4Data& data, int n);
 
   private:
 
     void    Construct();
     void    Destruct();
-    void    FillSol(System& sys_);
 
     // internal member-functions
 //   inline double SolNorm( Vector& sol, Vector& par );
@@ -127,14 +83,14 @@ class Point : public BasePoint
 
 
     // multipliers
-    Vector       mRe;
-    Vector       mIm;
+//    Vector       mRe;
+//    Vector       mIm;
     // number of trivial multipliers
-    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
+//    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
 
     // for the rotation phase conditions
-    Array1D<int> rotRe;
-    Array1D<int> rotIm;
+//    Array1D<int> rotRe;
+//    Array1D<int> rotIm;
 
     // stability matrix
     StabMatrix   jacStab;

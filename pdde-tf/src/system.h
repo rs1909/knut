@@ -30,15 +30,15 @@ class System
     static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
     static void makeSystem(const std::string& shobj, const std::string& executableDir);
 
-    int    ndim()
+    int    ndim() const 
     {
       return (*v_ndim)();
     }
-    int    npar()
+    int    npar() const 
     {
       return (*v_npar)();
     }
-    int    ntau()
+    int    ntau() const
     {
       return (*v_ntau)();
     }

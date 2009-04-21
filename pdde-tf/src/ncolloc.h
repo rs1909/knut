@@ -15,38 +15,19 @@
 #include "matrix.h"
 #include "spmatrix.h"
 
-class NColloc : public BaseColloc
+class NColloc : public PerSolColloc
 {
   public:
 
     NColloc(System& _sys, const int nint, const int ndeg, int nmat);        // computes mesh, metric, metricD
 
-    ~NColloc()
-    {}
+    ~NColloc() {}
 
     void Init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
-    void meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent);
 
     void Interpolate(Array3D<double>& out, const Vector& sol);
     void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
     void InterpolateMSH(Array3D<double>& out, const Vector& sol);
-
-    static void   getMetric(Matrix& mt, const Vector& t);
-    static void   getDiffMetric(Matrix& mt, const Vector& t);
-    static void   star(Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim);
-    static double integrate(const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim);
-
-    void   Star(Vector& out, const Vector& sol);
-    double Integrate(const Vector& v1, const Vector& v2);
-    double IntegrateDerivative(const Vector& v1, const Vector& v2);
-    double IntegrateCont(const Vector& v1, const Vector& v2, const Vector& v3);
-
-    void   PhaseStar(Vector& V1, const Vector& V2);
-    void   PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
-
-    void   Import(Vector& out, const Vector& in, const Vector& mesh, int deg_);
-    void   Export(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
-    void   pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 
@@ -62,6 +43,8 @@ class NColloc : public BaseColloc
     // However, the variables will be contained within the NColloc class
 
     // continuation of bifurcations -> characteristic matrices
+
+    inline int Ntau() const { return ntau; }
 
     void CharJac_x(SpMatrix& A, const Vector& par, double Z);
     void CharJac_x(SpMatrix& A, const Vector& par, double ZRe, double ZIm);
@@ -88,50 +71,7 @@ class NColloc : public BaseColloc
     template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi);
     void CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha);
 
-    // supplementary
-    inline int Ndim() const
-    {
-      return ndim;
-    }
-    inline int Npar() const
-    {
-      return npar;
-    }
-    inline int Ntau() const
-    {
-      return ntau;
-    }
-    inline int Nint() const
-    {
-      return nint;
-    }
-    inline int Ndeg() const
-    {
-      return ndeg;
-    }
-
-    inline const Vector& getElem()
-    {
-      return meshINT;
-    }
-    void setMesh(const Vector& msh)
-    {
-      P_ASSERT_X(msh.Size() == nint + 1, "Error in NColloc::setMesh : Bad dimensions\n");
-      mesh = msh;
-    }
-    inline const Vector& getMesh()
-    {
-      return mesh;
-    }
-    inline double Profile(int i, int d)
-    {
-      return mesh(i) + meshINT(d)*(mesh(i + 1) - mesh(i));
-    }
-
   private:
-
-    // helper functions
-    void meshAdapt_internal( Vector& newmesh, const Vector& profile );
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
     inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
@@ -186,20 +126,8 @@ class NColloc : public BaseColloc
       return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
-    // the equations
-    System* sys;
-
-    const int ndim;
-    const int npar;
     const int ntau;
-
-    const int nint;
-    const int ndeg;
-
     const int nmat;
-
-    Vector mesh;
-    Vector time;
 
     // these store the structure of the sparse matrix NO SEPARATION
     Array2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
@@ -223,22 +151,10 @@ class NColloc : public BaseColloc
     Array2D<int> mmI;
     Array2D<int> szI;
 
-    // it stores all the collocation data
+    Array2D<int> kkMSH; // dim(NTAU+1,NDEG*NINT+1) : which delay to which interval
+
     Array3D<double> tt;       // interpolation at the collocation points
-    Array1D<double> timeMSH;  // the representation points
-    Array3D<double> ttMSH;    // interpolation at the representation points
-    Array2D<int>    kkMSH;
-
-    // matrix for integration
-    Matrix metric;
-    // integration with derivatives (for phase conditions)
-    Matrix metricPhase;
-
-    // internal use for the initialization
-    Vector col;
-    Vector out;
-    Vector meshINT;
-    Array1D< Array1D<double> > lgr;
+    Array3D<double> ttMSH;    // interpolation at the representation points. I guess its the identity
 
     // for rhs, and derivatives
     // Matrix fx, dfx, t_dfx, dummy

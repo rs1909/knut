@@ -1,5 +1,6 @@
 ADD_LIBRARY( knutlib 
-	basecolloc.h basepoint.h basepoint.cpp
+	basecolloc.h basecolloc.cpp
+	basepoint.h basepoint.cpp
 	basecomp.h basecomp.cpp
 	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
 	mat4data.cpp mat4data.h matrix.cpp matrix.h
@@ -8,7 +9,9 @@ ADD_LIBRARY( knutlib
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
 	system.cpp system.h testfunct.cpp testfunct.h
 	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h 
-	multipliers.cpp multipliers.h)
+	multipliers.cpp multipliers.h
+	odecolloc.cpp odecolloc.h
+	odepoint.cpp odepoint.h )
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
 	${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include
