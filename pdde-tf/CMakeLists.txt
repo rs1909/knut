@@ -6,7 +6,7 @@ PROJECT( KNUT )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "Knut" )
-SET( PACKAGE_VERSION "1.2.2" )
+SET( PACKAGE_VERSION "2.0.0" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 
 SET( KNUT_GUI TRUE )
