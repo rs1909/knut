@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     
     params.loadXmlFile(cfInfo.fileName().toStdString());
     CLIComp comp(params);
+    params.printXmlFile(std::cout);
     comp.run();
   } else
   {

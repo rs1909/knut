@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-PROJECT( KNUT )
+PROJECT( KNUT C CXX Fortran )
 
 #------------------------------------------------------------------------------
 # SETTING UP THE VARIABLES
@@ -94,13 +94,13 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 IF(APPLE)
   # We need to search for ATLAS in MacPorts' location, too: /opt/local/lib
   SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /opt/local/lib /usr/lib )
-  FIND_LIBRARY( ATLAS_CBLAS NAMES libcblas.a cblas PATHS ${ATLAS_SEARCH_PATHS} )
+  FIND_LIBRARY( ATLAS_CBLAS NAMES libf77blas.a cblas PATHS ${ATLAS_SEARCH_PATHS} )
   FIND_LIBRARY( ATLAS_ATLAS NAMES libatlas.a atlas PATHS ${ATLAS_SEARCH_PATHS} )
 ELSE(APPLE)
   # For Linux distributions ATLAS can be located in many places
   SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
     /usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
-  FIND_LIBRARY( ATLAS_CBLAS NAMES cblas PATHS ${ATLAS_SEARCH_PATHS} )
+  FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${ATLAS_SEARCH_PATHS} )
   FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
 ENDIF(APPLE)
 

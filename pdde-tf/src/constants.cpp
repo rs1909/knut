@@ -303,6 +303,7 @@ void NConstants::loadXmlFile(const std::string &fileName)
     setSymIm(it, getNodeInteger(nd_imag));
     ++it; 
   }
+  mxmlDelete(tree);
 }
 
 void NConstants::saveXmlFile(const std::string &fileName)

@@ -376,49 +376,43 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   delete[] tvec2;
   delete[] tvec;
 
-  bool     RVEC     = false;
+  const int NCONV = NEV; // IPARAM[4];
+  int      RVEC     = 0;
   char     HOWMNY   = 'A';
   bool*    SELECT   = new bool[NCV+1];
-  double*  DR       = new double[NEV+2];
-  double*  DI       = new double[NEV+2];
-  double*  Z        = new double[N*(NEV+2)];
+  double*  DR       = new double[NCONV+2];
+  double*  DI       = new double[NCONV+2];
+  double*  Z        = new double[N*(NCONV+2)];
   int      LDZ      = N;
   double   SIGMAR   = 0.0;
   double   SIGMAI   = 0.0;
   double*  WORKEV   = new double[4*NCV]; // 3*NCV
 
-//  std::cout<<"INFO1:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
-//  std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
+//   std::cout<<"INFO1:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
+//   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
 
-  if (true /*IPARAM[4] >= NEV*/)
-  {
-    knut_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
-                &SIGMAR, &SIGMAI, WORKEV,
-                &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
-                IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 2);
+  knut_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
+    &SIGMAR, &SIGMAI, WORKEV,
+    &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
+    IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 1);
+
 //   std::cout<<"INFO2:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
-    wr.Clear();
-    wi.Clear();
-    if (IPARAM[4] > wr.Size())
-    {
-      std::cout << "More eigenvalues were calculated than expected: N=" << IPARAM[4] << "\n";
-      std::cout.flush();
-      IPARAM[4] = wr.Size();
-    }
-    // sorting eigenvalues;
-    int* sortindex = new int[IPARAM[4]];
-    for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;
-    eigvalcomp aa(DR, DI);
-    std::sort(sortindex, sortindex + IPARAM[4], aa);
-    const int eigstart = wr.Size() - IPARAM[4];
-    for (int i = 0; i < IPARAM[4]; i++)
-    {
-      wr(eigstart+i) = DR[sortindex[i]];
-      wi(eigstart+i) = DI[sortindex[i]];
-    }
-    delete[] sortindex;
+
+  wr.Clear();
+  wi.Clear();
+  // sorting eigenvalues;
+  int* sortindex = new int[IPARAM[4]+1];
+  for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;
+  eigvalcomp aa(DR, DI);
+  std::sort(sortindex, sortindex + IPARAM[4], aa);
+  const int eigstart = wr.Size() - IPARAM[4];
+  for (int i = 0; i < IPARAM[4]; i++)
+  {
+    wr(eigstart+i) = DR[sortindex[i]];
+    wi(eigstart+i) = DI[sortindex[i]];
   }
+  delete[] sortindex;
 
   // from the second
   delete[] WORKEV;

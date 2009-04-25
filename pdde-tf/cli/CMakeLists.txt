@@ -10,11 +10,13 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
 
 ADD_EXECUTABLE( knut main.cpp )
 
-
 IF(APPLE)
-  TARGET_LINK_LIBRARIES( knut knutlib laarpack umfpack amd mxml ${ATLAS_ATLAS} ${ATLAS_CBLAS} ${CMAKE_DL_LIBS} ${COREFOUNDATION_LIBRARY})
+  TARGET_LINK_LIBRARIES( knut knutlib laarpack umfpack amd mxml 
+    ${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} 
+    gfortran ${COREFOUNDATION_LIBRARY})
 ELSE(APPLE)
-  TARGET_LINK_LIBRARIES( knut knutlib laarpack umfpack amd mxml ${ATLAS_ATLAS} ${ATLAS_CBLAS} ${CMAKE_DL_LIBS})
+  TARGET_LINK_LIBRARIES( knut knutlib laarpack umfpack amd mxml 
+    ${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} gfortran)
 ENDIF(APPLE)
 
 IF( WIN32 )

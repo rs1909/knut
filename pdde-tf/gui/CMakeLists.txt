@@ -48,7 +48,7 @@ IF(APPLE)
   	${QT_QTSVG_LIBRARY}
   	${COREFOUNDATION_LIBRARY}
   	knutlib laarpack umfpack amd mxml
-  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS})
+  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} gfortran)
 
   SET_TARGET_PROPERTIES( Knut
     PROPERTIES
@@ -83,7 +83,7 @@ IF(NOT APPLE)
   	${QT_QTGUI_LIBRARY}
   	${QT_QTSVG_LIBRARY}
   	knutlib laarpack umfpack amd mxml
-  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS})
+  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} gfortran)
 
   INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
 

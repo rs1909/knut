@@ -4,7 +4,7 @@
 
 /* -----------------------------------------------------------------------------
  * CHOLMOD/Include/cholmod_blas.h.
- * Copyright (C) Univ. of Florida.  Author: Timothy A. Davis
+ * Copyright (C) 2005-2006, Univ. of Florida.  Author: Timothy A. Davis
  * CHOLMOD/Include/cholmod_blas.h is licensed under Version 2.1 of the GNU
  * Lesser General Public License.  See lesser.txt for a text of the license.
  * CHOLMOD is also available under other licenses; contact authors for details.
@@ -172,7 +172,7 @@
 /* === BLAS and LAPACK prototypes and macros ================================ */
 /* ========================================================================== */
 
-static inline void BLAS_DGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *alpha,
+void BLAS_DGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *alpha,
 	double *A, BLAS_INT *lda, double *X, BLAS_INT *incx, double *beta,
 	double *Y, BLAS_INT *incy) ;
 
@@ -190,7 +190,7 @@ static inline void BLAS_DGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *al
     } \
 }
 
-static inline void BLAS_ZGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *alpha,
+void BLAS_ZGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *alpha,
 	double *A, BLAS_INT *lda, double *X, BLAS_INT *incx, double *beta,
 	double *Y, BLAS_INT *incy) ;
 
@@ -208,7 +208,7 @@ static inline void BLAS_ZGEMV (char *trans, BLAS_INT *m, BLAS_INT *n, double *al
     } \
 }
 
-static inline void BLAS_DTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n, double *A,
+void BLAS_DTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n, double *A,
 	BLAS_INT *lda, double *X, BLAS_INT *incx) ;
 
 #define BLAS_dtrsv(uplo,trans,diag,n,A,lda,X,incx) \
@@ -224,7 +224,7 @@ static inline void BLAS_DTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n,
     } \
 }
 
-static inline void BLAS_ZTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n, double *A,
+void BLAS_ZTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n, double *A,
 	BLAS_INT *lda, double *X, BLAS_INT *incx) ;
 
 #define BLAS_ztrsv(uplo,trans,diag,n,A,lda,X,incx) \
@@ -240,7 +240,7 @@ static inline void BLAS_ZTRSV (char *uplo, char *trans, char *diag, BLAS_INT *n,
     } \
 }
 
-static inline void BLAS_DTRSM (char *side, char *uplo, char *transa, char *diag, BLAS_INT *m,
+void BLAS_DTRSM (char *side, char *uplo, char *transa, char *diag, BLAS_INT *m,
 	BLAS_INT *n, double *alpha, double *A, BLAS_INT *lda, double *B,
 	BLAS_INT *ldb) ;
 
@@ -257,7 +257,7 @@ static inline void BLAS_DTRSM (char *side, char *uplo, char *transa, char *diag,
     } \
 }
 
-static inline void BLAS_ZTRSM (char *side, char *uplo, char *transa, char *diag, BLAS_INT *m,
+void BLAS_ZTRSM (char *side, char *uplo, char *transa, char *diag, BLAS_INT *m,
 	BLAS_INT *n, double *alpha, double *A, BLAS_INT *lda, double *B,
 	BLAS_INT *ldb) ;
 
@@ -274,7 +274,7 @@ static inline void BLAS_ZTRSM (char *side, char *uplo, char *transa, char *diag,
     } \
 }
 
-static inline void BLAS_DGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT *n,
+void BLAS_DGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT *n,
 	BLAS_INT *k, double *alpha, double *A, BLAS_INT *lda, double *B,
 	BLAS_INT *ldb, double *beta, double *C, BLAS_INT *ldc) ;
 
@@ -293,7 +293,7 @@ static inline void BLAS_DGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT
     } \
 }
 
-static inline void BLAS_ZGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT *n,
+void BLAS_ZGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT *n,
 	BLAS_INT *k, double *alpha, double *A, BLAS_INT *lda, double *B,
 	BLAS_INT *ldb, double *beta, double *C, BLAS_INT *ldc) ;
 
@@ -312,7 +312,7 @@ static inline void BLAS_ZGEMM (char *transa, char *transb, BLAS_INT *m, BLAS_INT
     } \
 }
 
-static inline void BLAS_DSYRK (char *uplo, char *trans, BLAS_INT *n, BLAS_INT *k,
+void BLAS_DSYRK (char *uplo, char *trans, BLAS_INT *n, BLAS_INT *k,
 	double *alpha, double *A, BLAS_INT *lda, double *beta, double *C,
 	BLAS_INT *ldc) ;
 
@@ -329,7 +329,7 @@ static inline void BLAS_DSYRK (char *uplo, char *trans, BLAS_INT *n, BLAS_INT *k
     } \
 } \
 
-static inline void BLAS_ZHERK (char *uplo, char *trans, BLAS_INT *n, BLAS_INT *k,
+void BLAS_ZHERK (char *uplo, char *trans, BLAS_INT *n, BLAS_INT *k,
 	double *alpha, double *A, BLAS_INT *lda, double *beta, double *C,
 	BLAS_INT *ldc) ;
 
@@ -382,7 +382,7 @@ void LAPACK_ZPOTRF (char *uplo, BLAS_INT *n, double *A, BLAS_INT *lda,
 
 /* ========================================================================== */
 
-static inline void BLAS_DSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *incy) ;
+void BLAS_DSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *incy) ;
 
 #define BLAS_dscal(n,alpha,Y,incy) \
 { \
@@ -397,7 +397,7 @@ static inline void BLAS_DSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *
     } \
 }
 
-static inline void BLAS_ZSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *incy) ;
+void BLAS_ZSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *incy) ;
 
 #define BLAS_zscal(n,alpha,Y,incy) \
 { \
@@ -412,7 +412,7 @@ static inline void BLAS_ZSCAL (BLAS_INT *n, double *alpha, double *Y, BLAS_INT *
     } \
 }
 
-static inline void BLAS_DGER (BLAS_INT *m, BLAS_INT *n, double *alpha,
+void BLAS_DGER (BLAS_INT *m, BLAS_INT *n, double *alpha,
 	double *X, BLAS_INT *incx, double *Y, BLAS_INT *incy,
 	double *A, BLAS_INT *lda) ;
 
@@ -430,7 +430,7 @@ static inline void BLAS_DGER (BLAS_INT *m, BLAS_INT *n, double *alpha,
     } \
 }
 
-static inline void BLAS_ZGERU (BLAS_INT *m, BLAS_INT *n, double *alpha,
+void BLAS_ZGER (BLAS_INT *m, BLAS_INT *n, double *alpha,
 	double *X, BLAS_INT *incx, double *Y, BLAS_INT *incy,
 	double *A, BLAS_INT *lda) ;
 
@@ -447,9 +447,5 @@ static inline void BLAS_ZGERU (BLAS_INT *m, BLAS_INT *n, double *alpha,
 	BLAS_ZGER (&M, &N, alpha, X, &INCX, Y, &INCY, A, &LDA) ; \
     } \
 }
-
-/* including the cblas wrapper */
-
-#include "cholmod_cblaswrap.h"
 
 #endif

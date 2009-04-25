@@ -22,7 +22,7 @@ extern "C"
 {
 
 #include "cspblas.h"
-#include "cblas.h"
+#include "blas.h"
 #include "laarpack.h"
 
 }
@@ -1050,7 +1050,7 @@ inline Vector& Vector::operator=(const Vector& V)
 #ifdef DEBUG
   P_ASSERT_X(n == V.n, "Vector::operator=(): incompatible sizes\n");
 #endif // DEBUG
-  cblas_dcopy(n, V.v, 1, v, 1);
+  BLAS_dcopy(n, V.v, 1, v, 1);
   return *this;
 }
 
@@ -1059,7 +1059,7 @@ inline Vector& Vector::operator+=(const Vector& V)
 #ifdef DEBUG
   P_ASSERT_X(n == V.n, "Vector::operator+=(): incompatible sizes\n");
 #endif // DEBUG
-  cblas_daxpy(n, 1.0, V.v, 1, v, 1);
+  BLAS_daxpy(n, 1.0, V.v, 1, v, 1);
   return *this;
 }
 
@@ -1068,19 +1068,19 @@ inline Vector& Vector::operator-=(const Vector& V)
 #ifdef DEBUG
   P_ASSERT_X(n == V.n, "Vector::operator-=(): incompatible sizes\n");
 #endif // DEBUG
-  cblas_daxpy(n, -1.0, V.v, 1, v, 1);
+  BLAS_daxpy(n, -1.0, V.v, 1, v, 1);
   return *this;
 }
 
 inline Vector& Vector::operator/=(double div)
 {
-  cblas_dscal(n, 1.0 / div, v, 1);
+  BLAS_dscal(n, 1.0 / div, v, 1);
   return *this;
 }
 
 inline Vector& Vector::operator*=(double mul)
 {
-  cblas_dscal(n, mul, v, 1);
+  BLAS_dscal(n, mul, v, 1);
   return *this;
 }
 
@@ -1089,7 +1089,7 @@ inline double Vector::operator*(const Vector& V) const
 #ifdef DEBUG
   P_ASSERT_X(n == V.n, "Vector::operator*(): incompatible sizes\n");
 #endif // DEBUG
-  return cblas_ddot(n, V.v, 1, v, 1);
+  return BLAS_ddot(n, V.v, 1, v, 1);
 }
 
 // With the intermediate classes
@@ -1098,22 +1098,22 @@ inline double Vector::operator*(const Vector& V) const
 
 inline Vector& Vector::operator=(const __scal_vec_trans<Vector> R)
 {
-  cblas_dcopy(n, R.vec.v, 1, v, 1);
-  cblas_dscal(n, R.alpha, v, 1);
+  BLAS_dcopy(n, R.vec.v, 1, v, 1);
+  BLAS_dscal(n, R.alpha, v, 1);
 //  std::cout<<" = __scal_vec\n";
   return *this;
 }
 
 inline Vector& Vector::operator+=(const __scal_vec_trans<Vector> R)
 {
-  cblas_daxpy(n, R.alpha, R.vec.v, 1, v, 1);
+  BLAS_daxpy(n, R.alpha, R.vec.v, 1, v, 1);
 //  std::cout<<" += __scal_vec\n";
   return *this;
 }
 
 inline Vector& Vector::operator-=(const __scal_vec_trans<Vector> R)
 {
-  cblas_daxpy(n, -R.alpha, R.vec.v, 1, v, 1);
+  BLAS_daxpy(n, -R.alpha, R.vec.v, 1, v, 1);
 //  std::cout<<"-= __scal_vec\n";
   return *this;
 }
@@ -1122,7 +1122,7 @@ inline Vector& Vector::operator-=(const __scal_vec_trans<Vector> R)
 
 inline Vector& Vector::operator=(const __op_mul_vec<Matrix, Vector> R)
 {
-  cblas_dgemv(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+  BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 0.0, this->v, 1);
 //  std::cout<<"__op_mul_vec<Matrix,Vector>\n";
   return *this;
@@ -1130,7 +1130,7 @@ inline Vector& Vector::operator=(const __op_mul_vec<Matrix, Vector> R)
 
 inline Vector& Vector::operator+=(const __op_mul_vec<Matrix, Vector> R)
 {
-  cblas_dgemv(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+  BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
 //  std::cout<<"+= __op_mul_vec<Matrix,Vector>\n";
   return *this;
@@ -1138,7 +1138,7 @@ inline Vector& Vector::operator+=(const __op_mul_vec<Matrix, Vector> R)
 
 inline Vector& Vector::operator-=(const __op_mul_vec<Matrix, Vector> R)
 {
-  cblas_dgemv(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
+  BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
 //  std::cout<<"-= __op_mul_vec<Matrix,Vector>\n";
   return *this;
@@ -1148,8 +1148,8 @@ inline Vector& Vector::operator-=(const __op_mul_vec<Matrix, Vector> R)
 
 inline Vector& Vector::operator+=(const __op_mul_vec_plus_vec<Matrix, Vector> R)
 {
-  cblas_daxpy(n, R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
-  cblas_dgemv(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
+  BLAS_daxpy(n, R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
+  BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
   std::cout << "+=__op_mul_vec_plus_vec<Matrix,Vector>\n";
   return *this;
@@ -1157,8 +1157,8 @@ inline Vector& Vector::operator+=(const __op_mul_vec_plus_vec<Matrix, Vector> R)
 
 inline Vector& Vector::operator-=(const __op_mul_vec_plus_vec<Matrix, Vector> R)
 {
-  cblas_daxpy(n, -R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
-  cblas_dgemv(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
+  BLAS_daxpy(n, -R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
+  BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
   std::cout << "-=__op_mul_vec_plus_vec<Matrix,Vector>\n";
   return *this;
@@ -1197,7 +1197,7 @@ inline Matrix& Matrix::operator=(const __scal_vec_trans<Matrix>)
 
 inline Matrix& Matrix::operator=(const __op_mul_vec<Matrix, Matrix> R)
 {
-  cblas_dgemm(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+  BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, 0.0, this->m, this->r);
   P_ASSERT_X(false, "= __op_mul_vec<Matrix,Matrix>\n");
@@ -1206,7 +1206,7 @@ inline Matrix& Matrix::operator=(const __op_mul_vec<Matrix, Matrix> R)
 
 inline Matrix& Matrix::operator+=(const __op_mul_vec<Matrix, Matrix> R)
 {
-  cblas_dgemm(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+  BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, 1.0, this->m, this->r);
   P_ASSERT_X(false, "+= __op_mul_vec<Matrix,Matrix>\n");
@@ -1215,7 +1215,7 @@ inline Matrix& Matrix::operator+=(const __op_mul_vec<Matrix, Matrix> R)
 
 inline Matrix& Matrix::operator-=(const __op_mul_vec<Matrix, Matrix> R)
 {
-  cblas_dgemm(CblasColMajor, R.op.tr == Trans ? CblasTrans : CblasNoTrans, CblasNoTrans,
+  BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, -1.0, this->m, this->r);
   P_ASSERT_X(false, "-= __op_mul_vec<Matrix,Matrix>\n");

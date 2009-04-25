@@ -244,7 +244,7 @@ inline System::FPTR System::fptr(void * ptr)
 inline System::tdlhand System::tdlopen(const char* fname)
 {
 #ifndef _WIN32
-  return dlopen(fname, RTLD_NOW);
+  return dlopen(fname, RTLD_LAZY);
 #else
   return LoadLibrary(fname);
 #endif
@@ -262,6 +262,7 @@ inline void* System::tdlsym(tdlhand h, const char* sname)
 inline int System::tdlclose(System::tdlhand h)
 {
 #ifndef _WIN32
+  std::cout << "DLCLOSE " << h << "\n";
   return dlclose(h);
 #else
   return (int) FreeLibrary(h);

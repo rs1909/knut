@@ -1,35 +1,53 @@
-#include "f2c.h"
+#ifndef __BLAS_H
+#define __BLAS_H
 
-logical lsame_(char *ca, char *cb, ftnlen ca_len, ftnlen cb_len);
+void daxpy_(int * N, double * alpha, double * X, int * incX, double * Y, int * incY);
+void dcopy_(int * N, double * X, int * incX, double * Y, int * incY);
+double ddot_(int * N, double * X, int * incX, double * Y, int * incY);
+void dgemm_(char *TRANSA, char *TRANSB, int * M, int * N, int * K, double * alpha, double * A, int * lda, double * B, int * ldb,
+       double * beta, double * C, int * ldc, int l1, int l2);
+void dgemv_(char *TRANSA, int * M, int * N, double * alpha, double * A, int * lda, double * X, int * incX, double * beta,
+       double * Y, int * incY, int l1);
+void dtrsm_(char *SIDE, char *UPLO, char *TRANSA, char *DIAG, int * M, int * N, double * alpha, double * A, int * lda, double * B,
+       int * ldb, int l1, int l2, int l3, int l4);
+void dtrmv_(char *UPLO, char *TRANSA, char *DIAG, int * N, double * A, int * lda, double * X, int * incX, int l1, int l2, int l3);
+void dtrsv_(char *UPLO, char *TRANSA, char *DIAG, int * N, double * A, int * lda, double * X, int * incX, int l1, int l2, int l3);
+void dtrmm_(char *SIDE, char *UPLO, char *TRANSA, char *DIAG, int * M, int * N, double * alpha, double * A, int * lda, double * B,
+       int * ldb, int l1, int l2, int l3, int l4);
+void dscal_(int * N, double * alpha, double * X, int * incX);
+void dswap_(int * N, double * X, int * incX, double * Y, int * incY);
+int idamax_(int * N, double * X, int * incX);
+double dnrm2_(int * N, double * X, int * incX);
+void drot_(int * N, double * X, int * incX, double * Y, int * incY, double * c, double * s);
+double dasum_(int * N, double * X, int * incX);
+void dger_(int * M, int * N, double * alpha, double * X, int * incX, double * Y, int * incY, double * A, int * lda);
 
-void daxpy_(integer * N, doublereal * alpha, doublereal * X, integer * incX, doublereal * Y, integer * incY);
+// These used in matrix.h
+inline void   BLAS_daxpy(int N, double alpha, double * X, int incX, double * Y, int incY)
+{
+  daxpy_(&N, &alpha, X, &incX, Y, &incY);
+}
+inline void   BLAS_dcopy(int N, double * X, int incX, double * Y, int incY)
+{
+  dcopy_(&N, X, &incX, Y, &incY);
+}
+inline double BLAS_ddot(int N, double * X, int incX, double * Y, int incY)
+{
+  return ddot_(&N, X, &incX, Y, &incY);
+}
+inline void   BLAS_dgemm(char TRANSA, char TRANSB, int M, int N, int K, double alpha, double * A, int lda, double * B, int ldb,
+       double beta, double * C, int ldc)
+{
+  dgemm_(&TRANSA, &TRANSB, &M, &N, &K, &alpha, A, &lda, B, &ldb, &beta, C, &ldc, 1, 1);
+}
+inline void   BLAS_dgemv(char TRANSA, int M, int N, double alpha, double * A, int lda, double * X, int incX, double beta,
+       double * Y, int incY)
+{
+  dgemv_(&TRANSA, &M, &N, &alpha, A, &lda, X, &incX, &beta, Y, &incY, 1);
+}
+inline void   BLAS_dscal(int N, double alpha, double * X, int incX)
+{
+  dscal_(&N, &alpha, X, &incX);
+}
 
-void dcopy_(integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY);
-
-doublereal ddot_(integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY);
-
-void dgemm_(char *TRANSA, char *TRANSB, integer * M, integer * N, integer * K, doublereal * alpha, doublereal * A, integer * lda, doublereal * B, integer * ldb, doublereal * beta, doublereal * C, integer * ldc, ftnlen l1, ftnlen l2);
-
-void dgemv_(char *TRANSA, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * X, integer * incX, doublereal * beta, doublereal * Y, integer * incY, ftnlen l1);
-
-void dtrsm_(char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * B, integer * ldb, ftnlen l1, ftnlen l2, ftnlen l3, ftnlen l4);
-
-void dtrmv_(char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integer * lda, doublereal * X, integer * incX, ftnlen l1, ftnlen l2, ftnlen l3);
-
-void dtrsv_(char *UPLO, char *TRANSA, char *DIAG, integer * N, doublereal * A, integer * lda, doublereal * X, integer * incX, ftnlen l1, ftnlen l2, ftnlen l3);
-
-void dtrmm_(char *SIDE, char *UPLO, char *TRANSA, char *DIAG, integer * M, integer * N, doublereal * alpha, doublereal * A, integer * lda, doublereal * B, integer * ldb, ftnlen l1, ftnlen l2, ftnlen l3, ftnlen l4);
-
-void dscal_(integer * N, doublereal * alpha, doublereal * X, integer * incX);
-
-void dswap_(integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY);
-
-integer idamax_(integer * N, doublereal * X, integer * incX);
-
-doublereal dnrm2_(integer * N, doublereal * X, integer * incX);
-
-void drot_(integer * N, doublereal * X, integer * incX, doublereal * Y, integer * incY, doublereal * c, doublereal * s);
-
-doublereal dasum_(integer * N, doublereal * X, integer * incX);
-
-void dger_(integer * M, integer * N, doublereal * alpha, doublereal * X, integer * incX, doublereal * Y, integer * incY, doublereal * A, integer * lda);
+#endif

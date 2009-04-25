@@ -5,7 +5,8 @@ INCLUDE (CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(snprintf HAVE_SNPRINTF)
 CHECK_FUNCTION_EXISTS(vsnprintf HAVE_VSNPRINTF)
 CHECK_FUNCTION_EXISTS(strdup HAVE_STRDUP)
-CHECK_INCLUDE_FILES(pthread.h HAVE_PTHREAD_H)
+# there's a memory leak in Mini-XML if we enable pthread support
+# CHECK_INCLUDE_FILES(pthread.h HAVE_PTHREAD_H)
 
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
