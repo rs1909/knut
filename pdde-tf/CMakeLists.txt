@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-PROJECT( KNUT C CXX Fortran )
+PROJECT( KNUT )
 
 #------------------------------------------------------------------------------
 # SETTING UP THE VARIABLES
