@@ -28599,7 +28599,7 @@ C
 *     End of LSAME
 *
       END
-      REAL             FUNCTION SECOND( )
+      SUBROUTINE SECOND( T0 )
 *
 *  -- LAPACK auxiliary routine (version 3.2) --
 *     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
@@ -28615,7 +28615,7 @@ C
 *
 * =====================================================================
 *
-      SECOND = 0.0E+0
+      T0 = 0.0E+0
       RETURN
 *
 *     End of SECOND
