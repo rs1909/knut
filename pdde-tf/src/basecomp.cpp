@@ -12,6 +12,10 @@
 #include <string>
 #include <cmath>
 
+#define ITSTEPS 5
+#define ITLIM1 3
+#define ITLIM2 5
+
 void BaseComp::run(const char* branchFile)
 {
   System sys(params->getSysName());
@@ -55,13 +59,24 @@ void BaseComp::run(const char* branchFile)
     params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
     const int npar = sys.npar();
 
-//     for( int i=0; i<eqn.Size(); i++ ) std::cout<<EqnToStr( eqn(i) )<<", ";
-//     std::cout<<'\n';
-//     for( int i=0; i<var.Size(); i++ ) std::cout<<VarToStr( var(i) )<<", ";
-//     std::cout<<'\n';
     std::ostringstream screenout;
     screenout << std::scientific;
     screenout.precision(6);
+
+//    screenout << "- REFINE -\n";
+//    for( int i=0; i<eqn_refine.Size(); i++ ) screenout<<EqnToStr( eqn_refine(i) )<<", ";
+//    screenout << '\n';
+//    for( int i=0; i<var_refine.Size(); i++ ) screenout<<VarToStr( var_refine(i) )<<", ";
+//    screenout << "\n- START -\n";
+//    for( int i=0; i<eqn_start.Size(); i++ ) screenout<<EqnToStr( eqn_start(i) )<<", ";
+//    screenout << '\n';
+//    for( int i=0; i<var_start.Size(); i++ ) screenout<<VarToStr( var_start(i) )<<", ";
+//    screenout << "\n- CONTINUE -\n";
+//    for( int i=0; i<eqn.Size(); i++ ) screenout<<EqnToStr( eqn(i) )<<", ";
+//    screenout << '\n';
+//    for( int i=0; i<var.Size(); i++ ) screenout<<VarToStr( var(i) )<<", ";
+//    screenout << "\n--\n";
+//    print(screenout);
 
     // If it is a periodic solution OR switching from per. solotion to torus
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
@@ -164,7 +179,7 @@ void BaseComp::run(const char* branchFile)
       screenout << '\n';
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
-      const int ithist = 5;
+      const int ithist = ITSTEPS;
       Array1D<int> it(ithist);
       for (int i = 0; i < it.Size(); i++) it(i) = 3;
       int itpos = 0;
@@ -243,12 +258,19 @@ void BaseComp::run(const char* branchFile)
           ff << "\t" << norm << "\t" << pt.NormMX() << "\t" << ustab << "\n";
           ff.flush();
         }
-        int itc = it(itpos);
-        if ((itc > 3) && (fabs(ds) / 1.414 > params->getDsMin()) && (fabs(ds) / 1.414 < params->getDsMax())) ds /= 1.414;
-        if ((itc > 5) && (fabs(ds) / 2.0 > params->getDsMin()) && (fabs(ds) / 2.0 < params->getDsMax())) ds /= 2.0;
+        // step size adaptation
+        const int itc = it(itpos);
+        if ((itc > ITLIM1) && 
+            (fabs(ds) / 1.414 > fabs(params->getDsMin())) && 
+            (fabs(ds) / 1.414 < fabs(params->getDsMax()))) ds /= 1.414;
+        if ((itc > ITLIM2) && 
+            (fabs(ds) / 2.0 > fabs(params->getDsMin())) && 
+            (fabs(ds) / 2.0 < fabs(params->getDsMax()))) ds /= 2.0;
         bool decr = true;
-        for (int l = 0; l < it.Size(); l++) if (it(l) > 3) decr = false;
-        if (decr && (fabs(ds)*1.414 > params->getDsMin()) && (fabs(ds)*1.414 < params->getDsMax())) ds *= 1.414;
+        for (int l = 0; l < it.Size(); l++) if (!(it(l) < ITLIM1)) decr = false;
+        if ( decr && 
+            (fabs(ds)*1.414 > fabs(params->getDsMin())) && 
+            (fabs(ds)*1.414 < fabs(params->getDsMax()))) ds *= 1.414;
         if ((itc >= params->getNItC()) && (fabs(ds) / 2.0 < params->getDsMin()))
         {
           P_MESSAGE1("No convergence. The minimum arclength step size (DSMIN) has been reached.");

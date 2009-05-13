@@ -59,12 +59,12 @@ void PointTR::Jacobian
   {
     if (eqn(i) == EqnTORPhase0)
     {
-      P_ERROR_X1(ph0 == -1, "Too many phase conditions.");
+      if (ph0 != -1) P_MESSAGE1("Too many phase conditions.");
       ph0 = i - 1;
     }
     if (eqn(i) == EqnTORPhase1)
     {
-      P_ERROR_X1(ph1 == -1, "Too many phase conditions.");
+      if (ph1 != -1) P_MESSAGE1("Too many phase conditions.");
       ph1 = i - 1;
     }
   }
@@ -74,18 +74,18 @@ void PointTR::Jacobian
     rhs.getV3()(ph0) = 0.0;
     rhs.getV3()(ph1) = 0.0;
   }
-  else
+  else if (ph0 == (-1) && ph1 != (-1))
   {
-    P_ERROR_X1(ph0 == -1, "There is a first phase condition, but no second.");
-    if (ph1 != (-1))
-    {
-      colloc->PhaseONE(jac.getA31(ph1), sol/*Prev*/);
-      rhs.getV3()(ph1) = 0.0;
-    }
+    colloc->PhaseONE(jac.getA31(ph1), sol/*Prev*/);
+    rhs.getV3()(ph1) = 0.0;
+  } else 
+  {
+    P_MESSAGE1("There is a first phase condition, but no second.");
   }
 
   // jacobian, derivatives of the right-hand side
   colloc->Jacobian(jac.getA11(), A13, rhs.getV1(), par, sol, JacVar);
+  jac.getA11().Check();
   // the other equations
   // Currently: none
   for (int i = 1; i < eqn.Size(); i++)
@@ -150,4 +150,3 @@ void PointTR::WriteBinary(mat4Data& data, int n)
   }
   data.setBlanket(n, sol);
 }
-

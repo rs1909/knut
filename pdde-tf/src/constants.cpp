@@ -130,11 +130,16 @@ void NConstants::loadXmlFile(const std::string &fileName)
   mxml_node_t *tree;
 
   fp = fopen(fileName.c_str(), "r");
+  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
   tree = mxmlLoadFile(0, fp, MXML_TEXT_CALLBACK);
   fclose(fp);
 
   mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
   mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  if (!root_nd)
+  {
+    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+  }
   
   nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
   setInputFile(getNodeText(nd));
@@ -530,7 +535,7 @@ int NConstants::toEqnVar(System& sys,
   int  testFN_idx = -1;
   for (int i = 0; i < eqn.Size(); i++)
   {
-    if (eqn(i) == EqnPhase) aut = true;
+    if ((eqn(i) == EqnPhase) || (eqn(i) == EqnTORPhase0)) aut = true;
     if (eqn(i) == EqnPhaseRot) phaseRot = true;
     if ((eqn(i) == EqnTFPD) ||
         (eqn(i) == EqnTFLP) ||
@@ -604,6 +609,13 @@ int NConstants::toEqnVar(System& sys,
       {
         if (ee(i) != EqnPhase) { eqn_refine(j) = ee(i); var_refine(j) = vv(j); ++j; }
       }
+  }
+  
+  // Swithing from a Neimark-Sacker to a Torus (Delay Equation)
+  if (getBranchSW() == TFTRSwitch)
+  {
+    eqn_refine(0) = EqnSol;
+    var_refine(0) = VarSol;
   }
 
   // Here, we set up the branch switching.

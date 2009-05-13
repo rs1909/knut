@@ -23,13 +23,32 @@ using namespace std;
 
 void SpMatrix::Check()
 {
-  for (int j = 0; j < n; j++)
+  bool ok = true;
+  for (int j = 0; j < n && ok; j++)
   {
-    for (int k = Ap[j] + 1; k < Ap[j+1]; k++)
+    for (int k = Ap[j] + 1; k < Ap[j+1] && ok; k++)
     {
-      if (Ai[k-1] >= Ai[k]) cout << "SpMatrix::Check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
+      if (Ai[k-1] >= Ai[k] || Ai[k] < 0 || Ai[k-1] < 0)
+      {
+        std::cerr << "SpMatrix::Check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
+        ok = false;
+      }
     }
   }
+  for (int j = 0; j < n && ok; j++)
+  {
+    for (int k = Ap[j]; k < Ap[j+1] && ok; k++)
+    {
+      if (!isfinite(Ax[k]))
+      {
+        std::cerr << "SpMatrix::Check(): NaN at (" << j << "," << Ai[k] << ")\n";
+        ok = false;
+      }
+    }
+  }
+  if (ok) std::cerr << "Matrix tested VALID.\n";
+  else std::cerr << "Matrix tested INVALID. (Only the first error is shown.)\n";
+  std::cerr.flush();
 }
 
 void SpMatrix::Swap()
@@ -206,7 +225,7 @@ void SpFact::Fact()
     P_ASSERT_X(Numeric == 0, "This is a bug. The sparse matrix was already factorized.");
 
     int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
-    P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_symbolic()': ", sp_umf_error(status));
+    P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_symbolic()': (", status, ") ", sp_umf_error(status));
     status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
     fact = true;
     if (status != UMFPACK_OK)
@@ -218,7 +237,7 @@ void SpFact::Fact()
         GetDX(DX);
         DX.Print();
       }
-      P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
+      P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': (", status, ") ", sp_umf_error(status));
     }
     umfpack_di_free_symbolic(&Symbolic);
     Symbolic = 0;

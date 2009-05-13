@@ -123,6 +123,24 @@ inline const char* EqnToStr(Eqn eqn)
     case EqnTORPhase1:
       return "EqnTORPhase1";
       break;
+    case EqnTFLP:
+      return "EqnTFLP";
+      break;
+    case EqnTFPD:
+      return "EqnTFPD";
+      break;
+    case EqnTFLPAUT:
+      return "EqnTFLPAUT";
+      break;
+    case EqnTFLPAUTROT:
+      return "EqnTFLPAUTROT";
+      break;
+    case EqnTFCPLX_RE:
+      return "EqnTFCPLX_RE";
+      break;
+    case EqnTFCPLX_IM:
+      return "EqnTFCPLX_IM";
+      break;
     default:
       return "Eqn ?";
       break;

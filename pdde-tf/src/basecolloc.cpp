@@ -232,7 +232,6 @@ PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
   {
     poly_coeff_lgr(lgr(i), meshINT, i);
   }
-
 }
 
 int PerSolColloc::meshlookup(const Vector& mesh, double t)
@@ -274,82 +273,93 @@ static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& 
   newmesh(newmesh.Size()-1) = 1.0;
 }
 
-void PerSolColloc::meshAdapt_internal( Vector& newmesh, const Vector& profile )
+static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, const Array1D< Array1D<double> >& lgr)
 {
+  int ndeg_ = lgr.Size() - 1;
+  int nint_ = mesh.Size() - 1;
+  P_ERROR_X1( profile.Size() % (ndeg_*nint_ + 1) == 0, "Wrong profile size.");
+  int ndim_ = profile.Size() / (ndeg_*nint_ + 1);
+  
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
   const double hmach = 1e-6;
-  Matrix hd(NINT+1, NDIM);
-  for (int i = 0; i < NINT; i++)
+  Matrix hd(nint_+1, ndim_);
+  for (int i = 0; i < nint_; i++)
   {
-    for (int p = 0; p < NDIM; p++)
+    for (int p = 0; p < ndim_; p++)
     {
       hd(i, p) = 0.0;
-      for (int j = 0; j < NDEG+1; j++)
+      for (int j = 0; j < ndeg_+1; j++)
       {
-        hd(i,p) += lgr(j)(NDEG)*profile( p + NDIM*( j + NDEG*i ) );
+        hd(i,p) += lgr(j)(ndeg_)*profile( p + ndim_*( j + ndeg_*i ) );
       }
       // adjust by the mesh interval
-      hd(i,p) /= pow(mesh(i+1)-mesh(i),NDEG);
+      hd(i,p) /= pow(mesh(i+1)-mesh(i),ndeg_);
       if (fabs(hd(i,p)) > hmach) small_deri = false;
     }
   }
 //   if (small_deri) std::cout<<"small derivatives\\n";
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
-  for (int p = 0; p < NDIM; p++)
+  for (int p = 0; p < ndim_; p++)
   {
-    hd(NINT,p) = hd(0,p);
+    hd(nint_,p) = hd(0,p);
   }
   // computes the (m+1)-th derivative.
   // The mesh modulo need not to be changed, when not periodic BC is used.
-  for (int i = 0; i < NINT; i++)
+  for (int i = 0; i < nint_; i++)
   {
     double dtav;
-    if ( i+2 < NINT ) dtav = 0.5*(mesh(i+2)-mesh(i));
-    else dtav = 0.5*(1.0+mesh((i+2)-NINT)-mesh(i));
+    if ( i+2 < nint_ ) dtav = 0.5*(mesh(i+2)-mesh(i));
+    else dtav = 0.5*(1.0+mesh((i+2)-nint_)-mesh(i));
     if( dtav < 0.0 ) std::cout<<"dtav<0\\n";
-    for (int p = 0; p < NDIM; p++)
+    for (int p = 0; p < ndim_; p++)
     {
       hd(i,p) = (hd(i+1,p) - hd(i,p))/dtav;
     }
   }
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
-  for (int p = 0; p < NDIM; p++)
+  for (int p = 0; p < ndim_; p++)
   {
-    hd(NINT,p) = hd(0,p);
+    hd(nint_,p) = hd(0,p);
   }
   // eqf contains the integral which has to be equidistributed
-  Vector eqf(NINT+1);
+  P_ERROR_X1( eqf.Size() == nint_+1, "EQF has wrong size.");
   // when the derivatives are too small;
-  if (small_deri) for (int i = 0; i < NINT+1; ++i) eqf(i) = i;
+  if (small_deri) for (int i = 0; i < nint_+1; ++i) eqf(i) = i;
   else eqf(0) = 0.0;
   // computing eqf
-  const double pwr=1.0/(NDEG+1.0);
-  for (int j=0; j < NINT; ++j)
+  const double pwr=1.0/(ndeg_+1.0);
+  for (int j=0; j < nint_; ++j)
   {
     double EP=0;
     if (j == 0)
     {
-      for (int i = 0; i < NDIM; ++i)
+      for (int i = 0; i < ndim_; ++i)
       {
-        EP+=pow(fabs(hd(NINT,i)),pwr);
+        EP+=pow(fabs(hd(nint_,i)),pwr);
       }
     } else
     {
-      for (int i = 0; i < NDIM; ++i)
+      for (int i = 0; i < ndim_; ++i)
       {
         EP+=pow(fabs(hd(j-1,i)),pwr);
       }
     }
     double E=0;
-    for (int i = 0; i < NDIM; ++i)
+    for (int i = 0; i < ndim_; ++i)
     {
       E+=pow(fabs(hd(j,i)),pwr);
     }
     eqf(j+1)=eqf(j)+0.5*(mesh(j+1)-mesh(j))*(E+EP);
   }
+}
+
+void PerSolColloc::meshAdapt_internal( Vector& newmesh, const Vector& profile )
+{
+  Vector eqf(NINT+1);
+  meshAssess(eqf, mesh, profile, lgr);
   meshConstruct(newmesh, mesh, eqf);
 }
 
@@ -681,7 +691,7 @@ void PerSolColloc::Import(Vector& newprofile, const Vector& oldprofile, const Ve
   }
 
   Vector eqf(oldmesh.Size());
-  for (int i = 0; i < eqf.Size(); ++i) eqf(i) = i;
+  meshAssess(eqf, oldmesh, oldprofile, old_lgr);
   meshConstruct(mesh, oldmesh, eqf);
   profileConvert(newprofile, mesh, oldprofile, oldmesh, old_lgr, NDIM);
 }

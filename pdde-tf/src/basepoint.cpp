@@ -137,24 +137,24 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     case BifTFAUTLP:
     {
       PtTab tmp = { BifTFAUTLP, NOSwitch,   3, 2,
-                    { EqnSol, EqnPhase,      EqnTFLPAUT },
-                    { VarSol, parx(0),       parx(1) } };
+                    { EqnSol, EqnTFLPAUT, EqnPhase },
+                    { VarSol, parx(0),    parx(1) } };
       tab = tmp;
     }
     break;
     case BifTFAUTPD:
     {
       PtTab tmp = { BifTFAUTPD, NOSwitch,   3, 2,
-                    { EqnSol, EqnPhase,      EqnTFPD },
-                    { VarSol, parx(0),       parx(1) } };
+                    { EqnSol, EqnTFPD, EqnPhase },
+                    { VarSol, parx(0), parx(1) } };
       tab = tmp;
     }
     break;
     case BifTFAUTNS:
     {
       PtTab tmp = { BifTFAUTNS, NOSwitch,   4, 2,
-                    { EqnSol, EqnPhase,      EqnTFCPLX_RE,  EqnTFCPLX_IM },
-                    { VarSol, PANGLE,        parx(0),       parx(1) } };
+                    { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM, EqnPhase },
+                    { VarSol, PANGLE,        parx(0),      parx(1) } };
       tab = tmp;
     }
     break;
@@ -177,7 +177,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     break;
     case SolAUTTor:
     {
-      PtTab tmp = { SolAUTTor, NOSwitch, 2, 2,
+      PtTab tmp = { SolAUTTor, NOSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
                     { VarTORSol, parx(0),      parx(1) } };
       tab = tmp;
@@ -185,7 +185,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     break;
     case SolAUTTorNS:
     {
-      PtTab tmp = { SolAUTTor, TFTRSwitch, 2, 2,
+      PtTab tmp = { SolAUTTor, TFTRSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
                     { VarTORSol, parx(0),      parx(1) } };
       tab = tmp;
