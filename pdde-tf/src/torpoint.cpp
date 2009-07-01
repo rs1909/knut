@@ -118,6 +118,7 @@ void PointTR::Jacobian
       rhs.getV3()(dim3) = 0.0;
     }
   }
+//  for (int i = 0; i < dim3+1; i++) jac.getA31(i).Print();
 }
 
 #define NDEG1 colloc->Ndeg1()

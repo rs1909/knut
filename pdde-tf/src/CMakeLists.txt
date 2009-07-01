@@ -23,5 +23,5 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
 	${MXML_INCLUDE_DIRS})
 
 IF(NOT APPLE)
-  INSTALL( FILES matrix.h knutsys.h DESTINATION include/ )
+  INSTALL( FILES matrix.h knutsys.h pddesys.h DESTINATION include/ )
 ENDIF(NOT APPLE)

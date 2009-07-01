@@ -574,6 +574,14 @@ void PerSolPoint::BinaryRead(mat4Data& data, int n)
   {
     Vector tmp(data.getNDim()*(data.getNDeg()*data.getNInt() + 1));
     data.getProfile(n, tmp);
-    persolcolloc->Import(sol, tmp, msh, data.getNDeg());
+    const double amp = Amplitude(tmp, data.getNDim(), data.getNDeg(), data.getNInt());
+    if (amp < 1e-6)
+    {
+      std::cerr << "Warning: importing without mesh adaptation.\n";
+      persolcolloc->Import(sol, tmp, msh, data.getNDeg(), false);
+    } else
+    {
+      persolcolloc->Import(sol, tmp, msh, data.getNDeg(), true);
+    }
   }
 }

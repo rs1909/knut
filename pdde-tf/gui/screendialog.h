@@ -29,12 +29,13 @@ class screenDialog : public QDialog
       resize(size);
       move(pos);
     }
-	~screenDialog()
-	{
-	  QSettings settings("Knut", "text window");
-	  settings.setValue("pos", pos());
+    ~screenDialog()
+    {
+      QSettings settings("Knut", "text window");
+      settings.setValue("pos", pos());
       settings.setValue("size", size());
-	}
+      delete display;
+    }
   public slots:
     void setTitle(const std::string& str)
     {

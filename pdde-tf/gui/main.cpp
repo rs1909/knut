@@ -21,10 +21,9 @@
 // the command line can contain one xml file name.
 // if -r is given then it will run the continuation and exit afterwards
 
-QString constFile;
-
 int main(int argc, char *argv[])
 {
+  QString constFile;
   // searching for the run option
   bool run =  false;
   for (int acnt = 1; acnt < argc;  acnt++)
@@ -70,7 +69,10 @@ int main(int argc, char *argv[])
   {
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
-    MainWindow mainWin(app.applicationDirPath());
+#ifdef Q_WS_WIN
+    app.setFont(QFont("Helvetica", 9));
+#endif
+    MainWindow mainWin(app.applicationDirPath(), constFile);
 
 #ifdef Q_WS_MAC
     FileOpenEvent* openEvent = new FileOpenEvent(&app);

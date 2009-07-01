@@ -15,6 +15,7 @@
 #include "pointtype.h"
 #include "basecolloc.h"
 #include "multipliers.h"
+#include <cfloat>
 
 class System;
 
@@ -205,17 +206,31 @@ class PerSolPoint : public BasePoint
     int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
     PtType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
     void    clearStability() { mRe.Clear(); mIm.Clear(); }
-    inline double  NormMX()
+    static inline double  Amplitude(const Vector& sol, int ndim, int ndeg, int nint)
     {
-      double max = 0.0, min = 1.0e32;
-      for (int i = 0; i < persolcolloc->Nint()*persolcolloc->Ndeg() + 1; i++)
+      double nrm = 0.0;
+      for (int p = 0; p < ndim; ++p)
       {
-        double e = 0.0;
-        for (int j = 0; j < persolcolloc->Ndim(); j++) e += sqrt(sol(persolcolloc->Ndim() * i + j) * sol(persolcolloc->Ndim() * i + j));
-        if (e > max) max = e;
-        if (e < min) min = e;
+        double min = DBL_MAX;
+        double max = -DBL_MAX;
+        for (int j = 0; j < nint; ++j)
+        {
+          for (int k = 0; k < ndeg; ++k)
+          {
+            if (min > sol(p + ndim*(k + ndeg*j))) min = sol(p + ndim*(k + ndeg*j));
+            if (max < sol(p + ndim*(k + ndeg*j))) max = sol(p + ndim*(k + ndeg*j));
+          }
+        }
+        nrm += (max - min) * (max - min);
       }
-      return max -min;
+      return nrm;
+    }
+    inline double NormMX()
+    {
+      const int ndeg = persolcolloc->Nint();
+      const int nint = persolcolloc->Nint();
+      const int ndim = persolcolloc->Ndim();
+      return Amplitude(sol, ndim, ndeg, nint);
     }
     
     void BinaryRead(mat4Data& data, int n);

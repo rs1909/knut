@@ -38,11 +38,11 @@ void GnuPlot::SetYLabel(const char *lb)
   pl << "set ylabel \"" << lb << "\"\n";
 }
 
-void GnuPlot::Plot(int n, const char *style)
+void GnuPlot::Plot(unsigned int n, const char *style)
 {
-  if (n >= (int)cmd.size())
+  if (n >= cmd.size())
   {
-    for (int i = cmd.size(); i <= n; i++)
+    for (unsigned int i = cmd.size(); i <= n; i++)
     {
       cmd.insert(cmd.end(), std::string());
       data.insert(data.end(), std::string());
@@ -51,10 +51,10 @@ void GnuPlot::Plot(int n, const char *style)
   cmd[n] = style;
 }
 
-void GnuPlot::AddData(int n, double x, double y)
+void GnuPlot::AddData(unsigned int n, double x, double y)
 {
   std::ostringstream tmp;
-  if (n >= (int)cmd.size())
+  if (n >= cmd.size())
   {
     std::cout << "Gnuplot::AddData: Bad index\n";
     exit(-1);
@@ -64,10 +64,10 @@ void GnuPlot::AddData(int n, double x, double y)
   data[n] += tmp.str();
 }
 
-void GnuPlot::AddSData(int n, double x, double y)
+void GnuPlot::AddSData(unsigned int n, double x, double y)
 {
   std::ostringstream tmp;
-  if (n >= (int)cmd.size())
+  if (n >= cmd.size())
   {
     std::cout << "Gnuplot::AddData: Bad index\n";
     exit(-1);
@@ -80,13 +80,13 @@ void GnuPlot::AddSData(int n, double x, double y)
 void GnuPlot::Show()
 {
   if (cmd.size() != 0) pl << "plot ";
-  for (int i = 0; i < (int)cmd.size(); i++)
+  for (unsigned int i = 0; i < cmd.size(); i++)
   {
     if (i == 0) pl << " '-' " << cmd[i];
     else pl << ", '-' " << cmd[i];
   }
   pl << '\n';
-  for (int i = 0; i < (int)cmd.size(); i++)
+  for (unsigned int i = 0; i < cmd.size(); i++)
   {
     pl << data[i] << "e\n";
   }
@@ -98,13 +98,13 @@ void GnuPlot::Save(const char * filename)
 {
   pl << "set terminal postscript eps enh 22\n" << "set output \"" << filename << "\"\n";
   if (cmd.size() != 0) pl << "plot ";
-  for (int i = 0; i < (int)cmd.size(); i++)
+  for (unsigned int i = 0; i < cmd.size(); i++)
   {
     if (i == 0) pl << " '-' " << cmd[i];
     else pl << ", '-' " << cmd[i];
   }
   pl << '\n';
-  for (int i = 0; i < (int)cmd.size(); i++)
+  for (unsigned int i = 0; i < cmd.size(); i++)
   {
     pl << data[i] << "e\n";
   }

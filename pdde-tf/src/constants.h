@@ -45,13 +45,14 @@
 #define KN_ARRAY_CONSTANT( name, type, getName, setName, getSize, setSize, zero) private: \
     SELF(std::vector<type>) name; \
   public: \
-    type getName(unsigned int i) const { if (i<getSize()) return name[i]; else return zero; } \
-    virtual void setName(unsigned int i, type d) { name[i] = d; constantChanged(#name); } \
-    int getSize() const { return name.size(); } \
-    virtual void setSize(unsigned int ns) \
+    type getName(int i) const \
+      { if (i<getSize() && i>=0) return name[static_cast<unsigned int>(i)]; else return zero; } \
+    virtual void setName(int i, type d) { name[static_cast<unsigned int>(i)] = d; constantChanged(#name); } \
+    int getSize() const { return static_cast<int>(name.size()); } \
+    virtual void setSize(int ns) \
     { \
-      int ps = getSize(); name.resize(ns); \
-      for (int i=ps; i<ns; ++i) name[i] = zero; \
+      int ps = getSize(); name.resize(static_cast<unsigned int>(ns)); \
+      for (int i=ps; i<ns; ++i) name[static_cast<unsigned int>(i)] = zero; \
       constantChanged(#name); \
     }
 
@@ -139,17 +140,17 @@ class NConstants
     // Convert type, number into enum that can be used in the computation
     // OR MAYBE MAKE THE COMPUTATION WORK WITH THESE DIRECTLY?
     Var  getCp() const { return varFromTypeNum(getCpType(),getCpNum()); }
-    Var  getParx(unsigned int i) const 
+    Var  getParx(int i) const 
     {
       if (i<getParxNumSize()) return varFromTypeNum(getParxType(i), getParxNum(i)); 
       else return VarNone;
     }
-    Var  getVars(unsigned int i) const 
+    Var  getVars(int i) const 
     {
       if (i<getVarsNumSize()) return varFromTypeNum(getVarsType(i), getVarsNum(i));
       else return VarNone;
     }
-    Eqn  getEqns(unsigned int i) const 
+    Eqn  getEqns(int i) const 
     {
       if (i<getEqnsNumSize()) return eqnFromTypeNum(getEqnsType(i), getEqnsNum(i)); 
       else return EqnNone;

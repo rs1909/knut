@@ -51,9 +51,8 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat) :
     rrI(ntau + 1, nint*ndeg), ddI(ntau + 1, nint*ndeg),
     mmI(ntau + 1, nint*ndeg), szI(nmat + 1, nint*ndeg),
 
-    tt(2*ntau + 1, ndeg + 1, ndeg*nint),
+    kkMSH(ntau, nint*ndeg + 1),tt(2*ntau + 1, ndeg + 1, ndeg*nint),
     ttMSH(2*ntau, ndeg + 1, ndeg*nint + 1),
-    kkMSH(ntau, nint*ndeg + 1),
     solData(ndim, 2*ntau + 1, ndeg*nint),
     p_tau(ntau, nint*ndeg), p_dtau(ntau, nint*ndeg),
     p_fx(ndim, nint*ndeg), p_dfx(ndim,ndim, nint*ndeg), p_dfp(ndim,1, nint*ndeg),
@@ -106,8 +105,8 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat) :
 ///
 void NColloc::Init(const Vector& sol, const Vector& par)
 {
-  double *t = new double[NTAU+1];
-  double *tMSH = new double[NTAU];
+  Array1D<double> t(NTAU+1);
+  Array1D<double> tMSH(NTAU);
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -116,6 +115,7 @@ void NColloc::Init(const Vector& sol, const Vector& par)
       const int idx = j + i * NDEG;
       const double h0 = mesh(i + 1) - mesh(i);
       time(idx) = mesh(i) + h0 * col(j);
+//      if (!std::isfinite(mesh(i)) || !std::isfinite(col(j))) std::cout << mesh(i) << ", " << col(j) << "\n";
       timeMSH(idx) = mesh(i) + h0 * meshINT(j);
     }
   }
@@ -131,7 +131,7 @@ void NColloc::Init(const Vector& sol, const Vector& par)
       const double h0 = mesh(i + 1) - mesh(i);
 
       /* first, the derivative: x'(t)*/
-      t[0] = time(idx);
+      t(0) = time(idx);
       kk(0, idx) = i;
       kkS(0, idx) = i;
       kkI(0, idx) = i;
@@ -148,42 +148,43 @@ void NColloc::Init(const Vector& sol, const Vector& par)
         p_tau(k,idx) /= par(0);
         P_ERROR_X3(p_tau(k,idx) <= NMAT, "The scaled delay became greater then NMAT times the period. k=", k, ".");
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
-        t[1+k] = (t[0] - p_tau(k,idx)) - floor(t[0] - p_tau(k,idx));  // nem szetvalasztott
+        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // nem szetvalasztott
 
         // binary search for in which interval is t-p_tau(k,idx)
-        const int low = meshlookup(mesh, t[1+k]);
+        const int low = meshlookup(mesh, t(1+k));
         kk(k + 1, idx) = low;
 
-        if (t[0] - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low;
+        if (t(0) - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low;
         else kkS(k + 1, idx) = low - NINT;
 
-        kkI(k + 1, idx) = low + NINT * static_cast<int>(floor(t[0] - p_tau(k,idx)));
+        kkI(k + 1, idx) = low + NINT * static_cast<int>(floor(t(0) - p_tau(k,idx)));
 
+//        std::cout << "low " << low << " t(0) " << t(0) << " p_tau(k,idx) " << p_tau(k,idx);
         const double hk = mesh(low + 1) - mesh(low);
         // x(t-\tau_i)
-        poly_lgr(meshINT, out, (t[1+k] - mesh(low)) / hk);
+        poly_lgr(meshINT, out, (t(1+k) - mesh(low)) / hk);
         for (int l = 0; l < NDEG + 1; l++)
         {
           tt(1 + k, l, idx) = out(l);
         }
         // x'(t-\tau_i)
-        poly_dlg(meshINT, out, (t[1+k] - mesh(low)) / hk);
+        poly_dlg(meshINT, out, (t(1+k) - mesh(low)) / hk);
         for (int l = 0; l < NDEG + 1; l++)
         {
           tt(NTAU + 1 + k, l, idx) = out(l) / hk;
         }
         // creating interpolation at the representation points
-        tMSH[k] = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx));
-        const int lowMSH = meshlookup(mesh, tMSH[k]);
+        tMSH(k) = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx));
+        const int lowMSH = meshlookup(mesh, tMSH(k));
         kkMSH(k, idx) = lowMSH;
         const double hkMSH = mesh(lowMSH + 1) - mesh(lowMSH);
-        poly_lgr(meshINT, out, (tMSH[k] - mesh(lowMSH)) / hkMSH);
+        poly_lgr(meshINT, out, (tMSH(k) - mesh(lowMSH)) / hkMSH);
         for (int l = 0; l < NDEG + 1; l++)
         {
           ttMSH(k, l, idx) = out(l);
         }
         // x'(t-\tau_i)
-        poly_dlg(meshINT, out, (tMSH[k] - mesh(lowMSH)) / hkMSH);
+        poly_dlg(meshINT, out, (tMSH(k) - mesh(lowMSH)) / hkMSH);
         for (int l = 0; l < NDEG + 1; l++)
         {
           ttMSH(NTAU + k, l, idx) = out(l) / hkMSH;
@@ -247,6 +248,7 @@ void NColloc::Init(const Vector& sol, const Vector& par)
       int idpI = 0, delI = 0;
       rrI(eeI(0, idx), idx) = 0;
       ddI(eeI(0, idx), idx) = 0;
+//      std::cout << " mmI " << mmI(eeI(0, idx),idx) << " eeI " << eeI(0, idx) << " kkI " << kkI(eeI(0, idx),idx) << "\n";
       szI(mmI(eeI(0, idx), idx), idx) = NDEG + 1;
 
       for (int r = 1; r < NTAU + 1; r++)
@@ -314,8 +316,6 @@ void NColloc::Init(const Vector& sol, const Vector& par)
       ttMSH(NTAU + k, l, NDEG*NINT) = ttMSH(NTAU + k, l, 0);
     }
   }
-  delete[] tMSH;
-  delete[] t;
   // all the delays. the previous was rescaled and we need unscaled
   sys->p_tau(p_tau, time, par);
   sys->p_tau(p_tauMSH, timeMSH, par);

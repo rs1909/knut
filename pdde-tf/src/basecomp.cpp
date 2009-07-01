@@ -97,7 +97,8 @@ void BaseComp::run(const char* branchFile)
       pt.setCont(params->getCp() - VarPAR0);
   
       // setting the symmetric components
-      Array1D<int> sre(params->getSymReSize()), sim(params->getSymReSize());
+      Array1D<int> sre(params->getSymReSize());
+      Array1D<int> sim(params->getSymReSize());
       for (int i = 0; i < sre.Size(); ++i)
       {
         sre(i) = params->getSymRe(i);
@@ -276,8 +277,18 @@ void BaseComp::run(const char* branchFile)
           P_MESSAGE1("No convergence. The minimum arclength step size (DSMIN) has been reached.");
         }
         // stop continuation if CP has reached the bounds
-        if (par(params->getCp() - VarPAR0) < params->getCpMin()) break;
-        if (par(params->getCp() - VarPAR0) > params->getCpMax()) break;
+        if (par(params->getCp() - VarPAR0) < params->getCpMin())
+        {
+          screenout << "Minimum CP value is reached\n";
+          print(screenout);
+          break;
+        }
+        if (par(params->getCp() - VarPAR0) > params->getCpMax())
+        {
+          screenout << "Maximum CP value is reached\n";
+          print(screenout);
+          break;
+        }
       }
     }
     else
@@ -384,6 +395,5 @@ void BaseComp::run(const char* branchFile)
   catch (knutException ex)
   {
     raiseException(ex);
-    return;
   }
 }

@@ -78,12 +78,12 @@ void PlotData::clear(int n)
       }
       else if ((*i).type == PlotCircleType)
       {
-        for (int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
+        for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
         delete(*i).data.circle;
       }
       else if ((*i).type == PlotPolygonType)
       {
-        for (int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
+        for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
         delete(*i).data.polygon;
       }
       else
@@ -130,6 +130,7 @@ QColor PlotData::getColor(int n)
       }
     }
   }
+  return QColor(Qt::black);
 }
 
 void PlotData::setColor(int n, QColor& color)
@@ -153,7 +154,7 @@ void PlotData::setColor(int n, QColor& color)
       }
       else if ((*i).type == PlotCircleType)
       {
-        for (int j = 0; j < (*i).data.circle->item.size(); ++j)
+        for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j)
         {
           QPen pen = (*i).data.circle->item[j]->pen();
           pen.setColor(color);
@@ -163,7 +164,7 @@ void PlotData::setColor(int n, QColor& color)
       }
       else if ((*i).type == PlotPolygonType)
       {
-        for (int j = 0; j < (*i).data.polygon->item.size(); ++j)
+        for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j)
         {
           QPen pen = (*i).data.polygon->item[j]->pen();
           pen.setColor(color);
@@ -192,12 +193,12 @@ void PlotData::clearAll()
     }
     else if ((*i).type == PlotCircleType)
     {
-      for (int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
+      for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
       delete(*i).data.circle;
     }
     else if ((*i).type == PlotPolygonType)
     {
-      for (int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
+      for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
       delete(*i).data.polygon;
     }
     else
@@ -214,16 +215,16 @@ void PlotData::clearAll()
 }
 
 /// this computes the minimum and maximum value of an axis
-static inline void adjustAxis(qreal& min, qreal& max, int& numTicks)
+static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
 {
-  const int MinTicks = 4;
+  const unsigned int MinTicks = 4;
   qreal grossStep = (max - min) / MinTicks;
   qreal step = pow(10, floor(log10(grossStep)));
 
   if (5 * step < grossStep) step *= 5;
   else if (2 * step < grossStep) step *= 2;
 
-  numTicks = (int)(ceil(max / step) - floor(min / step));
+  numTicks = (unsigned int)(ceil(max / step) - floor(min / step));
   min = floor(min / step) * step;
   max = ceil(max / step) * step;
 }
@@ -831,7 +832,7 @@ void PlotData::rescaleData()
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         if (contains(pt.x(), pt.y()))(*i).data.circle->pos.push_back(pt);
       }
-      for (int p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
+      for (unsigned int p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
       (*i).data.circle->item.resize((*i).data.circle->pos.size(), 0);
     }
     if ((*i).type == PlotPolygonType)
@@ -842,7 +843,7 @@ void PlotData::rescaleData()
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         if (contains(pt.x(), pt.y()))(*i).data.polygon->pos.push_back(pt);
       }
-      for (int p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
+      for (unsigned int p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
       (*i).data.polygon->item.resize((*i).data.polygon->pos.size(), 0);
     }
   }
@@ -948,7 +949,7 @@ void PlotData::makeBox()
   BottomTicks.clear();
   TopTicks.clear();
   HText.clear();
-  for (int i = 0; i < cvb.xticks + 1; i++)
+  for (unsigned int i = 0; i < cvb.xticks + 1; i++)
   {
     BottomTicks.push_back(new QGraphicsLineItem);
     BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
@@ -977,7 +978,7 @@ void PlotData::makeBox()
   LeftTicks.clear();
   RightTicks.clear();
   VText.clear();
-  for (int i = 0; i < cvb.yticks + 1; i++)
+  for (unsigned int i = 0; i < cvb.yticks + 1; i++)
   {
     LeftTicks.push_back(new QGraphicsLineItem);
     LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);

@@ -357,7 +357,11 @@ inline int& SpMatrix::WrLi(int l, int e)
 {
 #ifdef DEBUG
 //   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
-  P_ASSERT_X((l < n) && (e < Ap[l+1]-Ap[l]) && (e >= 0) && (l >= 0) && (Ap[l] + e < size), "WrLi bound ");
+  P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
+  P_ASSERT_X5(e < Ap[l+1]-Ap[l], "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
+  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
+  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
+  P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
   return Ai[Ap[l] + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
@@ -366,7 +370,11 @@ inline int& SpMatrix::WrLi(int l, int e)
 inline double& SpMatrix::WrLx(int l, int e)
 {
 #ifdef DEBUG
-  P_ASSERT_X((l < n) && (Ap[l] + e < Ap[l+1]) && (e >= 0) && (l >= 0) && (Ap[l] + e < size), "WrLx bound ");
+  P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
+  P_ASSERT_X5(e < Ap[l+1]-Ap[l], "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
+  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
+  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
+  P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
   return Ax[Ap[l] + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";

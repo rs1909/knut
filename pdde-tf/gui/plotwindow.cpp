@@ -101,11 +101,12 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   xvarMap.push_back("Label");
   xvarMap.push_back("Mesh");
   xvarMap.push_back("RealMultiplier");
-  for (unsigned int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
+  for (int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
   {
     xvarMap.push_back(QString("P ") + QString::number(i - XParameter0));
   }
-  for (unsigned int i = 0; i < xvarMap.size(); ++i) xvar->insertItem(i, xvarMap.at(i));
+  for (unsigned int i = 0; i < xvarMap.size(); ++i)
+    xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
 
   yvarMap.push_back("None");
   yvarMap.push_back("L2Norm");
@@ -113,11 +114,12 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   yvarMap.push_back("ImagMultiplier");
   yvarMap.push_back("AbsMultiplier");
   yvarMap.push_back("Profile");
-  for (unsigned int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
+  for (int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
   {
     yvarMap.push_back(QString("P ") + QString::number(i - YParameter0));
   }
-  for (unsigned int i = 0; i < yvarMap.size(); ++i) yvar->insertItem(i, yvarMap.at(i));
+  for (unsigned int i = 0; i < yvarMap.size(); ++i)
+    yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
 
   ptlabel->setRange(0, data->getNCols() - 1);
   dim->setRange(0, data->getNDim() - 1);
@@ -209,7 +211,7 @@ void plotWindow::addPlot()
   {
     if (!data->isTorus())
     {
-      bool added;
+      bool added = false;
       try
       {
         added = plotdata.addPlot(data, (PlotXVariable)xvar->currentIndex(),
@@ -222,9 +224,9 @@ void plotWindow::addPlot()
       if (added)
       {
         plotSelect->addItem(QString("%1 : (%2, %3, L%4, D%5)")
-                            .arg(shortFileName).arg(xvarMap.at(xvar->currentIndex()))
-                            .arg(yvarMap.at(yvar->currentIndex()))
-                            .arg(ptlabel->value()).arg(dim->value()));
+          .arg(shortFileName).arg(xvarMap.at(static_cast<unsigned int>(xvar->currentIndex())))
+          .arg(yvarMap.at(static_cast<unsigned int>(yvar->currentIndex())))
+          .arg(ptlabel->value()).arg(dim->value()));
       }
     }
   }

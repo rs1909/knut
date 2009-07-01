@@ -71,17 +71,17 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
       if (parameters->getPointType() == SolUser)
       {
         // set the equation at position index.column() by its index
-      	parameters->setEqnsIdx(index.column(), value.toInt());
+      	parameters->setEqnsIdx(index.column(), value.toUInt());
       } else
       {
       	// set the extra parameter at position index.column() by its index
-   		parameters->setParxIdx(index.column(), value.toInt());
+   		parameters->setParxIdx(index.column(), value.toUInt());
       }
     }
     if ((index.row() == 1) && (parameters->getPointType() == SolUser))
     {
       // set the variable at position index.column() by its index
-   	  parameters->setVarsIdx(index.column(), value.toInt());
+   	  parameters->setVarsIdx(index.column(), value.toUInt());
     }
     emit dataChanged(index, index);
     return true;
@@ -122,18 +122,18 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->eqnsSize(); ++i) editor->addItem(parameters->eqnsString(i).c_str());
+      for (unsigned int i = 0; i < parameters->eqnsSize(); ++i) editor->addItem(parameters->eqnsString(i).c_str());
     }
     if (index.row() == 1)
     {
-      for (int i = 0; i < parameters->varsSize(); ++i) editor->addItem(parameters->varsString(i).c_str());
+      for (unsigned int i = 0; i < parameters->varsSize(); ++i) editor->addItem(parameters->varsString(i).c_str());
     }
   }
   else
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->parxSize(); ++i) editor->addItem(parameters->parxString(i).c_str());
+      for (unsigned int i = 0; i < parameters->parxSize(); ++i) editor->addItem(parameters->parxString(i).c_str());
     }
   }
 
@@ -275,6 +275,12 @@ EqnVarTableView::EqnVarTableView(NConstantsQtGui* params, QWidget* parent_) : QT
   connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
 }
 
+EqnVarTableView::~EqnVarTableView()
+{
+  delete delegate;
+  delete model;
+}
+
 void EqnVarTableView::resetSize()
 {
   resizeRowToContents(0);
@@ -310,6 +316,12 @@ SYMTableView::SYMTableView(NConstantsQtGui* params, QWidget* parent_) : QTableVi
   setModel(model);
   resetSize();
   connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
+}
+
+SYMTableView::~SYMTableView()
+{
+  delete delegate;
+  delete model;
 }
 
 void SYMTableView::resetSize()

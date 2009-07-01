@@ -78,14 +78,33 @@ class knutException
   throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1 )); }while(0)
 #  define P_ASSERT_X2(cond, arg1, arg2) do{ if(!(cond) ) \
   throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2 )); }while(0)
-#  define P_ASSERT_X3(cond, arg1, arg2) do{ if(!(cond) ) \
+#  define P_ASSERT_X3(cond, arg1, arg2, arg3) do{ if(!(cond) ) \
   throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3 )); }while(0)
+#  define P_ASSERT_X4(cond, arg1, arg2, arg3, arg4) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4 )); }while(0)
+#  define P_ASSERT_X5(cond, arg1, arg2, arg3, arg4, arg5) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5 )); }while(0)
+#  define P_ASSERT_X6(cond, arg1, arg2, arg3, arg4, arg5, arg6) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6 )); }while(0)
+#  define P_ASSERT_X7(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7 )); }while(0)
+#  define P_ASSERT_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8 )); }while(0)
+#  define P_ASSERT_X9(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8<<arg9 )); }while(0)
+#  define P_ASSERT_X10(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8<<arg9<<arg10 )); }while(0)
+#  define P_ASSERT_X11(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) do{ if(!(cond) ) \
+  throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Critical assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8<<arg9<<arg10<<arg11 )); }while(0)
 
 #  define P_MESSAGE1(msg) throw(-1)
 #  define P_MESSAGE2(msg,arg1) throw(-1)
 #  define P_MESSAGE3(msg,arg1,arg2) throw(-1)
 #  define P_MESSAGE4(msg,arg1,arg2,arg3) throw(-1)
 #  define P_MESSAGE5(msg,arg1,arg2,arg3,arg4) throw(-1)
+#  define P_MESSAGE6(msg,arg1,arg2,arg3,arg4,arg5) throw(-1)
+#  define P_MESSAGE7(msg,arg1,arg2,arg3,arg4,arg5,arg6) throw(-1)
+#  define P_MESSAGE8(msg,arg1,arg2,arg3,arg4,arg5,arg6,arg7) throw(-1)
 
 #  define P_ERROR(cond) do{ if(!(cond) ) throw(-1); }while(0)
 #  define P_ERROR_X1(cond, arg1) do{ if(!(cond) ) throw(-1); }while(0)
@@ -93,6 +112,9 @@ class knutException
 #  define P_ERROR_X3(cond, arg1, arg2, arg3) do{ if(!(cond) ) throw(-1); }while(0)
 #  define P_ERROR_X4(cond, arg1, arg2, arg3, arg4) do{ if(!(cond) ) throw(-1); }while(0)
 #  define P_ERROR_X5(cond, arg1, arg2, arg3, arg4, arg5) do{ if(!(cond) ) throw(-1); }while(0)
+#  define P_ERROR_X6(cond, arg1, arg2, arg3, arg4, arg5, arg6) do{ if(!(cond) ) throw(-1); }while(0)
+#  define P_ERROR_X7(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7) do{ if(!(cond) ) throw(-1); }while(0)
+#  define P_ERROR_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ if(!(cond) ) throw(-1); }while(0)
 
 #else
 
@@ -100,12 +122,23 @@ class knutException
 #  define P_ASSERT_X1(cond, arg1) do{ }while(0)
 #  define P_ASSERT_X2(cond, arg1, arg2) do{ }while(0)
 #  define P_ASSERT_X3(cond, arg1, arg2, arg3) do{ }while(0)
+#  define P_ASSERT_X4(cond, arg1, arg2, arg3, arg4) do{ }while(0)
+#  define P_ASSERT_X5(cond, arg1, arg2, arg3, arg4, arg5) do{ }while(0)
+#  define P_ASSERT_X6(cond, arg1, arg2, arg3, arg4, arg5, arg6) do{ }while(0)
+#  define P_ASSERT_X7(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7) do{ }while(0)
+#  define P_ASSERT_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ }while(0)
+#  define P_ASSERT_X9(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) do{ }while(0)
+#  define P_ASSERT_X10(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) do{ }while(0)
+#  define P_ASSERT_X11(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) do{ }while(0)
 
 #  define P_MESSAGE1(msg) throw(knutException( __FILE__, __LINE__, knutMessage(msg) ))
 #  define P_MESSAGE2(msg,arg1) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1 ))
 #  define P_MESSAGE3(msg,arg1,arg2) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2 ))
 #  define P_MESSAGE4(msg,arg1,arg2,arg3) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2<<arg3 ))
 #  define P_MESSAGE5(msg,arg1,arg2,arg3,arg4) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2<<arg3<<arg4 ))
+#  define P_MESSAGE6(msg,arg1,arg2,arg3,arg4,arg5) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2<<arg3<<arg4<<arg5 ))
+#  define P_MESSAGE7(msg,arg1,arg2,arg3,arg4,arg5,arg6) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6 ))
+#  define P_MESSAGE8(msg,arg1,arg2,arg3,arg4,arg5,arg6,arg7) throw(knutException( __FILE__, __LINE__, knutMessage(msg)<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7 ))
 
 #  define P_ERROR(cond) do{ if(!(cond) ) \
     throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ") )); }while(0)
@@ -119,6 +152,13 @@ class knutException
     throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4 )); }while(0)
 #  define P_ERROR_X5(cond, arg1, arg2, arg3, arg4, arg5) do{ if(!(cond) ) \
     throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5 )); }while(0)
+#  define P_ERROR_X6(cond, arg1, arg2, arg3, arg4, arg5, arg6) do{ if(!(cond) ) \
+    throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6 )); }while(0)
+#  define P_ERROR_X7(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7) do{ if(!(cond) ) \
+    throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7 )); }while(0)
+#  define P_ERROR_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ if(!(cond) ) \
+    throw(knutException( std::string(__FILE__), __LINE__, knutMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8 )); }while(0)
+
 #endif
 
 #endif

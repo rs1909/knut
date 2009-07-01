@@ -13,7 +13,7 @@
 void poly_lgr(const Vector& t, Vector &out, double c)
 {
 
-  P_ASSERT_X(t.Size() == out.Size(), "poly_lgr: wrong dimensions");
+  P_ASSERT_X1(t.Size() == out.Size(), "poly_lgr: wrong dimensions");
   for (int i = 0; i < t.Size(); i++)
   {
     out(i) = 1.0;
@@ -32,7 +32,7 @@ void poly_dlg(const Vector& t, Vector& out, double c)
   int j, k, l;
   double f;
 
-  P_ASSERT_X(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
+  P_ASSERT_X1(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
 
   for (j = 0; j < t.Size(); j++)
   {
@@ -57,7 +57,7 @@ void poly_d2lg(const Vector& t, Vector& out, double c)
   int i, j, k, l;
   double f;
 
-  P_ASSERT_X(t.Size() == out.Size(), "poly_dlg: wrong dimensions");
+  P_ASSERT_X1(t.Size() == out.Size(), "poly_d2lg: wrong dimensions.");
 
   for (i = 0; i < t.Size(); i++)
   {
@@ -104,7 +104,7 @@ void poly_coeff_lgr(Array1D<double>& out, const Array1D<double>& t, int i)
 ///
 void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>& in2)
 {
-  if (out.Size() < (in1.Size() - 1) + (in2.Size() - 1) + 1) std::cout << "Error in \"poly_mul\"\n";
+  P_ASSERT_X1(out.Size() > (in1.Size() - 1) + (in2.Size() - 1), "poly_coeff_mul: wrong dimensions.");
   out.Clear();
   for (int i = 0; i < in1.Size(); i++)
   {
@@ -124,7 +124,7 @@ void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
   {
     out(i + 1) = in(i) / (i + 1);
   }
-  if (in(in.Size() - 1) != 0.0) std::cout << "poly_coeff_int overflow " ;
+  P_ASSERT_X1(in(in.Size() - 1) == 0.0, "poly_coeff_int: overflow.");
 }
 
 /// differentiate the polynomial in and write to out
@@ -201,4 +201,3 @@ double poly_dlg_eval( const Array1D<double>& t, int i, double c)
   }
   return res;
 }
-

@@ -81,6 +81,7 @@ class EqnVarTableView : public QTableView
 
   public:
     EqnVarTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
+    ~EqnVarTableView();
 
   private slots:
 
@@ -178,6 +179,7 @@ class SYMTableView : public QTableView
 
   public:
     SYMTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
+    ~SYMTableView();
 
   private slots:
 

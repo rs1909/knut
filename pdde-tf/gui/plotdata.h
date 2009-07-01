@@ -110,7 +110,7 @@ class PlotItem
 struct ViewBox
 {
   qreal xmax, xmin, ymax, ymin;
-  int xticks, yticks;
+  unsigned int xticks, yticks;
 };
 
 class PlotData : public QGraphicsScene

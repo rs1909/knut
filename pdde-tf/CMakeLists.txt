@@ -38,6 +38,7 @@ ELSE( NOT WIN32 )
   SET( KNUT_DEMO_DIR demo/ CACHE INTERNAL "demo dir" )
   SET( KNUT_MATLAB_DIR matlab/ CACHE INTERNAL "matlab dir" )
   SET( KNUT_BIN_DIR bin/ CACHE INTERNAL "bin dir" )
+  SET( KNUT_INCLUDE_DIR include CACHE INTERNAL "include dir" )
 ENDIF( NOT WIN32 )
 
 IF( MSVC )
@@ -91,23 +92,31 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 # Finding ATLAS
 #------------------------------------------------------------------------------
 
+ENABLE_LANGUAGE( Fortran )
+
 IF(APPLE)
   # We need to search for ATLAS in MacPorts' location, too: /opt/local/lib
   SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /opt/local/lib /usr/lib )
   FIND_LIBRARY( ATLAS_CBLAS NAMES libf77blas.a cblas PATHS ${ATLAS_SEARCH_PATHS} )
   FIND_LIBRARY( ATLAS_ATLAS NAMES libatlas.a atlas PATHS ${ATLAS_SEARCH_PATHS} )
 ELSE(APPLE)
-  # For Linux distributions ATLAS can be located in many places
-  SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
+  IF(WIN32)
+   SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib )
+   FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib )
+   FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib )
+  ELSE(WIN32)
+    # For Linux distributions ATLAS can be located in many places
+    SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
     /usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
-  FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${ATLAS_SEARCH_PATHS} )
-  FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
+    FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${ATLAS_SEARCH_PATHS} )
+    FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
+  ENDIF(WIN32)
 ENDIF(APPLE)
 
 IF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 	MESSAGE( STATUS "ATLAS was found as ${ATLAS_CBLAS} and ${ATLAS_ATLAS}" )
 ELSE( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
-        MESSAGE( SEND_ERROR "ATLAS was NOT found!" )
+	MESSAGE( SEND_ERROR "ATLAS was NOT found!" )
 ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 
 #------------------------------------------------------------------------------

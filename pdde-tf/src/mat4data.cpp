@@ -46,9 +46,9 @@ int mat4Data::findMatrix(const char* name, mat4Data::header* found, bool test, i
     memcpy(&hd, (char*)address + cur_off, sizeof(struct header));
     P_ERROR_X5(hd.type == byte_order(), "'", name, " in file '", fileName, "' is not a matrix of double precision elements.");
     if (hd.imagf == 0)
-      cur_size = sizeof(struct header) + hd.namelen * sizeof(char) + hd.mrows * hd.ncols * sizeof(double);
+      cur_size = (int)sizeof(struct header) + hd.namelen * (int)sizeof(char) + hd.mrows * hd.ncols * (int)sizeof(double);
     else
-      cur_size = sizeof(struct header) + hd.namelen * sizeof(char) + 2 * hd.mrows * hd.ncols * sizeof(double);
+      cur_size = (int)sizeof(struct header) + hd.namelen * (int)sizeof(char) + 2 * hd.mrows * hd.ncols * (int)sizeof(double);
     if (strncmp(name, (char*)address + cur_off + sizeof(struct header), 20) == 0)
     {
       memcpy(found, &hd, sizeof(struct header));
@@ -81,7 +81,7 @@ static inline void *mmapFileWrite(int& file, const std::string& fileName, int si
   }
 
   void *address;
-  if ((address = mmap(0, size, PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, static_cast<size_t>(size), PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
     P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
   }
@@ -104,7 +104,7 @@ static inline void *mmapFileRead(int& file, const std::string& fileName, int& si
   size = filesize;
 
   void *address;
-  if ((address = mmap(0, filesize, PROT_READ, MAP_PRIVATE, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, static_cast<size_t>(filesize), PROT_READ, MAP_PRIVATE, file, 0)) == MAP_FAILED)
   {
     P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
   }
@@ -123,23 +123,23 @@ static inline void *mmapFileWrite(HANDLE& file, HANDLE& mapHandle, const std::st
                          FILE_ATTRIBUTE_NORMAL,
                          NULL)) == NULL)
   {
-    P_MESSAGE4("Unable to create the MAT file '", filename, "'. Error code ", static_cast<int>(GetLastError()), ".");
+    P_MESSAGE5("Unable to create the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
   }
 
   if (SetFilePointer(file, size, NULL, FILE_BEGIN) == 0)
   {
-    P_MESSAGE4("Unable to seek in the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
+    P_MESSAGE5("Unable to seek in the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
   }
-  P_ERROR_X3(SetEndOfFile(file), "Unable to truncate the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
+  P_ERROR_X5(SetEndOfFile(file), "Unable to truncate the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
 
   if ((mapHandle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, size, fileName.c_str())) == 0)
   {
-    P_MESSAGE4("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
+    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
   }
 
   void *address = MapViewOfFile(mapHandle, FILE_MAP_WRITE, 0, 0, 0);
   if (address != NULL) return address;
-  else P_MESSAGE4("Unable to view the file map of '", filename, "'. Error code ", static_cast<int>(GetLastError()), ".");
+  else P_MESSAGE5("Unable to view the file map of '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
   return 0;
 }
 
@@ -153,18 +153,18 @@ static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::str
                          FILE_ATTRIBUTE_NORMAL,
                          NULL)) == NULL)
   {
-    P_MESSAGE4("Unable to create the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
+    P_MESSAGE5("Unable to create the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
   }
 
   size = GetFileSize(file, NULL);
   if ((mapHandle = CreateFileMapping(file, NULL, PAGE_READONLY, 0, 0, fileName.c_str())) == 0)
   {
-    P_MESSAGE4("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
+    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
   }
 
   void *address = MapViewOfFile(mapHandle, FILE_MAP_READ, 0, 0, 0);
   if (address != NULL) return address;
-  else P_MESSAGE4("Unable to view the file map of '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
+  else P_MESSAGE5("Unable to view the file map of '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
   return 0;
 }
 
@@ -178,7 +178,7 @@ inline int mat4Data::createMatrixHeader(mat4Data::header* hd, const char* name, 
   hd->ncols = cols;
   hd->imagf = 0;
   hd->namelen = ((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header);
-  return sizeof(mat4Data::header) + hd->namelen + rows * cols * sizeof(double);
+  return (int)sizeof(mat4Data::header) + hd->namelen + rows * cols * (int)sizeof(double);
 }
 
 // returns the size of the whole data
@@ -189,12 +189,12 @@ inline int mat4Data::createComplexMatrixHeader(mat4Data::header* hd, const char*
   hd->ncols = cols;
   hd->imagf = 1;
   hd->namelen = ((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header);
-  return sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * sizeof(double);
+  return (int)sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * (int)sizeof(double);
 }
 
-inline int mat4Data::writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name)
+inline void mat4Data::writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name)
 {
-  strncpy((char*)address + offset + sizeof(mat4Data::header), name, hd->namelen);
+  strncpy((char*)address + offset + sizeof(mat4Data::header), name, static_cast<size_t>(hd->namelen));
   *((mat4Data::header*)((char*)address + offset)) = *hd;
 }
 
@@ -244,7 +244,7 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   int prof_size = createMatrixHeader(&prof_header, prof_string, ndim * (ndeg * nint + 1), ncols);
   size = prof_offset + prof_size;
 
-  const int approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
+  const int approxSize = 8 * ((int)sizeof(header) + 20) + (int)sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
 #ifndef WIN32
   address = mmapFileWrite(file, fileName, size);
 #else
@@ -347,13 +347,13 @@ void mat4Data::resizeMatrix(const char* name, int newcol)
   P_ASSERT_X1(mathead.ncols >= newcol, "Cannot increase the size of the matrix.");
   char* to = (char*)address + matoffset + mathead.enddata(newcol);
   char* from = (char*)address + matoffset + mathead.enddata(mathead.ncols);
-  size_t count = size - matoffset - mathead.enddata(mathead.ncols);
+  size_t count = static_cast<size_t>(size - matoffset - mathead.enddata(mathead.ncols));
   if (mathead.imagf!= 0)
   {
     // copy the imaginary part
     char* to_im = (char*)address + matoffset + mathead.col_off(newcol);
     char* from_im = (char*)address + matoffset + mathead.col_off(mathead.ncols);
-    memmove(to_im, from_im, mathead.col_off(newcol));
+    memmove(to_im, from_im, static_cast<size_t>(mathead.col_off(newcol)));
   }
   memmove(to, from, count);
   size -= mathead.enddata(mathead.ncols) - mathead.enddata(newcol);
@@ -443,7 +443,7 @@ mat4Data::~mat4Data()
 #ifndef WIN32
   int oldsize = size;
   condenseData();
-  if (munmap(address, oldsize) != 0)
+  if (munmap(address, static_cast<size_t>(oldsize)) != 0)
   {
     P_MESSAGE3("Unable to munmap the MAT file. ", strerror(errno), ".");
   }

@@ -18,7 +18,7 @@ void poly_d2lg(const Vector& t, Vector& out, double c);
 ///
 inline void poly_linmul(Array1D<double>& pp, double aa, double bb)
 {
-  if (pp(pp.Size() - 1) != 0.0) std::cout << "Warning: \"poly_linmul\" is truncating the highest order term!\n";
+  P_ASSERT_X1(pp(pp.Size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
   for (int i = pp.Size() - 1; i > 0; --i)
   {
     pp(i) = aa * pp(i) + bb * pp(i - 1);

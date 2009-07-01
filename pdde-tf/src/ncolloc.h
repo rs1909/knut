@@ -211,20 +211,20 @@ class NColloc : public PerSolColloc
     }
     void count_print()
     {
-      std::cout << "count_RHS " << count_RHS << "\n";
-      std::cout << "count_RHS_p " << count_RHS_p << "\n";
-      std::cout << "count_RHS_x " << count_RHS_x << "\n";
-      std::cout << "count_StabJac " << count_StabJac << "\n";
-      std::cout << "count_CharJac_x " << count_CharJac_x << "\n";
-      std::cout << "count_CharJac_x_p " << count_CharJac_x_p << "\n";
-      std::cout << "count_CharJac_x_x " << count_CharJac_x_x << "\n";
-      std::cout << "count_CharJac_x_z " << count_CharJac_x_z << "\n";
-      std::cout << "count_CharJac_mB " << count_CharJac_mB << "\n";
-      std::cout << "count_CharJac_mB_p " << count_CharJac_mB_p << "\n";
-      std::cout << "count_CharJac_mB_x " << count_CharJac_mB_x << "\n";
-      std::cout << "count_CharJac_MSHphi " << count_CharJac_MSHphi << "\n";
-      std::cout << "count_CharJac_MSHphi_p " << count_CharJac_MSHphi_p << "\n";
-      std::cout << "count_CharJac_MSHphi_x " << count_CharJac_MSHphi_x << "\n";
+      if (count_RHS) std::cout << "count_RHS " << count_RHS << "\n";
+      if (count_RHS_p) std::cout << "count_RHS_p " << count_RHS_p << "\n";
+      if (count_RHS_x) std::cout << "count_RHS_x " << count_RHS_x << "\n";
+      if (count_StabJac) std::cout << "count_StabJac " << count_StabJac << "\n";
+      if (count_CharJac_x) std::cout << "count_CharJac_x " << count_CharJac_x << "\n";
+      if (count_CharJac_x_p) std::cout << "count_CharJac_x_p " << count_CharJac_x_p << "\n";
+      if (count_CharJac_x_x) std::cout << "count_CharJac_x_x " << count_CharJac_x_x << "\n";
+      if (count_CharJac_x_z) std::cout << "count_CharJac_x_z " << count_CharJac_x_z << "\n";
+      if (count_CharJac_mB) std::cout << "count_CharJac_mB " << count_CharJac_mB << "\n";
+      if (count_CharJac_mB_p) std::cout << "count_CharJac_mB_p " << count_CharJac_mB_p << "\n";
+      if (count_CharJac_mB_x) std::cout << "count_CharJac_mB_x " << count_CharJac_mB_x << "\n";
+      if (count_CharJac_MSHphi) std::cout << "count_CharJac_MSHphi " << count_CharJac_MSHphi << "\n";
+      if (count_CharJac_MSHphi_p) std::cout << "count_CharJac_MSHphi_p " << count_CharJac_MSHphi_p << "\n";
+      if (count_CharJac_MSHphi_x) std::cout << "count_CharJac_MSHphi_x " << count_CharJac_MSHphi_x << "\n";
     }
 #endif // DEBUG
 };

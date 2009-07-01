@@ -54,7 +54,7 @@ class PerSolColloc : public BaseColloc
     void   PhaseStar(Vector& V1, const Vector& V2);
     void   PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
 
-    void   Import(Vector& out, const Vector& in, const Vector& mesh, int deg_);
+    void   Import(Vector& out, const Vector& in, const Vector& mesh, int deg_, bool adapt);
     void   Export(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
     void   pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent);
 
@@ -116,6 +116,7 @@ class PerSolColloc : public BaseColloc
     const int nint;
     const int ndeg;
 
+    Vector    time;
     Array1D<double> timeMSH;  // the representation points
 
     // matrix for integration
@@ -125,7 +126,6 @@ class PerSolColloc : public BaseColloc
 
     Vector mesh;
     Vector meshINT;
-    Vector time;
     Vector col;
     Array1D< Array1D<double> > lgr;
     // internal use for the initialization

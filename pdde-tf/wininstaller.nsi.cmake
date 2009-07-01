@@ -10,6 +10,7 @@
   !define PACKAGE_VERSION "@PACKAGE_VERSION@"
   ;Name and file
   Name "${PACKAGE_NAME}"
+  SetCompressor /SOLID lzma
   OutFile "${PACKAGE_NAME}-${PACKAGE_VERSION}.exe"
 
   ;Default installation folder
@@ -32,7 +33,7 @@
 ;--------------------------------
 ;Pages
 
-  !insertmacro MUI_PAGE_LICENSE "COPYING"
+  !insertmacro MUI_PAGE_LICENSE "@CMAKE_SOURCE_DIR@\COPYING"
   !insertmacro MUI_PAGE_DIRECTORY
   
   ;Start Menu Folder Page Configuration
@@ -60,14 +61,14 @@ Section "Dummy Section" SecDummy
   SetOutPath "$INSTDIR"
   
   ;ADD YOUR OWN FILES HERE...
-  File "COPYING"
+  File "@CMAKE_SOURCE_DIR@\COPYING"
   SetOutPath "$INSTDIR\bin"
   File "@CMAKE_INSTALL_PREFIX@\bin\knut-gui.exe"
-  File "C:\MinGW\bin\mingwm10.dll"
-  File "@QT_BINARY_DIR@\QtCore4.dll"
-  File "@QT_BINARY_DIR@\QtGui4.dll"
-  File "@QT_BINARY_DIR@\QtSvg4.dll"
-  File "@QT_BINARY_DIR@\QtXml4.dll"
+  File "/usr/i686-pc-mingw32/sys-root/mingw/bin/libgcc_s_sjlj-1.dll"
+  File "/usr/i686-pc-mingw32/sys-root/mingw/bin/mingwm10.dll"
+  File "@QT_QTCORE_LIBRARY_RELEASE@"
+  File "@QT_QTGUI_LIBRARY_RELEASE@"
+  File "@QT_QTSVG_LIBRARY_RELEASE@"
   SetOutPath "$INSTDIR"
   File /r "@CMAKE_INSTALL_PREFIX@\include"
   File /r "@CMAKE_INSTALL_PREFIX@\demo"

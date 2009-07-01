@@ -9,7 +9,7 @@
 
 /* definitions for compiling a system definition file */
 #define CMAKE_CXX_COMPILER                  "@CMAKE_CXX_COMPILER@"
-#define CMAKE_CXX_FLAGS                     "@CMAKE_CXX_FLAGS_RELEASE@"
+#define CMAKE_CXX_FLAGS                     "@CMAKE_CXX_FLAGS@"
 #define CMAKE_SHARED_LIBRARY_C_FLAGS        "@CMAKE_SHARED_LIBRARY_C_FLAGS@"
 #define CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "@CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS@"
 #define CMAKE_INSTALL_PREFIX                "@CMAKE_INSTALL_PREFIX@"

@@ -18,7 +18,7 @@
 
 #include <QtGui/QtGui>
 
-MainWindow::MainWindow(const QString& appDir) :
+MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
     executableDir(appDir), compThread(parameters),
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), compilerProcess(0)
@@ -126,7 +126,7 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
-  for (int i = 0; i < parameters.pointTypeSize(); ++i)
+  for (unsigned int i = 0; i < parameters.pointTypeSize(); ++i)
   {
     pttype->addItem(parameters.pointTypeString(i).c_str());
   }
@@ -141,7 +141,7 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* branchswLabel = new QLabel("SWITCH");
   branchswLabel->setToolTip("Switches to another branch at the bifurcation point.");
   branchsw = new QComboBox();
-  for (int i = 0; i < parameters.branchSWSize(); ++i)
+  for (unsigned int i = 0; i < parameters.branchSWSize(); ++i)
   {
     branchsw->addItem(parameters.branchSWString(i).c_str());
   }
@@ -180,7 +180,7 @@ MainWindow::MainWindow(const QString& appDir) :
   nint = new QSpinBox();
   nint->setRange(0, 0xffff);
   ndeg = new QSpinBox();
-  ndeg->setRange(0, 7);
+  ndeg->setRange(2, 24);
   nmul = new QSpinBox();
   nmul->setRange(0, 0xffff);
   stab = new QCheckBox();
@@ -358,8 +358,8 @@ MainWindow::MainWindow(const QString& appDir) :
   createStatusBar();
 
   readSettings();
-
-  setCurrentFile("");
+  if (fileName.isEmpty()) setCurrentFile("");
+  else loadFile(fileName);
 }
 
 void MainWindow::run()

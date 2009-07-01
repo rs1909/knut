@@ -171,25 +171,25 @@ class mat4Data
       }
       int size() const
       {
-        return sizeof(struct header) + namelen;
+        return (int)sizeof(struct header) + namelen;
       }
       int col_off(int i) const
       {
-        return size() + i*mrows*sizeof(double);
+        return size() + i*mrows*(int)sizeof(double);
       }
       int col_off_im(int i) const
       {
-        return size() + (mrows*ncols + i*mrows)*sizeof(double);
+        return size() + (mrows*ncols + i*mrows)*(int)sizeof(double);
       }
       int enddata(int i)
       {
-        if (imagf == 0) return size() + i*mrows*sizeof(double);
-        else return size() + 2*i*mrows*sizeof(double);
+        if (imagf == 0) return size() + i*mrows*(int)sizeof(double);
+        else return size() + 2*i*mrows*(int)sizeof(double);
       }
     };
     static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
     static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
-    static inline int writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name);
+    static inline void writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name);
 
     int  findMatrix(const char* name, mat4Data::header* found, bool test=false, int r=-1, int c=-1, int imag=-1, const char* fileName="");
     void openReadOnly(const std::string& fileName);

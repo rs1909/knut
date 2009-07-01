@@ -81,8 +81,12 @@ int main(int argc, const char** argv)
   catch (knutException ex)
   {
     CLIComp::printException(ex);
+#ifdef DEBUG
+    throw(-1);
+#endif
     exit(-1);
   }
 
   delete params;
+  return 0;
 }

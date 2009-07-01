@@ -418,11 +418,11 @@ void Point::Plot(GnuPlot& pl)
 
   for (int i = 0; i < NDIM; i++)
   {
-    pl.Plot(i, "with lines");
+    pl.Plot(static_cast<unsigned int>(i), "with lines");
     for (int j = 0; j < NINT*NDEG + 1; j++)
     {
       double t = (double)j / ((double)(NINT * NDEG));
-      pl.AddData(i, t, sol(i + NDIM*j));
+      pl.AddData(static_cast<unsigned int>(i), t, sol(i + NDIM*j));
     }
   }
   pl.Show();
@@ -497,7 +497,7 @@ void Point::Read(std::ifstream& file)
     Vector in(NDIM*(nint_*ndeg_ + 1));
 
     for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
-    colloc->Import(sol, in, msh, ndeg_);
+    colloc->Import(sol, in, msh, ndeg_, true);
   }
 }
 

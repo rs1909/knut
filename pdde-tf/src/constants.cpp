@@ -37,7 +37,6 @@ static const char *knut_whitespace_cb(mxml_node_t *node, int where)
 
 	level -= 1;
     if (level > max_levels) level = max_levels;
-    else if (level < 0) level = 0;
     for (unsigned int i = 0; i < level*tab; ++i ) spaces[i] = ' ';
     spaces[level*tab] = '\0';
     return spaces;
@@ -97,7 +96,7 @@ static inline const char *getNodeText(mxml_node_t* nd)
   return "";
 }
 
-static inline const char getNodeChar(mxml_node_t* nd)
+static inline char getNodeChar(mxml_node_t* nd)
 {
   const char* str = getNodeText(nd);
   return str[0];

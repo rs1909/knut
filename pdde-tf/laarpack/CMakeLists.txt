@@ -1,15 +1,15 @@
-ENABLE_LANGUAGE( Fortran )
-
 IF( ${CMAKE_Fortran_COMPILER} MATCHES "gfortran" )
-  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.a
+  EXECUTE_PROCESS( COMMAND gfortran -m64 -print-file-name=libgfortran.a
     OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
-ELSEIF( ${CMAKE_FORTRAN_COMPILER} MATCHES "g95" )
-  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libf95.a 
+  MESSAGE( STATUS "The command resulted in ${RES}" )
+ELSEIF( ${CMAKE_Fortran_COMPILER} MATCHES "g95" )
+  EXECUTE_PROCESS( COMMAND "g95 -print-file-name=libf95.a" 
     OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
 ENDIF( ${CMAKE_Fortran_COMPILER} MATCHES "gfortran" )
 
 SET( KNUT_FORTRAN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
 
-ADD_LIBRARY( laarpack laarpack.f debug.h stat.h )
-# SET_SOURCE_FILES_PROPERTIES( laarpack.f PROPERTIES COMPILE_FLAGS -ffloat-store )
+ADD_LIBRARY( laarpack laarpack.f dlamch.f debug.h stat.h )
+SET_SOURCE_FILES_PROPERTIES( dlamch.f PROPERTIES COMPILE_FLAGS -ffloat-store )
 # SET_TARGET_PROPERTIES(laarpack PROPERTIES LINKER_LANGUAGE FORTRAN)
+ADD_LIBRARY( AUX_BLAS xerbla.f )

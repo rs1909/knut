@@ -41,9 +41,9 @@ class GnuPlot
     void SetNoKey();
     void SetXLabel(const char *lb);
     void SetYLabel(const char *lb);
-    void Plot(int n, const char *style = "");
-    void AddData(int n, double x, double y);
-    void AddSData(int n, double x, double y);
+    void Plot(unsigned int n, const char *style = "");
+    void AddData(unsigned int n, double x, double y);
+    void AddSData(unsigned int n, double x, double y);
     void Show();
     void Save(const char * filename);
     void Clear();

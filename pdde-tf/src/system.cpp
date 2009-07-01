@@ -27,7 +27,7 @@
 
 System::System(const std::string& shobj)
 {
-  std::string objname;
+  std::string objname(shobj);
   if (shobj.find('/') == std::string::npos) objname = "./" + shobj;
 #ifdef WIN32
   std::string::size_type index = 0;
@@ -41,7 +41,7 @@ System::System(const std::string& shobj)
   if(bundleURL)
   {
     CFStringRef cfPath = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
-    const int ssize = CFStringGetLength(cfPath)+1;
+    size_t ssize = static_cast<size_t>(CFStringGetLength(cfPath)+1);
     char *buf = new char[ssize];
     if(cfPath) CFStringGetCString(cfPath, buf, 512, kCFStringEncodingASCII);
     executableFile = buf;
@@ -54,23 +54,16 @@ System::System(const std::string& shobj)
   char *buf = new char[512];
   const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
   if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
-//   procf.str("");
-//   procf << "/proc/" << getpid() << "/cwd";
-//   const ssize_t bswd = readlink(procf.str().c_str(), buf, 511);
-//   if ( bswd != -1) { buf[bswd] = '\0'; workingDir = buf; }
-//   std::cout << procf.str() << " WorkingDir: " << workingDir << "\n";
   delete[] buf;
 #endif
 
-//   std::cout << executableFile << "\n";
   std::string executableDir(executableFile);
   std::string::size_type sidx = executableDir.find_last_of('/');
   if (sidx != std::string::npos) executableDir.erase(sidx,std::string::npos);
-//   std::cout << executableDir << "\n";
   
   makeSystem(shobj, executableDir);
   handle = tdlopen(objname.c_str());
-  P_ERROR_X3(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ".");
+  P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
 
   tdlerror();    /* Clear any existing error */
   v_ndim = (tp_sys_ndim) fptr(tdlsym(handle, "sys_ndim"));
@@ -167,14 +160,15 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
 
 void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
+#ifndef WIN32
   std::string compiler(CMAKE_CXX_COMPILER);
+#else
+  std::string compiler("g++");
+#endif
   std::string::size_type slashpos = compiler.find_last_of('/');
   // truncate the string
   if (slashpos != std::string::npos) compiler = compiler.substr(slashpos+1);
   std::string cmdline(compiler);
-#ifdef __APPLE__ 
-  cmdline += " -arch " CMAKE_OSX_ARCHITECTURES;
-#endif
   cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
               CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" + executableDir;
   cmdline += "/../" KNUT_INCLUDE_DIR "\"";
@@ -183,6 +177,7 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
 //   std::cout << "The command line: " << cmdline << "\n";
   // want to see the results if possible...
   FILE* fd = popen(cmdline.c_str(),"r");
+  P_ERROR_X3(fd != 0, "Pipe cannot be opened for '", cmdline, "'.");
   std::string result;
   char* buf = new char[1024];
   char* str = 0;
@@ -208,20 +203,33 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
     P_MESSAGE3("The file name '", shobj, "' does not have the '.so' extension.");
   }
   // It is not portable to Windows!!!
-  struct stat *sbuf = new struct stat;
-  int res_so = stat(shobj.c_str(), sbuf);
-  int res_cxx = stat(cxxfile.c_str(), sbuf);
-  delete sbuf;
+  struct stat *sbuf_so  = new struct stat;
+  struct stat *sbuf_cxx = new struct stat;
+  int res_so = stat(shobj.c_str(), sbuf_so);
+  int res_cxx = stat(cxxfile.c_str(), sbuf_cxx);
+  // if there's no .so, but there's a .cpp
+  bool compile = (res_so != 0)&&(res_cxx == 0);
+  // if both .so and .cpp exist, the date decides
+#ifdef __APPLE__
+  if ((res_cxx == 0)&&(res_cxx == 0))
+    compile |= (sbuf_so->st_mtimespec.tv_sec <= sbuf_cxx->st_mtimespec.tv_sec)&&
+            (sbuf_so->st_mtimespec.tv_nsec <= sbuf_cxx->st_mtimespec.tv_nsec);
+#else
+  // for Linux and possibly for windows
+  if ((res_cxx == 0)&&(res_cxx == 0))
+    compile |= (sbuf_so->st_mtime <= sbuf_cxx->st_mtime);
+#endif
+  delete sbuf_so;
+  delete sbuf_cxx;
   
-  if (res_so != 0)
+  if (compile)
   {
-    if (res_cxx == 0)
-    {
-      compileSystem(cxxfile, shobj, executableDir);
-    } else
-    {
-      P_MESSAGE3("The file '", cxxfile ,"' doesn't exist.");
-    }
+    compileSystem(cxxfile, shobj, executableDir);
+  }
+  else if (res_so != 0)
+  {
+    P_MESSAGE5("The file '", shobj ,
+      "' doesn't exist and it cannot be compiled from '", cxxfile, "'.");
   }
 }
 

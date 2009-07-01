@@ -83,13 +83,12 @@ IF(NOT APPLE)
   	${QT_QTGUI_LIBRARY}
   	${QT_QTSVG_LIBRARY}
   	knutlib laarpack umfpack amd mxml
-  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+  	${ATLAS_CBLAS} ${ATLAS_ATLAS} AUX_BLAS ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
 
   INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
 
   IF(WIN32)
-    SET_TARGET_PROPERTIES( cfiletoxml PROPERTIES LINK_FLAGS "-Wl,-s" )
     SET_TARGET_PROPERTIES( knut-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
-    ADD_CUSTOM_COMMAND( TARGET knut-gui PRE_LINK COMMAND windres -i knut.rc -o knut_res.o --include-dir=. )
+    ADD_CUSTOM_COMMAND( TARGET knut-gui PRE_LINK COMMAND i686-pc-mingw32-windres -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )
   ENDIF(WIN32)
 ENDIF(NOT APPLE)

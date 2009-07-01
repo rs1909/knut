@@ -18,7 +18,7 @@ class MThread : public QThread, public BaseComp
     Q_OBJECT
   public:
     MThread(const NConstants& constants, QObject* parent = 0) 
-    : BaseComp(constants), QThread(parent)
+    : QThread(parent), BaseComp(constants)
     { }
     ~MThread() { }
     void run() { BaseComp::run(); }

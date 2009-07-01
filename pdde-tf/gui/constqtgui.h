@@ -167,11 +167,11 @@ class EqnType : public genMap<Eqn>
       key.push_back(EqnTFCPLX_IM);
     }
     // these translate to Type and Num. Here it is trivial
-    char getType(int) const
+    char getType(unsigned int) const
     {
       return 'E';
     }
-    int  getNum(unsigned int i) const
+    Eqn getNum(unsigned int i) const
     {
       return getkey(i);
     }
@@ -227,14 +227,14 @@ class VarType : public genMap<Var>
       setPar(npar);
     }
 
-    char getType(int i) const
+    char getType(unsigned int i) const
     {
       if (key[i] < VarPAR0) return 'S';
       else if (key[i] < VarPAR0 + npar) return 'P';
       else return 'I';
     }
 
-    int  getNum(int i) const
+    int  getNum(unsigned int i) const
     {
       if (key[i] < VarPAR0) return key[i];
       else if (key[i] < VarPAR0 + npar) return key[i] - VarPAR0;
@@ -268,47 +268,47 @@ class NConstantsQtGui : public QObject, public NConstants
   
   public:
     // for the continuation parameter
-    int  cpSize() { return cpMap.size(); }
-    const std::string& cpString(int i) { return cpMap.string(i); }
+    unsigned int cpSize() { return cpMap.size(); }
+    const std::string& cpString(unsigned int i) { return cpMap.string(i); }
     unsigned int getCpIdx() { return cpMap.indexof(getCp()); }
-    void setCpIdx(int i)
+    void setCpIdx(unsigned int i)
     {
       setCpType(cpMap.getType(i));
       setCpNum(cpMap.getNum(i));
     }
     
     // for pointType
-    int  pointTypeSize() { return pointTypeMap.size(); }
-    const std::string& pointTypeString(int i) { return pointTypeMap.string(i); }
+    unsigned int pointTypeSize() { return pointTypeMap.size(); }
+    const std::string& pointTypeString(unsigned int i) { return pointTypeMap.string(i); }
     unsigned int getPointTypeIdx() { return pointTypeMap.indexof(getPointType()); }
-    void setPointTypeIdx(int i) { setPointType(pointTypeMap.getNum(i)); }
+    void setPointTypeIdx(unsigned int i) { setPointType(pointTypeMap.getNum(i)); }
     
-    int  branchSWSize() { return branchSWMap.size(); }
-    const std::string& branchSWString(int i) { return branchSWMap.string(i); }
+    unsigned int branchSWSize() { return branchSWMap.size(); }
+    const std::string& branchSWString(unsigned int i) { return branchSWMap.string(i); }
     unsigned int getBranchSWIdx() { return branchSWMap.indexof(getBranchSW()); }
-    void setBranchSWIdx(int i) { setBranchSW(branchSWMap.getNum(i)); }
+    void setBranchSWIdx(unsigned int i) { setBranchSW(branchSWMap.getNum(i)); }
 
-    int parxSize() { return parxMap.size(); }
-    int eqnsSize() { return eqnsMap.size(); }
-    int varsSize() { return varsMap.size(); }    
+    unsigned int parxSize() { return parxMap.size(); }
+    unsigned int eqnsSize() { return eqnsMap.size(); }
+    unsigned int varsSize() { return varsMap.size(); }    
     const std::string& findParxString(Var i) { return parxMap.map(i); }
     const std::string& findEqnsString(Eqn i) { return eqnsMap.map(i); }
     const std::string& findVarsString(Var i) { return varsMap.map(i); }
-    const std::string& parxString(int i) { return parxMap.string(i); }
-    const std::string& eqnsString(int i) { return eqnsMap.string(i); }
-    const std::string& varsString(int i) { return varsMap.string(i); } 
+    const std::string& parxString(unsigned int i) { return parxMap.string(i); }
+    const std::string& eqnsString(unsigned int i) { return eqnsMap.string(i); }
+    const std::string& varsString(unsigned int i) { return varsMap.string(i); } 
     
-    virtual void setParxIdx(int i, int p)
+    virtual void setParxIdx(int i, unsigned int p)
     {
       setParxType(i, parxMap.getType(p));
       setParxNum(i, parxMap.getNum(p));
     }
-    virtual void setEqnsIdx(int i, int e)
+    virtual void setEqnsIdx(int i, unsigned int e)
     {
       setEqnsType(i, eqnsMap.getType(e));
       setEqnsNum(i, eqnsMap.getNum(e));
     }
-    virtual void setVarsIdx(int i, int v)
+    virtual void setVarsIdx(int i, unsigned int v)
     {
       setVarsType(i, varsMap.getType(v));
       setVarsNum(i, varsMap.getNum(v));

@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    MainWindow(const QString& appDir);
+    MainWindow(const QString& appDir, const QString& fileName);
         
     static void showException(QWidget* parent, const knutException& ex)
     {
@@ -93,7 +93,7 @@ class MainWindow : public QMainWindow
       else if (!strcmp(name,"pointType"))
       {
         pttype->blockSignals(true);
-        pttype->setCurrentIndex(parameters.getPointTypeIdx());
+        pttype->setCurrentIndex(static_cast<int>(parameters.getPointTypeIdx()));
         pttype->blockSignals(false);
       }
       else if (!strcmp(name,"cpType"))
@@ -103,13 +103,13 @@ class MainWindow : public QMainWindow
       else if (!strcmp(name,"cpNum"))
       {
         cp->blockSignals(true);
-        cp->setCurrentIndex(parameters.getCpIdx());
+        cp->setCurrentIndex(static_cast<int>(parameters.getCpIdx()));
         cp->blockSignals(false);
       }
       else if (!strcmp(name,"branchSW"))
       {
         branchsw->blockSignals(true);
-        branchsw->setCurrentIndex(parameters.getBranchSWIdx());
+        branchsw->setCurrentIndex(static_cast<int>(parameters.getBranchSWIdx()));
         branchsw->blockSignals(false);
       }
       else if (!strcmp(name,"parxType"))
@@ -302,8 +302,10 @@ class MainWindow : public QMainWindow
       else if (!strcmp(name,"translationMaps"))
       {
         cp->blockSignals(true);
+        int idx = cp->currentIndex();
         cp->clear();
-        for (int i = 0; i < parameters.cpSize(); ++i) cp->addItem(parameters.cpString(i).c_str());
+        for (unsigned int i = 0; i < parameters.cpSize(); ++i) cp->addItem(parameters.cpString(i).c_str());
+        if (idx < cp->count()) cp->setCurrentIndex(idx);
         cp->blockSignals(false);
       }
       else
@@ -318,9 +320,12 @@ class MainWindow : public QMainWindow
     void setInputFileParameter() { parameters.setInputFile(inputFile->text().toStdString()); }
     void setOutputFileParameter() { parameters.setOutputFile(outputFile->text().toStdString()); }
     void setLabelParameter(int d) { parameters.setLabel(d); }
-    void setPointTypeIdxParameter(int d) { parameters.setPointTypeIdx(d); }
-    void setCpIdxParameter(int d) { parameters.setCpIdx(d); }
-    void setBranchSWIdxParameter(int d) { parameters.setBranchSWIdx(d); }
+    void setPointTypeIdxParameter(int d)
+      { parameters.setPointTypeIdx(static_cast<unsigned int>(d)); }
+    void setCpIdxParameter(int d)
+      { parameters.setCpIdx(static_cast<unsigned int>(d)); }
+    void setBranchSWIdxParameter(int d)
+      { parameters.setBranchSWIdx(static_cast<unsigned int>(d)); }
     void setNEqnsParameter(int d)
     {
       parameters.setParxTypeSize(d);
