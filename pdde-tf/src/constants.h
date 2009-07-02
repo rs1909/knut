@@ -102,6 +102,9 @@ class NConstants
     // from sysname
     KN_CONSTANT(       nPar,       int,      getNPar,       setNPar)
     KN_CONSTANT(       nDim,       int,      getNDim,       setNDim)
+    
+  protected:
+    std::vector<std::string> parNames;
  
   public:
     // for double, int, char
@@ -111,7 +114,7 @@ class NConstants
     // to extract the dependencies run:
     // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
     NConstants(const NConstants& src) : inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), steps(src.steps), iad(src.iad), cpMin(src.cpMin), cpMax(src.cpMax), ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), epsC(src.epsC), epsR(src.epsR), epsK(src.epsK), nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), nPar(src.nPar), nDim(src.nDim) {}
-    ~NConstants() {}
+    ~NConstants() { initParNames(); }
     // for setting up the continuation
     int toEqnVar(System& sys,
                  Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
@@ -156,6 +159,26 @@ class NConstants
       else return EqnNone;
     }
     
+    void initParNames()
+    {
+      parNames.resize(getNPar()+ParEnd);
+      for (int i=0; i<getNPar(); ++i)
+      {
+        char buf[16];
+        snprintf(buf, 15, "%d", i);
+        parNames[i] = "Par. " + std::string(buf);
+      }
+      parNames[getNPar()+ParPeriod] = "Per. Mul.";
+      parNames[getNPar()+ParAngle] = "Angle (NS)";
+      parNames[getNPar()+ParRot] = "Rotation num.";      
+    }
+    void initDimensions(const System* sys)
+    {
+      setNPar(sys->npar());
+      setNDim(sys->ndim());
+      initParNames();
+      sys->parnames(parNames);
+    }
     // This loads the shared object file
     virtual void setSysNameText(const std::string& str)
     {
@@ -164,8 +187,7 @@ class NConstants
       try
       {
         sys = new System(sysname);
-        setNPar(sys->npar());
-        setNDim(sys->ndim());
+        initDimensions(sys);
         delete sys;
       }
       catch (knutException ex)
@@ -176,6 +198,7 @@ class NConstants
         throw(ex);
       }
     }
+    const std::vector<std::string>& getParNames() const { return parNames; }
 };
 
 #endif

@@ -198,7 +198,7 @@ inline void mat4Data::writeMatrixHeader(void* address, int offset, mat4Data::hea
   *((mat4Data::header*)((char*)address + offset)) = *hd;
 }
 
-mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
+mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
 {
   wperm = true;
   torus = false;
@@ -209,6 +209,10 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   nint = nint_;
   ndeg = ndeg_;
   nmul = nmul_;
+  
+  unsigned int max_namesize = 0;
+  for (unsigned int i=0; i<parNames.size(); ++i)
+    if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
 
   // creating the matrices
   char npoints_string[] = "knut_npoints";
@@ -218,9 +222,13 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
   int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
+  
+  char parnames_string[] = "knut_parnames";
+  parnames_offset = par_offset + par_size;
+  int parnames_size = createMatrixHeader(&parnames_header, parnames_string, parNames.size(), max_namesize);
 
   char mul_string[] = "knut_mul";
-  mul_offset = par_offset + par_size;
+  mul_offset = parnames_offset + parnames_size;
   int mul_size = createComplexMatrixHeader(&mul_header, mul_string, nmul, ncols);
 
   char ntrivmul_string[] = "knut_ntrivmul";
@@ -253,15 +261,48 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
 
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
+  writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
   writeMatrixHeader(address, mul_offset, &mul_header, mul_string);
   writeMatrixHeader(address, ntrivmul_offset, &ntrivmul_header, ntrivmul_string);
   writeMatrixHeader(address, ndim_offset, &ndim_header, ndim_string);
   writeMatrixHeader(address, elem_offset, &elem_header, elem_string);
   writeMatrixHeader(address, mesh_offset, &mesh_header, mesh_string);
   writeMatrixHeader(address, prof_offset, &prof_header, prof_string);
+  setParNames(parNames);
 }
 
-mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
+void mat4Data::setParNames(const std::vector<std::string>& parNames)
+{
+  for (unsigned int i=0; i<parNames.size(); ++i)
+  {
+    for (unsigned int j=0; j<parNames[i].size(); ++j)
+    {
+      elem(parnames_offset, i, j) = parNames[i][j];
+    }
+    for (int j=parNames[i].size(); j<getHeader(parnames_offset)->ncols; ++j)
+    {
+      elem(parnames_offset, i, j) = 0;
+    }
+  }
+}
+
+void mat4Data::getParNames(std::vector<std::string>& parNames) const
+{
+  parNames.resize(getRows(parnames_offset));
+  char* buf = new char[getCols(parnames_offset)+1];
+  for (int i = 0; i < getRows(parnames_offset); ++i)
+  {
+    for (int j = 0; j < getCols(parnames_offset); ++j)
+    {
+      buf[j] = (char)elem(parnames_offset, i, j);
+    }
+    buf[getCols(parnames_offset)] = '\0';
+    parNames[i] = buf;
+  }
+  delete[] buf;
+}
+
+mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
 {
   wperm = true;
   torus = true;
@@ -274,6 +315,10 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   ndeg1 = ndeg1_;
   ndeg2 = ndeg2_;
 
+  unsigned int max_namesize = 0;
+  for (unsigned int i=0; i<parNames.size(); ++i)
+    if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
+  
   // creating the matrices
   char npoints_string[] = "knut_npoints";
   npoints_offset = 0;
@@ -282,9 +327,13 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
   int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
+  
+  char parnames_string[] = "knut_parnames";
+  parnames_offset = par_offset + par_size;
+  int parnames_size = createMatrixHeader(&parnames_header, parnames_string, parNames.size(), max_namesize);
 
   char ndim_string[] = "knut_ndim";
-  ndim_offset = par_offset + par_size;
+  ndim_offset = parnames_offset + parnames_size;
   int ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
 
   char nint1_string[] = "knut_nint1";
@@ -323,6 +372,7 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
 #endif
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
+  writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
   writeMatrixHeader(address, ndim_offset, &ndim_header, ndim_string);
   writeMatrixHeader(address, nint1_offset, &nint1_header, nint1_string);
   writeMatrixHeader(address, nint2_offset, &nint2_header, nint2_string);
@@ -331,6 +381,7 @@ mat4Data::mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_
   writeMatrixHeader(address, mesh1_offset, &mesh1_header, mesh1_string);
   writeMatrixHeader(address, mesh2_offset, &mesh2_header, mesh2_string);
   writeMatrixHeader(address, blanket_offset, &blanket_header, blanket_string);
+  setParNames(parNames);
 }
 
 mat4Data::mat4Data(const std::string& fileName)
@@ -392,6 +443,8 @@ void mat4Data::openReadOnly(const std::string& fileName)
   par_offset = findMatrix("knut_par", &par_header, true, -1, -1, 0, fileName.c_str());
   npar = par_header.mrows;
   ncols = par_header.ncols;
+  
+  parnames_offset = findMatrix("knut_parnames", &parnames_header, true, -1, -1, 0, fileName.c_str());
 
   ndim_offset = findMatrix("knut_ndim", &ndim_header, true, 1, ncols, 0, fileName.c_str());
   ndim = static_cast<int>(*((double*)((char*)address + ndim_offset + ndim_header.col_off(0))));

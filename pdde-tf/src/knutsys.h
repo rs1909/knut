@@ -11,6 +11,8 @@
 #define KNUTSYS_H
 
 #include "matrix.h"
+#include <string>
+#include <vector>
 
 #ifdef _MSC_VER
 # define SYSEXPORT __declspec( dllexport )
@@ -35,6 +37,7 @@ extern "C"
   SYSEXPORT void   sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp );
   SYSEXPORT void   sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
   SYSEXPORT void   sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
+  SYSEXPORT void   sys_parnames( std::vector<std::string>& out );
 };
 
 #endif

@@ -20,6 +20,7 @@ void BaseComp::run(const char* branchFile)
 {
   System sys(params->getSysName());
   if (sys.ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
+  params->initDimensions(&sys);
 
   Vector par(sys.npar() + ParEnd);
   std::ofstream ff;
@@ -130,7 +131,7 @@ void BaseComp::run(const char* branchFile)
     if (eqn(0) != EqnTORSol)
     {
       PerSolPoint& pt = *pt_ptr;
-      mat4Data out(params->getOutputFile(),
+      mat4Data out(params->getOutputFile(), params->getParNames(),
                    params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
                    params->getNInt(), params->getNDeg(), params->getNMul());
 
@@ -293,7 +294,7 @@ void BaseComp::run(const char* branchFile)
     }
     else
     {
-      mat4Data out(params->getOutputFile(),
+      mat4Data out(params->getOutputFile(), params->getParNames(),
                    params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
                    params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2());
 

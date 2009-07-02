@@ -13,6 +13,7 @@
 #include "matrix.h"
 #include "pointtype.h"
 #include <string>
+#include <vector>
 // HANDLE is defined here
 #ifdef WIN32
 #  include <windows.h>
@@ -30,15 +31,17 @@ class mat4Data
 
     // opens the file, determines its size, maps the memory from file, sets up variables
     // Constructor for periodic orbits
-    mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
+    mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
     // Constructor for quasi-periodic orbits
-    mat4Data(const std::string& fileName, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
+    mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
     // Constructor for opening an existing file
     mat4Data(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
     ~mat4Data();
 
     void   setPar(int n, const Vector& par);
+    void   setParNames(const std::vector<std::string>& parNames);
+    void   getParNames(std::vector<std::string>& parNames) const;
     void   setMul(int n, const Vector& real, const Vector& imag);
     void   setElem(int n, const Vector& el);
     void   setMesh(int n, const Vector& mesh);
@@ -221,6 +224,14 @@ class mat4Data
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
+    int32_t getRows(int offset) const
+    {
+      return getHeader(offset)->mrows;
+    }
+    int32_t getCols(int offset) const
+    {
+      return getHeader(offset)->ncols;
+    }
 
 #ifdef WIN32
     HANDLE file;
@@ -251,6 +262,9 @@ class mat4Data
 
     int    par_offset;      //T
     header par_header;
+    
+    int    parnames_offset;
+    header parnames_header;
 
     int    mul_offset;
     header mul_header;

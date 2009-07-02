@@ -186,14 +186,19 @@ class VarType : public genMap<Var>
 {
   public:
 
-    VarType(int npar_ = 0, bool full_ = true) : npar(npar_), sysvar(full_)
+    VarType(const std::vector<std::string>& parNames, bool full_ = true) : sysvar(full_)
     {
-      setPar(npar_);
+      setPar(parNames);
+    }
+    VarType(bool full_ = true) : sysvar(full_)
+    {
+      std::vector<std::string> parNames;
+      setPar(parNames);
     }
 
-    void setPar(int npar_)
+    void setPar(const std::vector<std::string>& parNames)
     {
-      npar = npar_;
+      npar = parNames.size();
       key.clear();
       dsc.clear();
       dsc.push_back("None");
@@ -207,24 +212,11 @@ class VarType : public genMap<Var>
         dsc.push_back("Torus");
         key.push_back(VarTORSol);
       }
-      for (int i = 0; i < npar; ++i)
+      for (unsigned int i = 0; i < parNames.size(); ++i)
       {
-        char _buf[7+1];
-        _buf[7] = '\0';
-        snprintf(_buf, 7, "%d", i);
-        dsc.push_back("P " + std::string(_buf));
+        dsc.push_back(std::string(parNames[i]));
         key.push_back((Var)(VarPAR0 + i));
       }
-      dsc.push_back("Angle (NS)");
-      key.push_back((Var)(VarPAR0 + npar + ParAngle));
-      dsc.push_back("Rotation num.");
-      key.push_back((Var)(VarPAR0 + npar + ParRot));
-    }
-
-    void setSysVar(bool b)
-    {
-      sysvar = b;
-      setPar(npar);
     }
 
     char getType(unsigned int i) const
@@ -250,7 +242,7 @@ class VarType : public genMap<Var>
     }
   private:
     int npar;
-    bool sysvar;
+    const bool sysvar;
 };
 
 // IMPLEMENT THE SIGNALS AND SLOTS IN MAINWINDOW.[H,CPP]
@@ -267,6 +259,7 @@ class NConstantsQtGui : public QObject, public NConstants
     VarType            varsMap;
   
   public:
+    NConstantsQtGui() : cpMap(false), parxMap(false) { }
     // for the continuation parameter
     unsigned int cpSize() { return cpMap.size(); }
     const std::string& cpString(unsigned int i) { return cpMap.string(i); }
@@ -323,9 +316,9 @@ class NConstantsQtGui : public QObject, public NConstants
       {
         emit exceptionOccured(ex);
       }
-      cpMap.setPar(getNPar());
-      parxMap.setPar(getNPar());
-      varsMap.setPar(getNPar());
+      cpMap.setPar(parNames);
+      parxMap.setPar(parNames);
+      varsMap.setPar(parNames);
       emit constantChangedSignal("translationMaps");
     }
     virtual void constantChanged(const char* name) { emit constantChangedSignal(name); }

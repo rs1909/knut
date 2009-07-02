@@ -104,6 +104,10 @@ System::System(const std::string& shobj)
   tdlerror();    /* Clear any existing error */
   v_stsol = (tp_sys_stsol) fptr(tdlsym(handle, "sys_stsol"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_parnames = (tp_sys_parnames) fptr(tdlsym(handle, "sys_parnames"));
+  found_parnames = ((error = tdlerror()) == 0);
 
   /* Vectorized versions */
   tdlerror();    /* Clear any existing error */

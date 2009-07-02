@@ -129,13 +129,17 @@ class System
       }
     }
     // Setting the starting point
-    void   stpar(Vector& par)
+    void   stpar(Vector& par) const
     {
       (*v_stpar)(par);
     }
-    void   stsol(Vector& out, double t)
+    void   stsol(Vector& out, double t) const
     {
       (*v_stsol)(out, t);
+    }
+    void   parnames( std::vector<std::string>& out ) const
+    {
+      if (found_parnames) (*v_parnames)(out);
     }
 
   private:
@@ -174,6 +178,7 @@ class System
     typedef void(*tp_sys_p_deri)( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
     typedef void(*tp_sys_stpar)(Vector& par);
     typedef void(*tp_sys_stsol)(Vector& out, double t);
+    typedef void(*tp_sys_parnames)(std::vector<std::string>& out);
 
     typedef void(*FPTR)();
     union punned
@@ -215,23 +220,25 @@ class System
     Array3D<double> p2_xx_eps;
 
 
-    tp_sys_ndim    v_ndim;
-    tp_sys_npar    v_npar;
-    tp_sys_ntau    v_ntau;
-    tp_sys_nderi   v_nderi;
-    tp_sys_tau     v_tau;
-    tp_sys_dtau    v_dtau;
-    tp_sys_rhs     v_rhs;
-    tp_sys_deri    v_deri;
-    tp_sys_p_tau   v_p_tau;
-    tp_sys_p_dtau  v_p_dtau;
-    tp_sys_p_rhs   v_p_rhs;
-    tp_sys_p_deri  v_p_deri;
-    tp_sys_stpar   v_stpar;
-    tp_sys_stsol   v_stsol;
+    tp_sys_ndim     v_ndim;
+    tp_sys_npar     v_npar;
+    tp_sys_ntau     v_ntau;
+    tp_sys_nderi    v_nderi;
+    tp_sys_tau      v_tau;
+    tp_sys_dtau     v_dtau;
+    tp_sys_rhs      v_rhs;
+    tp_sys_deri     v_deri;
+    tp_sys_p_tau    v_p_tau;
+    tp_sys_p_dtau   v_p_dtau;
+    tp_sys_p_rhs    v_p_rhs;
+    tp_sys_p_deri   v_p_deri;
+    tp_sys_stpar    v_stpar;
+    tp_sys_stsol    v_stsol;
+    tp_sys_parnames v_parnames;
 
     bool found_tau, found_dtau, found_rhs, found_deri;
     bool found_p_tau, found_p_dtau, found_p_rhs, found_p_deri;
+    bool found_parnames;
 };
 
 inline System::FPTR System::fptr(void * ptr)

@@ -97,13 +97,15 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   buttonsLayout->addWidget(removePlotButton);
   buttonsLayout->addWidget(colorizePlotButton);
 
+  std::vector<std::string> parNames;
+  data->getParNames(parNames);
   xvarMap.push_back("None");
   xvarMap.push_back("Label");
   xvarMap.push_back("Mesh");
   xvarMap.push_back("RealMultiplier");
   for (int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
   {
-    xvarMap.push_back(QString("P ") + QString::number(i - XParameter0));
+    if (i - XParameter0 < (int)parNames.size()) xvarMap.push_back(QString(parNames[i - XParameter0].c_str()));
   }
   for (unsigned int i = 0; i < xvarMap.size(); ++i)
     xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
@@ -116,7 +118,7 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   yvarMap.push_back("Profile");
   for (int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
   {
-    yvarMap.push_back(QString("P ") + QString::number(i - YParameter0));
+    if (i - YParameter0 < (int)parNames.size()) yvarMap.push_back(QString(parNames[i - YParameter0].c_str()));
   }
   for (unsigned int i = 0; i < yvarMap.size(); ++i)
     yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
