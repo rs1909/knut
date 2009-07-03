@@ -34,13 +34,8 @@
 plotWindow::plotWindow(const QString& fname, QWidget *parent) :
     QMainWindow(parent), data(0)
 {
-  // open data file
-  openFile(fname);
-  if (!data) return;
-  if (data->isTorus()) return;
-  //
   plot = new QGraphicsView(this);
-  plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+  plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
   plot->setScene(&plotdata);
   QWidget *centralWidget = new QWidget;
   QVBoxLayout *centralLayout = new QVBoxLayout;
@@ -63,7 +58,6 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
 
   matfile = new QLineEdit;
   matfile->setReadOnly(true);
-  matfile->setText(fname);
   QAction *matfileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Open"), this);
   QToolButton *matfileButton = new QToolButton();
   matfileButton->setDefaultAction(matfileAct);
@@ -96,35 +90,6 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
   dockLayout->addWidget(plotSelect);
   buttonsLayout->addWidget(removePlotButton);
   buttonsLayout->addWidget(colorizePlotButton);
-
-  std::vector<std::string> parNames;
-  data->getParNames(parNames);
-  xvarMap.push_back("None");
-  xvarMap.push_back("Label");
-  xvarMap.push_back("Mesh");
-  xvarMap.push_back("RealMultiplier");
-  for (int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
-  {
-    if (i - XParameter0 < (int)parNames.size()) xvarMap.push_back(QString(parNames[i - XParameter0].c_str()));
-  }
-  for (unsigned int i = 0; i < xvarMap.size(); ++i)
-    xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
-
-  yvarMap.push_back("None");
-  yvarMap.push_back("L2Norm");
-  yvarMap.push_back("Amplitude");
-  yvarMap.push_back("ImagMultiplier");
-  yvarMap.push_back("AbsMultiplier");
-  yvarMap.push_back("Profile");
-  for (int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
-  {
-    if (i - YParameter0 < (int)parNames.size()) yvarMap.push_back(QString(parNames[i - YParameter0].c_str()));
-  }
-  for (unsigned int i = 0; i < yvarMap.size(); ++i)
-    yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
-
-  ptlabel->setRange(0, data->getNCols() - 1);
-  dim->setRange(0, data->getNDim() - 1);
 
   QAction *addPlotAct = new QAction(QIcon(":/res/images/cr16-action-add.png"), tr("Add Plot"), this);
   QToolButton *addPlotButton = new QToolButton();
@@ -169,6 +134,12 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
 
   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
+                       
+  // open data file
+  openFile(fname);
+  if (!data) return;
+  if (data->isTorus()) return;
+  matfile->setText(QDir::current().relativeFilePath(fname));
 }
 
 plotWindow::~plotWindow()
@@ -192,6 +163,39 @@ void plotWindow::openFile(const QString& fileName)
   {
     delete data;
     data = t_data;
+    
+    ptlabel->setRange(0, data->getNCols() - 1);
+    dim->setRange(0, data->getNDim() - 1);
+
+    std::vector<std::string> parNames;
+    data->getParNames(parNames);
+    xvarMap.clear();
+    xvar->clear();
+    xvarMap.push_back("None");
+    xvarMap.push_back("Label");
+    xvarMap.push_back("Mesh");
+    xvarMap.push_back("RealMultiplier");
+    for (int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
+    {
+      if (i - XParameter0 < (int)parNames.size()) xvarMap.push_back(QString(parNames[i - XParameter0].c_str()));
+    }
+    for (unsigned int i = 0; i < xvarMap.size(); ++i)
+      xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
+  
+    yvarMap.clear();
+    yvar->clear();
+    yvarMap.push_back("None");
+    yvarMap.push_back("L2Norm");
+    yvarMap.push_back("Amplitude");
+    yvarMap.push_back("ImagMultiplier");
+    yvarMap.push_back("AbsMultiplier");
+    yvarMap.push_back("Profile");
+    for (int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
+    {
+      if (i - YParameter0 < (int)parNames.size()) yvarMap.push_back(QString(parNames[i - YParameter0].c_str()));
+    }
+    for (unsigned int i = 0; i < yvarMap.size(); ++i)
+      yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
   }
   QFileInfo fi(fileName);
   shortFileName = fi.fileName();
@@ -217,7 +221,7 @@ void plotWindow::addPlot()
       try
       {
         added = plotdata.addPlot(data, (PlotXVariable)xvar->currentIndex(),
-                                 (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value(), "b", "r");
+                                 (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value());
       }
       catch (knutException ex)
       {
@@ -261,11 +265,13 @@ void plotWindow::clearPlot()
 void plotWindow::print()
 {
   QPrinter printer;
+  printer.setOrientation(QPrinter::Landscape);
   if (QPrintDialog(&printer).exec() == QDialog::Accepted)
   {
+    QRectF sourceRect = plotdata.itemsBoundingRect();
     QPainter painter(&printer);
     painter.setRenderHint(QPainter::Antialiasing);
-    plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
+    plotdata.render(&painter, QRectF(printer.pageRect()), sourceRect);
   }
 }
 
@@ -274,11 +280,14 @@ void plotWindow::exportSvg()
   QString fileName = QFileDialog::getSaveFileName(this, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
   if( !fileName.isEmpty() )
   {
+    QRectF sourceRect = plotdata.itemsBoundingRect();
+    QRectF targetRect = QRectF(0.0, 0.0, sourceRect.size().width(), sourceRect.size().height());
     QSvgGenerator printer;
     printer.setFileName(fileName);
-    printer.setSize(plot->sceneRect().size().toSize());
+    printer.setSize(sourceRect.size().toSize());
+    printer.setViewBox(targetRect);
     QPainter painter(&printer);
-    plotdata.render(&painter, plotdata.sceneRect(), plotdata.sceneRect());
+    plotdata.render(&painter, targetRect, sourceRect);
     painter.end();
   }
 }

@@ -36,7 +36,16 @@ PlotData::PlotData(QObject *parent) :
   addItem(&selection);
   selection.setVisible(false);
   makeBox();
-  setSceneRect(itemsBoundingRect());
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XNone,"None"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XLabel,"Label"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XMesh,"t/Period"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XRealMultiplier,"Re(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YNone,"None"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YL2Norm,"L2Norm"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YAmplitude,"max(x(.))-min(x(.))"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YImagMultiplier,"Im(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YAbsMultiplier,"Abs(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YProfile,"X_%1"));
 }
 
 PlotData::~PlotData()
@@ -46,7 +55,7 @@ PlotData::~PlotData()
 
 int PlotData::nplots()
 {
-  int number = 0, it = 0;
+  unsigned int number = 0, it = 0;
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -58,9 +67,9 @@ int PlotData::nplots()
   return it;
 }
 
-void PlotData::clear(int n)
+void PlotData::clear(unsigned int n)
 {
-  int number = 0, it = 0;
+  unsigned int number = 0, it = 0;
   std::list<PlotItem>::iterator i = Graph.begin();
   while (i != Graph.end())
   {
@@ -97,12 +106,22 @@ void PlotData::clear(int n)
       ++i;
     }
   }
-//   update();
+  if (n-1 < XCoordTextItems.size()) { delete XCoordTextItems[n-1]; XCoordTextItems.erase(XCoordTextItems.begin()+n-1); }
+  else std::cout<<"GB1\n";
+  if (n-1 < YCoordTextItems.size()) { delete YCoordTextItems[n-1]; YCoordTextItems.erase(YCoordTextItems.begin()+n-1); }
+  else std::cout<<"GB2\n";
+  if (n-1 < XCoordText.size()) XCoordText.erase(XCoordText.begin()+n-1);
+  else std::cout<<"GB3\n";
+  if (n-1 < YCoordText.size()) YCoordText.erase(YCoordText.begin()+n-1);
+  else std::cout<<"GB4\n";
+  makeBox();
+  labelColor();
+  //   update();
 }
 
-QColor PlotData::getColor(int n)
+QColor PlotData::getColor(unsigned int n)
 {
-  int number = 0, it = 0;
+  unsigned int number = 0, it = 0;
   for (std::list<PlotItem>::const_iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -133,9 +152,9 @@ QColor PlotData::getColor(int n)
   return QColor(Qt::black);
 }
 
-void PlotData::setColor(int n, QColor& color)
+void PlotData::setColor(unsigned int n, QColor& color)
 {
-  int number = 0, it = 0;
+  unsigned int number = 0, it = 0;
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -181,6 +200,22 @@ void PlotData::setColor(int n, QColor& color)
 //   update();
 }
 
+void PlotData::clearAxes()
+{
+  for (unsigned int i = 0; i < XCoordTextItems.size(); ++i)
+  {
+    removeItem(XCoordTextItems[i]);
+    delete XCoordTextItems[i];
+  }
+  XCoordTextItems.clear();
+  for (unsigned int i = 0; i < YCoordTextItems.size(); ++i)
+  {
+    removeItem(YCoordTextItems[i]);
+    delete YCoordTextItems[i];
+  }
+  YCoordTextItems.clear();
+}
+
 void PlotData::clearAll()
 {
   std::list<PlotItem>::iterator i;
@@ -207,6 +242,9 @@ void PlotData::clearAll()
     }
   }
   Graph.clear();
+  clearAxes();
+  XCoordText.clear();
+  YCoordText.clear();
   const ViewBox cvb = *currZoom;
   ZoomHistory.clear();
   ZoomHistory.push_back(cvb);
@@ -229,79 +267,78 @@ static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
   max = ceil(max / step) * step;
 }
 
-void PlotData::plotStyle(QPen& pen, const char* style)
-{
-  while (*style != '\0')
-  {
-    switch (style[0])
-    {
-      case 'b':
-        pen.setColor("blue");
-        break;
-      case 'g':
-        pen.setColor("green");
-        break;
-      case 'r':
-        pen.setColor("red");
-        break;
-      case 'c':
-        pen.setColor("cyan");
-        break;
-      case 'm':
-        pen.setColor("magenta");
-        break;
-      case 'y':
-        pen.setColor("yellow");
-        break;
-      case 'k':
-        pen.setColor("black");
-        break;
-      case '-':
-        switch (style[1])
-        {
-          case '-':
-            pen.setStyle(Qt::DashLine);
-            style++;
-            break;
-          case '.':
-            pen.setStyle(Qt::DashDotLine);
-            style++;
-            break;
-          default:
-            pen.setStyle(Qt::SolidLine);
-            break;
-        }
-        break;
-      case ':':
-        pen.setStyle(Qt::DotLine);
-        break;
-      default:
-        std::cout << "style Error\n";
-        break;
-    }
-    style++;
-  }
-}
+//void PlotData::plotStyle(QPen& pen, const char* style)
+//{
+//  while (*style != '\0')
+//  {
+//    switch (style[0])
+//    {
+//      case 'b':
+//        pen.setColor("blue");
+//        break;
+//      case 'g':
+//        pen.setColor("green");
+//        break;
+//      case 'r':
+//        pen.setColor("red");
+//        break;
+//      case 'c':
+//        pen.setColor("cyan");
+//        break;
+//      case 'm':
+//        pen.setColor("magenta");
+//        break;
+//      case 'y':
+//        pen.setColor("yellow");
+//        break;
+//      case 'k':
+//        pen.setColor("black");
+//        break;
+//      case '-':
+//        switch (style[1])
+//        {
+//          case '-':
+//            pen.setStyle(Qt::DashLine);
+//            style++;
+//            break;
+//          case '.':
+//            pen.setStyle(Qt::DashDotLine);
+//            style++;
+//            break;
+//          default:
+//            pen.setStyle(Qt::SolidLine);
+//            break;
+//        }
+//        break;
+//      case ':':
+//        pen.setStyle(Qt::DotLine);
+//        break;
+//      default:
+//        std::cout << "style Error\n";
+//        break;
+//    }
+//    style++;
+//  }
+//}
 
-void PlotData::addPlotLine(std::list<PlotItem>::iterator& it, const char* style)
+void PlotData::addPlotLine(std::list<PlotItem>::iterator& it, const QPen& pen, bool principal)
 {
   it->type = PlotLineType;
-  it->data.line = new PlotLine(QPen(QColor("blue")));
+  it->data.line = new PlotLine(pen);
   it->data.line->item = 0;
   it->data.line->pen.setWidthF(1);
-  plotStyle(it->data.line->pen, style);
+  it->principal = principal;
 }
 
-void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, PlotMarkerStyle type)
+void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, PlotMarkerStyle type, bool principal)
 {
   switch (type)
   {
     case PlotMarkerCircle:  // CIRCLE
       {
         it->type = PlotCircleType;
-        it->data.circle = new PlotCircle(QPen(QColor("blue")), QRectF(-3.0, -3.0, 6.0 , 6.0));
+        it->data.circle = new PlotCircle(pen, QRectF(-3.0, -3.0, 6.0 , 6.0));
         it->data.circle->pen.setWidthF(1);
-        plotStyle(it->data.circle->pen, style);
       }
       break;
     case PlotMarkerSquare:  // SQUARE
@@ -312,9 +349,8 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         pl[1] = QPointF(-3.0, 3.0);
         pl[2] = QPointF(3.0, 3.0);
         pl[3] = QPointF(3.0, -3.0);
-        it->data.polygon = new PlotPolygon(QPen(QColor("blue")), pl);
+        it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
-        plotStyle(it->data.polygon->pen, style);
       }
       break;
     case PlotMarkerTriangle: // TRIANGLE
@@ -324,9 +360,8 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         pl[0] = QPointF(-3.0, -3.0);
         pl[1] = QPointF(0.0, 3.0);
         pl[2] = QPointF(3.0, -3.0);
-        it->data.polygon = new PlotPolygon(QPen(QColor("blue")), pl);
+        it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
-        plotStyle(it->data.polygon->pen, style);
       }
       break;
     case PlotMarkerCross: // CROSS
@@ -339,9 +374,8 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
         pl[3] = QPointF(-3.0, -3.0);
         pl[4] = QPointF(3.0, 3.0);
         pl[5] = QPointF(0.0, 0.0);
-        it->data.polygon = new PlotPolygon(QPen(QColor("blue")), pl);
+        it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
-        plotStyle(it->data.polygon->pen, style);
       }
       break;
     default:
@@ -349,6 +383,7 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const char* style
       abort();
       break;
   }
+  it->principal = principal;
 }
 
 // this only called by addPlot...
@@ -377,13 +412,15 @@ void PlotData::dataToGraphics()
 }
 
 bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, 
-  int pt, int dim, const char* style, const char* stabstyle)
+  int pt, int dim)
 {
   int xadded = 0;
   int yadded = 0;
   std::list<PlotItem>::iterator start = --Graph.end();
   int startnumber = 0;
   if (Graph.begin() != Graph.end()) startnumber = Graph.rbegin()->number;
+  QColor plcolor, stabcolor(Qt::black);
+  plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
   // mindig az Y utan kovetkezik csak addPlot...()
   if (x >= XParameter0 && y != YAbsMultiplier && y != YProfile)
   {
@@ -429,7 +466,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     Graph.rbegin()->y(ndeg*nint) = data->getProfile(pt, dim, ndeg * nint);
     ++xadded;
     ++yadded;
-    addPlotLine(--Graph.end(), style);
+    addPlotLine(--Graph.end(), QPen(plcolor), true);
   }
   if (y >= YParameter0 && (x != XMesh && x != XRealMultiplier))
   {
@@ -438,7 +475,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       Graph.rbegin()->y(i) = data->getPar(i, y - YParameter0);
     }
     ++yadded;
-    addPlotLine(--Graph.end(), style);
+    addPlotLine(--Graph.end(), QPen(plcolor), true);
   }
   if (y == YAmplitude && (x != XMesh && x != XRealMultiplier))
   {
@@ -464,7 +501,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       Graph.rbegin()->y(i) = sqrt(nrm);
     }
     ++yadded;
-    addPlotLine(--Graph.end(), style);
+    addPlotLine(--Graph.end(), QPen(plcolor), true);
   }
   if (y == YL2Norm && (x != XMesh && x != XRealMultiplier))
   {
@@ -480,7 +517,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       Graph.rbegin()->y(i) = NColloc::integrate(prof, prof, metric, msh, data->getNDim());
     }
     ++yadded;
-    addPlotLine(--Graph.end(), style);
+    addPlotLine(--Graph.end(), QPen(plcolor), true);
   }
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
@@ -494,7 +531,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       Graph.rbegin()->x(i) = sin(i * 2.0 * M_PI / (segments - 1));
       Graph.rbegin()->y(i) = cos(i * 2.0 * M_PI / (segments - 1));
     }
-    addPlotLine(--Graph.end(), "k");
+    addPlotLine(--Graph.end(), QPen(stabcolor), false);
     // plotting the multipliers
     Graph.push_back(PlotItem());
     Graph.rbegin()->x.Init(data->getNMul());
@@ -506,7 +543,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     }
     ++xadded;
     ++yadded;
-    addPlotPoint(--Graph.end(), style, PlotMarkerCross);
+    addPlotPoint(--Graph.end(), QPen(plcolor), PlotMarkerCross, true);
   }
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
@@ -523,8 +560,8 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       }
       ++xadded;
       ++yadded;
-//       addPlotPoint(--Graph.end(), style, 0);
-      addPlotLine(--Graph.end(), style);
+//       addPlotPoint(--Graph.end(), QPen(plcolor), 0);
+      addPlotLine(--Graph.end(), QPen(plcolor), true);
     }
   }
   // add stability
@@ -560,16 +597,16 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
         switch (biftype[i])
         {
           case BifTFLP:
-            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerSquare);
+            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerSquare, false);
             break;
           case BifTFPD:
-            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerTriangle);
+            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerTriangle, false);
             break;
           case BifTFNS:
-            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerCircle);
+            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false);
             break;
           default:
-            addPlotPoint(--Graph.end(), stabstyle, PlotMarkerCross);
+            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCross, false);
             break;
         } 
       }
@@ -588,7 +625,16 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   {
     if (xadded != 0)
     {
+      std::vector<std::string> parNames;
+      data->getParNames(parNames);
+      if (x >= XParameter0) XCoordText.push_back(parNames.at(x-XParameter0).c_str());
+      else XCoordText.push_back(XCoordMap[x]);
+      if (y >= YParameter0) YCoordText.push_back(parNames.at(y-YParameter0).c_str());
+      else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
+      else YCoordText.push_back(YCoordMap[y]);
+      
       dataToGraphics();
+      labelColor();
       return true;
     }
     else
@@ -949,6 +995,7 @@ void PlotData::makeBox()
   BottomTicks.clear();
   TopTicks.clear();
   HText.clear();
+  qreal highest = 0;
   for (unsigned int i = 0; i < cvb.xticks + 1; i++)
   {
     BottomTicks.push_back(new QGraphicsLineItem);
@@ -959,12 +1006,13 @@ void PlotData::makeBox()
     TopTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
     HText.push_back(new QGraphicsTextItem);
     HText[i]->setPlainText(QString::number(cvb.xmin + (cvb.xmax - cvb.xmin)*i / cvb.xticks));
-    HText[i]->setFont(QFont("Arial", FontSize));
+    HText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = HText[i]->boundingRect().normalized();
     HText[i]->setPos(plotXSize * i / cvb.xticks - b.width() / 2.0, plotYSize /*- b.height()*/);
     addItem(TopTicks[i]);
     addItem(BottomTicks[i]);
     addItem(HText[i]);
+    if (highest < b.height()) highest = b.height();
   }
   for (unsigned int i = 0; i < VText.size(); i++)
   {
@@ -978,6 +1026,7 @@ void PlotData::makeBox()
   LeftTicks.clear();
   RightTicks.clear();
   VText.clear();
+  qreal widest = 0;
   for (unsigned int i = 0; i < cvb.yticks + 1; i++)
   {
     LeftTicks.push_back(new QGraphicsLineItem);
@@ -988,12 +1037,107 @@ void PlotData::makeBox()
     RightTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
     VText.push_back(new QGraphicsTextItem);
     VText[i]->setPlainText(QString::number(cvb.ymin + (cvb.ymax - cvb.ymin)*i / cvb.yticks));
-    VText[i]->setFont(QFont("Arial", FontSize));
+    VText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = VText[i]->boundingRect().normalized();
     VText[i]->setPos(-b.width(), plotYSize - plotYSize*i / cvb.yticks - b.height() / 2.0);
     addItem(LeftTicks[i]);
     addItem(RightTicks[i]);
     addItem(VText[i]);
+    if (widest < b.width()) widest = b.width();
+  }
+  // remove previous texts
+  clearAxes();
+  // Add labels
+  qreal sumwidth = 0;
+  qreal sumheight = 0;
+  unsigned int startmove = 0;
+  for (unsigned int i = 0; i < YCoordText.size(); ++i)
+  {
+    YCoordTextItems.push_back(new QGraphicsTextItem);
+    YCoordTextItems[i]->setPlainText(YCoordText[i]);
+    YCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
+    QRectF b = YCoordTextItems[i]->boundingRect().normalized();
+    YCoordTextItems[i]->setPos(-widest - b.height() - sumheight, plotYSize/2.0 + sumwidth + b.width());
+    YCoordTextItems[i]->setTransform(QTransform().rotate(-90));
+    sumwidth += b.width();
+    if (sumwidth > plotYSize)
+    {
+      for (unsigned int i = startmove; i < YCoordTextItems.size(); ++i)
+      {
+        YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
+        addItem(YCoordTextItems[i]);
+      }
+      sumheight += highest;
+      startmove = YCoordTextItems.size();
+      sumwidth = 0;
+    }
+  }
+  for (unsigned int i = startmove; i < YCoordTextItems.size(); ++i)
+  {
+    YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
+    addItem(YCoordTextItems[i]);
+  }
+  sumwidth = 0;
+  sumheight = 0;
+  startmove = 0;
+  for (unsigned int i = 0; i < XCoordText.size(); ++i)
+  {
+    XCoordTextItems.push_back(new QGraphicsTextItem);
+    XCoordTextItems[i]->setPlainText(XCoordText[i]);
+    XCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
+    QRectF b = XCoordTextItems[i]->boundingRect().normalized();
+    XCoordTextItems[i]->setPos(plotXSize / 2.0 + sumwidth, plotYSize + highest + sumheight);
+    sumwidth += b.width();
+    if (sumwidth > plotXSize)
+    {
+      for (unsigned int i = startmove; i < XCoordTextItems.size(); ++i)
+      {
+        XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
+        addItem(XCoordTextItems[i]);
+      }
+      sumheight += highest;
+      startmove = XCoordTextItems.size();
+      sumwidth = 0;
+    }
+  }
+  for (unsigned int i = startmove; i < XCoordText.size(); ++i)
+  {
+    XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
+    addItem(XCoordTextItems[i]);
+  }
+}
+
+void PlotData::labelColor()
+{
+  unsigned int prenumber = 0, it = 0;
+  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
+  {
+    if ((*i).principal && prenumber != (*i).number)
+    {
+      QColor textColor;
+      if ((*i).type == PlotLineType)
+      {      
+        textColor = (*i).data.line->pen.color();
+      }
+      if ((*i).type == PlotCircleType)
+      {
+        textColor = (*i).data.circle->pen.color();
+      }
+      if ((*i).type == PlotPolygonType)
+      {
+        textColor = (*i).data.polygon->pen.color();
+      }
+      unsigned int num = it++;
+      if (num < XCoordTextItems.size() && num < YCoordTextItems.size() && 
+          num < XCoordText.size() && num < YCoordText.size()) // safety measures
+      {
+        XCoordTextItems[num]->setDefaultTextColor(textColor);
+        YCoordTextItems[num]->setDefaultTextColor(textColor);
+//        std::cout << "Color @" << num << " " << textColor.red() << " " << textColor.green() << " " << textColor.blue() << "\n";
+      }
+//      else std::cout<<"GB5\n";
+    }
+    prenumber = (*i).number;
   }
 }
 
@@ -1004,6 +1148,7 @@ void PlotData::PlotPaint()
   // drawing the lines
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
   {
+    QColor textColor;
     if ((*i).type == PlotLineType)
     {
       delete(*i).data.line->item;

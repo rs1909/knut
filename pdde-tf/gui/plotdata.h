@@ -104,7 +104,8 @@ class PlotItem
     PlotType      type;
     Vector        x;
     Vector        y;
-    int           number;
+    unsigned int  number;
+    bool          principal;
 };
 
 struct ViewBox
@@ -123,13 +124,12 @@ class PlotData : public QGraphicsScene
     void makeBox();
     void PlotPaint();
     bool addPlot(const mat4Data* data, 
-      PlotXVariable x, PlotYVariable y, int pt, int dim,
-      const char* style, const char* stabstyle);
+      PlotXVariable x, PlotYVariable y, int pt, int dim);
     void clearAll();
-    void clear(int n);
+    void clear(unsigned int n);
     int  nplots();
-    QColor getColor(int n);
-    void setColor(int n, QColor& Color);
+    QColor getColor(unsigned int n);
+    void setColor(unsigned int n, QColor& Color);
 
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);
@@ -138,16 +138,18 @@ class PlotData : public QGraphicsScene
     void keyPressEvent(QKeyEvent * event);
 
   private:
-    void addPlotLine(std::list<PlotItem>::iterator& it, const char* style);
-    void addPlotPoint(std::list<PlotItem>::iterator& it, const char* style, PlotMarkerStyle type);
+    void addPlotLine(std::list<PlotItem>::iterator& it, const QPen& pen, bool p);
+    void addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, PlotMarkerStyle type, bool p);
     void dataToGraphics();
     void getScale(qreal& transx, qreal& transy, qreal& scale);
-    void plotStyle(QPen& pen, const char* style);
+//    void plotStyle(QPen& pen, const char* style);
     QPointF intersect(QPointF p1, QPointF p2);
     inline bool contains(double x, double y);
     bool crossbox(QPointF p1, QPointF p2, QPointF& i1, QPointF& i2);
     void rescaleData();
     void replot();
+    void clearAxes();
+    void labelColor();
 
     // geometry
     std::list<ViewBox> ZoomHistory;
@@ -172,6 +174,14 @@ class PlotData : public QGraphicsScene
     std::vector<QGraphicsLineItem*>  BottomTicks;
     std::vector<QGraphicsLineItem*>  LeftTicks;
     std::vector<QGraphicsLineItem*>  RightTicks;
+    
+    // for the axes
+    std::vector<QString> XCoordText;
+    std::vector<QString> YCoordText;
+    std::vector<QGraphicsTextItem*> XCoordTextItems;
+    std::vector<QGraphicsTextItem*> YCoordTextItems;
+    std::map<PlotXVariable,QString> XCoordMap;
+    std::map<PlotYVariable,QString> YCoordMap;
 };
 
 #endif
