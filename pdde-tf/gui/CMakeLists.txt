@@ -82,8 +82,8 @@ IF(NOT APPLE)
   	${QT_QTCORE_LIBRARY}
   	${QT_QTGUI_LIBRARY}
   	${QT_QTSVG_LIBRARY}
-  	knutlib laarpack umfpack amd mxml
-  	${ATLAS_CBLAS} ${ATLAS_ATLAS} AUX_BLAS ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+  	knutlib laarpack umfpack amd mxml AUX_BLAS
+  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
 
   INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
 

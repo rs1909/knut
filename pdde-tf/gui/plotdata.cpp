@@ -197,6 +197,7 @@ void PlotData::setColor(unsigned int n, QColor& color)
       }
     }
   }
+  labelColor();
 //   update();
 }
 
@@ -409,6 +410,7 @@ void PlotData::dataToGraphics()
   }
   rescaleData();
   PlotPaint();
+  labelColor();
 }
 
 bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, 

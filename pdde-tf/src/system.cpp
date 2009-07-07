@@ -55,12 +55,21 @@ System::System(const std::string& shobj)
   const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
   if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
   delete[] buf;
+#elif WIN32
+  char *buf = new char[MAX_PATH]; //always use MAX_PATH for filepaths
+  GetModuleFileName(NULL, buf, MAX_PATH*sizeof(char));
+  executableFile = buf;
+  delete[] buf;
 #endif
 
   std::string executableDir(executableFile);
+#ifndef WIN32
   std::string::size_type sidx = executableDir.find_last_of('/');
+#else
+  std::string::size_type sidx = executableDir.find_last_of('\\');
+#endif
   if (sidx != std::string::npos) executableDir.erase(sidx,std::string::npos);
-  
+
   makeSystem(shobj, executableDir);
   handle = tdlopen(objname.c_str());
   P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
@@ -165,20 +174,24 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
 void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
 #ifndef WIN32
+#define DIRSEP '/'
   std::string compiler(CMAKE_CXX_COMPILER);
 #else
+#define DIRSEP '\\'
   std::string compiler("g++");
 #endif
-  std::string::size_type slashpos = compiler.find_last_of('/');
+  std::string::size_type slashpos = compiler.find_last_of(DIRSEP);
   // truncate the string
   if (slashpos != std::string::npos) compiler = compiler.substr(slashpos+1);
   std::string cmdline(compiler);
   cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
-              CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" + executableDir;
-  cmdline += "/../" KNUT_INCLUDE_DIR "\"";
+              CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" +
+              executableDir.substr(0,executableDir.find_last_of(DIRSEP));
+  cmdline += DIRSEP;
+  cmdline += KNUT_INCLUDE_DIR "\"";
   cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
   
-//   std::cout << "The command line: " << cmdline << "\n";
+//  std::cout << "The command line: " << cmdline << "\n";
   // want to see the results if possible...
   FILE* fd = popen(cmdline.c_str(),"r");
   P_ERROR_X3(fd != 0, "Pipe cannot be opened for '", cmdline, "'.");
