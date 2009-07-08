@@ -1,3 +1,3 @@
 #! /bin/sh
-git describe --abbrev=100 --tags | sed -e s/.*-g//g | awk -- '// { printf "%s", $0 }' >REVISION
-git log -n1 HEAD | grep 'Date' | sed -e s/'Date:\ *'/', '/ | awk -- '// { printf "%s", $0 }' >>REVISION
+git show HEAD | head -n3 | grep 'commit' | sed -e s/'commit\ *'// | awk -- '// { printf "%s", $0 }' >REVISION
+git show HEAD | head -n3 | grep 'Date' | sed -e s/'Date:\ *'/', '/ | awk -- '// { printf "%s", $0 }' >>REVISION
