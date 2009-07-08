@@ -10,6 +10,7 @@
 #include <iostream>
 #include "spmatrix.h" // itt mar meghivtuk <vector>-t
 #include <cmath>
+#include <cstdlib>
 
 using namespace std;
 

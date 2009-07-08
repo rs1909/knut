@@ -6,6 +6,7 @@ AC_PROG_CC
 AC_C_INLINE
 AC_PROG_CXX
 AC_PROG_RANLIB
+AM_PROG_CC_C_O
 
 AC_LANG(C++)
 
@@ -34,9 +35,9 @@ AC_DEFUN([PDDE_CHECK_UNIX], [
 ])
 
 AC_DEFUN([PDDE_CHECK_SHARED],
-[ AC_MSG_CHECKING([whether --shared -fPIC is supported by $CXX])
+[ AC_MSG_CHECKING([whether -shared -fPIC is supported by $CXX])
   TMP_CXXFLAGS=$CXXFLAGS
-  CXXFLAGS="$TMP_CXXFLAGS --shared -fPIC"
+  CXXFLAGS="$TMP_CXXFLAGS -shared -fPIC"
   AC_LINK_IFELSE([int main() { return 0; }],
   [ MOD_CXXFLAGS=$CXXFLAGS; CXXFLAGS=$TMP_CXXFLAGS; echo "yes"], 
   [ echo "no"
@@ -69,7 +70,13 @@ case "${target_os}" in
     PDDE_CHECK_SHARED()
     PDDE_CHECK_UNIX()
     ;;
+  darwin*)
+    PDDE_DISP_ARCH()
+    PDDE_CHECK_SHARED()
+    PDDE_CHECK_UNIX()
+    ;;
   *)
+    PDDE_DISP_ARCH()
     AC_MSG_ERROR($UNSUPPORTED_OS)
     ;;
 esac
@@ -83,7 +90,9 @@ case "$CXX" in
     NOWARN_CXXFLAGS="-fno-rtti -fno-exceptions"
     CXXFLAGS="$CXXFLAGS -W -Wall $NOWARN_CXXFLAGS"
     MOD_CXXFLAGS="$MOD_CXXFLAGS $NOWARN_CXXFLAGS"  
-    AC_SUBST(CXXFLAGS NOWARN_CXXFLAGS MOD_CXXFLAGS)
+    AC_SUBST(CXXFLAGS)
+    AC_SUBST(NOWARN_CXXFLAGS)
+    AC_SUBST(MOD_CXXFLAGS)
     
     AC_MSG_CHECKING([whether -fvisibility-inlines-hidden is supported by $CXX])
     TMP_CXXFLAGS="$CXXFLAGS"

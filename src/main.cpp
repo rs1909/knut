@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <cstdlib>
 
 #define MAX_PARX 8
 #define MAX_EQVAR 8

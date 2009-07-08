@@ -3,6 +3,7 @@
 #include <fstream>
 #include "pointtype.h"
 #include "pderror.h"
+#include <cstdlib>
 
 #define MAX_PARX 8
 #define MAX_EQVAR 8

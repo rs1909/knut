@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <cstdlib>
 
 #include "matrix.h"
 #include "plot.h"
