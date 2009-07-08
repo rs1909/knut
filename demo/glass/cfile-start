@@ -1,9 +1,0 @@
-sys-glass.so            SYSNAME
-0                       LABEL
-50 P2 1 P0              TYPE, P0, NPARX, PARX[NPARX]
-200 4 5 1 1             NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4               NINT1, NINT2, NDEG1, NDEG2
-120 -100 100            STEPS, P0MIN, P0MAX
--0.002 0.002 0.002 -0.002       DS, DSMIN, DSMAX, DSSTART
-1e-05 1e-05 1e-06       EPSC, EPSR, EPSS
-12 12 12		NITC, NITR, NITS
