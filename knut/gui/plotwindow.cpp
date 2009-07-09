@@ -167,6 +167,7 @@ void plotWindow::openFile(const QString& fileName)
     ptlabel->setRange(0, data->getNCols() - 1);
     dim->setRange(0, data->getNDim() - 1);
 
+    const int xidx = xvar->currentIndex();
     std::vector<std::string> parNames;
     data->getParNames(parNames);
     xvarMap.clear();
@@ -181,7 +182,9 @@ void plotWindow::openFile(const QString& fileName)
     }
     for (unsigned int i = 0; i < xvarMap.size(); ++i)
       xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
-  
+    if ((xidx != -1) && (xidx < xvar->count())) xvar->setCurrentIndex(xidx);
+
+    const int yidx = yvar->currentIndex();  
     yvarMap.clear();
     yvar->clear();
     yvarMap.push_back("None");
@@ -196,6 +199,7 @@ void plotWindow::openFile(const QString& fileName)
     }
     for (unsigned int i = 0; i < yvarMap.size(); ++i)
       yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
+    if ((yidx != -1) && (yidx < yvar->count())) yvar->setCurrentIndex(yidx);
   }
   QFileInfo fi(fileName);
   shortFileName = fi.fileName();

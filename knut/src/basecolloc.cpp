@@ -137,6 +137,52 @@ static inline void poly_mul(Vector& pp, double bb, double aa)
   pp(0) = aa * pp(0);
 }
 
+static void poly_diff_int_trap(Matrix& sum, const Vector& t)
+{
+  const int dim = t.Size();
+  const int DIVS = 8*dim;
+  sum.Clear();
+  Vector lout(dim);
+  Vector dout(dim);
+  double d;
+  for (int k = 0; k < DIVS; ++k)
+  {
+    poly_lgr(t, lout, k*1.0/((double)DIVS-1.0));
+    poly_dlg(t, dout, k*1.0/((double)DIVS-1.0));
+    if ((k==0)||(k==DIVS-1)) d = 0.5/(DIVS-1);
+    else d = 1.0/(DIVS-1);
+    for (int i = 0; i < dim; i++)
+	{
+	  for (int j = 0; j < dim; j++)
+	  {
+	    sum(i,j) += d*dout(i)*lout(j);
+	  }
+	}
+  }
+}
+
+static void poly_int_trap(Matrix& sum, const Vector& t)
+{
+  const int dim = t.Size();
+  const int DIVS = 8*dim;
+  sum.Clear();
+  Vector lout(dim);
+  double d;
+  for (int k = 0; k < DIVS; ++k)
+  {
+    poly_lgr(t, lout, k*1.0/((double)DIVS-1.0));
+    if ((k==0)||(k==DIVS-1)) d = 0.5/(DIVS-1);
+    else d = 1.0/(DIVS-1);
+    for (int i = 0; i < dim; i++)
+	{
+	  for (int j = 0; j < dim; j++)
+	  {
+	    sum(i,j) += d*lout(i)*lout(j);
+	  }
+	}
+  }
+}
+
 static void poly_int(Matrix& out, const Vector& t)
 {
   int i, j, k;
@@ -241,13 +287,12 @@ PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
   repr_mesh(meshINT);
   col_mesh(col);
   
-  poly_int(metric, meshINT);   // works for any meshes
-  poly_diff_int(metricPhase, meshINT);
-  
-  meshINT.Print();
-  col.Print();
-  metric.Print();
-  metricPhase.Print();
+  poly_int_trap(metric, meshINT);
+  poly_diff_int_trap(metricPhase, meshINT);
+//  meshINT.Print();
+//  col.Print();
+//  metric.Print();
+//  metricPhase.Print();
 
   // computes the largrange coefficients
   for (int i = 0; i < ndeg+1; i++)
