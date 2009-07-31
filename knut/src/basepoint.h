@@ -179,7 +179,7 @@ class PerSolPoint : public BasePoint
     virtual void SwitchTFPD(double ds) = 0;   // switches branch with testFunct
     virtual void SwitchTFHB(double ds, std::ostream& out) = 0;   // switches branch with testFunct
     
-    int StartTF(Eqn FN, std::ostream& out);
+    int StartTF(bool findangle, std::ostream& out);
     inline void    setSym(int n, int* sRe, int* sIm)
     {
       rotRe.Init(n);
@@ -204,7 +204,7 @@ class PerSolPoint : public BasePoint
     }
 
     int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
-    PtType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
+    BifType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
     void    clearStability() { mRe.Clear(); mIm.Clear(); }
     static inline double  Amplitude(const Vector& sol, int ndim, int ndeg, int nint)
     {

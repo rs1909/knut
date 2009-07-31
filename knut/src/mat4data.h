@@ -18,6 +18,11 @@
 #ifdef WIN32
 #  include <windows.h>
 #endif
+
+#ifndef WIN32
+#  include <sys/file.h>
+#endif
+
 // for the correct integer size
 #ifndef _MSC_VER
 # include <stdint.h>
@@ -38,7 +43,17 @@ class mat4Data
     mat4Data(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
     ~mat4Data();
-
+    
+#ifndef WIN32
+    void   lock() const { flock(file, LOCK_EX); }
+    void   unlock() const { flock(file, LOCK_UN); }
+#else
+    // No locking on windows. Use a proper operating system instead.
+    void   lock() const { }
+    void   unlock() const { }
+#endif WIN32
+    // resets the tables (no locking)
+    void   initHeaders(const std::string& fileName);
     void   setPar(int n, const Vector& par);
     void   setParNames(const std::vector<std::string>& parNames);
     void   getParNames(std::vector<std::string>& parNames) const;
@@ -152,8 +167,9 @@ class mat4Data
     {
       return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
     }
-    int    getNextBifurcation(int n) const;
-    PtType getBifurcationType(int n) const;
+    int     getUnstableMultipliers(int n) const;
+    int     getNextBifurcation(int n) const;
+    BifType getBifurcationType(int n) const;
     bool isTorus() const
     {
       return torus;

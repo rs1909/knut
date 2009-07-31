@@ -306,11 +306,13 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   QLabel* nitRLabel = new QLabel("NITR");
   QLabel* nitKLabel = new QLabel("NITK");
   QLabel* iadLabel = new QLabel("IAD");
+  QLabel* nPrLabel = new QLabel("NPR");
   QLabel* nsymLabel = new QLabel("NSYM");
   nitCLabel->setToolTip(QString("Maximal number of iteration steps in continuation."));
   nitRLabel->setToolTip(QString("Maximal number of iteration when converging to a solution."));
   nitKLabel->setToolTip(QString("Maximal number of iteration steps when computing a singular (e.g. tangent) vector."));
   iadLabel->setToolTip(QString("Mesh adaptation in every IAD-th continuation steps."));
+  nPrLabel->setToolTip(QString("Print every NPR-th continuation step."));
   nsymLabel->setToolTip(QString("Number of rotational symmetric complex dimensions."));
 
   nitC = new QSpinBox();
@@ -321,17 +323,21 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   nitK->setRange(0, 0xffff);
   iad = new QSpinBox();
   iad->setRange(0, 0xffff);
+  nPr = new QSpinBox();
+  nPr->setRange(1, 0xffff);
   nsym = new QSpinBox();
   nsym->setRange(0, 0xffff);
   numericsGrid->addWidget(nitCLabel, 6, 0, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nitRLabel, 6, 1, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nitKLabel, 6, 2, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(iadLabel, 6, 3, Qt::AlignHCenter | Qt::AlignBottom);
+  numericsGrid->addWidget(nPrLabel, 6, 4, Qt::AlignHCenter | Qt::AlignBottom);
   symmetryGrid->addWidget(nsymLabel, 0, 0, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nitC, 7, 0);
   numericsGrid->addWidget(nitR, 7, 1);
   numericsGrid->addWidget(nitK, 7, 2);
   numericsGrid->addWidget(iad, 7, 3);
+  numericsGrid->addWidget(nPr, 7, 4);
   symmetryGrid->addWidget(nsym, 2, 0);
 
   sym = new SYMTableView(&parameters);
@@ -342,6 +348,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   connect(nitR, SIGNAL(valueChanged(int)), this, SLOT(setNItRParameter(int)));
   connect(nitK, SIGNAL(valueChanged(int)), this, SLOT(setNItKParameter(int)));
   connect(iad, SIGNAL(valueChanged(int)), this, SLOT(setIadParameter(int)));
+  connect(nPr, SIGNAL(valueChanged(int)), this, SLOT(setNPrParameter(int)));
 
   // update parameters in the GUI, when `parameters' have changed.
   connect(&parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));

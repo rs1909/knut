@@ -83,6 +83,15 @@ enum BranchSW
   TFBRAUTROTSwitch = 6
 };
 
+enum BifType
+{
+  BifNone,
+  BifLP,
+  BifPD,
+  BifNS,
+  BifMX
+};
+
 inline char parType(int npar, int p)
 {
   if (p < npar) return 'P';

@@ -20,6 +20,7 @@
 #include "plot.h"
 
 #include <fstream>
+#include <iomanip>
 #include <list>
 #include <cmath>
 
@@ -108,52 +109,44 @@ class Point : public PerSolPoint
 //     0  0.000000e+00  0.000000e+00  0.000000e+00   0    0
 //-------------------------------------------------------//
 
-inline void parNamePrint(std::ostream& out, int npar, Var cp, const Array1D<Var>& var)
+inline void parNamePrint(std::ostream& out, int npar, Var cp, const Array1D<Var>& var, const std::vector<std::string>& parNames)
 {
-  out.fill(' ');
+//   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
-  out.setf(std::ios::left);
+//   out.setf(std::ios::left);
 
-  out << "LABEL   NORM          ";
-  out << ' ';
-  out << parType(npar, cp - VarPAR0);
-  out.width(11);
-  out << parNum(npar, cp - VarPAR0) << "  ";
+  out << std::left << std::setfill(' ') << std::setw(5) <<  "LABEL" << " "; // 2 at the end
+  out << std::left << std::setfill(' ') << std::setw(2) <<  "TP" << ' '; // 3 at the end
+  out << ' ' << std::left << std::setfill(' ') << std::setw(12) << "NORM" << "  "; // 2 at the end
+  out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(cp - VarPAR0) << "  "; // 2 at the end
   for (int j = 1; j < var.Size(); j++)
   {
-    out << ' ';
-    out << parType(npar, var(j) - VarPAR0);
-    out.width(11);
-    out << parNum(npar, var(j) - VarPAR0) << "  ";
+    out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(var(j) - VarPAR0) << "  "; // 2 at the end
   }
-  out << " U IT";
+  out << std::left << std::setfill(' ') << std::setw(2) << "U" << " ";
+  out << std::left << std::setfill(' ') << std::setw(2) << "IT";
 }
 
-inline void parValuePrint(std::ostream& out, const Vector& par, Var cp, const Array1D<Var>& var, int lb, double norm, int ustab, int it)
+inline void parValuePrint(std::ostream& out, const Vector& par, Var cp, const Array1D<Var>& var, int lb, BifType tp, double norm, int ustab, int it)
 {
   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
   out.precision(6);
   out.setf(std::ios::uppercase | std::ios::scientific | std::ios::right);
 
-  out.width(5);
-  out.setf(std::ios::right);
-  out << lb << "  ";
-  out.width(13);
-  out.setf(std::ios::right);
-  out << norm << "  ";
-  out.width(13);
-  out.setf(std::ios::right);
-  out << par(cp - VarPAR0) << "  ";
+  out << std::right << std::setfill(' ') << std::setw(5) << lb << " "; // 2 at the end
+  if (tp == BifLP) out << std::left << std::setfill(' ') << std::setw(2) << "LP" << ' '; // 2 at the end
+  else if (tp == BifPD) out << std::left << std::setfill(' ') << std::setw(2) << "PD" << ' '; // 2 at the end
+  else if (tp == BifNS) out << std::left << std::setfill(' ') << std::setw(2) << "NS" << ' '; // 2 at the end
+  else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
+  out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
+  out << std::right << std::setfill(' ') << std::setw(13) << par(cp - VarPAR0) << "  "; // 2 at the end
   for (int j = 1; j < var.Size(); j++)
   {
-    out.width(13);
-    out << par(var(j) - VarPAR0) << "  ";
+    out << std::right << std::setfill(' ') << std::setw(13) << par(var(j) - VarPAR0) << "  "; // 2 at the end
   }
-  out.width(2);
-  out << ustab << " ";
-  out.width(2);
-  out << it;
+  out << std::left << std::setfill(' ') << std::setw(2) << ustab << " ";
+  out << std::left << std::setfill(' ') << std::setw(2) << it;
 }
 
 #endif

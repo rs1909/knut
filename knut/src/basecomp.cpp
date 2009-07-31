@@ -44,8 +44,7 @@ void BaseComp::run(const char* branchFile)
   Array1D<Var> var_refine;
   Array1D<Eqn> eqn_start;
   Array1D<Var> var_start;
-  Eqn          testFN;
-
+  bool         findangle;
 
   //-----------------------------------------------------------------------------------------------------------
   //
@@ -57,8 +56,9 @@ void BaseComp::run(const char* branchFile)
   // just a block to contain pt, which eats too much memory
   try
   {
-    params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, testFN);
+    const bool needFN = params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
     const int npar = sys.npar();
+    std::vector<std::string> parNames = params->getParNames();
 
     std::ostringstream screenout;
     screenout << std::scientific;
@@ -118,12 +118,12 @@ void BaseComp::run(const char* branchFile)
       print(screenout);
       pt.Refine(screenout);
       print(screenout);
-      if (testFN != EqnNone)
+      if (needFN)
       {
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.Reset(eqn_start, var_start);
         pt.setCont(params->getCp() - VarPAR0);
-        pt.StartTF(testFN, screenout);   // it only computes the characteristic multiplier refines the solution
+        pt.StartTF(findangle, screenout);   // it only computes the characteristic multiplier refines the solution
         print(screenout);
       }
     }
@@ -139,9 +139,9 @@ void BaseComp::run(const char* branchFile)
 
       for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
       //
-      parNamePrint(screenout, npar, params->getCp(), var);
+      parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
-      parValuePrint(screenout, par, params->getCp(), var, 0, pt.Norm(), 0, 0);
+      parValuePrint(screenout, par, params->getCp(), var, 0, BifNone, pt.Norm(), 0, 0);
       screenout << "\n";
       print(screenout);
 
@@ -185,6 +185,7 @@ void BaseComp::run(const char* branchFile)
       Array1D<int> it(ithist);
       for (int i = 0; i < it.Size(); i++) it(i) = 3;
       int itpos = 0;
+      int printedln = 0;
       double ds = params->getDs();
       for (int i = 0; i < params->getSteps(); i++)  // 35
       {
@@ -193,12 +194,6 @@ void BaseComp::run(const char* branchFile)
           delete pt_ptr;
           return;
         }
-        if (i % 24 == 0)
-        {
-          parNamePrint(screenout, npar, params->getCp(), var);
-          screenout << "\n";
-        }
-        print(screenout);
         itpos = (itpos + 1) % ithist;
         //
         it(itpos) = pt.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
@@ -214,42 +209,38 @@ void BaseComp::run(const char* branchFile)
         for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
         // console output
-        parValuePrint(screenout, par, params->getCp(), var, i, norm, ustab, it(itpos));
-        print(screenout);
+        const bool stabchange = (i != 0) && (ustab != ustabprev);
+        const bool toprint = (i % params->getNPr()) == 0;
+        // stability output
+        BifType bif = BifNone;
+        if (stabchange) bif = pt.testBif();
+        if (toprint || stabchange)
+        {
+          if (printedln % 24 == 0)
+          {
+            parNamePrint(screenout, npar, params->getCp(), var, parNames);
+            screenout << "\n";
+          }
+          parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, it(itpos));
+          print(screenout);
+          ++printedln;
+        }
         // adapt mesh if necessary
-        if((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
+        if ((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
         {
           const int itad = pt.Refine(screenout,true);
           const int ittan = pt.Tangent(true);
-          screenout << " " << itad << " " << ittan;
-          print(screenout);
-        }
-        if (i != 0  && ustab != ustabprev)
-        {
-          PtType bif = SolTF;
-          bif = pt.testBif();
-          switch (bif)
+          if (((i % params->getNPr()) == 0)||(i != 0  && ustab != ustabprev))
           {
-            case BifTFLP:
-            case BifTFAUTLP:
-              screenout << "  LP";
-              break;
-            case BifTFPD:
-            case BifTFAUTPD:
-              screenout << "  PD";
-              break;
-            case BifTFNS:
-            case BifTFAUTNS:
-              screenout << "  NS";
-              break;
-            default:
-              screenout << "  ??";
-              break;
+            screenout << " " << itad << " " << ittan;
+            print(screenout);
           }
         }
-        screenout << "\n";
-        print(screenout);
-
+        if (toprint || stabchange)
+        {
+          screenout << "\n";
+          print(screenout);
+        }
         // file output
         pt.BinaryWrite(out, i);
 
@@ -373,12 +364,12 @@ void BaseComp::run(const char* branchFile)
         double norm = pttr.Norm();
         if (i % 24 == 0)
         {
-          parNamePrint(screenout, npar, params->getCp(), var);
+          parNamePrint(screenout, npar, params->getCp(), var, parNames);
           screenout << "\n";
         }
         print(screenout);
         // console output
-        parValuePrint(screenout, par, params->getCp(), var, i, norm, 0, it);
+        parValuePrint(screenout, par, params->getCp(), var, i, BifNone, norm, 0, it);
         screenout << "\n";
         print(screenout);
         if (branchFile)

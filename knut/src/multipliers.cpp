@@ -67,7 +67,7 @@ int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, 
 #undef NCRIT
 }
 
-PtType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
+BifType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
 {
 #define NCRIT 6
   const int aut = lp+pd+ns;
@@ -105,9 +105,9 @@ PtType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, c
       }
     }
   }
-  if ((dminLP < dminPD) && (dminLP < dminNS)) return BifTFLP;
-  else if ((dminPD < dminLP) && (dminPD < dminNS)) return BifTFPD;
-  else if ((dminNS < dminPD) && (dminNS < dminLP)) return BifTFNS;
-  else return SolTF;
+  if ((dminLP < dminPD) && (dminLP < dminNS)) return BifLP;
+  else if ((dminPD < dminLP) && (dminPD < dminNS)) return BifPD;
+  else if ((dminNS < dminPD) && (dminNS < dminLP)) return BifNS;
+  else return BifNone;
 #undef NCRIT
 }

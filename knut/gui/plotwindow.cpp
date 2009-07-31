@@ -163,7 +163,8 @@ void plotWindow::openFile(const QString& fileName)
   {
     delete data;
     data = t_data;
-    
+   
+    data->lock(); 
     ptlabel->setRange(0, data->getNCols() - 1);
     dim->setRange(0, data->getNDim() - 1);
 
@@ -200,6 +201,7 @@ void plotWindow::openFile(const QString& fileName)
     for (unsigned int i = 0; i < yvarMap.size(); ++i)
       yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
     if ((yidx != -1) && (yidx < yvar->count())) yvar->setCurrentIndex(yidx);
+    data->unlock();
   }
   QFileInfo fi(fileName);
   shortFileName = fi.fileName();
@@ -219,6 +221,9 @@ void plotWindow::addPlot()
 {
   if (data)
   {
+    data->lock();
+    // make sure that the data is consistent
+    const_cast<mat4Data*>(data)->initHeaders("unnamed file");
     if (!data->isTorus())
     {
       bool added = false;
@@ -239,6 +244,7 @@ void plotWindow::addPlot()
           .arg(ptlabel->value()).arg(dim->value()));
       }
     }
+    data->unlock();
   }
 }
 

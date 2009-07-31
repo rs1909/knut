@@ -268,60 +268,6 @@ static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
   max = ceil(max / step) * step;
 }
 
-//void PlotData::plotStyle(QPen& pen, const char* style)
-//{
-//  while (*style != '\0')
-//  {
-//    switch (style[0])
-//    {
-//      case 'b':
-//        pen.setColor("blue");
-//        break;
-//      case 'g':
-//        pen.setColor("green");
-//        break;
-//      case 'r':
-//        pen.setColor("red");
-//        break;
-//      case 'c':
-//        pen.setColor("cyan");
-//        break;
-//      case 'm':
-//        pen.setColor("magenta");
-//        break;
-//      case 'y':
-//        pen.setColor("yellow");
-//        break;
-//      case 'k':
-//        pen.setColor("black");
-//        break;
-//      case '-':
-//        switch (style[1])
-//        {
-//          case '-':
-//            pen.setStyle(Qt::DashLine);
-//            style++;
-//            break;
-//          case '.':
-//            pen.setStyle(Qt::DashDotLine);
-//            style++;
-//            break;
-//          default:
-//            pen.setStyle(Qt::SolidLine);
-//            break;
-//        }
-//        break;
-//      case ':':
-//        pen.setStyle(Qt::DotLine);
-//        break;
-//      default:
-//        std::cout << "style Error\n";
-//        break;
-//    }
-//    style++;
-//  }
-//}
-
 void PlotData::addPlotLine(std::list<PlotItem>::iterator& it, const QPen& pen, bool principal)
 {
   it->type = PlotLineType;
@@ -567,8 +513,8 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     }
   }
   // add stability
-  std::vector<int>    bifidx;
-  std::vector<PtType> biftype;
+  std::vector<int>     bifidx;
+  std::vector<BifType> biftype;
   if ((x == XLabel || x >= XParameter0) && xadded != 0 && xadded == yadded)
   {
     int k, k_p = 0;
@@ -598,13 +544,13 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
         ++yadded;
         switch (biftype[i])
         {
-          case BifTFLP:
+          case BifLP:
             addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerSquare, false);
             break;
-          case BifTFPD:
+          case BifPD:
             addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerTriangle, false);
             break;
-          case BifTFNS:
+          case BifNS:
             addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false);
             break;
           default:

@@ -85,6 +85,7 @@ class NConstants
     KN_CONSTANT(       nDeg2,      int,      getNDeg2,      setNDeg2)
     KN_CONSTANT(       steps,      int,      getSteps,      setSteps)
     KN_CONSTANT(       iad,        int,      getIad,        setIad)
+    KN_CONSTANT(       nPr,        int,      getNPr,        setNPr)
     KN_CONSTANT(       cpMin,      double,   getCpMin,      setCpMin)
     KN_CONSTANT(       cpMax,      double,   getCpMax,      setCpMax)
     KN_CONSTANT(       ds,         double,   getDs,         setDs)
@@ -109,17 +110,17 @@ class NConstants
   public:
     // for double, int, char
     // for i in `g++ -E -DEXTRACT_NAMES constants.h | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
-    NConstants() : label(0), cpType(0), cpNum(0), nInt(0), nDeg(0), nMul(0), nMat(0), nInt1(0), nInt2(0), nDeg1(0), nDeg2(0), steps(0), iad(0), cpMin(0), cpMax(0), ds(0), dsMin(0), dsMax(0), dsStart(0), epsC(0), epsR(0), epsK(0), nItC(0), nItR(0), nItK(0), nPar(0), nDim(0)
+    NConstants() : label(0), cpType(0), cpNum(0), nInt(0), nDeg(0), nMul(0), nMat(0), nInt1(0), nInt2(0), nDeg1(0), nDeg2(0), steps(0), iad(0), nPr(0), cpMin(0), cpMax(0), ds(0), dsMin(0), dsMax(0), dsStart(0), epsC(0), epsR(0), epsK(0), nItC(0), nItR(0), nItK(0), nPar(0), nDim(0)
     {}
     // to extract the dependencies run:
     // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
-    NConstants(const NConstants& src) : inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), steps(src.steps), iad(src.iad), cpMin(src.cpMin), cpMax(src.cpMax), ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), epsC(src.epsC), epsR(src.epsR), epsK(src.epsK), nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), nPar(src.nPar), nDim(src.nDim) {}
+    NConstants(const NConstants& src) : inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), steps(src.steps), iad(src.iad), nPr(src.nPr), cpMin(src.cpMin), cpMax(src.cpMax), ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), epsC(src.epsC), epsR(src.epsR), epsK(src.epsK), nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), nPar(src.nPar), nDim(src.nDim) {}
     ~NConstants() { initParNames(); }
     // for setting up the continuation
-    int toEqnVar(System& sys,
-                 Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
-                 Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
-                 Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, Eqn& testFN);
+    bool toEqnVar(System& sys,
+                  Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
+                  Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
+                  Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, bool& findangle);
     void loadXmlFile(const std::string &fileName);
     void saveXmlFile(const std::string &fileName);
     void printXmlFile(std::ostream& file);

@@ -15,6 +15,6 @@
 class Vector;
 
 int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns);
-PtType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns);
+BifType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns);
 
 #endif

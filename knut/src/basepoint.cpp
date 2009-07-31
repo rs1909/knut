@@ -508,9 +508,9 @@ void PerSolPoint::FillSol(System& sys_)
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-int PerSolPoint::StartTF(Eqn FN, std::ostream& out)
+int PerSolPoint::StartTF(bool findangle, std::ostream& out)
 {
-  if ((FN == EqnTFCPLX_RE) || (FN == EqnTFCPLX_IM))
+  if (findangle)
   {
     Stability();
     double dmin = 10.0;
@@ -546,6 +546,7 @@ int PerSolPoint::StartTF(Eqn FN, std::ostream& out)
 
 void PerSolPoint::BinaryWrite(mat4Data& data, int n)
 {
+  data.lock();
   data.setNTrivMul(0, nTrivMulLP);
   data.setNTrivMul(1, nTrivMulPD);
   data.setNTrivMul(2, nTrivMulNS);
@@ -555,10 +556,12 @@ void PerSolPoint::BinaryWrite(mat4Data& data, int n)
   data.setElem(n, persolcolloc->getElem());
   data.setMesh(n, persolcolloc->getMesh());
   data.setProfile(n, sol);
+  data.unlock();
 }
 
 void PerSolPoint::BinaryRead(mat4Data& data, int n)
 {
+  data.lock();
   Vector msh(data.getNInt() + 1);
   P_ERROR_X1(data.getNPar() == (NPAR + ParEnd), "Wrong number of parameters in the input MAT file.");
   data.getPar(n, par);
@@ -584,4 +587,5 @@ void PerSolPoint::BinaryRead(mat4Data& data, int n)
       persolcolloc->Import(sol, tmp, msh, data.getNDeg(), true);
     }
   }
+  data.unlock();
 }

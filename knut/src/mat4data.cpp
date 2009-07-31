@@ -104,7 +104,7 @@ static inline void *mmapFileRead(int& file, const std::string& fileName, int& si
   size = filesize;
 
   void *address;
-  if ((address = mmap(0, static_cast<size_t>(filesize), PROT_READ, MAP_PRIVATE, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, static_cast<size_t>(filesize), PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
     P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
   }
@@ -259,6 +259,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   address = mmapFileWrite(file, mapHandle, fileName, size);
 #endif
 
+  lock();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -269,6 +270,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   writeMatrixHeader(address, mesh_offset, &mesh_header, mesh_string);
   writeMatrixHeader(address, prof_offset, &prof_header, prof_string);
   setParNames(parNames);
+  unlock();
 }
 
 void mat4Data::setParNames(const std::vector<std::string>& parNames)
@@ -370,6 +372,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
 #else
   address = mmapFileWrite(file, mapHandle, fileName, size);
 #endif
+  lock();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -382,6 +385,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   writeMatrixHeader(address, mesh2_offset, &mesh2_header, mesh2_string);
   writeMatrixHeader(address, blanket_offset, &blanket_header, blanket_string);
   setParNames(parNames);
+  unlock();
 }
 
 mat4Data::mat4Data(const std::string& fileName)
@@ -417,6 +421,7 @@ void mat4Data::condenseData()
   // condense the fields so that it is only the size of npoints, where it counts
   if (wperm)
   {
+    lock();
     const int npoints = getNPoints();
     if (!torus)
     {
@@ -427,17 +432,12 @@ void mat4Data::condenseData()
       resizeMatrix("knut_mul", npoints);
       resizeMatrix("knut_par", npoints);
     }
+    unlock();
   }
 }
 
-void mat4Data::openReadOnly(const std::string& fileName)
+void mat4Data::initHeaders(const std::string& fileName)
 {
-#ifndef WIN32
-  address = mmapFileRead(file, fileName, size);
-#else
-  address = mmapFileRead(file, mapHandle, fileName, size);
-#endif
-  
   npoints_offset = findMatrix("knut_npoints", &npoints_header, true, 1, 1, 0, fileName.c_str());
   
   par_offset = findMatrix("knut_par", &par_header, true, -1, -1, 0, fileName.c_str());
@@ -487,6 +487,18 @@ void mat4Data::openReadOnly(const std::string& fileName)
 
     blanket_offset = findMatrix("knut_blanket", &blanket_header, true, ndim*nint1*ndeg1*nint2*ndeg2, ncols, 0, fileName.c_str());
   }
+}
+
+void mat4Data::openReadOnly(const std::string& fileName)
+{
+#ifndef WIN32
+  address = mmapFileRead(file, fileName, size);
+#else
+  address = mmapFileRead(file, mapHandle, fileName, size);
+#endif
+  lock();
+  initHeaders(fileName);
+  unlock();
 }
 
 // WARNING This creates a large file and then shrinks it
@@ -790,6 +802,17 @@ void mat4Data::getProfile(int n, Vector& prof) const
   }
 }
 
+int mat4Data::getUnstableMultipliers(int n) const
+{
+  Vector mulRe(false), mulIm(false);
+  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
+  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  const int lp = getNTrivMul(0);
+  const int pd = getNTrivMul(1);
+  const int ns = getNTrivMul(2);
+  return unstableMultipliers(mulRe, mulIm, lp, pd, ns);
+}
+
 int mat4Data::getNextBifurcation(int n) const
 {
   Vector mulRe(false), mulIm(false);
@@ -810,7 +833,7 @@ int mat4Data::getNextBifurcation(int n) const
   return -1;
 }
 
-PtType  mat4Data::getBifurcationType(int n) const
+BifType  mat4Data::getBifurcationType(int n) const
 {
   Vector mulRe(false), mulIm(false);
   const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);

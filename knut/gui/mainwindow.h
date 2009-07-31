@@ -209,6 +209,12 @@ class MainWindow : public QMainWindow
         iad->setValue(parameters.getIad());
         iad->blockSignals(false);
       }
+      else if (!strcmp(name,"nPr"))
+      {
+        nPr->blockSignals(true);
+        nPr->setValue(parameters.getNPr());
+        nPr->blockSignals(false);
+      }
       else if (!strcmp(name,"cpMin"))
       {
         cpMin->blockSignals(true);
@@ -359,7 +365,7 @@ class MainWindow : public QMainWindow
     void setNItRParameter(int d) { parameters.setNItR(d); }
     void setNItKParameter(int d) { parameters.setNItK(d); }
     void setIadParameter(int d) { parameters.setIad(d); }
-    
+    void setNPrParameter(int d) { parameters.setNPr(d); }    
     
     void externalException(const knutException& ex)
     {
@@ -449,6 +455,7 @@ class MainWindow : public QMainWindow
     QSpinBox  *ndeg2;
     QSpinBox  *steps;
     QSpinBox  *iad;
+    QSpinBox  *nPr;
     QLineEdit *cpMin;
     QLineEdit *cpMax;
     QLineEdit *ds;
