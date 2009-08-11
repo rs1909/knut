@@ -51,7 +51,7 @@ class mat4Data
     // No locking on windows. Use a proper operating system instead.
     void   lock() const { }
     void   unlock() const { }
-#endif WIN32
+#endif
     // resets the tables (no locking)
     void   initHeaders(const std::string& fileName);
     void   setPar(int n, const Vector& par);
