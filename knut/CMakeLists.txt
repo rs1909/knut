@@ -64,6 +64,13 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #------------------------------------------------------------------------------
+# finding Qt4
+#------------------------------------------------------------------------------
+
+include(FindPkgConfig)
+pkg_check_modules (GINAC ginac)
+
+#------------------------------------------------------------------------------
 # Writing the generated files
 #------------------------------------------------------------------------------
 
@@ -209,6 +216,14 @@ ADD_SUBDIRECTORY(UMFPACK)
 # The Mini-Xml library
 ADD_SUBDIRECTORY(mxml)
 
+# The vector field generator
+IF(GINAC_FOUND)
+  ADD_SUBDIRECTORY(vfgen)
+  MESSAGE( STATUS "Vector field generator will be built" )
+ELSE(GINAC_FOUND)
+  MESSAGE( STATUS "Vector field generator will NOT be built" )
+ENDIF(GINAC_FOUND)
+
 # This is where the whole computation is
 # this produces a library "libknut.a"
 ADD_SUBDIRECTORY(src)
@@ -233,7 +248,7 @@ IF(BUILDGUI)
   ADD_SUBDIRECTORY(gui)
   MESSAGE( STATUS "GUI will be built" )
 ELSE(BUILDGUI)  
-  MESSAGE( STATUS "GUI will not be built" )
+  MESSAGE( STATUS "GUI will NOT be built" )
 ENDIF(BUILDGUI)
 
 # demo programs

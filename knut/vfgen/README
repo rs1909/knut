@@ -1,0 +1,6 @@
+VFGEN is written by Warren Weckesser <warren.weckesser(AT)gmail.com> and
+licensed under the GNU GPL version 2 license. This directory contains a
+modified version of VFGEN to support Knut. All other generators were removed
+so please use the original version of VFGEN if you need support for other
+software. Many thanks to Warren for implementing the original PDDE-CONT 
+generator, that I was able to modify myself.
