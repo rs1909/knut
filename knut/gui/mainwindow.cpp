@@ -98,19 +98,24 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   sysnameLabel->setToolTip(QString("The compiled system definition, e.g., \"sys-problem.so\""));
   sysname = new QLineEdit();
   QAction* sysdefAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
-  QAction* compileAct = new QAction(QIcon(":/res/images/cr16-action-build.png"), tr("&Compile..."), this);
+  QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-compile.png"), tr("&Compile..."), this);
+  QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);  
   QToolButton* getSysdef = new QToolButton();
   QToolButton* compile = new QToolButton();
+  QToolButton* generate = new QToolButton();
   getSysdef->setDefaultAction(sysdefAct);
   compile->setDefaultAction(compileAct);
+  generate->setDefaultAction(generateAct);
   sysnameLayout->addWidget(getSysdef);
   sysnameLayout->addWidget(compile);
+  sysnameLayout->addWidget(generate);
   sysnameLayout->addStretch();
   systemGrid->addWidget(sysnameLabel, 2, 0, Qt::AlignLeft | Qt::AlignVCenter);
   systemGrid->addWidget(sysname, 2, 1, 1, 3);
   systemGrid->addLayout(sysnameLayout, 2, 4);
   connect(sysdefAct, SIGNAL(triggered()), this, SLOT(setSysName()));
   connect(compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
+  connect(generateAct, SIGNAL(triggered()), this, SLOT(generateSystem()));
   // sets up a bidirectional connection
   connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
 
@@ -536,6 +541,22 @@ void MainWindow::compileSystem()
     try {
       System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
       sysname->setText(newfile);
+    }
+    catch (knutException ex)
+    {
+      externalException(ex);
+    }
+  }
+}
+
+void MainWindow::generateSystem()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");
+  if (!fileName.isEmpty() && compilerProcess == 0)
+  {
+    try {
+      System::generateSystem(fileName.toStdString(), executableDir.toStdString());
+      sysname->setText(fileName +".so");
     }
     catch (knutException ex)
     {

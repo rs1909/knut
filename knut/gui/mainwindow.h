@@ -403,6 +403,7 @@ class MainWindow : public QMainWindow
       terminalText.append(QString(str.c_str()));
     }
     void compileSystem();
+    void generateSystem();
 
   private:
     inline bool inputAssert(std::istream& is);

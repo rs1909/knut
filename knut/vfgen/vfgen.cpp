@@ -151,6 +151,6 @@ int main(int argc, char **argv)
   // command line argument.
   //
   if (vf.HasNonconstantDelay) cerr << "Nonconstant delays are not suported yet. ";
-  else vf.PrintKnut(options);
+  else vf.PrintKnut(std::cout, options);
   return(0);
 }  // end main()

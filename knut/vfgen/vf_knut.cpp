@@ -97,7 +97,7 @@ void VectorField::Knut_ConvertStateToZlags(ex& f)
         }
     }
 
-void VectorField::Knut_PrintParDerivs(ofstream &dout, const vector<ex> &vf0)
+void VectorField::Knut_PrintParDerivs(ostream &dout, const vector<ex> &vf0)
     {
     // int nc = conname_list.nops();
     int nv = varname_list.nops();
@@ -131,7 +131,7 @@ void VectorField::Knut_PrintParDerivs(ofstream &dout, const vector<ex> &vf0)
     }
     
 
-void VectorField::Knut_PrintJacobians(ofstream &dout, const vector<ex> &vf0)
+void VectorField::Knut_PrintJacobians(ostream &dout, const vector<ex> &vf0)
     {
     // int nc = conname_list.nops();
     int nv = varname_list.nops();
@@ -170,7 +170,7 @@ void VectorField::Knut_PrintJacobians(ofstream &dout, const vector<ex> &vf0)
         }
     }
 
-void VectorField::Knut_PrintXandParJacobians(ofstream &dout, const vector<ex> &vf0)
+void VectorField::Knut_PrintXandParJacobians(ostream &dout, const vector<ex> &vf0)
     {
     // int nc = conname_list.nops();
     int nv = varname_list.nops();
@@ -242,7 +242,7 @@ ex pddec_second_deriv(const ex &f, int lag1, int var1, int lag2, int var2)
     return df;
     }
 
-void VectorField::Knut_PrintHessiansTimesV(ofstream &dout, const vector<ex> &vf0)
+void VectorField::Knut_PrintHessiansTimesV(ostream &dout, const vector<ex> &vf0)
     {
     // int nc = conname_list.nops();
     int nv = varname_list.nops();
@@ -316,7 +316,7 @@ void VectorField::Knut_PrintHessiansTimesV(ofstream &dout, const vector<ex> &vf0
 // PrintKnut -- The PDDE-CONT code generator.
 //
 
-void VectorField::PrintKnut(map<string,string> options)
+void VectorField::PrintKnut(ostream& sys_out, map<string,string> options)
     {
     int nc = conname_list.nops();
     int nv = varname_list.nops();
@@ -333,13 +333,13 @@ void VectorField::PrintKnut(map<string,string> options)
     //
     //  Create the system definition file.
     //
-    string sys_filename = "sys-" + Name() + ".cpp";
-    ofstream sys_out;
-    sys_out.open(sys_filename.c_str());
+//    string sys_filename = "sys-" + Name() + ".cpp";
+//    ofstream sys_out;
+//    sys_out.open(sys_filename.c_str());
     sys_out << csrc;
     sys_out << "//" << endl;
-    sys_out << "// " << sys_filename << endl;
-    sys_out << "//" << endl;
+//    sys_out << "// " << sys_filename << endl;
+//    sys_out << "//" << endl;
     sys_out << "// Knut System Definition file for the VFGEN vector field: " << Name() << endl;
     sys_out << "//" << endl;
     PrintVFGENComment(sys_out,"// ");
@@ -838,7 +838,7 @@ void VectorField::PrintKnut(map<string,string> options)
     }
     sys_out << "}\n";
     sys_out << "}  // extern \"C\"\n";
-    sys_out.close();
+//    sys_out.close();
 
     return;
     }

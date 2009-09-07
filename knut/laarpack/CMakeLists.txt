@@ -1,6 +1,6 @@
 IF( ${CMAKE_Fortran_COMPILER} MATCHES "gfortran" )
   IF(NOT WIN32)
-    EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.a
+    EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.a
       OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
   ELSE(NOT WIN32)
     EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.a

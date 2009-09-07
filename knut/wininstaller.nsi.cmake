@@ -64,6 +64,7 @@ Section "Dummy Section" SecDummy
   File "@CMAKE_SOURCE_DIR@\COPYING"
   SetOutPath "$INSTDIR\bin"
   File "@CMAKE_INSTALL_PREFIX@\bin\knut-gui.exe"
+  File "@CMAKE_INSTALL_PREFIX@\bin\vfgen-knut.exe"
   File "/usr/i686-pc-mingw32/sys-root/mingw/bin/libgcc_s_sjlj-1.dll"
   File "/usr/i686-pc-mingw32/sys-root/mingw/bin/mingwm10.dll"
   File "@QT_QTCORE_LIBRARY_RELEASE@"

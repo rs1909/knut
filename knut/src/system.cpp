@@ -171,7 +171,7 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
   }
 }
 
-void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
+static inline void compilerOptions(std::string& cmdline, const std::string& executableDir)
 {
 #ifndef WIN32
 #define DIRSEP '/'
@@ -183,14 +183,16 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
   std::string::size_type slashpos = compiler.find_last_of(DIRSEP);
   // truncate the string
   if (slashpos != std::string::npos) compiler = compiler.substr(slashpos+1);
-  std::string cmdline(compiler);
+  cmdline += compiler;
   cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
               CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" +
               executableDir.substr(0,executableDir.find_last_of(DIRSEP));
   cmdline += DIRSEP;
   cmdline += KNUT_INCLUDE_DIR "\"";
-  cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
-  
+}
+
+static inline void runCompiler(const std::string& cmdline)
+{
 //  std::cout << "The command line: " << cmdline << "\n";
   // want to see the results if possible...
   FILE* fd = popen(cmdline.c_str(),"r");
@@ -207,46 +209,78 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
   if (cres != 0)  P_MESSAGE4("The output of the compile command '", cmdline, "' is ", result);
 }
 
+void System::generateSystem(const std::string& vffile, const std::string& executableDir)
+{
+  std::string cmdline("vfgen-knut ");
+  cmdline += vffile + " | ";
+  compilerOptions(cmdline, executableDir);
+  cmdline += " -x c++ - -o \"" + vffile + ".so\" 2>&1";
+  runCompiler(cmdline);
+}
+
+void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
+{
+  std::string cmdline;
+  compilerOptions(cmdline, executableDir);
+  cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
+  runCompiler(cmdline);
+}
+
 // Static member. Compile if necessary
 void System::makeSystem(const std::string& shobj, const std::string& executableDir)
 {
   // convert the name first from .so to .cpp
   std::string cxxfile(shobj);
+  std::string vffile(shobj);
   if (cxxfile.substr(cxxfile.size()-3,cxxfile.size()) == ".so")
   {
     cxxfile.erase(cxxfile.size()-3); cxxfile.append(".cpp");
-//     std::cout << cxxfile << "\n";
+    vffile.erase(vffile.size()-3);
   } else {
     P_MESSAGE3("The file name '", shobj, "' does not have the '.so' extension.");
   }
   // It is not portable to Windows!!!
   struct stat *sbuf_so  = new struct stat;
   struct stat *sbuf_cxx = new struct stat;
+  struct stat *sbuf_vf = new struct stat;
   int res_so = stat(shobj.c_str(), sbuf_so);
   int res_cxx = stat(cxxfile.c_str(), sbuf_cxx);
+  int res_vf = stat(vffile.c_str(), sbuf_vf);
   // if there's no .so, but there's a .cpp
   bool compile = (res_so != 0)&&(res_cxx == 0);
+  bool generate = (res_so != 0)&&(res_vf == 0);
   // if both .so and .cpp exist, the date decides
 #ifdef __APPLE__
-  if ((res_cxx == 0)&&(res_cxx == 0))
+  if (res_cxx == 0)
     compile |= (sbuf_so->st_mtimespec.tv_sec <= sbuf_cxx->st_mtimespec.tv_sec)&&
             (sbuf_so->st_mtimespec.tv_nsec <= sbuf_cxx->st_mtimespec.tv_nsec);
+  if ((res_vf == 0) && (vffile.substr(vffile.size()-3,vffile.size()) == ".vf"))
+    generate |= (sbuf_so->st_mtimespec.tv_sec <= sbuf_vf->st_mtimespec.tv_sec)&&
+            (sbuf_so->st_mtimespec.tv_nsec <= sbuf_vf->st_mtimespec.tv_nsec);
 #else
   // for Linux and possibly for windows
-  if ((res_cxx == 0)&&(res_cxx == 0))
+  if (res_cxx == 0)
     compile |= (sbuf_so->st_mtime <= sbuf_cxx->st_mtime);
+  if ((res_vf == 0) && (vffile.substr(vffile.size()-3,vffile.size()) == ".vf"))
+    generate |= (sbuf_so->st_mtime <= sbuf_cxx->st_mtime);
 #endif
   delete sbuf_so;
   delete sbuf_cxx;
   
-  if (compile)
+  if (generate)
   {
-    compileSystem(cxxfile, shobj, executableDir);
-  }
-  else if (res_so != 0)
+    generateSystem(vffile, executableDir);
+  } else
   {
-    P_MESSAGE5("The file '", shobj ,
-      "' doesn't exist and it cannot be compiled from '", cxxfile, "'.");
+    if (compile)
+    {
+      compileSystem(cxxfile, shobj, executableDir);
+    }
+    else if (res_so != 0)
+    {
+      P_MESSAGE5("The file '", shobj ,
+        "' doesn't exist and it cannot be compiled from '", cxxfile, "'.");
+    }
   }
 }
 

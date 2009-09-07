@@ -248,11 +248,11 @@ class VectorField : public Symbol
     void Print(void);
     void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
     void Knut_ConvertStateToZlags(GiNaC::ex& f);
-    void Knut_PrintParDerivs(std::ofstream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintJacobians(std::ofstream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintXandParJacobians(std::ofstream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintHessiansTimesV(std::ofstream &dout, const std::vector<GiNaC::ex> &e);
-    void PrintKnut(std::map<std::string,std::string> options);
+    void Knut_PrintParDerivs(std::ostream &dout, const std::vector<GiNaC::ex> &e);
+    void Knut_PrintJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
+    void Knut_PrintXandParJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
+    void Knut_PrintHessiansTimesV(std::ostream &dout, const std::vector<GiNaC::ex> &e);
+    void PrintKnut(std::ostream& sys_out, std::map<std::string,std::string> options);
     };
 
 #endif
