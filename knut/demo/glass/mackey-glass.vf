@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<VectorField Name="mackey_glass">
+<Parameter  Name="T"   DefaultValue="2.0" Description="Period" />
+<Parameter  Name="a"   DefaultValue="-1.0" />
+<Parameter  Name="b"   DefaultValue="1.5" />
+<Parameter  Name="tau" DefaultValue="2.0" />
+<Expression Name="DX"  Formula="delay(X,tau)" />
+<StateVariable Name="X" 
+  Formula="a*X + b*DX/(1+DX^10)"
+  DefaultInitialCondition="((1.0-1.5)/(-1.0))^(1.0/10.0)" DefaultHistory="0.0" />
+</VectorField>
