@@ -89,7 +89,9 @@ enum BifType
   BifLP,
   BifPD,
   BifNS,
-  BifMX
+  BifMax,
+  BifEndPoint,
+  BifNoConvergence
 };
 
 inline char parType(int npar, int p)

@@ -1,8 +1,8 @@
-<!DOCTYPE cfile>
+<?xml version="cfile 1.0" encoding="utf-8"?>
 <knut>
  <input>out-nssw.mat</input>
  <output>out-pdsw.mat</output>
- <sysname>sys-glass.so</sysname>
+ <sysname>mackey-glass.vf.so</sysname>
  <label>66</label>
  <pointtype>55</pointtype>
  <cptype>P</cptype>
@@ -26,18 +26,18 @@
  <ndeg2>4</ndeg2>
  <steps>1200</steps>
  <iad>3</iad>
- <cpmin>-100</cpmin>
- <cpmax>100</cpmax>
- <ds>-0.002</ds>
- <dsmin>0.002</dsmin>
- <dsmax>0.004</dsmax>
- <dsstart>0</dsstart>
- <epsc>1e-05</epsc>
- <epsr>1e-05</epsr>
- <epsk>1e-06</epsk>
+ <npr>10</npr>
+ <cpmin>-1.000000000000000E+02</cpmin>
+ <cpmax>1.000000000000000E+02</cpmax>
+ <ds>-2.000000000000000E-03</ds>
+ <dsmin>2.000000000000000E-03</dsmin>
+ <dsmax>4.000000000000000E-03</dsmax>
+ <dsstart>0.000000000000000E+00</dsstart>
+ <epsc>1.000000000000000E-05</epsc>
+ <epsr>1.000000000000000E-05</epsr>
+ <epsk>1.000000000000000E-06</epsk>
  <nitc>12</nitc>
  <nitr>12</nitr>
  <nitk>12</nitk>
  <nsym>0</nsym>
- <sym/>
 </knut>

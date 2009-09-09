@@ -111,7 +111,7 @@ void BaseComp::run(const char* branchFile)
       if (params->getLabel() != 0)
       {
         mat4Data istr(params->getInputFile());
-        pt.BinaryRead(istr, params->getLabel());
+        pt.BinaryRead(istr, params->getLabel()-1);
       }
 
       screenout   << "\n---      Refine supplied solution      ---\n";
@@ -209,12 +209,14 @@ void BaseComp::run(const char* branchFile)
         for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
         // console output
+        const bool endpoint = i == params->getSteps()-1;
         const bool stabchange = (i != 0) && (ustab != ustabprev);
         const bool toprint = (i % params->getNPr()) == 0;
         // stability output
         BifType bif = BifNone;
+        if (endpoint) bif = BifEndPoint;
         if (stabchange) bif = pt.testBif();
-        if (toprint || stabchange)
+        if (toprint || stabchange || endpoint)
         {
           if (printedln % 24 == 0)
           {
@@ -266,17 +268,23 @@ void BaseComp::run(const char* branchFile)
             (fabs(ds)*1.414 < fabs(params->getDsMax()))) ds *= 1.414;
         if ((itc >= params->getNItC()) && (fabs(ds) / 2.0 < params->getDsMin()))
         {
+          parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, it(itpos));
+          print(screenout);
           P_MESSAGE1("No convergence. The minimum arclength step size (DSMIN) has been reached.");
         }
         // stop continuation if CP has reached the bounds
         if (par(params->getCp() - VarPAR0) < params->getCpMin())
         {
+          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
+          print(screenout);
           screenout << "Minimum CP value is reached\n";
           print(screenout);
           break;
         }
         if (par(params->getCp() - VarPAR0) > params->getCpMax())
         {
+          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
+          print(screenout);
           screenout << "Maximum CP value is reached\n";
           print(screenout);
           break;
@@ -338,7 +346,7 @@ void BaseComp::run(const char* branchFile)
         if (params->getLabel() != 0)
         {
           mat4Data istr(params->getInputFile());
-          pttr.ReadBinary(istr, params->getLabel());
+          pttr.ReadBinary(istr, params->getLabel()-1);
           screenout << "\nFinding the tangent.\n"; print(screenout);
           pttr.setCont(params->getCp() - VarPAR0);
           pttr.Tangent();

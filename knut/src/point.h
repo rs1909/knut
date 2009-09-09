@@ -134,10 +134,13 @@ inline void parValuePrint(std::ostream& out, const Vector& par, Var cp, const Ar
   out.precision(6);
   out.setf(std::ios::uppercase | std::ios::scientific | std::ios::right);
 
-  out << std::right << std::setfill(' ') << std::setw(5) << lb << " "; // 2 at the end
+  out << std::right << std::setfill(' ') << std::setw(5) << lb+1 << " "; // 2 at the end
   if (tp == BifLP) out << std::left << std::setfill(' ') << std::setw(2) << "LP" << ' '; // 2 at the end
   else if (tp == BifPD) out << std::left << std::setfill(' ') << std::setw(2) << "PD" << ' '; // 2 at the end
   else if (tp == BifNS) out << std::left << std::setfill(' ') << std::setw(2) << "NS" << ' '; // 2 at the end
+  else if (tp == BifMax) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
+  else if (tp == BifEndPoint) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
+  else if (tp == BifNoConvergence) out << std::left << std::setfill(' ') << std::setw(2) << "MX" << ' '; // 2 at the end
   else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << par(cp - VarPAR0) << "  "; // 2 at the end
