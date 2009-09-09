@@ -22,6 +22,20 @@
   #include <string>
   #include <cstdio>
 
+  #include <climits>
+
+  static inline int toInt(long int x)
+  {
+    if ((x <= INT_MAX)&&(x >= INT_MIN)) return (int)x;
+    else { P_MESSAGE1("Integer is out of range."); return 0; }
+  }
+  
+  static inline int toInt(size_t x)
+  {
+    if (x < INT_MAX) return (int)x;
+    else { P_MESSAGE1("Out of range."); return 0; }
+  }
+
 #endif
 
 #ifdef REMOVE_TYPES

@@ -188,63 +188,71 @@ class mat4Data
       {
         return (char*)offset + namelen;
       }
-      int size() const
+      size_t size() const
       {
-        return (int)sizeof(struct header) + namelen;
+        return sizeof(struct header) + namelen;
       }
-      int col_off(int i) const
+      size_t col_off(size_t i) const
       {
-        return size() + i*mrows*(int)sizeof(double);
+        return size() + i*mrows*sizeof(double);
       }
-      int col_off_im(int i) const
+      size_t col_off_im(size_t i) const
       {
-        return size() + (mrows*ncols + i*mrows)*(int)sizeof(double);
+        return size() + (mrows*ncols + i*mrows)*sizeof(double);
       }
-      int enddata(int i)
+      size_t enddata(size_t i)
       {
-        if (imagf == 0) return size() + i*mrows*(int)sizeof(double);
-        else return size() + 2*i*mrows*(int)sizeof(double);
+        if (imagf == 0) return size() + i*mrows*sizeof(double);
+        else return size() + 2*i*mrows*sizeof(double);
+      }
+      size_t getRows()
+      {
+        return (size_t)mrows;
+      }
+      size_t getCols()
+      {
+        return (size_t)ncols;
       }
     };
-    static inline int createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
-    static inline int createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols);
-    static inline void writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name);
+    static inline size_t createMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols);
+    static inline size_t createComplexMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols);
+    static inline void writeMatrixHeader(void* address, size_t offset, mat4Data::header* hd, const char* name);
 
-    int  findMatrix(const char* name, mat4Data::header* found, bool test=false, int r=-1, int c=-1, int imag=-1, const char* fileName="");
+    off_t findMatrix(const char* name, mat4Data::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="");
     void openReadOnly(const std::string& fileName);
 
     void resizeMatrix(const char* name, int newcol);
     void condenseData();
 
-    struct header *getHeader(int offset)
+    struct header *getHeader(size_t offset)
     {
       return (struct header*)((char*)address + offset);
     }
-    const struct header *getHeader(int offset) const
+    const struct header *getHeader(size_t offset) const
       {
         return (struct header*)((char*)address + offset);
       }
-    double& elem(int offset, int row, int col)
+    double& elem(size_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    const double& elem(int offset, int row, int col) const
+    const double& elem(size_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    double& elem_im(int offset, int row, int col)
+    double& elem_im(size_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    const double& elem_im(int offset, int row, int col) const
+    const double& elem_im(size_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    int32_t getRows(int offset) const
+    int32_t getRows(size_t offset) const
     {
       return getHeader(offset)->mrows;
     }
-    int32_t getCols(int offset) const
+    int32_t getCols(size_t offset) const
     {
       return getHeader(offset)->ncols;
     }
@@ -255,9 +263,9 @@ class mat4Data
 #else
     int    file;
 #endif
-    int    filesize;
+    size_t filesize;
     void  *address;
-    int    size;
+    size_t size;
     int    ncols;
     bool   wperm;
     int    ndim;
@@ -273,53 +281,53 @@ class mat4Data
 
     bool   torus;
 
-    int    npoints_offset;  //T
+    off_t  npoints_offset;  //T
     header npoints_header;
 
-    int    par_offset;      //T
+    off_t  par_offset;      //T
     header par_header;
     
-    int    parnames_offset;
+    off_t  parnames_offset;
     header parnames_header;
 
-    int    mul_offset;
+    off_t  mul_offset;
     header mul_header;
 
-    int    ntrivmul_offset;
+    off_t  ntrivmul_offset;
     header ntrivmul_header;
 
-    int    ndim_offset;     //T
+    off_t  ndim_offset;     //T
     header ndim_header;
 
-    int    elem_offset;
+    off_t  elem_offset;
     header elem_header;
 
-    int    mesh_offset;
+    off_t  mesh_offset;
     header mesh_header;
 
-    int    prof_offset;
+    off_t  prof_offset;
     header prof_header;
 
     // for the torus
-    int    nint1_offset;     //T
+    off_t  nint1_offset;     //T
     header nint1_header;
 
-    int    nint2_offset;     //T
+    off_t  nint2_offset;     //T
     header nint2_header;
 
-    int    ndeg1_offset;     //T
+    off_t  ndeg1_offset;     //T
     header ndeg1_header;
 
-    int    ndeg2_offset;     //T
+    off_t  ndeg2_offset;     //T
     header ndeg2_header;
 
-    int    mesh1_offset;     //T
+    off_t  mesh1_offset;     //T
     header mesh1_header;
 
-    int    mesh2_offset;     //T
+    off_t  mesh2_offset;     //T
     header mesh2_header;
 
-    int    blanket_offset;   //T
+    off_t  blanket_offset;   //T
     header blanket_header;
 };
 

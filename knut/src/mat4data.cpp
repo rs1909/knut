@@ -36,39 +36,39 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
-int mat4Data::findMatrix(const char* name, mat4Data::header* found, bool test, int r, int c, int imag, const char* fileName)
+off_t mat4Data::findMatrix(const char* name, mat4Data::header* found, bool test, int32_t r, int32_t c, int32_t imag, const char* fileName)
 {
   struct header hd;
-  int cur_off = 0;
-  int cur_size;
+  off_t cur_off = 0;
+  size_t cur_size;
   do
   {
     memcpy(&hd, (char*)address + cur_off, sizeof(struct header));
     P_ERROR_X5(hd.type == byte_order(), "'", name, " in file '", fileName, "' is not a matrix of double precision elements.");
     if (hd.imagf == 0)
-      cur_size = (int)sizeof(struct header) + hd.namelen * (int)sizeof(char) + hd.mrows * hd.ncols * (int)sizeof(double);
+      cur_size = sizeof(struct header) + hd.namelen * sizeof(char) + hd.mrows * hd.ncols * sizeof(double);
     else
-      cur_size = (int)sizeof(struct header) + hd.namelen * (int)sizeof(char) + 2 * hd.mrows * hd.ncols * (int)sizeof(double);
+      cur_size = sizeof(struct header) + hd.namelen * sizeof(char) + 2 * hd.mrows * hd.ncols * sizeof(double);
     if (strncmp(name, (char*)address + cur_off + sizeof(struct header), 20) == 0)
     {
       memcpy(found, &hd, sizeof(struct header));
       // Checking the parameters
       if (r != -1) P_ERROR_X5(hd.mrows == r, "Wrong number of rows of '", name, "' in file '", fileName, "'.");
       if (c != -1) P_ERROR_X5(hd.ncols == c, "Wrong number of columns of '", name, "' in file '", fileName, "'.");
-      if ((imag != -1)&&(imag==0)) if (hd.imagf != 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has complex elements, but real was expected.");
-      if ((imag != -1)&&(imag!=0)) if (hd.imagf == 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has real elements, but complex was expected.");
+      if ((imag != -1)&&(imag == 0)) if (hd.imagf != 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has complex elements, but real was expected.");
+      if ((imag != -1)&&(imag != 0)) if (hd.imagf == 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has real elements, but complex was expected.");
       return cur_off;
     }
     cur_off += cur_size;
   }
-  while (cur_off < size);
+  while ((size_t)cur_off < size);
   if (test) P_MESSAGE5("Could not find '", name, "' in file '", fileName, "'.");
   return -1;
 }
 
 #ifndef WIN32
 
-static inline void *mmapFileWrite(int& file, const std::string& fileName, int size)
+static inline void *mmapFileWrite(int& file, const std::string& fileName, size_t size)
 {
   if ((file = open(fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR)) == -1)
   {
@@ -81,14 +81,14 @@ static inline void *mmapFileWrite(int& file, const std::string& fileName, int si
   }
 
   void *address;
-  if ((address = mmap(0, static_cast<size_t>(size), PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, size, PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
     P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
   }
   return address;
 }
 
-static inline void *mmapFileRead(int& file, const std::string& fileName, int& size)
+static inline void *mmapFileRead(int& file, const std::string& fileName, size_t& size)
 {
   if ((file = open(fileName.c_str(), O_RDONLY)) == -1)
   {
@@ -100,11 +100,10 @@ static inline void *mmapFileRead(int& file, const std::string& fileName, int& si
   {
     P_MESSAGE5("Unable to stat the MAT file '", fileName, "'. ", (const char *)strerror(errno), ".");
   }
-  int filesize = filestat.st_size;
-  size = filesize;
+  size = filestat.st_size;
 
   void *address;
-  if ((address = mmap(0, static_cast<size_t>(filesize), PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
+  if ((address = mmap(0, size, PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
     P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
   }
@@ -113,7 +112,7 @@ static inline void *mmapFileRead(int& file, const std::string& fileName, int& si
 
 #else
 
-static inline void *mmapFileWrite(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, int size)
+static inline void *mmapFileWrite(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, size_t size)
 {
   if ((file = CreateFile(fileName.c_str(),
                          FILE_WRITE_DATA | FILE_READ_DATA,
@@ -143,7 +142,7 @@ static inline void *mmapFileWrite(HANDLE& file, HANDLE& mapHandle, const std::st
   return 0;
 }
 
-static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, int& size)
+static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, size_t& size)
 {
   if ((file = CreateFile(fileName.c_str(),
                          FILE_READ_DATA,
@@ -171,30 +170,30 @@ static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::str
 #endif
 
 // returns the size of the whole data
-inline int mat4Data::createMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
+inline size_t mat4Data::createMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 0;
-  hd->namelen = ((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header);
-  return (int)sizeof(mat4Data::header) + hd->namelen + rows * cols * (int)sizeof(double);
+  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header));
+  return sizeof(mat4Data::header) + hd->namelen + rows * cols * sizeof(double);
 }
 
 // returns the size of the whole data
-inline int mat4Data::createComplexMatrixHeader(mat4Data::header* hd, const char* name, int rows, int cols)
+inline size_t mat4Data::createComplexMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 1;
-  hd->namelen = ((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header);
-  return (int)sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * (int)sizeof(double);
+  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header));
+  return sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * sizeof(double);
 }
 
-inline void mat4Data::writeMatrixHeader(void* address, int offset, mat4Data::header* hd, const char* name)
+inline void mat4Data::writeMatrixHeader(void* address, size_t offset, mat4Data::header* hd, const char* name)
 {
-  strncpy((char*)address + offset + sizeof(mat4Data::header), name, static_cast<size_t>(hd->namelen));
+  strncpy((char*)address + offset + sizeof(mat4Data::header), name, hd->namelen);
   *((mat4Data::header*)((char*)address + offset)) = *hd;
 }
 
@@ -210,49 +209,50 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   ndeg = ndeg_;
   nmul = nmul_;
   
-  unsigned int max_namesize = 0;
-  for (unsigned int i=0; i<parNames.size(); ++i)
+  size_t max_namesize = 0;
+  for (size_t i=0; i<parNames.size(); ++i)
     if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
 
   // creating the matrices
   char npoints_string[] = "knut_npoints";
   npoints_offset = 0;
-  int npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
+  size_t npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
 
   char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
-  int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
+  size_t par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
   
   char parnames_string[] = "knut_parnames";
   parnames_offset = par_offset + par_size;
-  int parnames_size = createMatrixHeader(&parnames_header, parnames_string, parNames.size(), max_namesize);
+  size_t parnames_size = createMatrixHeader(&parnames_header, parnames_string,
+                           static_cast<int32_t>(parNames.size()), static_cast<int32_t>(max_namesize));
 
   char mul_string[] = "knut_mul";
   mul_offset = parnames_offset + parnames_size;
-  int mul_size = createComplexMatrixHeader(&mul_header, mul_string, nmul, ncols);
+  size_t mul_size = createComplexMatrixHeader(&mul_header, mul_string, nmul, ncols);
 
   char ntrivmul_string[] = "knut_ntrivmul";
   ntrivmul_offset = mul_offset + mul_size;
-  int ntrivmul_size = createMatrixHeader(&ntrivmul_header, ntrivmul_string, 3, 1);
+  size_t ntrivmul_size = createMatrixHeader(&ntrivmul_header, ntrivmul_string, 3, 1);
 
   char ndim_string[] = "knut_ndim";
   ndim_offset = ntrivmul_offset + ntrivmul_size;
-  int ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
+  size_t ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
 
   char elem_string[] = "knut_elem";
   elem_offset = ndim_offset + ndim_size;
-  int elem_size = createMatrixHeader(&elem_header, elem_string, ndeg + 1, ncols);
+  size_t elem_size = createMatrixHeader(&elem_header, elem_string, ndeg + 1, ncols);
 
   char mesh_string[] = "knut_mesh";
   mesh_offset = elem_offset + elem_size;
-  int mesh_size = createMatrixHeader(&mesh_header, mesh_string, nint + 1, ncols);
+  size_t mesh_size = createMatrixHeader(&mesh_header, mesh_string, nint + 1, ncols);
 
   char prof_string[] = "knut_prof";
   prof_offset = mesh_offset + mesh_size;
-  int prof_size = createMatrixHeader(&prof_header, prof_string, ndim * (ndeg * nint + 1), ncols);
+  size_t prof_size = createMatrixHeader(&prof_header, prof_string, ndim * (ndeg * nint + 1), ncols);
   size = prof_offset + prof_size;
 
-  const int approxSize = 8 * ((int)sizeof(header) + 20) + (int)sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
+  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
 #ifndef WIN32
   address = mmapFileWrite(file, fileName, size);
 #else
@@ -275,13 +275,13 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
 
 void mat4Data::setParNames(const std::vector<std::string>& parNames)
 {
-  for (unsigned int i=0; i<parNames.size(); ++i)
+  for (size_t i=0; i<parNames.size(); ++i)
   {
-    for (unsigned int j=0; j<parNames[i].size(); ++j)
+    for (size_t j=0; j<parNames[i].size(); ++j)
     {
       elem(parnames_offset, i, j) = parNames[i][j];
     }
-    for (int j=parNames[i].size(); j<getHeader(parnames_offset)->ncols; ++j)
+    for (size_t j=parNames[i].size(); j<getHeader(parnames_offset)->getCols(); ++j)
     {
       elem(parnames_offset, i, j) = 0;
     }
@@ -317,54 +317,55 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   ndeg1 = ndeg1_;
   ndeg2 = ndeg2_;
 
-  unsigned int max_namesize = 0;
-  for (unsigned int i=0; i<parNames.size(); ++i)
+  size_t max_namesize = 0;
+  for (size_t i=0; i<parNames.size(); ++i)
     if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
   
   // creating the matrices
   char npoints_string[] = "knut_npoints";
   npoints_offset = 0;
-  int npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
+  size_t npoints_size = createMatrixHeader(&npoints_header, npoints_string, 1, 1);
 
   char par_string[] = "knut_par";
   par_offset = npoints_offset + npoints_size;
-  int par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
+  size_t par_size = createMatrixHeader(&par_header, par_string, npar, ncols);
   
   char parnames_string[] = "knut_parnames";
   parnames_offset = par_offset + par_size;
-  int parnames_size = createMatrixHeader(&parnames_header, parnames_string, parNames.size(), max_namesize);
+  size_t parnames_size = createMatrixHeader(&parnames_header, parnames_string,
+                           static_cast<int32_t>(parNames.size()), static_cast<int32_t>(max_namesize));
 
   char ndim_string[] = "knut_ndim";
   ndim_offset = parnames_offset + parnames_size;
-  int ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
+  size_t ndim_size = createMatrixHeader(&ndim_header, ndim_string, 1, ncols);
 
   char nint1_string[] = "knut_nint1";
   nint1_offset = ndim_offset + ndim_size;
-  int nint1_size = createMatrixHeader(&nint1_header, nint1_string, 1, ncols);
+  size_t nint1_size = createMatrixHeader(&nint1_header, nint1_string, 1, ncols);
 
   char nint2_string[] = "knut_nint2";
   nint2_offset = nint1_offset + nint1_size;
-  int nint2_size = createMatrixHeader(&nint2_header, nint2_string, 1, ncols);
+  size_t nint2_size = createMatrixHeader(&nint2_header, nint2_string, 1, ncols);
 
   char ndeg1_string[] = "knut_ndeg1";
   ndeg1_offset = nint2_offset + nint2_size;
-  int ndeg1_size = createMatrixHeader(&ndeg1_header, ndeg1_string, 1, ncols);
+  size_t ndeg1_size = createMatrixHeader(&ndeg1_header, ndeg1_string, 1, ncols);
 
   char ndeg2_string[] = "knut_ndeg2";
   ndeg2_offset = ndeg1_offset + ndeg1_size;
-  int ndeg2_size = createMatrixHeader(&ndeg2_header, ndeg2_string, 1, ncols);
+  size_t ndeg2_size = createMatrixHeader(&ndeg2_header, ndeg2_string, 1, ncols);
 
   char mesh1_string[] = "knut_mesh1";
   mesh1_offset = ndeg2_offset + ndeg2_size;
-  int mesh1_size = createMatrixHeader(&mesh1_header, mesh1_string, nint1 * ndeg1, ncols);
+  size_t mesh1_size = createMatrixHeader(&mesh1_header, mesh1_string, nint1 * ndeg1, ncols);
 
   char mesh2_string[] = "knut_mesh2";
   mesh2_offset = mesh1_offset + mesh1_size;
-  int mesh2_size = createMatrixHeader(&mesh2_header, mesh2_string, nint2 * ndeg2, ncols);
+  size_t mesh2_size = createMatrixHeader(&mesh2_header, mesh2_string, nint2 * ndeg2, ncols);
 
   char blanket_string[] = "knut_blanket";
   blanket_offset = mesh2_offset + mesh2_size;
-  int blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
+  size_t blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
 
 #ifndef WIN32
@@ -397,18 +398,18 @@ mat4Data::mat4Data(const std::string& fileName)
 void mat4Data::resizeMatrix(const char* name, int newcol)
 {
   header mathead;
-  int matoffset;
+  off_t matoffset;
   if ((matoffset = findMatrix(name, &mathead)) == -1) P_MESSAGE3("Matrix '", name, "' cannot be found.");
   P_ASSERT_X1(mathead.ncols >= newcol, "Cannot increase the size of the matrix.");
   char* to = (char*)address + matoffset + mathead.enddata(newcol);
   char* from = (char*)address + matoffset + mathead.enddata(mathead.ncols);
-  size_t count = static_cast<size_t>(size - matoffset - mathead.enddata(mathead.ncols));
+  size_t count = size - matoffset - mathead.enddata(mathead.ncols);
   if (mathead.imagf!= 0)
   {
     // copy the imaginary part
     char* to_im = (char*)address + matoffset + mathead.col_off(newcol);
     char* from_im = (char*)address + matoffset + mathead.col_off(mathead.ncols);
-    memmove(to_im, from_im, static_cast<size_t>(mathead.col_off(newcol)));
+    memmove(to_im, from_im, mathead.col_off(newcol));
   }
   memmove(to, from, count);
   size -= mathead.enddata(mathead.ncols) - mathead.enddata(newcol);
@@ -506,9 +507,9 @@ void mat4Data::openReadOnly(const std::string& fileName)
 mat4Data::~mat4Data()
 {
 #ifndef WIN32
-  int oldsize = size;
+  size_t oldsize = size;
   condenseData();
-  if (munmap(address, static_cast<size_t>(oldsize)) != 0)
+  if (munmap(address, oldsize) != 0)
   {
     P_MESSAGE3("Unable to munmap the MAT file. ", strerror(errno), ".");
   }

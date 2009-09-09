@@ -42,7 +42,7 @@ void GnuPlot::Plot(unsigned int n, const char *style)
 {
   if (n >= cmd.size())
   {
-    for (unsigned int i = cmd.size(); i <= n; i++)
+    for (size_t i = cmd.size(); i <= n; i++)
     {
       cmd.insert(cmd.end(), std::string());
       data.insert(data.end(), std::string());

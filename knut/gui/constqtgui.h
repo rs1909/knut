@@ -41,7 +41,7 @@ template<class KEY> class genMap
     {
       return string(indexof(v));
     }
-    unsigned int size() const
+    size_t size() const
     {
       return key.size();
     }
@@ -198,7 +198,7 @@ class VarType : public genMap<Var>
 
     void setPar(const std::vector<std::string>& parNames)
     {
-      npar = parNames.size();
+      npar = toInt(parNames.size());
       key.clear();
       dsc.clear();
       dsc.push_back("None");
@@ -261,7 +261,7 @@ class NConstantsQtGui : public QObject, public NConstants
   public:
     NConstantsQtGui() : cpMap(false), parxMap(false) { }
     // for the continuation parameter
-    unsigned int cpSize() { return cpMap.size(); }
+    size_t cpSize() { return cpMap.size(); }
     const std::string& cpString(unsigned int i) { return cpMap.string(i); }
     unsigned int getCpIdx() { return cpMap.indexof(getCp()); }
     void setCpIdx(unsigned int i)
@@ -271,19 +271,19 @@ class NConstantsQtGui : public QObject, public NConstants
     }
     
     // for pointType
-    unsigned int pointTypeSize() { return pointTypeMap.size(); }
+    size_t pointTypeSize() { return pointTypeMap.size(); }
     const std::string& pointTypeString(unsigned int i) { return pointTypeMap.string(i); }
     unsigned int getPointTypeIdx() { return pointTypeMap.indexof(getPointType()); }
     void setPointTypeIdx(unsigned int i) { setPointType(pointTypeMap.getNum(i)); }
     
-    unsigned int branchSWSize() { return branchSWMap.size(); }
+    size_t branchSWSize() { return branchSWMap.size(); }
     const std::string& branchSWString(unsigned int i) { return branchSWMap.string(i); }
     unsigned int getBranchSWIdx() { return branchSWMap.indexof(getBranchSW()); }
     void setBranchSWIdx(unsigned int i) { setBranchSW(branchSWMap.getNum(i)); }
 
-    unsigned int parxSize() { return parxMap.size(); }
-    unsigned int eqnsSize() { return eqnsMap.size(); }
-    unsigned int varsSize() { return varsMap.size(); }    
+    size_t parxSize() { return parxMap.size(); }
+    size_t eqnsSize() { return eqnsMap.size(); }
+    size_t varsSize() { return varsMap.size(); }    
     const std::string& findParxString(Var i) { return parxMap.map(i); }
     const std::string& findEqnsString(Eqn i) { return eqnsMap.map(i); }
     const std::string& findVarsString(Var i) { return varsMap.map(i); }

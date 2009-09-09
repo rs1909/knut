@@ -10,9 +10,6 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
 
 ADD_EXECUTABLE( knut main.cpp )
 
-MESSAGE( STATUS "The FORTRAN ${CMAKE_Fortran_COMPILER} runtime library is
-${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME}." )
-
 IF(APPLE)
   TARGET_LINK_LIBRARIES( knut knutlib laarpack umfpack amd mxml 
     ${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} 

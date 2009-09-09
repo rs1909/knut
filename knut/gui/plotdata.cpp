@@ -826,7 +826,7 @@ void PlotData::rescaleData()
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         if (contains(pt.x(), pt.y()))(*i).data.circle->pos.push_back(pt);
       }
-      for (unsigned int p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
+      for (size_t p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
       (*i).data.circle->item.resize((*i).data.circle->pos.size(), 0);
     }
     if ((*i).type == PlotPolygonType)
@@ -837,7 +837,7 @@ void PlotData::rescaleData()
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         if (contains(pt.x(), pt.y()))(*i).data.polygon->pos.push_back(pt);
       }
-      for (unsigned int p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
+      for (size_t p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
       (*i).data.polygon->item.resize((*i).data.polygon->pos.size(), 0);
     }
   }
@@ -998,7 +998,7 @@ void PlotData::makeBox()
   // Add labels
   qreal sumwidth = 0;
   qreal sumheight = 0;
-  unsigned int startmove = 0;
+  size_t startmove = 0;
   for (unsigned int i = 0; i < YCoordText.size(); ++i)
   {
     YCoordTextItems.push_back(new QGraphicsTextItem);
@@ -1010,7 +1010,7 @@ void PlotData::makeBox()
     sumwidth += b.width();
     if (sumwidth > plotYSize)
     {
-      for (unsigned int i = startmove; i < YCoordTextItems.size(); ++i)
+      for (size_t i = startmove; i < YCoordTextItems.size(); ++i)
       {
         YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
         addItem(YCoordTextItems[i]);
@@ -1020,7 +1020,7 @@ void PlotData::makeBox()
       sumwidth = 0;
     }
   }
-  for (unsigned int i = startmove; i < YCoordTextItems.size(); ++i)
+  for (size_t i = startmove; i < YCoordTextItems.size(); ++i)
   {
     YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
     addItem(YCoordTextItems[i]);
@@ -1028,7 +1028,7 @@ void PlotData::makeBox()
   sumwidth = 0;
   sumheight = 0;
   startmove = 0;
-  for (unsigned int i = 0; i < XCoordText.size(); ++i)
+  for (size_t i = 0; i < XCoordText.size(); ++i)
   {
     XCoordTextItems.push_back(new QGraphicsTextItem);
     XCoordTextItems[i]->setPlainText(XCoordText[i]);
@@ -1038,7 +1038,7 @@ void PlotData::makeBox()
     sumwidth += b.width();
     if (sumwidth > plotXSize)
     {
-      for (unsigned int i = startmove; i < XCoordTextItems.size(); ++i)
+      for (size_t i = startmove; i < XCoordTextItems.size(); ++i)
       {
         XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
         addItem(XCoordTextItems[i]);
@@ -1048,7 +1048,7 @@ void PlotData::makeBox()
       sumwidth = 0;
     }
   }
-  for (unsigned int i = startmove; i < XCoordText.size(); ++i)
+  for (size_t i = startmove; i < XCoordText.size(); ++i)
   {
     XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
     addItem(XCoordTextItems[i]);

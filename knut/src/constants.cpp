@@ -112,13 +112,13 @@ static inline int getNodeInteger(mxml_node_t* nd)
 {
   const char* str = getNodeText(nd);
   P_ERROR_X1(str != 0, "MXML: node could not be found.");
-  return strtol(str, 0, 10);
+  return toInt(strtol(str, 0, 10));
 }
 
 static inline int getNodeInteger(mxml_node_t* nd, int def_value)
 {
   const char* str = getNodeText(nd);
-  if (str != 0) return strtol(str, 0, 10);
+  if (str != 0) return toInt(strtol(str, 0, 10));
   else return def_value;
 }
 
