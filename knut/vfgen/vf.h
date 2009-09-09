@@ -30,7 +30,11 @@
 #include <map>
 #include <ginac/ginac.h>
 
-#include "ginac_declare_funcs.h"
+DECLARE_FUNCTION_2P(delay)
+DECLARE_FUNCTION_2P(Zlags_)
+
+DECLARE_FUNCTION_1P(heaviside)
+DECLARE_FUNCTION_1P(ramp)
 
 //
 // Symbol
@@ -51,14 +55,14 @@
 //
 
 class Symbol
-    {
-    private:
+{
+  private:
 
     std::string name;
     std::string description;
     std::string latex;
 
-    public:
+  public:
 
     // Constructors
     Symbol();
@@ -72,16 +76,16 @@ class Symbol
     std::string Description(void);
     void Latex(std::string l);
     std::string Latex(void);
-    };
+};
 
 
 class FormulaSymbol : public Symbol
-    {
-    private:
+{
+  private:
 
     std::string formula;
 
-    public:
+  public:
 
     // Constructors
     FormulaSymbol();
@@ -91,15 +95,15 @@ class FormulaSymbol : public Symbol
     // Get/Set methods
     void Formula(std::string f);
     std::string Formula(void);
-    };
+};
 
 class Constant : public Symbol
-    {
-    private:
+{
+  private:
 
     std::string value;
 
-    public:
+  public:
 
     // Constructors
     Constant(std::string name);
@@ -108,15 +112,15 @@ class Constant : public Symbol
     // Get/Set methods
     void Value(std::string val);
     std::string Value(void);
-    };
+};
 
 class Parameter : public Symbol
-    {
-    private:
+{
+  private:
 
     std::string defaultvalue;
 
-    public:
+  public:
 
     // Constructors
     Parameter(std::string name);
@@ -125,29 +129,29 @@ class Parameter : public Symbol
     // Get/Set methods
     void DefaultValue(std::string val);
     std::string DefaultValue(void);
-    };
+};
 
 class Expression : public FormulaSymbol
-    {
-    public:
+{
+  public:
 
     // Constructors
     Expression(std::string name);
     Expression(std::string name, std::string descr);
 
-    };
+};
 
 
 class StateVariable : public FormulaSymbol
-    {
-    private:
+{
+  private:
 
     std::string periodicfrom;
     std::string periodicto;
     std::string default_ic;
     std::string default_history;
 
-    public:
+  public:
 
     // Constructors
     StateVariable(std::string name);
@@ -163,29 +167,29 @@ class StateVariable : public FormulaSymbol
     std::string DefaultInitialCondition(void);
     void DefaultHistory(std::string hist);
     std::string DefaultHistory(void);
-    };
+};
 
 
 class Function : public FormulaSymbol
-    {
-    public:
+{
+  public:
 
     // Constructors
     Function(std::string name);
     Function(std::string name, std::string descr);
-    };
+};
 
 
 class VectorField : public Symbol
-    {
-    private:
+{
+  private:
 
     // There is no implementation of the copy constructor.
     VectorField(const VectorField& vf);
     // There is no implementation of the assignment operator.
     VectorField operator=(const VectorField& vf);
 
-    protected:
+//  protected:
 
     GiNaC::lst conname_list;
     GiNaC::lst convalue_list;
@@ -205,7 +209,7 @@ class VectorField : public Symbol
     GiNaC::symbol IndVar;
 
     // Everything is public, for now.
-    public:
+//  public:
 
     std::string IndependentVariable;
     std::vector<Constant *>      Constants;
@@ -221,6 +225,7 @@ class VectorField : public Symbol
 
     std::vector<GiNaC::ex> Delays;
 
+  public:
     // Constructors
     VectorField();
     VectorField(std::string name, std::string descr);
@@ -244,6 +249,8 @@ class VectorField : public Symbol
 
     void CheckForDelay(const GiNaC::ex& f);
     int  ProcessSymbols(void);
+    
+    bool testHasNonconstantDelay() { return HasNonconstantDelay; }
 
     void Print(void);
     void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
@@ -252,7 +259,7 @@ class VectorField : public Symbol
     void Knut_PrintJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
     void Knut_PrintXandParJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
     void Knut_PrintHessiansTimesV(std::ostream &dout, const std::vector<GiNaC::ex> &e);
-    void PrintKnut(std::ostream& sys_out, std::map<std::string,std::string> options);
-    };
+    void PrintKnut(std::ostream& sys_out, std::map<std::string, std::string> options);
+};
 
 #endif

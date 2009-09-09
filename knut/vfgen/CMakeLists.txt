@@ -7,8 +7,6 @@ ADD_DEFINITIONS(-DVERSION="\\\"${VFGEN_VERSION}\\\"")
 
 SET(VFGEN_CPP_SRC_FILES 
 	codegen_utils.cpp 
-	ginac_aux_functions.cpp 
-	strutils.cpp
 	vf.cpp vfgen.cpp 
 	vf_knut.cpp vf_xml.cpp) 
 

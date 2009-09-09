@@ -25,27 +25,14 @@
 #ifndef CODEGEN_UTILS
 #define CODEGEN_UTILS 1
 
-char *DateTimeMsg(); //!
+#include <ginac/ginac.h>
+
+char *DateTimeMsg();
 void PrintVFGENComment(std::ostream &fout, const char *prefix);
-//void Declare(std::ostream &fout, std::string prefixstr, std::string typestr, GiNaC::lst name, std::string termstr);
-//void CDeclare(std::ostream &fout, std::string typestr, GiNaC::lst names);
-//void CDeclare_double(std::ostream &fout, GiNaC::lst names);
-//void MakeCArrayOfStrings(std::ostream &fout, char *var, GiNaC::lst names);
-//void MakePythonListOfStrings(std::ostream &fout, char *var, GiNaC::lst names, char *pre);
 void GetFromVector(std::ostream &fout, const char *skip, GiNaC::lst names, const char *vector,
-                      const char *braces, int istart, const char *term);
+                   const char *braces, size_t istart, const char *term);
 void GetFromVector2(std::ostream &fout, const char *skip, GiNaC::lst names, const char *vector,
-                      const char *bropen, const char *brclose, int istart, const char *term);
-//void SetVectorFromNames(std::ostream &fout, char *skip, const char *vector, GiNaC::lst names,
-//                      char *braces, int istart, char *term);
-//void PrintNameList(std::ostream &fout, GiNaC::lst names);
-//void PrintPi(std::ostream &fout);
-//void PrintMultilineComment(std::ostream &fout, const std::string &comment,
-//        const std::string &pre, const std::string &cmark);
-//
-//void print_power_as_fortran(const GiNaC::power& p, const GiNaC::print_csrc& c, unsigned level);
-//std::string fix_exp_notation(std::string &s);
-//void F77Write(std::ostream &fout, std::string s);
-//void F77Declare(std::ostream &fout, GiNaC::lst names);
+                    const char *bropen, const char *brclose, size_t istart, const char *term);
+GiNaC::ex iterated_subs(GiNaC::ex f, GiNaC::lst e);
 
 #endif

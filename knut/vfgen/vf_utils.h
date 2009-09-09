@@ -23,8 +23,8 @@
 #ifndef VF_UTILS_H
 #define VF_UTILS_H
 
-#include "strutils.h"
+// #include "strutils.h"
 #include "codegen_utils.h"
-#include "ginac_aux_functions.h"
+// #include "ginac_aux_functions.h"
 
 #endif
