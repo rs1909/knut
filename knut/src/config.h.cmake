@@ -19,3 +19,4 @@
 
 /* whether build the GUI */
 #cmakedefine KNUT_GUI
+#cmakedefine GINAC_FOUND

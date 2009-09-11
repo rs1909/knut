@@ -141,7 +141,7 @@ void BaseComp::run(const char* branchFile)
       //
       parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
-      parValuePrint(screenout, par, params->getCp(), var, 0, BifNone, pt.Norm(), 0, 0);
+      parValuePrint(screenout, par, params->getCp(), var, -1, BifNone, pt.Norm(), 0, 0);
       screenout << "\n";
       print(screenout);
 
@@ -211,7 +211,7 @@ void BaseComp::run(const char* branchFile)
         // console output
         const bool endpoint = i == params->getSteps()-1;
         const bool stabchange = (i != 0) && (ustab != ustabprev);
-        const bool toprint = (i % params->getNPr()) == 0;
+        const bool toprint = (((i+1) % params->getNPr()) == 0)||(i == 0);
         // stability output
         BifType bif = BifNone;
         if (endpoint) bif = BifEndPoint;
@@ -232,7 +232,7 @@ void BaseComp::run(const char* branchFile)
         {
           const int itad = pt.Refine(screenout,true);
           const int ittan = pt.Tangent(true);
-          if (((i % params->getNPr()) == 0)||(i != 0  && ustab != ustabprev))
+          if (toprint || (i != 0  && ustab != ustabprev))
           {
             screenout << " " << itad << " " << ittan;
             print(screenout);
@@ -269,23 +269,16 @@ void BaseComp::run(const char* branchFile)
         if ((itc >= params->getNItC()) && (fabs(ds) / 2.0 < params->getDsMin()))
         {
           parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, it(itpos));
-          print(screenout);
-          P_MESSAGE1("No convergence. The minimum arclength step size (DSMIN) has been reached.");
-        }
-        // stop continuation if CP has reached the bounds
-        if (par(params->getCp() - VarPAR0) < params->getCpMin())
-        {
-          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
-          print(screenout);
-          screenout << "Minimum CP value is reached\n";
+          screenout << '\n';
           print(screenout);
           break;
         }
-        if (par(params->getCp() - VarPAR0) > params->getCpMax())
+        // stop continuation if CP has reached the bounds
+        if ((par(params->getCp() - VarPAR0) < params->getCpMin())||
+            (par(params->getCp() - VarPAR0) > params->getCpMax()))
         {
           parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
-          print(screenout);
-          screenout << "Maximum CP value is reached\n";
+          screenout << '\n';
           print(screenout);
           break;
         }

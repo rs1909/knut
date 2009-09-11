@@ -11,19 +11,82 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
-#include <sys/stat.h>
+#include <cstring>
+#include <list>
+#include <map>
 #include <sstream>
+#include <fstream>
+extern "C"{
+#include <sys/stat.h>
+#include <sys/wait.h>
+}
 
+#include "config.h"
+#ifdef GINAC_FOUND
+#include "vf.h"
+#endif
 #include "system.h"
 #include "matrix.h"
 #include "pointtype.h"
-#include "config.h"
 
 #ifdef __APPLE__
 #include <CoreFoundation/CFBase.h>
 #include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CFBundle.h>
 #endif
+
+int pipeOpen(std::list<std::string>& arglist,
+                           int* input, int* output, int* error)
+{
+  if ( (input==0)&&(output==0)&&(error==0) ) return -1;
+  const char* command;
+  char *argv[arglist.size()+1];
+  int i = 0;
+  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  {
+    argv[i] = new char[it->size()+1];
+    strcpy(argv[i],it->c_str());
+    ++i;
+  }
+  argv[i] = 0;
+  command = argv[0];
+  
+  int fds_output[2], fds_input[2], fds_error[2];
+
+  /* Create a pipe.  File descriptors for the two ends of the pipe are
+     placed in fds.  */
+  if (output) pipe (fds_output);
+  if (input)  pipe (fds_input);
+  if (error)  pipe (fds_error);
+  /* Fork a child process.  */
+  pid_t pid = fork ();
+  if (pid == (pid_t) 0)
+  {
+    /* This is the child process.  Close our copy of the read (write) end of
+       the file descriptor.  */
+    if (input)  close (fds_input[1]);
+    if (output) close (fds_output[0]);
+    if (error)  close (fds_error[0]);
+    /* Connect the read(write) end of the pipe to standard input.  */
+    if (input) dup2 (fds_input[0], STDIN_FILENO);
+    if (output) dup2 (fds_output[1], STDOUT_FILENO);
+    if (error)  dup2 (fds_error[1], STDERR_FILENO);
+    /* Replace the child process with the "cat" program.  */
+    execvp (command, argv);
+  }
+  else
+  {
+    /* Close our copy of the write (read) end of the file descriptor.  */
+    if (input)  close (fds_input[0]);
+    if (output) close (fds_output[1]);
+    if (error)  close (fds_error[1]);
+    if (input)  *input = fds_input[1];
+    if (output) *output = fds_output[0];
+    if (error)  *error = fds_error[0];
+  }
+  for (int k=0; k<1; ++k) delete[] argv[k];
+  return pid;
+}
 
 System::System(const std::string& shobj)
 {
@@ -171,71 +234,119 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
   }
 }
 
-static inline void compilerOptions(std::string& cmdline, const std::string& executableDir)
+
+static inline void addArgList(std::list<std::string>& argv, const std::string& str)
 {
-#ifndef WIN32
-#define DIRSEP '/'
-  std::string compiler(CMAKE_CXX_COMPILER);
-#else
+  size_t start = 0;
+  size_t i=0;
+  while (i < str.size())
+  {
+    while ((str[i] != ' ')&&(str[i] != '\t')&&(i < str.size())) ++i;
+    argv.push_back(str.substr(start, i-start));
+    while ((str[i] == ' ')||(str[i] == '\t')) ++i;
+    start = i;
+  }
+}
+
+static inline void toCommandLine(std::string& cmdline, const std::list<std::string>& arglist)
+{
+  cmdline.erase();
+  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  {
+    if (it != arglist.begin()) cmdline += ' ';
+    cmdline += *it;
+  }
+}
+
+#if WIN32
 #define DIRSEP '\\'
-  std::string compiler("g++");
+#else
+#define DIRSEP '/'
 #endif
-  std::string::size_type slashpos = compiler.find_last_of(DIRSEP);
-  // truncate the string
-  if (slashpos != std::string::npos) compiler = compiler.substr(slashpos+1);
-  cmdline += compiler;
-  cmdline += " " CMAKE_CXX_FLAGS " " CMAKE_SHARED_LIBRARY_C_FLAGS " " 
-              CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " -I\"" +
-              executableDir.substr(0,executableDir.find_last_of(DIRSEP));
-  cmdline += DIRSEP;
-  cmdline += KNUT_INCLUDE_DIR "\"";
-}
 
-static inline void runCompiler(const std::string& cmdline)
-{
-//  std::cout << "The command line: " << cmdline << "\n";
-  // want to see the results if possible...
-  FILE* fd = popen(cmdline.c_str(),"r");
-  P_ERROR_X3(fd != 0, "Pipe cannot be opened for '", cmdline, "'.");
-  std::string result;
-  char* buf = new char[1024];
-  char* str = 0;
-  do{
-    str = std::fgets(buf, 1024, fd);
-    if (str != 0) result.append(str);
-  } while (str != 0);
-  delete[] buf;
-  int cres = pclose(fd);
-  if (cres != 0)  P_MESSAGE4("The output of the compile command '", cmdline, "' is ", result);
-}
+static void runCompiler(const std::string& cxxstring, const std::string& shobj, const std::string& executableDir)
+{  
+  // constructing the command line
+  std::list<std::string> arglist;
+  addArgList(arglist, std::string(CMAKE_CXX_COMPILER " " 
+    CMAKE_CXX_FLAGS " "
+    CMAKE_SHARED_LIBRARY_C_FLAGS " " 
+    CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS));
+  std::string includeArg("-I");
+  includeArg += executableDir.substr(0,executableDir.find_last_of(DIRSEP));
+  includeArg += DIRSEP;
+  includeArg += KNUT_INCLUDE_DIR;
+  arglist.push_back(includeArg);
+  arglist.push_back("-x");
+  arglist.push_back("c++");
+  arglist.push_back("-o");
+  arglist.push_back(shobj);
+  arglist.push_back("-");
 
-void System::generateSystem(const std::string& vffile, const std::string& executableDir)
-{
-  std::string cmdline("vfgen-knut ");
-  cmdline += vffile + " | ";
-  compilerOptions(cmdline, executableDir);
-  cmdline += " -x c++ - -o \"" + vffile + ".so\" 2>&1";
-  runCompiler(cmdline);
+  // running the command
+  int input, output, error;
+  pipeOpen(arglist, &input, &output, &error);
+  write (input, cxxstring.c_str(), cxxstring.size());
+  close (input);
+  // Output
+  const size_t bufsize = 2048;
+  char *out_buf = new char[bufsize];
+  char *err_buf = new char[bufsize];
+  size_t bytes = read(output, out_buf, bufsize);
+  out_buf[bytes] = '\0';
+  // Standard Error
+  bytes = read(error, err_buf, bufsize);
+  err_buf[bytes] = '\0';
+  int status;
+  // Check the exist status
+  waitpid(-1,&status,0);
+  close (output);
+  close (error);
+  std::string cmdline;
+  toCommandLine(cmdline, arglist);
+  if (status != 0) P_MESSAGE6("The error output of the compile command '",
+    cmdline, "' is ", err_buf, " and the standard output is ", out_buf);
 }
 
 void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
-  std::string cmdline;
-  compilerOptions(cmdline, executableDir);
-  cmdline += " \"" + cxxfile + "\" -o \"" + shobj + "\" 2>&1";
-  runCompiler(cmdline);
+  std::ifstream file(cxxfile.c_str());
+  std::string cxxcode, buf;
+  while (file.good())
+  {
+    getline(file,buf);
+    cxxcode += buf + '\n';
+  }
+  runCompiler(cxxcode, shobj, executableDir);
 }
+
+void System::generateSystem(const std::string& vffile, const std::string& executableDir)
+{
+#ifdef GINAC_FOUND
+  // parsing the vector field file
+  std::ostringstream cxxcode;
+  std::map<std::string, std::string> options;
+  VectorField vf;
+  vf.ReadXML(vffile);
+  int pserr = vf.ProcessSymbols();
+  if (pserr == -1) P_MESSAGE1("Could not parse the vector filed definition.");
+  if (vf.testHasNonconstantDelay()) P_MESSAGE1("Nonconstant delays are not suported yet.");
+  vf.PrintKnut(cxxcode, options);
+  runCompiler(cxxcode.str(), vffile + ".so", executableDir);
+#endif
+} 
 
 // Static member. Compile if necessary
 void System::makeSystem(const std::string& shobj, const std::string& executableDir)
 {
   // convert the name first from .so to .cpp
   std::string cxxfile(shobj);
-  std::string vffile(shobj);
+  std::string vffile;
   if (cxxfile.substr(cxxfile.size()-3,cxxfile.size()) == ".so")
   {
-    cxxfile.erase(cxxfile.size()-3); cxxfile.append(".cpp");
-    vffile.erase(vffile.size()-3);
+    cxxfile.erase(cxxfile.size()-3);
+    vffile = cxxfile;
+    cxxfile.append(".cpp");
   } else {
     P_MESSAGE3("The file name '", shobj, "' does not have the '.so' extension.");
   }
@@ -249,6 +360,10 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
   // if there's no .so, but there's a .cpp
   bool compile = (res_so != 0)&&(res_cxx == 0);
   bool generate = (res_so != 0)&&(res_vf == 0);
+//   if (generate) std::cout << "Generate\n";
+//   else std::cout << "Can't generate\n";
+//   if (compile) std::cout << "Compile\n";
+//   else std::cout << "Can't compile\n";
   // if both .so and .cpp exist, the date decides
 #ifdef __APPLE__
   if (res_cxx == 0)

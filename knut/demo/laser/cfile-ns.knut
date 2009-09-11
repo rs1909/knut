@@ -3,7 +3,7 @@
  <input>out-psol.mat</input>
  <output>out-ns.mat</output>
  <sysname>sys-laser.so</sysname>
- <label>39</label>
+ <label>41</label>
  <pointtype>-1</pointtype>
  <cptype>P</cptype>
  <cpnum>0</cpnum>
