@@ -1,4 +1,5 @@
 #!/bin/sh
+# CMAKE_OSX_ARCHITECTURES is necessary to remove other architectures
 SCRIPTDIR=${0/build-mac.sh/}
 cmake -G "Unix Makefiles"\
 	-D CMAKE_CXX_COMPILER="g++"\

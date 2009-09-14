@@ -1,6 +1,14 @@
 INCLUDE( ${QT_USE_FILE} )
 
 LINK_DIRECTORIES( ${CBLAS_PATH} ${ATLAS_PATH} )
+SET(INTERNAL_LIBS knutlib laarpack umfpack amd ${VFGEN_LIBS} mxml)
+SET(EXTERNAL_LIBS ${GINAC_LDFLAGS} ${ATLAS_CBLAS} ${ATLAS_ATLAS}
+        ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+SET(QT_LIBS ${KNUT_QTMAIN}
+        ${QT_QTCORE_LIBRARY}
+        ${QT_QTGUI_LIBRARY}
+        ${QT_QTSVG_LIBRARY}
+        ${COREFOUNDATION_LIBRARY})
 
 INCLUDE_DIRECTORIES( ${QT_QTXML_INCLUDE_DIR}
 	${QT_QTSVG_INCLUDE_DIR}
@@ -41,20 +49,14 @@ IF(APPLE)
     ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
     PROPERTIES MACOSX_PACKAGE_LOCATION Headers)
 
-  TARGET_LINK_LIBRARIES( Knut
-  	${KNUT_QTMAIN}
-  	${QT_QTCORE_LIBRARY}
-  	${QT_QTGUI_LIBRARY}
-  	${QT_QTSVG_LIBRARY}
-  	${COREFOUNDATION_LIBRARY}
-  	knutlib laarpack umfpack amd ${VFGEN_LIBS} mxml
-	${GINAC_LDFLAGS}
-  	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+  TARGET_LINK_LIBRARIES( Knut ${QT_LIBS} 
+	${INTERNAL_LIBS} ${EXTERNAL_LIBS}
+	${COREFOUNDATION_LIBRARY})
 
   SET_TARGET_PROPERTIES( Knut
     PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST ${KNUT_SOURCE_DIR}/gui/MacOS/Info.plist
-  	MACOSX_BUNDLE_INFO_STRING "A numerical continuation software"
+#    MACOSX_BUNDLE_INFO_PLIST ${KNUT_SOURCE_DIR}/gui/MacOS/Info.plist
+    MACOSX_BUNDLE_INFO_STRING "A numerical continuation software"
     MACOSX_BUNDLE_ICON_FILE "knut.icns"
     MACOSX_BUNDLE_GUI_IDENTIFIER "????"
     MACOSX_BUNDLE_LONG_VERSION_STRING "${PACKAGE_VERSION}"
@@ -63,7 +65,23 @@ IF(APPLE)
     MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
     MACOSX_BUNDLE_COPYRIGHT "Copyright © 2002-2009, Robert Szalai")
 
-  INSTALL( TARGETS Knut DESTINATION "." )
+  INSTALL( TARGETS Knut DESTINATION ${KNUT_BINARY_DIR})
+  ADD_CUSTOM_TARGET(frameworks
+    COMMAND
+    mkdir -p "${KNUT_BINARY_DIR}/Knut.app/Contents/Frameworks"\;
+    mkdir -p "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/"\;
+    cp -HR ${QT_QTGUI_LIBRARY_RELEASE}/Versions/4/Resources/qt_menu.nib "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/"\;
+# Apparently no plugins are required 
+#    cp -HR ${QT_PLUGINS_DIR}/imageformats "${KNUT_BINARY_DIR}/Knut.app/Contents/Plugins"\;
+    # SETTING UP THE PLUGIN LOCATIONS
+    rm -f "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
+    echo "[Paths]" >"${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
+    echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
+    cmake -P ${KNUT_SOURCE_DIR}/createAppBundle.cmake ${KNUT_BINARY_DIR}\;
+    # COPYING THE WHOLE THING
+    rm -rf "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
+    mkdir -p "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
+    cp -Rp "${KNUT_BINARY_DIR}/Knut.app" "${CMAKE_INSTALL_PREFIX}"\;)
 
 ENDIF(APPLE)
 
@@ -78,17 +96,11 @@ IF(NOT APPLE)
     screendialog.h
     ${MOC_SRCS} ${ICONS} )
 
-  TARGET_LINK_LIBRARIES( knut-gui
-  	${KNUT_QTMAIN}
-  	${QT_QTCORE_LIBRARY}
-  	${QT_QTGUI_LIBRARY}
-  	${QT_QTSVG_LIBRARY}
-  	knutlib laarpack umfpack amd ${VFGEN_LIBS} mxml AUX_BLAS
-  	${GINAC_LDFLAGS}
-	${ATLAS_CBLAS} ${ATLAS_ATLAS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+  TARGET_LINK_LIBRARIES( knut-gui ${QT_LIBS}
+        ${INTERNAL_LIBS} ${EXTERNAL_LIBS})
 
   INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
-
+	
   IF(WIN32)
     SET_TARGET_PROPERTIES( knut-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
     ADD_CUSTOM_COMMAND( TARGET knut-gui PRE_LINK COMMAND i686-pc-mingw32-windres -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )

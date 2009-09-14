@@ -64,11 +64,43 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #------------------------------------------------------------------------------
-# finding Qt4
+# finding GiNaC
 #------------------------------------------------------------------------------
 
 include(FindPkgConfig)
 pkg_check_modules (GINAC ginac)
+
+#------------------------------------------------------------------------------
+# finding libstdc++
+#------------------------------------------------------------------------------
+
+IF(${CMAKE_CXX_FLAGS} MATCHES ".*-m64.*")
+  SET(OSX_ARCH "x86_64" CACHE INTERNAL "The build architecture" )
+  EXECUTE_PROCESS( COMMAND ${CMAKE_CXX_COMPILER} -m64 -print-file-name=libstdc++.a
+    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+ELSE(${CMAKE_CXX_FLAGS} MATCHES ".*-m64.*")
+  SET(OSX_ARCH "i386" CACHE INTERNAL "The build architecture" )
+  EXECUTE_PROCESS( COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++.a
+    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+ENDIF(${CMAKE_CXX_FLAGS} MATCHES ".*-m64.*")
+
+MESSAGE( STATUS "The C++ runtime library is ${RES}" )
+SET( KNUT_CXX_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
+
+#------------------------------------------------------------------------------
+# finding libgfortran
+#------------------------------------------------------------------------------
+
+IF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.a
+    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+ELSE(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+  EXECUTE_PROCESS( COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libgfortran.a
+    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+
+MESSAGE( STATUS "The FORTRAN runtime library is ${RES}" )
+SET( KNUT_FORTRAN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
 
 #------------------------------------------------------------------------------
 # Writing the generated files
@@ -157,49 +189,6 @@ IF(APPLE)
     rm -f "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
     hdiutil create -volname "Knut" -srcfolder Knut.app/ -srcfolder matlab/ -srcfolder demo/ "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
     popd\;)
-  # CREATING A MAC OSX BUNDLE
-  ADD_CUSTOM_TARGET( frameworks
-    COMMAND rm -rf "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks"\;
-    mkdir -p "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks"\;
-    rm -rf "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Plugins"\;
-    mkdir -p "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Plugins"\;
-    cp -R ${QT_QTCORE_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks"\;
-    cp -R ${QT_QTGUI_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks"\;
-    cp -R ${QT_QTSVG_LIBRARY_RELEASE} "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks"\;
-    cp -R ${QT_PLUGINS_DIR}/imageformats "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Plugins"\;
-    "LIBNAMES=(QtCore.framework/Versions/4/QtCore" "QtGui.framework/Versions/4/QtGui" "QtSvg.framework/Versions/4/QtSvg)"\;
-    rm `find "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks" -type f | grep Headers`\;
-    for ix in \$\${!LIBNAMES[*]}\; do
-      LOCNAMES[\$\$ix]=`otool -L gui/Knut.app/Contents/MacOS/Knut | grep \$\${LIBNAMES[\$\$ix]} | sed -e s/\\\(.*\\\)//g -e s/\\ //g`\;
-      # CHANGING THE LIBRARY IDS
-      install_name_tool -id "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}"
-"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}"\;
-      # CHANGING THE DEPENDENCIES in KNUT
-      install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}"
-"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/MacOS/Knut"\;
-      # REMOVING UNNECESSARY ARCHS
-      lipo "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}" -thin ${CMAKE_OSX_ARCHITECTURES} -output
-"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks/\$\${LIBNAMES[\$\$ix]}"\;
-    done\;
-    for ix in \$\${!LIBNAMES[*]}\; do
-      for iy in \$\${!LIBNAMES[*]}\; do
-        # CHANGING THE DEPENDENCIES IN THE LIBRARIES
-        install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}"
-"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Frameworks/\$\${LIBNAMES[\$\$iy]}"\;
-      done\;
-      # COPYING THE PLUGINS AND CHANGING THE DEPENDENCIES
-      for plg in "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Plugins/imageformats/*.dylib"\; do
-        install_name_tool -change "\$\${LOCNAMES[\$\$ix]}" "\@executable_path/../Frameworks/\$\${LIBNAMES[\$\$ix]}" "\$\$plg"\;
-      done\;
-    done\;
-    #
-    for plg in "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Plugins/imageformats/*.dylib"\; do
-      lipo "\$\$plg" -thin ${CMAKE_OSX_ARCHITECTURES} -output "\$\$plg"\;
-    done\;
-    # SETTING UP THE PLUGIN LOCATIONS
-    rm -f "${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Resources/qt.conf"\;
-    echo "[Paths]" >"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Resources/qt.conf"\;
-    echo "Plugins = Plugins" >"${CMAKE_INSTALL_PREFIX}/Knut.app/Contents/Resources/qt.conf"\;)
 ENDIF(APPLE)
 
 #------------------------------------------------------------------------------

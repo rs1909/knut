@@ -266,9 +266,11 @@ static inline void toCommandLine(std::string& cmdline, const std::list<std::stri
 
 static void runCompiler(const std::string& cxxstring, const std::string& shobj, const std::string& executableDir)
 {  
+  std::string cxxcomp(CMAKE_CXX_COMPILER);
   // constructing the command line
   std::list<std::string> arglist;
-  addArgList(arglist, std::string(CMAKE_CXX_COMPILER " " 
+  arglist.push_back(cxxcomp.substr(cxxcomp.find_last_of(DIRSEP)+1,std::string::npos));
+  addArgList(arglist, std::string( 
     CMAKE_CXX_FLAGS " "
     CMAKE_SHARED_LIBRARY_C_FLAGS " " 
     CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS));
@@ -283,6 +285,9 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   arglist.push_back(shobj);
   arglist.push_back("-");
 
+  std::string cmdline;
+  toCommandLine(cmdline, arglist);
+//  std::cout << cmdline << std::endl;
   // running the command
   int input, output, error;
   pipeOpen(arglist, &input, &output, &error);
@@ -302,8 +307,6 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   waitpid(-1,&status,0);
   close (output);
   close (error);
-  std::string cmdline;
-  toCommandLine(cmdline, arglist);
   if (status != 0) P_MESSAGE6("The error output of the compile command '",
     cmdline, "' is ", err_buf, " and the standard output is ", out_buf);
 }
