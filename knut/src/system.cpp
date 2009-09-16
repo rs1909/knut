@@ -19,6 +19,7 @@
 extern "C"{
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <errno.h>
 }
 
 #include "config.h"
@@ -39,50 +40,57 @@ int pipeOpen(std::list<std::string>& arglist,
                            int* input, int* output, int* error)
 {
   if ( (input==0)&&(output==0)&&(error==0) ) return -1;
-  const char* command;
   char *argv[arglist.size()+1];
   int i = 0;
-  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  for (std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
   {
     argv[i] = new char[it->size()+1];
     strcpy(argv[i],it->c_str());
     ++i;
   }
   argv[i] = 0;
-  command = argv[0];
-  
+
   int fds_output[2], fds_input[2], fds_error[2];
+  int fdc_output[2], fdc_input[2], fdc_error[2];
 
   /* Create a pipe.  File descriptors for the two ends of the pipe are
      placed in fds.  */
-  if (output) pipe (fds_output);
-  if (input)  pipe (fds_input);
-  if (error)  pipe (fds_error);
+  if (output) if (pipe (fds_output) == -1) P_MESSAGE2("pipe: ", strerror(errno));
+  if (input)  if (pipe (fds_input) == -1) P_MESSAGE2("pipe: ", strerror(errno));
+  if (error)  if (pipe (fds_error) == -1) P_MESSAGE2("pipe: ", strerror(errno));
+  for (int i=0; i<2; ++i)
+  {
+    fdc_output[i] = fds_output[i]; 
+    fdc_input[i] = fds_input[i];
+    fdc_error[i] = fds_error[i];
+  }
   /* Fork a child process.  */
   pid_t pid = fork ();
   if (pid == (pid_t) 0)
   {
     /* This is the child process.  Close our copy of the read (write) end of
        the file descriptor.  */
-    if (input)  close (fds_input[1]);
-    if (output) close (fds_output[0]);
-    if (error)  close (fds_error[0]);
+    if (input)  if (close (fds_input[1]) == -1) P_MESSAGE2("close: ", strerror(errno));
+    if (output) if (close (fds_output[0]) == -1) P_MESSAGE2("close: ", strerror(errno));
+    if (error)  if (close (fds_error[0]) == -1) P_MESSAGE2("close ", strerror(errno));
     /* Connect the read(write) end of the pipe to standard input.  */
-    if (input) dup2 (fds_input[0], STDIN_FILENO);
-    if (output) dup2 (fds_output[1], STDOUT_FILENO);
-    if (error)  dup2 (fds_error[1], STDERR_FILENO);
+    if (input)  if (dup2 (fds_input[0], STDIN_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
+    if (output) if (dup2 (fds_output[1], STDOUT_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
+    if (error)  if (dup2 (fds_error[1], STDERR_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
     /* Replace the child process with the "cat" program.  */
-    execvp (command, argv);
+    int st = execvp (argv[0], argv);
+    // This wouldn't return unless there's a problem
+    if (st == -1) P_MESSAGE4("Error executing command ", argv[0], ": ", strerror(errno));
   }
   else
   {
     /* Close our copy of the write (read) end of the file descriptor.  */
-    if (input)  close (fds_input[0]);
-    if (output) close (fds_output[1]);
-    if (error)  close (fds_error[1]);
-    if (input)  *input = fds_input[1];
-    if (output) *output = fds_output[0];
-    if (error)  *error = fds_error[0];
+    if (input)  if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
+    if (output) if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
+    if (error)  if (close (fdc_error[1]) == -1) P_MESSAGE2("close ", strerror(errno));
+    if (input)  *input = fdc_input[1];
+    if (output) *output = fdc_output[0];
+    if (error)  *error = fdc_error[0];
   }
   for (int k=0; k<1; ++k) delete[] argv[k];
   return pid;
@@ -234,17 +242,16 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
   }
 }
 
-
 static inline void addArgList(std::list<std::string>& argv, const std::string& str)
 {
   size_t start = 0;
   size_t i=0;
   while (i < str.size())
-  {
-    while ((str[i] != ' ')&&(str[i] != '\t')&&(i < str.size())) ++i;
-    argv.push_back(str.substr(start, i-start));
-    while ((str[i] == ' ')||(str[i] == '\t')) ++i;
+  {    
+    while (((str[i] == ' ')||(str[i] == '\t'))&&(i < str.size())) ++i;
     start = i;
+    while (((str[i] != ' ')&&(str[i] != '\t'))&&(i < str.size())) ++i;
+    argv.push_back(str.substr(start, i-start));
   }
 }
 
@@ -287,12 +294,16 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 
   std::string cmdline;
   toCommandLine(cmdline, arglist);
-//  std::cout << cmdline << std::endl;
+//   std::cout << cmdline << std::endl;
   // running the command
   int input, output, error;
-  pipeOpen(arglist, &input, &output, &error);
+  int pid = pipeOpen(arglist, &input, &output, &error);
   write (input, cxxstring.c_str(), cxxstring.size());
   close (input);
+  int status = 0;
+  pid_t retval = waitpid(-1, &status, 0);
+  if (retval == -1) P_MESSAGE2("Error while waiting for the compiler: ", strerror(errno));
+  if (retval == 0) P_MESSAGE1("A mysterious error. (No child wanted to report status.)");
   // Output
   const size_t bufsize = 2048;
   char *out_buf = new char[bufsize];
@@ -302,22 +313,25 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   // Standard Error
   bytes = read(error, err_buf, bufsize);
   err_buf[bytes] = '\0';
-  int status;
   // Check the exist status
-  waitpid(-1,&status,0);
   close (output);
   close (error);
-  if (status != 0) P_MESSAGE6("The error output of the compile command '",
-    cmdline, "' is ", err_buf, " and the standard output is ", out_buf);
+  if (WIFEXITED(status))
+  {
+    if (WEXITSTATUS(status) != 0) P_MESSAGE6("The error output of the compile command '",
+      cmdline, "' is ", err_buf, " and the standard output is ", out_buf);
+  } else
+  {
+    P_MESSAGE1("The compiler was unexpectedly terminated.");
+  }
 }
 
 void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
   std::ifstream file(cxxfile.c_str());
   std::string cxxcode, buf;
-  while (file.good())
+  while (!std::getline(file,buf).eof())
   {
-    getline(file,buf);
     cxxcode += buf + '\n';
   }
   runCompiler(cxxcode, shobj, executableDir);
@@ -363,10 +377,6 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
   // if there's no .so, but there's a .cpp
   bool compile = (res_so != 0)&&(res_cxx == 0);
   bool generate = (res_so != 0)&&(res_vf == 0);
-//   if (generate) std::cout << "Generate\n";
-//   else std::cout << "Can't generate\n";
-//   if (compile) std::cout << "Compile\n";
-//   else std::cout << "Can't compile\n";
   // if both .so and .cpp exist, the date decides
 #ifdef __APPLE__
   if (res_cxx == 0)
