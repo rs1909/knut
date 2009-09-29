@@ -35,8 +35,11 @@ class ODEColloc : public PerSolColloc
     void RHS(Vector& rhs, const Vector& par, const Vector& sol);
     void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
     void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
+    void StabJac(SpMatrix& A, const Vector& par);
 
   private:
+    
+    template <bool periodic> void RHS_jacobian(SpMatrix& A, const Vector& par);
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
     inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cDEG, int cDIM)

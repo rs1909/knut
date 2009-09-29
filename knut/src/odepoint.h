@@ -26,7 +26,7 @@ class ODEPoint : public PerSolPoint
     ODEPoint(System& sys, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg);
     ~ODEPoint();
     
-    virtual void Stability() { P_MESSAGE1("Not implemented"); }
+    virtual void Stability();
     virtual void SwitchTFLP(BranchSW type, double ds) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
     virtual void SwitchTFPD(double ds) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
     virtual void SwitchTFHB(double ds, std::ostream& out) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
@@ -41,6 +41,10 @@ class ODEPoint : public PerSolPoint
     );
     
     ODEColloc* colloc;
+    SpFact     jacStab;
+    Matrix     matrixInitialCondition;
+    Matrix     matrixSolution;
+    Matrix     monodromyMatrix;
 };
 
 #endif // ODEPOINT_H

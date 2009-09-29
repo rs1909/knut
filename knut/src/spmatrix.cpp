@@ -302,7 +302,7 @@ void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
 
   for (int i = 0; i < b.c; i++)
   {
-    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.m + i * x.r, b.m + i * b.r, Numeric, Control, 0, Wi, W);
+    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.Pointer(0, i), b.Pointer(0, i), Numeric, Control, 0, Wi, W);
     P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
   }
 }

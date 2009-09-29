@@ -12,21 +12,20 @@
 #include "matrix.h"
 #include "hypermatrix.h"
 
-#define NDIM colloc->Ndim()
-#define NPAR colloc->Npar()
-#define NINT colloc->Nint()
-#define NDEG colloc->Ndeg()
-
 ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg)
- : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim())
+ : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
+   jacStab('R', sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1)),
+   matrixInitialCondition(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
+   matrixSolution(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
+   monodromyMatrix(sys_.ndim(), sys_.ndim())
 {
   colloc = new ODEColloc(sys_, nint, ndeg);
   basecolloc = colloc;
   persolcolloc = colloc;
   Construct();
   FillSol(sys_);
-  par(NPAR + ParAngle) = 0.0;
-  par(NPAR + ParRot) = 0.0;
+  par(colloc->Npar() + ParAngle) = 0.0;
+  par(colloc->Npar() + ParRot) = 0.0;
 }
 
 ODEPoint::~ODEPoint()
@@ -34,6 +33,11 @@ ODEPoint::~ODEPoint()
   delete colloc;
   Destruct();
 }
+
+#define NDIM (colloc->Ndim())
+#define NPAR (colloc->Npar())
+#define NINT (colloc->Nint())
+#define NDEG (colloc->Ndeg())
 
 // its unmodified from point.cpp. Only some stuff is removed.
 void ODEPoint::Jacobian
@@ -112,4 +116,22 @@ void ODEPoint::Jacobian
       RHS.getV3()(dim3) = 0.0;
     }
   }
+}
+
+void ODEPoint::Stability()
+{
+  for (int i = 0; i < NDIM; ++i)
+  {
+    matrixInitialCondition(i,i) = 1.0;
+  }
+  colloc->StabJac(jacStab, par);
+  jacStab.Solve(matrixSolution, matrixInitialCondition);
+  for (int i = 0; i < NDIM; ++i)
+  {
+    for (int j = 0; j< NDIM; ++j)
+    {  
+      monodromyMatrix(i,j) = matrixSolution(NDIM*NDEG*NINT+i,j);
+    }
+  }
+  monodromyMatrix.Eigval(mRe, mIm);
 }

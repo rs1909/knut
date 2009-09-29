@@ -228,16 +228,31 @@ void ODEColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int
 
 void ODEColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 {
+  RHS_jacobian<true>(A, par);
+}
+
+void ODEColloc::StabJac(SpMatrix& A, const Vector& par)
+{
+  RHS_jacobian<false>(A, par);
+}
+
+template <bool periodic>
+void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
+{
   A.Clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(2);
+    if (periodic) A.NewL(2);
+    else          A.NewL(1);
     A.WrLi(r, 0) = r;
-    A.WrLi(r, 1) = r + NDIM * NDEG * NINT;
     A.WrLx(r, 0) = 1.0;
-    A.WrLx(r, 1) = -1.0;
+    if (periodic)
+    {
+      A.WrLi(r, 1) = r + NDIM * NDEG * NINT;
+      A.WrLx(r, 1) = -1.0;
+    }
   }
 
   // MUST PRESERVE THE ORDER. DO NOT CHANGE THE LOOPS

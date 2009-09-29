@@ -262,6 +262,15 @@ class Array2D
       return &m[i + r*j];
     }
 
+    inline const T *Pointer(const int i, const int j) const
+    {
+#ifdef DEBUG
+      P_ASSERT_X(i < r && j < c, "bound& ");
+      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
+#endif
+      return &m[i + r*j];
+    }
+
     inline void Clear()
     {
       for (int i = 0; i < r*c; i++) m[i] = T(0);
