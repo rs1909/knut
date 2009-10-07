@@ -3,7 +3,14 @@
 # Apparently no plugins are required
 #  file(GLOB pluginlist "${QT_PLUGINS_DIR}/imageformats/*.dylib")
   get_bundle_keys(${KNUT_BINARY_DIR}/gui/Knut.app "${pluginlist}" "${KNUT_BINARY_DIR}/Knut.app/Contents/Plugins/" keys)
-  fixup_bundle(${KNUT_BINARY_DIR}/Knut.app "" "${KNUT_BINARY_DIR}/Knut.app/Contents/Plugins/")
+  fixup_bundle(${KNUT_BINARY_DIR}/gui/Knut.app "" "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Plugins/")
   foreach(key ${keys})
-        execute_process(COMMAND lipo ${${key}_RESOLVED_EMBEDDED_ITEM} -thin ${OSX_ARCH} -output ${${key}_RESOLVED_EMBEDDED_ITEM})
+        execute_process(COMMAND otool -f ${${key}_RESOLVED_EMBEDDED_ITEM} 
+        OUTPUT_VARIABLE tothin)
+        if(tothin MATCHES fat_magic)
+          execute_process(COMMAND lipo ${${key}_RESOLVED_EMBEDDED_ITEM} -thin ${OSX_ARCH} -output ${${key}_RESOLVED_EMBEDDED_ITEM})
+          MESSAGE("Thinning ${${key}_RESOLVED_EMBEDDED_ITEM}")
+        else(tothin MATCHES fat_magic)
+          MESSAGE("Not thinning ${${key}_RESOLVED_EMBEDDED_ITEM}")
+        endif(tothin MATCHES fat_magic)
   endforeach(key)

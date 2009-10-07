@@ -65,23 +65,23 @@ IF(APPLE)
     MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
     MACOSX_BUNDLE_COPYRIGHT "Copyright © 2002-2009, Robert Szalai")
 
-  INSTALL( TARGETS Knut DESTINATION ${KNUT_BINARY_DIR})
+# INSTALL( TARGETS Knut DESTINATION ${KNUT_BINARY_DIR})
   ADD_CUSTOM_TARGET(frameworks
     COMMAND
-    mkdir -p "${KNUT_BINARY_DIR}/Knut.app/Contents/Frameworks"\;
-    mkdir -p "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/"\;
-    cp -HR ${QT_QTGUI_LIBRARY_RELEASE}/Versions/4/Resources/qt_menu.nib "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/"\;
+    mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Frameworks"\;
+    mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/"\;
+    cp -HR ${QT_QTGUI_LIBRARY_RELEASE}/Versions/4/Resources/qt_menu.nib "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/"\;
 # Apparently no plugins are required 
-#    cp -HR ${QT_PLUGINS_DIR}/imageformats "${KNUT_BINARY_DIR}/Knut.app/Contents/Plugins"\;
+#    cp -HR ${QT_PLUGINS_DIR}/imageformats "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Plugins"\;
     # SETTING UP THE PLUGIN LOCATIONS
-    rm -f "${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
-    echo "[Paths]" >"${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
-    echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/Knut.app/Contents/Resources/qt.conf"\;
+    rm -f "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
+    echo "[Paths]" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
+    echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
     cmake -P ${KNUT_SOURCE_DIR}/createAppBundle.cmake ${KNUT_BINARY_DIR}\;
     # COPYING THE WHOLE THING
     rm -rf "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
     mkdir -p "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
-    cp -Rp "${KNUT_BINARY_DIR}/Knut.app" "${CMAKE_INSTALL_PREFIX}"\;)
+    cp -Rp "${KNUT_BINARY_DIR}/gui/Knut.app" "${CMAKE_INSTALL_PREFIX}"\;)
 
 ENDIF(APPLE)
 

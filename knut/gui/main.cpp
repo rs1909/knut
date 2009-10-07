@@ -15,6 +15,8 @@
 #include <QFileInfo>
 
 #ifdef Q_WS_MAC
+#include <cstdio>
+#include <mach-o/dyld.h>
 #include "macopenevent.h"
 #endif
 
@@ -25,7 +27,10 @@ int main(int argc, char *argv[])
 {
   QString constFile;
   // searching for the run option
-  bool run =  false;
+  bool run = false;
+#ifdef Q_WS_MAC
+  bool printDyld = false;
+#endif
   for (int acnt = 1; acnt < argc;  acnt++)
   {
     if (argv[acnt][0] == '-')
@@ -46,12 +51,45 @@ int main(int argc, char *argv[])
           }
           break;
 #endif
+#ifdef Q_WS_MAC
+        case 'L':
+          if (argv[acnt][2] == 0) printDyld = true;
+          break;
+#endif
       }
     } else
     {
       constFile = argv[acnt];
     }
   }
+  
+#ifdef Q_WS_MAC
+  // gettig shared library names from 'Mac OS X interals' by A. Singh
+  if (printDyld)
+  {
+    const char *s;
+    uint32_t i, image_max;
+    image_max = _dyld_image_count();
+    // start from 1 so that the program itself is not included
+    for (i = 1; i < image_max; i++)
+    {
+      if ((s = _dyld_get_image_name(i)))
+      {
+        QFileInfo lib(s);
+        // remove system libraries
+        if (!lib.path().contains("/usr/lib") && !lib.path().contains("/System"))
+        {
+          std::cout << s << '\n';
+        }
+      } else
+      {
+        // No name
+        std::cerr << "Library has no name\n";
+      }
+    }
+    return 0;
+  }
+#endif
 
   if (run)
   {
