@@ -270,7 +270,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
   }
 
   // the right-hand side
-  sys->p_rhs(p_fx, time1, p_xx, par);
+  sys->p_rhs(p_fx, time1, p_xx, par, 0);
   for (int idx = 0; idx < time1.Size(); ++idx)
   {
     for (int p = 0; p < NDIM; p++) 
@@ -297,7 +297,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
       for (int k = 0; k < NTAU; k++)
       {
         int nx = 1, vx = k, np = 0, vp = 0;
-        sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+        sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
         for (int idx = 0; idx < time1.Size(); ++idx)
         {
           for (int p = 0; p < NDIM; p++)
@@ -323,7 +323,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
     if (var(r) < NPAR)
     {
       int nx = 0, vx = 0, np = 1, vp = var(r);
-      sys->p_deri(p_dfp, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfp, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
       for (int idx = 0; idx < time1.Size(); ++idx)
       {
         for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = - par(0) * p_dfp(p, 0, idx);
@@ -347,7 +347,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
       for (int k = 0; k < NTAU; k++)
       {
         const int nx = 1, vx = k, np = 0, vp = 0;
-        sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+        sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
         for (int idx = 0; idx < time1.Size(); ++idx)
         {
           const double d = -p_tau(k, idx);
@@ -373,7 +373,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
     {
       // evaluate the solution
       const int nx = 1, vx = k - 1, np = 0, vp = 0;
-      sys->p_deri(p_dfx, time1, p_xx, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
     }
 
     for (int idx = 0; idx < time1.Size(); ++idx)

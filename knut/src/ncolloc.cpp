@@ -431,7 +431,7 @@ void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
     rhs(r) = sol(r + NDIM * NDEG * NINT) - sol(r);
   }
 
-  sys->p_rhs(p_fx, time, solData, par);
+  sys->p_rhs(p_fx, time, solData, par, 0);
   for (int k = 0; k < NDIM; k++)
   {
     for (int idx = 0; idx < NDEG*NINT; ++idx)
@@ -455,7 +455,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int a
   if (alpha == 0)
   {
     sys->p_dtau(p_dtau, time, par, alpha);
-    sys->p_rhs(p_fx, time, solData, par);
+    sys->p_rhs(p_fx, time, solData, par, 0);
 
     for (int p = 0; p < NDIM; p++)
     {
@@ -469,7 +469,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int a
     {
       int nx=1, vx=r, np=0, vp;
 
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
       for (int p = 0; p < NDIM; p++)
       {
         for (int q = 0; q < NDIM; q++)
@@ -490,7 +490,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int a
     nx = 0, np = 1;
     vp = alpha;
 
-    sys->p_deri(p_dfp, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    sys->p_deri(p_dfp, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
     for (int k = 0; k < NDIM; k++)
     {
@@ -503,7 +503,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int a
     for (int r = 0; r < NTAU; r++)
     {
       nx = 1; np = 0; vx = r;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
       for (int p = 0; p < NDIM; p++)
       {
         for (int q = 0; q < NDIM; q++)
@@ -551,7 +551,7 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
     if (k != 0)
     {
       vx = k - 1;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -631,7 +631,7 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par)
     if (k != 0)
     {
       vx = k - 1;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -706,7 +706,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Z)
     {
       int nx = 1, vx, np = 0, vp;
       vx = k - 1;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -801,7 +801,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Re, double Im)
     {
       int nx = 1, vx, np = 0, vp;
       vx = k - 1;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -870,7 +870,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       nx = 1;
       np = 0;
       vx[0] = k;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fx.Clear(); //OK this is cleared, but why here?
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
@@ -889,7 +889,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       {
         vx[1] = r;
         vx[0] = k;
-        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
         for (int idx = 0; idx < NDEG*NINT; ++idx)
         {
           for (int p = 0; p < NDIM; p++)
@@ -930,7 +930,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       np = 1;
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fx.Clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
@@ -949,7 +949,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       {
         vx[1] = r;
         vx[0] = k; // CHANGE THIS to 0, 1
-        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
         for (int idx = 0; idx < NDEG*NINT; ++idx)
         {
           for (int p = 0; p < NDIM; p++)
@@ -1021,7 +1021,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       nx = 1;
       np = 0;
       vx[0] = k;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fxRe.Clear(); //OK this is cleared, but why here?
       p_fxIm.Clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
@@ -1042,8 +1042,8 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       {
         vx[1] = r;
         vx[0] = k;
-        sys->p_deri(p_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
-        sys->p_deri(p_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        sys->p_deri(p_dfxRe, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_dfxIm, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataIm);
         for (int idx = 0; idx < NDEG*NINT; ++idx)
         {
           for (int p = 0; p < NDIM; p++)
@@ -1086,7 +1086,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       np = 1;
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fxRe.Clear();
       p_fxIm.Clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
@@ -1107,8 +1107,8 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       {
         vx[1] = r;
         vx[0] = k; // CHANGE THIS to 0, 1
-        sys->p_deri(p_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
-        sys->p_deri(p_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        sys->p_deri(p_dfxRe, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_dfxIm, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataIm);
         for (int idx = 0; idx < NDEG*NINT; ++idx)
         {
           for (int p = 0; p < NDIM; p++)
@@ -1178,7 +1178,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
     for (int r = 0; r < NTAU; r++)
     {
       vx[0] = r;        // CHANGE THIS to 0
-      sys->p_deri(p_t_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+      sys->p_deri(p_t_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
       //std::cout<<"t_dfx "; t_dfx.Print();
       for (int ra = 0; ra < NDIM; ra++)
       {
@@ -1278,8 +1278,8 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
       for (int r = 0; r < NTAU; r++)
       {
         vx[0] = r;        // CHANGE THIS to 0
-        sys->p_deri(p_t_dfxRe, time, solData, par, nx, &vx[0], np, &vp, phiDataRe);
-        sys->p_deri(p_t_dfxIm, time, solData, par, nx, &vx[0], np, &vp, phiDataIm);
+        sys->p_deri(p_t_dfxRe, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataRe);
+        sys->p_deri(p_t_dfxIm, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataIm);
         //std::cout<<"t_dfx "; t_dfx.Print();
         for (int ra = 0; ra < NDIM; ra++)
         {
@@ -1367,7 +1367,7 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
   {
     int nx = 1, vx, np = 0, vp;
     vx = k;
-    sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -1428,7 +1428,7 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, double Z)
   {
     int nx = 1, vx, np = 0, vp;
     vx = k - 1;
-    sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
       const int zpow = (-kkI(k, idx) + NINT - 1) / NINT;
@@ -1485,7 +1485,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       nx = 1;
       np = 0;
       vx[0] = k;
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fx.Clear(); //OK this is cleared, but why here?
       for (int p = 0; p < NDIM; p++)
       {
@@ -1504,7 +1504,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       {
         vx[1] = r;
         vx[0] = k;
-        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
         for (int p = 0; p < NDIM; p++)
         {
           for (int q = 0; q < NDIM; q++)
@@ -1542,7 +1542,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       np = 1;
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
-      sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, p_dummy);
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fx.Clear();
       for (int p = 0; p < NDIM; p++)
       {
@@ -1561,7 +1561,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       {
         vx[1] = r;
         vx[0] = k; // CHANGE THIS to 0, 1
-        sys->p_deri(p_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+        sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
         for (int p = 0; p < NDIM; p++)
         {
           for (int q = 0; q < NDIM; q++)
@@ -1634,7 +1634,7 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
     for (int r = 0; r < NTAU; r++)
     {
       vx[0] = r;        // CHANGE THIS to 0
-      sys->p_deri(p_t_dfx, time, solData, par, nx, &vx[0], np, &vp, phiData);
+      sys->p_deri(p_t_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
       //std::cout<<"t_dfx "; t_dfx.Print();
       for (int ra = 0; ra < NDIM; ra++)
       {
@@ -1683,7 +1683,7 @@ void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>
 #ifdef DEBUG
   count_CharJac_MSHphi++;
 #endif
-  sys->p_rhs(p_fxMSH, timeMSH, solData, par);
+  sys->p_rhs(p_fxMSH, timeMSH, solData, par, 0);
 
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
   {
@@ -1708,7 +1708,7 @@ void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<doubl
       nx = 1;
       np = 0;
       vx = r;
-      sys->p_deri(p_dfxMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfxMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       for (int p = 0; p < NDIM; p++)
       {
@@ -1731,11 +1731,11 @@ void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<doubl
       nx = 0, np = 1;
       vp = alpha;
 
-      sys->p_deri(p_dfpMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfpMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       nx = 1, np = 0;
       vx = r;
-      sys->p_deri(p_dfxMSH, timeMSH, solData, par, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfxMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       for (int k = 0; k < NDIM; k++)
       {

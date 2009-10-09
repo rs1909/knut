@@ -56,7 +56,7 @@ static inline double V( double x )
   return pow( ( x - 1 ) / 1, 3.0 ) / ( pow( ( x - 1 ) / 1, 3.0 ) + 1);
 }
 
-void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par )
+void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel )
 {
 #define xx(i,j) yy(i-1,j-1,idx)
 #define f(i,j) out(i-1,idx)
@@ -94,7 +94,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
   }
 }
 
-void sys_p_deri( Array3D<double>&, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, 
+void sys_p_deri( Array3D<double>&, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel, 
                  int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
 {
 

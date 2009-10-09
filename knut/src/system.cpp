@@ -162,20 +162,24 @@ System::System(const std::string& shobj)
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
+  v_nevent = (tp_sys_nevent) fptr(tdlsym(handle, "sys_nevent"));
+  if ((error = tdlerror()) != 0) v_nevent = 0;
+
+  tdlerror();    /* Clear any existing error */
   v_tau = (tp_sys_tau) fptr(tdlsym(handle, "sys_tau"));
-  found_tau = ((error = tdlerror()) == 0);
+  if ((error = tdlerror()) != 0) v_tau = 0;
 
   tdlerror();    /* Clear any existing error */
   v_dtau = (tp_sys_dtau) fptr(tdlsym(handle, "sys_dtau"));
-  found_dtau = ((error = tdlerror()) == 0);
-
+  if ((error = tdlerror()) != 0) v_dtau = 0;
+  
   tdlerror();    /* Clear any existing error */
   v_rhs = (tp_sys_rhs) fptr(tdlsym(handle, "sys_rhs"));
-  found_rhs = ((error = tdlerror()) == 0);
+  if ((error = tdlerror()) != 0) v_rhs = 0;
 
   tdlerror();    /* Clear any existing error */
   v_deri = (tp_sys_deri) fptr(tdlsym(handle, "sys_deri"));
-  found_deri = ((error = tdlerror()) == 0);
+  if ((error = tdlerror()) != 0) v_deri = 0;
 
   tdlerror();    /* Clear any existing error */
   v_stpar = (tp_sys_stpar) fptr(tdlsym(handle, "sys_stpar"));
@@ -187,31 +191,30 @@ System::System(const std::string& shobj)
   
   tdlerror();    /* Clear any existing error */
   v_parnames = (tp_sys_parnames) fptr(tdlsym(handle, "sys_parnames"));
-  found_parnames = ((error = tdlerror()) == 0);
+  if ((error = tdlerror()) != 0) v_parnames = 0;
 
   /* Vectorized versions */
   tdlerror();    /* Clear any existing error */
   v_p_tau = (tp_sys_p_tau) fptr(tdlsym(handle, "sys_p_tau"));
-  found_p_tau = ((error = tdlerror()) == 0);
-  if (!found_tau && !found_p_tau) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
+  if ((error = tdlerror()) != 0) v_p_tau = 0;
+  if ((v_tau == 0) && (v_p_tau == 0)) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_dtau = (tp_sys_p_dtau) fptr(tdlsym(handle, "sys_p_dtau"));
-  found_p_dtau = ((error = tdlerror()) == 0);
-  if (!found_dtau && !found_p_dtau) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
+  if ((error = tdlerror()) != 0) v_p_dtau = 0;
+  if ((v_dtau == 0) && (v_p_dtau == 0)) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_rhs = (tp_sys_p_rhs) fptr(tdlsym(handle, "sys_p_rhs"));
-  found_p_rhs = ((error = tdlerror()) == 0);
-  if (!found_rhs && !found_p_rhs) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
+  if ((error = tdlerror()) != 0) v_p_rhs = 0;
+  if ((v_rhs == 0) && (v_p_rhs == 0)) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   v_p_deri = (tp_sys_p_deri) fptr(tdlsym(handle, "sys_p_deri"));
-  found_p_deri = ((error = tdlerror()) == 0);
-  if (!found_deri && !found_p_deri) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
+  if ((error = tdlerror()) != 0) v_p_deri = 0;
+  if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
 
   nderi = (*v_nderi)();
-//  std::cout<<"The order of supplied derivatives is "<<nderi<<".\n";
 
   f.Init(ndim()), f_eps.Init(ndim());
   f2.Init(ndim()), f_eps2.Init(ndim());
@@ -412,86 +415,7 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
   }
 }
 
-void System::discrderi(Matrix &out, double t, const Matrix& xx, const Vector& par,
-                       int nx, const int* vx, int np, const int* vp, const Matrix& vv)
-{
-  const double abs_eps_x1 = 1e-6;
-  const double rel_eps_x1 = 1e-6;
-  const double abs_eps_p1 = 1e-6;
-  const double rel_eps_p1 = 1e-6;
-  const double abs_eps_x2 = 1e-6;
-  const double rel_eps_x2 = 1e-6;
-
-  const int n = ndim();
-  const int m = 2 * ntau() + 1;
-
-  // f, f_eps, xx_eps
-  // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
-  if ((nx == 1) && (np == 0))
-  {
-    rhs(f, t, xx, par);
-    for (int j = 0; j < n; j++)
-    {
-      // xx_eps = xx;
-      for (int q = 0; q < m; q++) for (int p = 0; p < n; p++) xx_eps(p, q) = xx(p, q);
-      const double eps = abs_eps_x1 + rel_eps_x1 * fabs(xx(j, vx[0]));
-      xx_eps(j, vx[0]) = xx(j, vx[0]) + eps;
-      rhs(f_eps, t, xx_eps, par);
-      for (int p = 0; p < n; p++) out(p, j) = (f_eps(p) - f(p)) / eps;
-    }
-  }
-  // f, f_eps, par_eps
-  // derivatives w.r.t. the parameters, purely, so this results a vector
-  if ((nx == 0) && (np == 1))
-  {
-    rhs(f, t, xx, par);
-    par_eps = par;
-    const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
-    par_eps(vp[0]) = par(vp[0]) + eps;
-    rhs(f_eps, t, xx, par_eps);
-    for (int p = 0; p < n; p++) out(p) = (f_eps(p) - f(p)) / eps;
-  }
-  // f2, f_eps2, dxx2, dxx_eps2, xx_eps2, vt
-  // second derivatives w.r.t. x
-  if ((nx == 2) && (np == 0))
-  {
-    for (int j = 0; j < n; j++)
-    {
-      deri(dxx2, t, xx, par, 1, &vx[0], 0, vp, vv);
-      xx_eps2 = xx;
-      const double eps2 = abs_eps_x2 + rel_eps_x2 * fabs(xx(j, vx[1]));
-      xx_eps2(j, vx[1]) += eps2;
-      deri(dxx_eps2, t, xx_eps2, par, 1, &vx[0], 0, vp, vv);
-      for (int p = 0; p < n; p++)
-      {
-        out(p, j) = 0.0;
-        for (int q = 0; q < n; q++)
-        {
-          out(p, j) += (dxx_eps2(p, q) - dxx2(p, q)) * vv(q, vx[0]);
-        }
-        out(p, j) /= eps2;
-      }
-    }
-  }
-  // mixed derivative w.r.t. x and the parameters
-  if ((nx == 1) && (np == 1))
-  {
-    deri(dxx2, t, xx, par, 1, vx, 0, vp, vv);
-    par_eps = par;
-    const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
-    par_eps(vp[0]) = par(vp[0]) + eps;
-    deri(dxx_eps2, t, xx, par_eps, 1, vx, 0, vp, vv);
-    for (int p = 0; p < n; p++)
-    {
-      for (int q = 0; q < n; q++)
-      {
-        out(p, q) = (dxx_eps2(p, q) - dxx2(p, q)) / eps;
-      }
-    }
-  }
-}
-
-void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, 
+void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, int sel, 
                           int nx, const int* vx, int np, const int* vp, const Array3D<double>& p_vv )
 {
   const double abs_eps_x1 = 1e-6;
@@ -509,7 +433,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
   if ((nx == 1) && (np == 0))
   {
 //     std::cout<<"@";
-    p_rhs(p_fx, time, p_xx, par);
+    p_rhs(p_fx, time, p_xx, par, sel);
     for (int j = 0; j < n; j++)
     {
       for (int p = 0; p < n; p++) 
@@ -520,7 +444,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
         const double eps = abs_eps_x1 + rel_eps_x1 * fabs(p_xx(j, vx[0],idx));
         p_xx_eps(j, vx[0],idx) = p_xx(j, vx[0],idx) + eps;
       }
-      p_rhs(p_fx_eps, time, p_xx_eps, par);
+      p_rhs(p_fx_eps, time, p_xx_eps, par, sel);
       for (int p = 0; p < n; p++)
       {
         for (int idx=0; idx < time.Size(); ++idx)
@@ -533,10 +457,10 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
   {
 //     std::cout<<"&";
     par_eps = par;
-    p_rhs(p_fx, time, p_xx, par);
+    p_rhs(p_fx, time, p_xx, par, sel);
     const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
     par_eps(vp[0]) = par(vp[0]) + eps;
-    p_rhs(p_fx_eps, time, p_xx, par_eps);
+    p_rhs(p_fx_eps, time, p_xx, par_eps, sel);
     for (int p = 0; p < n; p++)
     {
       for (int idx=0; idx < time.Size(); ++idx) out(p, 0, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / eps;
@@ -548,7 +472,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
 //     std::cout<<"<?";
     for (int j = 0; j < n; j++)
     {
-      p_deri(p2_dfx, time, p_xx, par, 1, &vx[0], 0, vp, p_vv);
+      p_deri(p2_dfx, time, p_xx, par, sel, 1, &vx[0], 0, vp, p_vv);
       for (int p = 0; p < n; p++) 
         for (int q = 0; q < m; q++) 
           for (int idx=0; idx < time.Size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
@@ -557,7 +481,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
         const double eps = abs_eps_x2 + rel_eps_x2 * fabs(p_xx(j, vx[1], idx));
         p2_xx_eps(j, vx[1], idx) += eps;
       }
-      p_deri(p2_dfx_eps, time, p2_xx_eps, par, 1, &vx[0], 0, vp, p_vv);
+      p_deri(p2_dfx_eps, time, p2_xx_eps, par, sel, 1, &vx[0], 0, vp, p_vv);
       for (int p = 0; p < n; p++)
       {
         for (int idx=0; idx < time.Size(); ++idx) out(p, j, idx) = 0.0;
@@ -575,10 +499,10 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
   {
 //     std::cout<<"<!";
     par_eps = par;
-    p_deri(p2_dfx, time, p_xx, par, 1, vx, 0, vp, p_vv);
+    p_deri(p2_dfx, time, p_xx, par, sel, 1, vx, 0, vp, p_vv);
     const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
     par_eps(vp[0]) = par(vp[0]) + eps;
-    p_deri(p2_dfx_eps, time, p_xx, par_eps, 1, vx, 0, vp, p_vv);
+    p_deri(p2_dfx_eps, time, p_xx, par_eps, sel, 1, vx, 0, vp, p_vv);
     for (int p = 0; p < n; p++)
     {
       for (int q = 0; q < n; q++)

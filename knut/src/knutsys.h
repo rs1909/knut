@@ -26,6 +26,7 @@ extern "C"
   SYSEXPORT int    sys_npar();
   SYSEXPORT int    sys_ntau();
   SYSEXPORT int    sys_nderi();
+  SYSEXPORT int    sys_nevent();
   SYSEXPORT void   sys_tau(Vector& out, double t, const Vector& par);
   SYSEXPORT void   sys_dtau(Vector& out, double t, const Vector& par, int vp);
   SYSEXPORT void   sys_rhs(Vector& out, double t, const Matrix& x, const Vector& par);
@@ -35,8 +36,9 @@ extern "C"
   // Vectorized version of each function
   SYSEXPORT void   sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par );
   SYSEXPORT void   sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp );
-  SYSEXPORT void   sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
-  SYSEXPORT void   sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
+  SYSEXPORT void   sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel );
+  SYSEXPORT void   sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
+  SYSEXPORT void   sys_p_event( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
   SYSEXPORT void   sys_parnames( std::vector<std::string>& out );
 };
 

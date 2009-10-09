@@ -246,7 +246,7 @@ template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par
   for (int k = 0; k < NTAU; k++)
   {
     int nx = 1, vx = k, np = 0, vp;
-    sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, nx, &vx, np, &vp, p_dummy);
+    sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (int idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
     {
       for (int l = 0; l < NDEG + 1; l++) // degree

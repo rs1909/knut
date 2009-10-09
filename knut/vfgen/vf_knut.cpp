@@ -321,7 +321,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   size_t nv = varname_list.nops();
   size_t np = parname_list.nops();
   size_t na = exprname_list.nops();
-  // int nf = funcname_list.nops();
+  size_t nf = funcname_list.nops();
   size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
 
@@ -366,6 +366,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "int sys_npar()  { return " << par_shift + np << "; }  // Number of parameters, plus one (for the period)\n";
   sys_out << "int sys_ntau()  { return " << 1 + Delays.size() << "; }  // Number of delays, plus one\n";
   sys_out << "int sys_nderi() { return 2; }  // Order of derivatives computed here\n";
+  sys_out << "int sys_nevent() { return " << nf << "; }  // Number of event functions\n";
   sys_out << endl;
 
   //
@@ -838,6 +839,73 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "}\n";
   sys_out << "}  // extern \"C\"\n";
 //    sys_out.close();
+
+
+  // Function definition starts here.
+  sys_out << "//" << endl;
+  sys_out << "void sys_p_event(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "{\n";
+  if (HasPi)
+  {
+    sys_out << "    const double Pi = M_PI;\n";
+  }
+  //
+  // Constants...
+  //
+  for (size_t i = 0; i < nc; ++i)
+  {
+    sys_out << "    const double " << conname_list[i] << " = " << convalue_list[i] << ";" << endl;
+  }
+  //
+  // Parameters...
+  //
+  if (parname_list.nops() > 0)
+  {
+    sys_out << "    // Parameters (par_(0) is the period)\n";
+    GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
+    sys_out << endl;
+  }
+  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    {\n";
+  sys_out << "        const double t = time(idx);\n";
+  if (na > 0)
+  {
+    sys_out << "        // State variables\n";
+    GetFromVector2(sys_out, "        const double ", varname_list, "Zlags_", "(", ",0,idx)", 0, ";");
+  }
+  //
+  // The following code assumes that the delays are single parameters,
+  // and not mathematical expressions.
+  //
+  // Expressions...
+  //
+  if (na > 0)
+    sys_out << "        // Expressions\n";
+  for (size_t i = 0; i < na; ++i)
+  {
+    ex f = exprformula_list[i];
+    if (f.has(delay(wild(1), wild(2))))
+      Knut_ConvertDelaysToZlags(f);
+    sys_out << "        const double " << exprname_list[i] << " = " << f << ";" << endl;
+  }
+  sys_out << endl;
+
+  //
+  // StateVariables...
+  //
+  // sys_out << "    vf_ = zeros(" << nv << ",1);" << endl;
+  sys_out << "        // Compute the vector field\n";
+  for (size_t i = 0; i < nf; ++i)
+  {
+    ex f = funcformula_list[i];
+    if (f.has(delay(wild(1), wild(2)))) Knut_ConvertDelaysToZlags(f);
+    Knut_ConvertStateToZlags(f);
+    sys_out << "        out(" << i << ",idx)" << " = " << f << ";" << endl;
+  }
+  sys_out << "    }\n";
+  sys_out << "}\n";
+
+
 
   return;
 }

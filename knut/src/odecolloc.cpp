@@ -181,7 +181,7 @@ void ODEColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
     rhs(r) = sol(r + NDIM * NDEG * NINT) - sol(r);
   }
 
-  sys->p_rhs(p_fx, time, solData, par);
+  sys->p_rhs(p_fx, time, solData, par, 0);
   for (int k = 0; k < NDIM; k++)
   {
     for (int idx = 0; idx < NDEG*NINT; ++idx)
@@ -201,7 +201,7 @@ void ODEColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int
 
   if (alpha == 0)
   {
-    sys->p_rhs(p_fx, time, solData, par);
+    sys->p_rhs(p_fx, time, solData, par, 0);
 
     for (int p = 0; p < NDIM; p++)
     {
@@ -214,7 +214,7 @@ void ODEColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int
   else
   {
     int nx=0, vx=0, np=1, vp=alpha;
-    sys->p_deri(p_dfp, time, solData, par, nx, &vx, np, &vp, p_dummy);
+    sys->p_deri(p_dfp, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
     for (int k = 0; k < NDIM; k++)
     {
@@ -265,7 +265,7 @@ void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
   }
 
   int nx = 1, vx = 0, np = 0, vp;
-  sys->p_deri(p_dfx, time, solData, par, nx, &vx, np, &vp, p_dummy);
+  sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
   for (int i = 0; i < NINT; ++i)
   {
     for (int j = 0; j < NDEG; ++j)

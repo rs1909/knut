@@ -36,7 +36,7 @@ void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1
 }
 
 void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
-                const Array3D<double>& xx, const Array1D<double>& par )
+                const Array3D<double>& xx, const Array1D<double>& par, int sel )
 {
   // parameters
   const double alpha = par(1);
@@ -65,7 +65,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
 }
 
 void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time,
-                 const Array3D<double>& xx, const Array1D<double>& par,
+                 const Array3D<double>& xx, const Array1D<double>& par, int sel,
                  const int nx, const int* vx, const int np, const int* vp,
                  const Array3D<double>& vv )
 {

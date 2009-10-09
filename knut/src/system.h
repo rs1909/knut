@@ -43,90 +43,65 @@ class System
     {
       return (*v_ntau)();
     }
-    void   tau(Vector& out, double t, const Vector& par)
-    {
-      (*v_tau)(out, t, par);
-    }
-    void   dtau(Vector& out, double t, const Vector& par, int vp)
-    {
-      (*v_dtau)(out, t, par, vp);
-    }
-    void   rhs(Vector& out, double t, const Matrix& x, const Vector& par)
-    {
-      (*v_rhs)(out, t, x, par);
-    }
-    void   deri(Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v)
-    {
-      if (nderi == 2)(*v_deri)(out, t, x, par, nx, vx, np, vp, v);
-      else if (nderi == 0) discrderi(out, t, x, par, nx, vx, np, vp, v);
-      else if (nderi == 1 && ((nx == 1 && np == 0) || (nx == 0 && np == 1)))(*v_deri)(out, t, x, par, nx, vx, np, vp, v);
-      else discrderi(out, t, x, par, nx, vx, np, vp, v);
-    }
     // Vectorized versions
     void   p_tau( Array2D<double>& out, const Array1D<double>& time, const Vector& par )
     {
-      if (found_p_tau) (*v_p_tau)(out, time, par);
+      if (v_p_tau != 0) (*v_p_tau)(out, time, par);
       else
       {
         for (int i=0; i<time.Size(); ++i)
         {
           Vector tout(out, i);
-          tau(tout, time(i), par);
+          (*v_tau)(tout, time(i), par);
         }
       }
     }
     void   p_dtau( Array2D<double>& out, const Array1D<double>& time, const Vector& par, int vp )
     {
-      if (found_p_dtau) (*v_p_dtau)(out, time, par, vp);
+      if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
       else
       {
         for (int i=0; i<time.Size(); ++i)
         {
           Vector tout(out, i);
-          dtau(tout, time(i), par, vp);
+          (*v_dtau)(tout, time(i), par, vp);
         }
       }
     }
-    void   p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par )
+    void   p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int sel )
     {
-      if (found_p_rhs) (*v_p_rhs)(out, time, x, par);
+      if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
       else
       {
         for (int i=0; i<time.Size(); ++i)
         {
           Vector vout(out, i);
           Matrix xxin(x, i);
-          rhs(vout, time(i), xxin, par);
+          (*v_rhs)(vout, time(i), xxin, par);
         }
       }
     }
-    void   p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
+    void   p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par,
+                   int sel, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
     {
-      if (found_p_deri)
+      if ((nderi == 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
       {
-        if (nderi == 2)
+        if (v_p_deri != 0)
         {
-          (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
-        }
-        else if (nderi == 0) p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
-        else if ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1)))
+          (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
+        } else
         {
-          (*v_p_deri)(out, time, x, par, nx, vx, np, vp, vv);
+          for (int i=0; i<time.Size(); ++i)
+          {
+            Matrix mout(out, i);
+            Matrix xxin(x, i);
+            Matrix vvin(vv, i);
+            (*v_deri)(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
+          }
         }
-        else
-        {
-          p_discrderi(out, time, x, par, nx, vx, np, vp, vv);
-        }
-      }
-      else
+      } else
       {
-        for (int i=0; i<time.Size(); ++i)
-        {
-          Matrix mout(out, i);
-          Matrix xxin(x, i);
-          Matrix vvin(vv, i);
-          deri(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
-        }
+        p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
       }
     }
     // Setting the starting point
@@ -140,13 +115,11 @@ class System
     }
     void   parnames( std::vector<std::string>& out ) const
     {
-      if (found_parnames) (*v_parnames)(out);
+      if (v_parnames != 0) (*v_parnames)(out);
     }
 
   private:
-    void   discrderi( Matrix &out, double t, const Matrix& xx, const Vector& par,
-                      int nx, const int* vx, int np, const int* vp, const Matrix& vv);
-    void   p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, 
+    void   p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, int sel,
                         int nx, const int* vx, int np, const int* vp, const Array3D<double>& p_vv );
 
     void   p_resize(int sz)
@@ -169,14 +142,16 @@ class System
     typedef int(*tp_sys_npar)();
     typedef int(*tp_sys_ntau)();
     typedef int(*tp_sys_nderi)();
+    typedef int(*tp_sys_nevent)();
     typedef void(*tp_sys_tau)(Vector& out, double t, const Vector& par);
     typedef void(*tp_sys_dtau)(Vector& out, double t, const Vector& par, int vp);
     typedef void(*tp_sys_rhs)(Vector& out, double t, const Matrix& x, const Vector& par);
     typedef void(*tp_sys_deri)(Matrix& out, double t, const Matrix& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Matrix& v);
     typedef void(*tp_sys_p_tau)( Array2D<double>& out, const Array1D<double>& time, const Vector& par );
     typedef void(*tp_sys_p_dtau)( Array2D<double>& out, const Array1D<double>& time, const Vector& par, int vp );
-    typedef void(*tp_sys_p_rhs)( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par );
-    typedef void(*tp_sys_p_deri)( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
+    typedef void(*tp_sys_p_rhs)( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int sel );
+    typedef void(*tp_sys_p_deri)( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Vector& par, int sel, int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv );
+    typedef void(*tp_sys_p_event)( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
     typedef void(*tp_sys_stpar)(Vector& par);
     typedef void(*tp_sys_stsol)(Vector& out, double t);
     typedef void(*tp_sys_parnames)(std::vector<std::string>& out);
@@ -225,6 +200,7 @@ class System
     tp_sys_npar     v_npar;
     tp_sys_ntau     v_ntau;
     tp_sys_nderi    v_nderi;
+    tp_sys_nevent   v_nevent;
     tp_sys_tau      v_tau;
     tp_sys_dtau     v_dtau;
     tp_sys_rhs      v_rhs;
@@ -233,13 +209,11 @@ class System
     tp_sys_p_dtau   v_p_dtau;
     tp_sys_p_rhs    v_p_rhs;
     tp_sys_p_deri   v_p_deri;
+    tp_sys_p_event  v_p_event;
     tp_sys_stpar    v_stpar;
     tp_sys_stsol    v_stsol;
     tp_sys_parnames v_parnames;
 
-    bool found_tau, found_dtau, found_rhs, found_deri;
-    bool found_p_tau, found_p_dtau, found_p_rhs, found_p_deri;
-    bool found_parnames;
 };
 
 inline System::FPTR System::fptr(void * ptr)
