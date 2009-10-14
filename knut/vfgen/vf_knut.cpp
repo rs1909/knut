@@ -396,7 +396,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << " ]\n";
   // Function definition starts here.
   sys_out << "//" << endl;
-  sys_out << "void sys_p_rhs(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "void sys_p_rhs(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_, int sel)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -668,7 +668,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//\n";
   // Function definition starts here.
   sys_out << "//" << endl;
-  sys_out << "void sys_p_deri(Array3D<double>& jac_, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_,\n int nx_, const int* vx_, int np_, const int* vp_, const Array3D<double>& v_)\n";
+  sys_out << "void sys_p_deri(Array3D<double>& jac_, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_, int sel,\nint nx_, const int* vx_, int np_, const int* vp_, const Array3D<double>& v_)\n";
   sys_out << "{\n";
   sys_out << "    if (nx_ == 1 & np_ == 0)\n";
   sys_out << "        " << Name() << "_jacx(jac_, time, vx_[0], Zlags_, par_);\n";

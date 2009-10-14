@@ -18,8 +18,12 @@
 #include <fstream>
 extern "C"{
 #include <sys/stat.h>
+#ifndef WIN32
 #include <sys/wait.h>
 #include <errno.h>
+#else
+#include <windows.h>
+#endif 
 }
 
 #include "config.h"
@@ -36,8 +40,225 @@ extern "C"{
 #include <CoreFoundation/CFBundle.h>
 #endif
 
-int pipeOpen(std::list<std::string>& arglist,
-                           int* input, int* output, int* error)
+// Separates the string into arguments and add to the list of arguments.
+// It does not work if the argument has a space inside.
+static inline void addArgList(std::list<std::string>& argv, const std::string& str)
+{
+  size_t start = 0;
+  size_t i=0;
+  while (i < str.size())
+  {    
+    while (((str[i] == ' ')||(str[i] == '\t'))&&(i < str.size())) ++i;
+    start = i;
+    while (((str[i] != ' ')&&(str[i] != '\t'))&&(i < str.size())) ++i;
+    argv.push_back(str.substr(start, i-start));
+  }
+}
+
+#ifdef WIN32
+#define DIRSEP '\\'
+#else
+#define DIRSEP '/'
+#endif
+
+// Constructs the command line and the argument list of the GNU C++ compiler (g++).
+static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::string& cmdline, const std::string& shobj, const std::string& executableDir)
+{
+#ifdef WIN32
+  std::string cxxcomp("g++");
+  arglist.push_back(cxxcomp);
+#else
+  std::string cxxcomp(CMAKE_CXX_COMPILER);
+  arglist.push_back(cxxcomp.substr(cxxcomp.find_last_of(DIRSEP)+1,std::string::npos));
+#endif
+  // constructing the command line
+  addArgList(arglist, std::string( 
+    CMAKE_CXX_FLAGS " "
+    CMAKE_SHARED_LIBRARY_C_FLAGS " " 
+    CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS));
+  std::string includeArg("-I");
+  includeArg += executableDir.substr(0,executableDir.find_last_of(DIRSEP));
+  includeArg += DIRSEP;
+  includeArg += KNUT_INCLUDE_DIR;
+  arglist.push_back(includeArg);
+  arglist.push_back("-x");
+  arglist.push_back("c++");
+  arglist.push_back("-o");
+  arglist.push_back(shobj);
+  arglist.push_back("-");
+
+  cmdline.erase();
+  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  {
+    if (it != arglist.begin()) cmdline += ' ';
+#ifdef WIN32
+    if (it != arglist.begin()) cmdline += "\"";
+    cmdline += *it;
+    if (it != arglist.begin()) cmdline += "\"";
+#else
+    cmdline += *it;
+#endif
+  }
+}
+
+#ifdef WIN32
+
+// Run the compiler with cxxstring as the program to compile.
+// Catch the standard input, output and error streams to interact.
+// This is the Windows version.
+static void runCompiler(const std::string& cxxstring, const std::string& shobj, const std::string& executableDir)
+{
+  // setting up the command line
+  std::list<std::string> arglist;
+  std::string cmdline;
+  mkArgListCommandLine(arglist, cmdline, shobj, executableDir);
+  
+  HANDLE g_hChildStd_IN_Rd = NULL;
+  HANDLE g_hChildStd_IN_Wr = NULL;
+  HANDLE g_hChildStd_OUT_Rd = NULL;
+  HANDLE g_hChildStd_OUT_Wr = NULL;
+  HANDLE g_hChildStd_ERR_Rd = NULL;
+  HANDLE g_hChildStd_ERR_Wr = NULL;
+
+  HANDLE g_hInputFile = NULL;
+
+  SECURITY_ATTRIBUTES saAttr;
+ 
+  // Set the bInheritHandle flag so pipe handles are inherited. 
+  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+  saAttr.bInheritHandle = TRUE;
+  saAttr.lpSecurityDescriptor = NULL;
+
+  // Create a pipe for the child process's STDOUT. 
+  if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0)) 
+    P_MESSAGE2("StdoutRd CreatePipe", (int)GetLastError());
+  // Ensure the read handle to the pipe for STDOUT is not inherited.
+  if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0))
+    P_MESSAGE2("Stdout SetHandleInformation", (int)GetLastError());
+  // Create a pipe for the child process's STDIN. 
+  if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
+    P_MESSAGE2("Stdin CreatePipe", (int)GetLastError());
+  // Ensure the write handle to the pipe for STDIN is not inherited.
+  if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
+    P_MESSAGE2("Stdin SetHandleInformation", (int)GetLastError());
+  // Create a pipe for the child process's STDERR.
+  if (!CreatePipe(&g_hChildStd_ERR_Rd, &g_hChildStd_ERR_Wr, &saAttr, 0)) 
+    P_MESSAGE2("Stdin CreatePipe", (int)GetLastError());
+  // Ensure the read handle to the pipe for STDERR is not inherited.
+  if (!SetHandleInformation(g_hChildStd_ERR_Rd, HANDLE_FLAG_INHERIT, 0))
+    P_MESSAGE2("Stdin SetHandleInformation", (int)GetLastError());
+ 
+   // Create the child process. 
+  CHAR *szCmdline = new CHAR[cmdline.size()+1];
+  strcpy(szCmdline, cmdline.c_str());
+  
+  PROCESS_INFORMATION piProcInfo; 
+  STARTUPINFO siStartInfo;
+  BOOL bSuccess = FALSE;
+ 
+  // Set up members of the PROCESS_INFORMATION structure. 
+  ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
+ 
+  // Set up members of the STARTUPINFO structure. 
+  // This structure specifies the STDIN and STDOUT handles for redirection.
+  ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+  siStartInfo.cb = sizeof(STARTUPINFO); 
+  siStartInfo.hStdError = g_hChildStd_ERR_Wr;
+  siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
+  siStartInfo.hStdInput = g_hChildStd_IN_Rd;
+  siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+ 
+  // Create the child process. 
+  bSuccess = CreateProcess(NULL, 
+    szCmdline,     // command line 
+    NULL,          // process security attributes 
+    NULL,          // primary thread security attributes 
+    TRUE,          // handles are inherited 
+    0,             // creation flags 
+    NULL,          // use parent's environment 
+    NULL,          // use parent's current directory 
+    &siStartInfo,  // STARTUPINFO pointer 
+    &piProcInfo);  // receives PROCESS_INFORMATION 
+   
+  // If an error occurs, exit the application. 
+  if ( ! bSuccess )
+    P_MESSAGE2("CreateProcess", (int)GetLastError());
+ 
+  // Write to the pipe that is the standard input for a child process. 
+  // Data is written to the pipe's buffers, so it is not necessary to wait
+  // until the child process is running before writing data.
+  DWORD dwRead = cxxstring.size(), dwWritten;
+  bSuccess = WriteFile(g_hChildStd_IN_Wr, cxxstring.c_str(), dwRead, &dwWritten, NULL);
+  if ( ! bSuccess ) 
+    P_MESSAGE2("WriteFile", (int)GetLastError());
+
+  if (!CloseHandle(g_hChildStd_IN_Wr)) 
+    P_MESSAGE2("StdInWr CloseHandle", (int)GetLastError());
+  if (!CloseHandle(g_hChildStd_IN_Rd)) 
+    P_MESSAGE2("StdInRd CloseHandle", (int)GetLastError());
+ 
+  // Read from pipe that is the standard output for child process.
+  const size_t bufsize = 2048;
+  CHAR *out_buf = new char[bufsize];
+  CHAR *err_buf = new char[bufsize];
+  dwRead = 0;
+  dwWritten = 0;
+  bSuccess = FALSE;
+  HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  // Close the write end of the pipe before reading from the 
+  // read end of the pipe, to control child process execution.
+  // The pipe is assumed to have enough buffer space to hold the
+  // data the child process has already written to it.
+  if (!CloseHandle(g_hChildStd_OUT_Wr)) 
+    P_MESSAGE2("StdOutWr CloseHandle", (int)GetLastError());
+   
+  std::string outstr;
+  std::string errstr;
+  for (;;) 
+  {
+    bSuccess = ReadFile( g_hChildStd_OUT_Rd, out_buf, bufsize-1, &dwRead, NULL);
+    err_buf[dwRead] = '\0';
+    if( ! bSuccess || dwRead == 0 ) break;
+    outstr.append(out_buf);
+  }
+  
+  if (!CloseHandle(g_hChildStd_OUT_Rd)) 
+    P_MESSAGE2("StdOutRd CloseHandle", (int)GetLastError());
+  
+  if (!CloseHandle(g_hChildStd_ERR_Wr)) 
+    P_MESSAGE2("StdErrWr CloseHandle", (int)GetLastError());
+   
+  for (;;) 
+  {
+    bSuccess = ReadFile( g_hChildStd_ERR_Rd, err_buf, bufsize-1, &dwRead, NULL);
+    err_buf[dwRead] = '\0';
+    if( ! bSuccess || dwRead == 0 ) break;
+    errstr.append(err_buf);
+  }   
+  
+  if (!CloseHandle(g_hChildStd_ERR_Rd)) 
+    P_MESSAGE2("StdErrRd CloseHandle", (int)GetLastError());
+  
+  WaitForSingleObject(piProcInfo.hProcess, INFINITE);
+  DWORD exitStatus;
+  GetExitCodeProcess(piProcInfo.hProcess, &exitStatus); 
+  CloseHandle(piProcInfo.hProcess);
+  CloseHandle(piProcInfo.hThread);
+
+  if (exitStatus != 0) P_MESSAGE6("The error output of the compile command '",
+      cmdline, "' is ", errstr.c_str(), " and the standard output is ", outstr.c_str());
+  
+  delete[] out_buf;
+  delete[] err_buf;
+}
+
+#else
+
+// Opens the three pipes for interacting with a program.
+// arglist is the argument list starting with the program name.
+// the int* - s are the file numbers for the three pipes.
+int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
 {
   if ( (input==0)&&(output==0)&&(error==0) ) return -1;
   char *argv[arglist.size()+1];
@@ -92,9 +313,67 @@ int pipeOpen(std::list<std::string>& arglist,
     if (output) *output = fdc_output[0];
     if (error)  *error = fdc_error[0];
   }
-  for (int k=0; k<1; ++k) delete[] argv[k];
+  for (size_t k=0; k<arglist.size(); ++k) delete[] argv[k];
   return pid;
 }
+
+// Run the compiler with cxxstring as the program to compile.
+// Catch the standard input, output and error streams to interact.
+// This is the Linux/Mac OS X version.
+static void runCompiler(const std::string& cxxstring, const std::string& shobj, const std::string& executableDir)
+{
+  std::list<std::string> arglist;
+  std::string cmdline;
+  mkArgListCommandLine(arglist, cmdline, shobj, executableDir);
+  
+  //   std::cout << cmdline << std::endl;
+  // running the command
+  int input, output, error;
+  int pid = pipeOpen(arglist, &input, &output, &error);
+  write (input, cxxstring.c_str(), cxxstring.size());
+  if (close (input) == -1) P_MESSAGE2("Error closing input pipe: ", strerror(errno));
+
+  const size_t bufsize = 2048;
+  char *out_buf = new char[bufsize];
+  std::string out_str, err_str;
+  // Standard Output
+  for (;;)
+  {
+    ssize_t bytes = read(output, out_buf, bufsize-1);
+    out_buf[bytes] = '\0';
+    if (bytes == -1) P_MESSAGE2("Error reading standard output: ", strerror(errno));
+    if ((bytes == 0) || (bytes == -1)) break;
+    out_str.append(out_buf);
+  }
+  // Standard Error
+  for (;;)
+  {
+    ssize_t bytes = read(error, out_buf, bufsize-1);
+    out_buf[bytes] = '\0';
+    if (bytes == -1) P_MESSAGE2("Error reading standard error: ", strerror(errno));
+    if ((bytes == 0) || (bytes == -1)) break;
+    err_str.append(out_buf);
+  }
+  // closing the remaining pipes
+  if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
+  if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
+  // checking status of compiler
+  int status = 0;
+  pid_t retval = waitpid(-1, &status, 0);
+  if (retval == -1) P_MESSAGE2("Error while waiting for the compiler: ", strerror(errno));
+  if (retval == 0) P_MESSAGE1("A mysterious error. (No child wanted to report status.)");
+  // Check the exist status
+  if (WIFEXITED(status))
+  {
+    if (WEXITSTATUS(status) != 0) P_MESSAGE8("Error code is ", WEXITSTATUS(status), " and the error output of the compile command '",
+      cmdline, "' is\n", err_str.c_str(), "\nand the standard output is\n", out_str.c_str());
+  } else
+  {
+    P_MESSAGE1("The compiler was unexpectedly terminated.");
+  }
+}
+
+#endif
 
 System::System(const std::string& shobj)
 {
@@ -134,11 +413,7 @@ System::System(const std::string& shobj)
 #endif
 
   std::string executableDir(executableFile);
-#ifndef WIN32
-  std::string::size_type sidx = executableDir.find_last_of('/');
-#else
-  std::string::size_type sidx = executableDir.find_last_of('\\');
-#endif
+  std::string::size_type sidx = executableDir.find_last_of(DIRSEP);
   if (sidx != std::string::npos) executableDir.erase(sidx,std::string::npos);
 
   makeSystem(shobj, executableDir);
@@ -245,90 +520,6 @@ static inline void AX(Vector & res, const Matrix& M, const Vector& v)
   }
 }
 
-static inline void addArgList(std::list<std::string>& argv, const std::string& str)
-{
-  size_t start = 0;
-  size_t i=0;
-  while (i < str.size())
-  {    
-    while (((str[i] == ' ')||(str[i] == '\t'))&&(i < str.size())) ++i;
-    start = i;
-    while (((str[i] != ' ')&&(str[i] != '\t'))&&(i < str.size())) ++i;
-    argv.push_back(str.substr(start, i-start));
-  }
-}
-
-static inline void toCommandLine(std::string& cmdline, const std::list<std::string>& arglist)
-{
-  cmdline.erase();
-  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
-  {
-    if (it != arglist.begin()) cmdline += ' ';
-    cmdline += *it;
-  }
-}
-
-#if WIN32
-#define DIRSEP '\\'
-#else
-#define DIRSEP '/'
-#endif
-
-static void runCompiler(const std::string& cxxstring, const std::string& shobj, const std::string& executableDir)
-{  
-  std::string cxxcomp(CMAKE_CXX_COMPILER);
-  // constructing the command line
-  std::list<std::string> arglist;
-  arglist.push_back(cxxcomp.substr(cxxcomp.find_last_of(DIRSEP)+1,std::string::npos));
-  addArgList(arglist, std::string( 
-    CMAKE_CXX_FLAGS " "
-    CMAKE_SHARED_LIBRARY_C_FLAGS " " 
-    CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS));
-  std::string includeArg("-I");
-  includeArg += executableDir.substr(0,executableDir.find_last_of(DIRSEP));
-  includeArg += DIRSEP;
-  includeArg += KNUT_INCLUDE_DIR;
-  arglist.push_back(includeArg);
-  arglist.push_back("-x");
-  arglist.push_back("c++");
-  arglist.push_back("-o");
-  arglist.push_back(shobj);
-  arglist.push_back("-");
-
-  std::string cmdline;
-  toCommandLine(cmdline, arglist);
-//   std::cout << cmdline << std::endl;
-  // running the command
-  int input, output, error;
-  int pid = pipeOpen(arglist, &input, &output, &error);
-  write (input, cxxstring.c_str(), cxxstring.size());
-  close (input);
-  int status = 0;
-  pid_t retval = waitpid(-1, &status, 0);
-  if (retval == -1) P_MESSAGE2("Error while waiting for the compiler: ", strerror(errno));
-  if (retval == 0) P_MESSAGE1("A mysterious error. (No child wanted to report status.)");
-  // Output
-  const size_t bufsize = 2048;
-  char *out_buf = new char[bufsize];
-  char *err_buf = new char[bufsize];
-  size_t bytes = read(output, out_buf, bufsize);
-  out_buf[bytes] = '\0';
-  // Standard Error
-  bytes = read(error, err_buf, bufsize);
-  err_buf[bytes] = '\0';
-  // Check the exist status
-  close (output);
-  close (error);
-  if (WIFEXITED(status))
-  {
-    if (WEXITSTATUS(status) != 0) P_MESSAGE6("The error output of the compile command '",
-      cmdline, "' is ", err_buf, " and the standard output is ", out_buf);
-  } else
-  {
-    P_MESSAGE1("The compiler was unexpectedly terminated.");
-  }
-}
-
 void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
   std::ifstream file(cxxfile.c_str());
@@ -354,7 +545,7 @@ void System::generateSystem(const std::string& vffile, const std::string& execut
   vf.PrintKnut(cxxcode, options);
   runCompiler(cxxcode.str(), vffile + ".so", executableDir);
 #endif
-} 
+}
 
 // Static member. Compile if necessary
 void System::makeSystem(const std::string& shobj, const std::string& executableDir)

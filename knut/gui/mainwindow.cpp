@@ -23,6 +23,9 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), compilerProcess(0)
 {
+#if WIN32
+  executableDir.replace('/','\\');
+#endif
   // QTabWidget
   // a) files + equations b) numerics c) symmetry d) torus
   QTabWidget* tabWidget = new QTabWidget();
