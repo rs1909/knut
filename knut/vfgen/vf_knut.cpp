@@ -1,10 +1,8 @@
 
-//
-//  vf_pddecont.cpp
+//  'vf_knut.cpp'
+//  renamed from 'vf_pddecont.cpp'
 //
 //  This file defines the VectorField::PrintKnut method.
-//
-//
 //
 //  Copyright (C) 2008 Warren Weckesser
 //  Copyright (C) 2009 Robert Szalai
@@ -325,20 +323,11 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
 
-  // cerr << "Delays:\n";
-  // for (vector<ex>::iterator di = Delays.begin(); di != Delays.end(); ++di)
-  //     cerr << "   " << *di << endl;
-
   //
   //  Create the system definition file.
   //
-//    string sys_filename = "sys-" + Name() + ".cpp";
-//    ofstream sys_out;
-//    sys_out.open(sys_filename.c_str());
   sys_out << csrc;
   sys_out << "//" << endl;
-//    sys_out << "// " << sys_filename << endl;
-//    sys_out << "//" << endl;
   sys_out << "// Knut System Definition file for the VFGEN vector field: " << Name() << endl;
   sys_out << "//" << endl;
   PrintVFGENComment(sys_out, "// ");
@@ -369,32 +358,11 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "int sys_nevent() { return " << nf << "; }  // Number of event functions\n";
   sys_out << endl;
 
-  //
+  // ***************************************************************************
   //  Create the vector field function sys_rhs
-  //
+  // ***************************************************************************
   sys_out << "//" << endl;
   sys_out << "// sys_p_rhs(...) computes the vector field.\n";
-  sys_out << "//" << endl;
-  // Include a list of the lags in the comments.
-  sys_out << "// The lags are: {";
-  for (unsigned k = 0; k < Delays.size(); ++k)
-  {
-    sys_out << Delays[k];
-    if (k < Delays.size() - 1)
-      sys_out << ", ";
-  }
-  sys_out << "}" << endl;
-  sys_out << "//\n";
-  sys_out << "// If X(t) is the state vector at time t, then\n";
-  sys_out << "//    Zlags_ = [ X(t) ";
-  for (size_t k = 0; k < Delays.size(); ++k)
-  {
-    sys_out << "X(t-" << Delays[k] << ")";
-    if (k < Delays.size() - 1)
-      sys_out << " ";
-  }
-  sys_out << " ]\n";
-  // Function definition starts here.
   sys_out << "//" << endl;
   sys_out << "void sys_p_rhs(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_, int sel)\n";
   sys_out << "{\n";
@@ -421,11 +389,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
-  if (na > 0)
-  {
-    sys_out << "        // State variables\n";
-    GetFromVector2(sys_out, "        const double ", varname_list, "Zlags_", "(", ",0,idx)", 0, ";");
-  }
   //
   // The following code assumes that the delays are single parameters,
   // and not mathematical expressions.
@@ -437,8 +400,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   for (size_t i = 0; i < na; ++i)
   {
     ex f = exprformula_list[i];
-    if (f.has(delay(wild(1), wild(2))))
-      Knut_ConvertDelaysToZlags(f);
+    Knut_ConvertStateToZlags(f);
     sys_out << "        const double " << exprname_list[i] << " = " << f << ";" << endl;
   }
   sys_out << endl;
@@ -451,17 +413,15 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   for (size_t i = 0; i < nv; ++i)
   {
     ex f = varvecfield_list[i];
-    if (f.has(delay(wild(1), wild(2))))
-      Knut_ConvertDelaysToZlags(f);
     Knut_ConvertStateToZlags(f);
     sys_out << "        out(" << i << ",idx)" << " = " << f << ";" << endl;
   }
   sys_out << "    }\n";
   sys_out << "}\n";
 
-  //
-  //  Create the derivative functions to be used in sys_p_deri(...)
-  //
+  // ***************************************************************************
+  //  Derivative with respect to the delays
+  // ***************************************************************************
   sys_out << endl;
   sys_out << "//\n";
   sys_out << "// " << Name() << "_jacx\n";
@@ -515,7 +475,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    }\n";
   sys_out << "}\n";
   sys_out << endl;
-
+  // ***************************************************************************
+  //  Derivative with respect to the parameters
+  // ***************************************************************************
   sys_out << endl;
   sys_out << "//\n";
   sys_out << "// " << Name() << "_jacp\n";
@@ -553,7 +515,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    }\n";
   sys_out << "}\n";
   sys_out << endl;
-
+  // ***************************************************************************
+  //  Derivative with respect to the delays and parameters (2nd order)
+  // ***************************************************************************
   sys_out << endl;
   sys_out << "//\n";
   sys_out << "// " << Name() << "_jacxp\n";
@@ -593,7 +557,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "}\n";
   sys_out << endl;
 
-
+  // ***************************************************************************
+  //  Second order derivative with respect to the delays 
+  // ***************************************************************************
   sys_out << endl;
   sys_out << "//\n";
   sys_out << "// " << Name() << "_hess_times_v\n";
@@ -636,10 +602,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << endl;
 
 
-  //
+  // ***************************************************************************
   //  Create the derivatives function sys_p_deri(...)
-  //
-
+  // ***************************************************************************
   sys_out << "//" << endl;
   sys_out << "// sys_p_deri(...)\n";
   sys_out << "//" << endl;
@@ -680,14 +645,14 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "        " << Name() << "_hess_times_v(jac_,time,vx_[0],vx_[1],vx_[0],v_,Zlags_,par_);\n";
   sys_out << "    else\n";
   sys_out << "    {\n";
-  sys_out << "        std::cerr << \"sys_deri: Requested derivative has not been implemented.\\n\";\n";
-  sys_out << "        exit(-1);\n";
+  sys_out << "        // std::cerr << \"sys_deri: Requested derivative has not been implemented.\\n\";\n";
+  sys_out << "        // exit(-1);\n";
   sys_out << "    }\n";
   sys_out << "}\n";
 
-  //
+  // ***************************************************************************
   // Create sys_p_tau()
-  //
+  // ***************************************************************************
   sys_out << endl;
   sys_out << "//" << endl;
   sys_out << "// sys_p_tau(...) computes the vector of delays.\n";
@@ -737,9 +702,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    }\n";
   sys_out << "}\n";
   sys_out << endl;
-  //
+  // ***************************************************************************
   // Create sys_dtau()
-  //
+  // ***************************************************************************
   sys_out << "//\n";
   sys_out << "// sys_p_dtau(...) computes the derivatives of the delays with respect to the parameters.\n";
   sys_out << "//\n";
@@ -799,6 +764,9 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "}\n";
   sys_out << endl;
 
+  // ***************************************************************************
+  // Starting parameters
+  // ***************************************************************************
   sys_out << "void sys_stpar(Vector& par_)\n";
   sys_out << "{\n";
   if (HasPi)
@@ -810,16 +778,69 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   if (!HasPeriod) sys_out << "    par_(0) = 1.0;\n";
   for (size_t j = 0; j < np; ++j)
   {
-    sys_out << "    par_(" << j + par_shift << ") = " << pardefval_list[j] << ";\n";
+    // First make a replacement list with all the other parameters
+    GiNaC::lst parsubs;
+    // add other parameters
+    for (size_t k = 0; k < np; ++k)
+    {
+      if (k != j)
+      {
+        parsubs.append(parname_list[k] == pardefval_list[k]);
+      }
+    }
+    // add constants
+    for (size_t k = 0; k < nc; ++k)
+    {
+      parsubs.append(conname_list[k] == convalue_list[k]);
+    }
+    ex defval = pardefval_list[j];
+    defval = iterated_subs(defval, parsubs);
+    sys_out << "    par_(" << j + par_shift << ") = " << defval << ";\n";
   }
   sys_out << "}\n";
   sys_out << endl;
+  
+  // ***************************************************************************
+  // Starting solution
+  // ***************************************************************************
   sys_out << "void sys_stsol(Vector& out, double t)\n";
   sys_out << "{\n";
   if (HasPi)
   {
     sys_out << "    const double Pi = M_PI;\n";
   }
+  //
+  // Constants...
+  //
+  for (size_t i = 0; i < nc; ++i)
+  {
+    sys_out << "    const double " << conname_list[i] << " = " << convalue_list[i] << ";" << endl;
+  }
+  //
+  // Parameters...
+  //
+  for (size_t j = 0; j < np; ++j)
+  {
+    // First make a replacement list with all the other parameters
+    GiNaC::lst parsubs;
+    // add other parameters
+    for (size_t k = 0; k < np; ++k)
+    {
+      if (k != j)
+      {
+        parsubs.append(parname_list[k] == pardefval_list[k]);
+      }
+    }
+    // add constants
+    for (size_t k = 0; k < nc; ++k)
+    {
+      parsubs.append(conname_list[k] == convalue_list[k]);
+    }
+    ex defval = pardefval_list[j];
+    defval = iterated_subs(defval, parsubs);
+    sys_out << "    const double " << parname_list[j] << " = " << defval << ";\n";
+  }
+  
   sys_out << "    // VFGEN used the DefaultInitialConditions of the StateVariables.\n";
   sys_out << "    // Change the following values to implement your known solution.\n";
   for (size_t j = 0; j < nv; ++j)
@@ -829,7 +850,10 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "}\n";
   sys_out << endl;
 
-  sys_out << " void sys_parnames( std::vector<std::string>& out )\n";
+  // ***************************************************************************
+  // Parameter names
+  // ***************************************************************************
+  sys_out << "void sys_parnames( const char *out[] )\n";
   sys_out << "{\n";
   if (!HasPeriod) sys_out << "    out[0] = \"Period\";\n";
   for (unsigned int k = 0; k < parname_list.nops(); ++k)
@@ -838,10 +862,10 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   }
   sys_out << "}\n";
   sys_out << "}  // extern \"C\"\n";
-//    sys_out.close();
 
-
-  // Function definition starts here.
+  // ***************************************************************************
+  // Event functions
+  // ***************************************************************************
   sys_out << "//" << endl;
   sys_out << "void sys_p_event(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
   sys_out << "{\n";
@@ -868,14 +892,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
-  if (na > 0)
-  {
-    sys_out << "        // State variables\n";
-    GetFromVector2(sys_out, "        const double ", varname_list, "Zlags_", "(", ",0,idx)", 0, ";");
-  }
-  //
-  // The following code assumes that the delays are single parameters,
-  // and not mathematical expressions.
   //
   // Expressions...
   //
@@ -884,8 +900,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   for (size_t i = 0; i < na; ++i)
   {
     ex f = exprformula_list[i];
-    if (f.has(delay(wild(1), wild(2))))
-      Knut_ConvertDelaysToZlags(f);
+    Knut_ConvertStateToZlags(f);
     sys_out << "        const double " << exprname_list[i] << " = " << f << ";" << endl;
   }
   sys_out << endl;
@@ -898,14 +913,12 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   for (size_t i = 0; i < nf; ++i)
   {
     ex f = funcformula_list[i];
-    if (f.has(delay(wild(1), wild(2)))) Knut_ConvertDelaysToZlags(f);
+//    if (f.has(delay(wild(1), wild(2)))) Knut_ConvertDelaysToZlags(f);
     Knut_ConvertStateToZlags(f);
     sys_out << "        out(" << i << ",idx)" << " = " << f << ";" << endl;
   }
   sys_out << "    }\n";
   sys_out << "}\n";
-
-
 
   return;
 }

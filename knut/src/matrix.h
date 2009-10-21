@@ -10,11 +10,11 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#ifndef KNUTSYS_H
 #include <iostream>
 #include <iterator>
 #include <cstdlib>
 
-#ifndef KNUTSYS_H
 #include "plot.h"
 #include "knerror.h"
 
@@ -28,12 +28,26 @@ extern "C"
 }
 #endif
 
+#ifndef KNUTSYS_H
+
 #ifndef P_ASSERT
 #  define P_ASSERT(cond) do{ if(!(cond)) { std::cout<<#cond; std::cout.flush(); abort(); } }while(0)
 #endif
 
 #ifndef P_ASSERT_X
 #  define P_ASSERT_X(cond,msg) do{ if(!(cond)) { std::cout<<#cond<<msg; std::cout.flush(); abort(); } }while(0)
+#endif
+
+#else
+
+#ifndef P_ASSERT
+#  define P_ASSERT(cond) do{ }while(0)
+#endif
+
+#ifndef P_ASSERT_X
+#  define P_ASSERT_X(cond,msg) do{ }while(0)
+#endif
+
 #endif
 
 template<class T> class Array2D;
@@ -167,6 +181,7 @@ class Array1D
 #endif
       return v[i];
     }
+#ifndef KNUTSYS_H
     class iterator
     {
       private:
@@ -196,6 +211,7 @@ class Array1D
     };
     iterator begin() { iterator it; it.pt = v; return it; }
     iterator end() { iterator it; it.pt = v+n; return it; }
+#endif
 };
 
 
@@ -593,13 +609,13 @@ class Vector : public Array1D<double>
     inline virtual ~Vector()
     { }
 
+#ifndef KNUTSYS_H
+
     inline void Print() const
     {
       for (int j = 0; j < n; j++) std::cout << v[j] << '\t';
       std::cout << '\n';
     }
-
-#ifndef KNUTSYS_H
 
     inline void Rand()
     {
@@ -689,15 +705,10 @@ class Matrix : public Array2D<double>
     }
     inline int Size() const
     {
-      if ((r == 1) || (c == 1))
-      {
-        return r*c;
-      }
-      else
-      {
-        std::cout << "Hs\n";
-        return 0;
-      }
+#ifdef DEBUG
+      P_ASSERT_X((r == 1) || (c == 1), "Matrix::Size(): not a single row or column.\n");
+#endif // DEBUG
+      return r*c;
     }
 
 #ifndef KNUTSYS_H
@@ -753,8 +764,6 @@ class Matrix : public Array2D<double>
       return __scal_vec_trans_rng<Matrix>(*this, r_);
     }
 
-#endif // KNUTSYS_H
-
     inline void Print()
     {
       double sum = 0.0;
@@ -769,6 +778,8 @@ class Matrix : public Array2D<double>
       }
       std::cout << "SUM: " << sum << '\n';
     }
+
+#endif // KNUTSYS_H
 
     friend class Vector;
     friend class MatFact;

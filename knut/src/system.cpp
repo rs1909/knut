@@ -75,7 +75,8 @@ static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::st
   addArgList(arglist, std::string( 
     CMAKE_CXX_FLAGS " "
     CMAKE_SHARED_LIBRARY_C_FLAGS " " 
-    CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS));
+    CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " "
+    KNUT_NO_EXCEPTIONS));
   std::string includeArg("-I");
   includeArg += executableDir.substr(0,executableDir.find_last_of(DIRSEP));
   includeArg += DIRSEP;

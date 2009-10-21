@@ -113,9 +113,9 @@ class System
     {
       (*v_stsol)(out, t);
     }
-    void   parnames( std::vector<std::string>& out ) const
+    void   parnames(const char *names[]) const
     {
-      if (v_parnames != 0) (*v_parnames)(out);
+      if (v_parnames != 0) (*v_parnames)(names);
     }
 
   private:
@@ -154,7 +154,7 @@ class System
     typedef void(*tp_sys_p_event)( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par );
     typedef void(*tp_sys_stpar)(Vector& par);
     typedef void(*tp_sys_stsol)(Vector& out, double t);
-    typedef void(*tp_sys_parnames)(std::vector<std::string>& out);
+    typedef void(*tp_sys_parnames)(const char *names[]);
 
     typedef void(*FPTR)();
     union punned

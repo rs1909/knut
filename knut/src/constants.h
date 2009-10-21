@@ -192,7 +192,10 @@ class NConstants
       setNPar(sys->npar());
       setNDim(sys->ndim());
       initParNames();
-      sys->parnames(parNames);
+      const char **names = new const char *[sys->npar()];
+      sys->parnames(names);
+      for (int i=0; i<sys->npar(); ++i) parNames[i] = names[i];
+      delete[] names;
     }
     // This loads the shared object file
     virtual void setSysNameText(const std::string& str)

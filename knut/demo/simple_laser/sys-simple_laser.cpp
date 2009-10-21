@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "knutsys.h"
 
 // xx:  Ax Ay    N

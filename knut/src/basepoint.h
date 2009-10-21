@@ -171,7 +171,7 @@ class PerSolPoint : public BasePoint
 {
   public:
     PerSolPoint(System& sys, const Array1D<Eqn>& eqn_, const Array1D<Var>& var_, const int solsize, const int nz_jac_, const int nmul) 
-      : BasePoint(sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul) { }
+      : BasePoint(sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
     virtual ~PerSolPoint() {}
     
     virtual void Stability() = 0;

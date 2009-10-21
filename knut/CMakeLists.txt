@@ -86,6 +86,7 @@ ENDIF(${CMAKE_CXX_FLAGS} MATCHES ".*-m64.*")
 
 MESSAGE( STATUS "The C++ runtime library is ${RES}" )
 SET( KNUT_CXX_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
+SET( KNUT_NO_EXCEPTIONS "-fno-rtti -fno-exceptions" CACHE INTERNAL "No exceptions")
 
 #------------------------------------------------------------------------------
 # finding libgfortran

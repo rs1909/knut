@@ -369,14 +369,6 @@ int VectorField::ProcessSymbols(void)
   HasPi   = false;
   HasPeriod = false;
   
-  // setting up the reader
-  // THIS IS A WORKAROUND FOR A BUG IN GINAC
-//  prototype_table funcs = get_default_reader();
-//  funcs[make_pair("delay", 2)] = delay_reader;
-//  funcs[make_pair("Zlags_", 2)] = Zlags__reader;
-//  funcs[make_pair("heaviside", 1)] = heaviside_reader;
-//  funcs[make_pair("ramp", 1)] = heaviside_reader;
-
   // Process the constants NAME
   for (vector<Constant *>::iterator c = Constants.begin(); c != Constants.end(); ++c)
   {
@@ -387,8 +379,6 @@ int VectorField::ProcessSymbols(void)
     allsymbols.append(con);
   }
 
-//  {
-//    parser reader(allsymbols, false, funcs);
     // Process the constants VALUE
     for (vector<Constant *>::iterator c = Constants.begin(); c != Constants.end(); ++c)
     {
@@ -406,7 +396,6 @@ int VectorField::ProcessSymbols(void)
         rval = -1;
       }
     }
-//  }
 
   // Process the parameters NAME
   for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
@@ -421,8 +410,6 @@ int VectorField::ProcessSymbols(void)
     allsymbols.append(par);
   }
   // Process the parameters DEFAULTVALUE
-//  {
-//    parser reader(allsymbols, false, funcs);
     for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
     {
       bool isPeriod = !strcasecmp((*p)->Description().c_str(), "period");
@@ -440,7 +427,6 @@ int VectorField::ProcessSymbols(void)
         rval = -1;
       }
     }
-//  }
 
   // At this point, allsymbols is a list of the ginac
   // symbols of the constants and parameters.
