@@ -44,17 +44,19 @@
 # define SELF(a) a
 #endif
 
-#define KN_CONSTANT(name, type, getName, setName) private: \
+#define KN_CONSTANT(name, type, getName, setName, nsetName) private: \
     SELF(type) name; \
   public: \
     type getName() const { return name; } \
-    virtual void setName(type d) { name = d; constantChanged(#name); }
+    virtual void setName(type d) { name = d; constantChanged(#name); } \
+    virtual void nsetName(type d) { name = d; }
 
-#define KN_STRING_CONSTANT(name, getName, setName) private: \
+#define KN_STRING_CONSTANT(name, getName, setName, nsetName) private: \
     SELF(std::string) name; \
   public: \
     const std::string& getName() const { return name; } \
-    virtual void setName(const std::string& d) { name = d; constantChanged(#name); }
+    virtual void setName(const std::string& d) { name = d; constantChanged(#name); } \
+    virtual void nsetName(const std::string& d) { name = d; }
 
 #define KN_ARRAY_CONSTANT( name, type, getName, setName, getSize, setSize, zero) private: \
     SELF(std::vector<type>) name; \
@@ -74,49 +76,49 @@ class NConstants
 {
   private:
     
-    KN_STRING_CONSTANT(inputFile,            getInputFile,  setInputFile) 
-    KN_STRING_CONSTANT(outputFile,           getOutputFile, setOutputFile)
-    KN_STRING_CONSTANT(sysname,              getSysName,    setSysName)
-    KN_CONSTANT(       label,      int,      getLabel,      setLabel)
-    KN_CONSTANT(       pointType,  PtType,   getPointType,  setPointType)
-    KN_CONSTANT(       cpType,     char,     getCpType,     setCpType)
-    KN_CONSTANT(       cpNum,      int,      getCpNum,      setCpNum)
-    KN_CONSTANT(       branchSW,   BranchSW, getBranchSW,   setBranchSW)
-    KN_ARRAY_CONSTANT( parxType,   char,     getParxType,   setParxType, getParxTypeSize, setParxTypeSize, 'P')
-    KN_ARRAY_CONSTANT( parxNum,    int,      getParxNum,    setParxNum,  getParxNumSize,  setParxNumSize, 0)
-    KN_ARRAY_CONSTANT( eqnsType,   char,     getEqnsType,   setEqnsType, getEqnsTypeSize, setEqnsTypeSize, 'E')
-    KN_ARRAY_CONSTANT( eqnsNum,    int,      getEqnsNum,    setEqnsNum,  getEqnsNumSize,  setEqnsNumSize, 0)
-    KN_ARRAY_CONSTANT( varsType,   char,     getVarsType,   setVarsType, getVarsTypeSize, setVarsTypeSize, 'P')
-    KN_ARRAY_CONSTANT( varsNum,    int,      getVarsNum,    setVarsNum,  getVarsNumSize,  setVarsNumSize, 0)
-    KN_CONSTANT(       nInt,       int,      getNInt,       setNInt)
-    KN_CONSTANT(       nDeg,       int,      getNDeg,       setNDeg)
-    KN_CONSTANT(       nMul,       int,      getNMul,       setNMul)
-    KN_CONSTANT(       stab,       bool,     getStab,       setStab)
-    KN_CONSTANT(       nMat,       int,      getNMat,       setNMat)
-    KN_CONSTANT(       nInt1,      int,      getNInt1,      setNInt1)
-    KN_CONSTANT(       nInt2,      int,      getNInt2,      setNInt2)
-    KN_CONSTANT(       nDeg1,      int,      getNDeg1,      setNDeg1)
-    KN_CONSTANT(       nDeg2,      int,      getNDeg2,      setNDeg2)
-    KN_CONSTANT(       steps,      int,      getSteps,      setSteps)
-    KN_CONSTANT(       iad,        int,      getIad,        setIad)
-    KN_CONSTANT(       nPr,        int,      getNPr,        setNPr)
-    KN_CONSTANT(       cpMin,      double,   getCpMin,      setCpMin)
-    KN_CONSTANT(       cpMax,      double,   getCpMax,      setCpMax)
-    KN_CONSTANT(       ds,         double,   getDs,         setDs)
-    KN_CONSTANT(       dsMin,      double,   getDsMin,      setDsMin)
-    KN_CONSTANT(       dsMax,      double,   getDsMax,      setDsMax)
-    KN_CONSTANT(       dsStart,    double,   getDsStart,    setDsStart)
-    KN_CONSTANT(       epsC,       double,   getEpsC,       setEpsC)
-    KN_CONSTANT(       epsR,       double,   getEpsR,       setEpsR)
-    KN_CONSTANT(       epsK,       double,   getEpsK,       setEpsK)
-    KN_CONSTANT(       nItC,       int,      getNItC,       setNItC)
-    KN_CONSTANT(       nItR,       int,      getNItR,       setNItR)
-    KN_CONSTANT(       nItK,       int,      getNItK,       setNItK)
-    KN_ARRAY_CONSTANT( symRe,      int,      getSymRe,      setSymRe, getSymReSize, setSymReSize, 0)
-    KN_ARRAY_CONSTANT( symIm,      int,      getSymIm,      setSymIm, getSymImSize, setSymImSize, 0)
+    KN_STRING_CONSTANT(inputFile,            getInputFile,  setInputFile,  nsetInputFile) 
+    KN_STRING_CONSTANT(outputFile,           getOutputFile, setOutputFile, nsetOutputFile)
+    KN_STRING_CONSTANT(sysname,              getSysName,    setSysName,    nsetSysName)
+    KN_CONSTANT(       label,      int,      getLabel,      setLabel,      nsetLabel)
+    KN_CONSTANT(       pointType,  PtType,   getPointType,  setPointType,  nsetPointType)
+    KN_CONSTANT(       cpType,     char,     getCpType,     setCpType,     nsetCpType)
+    KN_CONSTANT(       cpNum,      int,      getCpNum,      setCpNum,      nsetCpNum)
+    KN_CONSTANT(       branchSW,   BranchSW, getBranchSW,   setBranchSW,   nsetBranchSW)
+    KN_ARRAY_CONSTANT( parxType,   char,     getParxType,   setParxType,   getParxTypeSize, setParxTypeSize, 'P')
+    KN_ARRAY_CONSTANT( parxNum,    int,      getParxNum,    setParxNum,    getParxNumSize,  setParxNumSize, 0)
+    KN_ARRAY_CONSTANT( eqnsType,   char,     getEqnsType,   setEqnsType,   getEqnsTypeSize, setEqnsTypeSize, 'E')
+    KN_ARRAY_CONSTANT( eqnsNum,    int,      getEqnsNum,    setEqnsNum,    getEqnsNumSize,  setEqnsNumSize, 0)
+    KN_ARRAY_CONSTANT( varsType,   char,     getVarsType,   setVarsType,   getVarsTypeSize, setVarsTypeSize, 'P')
+    KN_ARRAY_CONSTANT( varsNum,    int,      getVarsNum,    setVarsNum,    getVarsNumSize,  setVarsNumSize, 0)
+    KN_CONSTANT(       nInt,       int,      getNInt,       setNInt,       nsetNInt)
+    KN_CONSTANT(       nDeg,       int,      getNDeg,       setNDeg,       nsetNDeg)
+    KN_CONSTANT(       nMul,       int,      getNMul,       setNMul,       nsetNMul)
+    KN_CONSTANT(       stab,       bool,     getStab,       setStab,       nsetStab)
+    KN_CONSTANT(       nMat,       int,      getNMat,       setNMat,       nsetNMat)
+    KN_CONSTANT(       nInt1,      int,      getNInt1,      setNInt1,      nsetNInt1)
+    KN_CONSTANT(       nInt2,      int,      getNInt2,      setNInt2,      nsetNInt2)
+    KN_CONSTANT(       nDeg1,      int,      getNDeg1,      setNDeg1,      nsetNDeg1)
+    KN_CONSTANT(       nDeg2,      int,      getNDeg2,      setNDeg2,      nsetNDeg2)
+    KN_CONSTANT(       steps,      int,      getSteps,      setSteps,      nsetSteps)
+    KN_CONSTANT(       iad,        int,      getIad,        setIad,        nsetIad)
+    KN_CONSTANT(       nPr,        int,      getNPr,        setNPr,        nsetNPr)
+    KN_CONSTANT(       cpMin,      double,   getCpMin,      setCpMin,      nsetCpMin)
+    KN_CONSTANT(       cpMax,      double,   getCpMax,      setCpMax,      nsetCpMax)
+    KN_CONSTANT(       ds,         double,   getDs,         setDs,         nsetDs)
+    KN_CONSTANT(       dsMin,      double,   getDsMin,      setDsMin,      nsetDsMin)
+    KN_CONSTANT(       dsMax,      double,   getDsMax,      setDsMax,      nsetDsMax)
+    KN_CONSTANT(       dsStart,    double,   getDsStart,    setDsStart,    nsetDsStart)
+    KN_CONSTANT(       epsC,       double,   getEpsC,       setEpsC,       nsetEpsC)
+    KN_CONSTANT(       epsR,       double,   getEpsR,       setEpsR,       nsetEpsR)
+    KN_CONSTANT(       epsK,       double,   getEpsK,       setEpsK,       nsetEpsK)
+    KN_CONSTANT(       nItC,       int,      getNItC,       setNItC,       nsetNItC)
+    KN_CONSTANT(       nItR,       int,      getNItR,       setNItR,       nsetNItR)
+    KN_CONSTANT(       nItK,       int,      getNItK,       setNItK,       nsetNItK)
+    KN_ARRAY_CONSTANT( symRe,      int,      getSymRe,      setSymRe,      getSymReSize, setSymReSize, 0)
+    KN_ARRAY_CONSTANT( symIm,      int,      getSymIm,      setSymIm,      getSymImSize, setSymImSize, 0)
     // from sysname
-    KN_CONSTANT(       nPar,       int,      getNPar,       setNPar)
-    KN_CONSTANT(       nDim,       int,      getNDim,       setNDim)
+    KN_CONSTANT(       nPar,       int,      getNPar,       setNPar,       nsetNPar)
+    KN_CONSTANT(       nDim,       int,      getNDim,       setNDim,       nsetNDim)
     
   protected:
     std::vector<std::string> parNames;

@@ -323,9 +323,9 @@ class MainWindow : public QMainWindow
     // this loads the file, not just sets the parameter
     // otherwise it would be `setSysName()'
     void setSysNameParameter() { parameters.setSysNameText(sysname->text().toStdString()); }
-    void setInputFileParameter() { parameters.setInputFile(inputFile->text().toStdString()); }
-    void setOutputFileParameter() { parameters.setOutputFile(outputFile->text().toStdString()); }
-    void setLabelParameter(int d) { parameters.setLabel(d); }
+    void setInputFileParameter(const QString & text) { parameters.nsetInputFile(text.toStdString()); }
+    void setOutputFileParameter(const QString & text) { parameters.nsetOutputFile(text.toStdString()); }
+    void setLabelParameter(int d) { parameters.nsetLabel(d); }
     void setPointTypeIdxParameter(int d)
       { parameters.setPointTypeIdx(static_cast<unsigned int>(d)); }
     void setCpIdxParameter(int d)
@@ -341,31 +341,31 @@ class MainWindow : public QMainWindow
       parameters.setVarsTypeSize(d);
       parameters.setVarsNumSize(d);
     }
-    void setNIntParameter(int d) { parameters.setNInt(d); }
-    void setNDegParameter(int d) { parameters.setNDeg(d); }
-    void setNMulParameter(int d) { parameters.setNMul(d); }
-    void setStabParameter(int d) { parameters.setStab(d); }
-    void setNMatParameter(int d) { parameters.setNMat(d); }
-    void setNInt1Parameter(int d) { parameters.setNInt1(d); }
-    void setNInt2Parameter(int d) { parameters.setNInt2(d); }
-    void setNDeg1Parameter(int d) { parameters.setNDeg1(d); }
-    void setNDeg2Parameter(int d) { parameters.setNDeg2(d); }
-    void setStepsParameter(int d) { parameters.setSteps(d); }
-    void setDsParameter() { parameters.setDs(ds->text().toDouble()); }
-    void setDsMinParameter() { parameters.setDsMin(dsMin->text().toDouble()); }
-    void setDsMaxParameter() { parameters.setDsMax(dsMax->text().toDouble()); }
-    void setDsStartParameter() { parameters.setDsStart(dsStart->text().toDouble()); }
-    void setEpsCParameter() { parameters.setEpsC(epsC->text().toDouble()); }
-    void setEpsRParameter() { parameters.setEpsR(epsR->text().toDouble()); }
-    void setEpsKParameter() { parameters.setEpsK(epsK->text().toDouble()); }
-    void setCpMinParameter() { parameters.setCpMin(cpMin->text().toDouble()); }
-    void setCpMaxParameter() { parameters.setCpMax(cpMax->text().toDouble()); }
+    void setNIntParameter(int d) { parameters.nsetNInt(d); }
+    void setNDegParameter(int d) { parameters.nsetNDeg(d); }
+    void setNMulParameter(int d) { parameters.nsetNMul(d); }
+    void setStabParameter(int d) { parameters.nsetStab(d); }
+    void setNMatParameter(int d) { parameters.nsetNMat(d); }
+    void setNInt1Parameter(int d) { parameters.nsetNInt1(d); }
+    void setNInt2Parameter(int d) { parameters.nsetNInt2(d); }
+    void setNDeg1Parameter(int d) { parameters.nsetNDeg1(d); }
+    void setNDeg2Parameter(int d) { parameters.nsetNDeg2(d); }
+    void setStepsParameter(int d) { parameters.nsetSteps(d); }
+    void setDsParameter(const QString & text) { parameters.nsetDs(text.toDouble()); }
+    void setDsMinParameter(const QString & text) { parameters.nsetDsMin(text.toDouble()); }
+    void setDsMaxParameter(const QString & text) { parameters.nsetDsMax(text.toDouble()); }
+    void setDsStartParameter(const QString & text) { parameters.nsetDsStart(text.toDouble()); }
+    void setEpsCParameter(const QString & text) { parameters.nsetEpsC(text.toDouble()); }
+    void setEpsRParameter(const QString & text) { parameters.nsetEpsR(text.toDouble()); }
+    void setEpsKParameter(const QString & text) { parameters.nsetEpsK(text.toDouble()); }
+    void setCpMinParameter(const QString & text) { parameters.nsetCpMin(text.toDouble()); }
+    void setCpMaxParameter(const QString & text) { parameters.nsetCpMax(text.toDouble()); }
     void setNSymParameter(int d) { parameters.setSymReSize(d); parameters.setSymImSize(d); }
-    void setNItCParameter(int d) { parameters.setNItC(d); }
-    void setNItRParameter(int d) { parameters.setNItR(d); }
-    void setNItKParameter(int d) { parameters.setNItK(d); }
-    void setIadParameter(int d) { parameters.setIad(d); }
-    void setNPrParameter(int d) { parameters.setNPr(d); }    
+    void setNItCParameter(int d) { parameters.nsetNItC(d); }
+    void setNItRParameter(int d) { parameters.nsetNItR(d); }
+    void setNItKParameter(int d) { parameters.nsetNItK(d); }
+    void setIadParameter(int d) { parameters.nsetIad(d); }
+    void setNPrParameter(int d) { parameters.nsetNPr(d); }    
     
     void externalException(const knutException& ex)
     {

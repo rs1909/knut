@@ -73,7 +73,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   systemGrid->addLayout(getInputFileLayout, 0, 4);
   connect(inputFileAct, SIGNAL(triggered()), this, SLOT(setInputFile())); // opening an input file
   connect(inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot())); // plotting the input file
-  connect(inputFile, SIGNAL(editingFinished()), this, SLOT(setInputFileParameter()));
+  connect(inputFile, SIGNAL(textEdited(const QString &)), this, SLOT(setInputFileParameter(const QString &)));
 
   QHBoxLayout *getOutputFileLayout = new QHBoxLayout;
   QLabel* outputFileLabel = new QLabel("OUTPUT");
@@ -93,7 +93,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   systemGrid->addLayout(getOutputFileLayout, 1, 4);
   connect(outputFileAct, SIGNAL(triggered()), this, SLOT(setOutputFile()));
   connect(outputFilePlotAct, SIGNAL(triggered()), this, SLOT(outputPlot()));
-  connect(outputFile, SIGNAL(editingFinished()), this, SLOT(setOutputFileParameter()));
+  connect(outputFile, SIGNAL(textEdited(const QString &)), this, SLOT(setOutputFileParameter(const QString &)));
 
   // this only for setting SYSNAME
   QHBoxLayout *sysnameLayout = new QHBoxLayout;
@@ -269,10 +269,10 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   numericsGrid->addWidget(dsMax, 3, 3);
   numericsGrid->addWidget(dsStart, 3, 4);
   connect(steps, SIGNAL(valueChanged(int)), this, SLOT(setStepsParameter(int)));
-  connect(ds, SIGNAL(editingFinished()), this, SLOT(setDsParameter()));
-  connect(dsMin, SIGNAL(editingFinished()), this, SLOT(setDsMinParameter()));
-  connect(dsMax, SIGNAL(editingFinished()), this, SLOT(setDsMaxParameter()));
-  connect(dsStart, SIGNAL(editingFinished()), this, SLOT(setDsStartParameter()));
+  connect(ds, SIGNAL(textEdited(const QString &)), this, SLOT(setDsParameter(const QString &)));
+  connect(dsMin, SIGNAL(textEdited(const QString &)), this, SLOT(setDsMinParameter(const QString &)));
+  connect(dsMax, SIGNAL(textEdited(const QString &)), this, SLOT(setDsMaxParameter(const QString &)));
+  connect(dsStart, SIGNAL(textEdited(const QString &)), this, SLOT(setDsStartParameter(const QString &)));
 
   QLabel* epsCLabel = new QLabel("EPSC");
   QLabel* epsRLabel = new QLabel("EPSR");
@@ -304,11 +304,11 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   numericsGrid->addWidget(epsK, 5, 2);
   numericsGrid->addWidget(cpMin, 5, 3);
   numericsGrid->addWidget(cpMax, 5, 4);
-  connect(epsC, SIGNAL(editingFinished()), this, SLOT(setEpsCParameter()));
-  connect(epsR, SIGNAL(editingFinished()), this, SLOT(setEpsRParameter()));
-  connect(epsK, SIGNAL(editingFinished()), this, SLOT(setEpsKParameter()));
-  connect(cpMin, SIGNAL(editingFinished()), this, SLOT(setCpMinParameter()));
-  connect(cpMax, SIGNAL(editingFinished()), this, SLOT(setCpMaxParameter()));
+  connect(epsC, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsCParameter(const QString &)));
+  connect(epsR, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsRParameter(const QString &)));
+  connect(epsK, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsKParameter(const QString &)));
+  connect(cpMin, SIGNAL(textEdited(const QString &)), this, SLOT(setCpMinParameter(const QString &)));
+  connect(cpMax, SIGNAL(textEdited(const QString &)), this, SLOT(setCpMaxParameter(const QString &)));
 
   QLabel* nitCLabel = new QLabel("NITC");
   QLabel* nitRLabel = new QLabel("NITR");
@@ -382,6 +382,7 @@ void MainWindow::run()
   if (!compThread.isRunning())
   {
     terminalText.clear();
+    setSysNameParameter(); // this is probably not updated by editingFinished()
     compThread.setConstants(parameters);
     compThread.setStopFlag(false);
     connect(&compThread, SIGNAL(finished()), this, SLOT(stopped()));
@@ -544,6 +545,7 @@ void MainWindow::compileSystem()
     try {
       System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
       sysname->setText(newfile);
+      setSysNameParameter();
     }
     catch (knutException ex)
     {
@@ -560,6 +562,7 @@ void MainWindow::generateSystem()
     try {
       System::generateSystem(fileName.toStdString(), executableDir.toStdString());
       sysname->setText(fileName +".so");
+      setSysNameParameter();
     }
     catch (knutException ex)
     {

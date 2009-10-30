@@ -18,11 +18,23 @@
 
 void BaseComp::run(const char* branchFile)
 {
-  System sys(params->getSysName());
-  if (sys.ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
-  params->initDimensions(&sys);
+  System *sys;
+  try
+  {
+    sys = new System(params->getSysName());
+  }
+  catch (knutException ex)
+  {
+    raiseException(ex);
+    delete sys;
+    return;
+  }
 
-  Vector par(sys.npar() + ParEnd);
+  
+  if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
+  params->initDimensions(sys);
+
+  Vector par(sys->npar() + ParEnd);
   std::ofstream ff;
   if (branchFile)
   {
@@ -52,12 +64,10 @@ void BaseComp::run(const char* branchFile)
   //
   //-----------------------------------------------------------------------------------------------------------
 
-
-  // just a block to contain pt, which eats too much memory
   try
   {
-    const bool needFN = params->toEqnVar(sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
-    const int npar = sys.npar();
+    const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
+    const int npar = sys->npar();
     std::vector<std::string> parNames = params->getParNames();
 
     std::ostringstream screenout;
@@ -84,8 +94,8 @@ void BaseComp::run(const char* branchFile)
     PerSolPoint* pt_ptr = 0;
     if (eqn_start(0) != EqnTORSol)
     {
-      if (eqn_start(0) == EqnSol) pt_ptr = new Point(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
-      else if (eqn_start(0) == EqnODESol) pt_ptr = new ODEPoint(sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      if (eqn_start(0) == EqnSol) pt_ptr = new Point(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
+      else if (eqn_start(0) == EqnODESol) pt_ptr = new ODEPoint(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
       PerSolPoint& pt = *pt_ptr;
   
@@ -132,7 +142,7 @@ void BaseComp::run(const char* branchFile)
     {
       PerSolPoint& pt = *pt_ptr;
       mat4Data out(params->getOutputFile(), params->getParNames(),
-                   params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
+                   params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
                    params->getNInt(), params->getNDeg(), params->getNMul());
 
       screenout   << "\n---     Starting the continuation      ---\n";
@@ -192,6 +202,7 @@ void BaseComp::run(const char* branchFile)
         if (stopFlag)
         {
           delete pt_ptr;
+          delete sys;
           return;
         }
         itpos = (itpos + 1) % ithist;
@@ -200,6 +211,7 @@ void BaseComp::run(const char* branchFile)
         if (stopFlag)
         {
           delete pt_ptr;
+          delete sys;
           return;
         }
         //
@@ -287,7 +299,7 @@ void BaseComp::run(const char* branchFile)
     else
     {
       mat4Data out(params->getOutputFile(), params->getParNames(),
-                   params->getSteps(), sys.ndim(), sys.npar() + ParEnd,
+                   params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
                    params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2());
 
       screenout << "ENTERING THE TORUS CODE!\n";
@@ -322,7 +334,7 @@ void BaseComp::run(const char* branchFile)
         delete pt_ptr;
         pt_ptr = 0;
       }
-      PointTR pttr(sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
+      PointTR pttr(*sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
       // construct the solution tangent from the eigenvectors
       // these next three functions could be only one
       if (params->getBranchSW() == TFTRSwitch)
@@ -357,6 +369,7 @@ void BaseComp::run(const char* branchFile)
       {
         if (stopFlag)
         {
+          delete sys;
           return;
         }
         // same as for periodic orbits
@@ -389,4 +402,5 @@ void BaseComp::run(const char* branchFile)
   {
     raiseException(ex);
   }
+  delete sys;
 }
