@@ -27,22 +27,27 @@ class ParamsModel : public QAbstractTableModel
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
-    int rowCount(const QModelIndex &/*parent = QModelIndex()*/) const
+    int rowCount(const QModelIndex &parent = QModelIndex()) const
     {
       if (parameters->getPointType() == SolUser) return 2;
       else return 1;
     }
-    int columnCount(const QModelIndex &/*parent = QModelIndex()*/) const
+    int columnCount(const QModelIndex &parent = QModelIndex()) const
     {
       if (parameters->getPointType() == SolUser) return parameters->getEqnsNumSize();
       else return parameters->getParxNumSize();
     };
 
     QVariant data(const QModelIndex &index, int role) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex &index) const
+    {
+      if (!index.isValid()) return Qt::NoItemFlags;
+      else return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+    }
 
   public slots:
     void dataUpdated()
@@ -64,11 +69,7 @@ class BoxDelegate : public QItemDelegate
     { }
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-
-    void setEditorData(QWidget *editor, const QModelIndex &index) const;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
-
-    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
   private:
 
@@ -124,11 +125,11 @@ class SYMModel : public QAbstractTableModel
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
-    int rowCount(const QModelIndex &/*parent = QModelIndex()*/) const
+    int rowCount(const QModelIndex &parent = QModelIndex()) const
     {
       return 2;
     }
-    int columnCount(const QModelIndex &/*parent = QModelIndex()*/) const
+    int columnCount(const QModelIndex &parent = QModelIndex()) const
     {
       return parameters->getSymReSize();
     };

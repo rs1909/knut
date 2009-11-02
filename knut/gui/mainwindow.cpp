@@ -12,6 +12,7 @@
 #include "plotdata.h"
 #include "plotwindow.h"
 #include "paramview.h"
+#include "constqtgui.h"
 
 #include <fstream>
 #include <cfloat>
@@ -364,6 +365,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   // connecting exceptions
   connect(&compThread, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
   connect(&parameters, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
+  connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)));
   // text output
   connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
 
@@ -530,9 +532,14 @@ void MainWindow::terminalView()
     connect(terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()));
   } else
   {
-	delete terminalDialog;
-	terminalDialog = 0;
+    delete terminalDialog;
+    terminalDialog = 0;
   }
+}
+
+void MainWindow::setSysNameParameter()
+{ 
+  parameters.setSysNameText(sysname->text().toStdString(), true);
 }
 
 void MainWindow::compileSystem()

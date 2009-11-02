@@ -250,7 +250,7 @@ class NConstantsQtGui : public QObject, public NConstants
 {
   Q_OBJECT
   private:
-	// These are not necessary by the command line
+    // These are not necessary by the command line
     PointType          pointTypeMap;
     VarType            cpMap;
     brswType           branchSWMap;
@@ -306,15 +306,20 @@ class NConstantsQtGui : public QObject, public NConstants
       setVarsType(i, varsMap.getType(v));
       setVarsNum(i, varsMap.getNum(v));
     }
-    virtual void setSysNameText(const std::string& str)
+    int getParxIdx(int i) { return parxMap.indexof(getParx(i)); }
+    int getEqnsIdx(int i) { return eqnsMap.indexof(getEqns(i)); }
+    int getVarsIdx(int i) { return varsMap.indexof(getVars(i)); }
+    virtual void setSysNameText(const std::string& str, bool testing = false)
     {
       try
       {
-        NConstants::setSysNameText(str);
+        NConstants::setSysNameText(str, testing);
       }
       catch(knutException ex)
       {
-        emit exceptionOccured(ex);
+        if (testing) emit sendMessage(QString::fromStdString(ex.getMessage().str()));
+        else emit exceptionOccured(ex);
+        return;
       }
       cpMap.setPar(parNames);
       parxMap.setPar(parNames);
@@ -325,6 +330,7 @@ class NConstantsQtGui : public QObject, public NConstants
   signals:
     void constantChangedSignal(const char* name);
     void exceptionOccured(const knutException&);
+    void sendMessage(const QString & message);
 };
 
 #endif

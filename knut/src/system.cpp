@@ -554,7 +554,7 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
   // convert the name first from .so to .cpp
   std::string cxxfile(shobj);
   std::string vffile;
-  if (cxxfile.substr(cxxfile.size()-3,cxxfile.size()) == ".so")
+  if (cxxfile.substr(std::max((int)cxxfile.size()-3,0),cxxfile.size()) == ".so")
   {
     cxxfile.erase(cxxfile.size()-3);
     vffile = cxxfile;

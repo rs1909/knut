@@ -322,7 +322,7 @@ class MainWindow : public QMainWindow
     
     // this loads the file, not just sets the parameter
     // otherwise it would be `setSysName()'
-    void setSysNameParameter() { parameters.setSysNameText(sysname->text().toStdString()); }
+    void setSysNameParameter();
     void setInputFileParameter(const QString & text) { parameters.nsetInputFile(text.toStdString()); }
     void setOutputFileParameter(const QString & text) { parameters.nsetOutputFile(text.toStdString()); }
     void setLabelParameter(int d) { parameters.nsetLabel(d); }

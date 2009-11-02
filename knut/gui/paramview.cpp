@@ -25,17 +25,11 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the equation NAME based on its index in the list
-//        std::cerr << "at " << index.row() << "," << index.column() << " E "
-//                  << parameters->getEqnsType(index.column()) 
-//                  << parameters->getEqnsNum(index.column()) << "\n";
         return QVariant(parameters->findEqnsString(parameters->getEqns(index.column())).c_str());
       }
       else
       {
         // Find the parameter NAME based on its index in the list
-//        std::cerr << "at " << index.row() << "," << index.column() << " Px "
-//                  << parameters->getParxType(index.column()) 
-//                  << parameters->getParxNum(index.column()) << "\n";
         return QVariant(parameters->findParxString(parameters->getParx(index.column())).c_str());
       }
     }
@@ -44,22 +38,11 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the variable NAME based on its index in the list
-//        std::cerr << "at " << index.row() << "," << index.column() << " V "
-//                  << parameters->getVarsType(index.column()) 
-//                  << parameters->getVarsNum(index.column()) << "\n";
         return QVariant(parameters->findVarsString(parameters->getVars(index.column())).c_str());
       }
     }
   }
   return QVariant();
-}
-
-Qt::ItemFlags ParamsModel::flags(const QModelIndex &index) const
-{
-  if (!index.isValid())
-    return Qt::ItemIsEnabled;
-
-  return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 }
 
 bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -71,17 +54,17 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
       if (parameters->getPointType() == SolUser)
       {
         // set the equation at position index.column() by its index
-      	parameters->setEqnsIdx(index.column(), value.toUInt());
+        parameters->setEqnsIdx(index.column(), value.toUInt());
       } else
       {
-      	// set the extra parameter at position index.column() by its index
-   		parameters->setParxIdx(index.column(), value.toUInt());
+        // set the extra parameter at position index.column() by its index
+        parameters->setParxIdx(index.column(), value.toUInt());
       }
     }
     if ((index.row() == 1) && (parameters->getPointType() == SolUser))
     {
       // set the variable at position index.column() by its index
-   	  parameters->setVarsIdx(index.column(), value.toUInt());
+      parameters->setVarsIdx(index.column(), value.toUInt());
     }
     emit dataChanged(index, index);
     return true;
@@ -123,10 +106,12 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
     if (index.row() == 0)
     {
       for (unsigned int i = 0; i < parameters->eqnsSize(); ++i) editor->addItem(parameters->eqnsString(i).c_str());
+      editor->setCurrentIndex(parameters->getEqnsIdx(index.column()));
     }
     if (index.row() == 1)
     {
       for (unsigned int i = 0; i < parameters->varsSize(); ++i) editor->addItem(parameters->varsString(i).c_str());
+      editor->setCurrentIndex(parameters->getVarsIdx(index.column()));
     }
   }
   else
@@ -134,20 +119,13 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
     if (index.row() == 0)
     {
       for (unsigned int i = 0; i < parameters->parxSize(); ++i) editor->addItem(parameters->parxString(i).c_str());
+      editor->setCurrentIndex(parameters->getParxIdx(index.column()));
     }
   }
 
   editor->installEventFilter(const_cast<BoxDelegate*>(this));
 
   return editor;
-}
-
-void BoxDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
-{
-  int value = index.model()->data(index, Qt::DisplayRole).toInt();
-
-  QComboBox *cbox = static_cast<QComboBox*>(editor);
-  cbox->setCurrentIndex(value);
 }
 
 void BoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
@@ -164,13 +142,6 @@ void BoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     if (index.row() == 0)  model->setData(index, cbox->currentIndex());
   }
 }
-
-void BoxDelegate::updateEditorGeometry(QWidget *editor,
-                                       const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
-{
-  editor->setGeometry(option.rect);
-}
-
 
 QVariant SYMModel::data(const QModelIndex &index, int role) const
 {
@@ -283,29 +254,23 @@ EqnVarTableView::~EqnVarTableView()
 
 void EqnVarTableView::resetSize()
 {
-  resizeRowToContents(0);
-  if (parameters->getPointType() == SolUser) resizeRowToContents(1);
+  resizeRowsToContents();
+//   resizeColumnsToContents(); // Do not resize, it gets too small
   horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+  horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+  verticalHeader()->setResizeMode(QHeaderView::Fixed);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  if (parameters->getPointType() == SolUser)
-  {
-    setMaximumSize(columnWidth(0) + 2*frameWidth() + 2000,
-                   rowHeight(0) + rowHeight(1) + 2*frameWidth() +
-                   horizontalHeader()->frameRect().height());
-    setMinimumSize(columnWidth(0) + 2*frameWidth(),
-                   rowHeight(0) + rowHeight(1) + 2*frameWidth() +
-                   horizontalHeader()->frameRect().height());
-  }
-  else
-  {
-    setMaximumSize(columnWidth(0) + 2*frameWidth() + 2000,
-                   rowHeight(0) + 2*frameWidth() +
-                   horizontalHeader()->frameRect().height());
-    setMinimumSize(columnWidth(0) + 2*frameWidth(),
-                   rowHeight(0) + 2*frameWidth() +
-                   horizontalHeader()->frameRect().height());
-  }
+  
+  int tableWidth = 2*frameWidth() + verticalHeader()->frameRect().width() + 
+    2*verticalHeader()->frameWidth();
+  int tableHeight = 2*frameWidth() + horizontalHeader()->frameRect().height() +
+    2*horizontalHeader()->frameWidth();
+  for (int i=0; i < model->columnCount(); ++i) tableWidth += columnWidth(i);
+  for (int i=0; i < model->rowCount(); ++i) tableHeight += rowHeight(i);
+  
+  setMinimumSize(tableWidth, tableHeight);
+  setMaximumSize(tableWidth, tableHeight);
 }
 
 SYMTableView::SYMTableView(NConstantsQtGui* params, QWidget* parent_) : QTableView(parent_), parameters(params)
@@ -326,15 +291,21 @@ SYMTableView::~SYMTableView()
 
 void SYMTableView::resetSize()
 {
-  resizeRowToContents(0);
-  resizeRowToContents(1);
+  resizeRowsToContents();
+//   resizeColumnsToContents(); // Do not resize, it gets too small
   horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+  horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+  verticalHeader()->setResizeMode(QHeaderView::Fixed);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  setMaximumSize(columnWidth(0) + 2*frameWidth() + 2000,
-                 rowHeight(0) + rowHeight(1) + 2*frameWidth() +
-                 horizontalHeader()->frameRect().height());
-  setMinimumSize(columnWidth(0) + 2*frameWidth(),
-                 rowHeight(0) + rowHeight(1) + 2*frameWidth() +
-                 horizontalHeader()->frameRect().height());
+  
+  int tableWidth = 2*frameWidth() + verticalHeader()->frameRect().width() + 
+    2*verticalHeader()->frameWidth();
+  int tableHeight = 2*frameWidth() + horizontalHeader()->frameRect().height() +
+    2*horizontalHeader()->frameWidth();
+  for (int i=0; i < model->columnCount(); ++i) tableWidth += columnWidth(i);
+  for (int i=0; i < model->rowCount(); ++i) tableHeight += rowHeight(i);
+  
+  setMinimumSize(tableWidth, tableHeight);
+  setMaximumSize(tableWidth, tableHeight);
 }

@@ -131,7 +131,7 @@ class NConstants
     // to extract the dependencies run:
     // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
     NConstants(const NConstants& src) : inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), steps(src.steps), iad(src.iad), nPr(src.nPr), cpMin(src.cpMin), cpMax(src.cpMax), ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), epsC(src.epsC), epsR(src.epsR), epsK(src.epsK), nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), nPar(src.nPar), nDim(src.nDim) {}
-    ~NConstants() { initParNames(); }
+    ~NConstants() { }
     // for setting up the continuation
     bool toEqnVar(System& sys,
                   Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
@@ -142,8 +142,8 @@ class NConstants
     void printXmlFile(std::ostream& file);
     // this is to notify the system of changes
     virtual void constantChanged(const char* name) { }
-	
-	// converting equation numbers to what can be used in continuation
+    
+    // converting equation numbers to what can be used in continuation
     Eqn eqnFromTypeNum(char type, int num) const
     {
       if (type == 'E') return (Eqn)num;
@@ -194,13 +194,14 @@ class NConstants
       setNPar(sys->npar());
       setNDim(sys->ndim());
       initParNames();
-      const char **names = new const char *[sys->npar()];
+      const char **names = new const char *[sys->npar()+1];
+      for (int i=0; i<sys->npar()+1; ++i) names[i] = 0;
       sys->parnames(names);
-      for (int i=0; i<sys->npar(); ++i) parNames[i] = names[i];
+      for (int i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
       delete[] names;
     }
     // This loads the shared object file
-    virtual void setSysNameText(const std::string& str)
+    virtual void setSysNameText(const std::string& str, bool testing = false)
     {
       setSysName(str);
       System* sys = 0;
@@ -212,7 +213,7 @@ class NConstants
       }
       catch (knutException ex)
       {
-      	delete sys;
+        delete sys;
         setNPar(0);
         setNDim(0);
         throw(ex);
