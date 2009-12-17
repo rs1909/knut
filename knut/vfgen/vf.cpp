@@ -138,83 +138,83 @@ ex ramp_reader(const exvector& ev)
 //
 
 Symbol::Symbol() { }
-Symbol::Symbol(string n) : name(n) { }
-Symbol::Symbol(string n, string descr) : name(n), description(descr) { }
+Symbol::Symbol(const std::string& n) : name(n) { }
+Symbol::Symbol(const std::string& n, const std::string& descr) : name(n), description(descr) { }
 
-void   Symbol::Name(string n) { name = n; }
-string Symbol::Name(void) { return name; }
-void   Symbol::Description(string descr) { description = descr; }
-string Symbol::Description(void) { return description; }
-void   Symbol::Latex(string l) { latex = l; }
-string Symbol::Latex(void) { return latex; }
+void   Symbol::Name(const std::string& n) { name = n; }
+const std::string& Symbol::Name(void) const { return name; }
+void   Symbol::Description(const std::string& descr) { description = descr; }
+const std::string& Symbol::Description(void) const { return description; }
+void   Symbol::Latex(const std::string& l) { latex = l; }
+const std::string& Symbol::Latex(void) const { return latex; }
 
 //
 // FormulaSymbol Methods
 //
 
 FormulaSymbol::FormulaSymbol() : Symbol() { }
-FormulaSymbol::FormulaSymbol(string name) : Symbol(name) { }
-FormulaSymbol::FormulaSymbol(string name, string descr) : Symbol(name, descr) { }
+FormulaSymbol::FormulaSymbol(const std::string& name) : Symbol(name) { }
+FormulaSymbol::FormulaSymbol(const std::string& name, const std::string& descr) : Symbol(name, descr) { }
 
-void   FormulaSymbol::Formula(string f) { formula = f; }
-string FormulaSymbol::Formula(void) { return formula; }
+void   FormulaSymbol::Formula(const std::string& f) { formula = f; }
+const std::string& FormulaSymbol::Formula(void) const { return formula; }
 
 //
 // Constant Methods
 //
 
-Constant::Constant(string name) : Symbol(name), value("") { }
-Constant::Constant(string name, string descr) : Symbol(name, descr), value("") { }
+Constant::Constant(const std::string& name) : Symbol(name), value("") { }
+Constant::Constant(const std::string& name, const std::string& descr) : Symbol(name, descr), value("") { }
 
-void   Constant::Value(string val) { value = val; }
-string Constant::Value(void) { return value; }
+void   Constant::Value(const std::string& val) { value = val; }
+const std::string& Constant::Value(void) const { return value; }
 
 
 //
 // Parameter Methods
 //
 
-Parameter::Parameter(string name) : Symbol(name), defaultvalue("") { }
-Parameter::Parameter(string name, string descr) : Symbol(name, descr), defaultvalue("") { }
+Parameter::Parameter(const std::string& name) : Symbol(name), defaultvalue("") { }
+Parameter::Parameter(const std::string& name, const std::string& descr) : Symbol(name, descr), defaultvalue("") { }
 
-void   Parameter::DefaultValue(string val) { defaultvalue = val; }
-string Parameter::DefaultValue(void) { return defaultvalue; }
+void   Parameter::DefaultValue(const std::string& val) { defaultvalue = val; }
+const std::string& Parameter::DefaultValue(void) const { return defaultvalue; }
 
 //
 // Expression Methods
 //
-Expression::Expression(string name) : FormulaSymbol(name) { }
-Expression::Expression(string name, string descr) : FormulaSymbol(name, descr) { }
+Expression::Expression(const std::string& name) : FormulaSymbol(name) { }
+Expression::Expression(const std::string& name, const std::string& descr) : FormulaSymbol(name, descr) { }
 
 //
 // StateVariable Methods
 //
-StateVariable::StateVariable(string name) : FormulaSymbol(name), periodicfrom(""), periodicto(""), default_ic("") { }
-StateVariable::StateVariable(string name, string descr) : FormulaSymbol(name, descr), periodicfrom(""), periodicto(""), default_ic("") { }
+StateVariable::StateVariable(const std::string& name) : FormulaSymbol(name), periodicfrom(""), periodicto(""), default_ic("") { }
+StateVariable::StateVariable(const std::string& name, const std::string& descr) : FormulaSymbol(name, descr), periodicfrom(""), periodicto(""), default_ic("") { }
 
-void   StateVariable::PeriodicFrom(string pfrom) { periodicfrom = pfrom; }
-string StateVariable::PeriodicFrom(void) { return periodicfrom; }
-void   StateVariable::PeriodicTo(string pto) { periodicto = pto; }
-string StateVariable::PeriodicTo(void) { return periodicto; }
+void   StateVariable::PeriodicFrom(const std::string& pfrom) { periodicfrom = pfrom; }
+const std::string& StateVariable::PeriodicFrom(void) const { return periodicfrom; }
+void   StateVariable::PeriodicTo(const std::string& pto) { periodicto = pto; }
+const std::string& StateVariable::PeriodicTo(void) const { return periodicto; }
 bool   StateVariable::IsPeriodic(void) { return periodicfrom != ""; }
-void   StateVariable::DefaultInitialCondition(string ic) { default_ic = ic; }
-string StateVariable::DefaultInitialCondition(void) { return default_ic; }
-void   StateVariable::DefaultHistory(string hist) { default_history = hist; }
-string StateVariable::DefaultHistory() { return default_history; }
+void   StateVariable::DefaultInitialCondition(const std::string& ic) { default_ic = ic; }
+const std::string& StateVariable::DefaultInitialCondition(void) const { return default_ic; }
+void   StateVariable::DefaultHistory(const std::string& hist) { default_history = hist; }
+const std::string& StateVariable::DefaultHistory() const { return default_history; }
 
 //
 // Function Methods
 //
-Function::Function(string name) : FormulaSymbol(name) { }
-Function::Function(string name, string descr) : FormulaSymbol(name, descr) { }
+Function::Function(const std::string& name) : FormulaSymbol(name) { }
+Function::Function(const std::string& name, const std::string& descr) : FormulaSymbol(name, descr) { }
 
 //
 // VectorField Methods
 //
 
 VectorField::VectorField(void) : IndependentVariable("t"), IsAutonomous(true) { }
-VectorField::VectorField(string name, string descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
-VectorField::VectorField(string name, string descr, string indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
+VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
+VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
 // TO DO: Create the destructor; it must delete the memory used
 //        by the vector<>s in VectorField.
 
@@ -372,7 +372,7 @@ int VectorField::ProcessSymbols(void)
   // Process the constants NAME
   for (vector<Constant *>::iterator c = Constants.begin(); c != Constants.end(); ++c)
   {
-    symbol con((*c)->Latex() != ""
+    symbol con(!(*c)->Latex().empty()
                ? symbol((*c)->Name(), (*c)->Latex())
                : symbol((*c)->Name()));
     conname_list.append(con);
@@ -400,7 +400,7 @@ int VectorField::ProcessSymbols(void)
   // Process the parameters NAME
   for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
   {
-    symbol par((*p)->Latex() != ""
+    symbol par(!(*p)->Latex().empty()
                ? symbol((*p)->Name(), (*p)->Latex())
                : symbol((*p)->Name()));
     // symbol par((*p)->Name());
@@ -444,7 +444,7 @@ int VectorField::ProcessSymbols(void)
   int nv = 0;
   for (vector<StateVariable *>::iterator sv = StateVariables.begin(); sv != StateVariables.end(); ++sv, ++nv)
   {
-    symbol var((*sv)->Latex() != ""
+    symbol var(!(*sv)->Latex().empty()
                ? symbol((*sv)->Name(), (*sv)->Latex())
                : symbol((*sv)->Name()));
     varname_list.append(var);
@@ -500,7 +500,7 @@ int VectorField::ProcessSymbols(void)
   // Process the expressions NAME and FORMULA
   for (vector<Expression *>::iterator e = Expressions.begin(); e != Expressions.end(); ++e)
   {
-    symbol auxe((*e)->Latex() != ""
+    symbol auxe(!(*e)->Latex().empty()
                 ? symbol((*e)->Name(), (*e)->Latex())
                 : symbol((*e)->Name()));
     exprname_list.append(auxe);

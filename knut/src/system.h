@@ -25,7 +25,7 @@ class System
 {
   public:
 
-    System(const std::string& shobj);
+    System(const std::string& shobj, int usederi);
     ~System();
     static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
     static void generateSystem(const std::string& vffile, const std::string& executableDir);

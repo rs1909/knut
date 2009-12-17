@@ -15,6 +15,8 @@
 #include <QPainterPath>
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
+#include <QSharedPointer>
+#include <QLinkedList>
 class QGraphicsSceneMouseEvent;
 
 #include <vector>
@@ -26,20 +28,28 @@ class QGraphicsSceneMouseEvent;
 enum PlotXVariable
 {
   XNone,
+  // only one row of data is used
+  XMesh,           // -> YProfile
+  XRealMultiplier, // -> YImagMultiplier
+  XSeparator,
+  // From here all rows are necessary
+  // can be combined with any of the X > XSeparator
   XLabel,
-  XMesh,
-  XRealMultiplier,
   XParameter0
 };
 
 enum PlotYVariable
 {
   YNone,
+  // only one row of data is used
+  YImagMultiplier, // -> XRealMultiplier
+  YProfile,        // - > XMesh
+  YSeparator,
+  // From here all rows are necessary
+  // can be combined with any of the Y > YSeparator
   YL2Norm,
   YAmplitude,
-  YImagMultiplier,
   YAbsMultiplier,
-  YProfile,
   YParameter0
 };
 
@@ -50,6 +60,13 @@ enum PlotType
   PlotPolygonType
 };
 
+enum PlotDataType
+{
+  PlotBasicData,
+  PlotStability,
+  PlotAuxiliary
+};
+
 enum PlotMarkerStyle
 {
   PlotMarkerCircle,
@@ -58,25 +75,41 @@ enum PlotMarkerStyle
   PlotMarkerCross
 };
 
-class PlotLine
+class PlotPolyLine
 {
   public:
-    PlotLine(const QPen& p) : pen(p)
-    { }
-    QPen           pen;
-    QPainterPath   line;
-    QGraphicsPathItem *item;
+    PlotPolyLine(const QPen& pen_) : pen(pen_), item(0) { }
+    QPen               pen;
+    QPainterPath       path;
+    QGraphicsPathItem* item;
+};
+
+class PlotLine : public QLinkedList<PlotPolyLine>
+{
+  public:
+    PlotLine(const QPen& p) : pen(p) { }
+    void clear()
+    {
+      for (PlotLine::iterator it = begin(); it != end(); ++it)
+      {
+        delete it->item;
+      }
+      QLinkedList<PlotPolyLine>::clear();
+    }
+    QPen pen;
 };
 
 class PlotCircle
 {
   public:
-    PlotCircle(const QPen& pen_, const QRectF& point_) : pen(pen_), point(point_)
-    { }
+    PlotCircle(const QPen& pen_, const QRectF& point_, bool scale_ = false) 
+      : pen(pen_), point(point_), scale(scale_) { }
     QPen                 pen;
     QRectF               point;
+    QRectF               scaledPoint;
     std::vector<QPointF> pos;
     std::vector<QGraphicsEllipseItem*> item;
+    bool scale;
 };
 
 class PlotPolygon
@@ -100,12 +133,22 @@ union PlotItemUnion
 class PlotItem
 {
   public:
+    PlotItem(const QSharedPointer<const mat4Data>& mat, PlotDataType type,
+             PlotXVariable x, PlotYVariable y, int pt, int dim)
+     : dataType(type), source(mat.data()), varX(x), varY(y), point(pt), dimension(dim) {}
+    bool isFrom(const QSharedPointer<const mat4Data>& mat) { return source == mat.data(); }
     PlotItemUnion data;
     PlotType      type;
+    PlotDataType  dataType;
     Vector        x;
     Vector        y;
     unsigned int  number;
     bool          principal;
+    const mat4Data *source;
+    const PlotXVariable varX;
+    const PlotYVariable varY;
+    const int     point;
+    const int     dimension;
 };
 
 struct ViewBox
@@ -121,16 +164,15 @@ class PlotData : public QGraphicsScene
   public:
     PlotData(QObject *parent = 0);
     ~PlotData();
-    void makeBox();
-    void PlotPaint();
-    bool addPlot(const mat4Data* data, 
+    bool addPlot(const QSharedPointer<const mat4Data>& mat, 
       PlotXVariable x, PlotYVariable y, int pt, int dim);
     void clearAll();
     void clear(unsigned int n);
     int  nplots();
     QColor getColor(unsigned int n);
     void setColor(unsigned int n, QColor& Color);
-
+    void updatePlot(const QSharedPointer<const mat4Data>& mat);
+    
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
@@ -138,15 +180,20 @@ class PlotData : public QGraphicsScene
     void keyPressEvent(QKeyEvent * event);
 
   private:
-    void addPlotLine(std::list<PlotItem>::iterator& it, const QPen& pen, bool p);
-    void addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, PlotMarkerStyle type, bool p);
-    void dataToGraphics();
+    void addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool p);
+    void addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen, 
+                      PlotMarkerStyle type, bool p, qreal radius = 3.0, bool scale = false);
+    void dataToGraphics(std::list<PlotItem>::const_iterator begin,
+                        std::list<PlotItem>::const_iterator end);
     void getScale(qreal& transx, qreal& transy, qreal& scale);
-//    void plotStyle(QPen& pen, const char* style);
     QPointF intersect(QPointF p1, QPointF p2);
     inline bool contains(double x, double y);
     bool crossbox(QPointF p1, QPointF p2, QPointF& i1, QPointF& i2);
-    void rescaleData();
+    void rescaleData(std::list<PlotItem>::const_iterator begin,
+                     std::list<PlotItem>::const_iterator end);
+    void makeBox();
+    void PlotPaint(std::list<PlotItem>::const_iterator begin,
+                   std::list<PlotItem>::const_iterator end, bool zoom);
     void replot();
     void clearAxes();
     void labelColor();
@@ -168,6 +215,7 @@ class PlotData : public QGraphicsScene
 
     // the plot box
     QGraphicsRectItem               *Box;
+    QPainterPath                     clipBox;
     std::vector<QGraphicsTextItem*>  HText;
     std::vector<QGraphicsTextItem*>  VText;
     std::vector<QGraphicsLineItem*>  TopTicks;

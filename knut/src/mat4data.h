@@ -45,15 +45,16 @@ class mat4Data
     ~mat4Data();
     
 #ifndef WIN32
-    void   lock() const { flock(file, LOCK_EX); }
-    void   unlock() const { flock(file, LOCK_UN); }
+    void   lock() const { if (flock(file, LOCK_EX) != 0) std::cerr<<"Error locking\n"; }
+    void   unlock() const { if (flock(file, LOCK_UN) != 0) std::cerr<<"Error locking\n"; }
 #else
     // No locking on windows. Use a proper operating system instead.
     void   lock() const { }
     void   unlock() const { }
 #endif
+    const std::string& getFileName() const { return matFileName; }
     // resets the tables (no locking)
-    void   initHeaders(const std::string& fileName);
+    void   initHeaders();
     void   setPar(int n, const Vector& par);
     void   setParNames(const std::vector<std::string>& parNames);
     void   getParNames(std::vector<std::string>& parNames) const;
@@ -168,7 +169,7 @@ class mat4Data
       return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
     }
     int     getUnstableMultipliers(int n) const;
-    int     getNextBifurcation(int n) const;
+    int     getNextBifurcation(int n, bool* stab = 0) const;
     BifType getBifurcationType(int n) const;
     bool isTorus() const
     {
@@ -263,6 +264,7 @@ class mat4Data
 #else
     int    file;
 #endif
+    const std::string matFileName;
     size_t filesize;
     void  *address;
     size_t size;

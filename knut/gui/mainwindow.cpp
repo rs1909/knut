@@ -409,7 +409,8 @@ void MainWindow::setSysName()
                                                   QString(), "Shared object (*.so);;All files (*)");
   if (!fileName.isEmpty())
   {
-    sysname->setText(fileName);
+    sysname->setText(QDir::current().relativeFilePath(fileName));
+    setSysNameParameter();
   }
 }
 
@@ -419,6 +420,7 @@ void MainWindow::setInputFile()
   if (!fileName.isEmpty())
   {
     inputFile->setText(QDir::current().relativeFilePath(fileName));
+    setInputFileParameter(QDir::current().relativeFilePath(fileName));
   }
 }
 
@@ -428,6 +430,7 @@ void MainWindow::setOutputFile()
   if (!fileName.isEmpty())
   {
     outputFile->setText(QDir::current().relativeFilePath(fileName));
+    setOutputFileParameter(QDir::current().relativeFilePath(fileName));
   }
 }
 
@@ -450,17 +453,23 @@ void MainWindow::inputPlotDestroyed()
 //  std::cout<<"plot destroyed\n";
   delete inputPlotWindow;
   inputPlotWindow = 0;
+  inputMatFile.clear();
 }
 
 void MainWindow::inputPlot()
 {
   if (inputPlotWindow == 0)
   {
-    inputPlotWindow = new plotWindow(inputFile->text());
-    if (inputPlotWindow->isPlotting())
+    openInputMatFile(inputFile->text());
+    inputPlotWindow = new plotWindow(inputMatFile);
+    if (inputPlotWindow->isDataSet())
     {
       QDialog *inputPlotDialog = new QDialog(this);
       QVBoxLayout *inputPlotLayout = new QVBoxLayout();
+      connect(inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()));
+      connect(inputPlotWindow, SIGNAL(openFile(const QString&)), 
+              this, SLOT(openInputMatFile(const QString&)));
+      
       inputPlotLayout->addWidget(inputPlotWindow);
       inputPlotLayout->setMargin(0);
       inputPlotDialog->setLayout(inputPlotLayout);
@@ -468,12 +477,10 @@ void MainWindow::inputPlot()
       inputPlotDialog->setWindowFlags(Qt::Window);
       inputPlotDialog->show();
       inputPlotDialog->raise();
-      connect(inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()));
     }
     else
     {
-      delete inputPlotWindow;
-      inputPlotWindow = 0;
+      inputPlotDestroyed();
     }
   }
 }
@@ -483,17 +490,24 @@ void MainWindow::outputPlotDestroyed()
 //  std::cout<<"plot destroyed\n";
   delete outputPlotWindow;
   outputPlotWindow = 0;
+  outputMatFile.clear();
 }
 
 void MainWindow::outputPlot()
 {
   if (outputPlotWindow == 0)
   {
-    outputPlotWindow = new plotWindow(outputFile->text());
-    if (outputPlotWindow->isPlotting())
+    openOutputMatFile(QString());
+    outputPlotWindow = new plotWindow(outputMatFile);
+    if (outputPlotWindow->isDataSet())
     {
       QDialog *outputPlotDialog = new QDialog(this);
       QVBoxLayout *outputPlotLayout = new QVBoxLayout();
+      connect(outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()));
+      connect(outputPlotWindow, SIGNAL(openFile(const QString&)), this, SLOT(openOutputMatFile(const QString&)));
+      connect(&compThread, SIGNAL(dataChanged(const QSharedPointer<const mat4Data>&)), 
+              outputPlotWindow, SLOT(updatePlot(const QSharedPointer<const mat4Data>&)));
+
       outputPlotLayout->addWidget(outputPlotWindow);
       outputPlotLayout->setMargin(0);
       outputPlotDialog->setLayout(outputPlotLayout);
@@ -501,14 +515,59 @@ void MainWindow::outputPlot()
       outputPlotDialog->setWindowFlags(Qt::Window);
       outputPlotDialog->show();
       outputPlotDialog->raise();
-      connect(outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()));
     }
     else
     {
-      delete outputPlotWindow;
-      outputPlotWindow = 0;
+      outputPlotDestroyed();
     }
   }
+}
+
+void MainWindow::openInputMatFile(const QString& fileName)
+{
+  try {
+    inputMatFile = QSharedPointer<const mat4Data>(new mat4Data(fileName.toStdString()));
+    if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
+  }
+  catch (knutException ex) 
+  {
+    externalException(ex);
+  }
+}
+
+void MainWindow::openOutputMatFile(const QString& fileName)
+{
+  if (fileName.isEmpty()) 
+  {
+    if (compThread.isRunning()) outputMatFile = compThread.dataPointer();
+    else 
+    {
+      try {
+        outputMatFile = QSharedPointer<const mat4Data>(new mat4Data(outputFile->text().toStdString()));
+      }
+      catch (knutException ex) 
+      {
+        externalException(ex);
+      }
+    }
+  } else 
+  {
+    if (QFileInfo(fileName) == QFileInfo(QString::fromStdString(outputMatFile->getFileName())))
+    {
+      // the same file
+      if (compThread.isRunning()) outputMatFile = compThread.dataPointer();
+    } else
+    {
+      try {
+        outputMatFile = QSharedPointer<const mat4Data>(new mat4Data(fileName.toStdString()));
+      }
+      catch (knutException ex) 
+      {
+        externalException(ex);
+      }
+    }
+  }
+  if (outputPlotWindow) outputPlotWindow->setData(outputMatFile);
 }
 
 void MainWindow::terminalViewDestroyed()
@@ -551,7 +610,7 @@ void MainWindow::compileSystem()
     newfile.replace(QString(".cpp"), QString(".so"));
     try {
       System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
-      sysname->setText(newfile);
+      sysname->setText(QDir::current().relativeFilePath(newfile));
       setSysNameParameter();
     }
     catch (knutException ex)
@@ -568,7 +627,7 @@ void MainWindow::generateSystem()
   {
     try {
       System::generateSystem(fileName.toStdString(), executableDir.toStdString());
-      sysname->setText(fileName +".so");
+      sysname->setText(QDir::current().relativeFilePath(fileName +".so"));
       setSysNameParameter();
     }
     catch (knutException ex)

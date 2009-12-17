@@ -31,8 +31,28 @@
 #include <QSplitter>
 #include <QSvgGenerator>
 
-plotWindow::plotWindow(const QString& fname, QWidget *parent) :
+plotWindow::plotWindow(QWidget *parent) :
     QMainWindow(parent), data(0)
+{
+  setupPlotWindow();
+}
+
+plotWindow::plotWindow(const QSharedPointer<const mat4Data>& mat, QWidget *parent) :
+    QMainWindow(parent), data(mat)
+{
+  setupPlotWindow();
+  if (!data) return;
+  if (data->isTorus()) return;
+  matfile->setText(QDir::current().relativeFilePath(data->getFileName().c_str()));
+  setData(mat);
+}
+
+plotWindow::~plotWindow()
+{
+  // empty: we don't allocate memory here
+}
+
+void plotWindow::setupPlotWindow()
 {
   plot = new QGraphicsView(this);
   plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
@@ -134,76 +154,62 @@ plotWindow::plotWindow(const QString& fname, QWidget *parent) :
 
   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
-                       
-  // open data file
-  openFile(fname);
-  if (!data) return;
-  if (data->isTorus()) return;
-  matfile->setText(QDir::current().relativeFilePath(fname));
 }
 
-plotWindow::~plotWindow()
+void plotWindow::setData(const QSharedPointer<const mat4Data>& mat)
 {
-  delete data;
-}
+  data = mat;
+  matfile->setText(QDir::current().relativeFilePath(data->getFileName().c_str()));
+  data->lock(); 
+  ptlabel->setRange(0, data->getNCols() - 1);
+  dim->setRange(0, data->getNDim() - 1);
 
-void plotWindow::openFile(const QString& fileName)
-{
-  const mat4Data *t_data = 0;
-  try
+  const int xidx = xvar->currentIndex();
+  std::vector<std::string> parNames;
+  data->getParNames(parNames);
+  xvarMap.clear();
+  xvarMap.push_back(XTranslate(XNone, "None"));
+  xvarMap.push_back(XTranslate(XLabel, "Label"));
+  xvarMap.push_back(XTranslate(XMesh, "Mesh"));
+  xvarMap.push_back(XTranslate(XRealMultiplier, "RealMultiplier"));
+  for (int i = 0; i < data->getNPar(); ++i)
   {
-    t_data = new mat4Data(fileName.toStdString());
-  }
-  catch (knutException ex)
-  {
-    MainWindow::showException(this, ex);
-    return;
-  }
-  if (t_data)
-  {
-    delete data;
-    data = t_data;
-   
-    data->lock(); 
-    ptlabel->setRange(0, data->getNCols() - 1);
-    dim->setRange(0, data->getNDim() - 1);
-
-    const int xidx = xvar->currentIndex();
-    std::vector<std::string> parNames;
-    data->getParNames(parNames);
-    xvarMap.clear();
-    xvar->clear();
-    xvarMap.push_back("None");
-    xvarMap.push_back("Label");
-    xvarMap.push_back("Mesh");
-    xvarMap.push_back("RealMultiplier");
-    for (int i = XParameter0; i < XParameter0 + data->getNPar(); ++i)
+    if (i < (int)parNames.size())
     {
-      if (i - XParameter0 < (int)parNames.size()) xvarMap.push_back(QString(parNames[i - XParameter0].c_str()));
+      xvarMap.push_back(XTranslate((PlotXVariable)(XParameter0 + i), QString::fromStdString(parNames[i])));
     }
-    for (unsigned int i = 0; i < xvarMap.size(); ++i)
-      xvar->insertItem(static_cast<int>(i), xvarMap.at(i));
-    if ((xidx != -1) && (xidx < xvar->count())) xvar->setCurrentIndex(xidx);
-
-    const int yidx = yvar->currentIndex();  
-    yvarMap.clear();
-    yvar->clear();
-    yvarMap.push_back("None");
-    yvarMap.push_back("L2Norm");
-    yvarMap.push_back("Amplitude");
-    yvarMap.push_back("ImagMultiplier");
-    yvarMap.push_back("AbsMultiplier");
-    yvarMap.push_back("Profile");
-    for (int i = YParameter0; i < YParameter0 + data->getNPar(); ++i)
-    {
-      if (i - YParameter0 < (int)parNames.size()) yvarMap.push_back(QString(parNames[i - YParameter0].c_str()));
-    }
-    for (unsigned int i = 0; i < yvarMap.size(); ++i)
-      yvar->insertItem(static_cast<int>(i), yvarMap.at(i));
-    if ((yidx != -1) && (yidx < yvar->count())) yvar->setCurrentIndex(yidx);
-    data->unlock();
   }
-  QFileInfo fi(fileName);
+  xvar->clear();
+  for (unsigned int i = 0; i < xvarMap.size(); ++i)
+  {
+    xvar->insertItem(static_cast<int>(i), xvarMap.at(i).name);
+  }
+  if ((xidx != -1) && (xidx < xvar->count())) xvar->setCurrentIndex(xidx);
+
+  const int yidx = yvar->currentIndex();  
+  yvarMap.clear();
+  yvarMap.push_back(YTranslate(YNone, "None"));
+  yvarMap.push_back(YTranslate(YL2Norm, "L2Norm"));
+  yvarMap.push_back(YTranslate(YAmplitude, "Amplitude"));
+  yvarMap.push_back(YTranslate(YImagMultiplier, "ImagMultiplier"));
+  yvarMap.push_back(YTranslate(YAbsMultiplier, "AbsMultiplier"));
+  yvarMap.push_back(YTranslate(YProfile, "Profile"));
+  for (int i = 0; i < data->getNPar(); ++i)
+  {
+    if (i < (int)parNames.size())
+    {
+      yvarMap.push_back(YTranslate((PlotYVariable)(YParameter0 + i), QString::fromStdString(parNames[i])));
+    }
+  }
+  yvar->clear();
+  for (unsigned int i = 0; i < yvarMap.size(); ++i)
+  {
+    yvar->insertItem(static_cast<int>(i), yvarMap.at(i).name);
+  }
+  if ((yidx != -1) && (yidx < yvar->count())) yvar->setCurrentIndex(yidx);
+  data->unlock();
+
+  QFileInfo fi(QString::fromStdString(data->getFileName()));
   shortFileName = fi.fileName();
 }
 
@@ -212,8 +218,7 @@ void plotWindow::open()
   QString fileName = QFileDialog::getOpenFileName(this, "Open data", QString(), "v4 MAT files (*.mat);;All files (*)");
   if (!fileName.isEmpty())
   {
-    openFile(fileName);
-    matfile->setText(QDir::current().relativeFilePath(fileName));
+    emit openFile(fileName);
   }
 }
 
@@ -223,14 +228,14 @@ void plotWindow::addPlot()
   {
     data->lock();
     // make sure that the data is consistent
-    const_cast<mat4Data*>(data)->initHeaders("unnamed file");
+    qSharedPointerConstCast<mat4Data>(data)->initHeaders();
     if (!data->isTorus())
     {
       bool added = false;
       try
       {
-        added = plotdata.addPlot(data, (PlotXVariable)xvar->currentIndex(),
-                                 (PlotYVariable)yvar->currentIndex(), ptlabel->value(), dim->value());
+        added = plotdata.addPlot(data, xvarMap.at(xvar->currentIndex()).value,
+                                 yvarMap.at(yvar->currentIndex()).value, ptlabel->value(), dim->value());
       }
       catch (knutException ex)
       {
@@ -239,8 +244,8 @@ void plotWindow::addPlot()
       if (added)
       {
         plotSelect->addItem(QString("%1 : (%2, %3, L%4, D%5)")
-          .arg(shortFileName).arg(xvarMap.at(static_cast<unsigned int>(xvar->currentIndex())))
-          .arg(yvarMap.at(static_cast<unsigned int>(yvar->currentIndex())))
+          .arg(shortFileName).arg(xvarMap.at(static_cast<unsigned int>(xvar->currentIndex())).name)
+          .arg(yvarMap.at(static_cast<unsigned int>(yvar->currentIndex())).name)
           .arg(ptlabel->value()).arg(dim->value()));
       }
     }
@@ -278,7 +283,7 @@ void plotWindow::print()
   printer.setOrientation(QPrinter::Landscape);
   if (QPrintDialog(&printer).exec() == QDialog::Accepted)
   {
-    QRectF sourceRect = plotdata.itemsBoundingRect();
+    QRectF sourceRect = plotdata.sceneRect();
     QPainter painter(&printer);
     painter.setRenderHint(QPainter::Antialiasing);
     plotdata.render(&painter, QRectF(printer.pageRect()), sourceRect);
@@ -290,7 +295,7 @@ void plotWindow::exportSvg()
   QString fileName = QFileDialog::getSaveFileName(this, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
   if( !fileName.isEmpty() )
   {
-    QRectF sourceRect = plotdata.itemsBoundingRect();
+    QRectF sourceRect = plotdata.sceneRect();
     QRectF targetRect = QRectF(0.0, 0.0, sourceRect.size().width(), sourceRect.size().height());
     QSvgGenerator printer;
     printer.setFileName(fileName);
@@ -300,4 +305,9 @@ void plotWindow::exportSvg()
     plotdata.render(&painter, targetRect, sourceRect);
     painter.end();
   }
+}
+
+void plotWindow::updatePlot(const QSharedPointer<const mat4Data>& data)
+{
+  plotdata.updatePlot(data);
 }

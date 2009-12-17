@@ -101,7 +101,9 @@ class EqnVarTableView : public QTableView
       }
     }
     
+    // set size of the widget
     void resetSize();
+    QSize minimumSizeHint() const;
 
   private:
 

@@ -4,10 +4,10 @@ cmake -G "Unix Makefiles"\
 	-D CMAKE_CXX_COMPILER="g++-4.2"\
 	-D CMAKE_C_COMPILER="gcc-4.2"\
 	-D CMAKE_Fortran_COMPILER="/opt/local/bin/gfortran"\
-	-D CMAKE_C_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused -Wno-unknown-pragmas"\
-	-D CMAKE_CXX_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused"\
-	-D CMAKE_Fortran_FLAGS="-m64 -g -O3"\
+	-D CMAKE_C_FLAGS="-m64 -g -O0 -fno-inline -W -Wall -Wno-unused -Wno-unknown-pragmas"\
+	-D CMAKE_CXX_FLAGS="-m64 -g -O0 -fno-inline -W -Wall -Wno-unused"\
+	-D CMAKE_Fortran_FLAGS="-m64 -g -O0"\
 	-D CMAKE_INSTALL_PREFIX=$HOME/Apps/Knut\
-	-D CMAKE_BUILD_TYPE=DEBUG $SCRIPTDIR
+	-D CMAKE_BUILD_TYPE=RELWITHDEBINFO $SCRIPTDIR
 make
 make install

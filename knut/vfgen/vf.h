@@ -66,16 +66,16 @@ class Symbol
 
     // Constructors
     Symbol();
-    Symbol(std::string name);
-    Symbol(std::string name, std::string descr);
+    Symbol(const std::string& name);
+    Symbol(const std::string& name, const std::string& descr);
 
     // Get/Set methods
-    void Name(std::string n);
-    std::string Name(void);
-    void Description(std::string descr);
-    std::string Description(void);
-    void Latex(std::string l);
-    std::string Latex(void);
+    void Name(const std::string& n);
+    const std::string& Name(void) const;
+    void Description(const std::string& descr);
+    const std::string& Description(void) const;
+    void Latex(const std::string& l);
+    const std::string& Latex(void) const;
 };
 
 
@@ -89,12 +89,12 @@ class FormulaSymbol : public Symbol
 
     // Constructors
     FormulaSymbol();
-    FormulaSymbol(std::string name);
-    FormulaSymbol(std::string name, std::string descr);
+    FormulaSymbol(const std::string& name);
+    FormulaSymbol(const std::string& name, const std::string& descr);
 
     // Get/Set methods
-    void Formula(std::string f);
-    std::string Formula(void);
+    void Formula(const std::string& f);
+    const std::string& Formula(void) const;
 };
 
 class Constant : public Symbol
@@ -106,12 +106,12 @@ class Constant : public Symbol
   public:
 
     // Constructors
-    Constant(std::string name);
-    Constant(std::string name, std::string descr);
+    Constant(const std::string& name);
+    Constant(const std::string& name, const std::string& descr);
 
     // Get/Set methods
-    void Value(std::string val);
-    std::string Value(void);
+    void Value(const std::string& val);
+    const std::string& Value(void) const;
 };
 
 class Parameter : public Symbol
@@ -123,12 +123,12 @@ class Parameter : public Symbol
   public:
 
     // Constructors
-    Parameter(std::string name);
-    Parameter(std::string name, std::string descr);
+    Parameter(const std::string& name);
+    Parameter(const std::string& name, const std::string& descr);
 
     // Get/Set methods
-    void DefaultValue(std::string val);
-    std::string DefaultValue(void);
+    void DefaultValue(const std::string& val);
+    const std::string& DefaultValue(void) const;
 };
 
 class Expression : public FormulaSymbol
@@ -136,8 +136,8 @@ class Expression : public FormulaSymbol
   public:
 
     // Constructors
-    Expression(std::string name);
-    Expression(std::string name, std::string descr);
+    Expression(const std::string& name);
+    Expression(const std::string& name, const std::string& descr);
 
 };
 
@@ -154,19 +154,19 @@ class StateVariable : public FormulaSymbol
   public:
 
     // Constructors
-    StateVariable(std::string name);
-    StateVariable(std::string name, std::string descr);
+    StateVariable(const std::string& name);
+    StateVariable(const std::string& name, const std::string& descr);
 
     // Get/Set methods
-    void PeriodicFrom(std::string pfrom);
-    std::string PeriodicFrom(void);
-    void PeriodicTo(std::string pto);
-    std::string PeriodicTo(void);
+    void PeriodicFrom(const std::string& pfrom);
+    const std::string& PeriodicFrom(void) const;
+    void PeriodicTo(const std::string& pto);
+    const std::string& PeriodicTo(void) const;
     bool IsPeriodic();
-    void DefaultInitialCondition(std::string ic);
-    std::string DefaultInitialCondition(void);
-    void DefaultHistory(std::string hist);
-    std::string DefaultHistory(void);
+    void DefaultInitialCondition(const std::string& ic);
+    const std::string& DefaultInitialCondition(void) const;
+    void DefaultHistory(const std::string& hist);
+    const std::string& DefaultHistory(void) const;
 };
 
 
@@ -175,8 +175,8 @@ class Function : public FormulaSymbol
   public:
 
     // Constructors
-    Function(std::string name);
-    Function(std::string name, std::string descr);
+    Function(const std::string& name);
+    Function(const std::string& name, const std::string& descr);
 };
 
 
@@ -228,8 +228,8 @@ class VectorField : public Symbol
   public:
     // Constructors
     VectorField();
-    VectorField(std::string name, std::string descr);
-    VectorField(std::string name, std::string descr, std::string indvar);
+    VectorField(const std::string& name, const std::string& descr);
+    VectorField(const std::string& name, const std::string& descr, const std::string& indvar);
 
     void AddConstant(Constant *c);
     void AddParameter(Parameter *p);
@@ -244,8 +244,8 @@ class VectorField : public Symbol
     int FindDelay(GiNaC::ex&);
     int AddDelay(GiNaC::ex&);
 
-    void PrintXML(std::string cmdstr);
-    int  ReadXML(std::string xmlfilename);
+    void PrintXML(const std::string& cmdstr);
+    int  ReadXML(const std::string& xmlfilename);
 
     void CheckForDelay(const GiNaC::ex& f);
     int  ProcessSymbols(void);

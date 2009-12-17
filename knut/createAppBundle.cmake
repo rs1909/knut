@@ -4,6 +4,7 @@
 #  file(GLOB pluginlist "${QT_PLUGINS_DIR}/imageformats/*.dylib")
   get_bundle_keys(${KNUT_BINARY_DIR}/gui/Knut.app "${pluginlist}" "${KNUT_BINARY_DIR}/Knut.app/Contents/Plugins/" keys)
   fixup_bundle(${KNUT_BINARY_DIR}/gui/Knut.app "" "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Plugins/")
+  MESSAGE("Thinning all the binaries...")
   foreach(key ${keys})
         execute_process(COMMAND otool -f ${${key}_RESOLVED_EMBEDDED_ITEM} 
         OUTPUT_VARIABLE tothin)

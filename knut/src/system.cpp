@@ -376,7 +376,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 
 #endif
 
-System::System(const std::string& shobj)
+System::System(const std::string& shobj, int usederi)
 {
   std::string objname(shobj);
   if (shobj.find('/') == std::string::npos) objname = "./" + shobj;
@@ -490,8 +490,8 @@ System::System(const std::string& shobj)
   if ((error = tdlerror()) != 0) v_p_deri = 0;
   if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
 
-  nderi = (*v_nderi)();
-
+  nderi = std::min ( (*v_nderi)(), usederi );
+  
   f.Init(ndim()), f_eps.Init(ndim());
   f2.Init(ndim()), f_eps2.Init(ndim());
   xx_eps.Init(ndim(), 2 * ntau() + 1);

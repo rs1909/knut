@@ -29,12 +29,14 @@ PlotData::PlotData(QObject *parent) :
 {
   const ViewBox cvb =
     {
-      1.0, -1.0, 1.0, -1.0, 1, 1
+      0, 0, 0, 0, 1, 1
     };
+  setSceneRect(-0.2*plotXSize, -0.2*plotYSize, 1.4*plotXSize, 1.4*plotYSize);
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
   addItem(&selection);
   selection.setVisible(false);
+  clipBox.addRect(QRectF(0.0, 0.0, plotXSize, plotYSize));
   makeBox();
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XNone,"None"));
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XLabel,"Label"));
@@ -82,8 +84,11 @@ void PlotData::clear(unsigned int n)
     {
       if ((*i).type == PlotLineType)
       {
-        delete(*i).data.line->item;
-        delete(*i).data.line;
+        for (PlotLine::const_iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+        {
+          delete it->item;
+        }
+        delete (*i).data.line;
       }
       else if ((*i).type == PlotCircleType)
       {
@@ -116,7 +121,6 @@ void PlotData::clear(unsigned int n)
   else std::cout<<"GB4\n";
   makeBox();
   labelColor();
-  //   update();
 }
 
 QColor PlotData::getColor(unsigned int n)
@@ -133,7 +137,7 @@ QColor PlotData::getColor(unsigned int n)
     {
       if ((*i).type == PlotLineType)
       {
-        return (*i).data.line->item->pen().color();
+        return (*i).data.line->pen.color();
       }
       else if ((*i).type == PlotCircleType)
       {
@@ -166,10 +170,12 @@ void PlotData::setColor(unsigned int n, QColor& color)
     {
       if ((*i).type == PlotLineType)
       {
-        QPen pen = (*i).data.line->item->pen();
-        pen.setColor(color);
-        (*i).data.line->pen = pen;
-        (*i).data.line->item->setPen(pen);
+        (*i).data.line->pen.setColor(color);
+        for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+        {
+          it->pen.setColor(color);
+          it->item->setPen(it->pen);
+        }
       }
       else if ((*i).type == PlotCircleType)
       {
@@ -198,7 +204,6 @@ void PlotData::setColor(unsigned int n, QColor& color)
     }
   }
   labelColor();
-//   update();
 }
 
 void PlotData::clearAxes()
@@ -224,7 +229,10 @@ void PlotData::clearAll()
   {
     if ((*i).type == PlotLineType)
     {
-      delete(*i).data.line->item;
+      for (PlotLine::const_iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+      {
+        delete it->item;
+      }
       delete(*i).data.line;
     }
     else if ((*i).type == PlotCircleType)
@@ -250,7 +258,6 @@ void PlotData::clearAll()
   ZoomHistory.clear();
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
-//   update();
 }
 
 /// this computes the minimum and maximum value of an axis
@@ -268,23 +275,24 @@ static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
   max = ceil(max / step) * step;
 }
 
-void PlotData::addPlotLine(std::list<PlotItem>::iterator& it, const QPen& pen, bool principal)
+void PlotData::addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool principal)
 {
   it->type = PlotLineType;
   it->data.line = new PlotLine(pen);
-  it->data.line->item = 0;
   it->data.line->pen.setWidthF(1);
+  it->data.line->pen.setStyle(Qt::DashLine);
   it->principal = principal;
 }
 
-void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, PlotMarkerStyle type, bool principal)
+void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen, 
+                            PlotMarkerStyle type, bool principal, qreal radius, bool scale)
 {
   switch (type)
   {
     case PlotMarkerCircle:  // CIRCLE
       {
         it->type = PlotCircleType;
-        it->data.circle = new PlotCircle(pen, QRectF(-3.0, -3.0, 6.0 , 6.0));
+        it->data.circle = new PlotCircle(pen, QRectF(-radius, -radius, 2*radius, 2*radius), scale);
         it->data.circle->pen.setWidthF(1);
       }
       break;
@@ -292,10 +300,10 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, 
       {
         it->type = PlotPolygonType;
         QPolygonF pl(4);
-        pl[0] = QPointF(-3.0, -3.0);
-        pl[1] = QPointF(-3.0, 3.0);
-        pl[2] = QPointF(3.0, 3.0);
-        pl[3] = QPointF(3.0, -3.0);
+        pl[0] = QPointF(-radius, -radius);
+        pl[1] = QPointF(-radius, radius);
+        pl[2] = QPointF(radius, radius);
+        pl[3] = QPointF(radius, -radius);
         it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
       }
@@ -304,9 +312,9 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, 
       {
         it->type = PlotPolygonType;
         QPolygonF pl(3);
-        pl[0] = QPointF(-3.0, -3.0);
-        pl[1] = QPointF(0.0, 3.0);
-        pl[2] = QPointF(3.0, -3.0);
+        pl[0] = QPointF(-radius, radius/sqrt(3));
+        pl[1] = QPointF(0.0, -radius*2/sqrt(3));
+        pl[2] = QPointF(radius, radius/sqrt(3));
         it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
       }
@@ -315,11 +323,11 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, 
       {
         it->type = PlotPolygonType;
         QPolygonF pl(6);
-        pl[0] = QPointF(-3.0, 3.0);
-        pl[1] = QPointF(3.0, -3.0);
+        pl[0] = QPointF(-radius, radius);
+        pl[1] = QPointF(radius, -radius);
         pl[2] = QPointF(0.0, 0.0);
-        pl[3] = QPointF(-3.0, -3.0);
-        pl[4] = QPointF(3.0, 3.0);
+        pl[3] = QPointF(-radius, -radius);
+        pl[4] = QPointF(radius, radius);
         pl[5] = QPointF(0.0, 0.0);
         it->data.polygon = new PlotPolygon(pen, pl);
         it->data.polygon->pen.setWidthF(1);
@@ -334,45 +342,67 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator& it, const QPen& pen, 
 }
 
 // this only called by addPlot...
-void PlotData::dataToGraphics()
+// begin and end refers to what was added to the graphics
+void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
+                              std::list<PlotItem>::const_iterator end)
 {
+  bool toZoom = false;
+  // if current is the top of zoom levels
   if (ZoomHistory.begin() == currZoom)
   {
-    ViewBox cvb = { -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
+    ViewBox cvb;
+    // if invalid box
+    if (begin == Graph.begin() && end == Graph.end())
+    {
+      const ViewBox cvb_ini = { -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
+      cvb = cvb_ini;
+    } else
+    {
+      cvb = *currZoom;
+    }
     std::list<PlotItem>::const_iterator it;
-    for (it = Graph.begin(); it != Graph.end(); it++)
+    for (it = begin; it != end; it++)
     {
       for (int k = 0; k < it->x.Size(); k++)
       {
-        if (it->x(k) > cvb.xmax) cvb.xmax = it->x(k);
-        if (it->x(k) < cvb.xmin) cvb.xmin = it->x(k);
-        if (it->y(k) > cvb.ymax) cvb.ymax = it->y(k);
-        if (it->y(k) < cvb.ymin) cvb.ymin = it->y(k);
+        if (it->x(k) > cvb.xmax) { cvb.xmax = it->x(k); toZoom = true; }
+        if (it->x(k) < cvb.xmin) { cvb.xmin = it->x(k); toZoom = true; }
+        if (it->y(k) > cvb.ymax) { cvb.ymax = it->y(k); toZoom = true; }
+        if (it->y(k) < cvb.ymin) { cvb.ymin = it->y(k); toZoom = true; }
       }
     }
+    if (cvb.xmax == cvb.xmin ) { cvb.xmin *= 0.95; cvb.xmax *= 1.05; }
+    if (cvb.ymax == cvb.ymin ) { cvb.ymin *= 0.95; cvb.ymax *= 1.05; }
     adjustAxis(cvb.xmin, cvb.xmax, cvb.xticks);
     adjustAxis(cvb.ymin, cvb.ymax, cvb.yticks);
     *currZoom = cvb;
   }
-  rescaleData();
-  PlotPaint();
+  if (toZoom)
+  {
+    rescaleData(Graph.begin(), Graph.end());
+    PlotPaint(Graph.begin(), Graph.end(), true);
+  } else 
+  {
+    rescaleData(begin, end);
+    PlotPaint(begin, end, false);
+  }
   labelColor();
 }
 
-bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y, 
+bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable x, PlotYVariable y, 
   int pt, int dim)
 {
   int xadded = 0;
   int yadded = 0;
   std::list<PlotItem>::iterator start = --Graph.end();
   int startnumber = 0;
-  if (Graph.begin() != Graph.end()) startnumber = Graph.rbegin()->number;
+  if (!Graph.empty()) startnumber = Graph.rbegin()->number;
   QColor plcolor, stabcolor(Qt::black);
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
   // mindig az Y utan kovetkezik csak addPlot...()
   if (x >= XParameter0 && y != YAbsMultiplier && y != YProfile)
   {
-    Graph.push_back(PlotItem());
+    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.Init(data->getNPoints());
     Graph.rbegin()->y.Init(data->getNPoints());
     for (int i = 0; i < data->getNPoints(); i++)
@@ -386,7 +416,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   }
   if (x == XLabel && y != YAbsMultiplier && y != YProfile)
   {
-    Graph.push_back(PlotItem());
+    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.Init(data->getNPoints());
     Graph.rbegin()->y.Init(data->getNPoints());
     for (int i = 0; i < data->getNPoints(); i++)
@@ -399,7 +429,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   {
     const int ndeg = data->getNDeg();
     const int nint = data->getNInt();
-    Graph.push_back(PlotItem());
+    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.Init(ndeg*nint + 1);
     Graph.rbegin()->y.Init(ndeg*nint + 1);
     for (int i = 0; i < nint; i++)
@@ -454,14 +484,14 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   if (y == YL2Norm && (x != XMesh && x != XRealMultiplier))
   {
     Vector elem(false);
-    const_cast<mat4Data*>(data)->getElemRef(0, elem);
+    qSharedPointerConstCast<mat4Data>(data)->getElemRef(0, elem);
     Matrix metric(elem.Size(), elem.Size());
     NColloc::getMetric(metric, elem);
     Vector prof(false), msh(false);
     for (int i = 0; i < data->getNPoints(); i++)
     {
-      const_cast<mat4Data*>(data)->getMeshRef(i, msh);
-      const_cast<mat4Data*>(data)->getProfileRef(i, prof);
+      qSharedPointerConstCast<mat4Data>(data)->getMeshRef(i, msh);
+      qSharedPointerConstCast<mat4Data>(data)->getProfileRef(i, prof);
       Graph.rbegin()->y(i) = NColloc::integrate(prof, prof, metric, msh, data->getNDim());
     }
     ++yadded;
@@ -469,19 +499,15 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   }
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
-    // plot the unit circel!!!
-    const int segments = 100;
-    Graph.push_back(PlotItem());
-    Graph.rbegin()->x.Init(segments);
-    Graph.rbegin()->y.Init(segments);
-    for (int i = 0; i < segments; ++i)
-    {
-      Graph.rbegin()->x(i) = sin(i * 2.0 * M_PI / (segments - 1));
-      Graph.rbegin()->y(i) = cos(i * 2.0 * M_PI / (segments - 1));
-    }
-    addPlotLine(--Graph.end(), QPen(stabcolor), false);
+    // plot the unit circle
+    Graph.push_back(PlotItem(data, PlotAuxiliary, x, y, pt, dim));
+    Graph.rbegin()->x.Init(1);
+    Graph.rbegin()->y.Init(1);
+    Graph.rbegin()->x(0) = 0.0;
+    Graph.rbegin()->y(0) = 0.0;
+    addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false, 1, true);
     // plotting the multipliers
-    Graph.push_back(PlotItem());
+    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.Init(data->getNMul());
     Graph.rbegin()->y.Init(data->getNMul());
     for (int i = 0; i < data->getNMul(); i++)
@@ -497,7 +523,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   {
     for (int r = 0; r < data->getNMul(); r++)
     {
-      Graph.push_back(PlotItem());
+      Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
       Graph.rbegin()->x.Init(data->getNPoints());
       Graph.rbegin()->y.Init(data->getNPoints());
       for (int i = 0; i < data->getNPoints(); i++)
@@ -513,18 +539,21 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     }
   }
   // add stability
+  std::vector<int>     stabidx;
   std::vector<int>     bifidx;
   std::vector<BifType> biftype;
   if ((x == XLabel || x >= XParameter0) && xadded != 0 && xadded == yadded)
   {
     int k, k_p = 0;
+    bool stab = false;
     do
     {
-      k = data->getNextBifurcation(k_p);
+      k = data->getNextBifurcation(k_p, &stab);
       if (k != -1)
       {
         bifidx.push_back(k);
         biftype.push_back(data->getBifurcationType(k));
+        if (stab) stabidx.push_back(k);
         k_p = k;
       }
     }
@@ -534,7 +563,7 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
     {
       for (unsigned int i = 0; i < bifidx.size(); i++)
       {
-        Graph.push_back(PlotItem());
+        Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
         Graph.rbegin()->x.Init(1);
         Graph.rbegin()->y.Init(1);
         Graph.rbegin()->x(0) = (it->x(bifidx[i] - 1) + it->x(bifidx[i])) / 2.0;
@@ -581,7 +610,9 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
       else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
       else YCoordText.push_back(YCoordMap[y]);
       
-      dataToGraphics();
+      std::list<PlotItem>::const_iterator it = Graph.end();
+      for (int i = 0; i < xadded; ++i) --it;
+      dataToGraphics(it, Graph.end());
       labelColor();
       return true;
     }
@@ -592,230 +623,185 @@ bool PlotData::addPlot(const mat4Data* data, PlotXVariable x, PlotYVariable y,
   }
 }
 
-///
-/// The inlines
-///
-
-static inline qreal itr(qreal xx, qreal x1, qreal x2, qreal y1, qreal y2)
+void PlotData::updatePlot(const QSharedPointer<const mat4Data>& mat)
 {
-  return ((x2 -xx)*y1 + (xx - x1)*y2) / (x2 - x1);
+  int it = 0;
+  std::list<PlotItem>::iterator first = Graph.end();
+  std::list<PlotItem>::iterator last = Graph.end();
+  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
+  {
+    // only update if all the data is necessary
+    if (i->isFrom(mat) && i->varX > XSeparator && i->varY > YSeparator)
+    {
+      // only select one of the, but recreate all of them
+      if (i->principal)
+      {
+        std::cout << "Recreate this! " << it++ << "\n";
+      }
+      if (first == Graph.end()) first = i;
+      last = i;
+    }
+  }
 }
 
-static inline int intpos(qreal x, qreal min, qreal max)
+// The intersection point is defined by 
+// A + alpha*(B-A) == C + beta*(D-C)
+// if 0 < alpha <= 1 AND 0 < beta <= 1 -> intersect in the middle
+static inline bool intersect(qreal& alpha, qreal& beta,
+                             QPointF& itPoint,
+                             const QPointF& A, const QPointF& B,
+                             const QPointF& C, const QPointF& D)
 {
-  if (x < min) return -1;
-  else if (x < max) return 0;
-  else return 1;
-}
-
-static inline bool crossing(int x1, int y1, int x2, int y2)
-{
-  if ((x1*x2 == 1) || (y1*y2 == 1)) return false;
-  else return true;
-}
-
-///
-/// End inlines
-///
-
-// /-----------------|
-// |  1  |  4  |  7  |
-// |-----+-----+-----|
-// |  2  |  5  |  8  |
-// |-----+-----+-----|
-// |  3  |  6  |  9  |
-// \-----------------|
-
-/// finds out how the viewbox is intersected if
-/// p1 is inside the box,
-/// p2 is outside the box
-QPointF PlotData::intersect(QPointF p1, QPointF p2)
-{
-  // p1 is in the box, p2 is out of the box
-  const ViewBox cvb =
-    {
-      plotXSize, 0.0, plotYSize, 0.0, 0, 0
-    };
-  qreal ycr, xcr;
-  if (p2.x() > cvb.xmax)
+  const qreal Vx = B.x() - A.x();
+  const qreal Vy = B.y() - A.y();
+  const qreal Wx = D.x() - C.x();
+  const qreal Wy = D.y() - C.y();
+  const qreal VpW = -Vy*Wx + Vx*Wy;
+  const qreal AmCx = A.x() - C.x(); 
+  const qreal AmCy = A.y() - C.y();
+  if (VpW != 0.0)
   {
-    ycr = itr(cvb.xmax, p1.x(), p2.x(), p1.y(), p2.y());
-    if (ycr > cvb.ymax)
-    {
-      ycr = cvb.ymax;
-      xcr = itr(cvb.ymax, p1.y(), p2.y(), p1.x(), p2.x());
-    }
-    else if (ycr > cvb.ymin) xcr = cvb.xmax;
-    else
-    {
-      ycr = cvb.ymin;
-      xcr = itr(cvb.ymin, p1.y(), p2.y(), p1.x(), p2.x());
-    }
-  }
-  else if (p2.x() > cvb.xmin)
-  {
-    if (p2.y() > cvb.ymax)
-    {
-      xcr = itr(cvb.ymax, p1.y(), p2.y(), p1.x(), p2.x());
-      ycr = cvb.ymax;
-    }
-    else if (p2.y() > cvb.ymin)
-    {
-      xcr = p2.x(), ycr = p2.y();
-    }
-    else
-    {
-      xcr = itr(cvb.ymin, p1.y(), p2.y(), p1.x(), p2.x());
-      ycr = cvb.ymin;
-    }
-  }
-  else
-  {
-    ycr = itr(cvb.xmin, p1.x(), p2.x(), p1.y(), p2.y());
-    if (ycr > cvb.ymax)
-    {
-      ycr = cvb.ymax;
-      xcr = itr(cvb.ymax, p1.y(), p2.y(), p1.x(), p2.x());
-    }
-    else if (ycr > cvb.ymin) xcr = cvb.xmin;
-    else
-    {
-      ycr = cvb.ymin;
-      xcr = itr(cvb.ymin, p1.y(), p2.y(), p1.x(), p2.x());
-    }
-  }
-  return QPointF(xcr, ycr);
-}
-
-inline bool PlotData::contains(double x, double y)
-{
-  return (x >= 0.0) && (y >= 0.0) && (x <= plotXSize) && (y <= plotYSize);
-}
-
-bool PlotData::crossbox(QPointF p1, QPointF p2, QPointF& i1, QPointF& i2)
-{
-  const ViewBox cvb =
-    {
-      plotXSize, 0.0, plotYSize, 0.0, 0, 0
-    };
-
-  qreal ycrmin = itr(cvb.xmin, p1.x(), p2.x(), p1.y(), p2.y());
-  qreal ycrmax = itr(cvb.xmax, p1.x(), p2.x(), p1.y(), p2.y());
-  qreal xcrmin = itr(cvb.ymin, p1.y(), p2.y(), p1.x(), p2.x());
-  qreal xcrmax = itr(cvb.ymax, p1.y(), p2.y(), p1.x(), p2.x());
-  int id = 0;
-  qreal x[4], y[4]; // security reasons
-  if ((ycrmin > cvb.ymin) && (ycrmin < cvb.ymax))
-  {
-    x[id] = cvb.xmin;
-    y[id] = ycrmin;
-    ++id;
-  }
-  if ((ycrmax > cvb.ymin) && (ycrmax < cvb.ymax))
-  {
-    x[id] = cvb.xmax;
-    y[id] = ycrmax;
-    ++id;
-  }
-  if ((xcrmin > cvb.xmin) && (xcrmin < cvb.xmax))
-  {
-    y[id] = cvb.ymin;
-    x[id] = xcrmin;
-    ++id;
-  }
-  if ((xcrmax > cvb.xmin) && (xcrmax < cvb.xmax))
-  {
-    y[id] = cvb.ymax;
-    x[id] = xcrmax;
-    ++id;
-  }
-  if (id == 0) return false;
-  else if (id == 2)
-  {
-    i1 = QPointF(x[0], y[0]);
-    i2 = QPointF(x[1], y[1]);
+    alpha = (-Wy*AmCx + Wx*AmCy)/VpW;
+    beta = (-Vy*AmCx + Vx*AmCy)/VpW;
+    itPoint = QPointF(A.x() + alpha*Vx, A.y() + alpha*Vy);
     return true;
   }
-  else
-  {
-    std::cout << "GEBASZ van " << id << "\n";
-    return false;
-  }
+  return false;
+}                            
+
+enum horizPosition
+{
+  Left = 1,
+  HMiddle = 2,
+  Right = 3
+};
+
+enum vertPosition
+{
+  Bottom = 1,
+  VMiddle = 2,
+  Top = 3
+};
+
+static inline horizPosition horizPoint(const QPointF& BottomRight, const QPointF& TopLeft, const QPointF& A)
+{
+  if (A.x() < TopLeft.x()) return Left;
+  else if (A.x() <= BottomRight.x()) return HMiddle;
+  else return Right;
 }
 
-void PlotData::rescaleData()
+static inline vertPosition vertPoint(const QPointF& BottomRight, const QPointF& TopLeft, const QPointF& A)
+{
+  if (A.y() < BottomRight.y()) return Bottom;
+  else if (A.y() <= TopLeft.y()) return VMiddle;
+  else return Top;
+}
+
+// A is the orevoius point, B is the next point
+// returns the point to be plotted 'toPlot'
+static inline void pointOutside(PlotLine& ppath,
+                                const QPointF& BottomLeft, const QPointF& BottomRight, 
+                                const QPointF& TopLeft,    const QPointF& TopRight,
+                                const QPointF& A,          const QPointF& B)
+{
+  // Handle the easy cases quickly
+  const int Ahoriz = horizPoint (BottomRight, TopLeft, A);
+  const int Bhoriz = horizPoint (BottomRight, TopLeft, B);
+  const int Avert = vertPoint (BottomRight, TopLeft, A);
+  const int Bvert = vertPoint (BottomRight, TopLeft, B);
+    
+  if (Ahoriz == HMiddle && Avert == VMiddle && Bhoriz == HMiddle && Bvert == VMiddle)
+  {
+    ppath.last().path.lineTo(B);
+    return;
+  }
+  else if (Ahoriz == Bhoriz && Ahoriz != HMiddle) return;
+  else if (Avert == Bvert && Avert != VMiddle) return;
+  else if (Ahoriz == Bhoriz && Avert == Bvert) return;
+  
+  // when it can intersect
+  qreal alpha[4];
+  qreal beta[4];
+  QPointF itPoint[4];
+  bool it[4];
+  it[0] = intersect (alpha[0], beta[0], itPoint[0], BottomLeft,  BottomRight, A, B);
+  it[1] = intersect (alpha[1], beta[1], itPoint[1], BottomRight, TopRight, A, B);
+  it[2] = intersect (alpha[2], beta[2], itPoint[2], TopRight,    TopLeft, A, B);
+  it[3] = intersect (alpha[3], beta[3], itPoint[3], TopLeft,     BottomLeft, A, B);
+  int oneSideIt = 0;
+  int twoSideIt = 0;
+  int oneSidePt[4];
+  int twoSidePt[4];
+  int otherSidePt[4];
+  for (int i = 0; i < 4; ++i)
+  {
+    if (it[i])
+    {
+      if (alpha[i] > 0 && alpha[i] <= 1 && beta[i] > 0 && beta[i] <= 1) { twoSidePt[twoSideIt] = i; ++twoSideIt; }
+      else if (alpha[i] > 0 && alpha[i] <= 1) { oneSidePt[oneSideIt] = i; ++oneSideIt; }
+    }
+  }
+  if (oneSideIt == 2)
+  {
+    if (beta[oneSidePt[0]]*beta[oneSidePt[1]] < 0)
+    {
+      ppath.last().path.lineTo(B);
+//       std::cout << "Should have been handled already";
+    }
+  } else
+  if (twoSideIt == 1)
+  {
+    if (beta[oneSidePt[0]] > 1) 
+    {
+      ppath.append(PlotPolyLine(ppath.pen));
+      ppath.last().path.moveTo(itPoint[twoSidePt[0]]);
+      ppath.last().path.lineTo(B);
+//       std::cout << "-in-";
+    } else
+    {
+      ppath.last().path.lineTo(itPoint[twoSidePt[0]]);
+//       std::cout << "-out-"; 
+    }
+  } else
+  if (twoSideIt == 2)
+  {
+    ppath.append(PlotPolyLine(ppath.pen));
+    ppath.last().path.moveTo(itPoint[twoSidePt[0]]);
+    ppath.last().path.lineTo(itPoint[twoSidePt[1]]);
+//     std::cout << "-cross-";
+  }
+//   std::cout.flush();
+}
+
+void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
+                           std::list<PlotItem>::const_iterator end)
 {
   ViewBox cvb = *currZoom;
 
   const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
   const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
 
+  const QPointF BottomLeft(0,0), BottomRight(plotXSize,0), 
+                TopLeft(0,plotYSize), TopRight(plotXSize,plotYSize);
   // rescaling all the data
-  std::list<PlotItem>::iterator i;
-  for (i = Graph.begin(); i != Graph.end(); i++)
+  std::list<PlotItem>::const_iterator i;
+  for (i = begin; i != end; i++)
   {
     if ((*i).type == PlotLineType)
     {
-      delete(*i).data.line->item;
-      (*i).data.line->item = 0;
-      (*i).data.line->line = QPainterPath();
-      int x = 0, y = 0, prx = 0, pry = 0;
-      bool pr = true;
-      if (i->x.Size() != i->y.Size())
+      PlotLine& ppath = *(*i).data.line;
+      QPointF prevPoint(xscale*(i->x(0) - cvb.xmin), yscale*(cvb.ymax - i->y(0)));
+      
+      // initializing ppath
+      ppath.clear();
+      ppath.append(PlotPolyLine(ppath.pen));
+      ppath.last().path.moveTo(prevPoint);
+      
+      for (int k = 1; k < i->x.Size(); k++)
       {
-        std::cout << "DataX DataY Sizes differ\n";
-        return;
-      }
-      for (int k = 0; k < i->x.Size(); k++)
-      {
-        x = intpos(i->x(k), cvb.xmin, cvb.xmax);
-        y = intpos(i->y(k), cvb.ymin, cvb.ymax);
-        if (crossing(prx, pry, x, y))
-        {
-          if ((x == 0) && (y == 0))
-          {
-            if (!pr)
-            {
-              // the previous was not in the viewport
-              (*i).data.line->line.moveTo(intersect(QPointF(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k))),
-                                                    QPointF(xscale*(i->x(k - 1) - cvb.xmin), yscale*(cvb.ymax - i->y(k - 1)))));
-            }
-            if (k == 0)
-            {
-              (*i).data.line->line.moveTo(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)));
-            }
-            else
-            {
-              (*i).data.line->line.lineTo(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)));
-            }
-            pr = true;
-          }
-          else
-          {
-            if (k != 0)
-            {
-              if (pr)
-              {
-                (*i).data.line->line.lineTo(intersect(QPointF(xscale*(i->x(k - 1) - cvb.xmin), yscale*(cvb.ymax - i->y(k - 1))),
-                                                      QPointF(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)))));
-              }
-              else
-              {
-                QPointF pt1, pt2;
-                if (crossbox(QPointF(xscale*(i->x(k - 1) - cvb.xmin), yscale*(cvb.ymax - i->y(k - 1))),
-                             QPointF(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k))),
-                             pt1, pt2))
-                {
-                  (*i).data.line->line.moveTo(pt1);
-                  (*i).data.line->line.lineTo(pt2);
-                }
-              }
-            }
-            pr = false;
-          }
-        }
-        prx = x;
-        pry = y;
+        QPointF currentPoint(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)));
+        pointOutside(ppath, BottomLeft, BottomRight, TopLeft, TopRight, prevPoint, currentPoint);
+        prevPoint = currentPoint;
       }
     }
     if ((*i).type == PlotCircleType)
@@ -824,7 +810,16 @@ void PlotData::rescaleData()
       for (int k = 0; k < i->x.Size(); k++)
       {
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
-        if (contains(pt.x(), pt.y()))(*i).data.circle->pos.push_back(pt);
+        QRectF& rect = (*i).data.circle->point;
+        QRectF& scaledRect = (*i).data.circle->scaledPoint;
+        if ((*i).data.circle->scale)
+        {
+          scaledRect.setLeft(xscale*rect.left());
+          scaledRect.setRight(xscale*rect.right());
+          scaledRect.setBottom(yscale*rect.bottom());
+          scaledRect.setTop(yscale*rect.top());
+        }
+        if (Box->rect().intersects(scaledRect)) (*i).data.circle->pos.push_back(pt);
       }
       for (size_t p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
       (*i).data.circle->item.resize((*i).data.circle->pos.size(), 0);
@@ -835,7 +830,7 @@ void PlotData::rescaleData()
       for (int k = 0; k < i->x.Size(); k++)
       {
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
-        if (contains(pt.x(), pt.y()))(*i).data.polygon->pos.push_back(pt);
+        if (Box->rect().contains(pt.x(), pt.y()))(*i).data.polygon->pos.push_back(pt);
       }
       for (size_t p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
       (*i).data.polygon->item.resize((*i).data.polygon->pos.size(), 0);
@@ -880,7 +875,7 @@ void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
     // add the new level
     ZoomHistory.push_back(newvb);
     currZoom = --ZoomHistory.end();
-    dataToGraphics();
+    dataToGraphics(Graph.begin(), Graph.end());
     selection.setVisible(false);
     update(selection.boundingRect().normalized());
     event->accept();
@@ -909,7 +904,7 @@ void PlotData::keyPressEvent(QKeyEvent * key)
     if (ZoomHistory.begin() != currZoom)
     {
       --currZoom;
-      dataToGraphics();
+      dataToGraphics(Graph.begin(), Graph.end());
     }
     key->accept();
   }
@@ -918,7 +913,7 @@ void PlotData::keyPressEvent(QKeyEvent * key)
     if (--ZoomHistory.end() != currZoom)
     {
       ++currZoom;
-      dataToGraphics();
+      dataToGraphics(Graph.begin(), Graph.end());
     }
     key->accept();
   }
@@ -929,6 +924,7 @@ void PlotData::makeBox()
   ViewBox cvb = *currZoom;
   // drawing the box
   if (Box == 0) Box = addRect(QRectF(0.0, 0.0, plotXSize, plotYSize), QPen(QBrush(Qt::SolidPattern), 2.0));
+//  Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
 
   // drawing the ticks and tickmarks
   for (unsigned int i = 0; i < HText.size(); i++)
@@ -1081,45 +1077,52 @@ void PlotData::labelColor()
       {
         XCoordTextItems[num]->setDefaultTextColor(textColor);
         YCoordTextItems[num]->setDefaultTextColor(textColor);
-//        std::cout << "Color @" << num << " " << textColor.red() << " " << textColor.green() << " " << textColor.blue() << "\n";
       }
-//      else std::cout<<"GB5\n";
     }
     prenumber = (*i).number;
   }
 }
 
-void PlotData::PlotPaint()
+void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
+                         std::list<PlotItem>::const_iterator end, bool zoom)
 {
   // drawing the box
   makeBox();
   // drawing the lines
-  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
+  for (std::list<PlotItem>::const_iterator i = begin; i != end; i++)
   {
     QColor textColor;
     if ((*i).type == PlotLineType)
     {
-      delete(*i).data.line->item;
-      (*i).data.line->item = addPath((*i).data.line->line, (*i).data.line->pen);
+      for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+      {
+        delete it->item;
+        it->item = new QGraphicsPathItem(it->path, Box, this);
+        it->item->setPen(it->pen);
+      }
     }
     if ((*i).type == PlotCircleType)
     {
       for (unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j)
       {
-        delete(*i).data.circle->item[j];
-        (*i).data.circle->item[j] = addEllipse((*i).data.circle->point, (*i).data.circle->pen);
-        (*i).data.circle->item[j]->setPos((*i).data.circle->pos[j]);
+        delete (*i).data.circle->item[j];
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, Box, this);
+        item->setPen((*i).data.circle->pen);
+        item->setPos((*i).data.circle->pos[j]);
+        (*i).data.circle->item[j] = item;
       }
     }
     if ((*i).type == PlotPolygonType)
     {
       for (unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j)
       {
-        delete(*i).data.polygon->item[j];
-        (*i).data.polygon->item[j] = addPolygon((*i).data.polygon->point, (*i).data.polygon->pen);
-        (*i).data.polygon->item[j]->setPos((*i).data.polygon->pos[j]);
+        delete (*i).data.polygon->item[j];
+        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, Box, this);
+        item->setPen((*i).data.polygon->pen);
+        item->setPos((*i).data.polygon->pos[j]);
+        (*i).data.polygon->item[j] = item;
       }
     }
   }
-//   update();
+  labelColor();
 }

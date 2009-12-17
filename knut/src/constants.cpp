@@ -310,6 +310,9 @@ void NConstants::loadXmlFile(const std::string &fileName)
   nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
   setNItK(getNodeInteger(nd, 12));
 
+  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
+  setNDeri(getNodeInteger(nd, 8)); // this is just a number, higher then sys_nderi() provides
+
   nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
   setSymReSize(getNodeInteger(nd, 0));
   setSymImSize(getNodeInteger(nd, 0));
@@ -495,6 +498,9 @@ void NConstants::printXmlFile(std::ostream& file)
   
   node = mxmlNewElement(data, "nitk");
   mxmlNewInteger(node, getNItK());
+  
+  node = mxmlNewElement(data, "nderi");
+  mxmlNewInteger(node, getNDeri());
 
   node = mxmlNewElement(data, "nsym");
   mxmlNewInteger(node, getSymReSize());

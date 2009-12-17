@@ -124,8 +124,8 @@ void TestFunct::Init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   double one = 1.0;
-  double gg;
-  double hh;
+  double gg = 0.0;
+  double hh = 0.0;
   double ggdiff, hhdiff;
 
   if (first)

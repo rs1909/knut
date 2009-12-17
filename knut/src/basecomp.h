@@ -2,6 +2,7 @@
 #define BASECOMP_H
 
 #include "constants.h"
+#include "mat4data.h"
 
 class BaseComp
 {
@@ -27,6 +28,10 @@ class BaseComp
     }
     virtual void print(std::ostringstream& str) = 0;
     virtual void raiseException(const knutException& ex) = 0;
+    virtual void setData(mat4Data* data) = 0;
+    virtual mat4Data& data() = 0;
+    virtual void deleteData() = 0;
+    virtual void dataUpdated() = 0;
   protected:
     NConstants* params;
     bool        stopFlag;
@@ -35,7 +40,7 @@ class BaseComp
 class CLIComp : public BaseComp
 {
   public:
-    CLIComp(const NConstants& constants) : BaseComp(constants) { }
+    CLIComp(const NConstants& constants) : BaseComp(constants), output(0) { }
     ~CLIComp() { }
     void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
     static void printException(const knutException& ex)
@@ -47,6 +52,12 @@ class CLIComp : public BaseComp
       printException(ex);
       exit(-1);
     }
+    void setData(mat4Data* data) { output = data; }
+    mat4Data& data() { return *output; }
+    void deleteData() { delete output; output = 0; }
+    void dataUpdated() { }
+  private:
+    mat4Data* output;
 };
 
 #endif

@@ -64,7 +64,7 @@ bool isValidName(const string s)
 // PrintXML
 //
 
-void VectorField::PrintXML(string cmdstr)
+void VectorField::PrintXML(const std::string& cmdstr)
 {
   cout << "<?xml version=\"1.0\" ?>" << endl;
   cout << "<!--\n";
@@ -185,7 +185,7 @@ void VectorField::PrintXML(string cmdstr)
 // ReadXML
 //
 
-int VectorField::ReadXML(string xmlfilename)
+int VectorField::ReadXML(const std::string& xmlfilename)
 {
   FILE *xmlfile;
   mxml_node_t *tree;

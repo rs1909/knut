@@ -18,10 +18,10 @@
 
 void BaseComp::run(const char* branchFile)
 {
-  System *sys;
+  System *sys = 0;
   try
   {
-    sys = new System(params->getSysName());
+    sys = new System(params->getSysName(), params->getNDeri());
   }
   catch (knutException ex)
   {
@@ -64,6 +64,7 @@ void BaseComp::run(const char* branchFile)
   //
   //-----------------------------------------------------------------------------------------------------------
 
+  PerSolPoint* pt_ptr = 0;
   try
   {
     const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
@@ -91,7 +92,6 @@ void BaseComp::run(const char* branchFile)
 
     // If it is a periodic solution OR switching from per. solotion to torus
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
-    PerSolPoint* pt_ptr = 0;
     if (eqn_start(0) != EqnTORSol)
     {
       if (eqn_start(0) == EqnSol) pt_ptr = new Point(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
@@ -141,9 +141,9 @@ void BaseComp::run(const char* branchFile)
     if (eqn(0) != EqnTORSol)
     {
       PerSolPoint& pt = *pt_ptr;
-      mat4Data out(params->getOutputFile(), params->getParNames(),
-                   params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
-                   params->getNInt(), params->getNDeg(), params->getNMul());
+      setData(new mat4Data(params->getOutputFile(), params->getParNames(),
+                           params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
+                           params->getNInt(), params->getNDeg(), params->getNMul()));
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
@@ -199,17 +199,12 @@ void BaseComp::run(const char* branchFile)
       double ds = params->getDs();
       for (int i = 0; i < params->getSteps(); i++)  // 35
       {
-        if (stopFlag)
-        {
-          delete pt_ptr;
-          delete sys;
-          return;
-        }
         itpos = (itpos + 1) % ithist;
         //
         it(itpos) = pt.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
         if (stopFlag)
         {
+          deleteData();
           delete pt_ptr;
           delete sys;
           return;
@@ -256,7 +251,8 @@ void BaseComp::run(const char* branchFile)
           print(screenout);
         }
         // file output
-        pt.BinaryWrite(out, i);
+        pt.BinaryWrite(data(), i);
+        dataUpdated();
 
         // branch output
         if (branchFile)
@@ -295,12 +291,13 @@ void BaseComp::run(const char* branchFile)
           break;
         }
       }
+      deleteData();
     }
     else
     {
-      mat4Data out(params->getOutputFile(), params->getParNames(),
-                   params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
-                   params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2());
+      setData(new mat4Data(params->getOutputFile(), params->getParNames(),
+                           params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
+                           params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
 
       screenout << "ENTERING THE TORUS CODE!\n";
       print(screenout);
@@ -369,6 +366,7 @@ void BaseComp::run(const char* branchFile)
       {
         if (stopFlag)
         {
+          deleteData();
           delete sys;
           return;
         }
@@ -392,15 +390,20 @@ void BaseComp::run(const char* branchFile)
           ff << norm << "\n";
           ff.flush();
         }
-        pttr.WriteBinary(out, i);
+        pttr.WriteBinary(data(), i);
+        dataUpdated();
       }
+      deleteData();
     }
     // **********************************************************************************************************
     delete pt_ptr;
+    delete sys;
   }
   catch (knutException ex)
   {
+    delete pt_ptr;
+    delete sys;
+    deleteData();
     raiseException(ex);
   }
-  delete sys;
 }

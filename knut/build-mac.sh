@@ -11,4 +11,3 @@ cmake -G "Unix Makefiles"\
 	-D CMAKE_INSTALL_PREFIX=$HOME/Apps/Knut\
 	-D CMAKE_BUILD_TYPE=RELWITHDEBINFO $SCRIPTDIR
 make
-make install

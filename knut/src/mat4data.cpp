@@ -80,6 +80,7 @@ static inline void *mmapFileWrite(int& file, const std::string& fileName, size_t
     P_MESSAGE5("Unable to resize the MAT file '", fileName, "'. ", (const char *)strerror(errno), ".");
   }
 
+//  std::cout << "MMAP - WRITE\n";
   void *address;
   if ((address = mmap(0, size, PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
@@ -102,6 +103,7 @@ static inline void *mmapFileRead(int& file, const std::string& fileName, size_t&
   }
   size = filestat.st_size;
 
+//  std::cout << "MMAP - READ\n";
   void *address;
   if ((address = mmap(0, size, PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
   {
@@ -198,6 +200,7 @@ inline void mat4Data::writeMatrixHeader(void* address, size_t offset, mat4Data::
 }
 
 mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
+  : matFileName(fileName)
 {
   wperm = true;
   torus = false;
@@ -305,6 +308,7 @@ void mat4Data::getParNames(std::vector<std::string>& parNames) const
 }
 
 mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
+  : matFileName(fileName)
 {
   wperm = true;
   torus = true;
@@ -390,6 +394,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
 }
 
 mat4Data::mat4Data(const std::string& fileName)
+  : matFileName(fileName)
 {
   wperm = false;
   this->openReadOnly(fileName);
@@ -437,56 +442,56 @@ void mat4Data::condenseData()
   }
 }
 
-void mat4Data::initHeaders(const std::string& fileName)
+void mat4Data::initHeaders()
 {
-  npoints_offset = findMatrix("knut_npoints", &npoints_header, true, 1, 1, 0, fileName.c_str());
+  npoints_offset = findMatrix("knut_npoints", &npoints_header, true, 1, 1, 0, matFileName.c_str());
   
-  par_offset = findMatrix("knut_par", &par_header, true, -1, -1, 0, fileName.c_str());
+  par_offset = findMatrix("knut_par", &par_header, true, -1, -1, 0, matFileName.c_str());
   npar = par_header.mrows;
   ncols = par_header.ncols;
   
-  parnames_offset = findMatrix("knut_parnames", &parnames_header, true, -1, -1, 0, fileName.c_str());
+  parnames_offset = findMatrix("knut_parnames", &parnames_header, true, -1, -1, 0, matFileName.c_str());
 
-  ndim_offset = findMatrix("knut_ndim", &ndim_header, true, 1, ncols, 0, fileName.c_str());
+  ndim_offset = findMatrix("knut_ndim", &ndim_header, true, 1, ncols, 0, matFileName.c_str());
   ndim = static_cast<int>(*((double*)((char*)address + ndim_offset + ndim_header.col_off(0))));
 
-  if ((mul_offset = findMatrix("knut_mul", &mul_header, false, -1, ncols, 1, fileName.c_str())) != -1)
+  if ((mul_offset = findMatrix("knut_mul", &mul_header, false, -1, ncols, 1, matFileName.c_str())) != -1)
   {
     torus = false;
     nmul = mul_header.mrows;
     
     // periodic solutions
-    ntrivmul_offset = findMatrix("knut_ntrivmul", &ntrivmul_header, true, 3, 1, 0, fileName.c_str());
+    ntrivmul_offset = findMatrix("knut_ntrivmul", &ntrivmul_header, true, 3, 1, 0, matFileName.c_str());
 
-    elem_offset = findMatrix("knut_elem", &elem_header, true, -1, ncols, 0, fileName.c_str());
+    elem_offset = findMatrix("knut_elem", &elem_header, true, -1, ncols, 0, matFileName.c_str());
     ndeg = elem_header.mrows - 1;
 
-    mesh_offset = findMatrix("knut_mesh", &mesh_header, true, -1, ncols, 0, fileName.c_str());
+    mesh_offset = findMatrix("knut_mesh", &mesh_header, true, -1, ncols, 0, matFileName.c_str());
     nint = mesh_header.mrows - 1;
 
-    prof_offset = findMatrix("knut_prof", &prof_header, true, ndim*(ndeg*nint + 1), ncols, 0, fileName.c_str());
+    prof_offset = findMatrix("knut_prof", &prof_header, true, ndim*(ndeg*nint + 1), ncols, 0, matFileName.c_str());
   }
   else
   {
     torus = true;
     // quasiperiodic solutions
-    nint1_offset = findMatrix("knut_nint1", &nint1_header, true, 1, ncols, 0, fileName.c_str());
+    nint1_offset = findMatrix("knut_nint1", &nint1_header, true, 1, ncols, 0, matFileName.c_str());
     nint1 = static_cast<int>(*((double*)((char*)address + nint1_offset + nint1_header.col_off(0))));
 
-    nint2_offset = findMatrix("knut_nint2", &nint2_header, true, 1, ncols, 0, fileName.c_str());
+    nint2_offset = findMatrix("knut_nint2", &nint2_header, true, 1, ncols, 0, matFileName.c_str());
     nint2 = static_cast<int>(*((double*)((char*)address + nint2_offset + nint2_header.col_off(0))));
 
-    ndeg1_offset = findMatrix("knut_ndeg1", &ndeg1_header, true, 1, ncols, 0, fileName.c_str());
+    ndeg1_offset = findMatrix("knut_ndeg1", &ndeg1_header, true, 1, ncols, 0, matFileName.c_str());
     ndeg1 = static_cast<int>(*((double*)((char*)address + ndeg1_offset + ndeg1_header.col_off(0))));
 
-    ndeg2_offset = findMatrix("knut_ndeg2", &ndeg2_header, true, 1, ncols, 0, fileName.c_str());
+    ndeg2_offset = findMatrix("knut_ndeg2", &ndeg2_header, true, 1, ncols, 0, matFileName.c_str());
     ndeg2 = static_cast<int>(*((double*)((char*)address + ndeg2_offset + ndeg2_header.col_off(0))));
 
-    mesh1_offset = findMatrix("knut_mesh1", &mesh1_header, true, nint1*ndeg1, ncols, 0, fileName.c_str());
+    mesh1_offset = findMatrix("knut_mesh1", &mesh1_header, true, nint1*ndeg1, ncols, 0, matFileName.c_str());
 
-    mesh2_offset = findMatrix("knut_mesh2", &mesh2_header, true, nint2*ndeg2, ncols, 0, fileName.c_str());
+    mesh2_offset = findMatrix("knut_mesh2", &mesh2_header, true, nint2*ndeg2, ncols, 0, matFileName.c_str());
 
-    blanket_offset = findMatrix("knut_blanket", &blanket_header, true, ndim*nint1*ndeg1*nint2*ndeg2, ncols, 0, fileName.c_str());
+    blanket_offset = findMatrix("knut_blanket", &blanket_header, true, ndim*nint1*ndeg1*nint2*ndeg2, ncols, 0, matFileName.c_str());
   }
 }
 
@@ -498,7 +503,7 @@ void mat4Data::openReadOnly(const std::string& fileName)
   address = mmapFileRead(file, mapHandle, fileName, size);
 #endif
   lock();
-  initHeaders(fileName);
+  initHeaders();
   unlock();
 }
 
@@ -509,6 +514,7 @@ mat4Data::~mat4Data()
 #ifndef WIN32
   size_t oldsize = size;
   condenseData();
+//  std::cout << "MUNMAP\n";
   if (munmap(address, oldsize) != 0)
   {
     P_MESSAGE3("Unable to munmap the MAT file. ", strerror(errno), ".");
@@ -814,7 +820,7 @@ int mat4Data::getUnstableMultipliers(int n) const
   return unstableMultipliers(mulRe, mulIm, lp, pd, ns);
 }
 
-int mat4Data::getNextBifurcation(int n) const
+int mat4Data::getNextBifurcation(int n, bool* stab) const
 {
   Vector mulRe(false), mulIm(false);
   const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
@@ -828,7 +834,15 @@ int mat4Data::getNextBifurcation(int n) const
     const_cast<mat4Data*>(this)->getMulReRef(i, mulRe);
     const_cast<mat4Data*>(this)->getMulImRef(i, mulIm);
     int ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns);
-    if (ustab != p_ustab) return i;
+    if (ustab != p_ustab) 
+    {
+      if (stab != 0)
+      {
+        if (ustab == 0 || p_ustab == 0) *stab = true;
+        else *stab = false;
+      }
+      return i;
+    }
     p_ustab = ustab;
   }
   return -1;

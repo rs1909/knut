@@ -36,7 +36,7 @@ IF(APPLE)
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
     constqtgui.h
-    compthread.h
+    compthread.h compthread.cpp
     screendialog.h
     macopenevent.h
     ${MOC_SRCS} ${ICONS} MacOS/knut.icns
@@ -92,7 +92,7 @@ IF(NOT APPLE)
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
     constqtgui.h
-    compthread.h
+    compthread.h compthread.cpp
     screendialog.h
     ${MOC_SRCS} ${ICONS} )
 

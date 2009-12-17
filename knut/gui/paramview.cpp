@@ -262,6 +262,13 @@ void EqnVarTableView::resetSize()
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   
+  QSize minSize = minimumSizeHint();
+  setMinimumSize(minSize);
+  setMaximumSize(minSize);
+}
+
+QSize EqnVarTableView::minimumSizeHint() const
+{
   int tableWidth = 2*frameWidth() + verticalHeader()->frameRect().width() + 
     2*verticalHeader()->frameWidth();
   int tableHeight = 2*frameWidth() + horizontalHeader()->frameRect().height() +
@@ -269,8 +276,7 @@ void EqnVarTableView::resetSize()
   for (int i=0; i < model->columnCount(); ++i) tableWidth += columnWidth(i);
   for (int i=0; i < model->rowCount(); ++i) tableHeight += rowHeight(i);
   
-  setMinimumSize(tableWidth, tableHeight);
-  setMaximumSize(tableWidth, tableHeight);
+  return QSize(tableWidth, tableHeight);
 }
 
 SYMTableView::SYMTableView(NConstantsQtGui* params, QWidget* parent_) : QTableView(parent_), parameters(params)

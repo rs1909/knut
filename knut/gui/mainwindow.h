@@ -305,6 +305,10 @@ class MainWindow : public QMainWindow
       {
         // Don't react!
       }
+      else if (!strcmp(name,"nDeri"))
+      {
+        // Don't react!
+      }
       else if (!strcmp(name,"translationMaps"))
       {
         cp->blockSignals(true);
@@ -404,7 +408,9 @@ class MainWindow : public QMainWindow
     }
     void compileSystem();
     void generateSystem();
-
+    void openInputMatFile(const QString& fileName);
+    void openOutputMatFile(const QString& fileName);
+    
   private:
     inline bool inputAssert(std::istream& is);
 
@@ -489,6 +495,9 @@ class MainWindow : public QMainWindow
     QAction *exitAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
+    
+    QSharedPointer<const mat4Data> inputMatFile;
+    QSharedPointer<const mat4Data> outputMatFile;
 };
 
 #endif
