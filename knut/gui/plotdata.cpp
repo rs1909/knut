@@ -603,7 +603,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
   {
     std::list<PlotItem>::const_iterator itc = Graph.end();
     for (int i = 0; i < xadded; ++i) --itc;
-    for (unsigned int i = 0; i < bifidx.size(); i++)
+    for (unsigned int i = 0; i < bifidx.size(); ++i)
     {
       Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
       Graph.rbegin()->x.Init(1);
@@ -611,6 +611,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       
       if (y != YAbsMultiplier)
       {
+        // find out in which stability region is our point
         unsigned int k = 1, k2;
         while ((bifidx[i] > stabidx[k]) && k < stabidx.size()) ++k;
         const bool stbif = (bifidx[i] == stabidx[k]);
@@ -619,11 +620,11 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
         
         std::list<PlotItem>::const_iterator it = itc;
         for (unsigned int p = 0; p < k-1; ++p) ++it;
-        
+                
         if (stbif)
         {
           Graph.rbegin()->x(0) = it->x(it->x.Size()-1);
-          Graph.rbegin()->y(0) = it->y(it->x.Size()-1);
+          Graph.rbegin()->y(0) = it->y(it->y.Size()-1);
         } else
         {
           Graph.rbegin()->x(0) = (it->x(k2 - 1) + it->x(k2)) / 2.0;
@@ -650,7 +651,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
         default:
           addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCross, false);
           break;
-      } 
+      }
     }
   }
   for (std::list<PlotItem>::iterator it = ++start; it != Graph.end(); ++it)
@@ -882,8 +883,12 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
           scaledRect.setRight(xscale*rect.right());
           scaledRect.setBottom(yscale*rect.bottom());
           scaledRect.setTop(yscale*rect.top());
+          if (Box->rect().intersects(scaledRect)) (*i).data.circle->pos.push_back(pt);
+        } else
+        {
+          scaledRect = rect;
+          if (Box->rect().contains(pt.x(), pt.y())) (*i).data.circle->pos.push_back(pt);
         }
-        if (Box->rect().intersects(scaledRect)) (*i).data.circle->pos.push_back(pt);
       }
       for (size_t p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
       (*i).data.circle->item.resize((*i).data.circle->pos.size(), 0);
@@ -894,7 +899,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       for (int k = 0; k < i->x.Size(); k++)
       {
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
-        if (Box->rect().contains(pt.x(), pt.y()))(*i).data.polygon->pos.push_back(pt);
+        if (Box->rect().contains(pt.x(), pt.y())) (*i).data.polygon->pos.push_back(pt);
       }
       for (size_t p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
       (*i).data.polygon->item.resize((*i).data.polygon->pos.size(), 0);
