@@ -44,12 +44,12 @@ enum PlotYVariable
   // only one row of data is used
   YImagMultiplier, // -> XRealMultiplier
   YProfile,        // - > XMesh
+  YAbsMultiplier,
   YSeparator,
   // From here all rows are necessary
   // can be combined with any of the Y > YSeparator
   YL2Norm,
   YAmplitude,
-  YAbsMultiplier,
   YParameter0
 };
 
@@ -180,7 +180,7 @@ class PlotData : public QGraphicsScene
     void keyPressEvent(QKeyEvent * event);
 
   private:
-    void addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool p);
+    void addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool p, bool s = true);
     void addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen, 
                       PlotMarkerStyle type, bool p, qreal radius = 3.0, bool scale = false);
     void dataToGraphics(std::list<PlotItem>::const_iterator begin,

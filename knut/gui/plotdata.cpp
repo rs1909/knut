@@ -275,12 +275,13 @@ static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
   max = ceil(max / step) * step;
 }
 
-void PlotData::addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool principal)
+void PlotData::addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool principal, bool stab)
 {
   it->type = PlotLineType;
   it->data.line = new PlotLine(pen);
   it->data.line->pen.setWidthF(1);
-  it->data.line->pen.setStyle(Qt::DashLine);
+  if (stab) it->data.line->pen.setStyle(Qt::SolidLine);
+  else it->data.line->pen.setStyle(Qt::DashLine);
   it->principal = principal;
 }
 
@@ -389,6 +390,16 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
   labelColor();
 }
 
+// Need to simplify this to less cases
+// Draw a line until stability changes
+// 1. find out if it is stable start with the solid line
+// 2. find out where is the next zero crossing point and draw line until
+// 3. repeat antuil the end
+// 4. put bifurcation points
+// Cases
+// 1. x > XSeparator, y > YSeparator
+//    - We draw stability in this case with dashed lines
+// 2. everything else doesn't change.
 bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable x, PlotYVariable y, 
   int pt, int dim)
 {
@@ -399,32 +410,131 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
   if (!Graph.empty()) startnumber = Graph.rbegin()->number;
   QColor plcolor, stabcolor(Qt::black);
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
-  // mindig az Y utan kovetkezik csak addPlot...()
-  if (x >= XParameter0 && y != YAbsMultiplier && y != YProfile)
+  // get stability data
+  bool stab_ini = data->getUnstableMultipliers(0) == 0;
+  std::vector<unsigned int> stabidx;
+  std::vector<unsigned int> bifidx;
+  std::vector<BifType>      biftype;
   {
-    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.Init(data->getNPoints());
-    Graph.rbegin()->y.Init(data->getNPoints());
-    for (int i = 0; i < data->getNPoints(); i++)
+    int k_p = 0, k;
+    bool stab = false;
+    stabidx.push_back(0);
+    do
     {
-      if (x != XParameter0) 
-        Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
-      else
-        Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
-    }
-    ++xadded;
+      k = data->getNextBifurcation(k_p, &stab);
+      if (k != -1)
+      {
+        bifidx.push_back(k);
+        biftype.push_back(data->getBifurcationType(k));
+        if (stab) stabidx.push_back(k);
+        k_p = k;
+      }
+    } while (k != -1);
+    stabidx.push_back(data->getNPoints()-1);
   }
-  if (x == XLabel && y != YAbsMultiplier && y != YProfile)
+  // Putting in the data
+  if (x > XSeparator && y > YSeparator)
   {
-    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.Init(data->getNPoints());
-    Graph.rbegin()->y.Init(data->getNPoints());
-    for (int i = 0; i < data->getNPoints(); i++)
+    double pxend = 0.0, pyend = 0.0;
+    for (unsigned int b = 1; b < stabidx.size(); ++b)
     {
-      Graph.rbegin()->x(i) = i;
+//      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
+      Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
+      int bskip = 0, eskip = 0;
+      if (b == 1) bskip == 0; else bskip = 1;
+      if (b == stabidx.size()-1) eskip == 0; else eskip = 1;
+      Graph.rbegin()->x.Init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      Graph.rbegin()->y.Init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      
+      // X Coordinate
+      if (x == XLabel)
+      {
+        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) Graph.rbegin()->x(j) = i;
+      } else
+      if (x >= XParameter0)
+      {
+        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          if (x != XParameter0)
+            Graph.rbegin()->x(j) = data->getPar(i, x - XParameter0);
+          else
+            Graph.rbegin()->x(j) = 
+              data->getPar(i, x - XParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
+        }
+      } else std::cout << "Bad X coord\n";
+      ++xadded;
+      // Y Coordinate
+      if (y == YL2Norm)
+      {
+        Vector elem(false);
+        qSharedPointerConstCast<mat4Data>(data)->getElemRef(0, elem);
+        Matrix metric(elem.Size(), elem.Size());
+        NColloc::getMetric(metric, elem);
+        Vector prof(false), msh(false);
+        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          qSharedPointerConstCast<mat4Data>(data)->getMeshRef(i, msh);
+          qSharedPointerConstCast<mat4Data>(data)->getProfileRef(i, prof);
+          Graph.rbegin()->y(j) = NColloc::integrate(prof, prof, metric, msh, data->getNDim());
+        }
+      } else
+      if (y == YAmplitude)
+      {
+        const int ndeg = data->getNDeg();
+        const int nint = data->getNInt();
+        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          double nrm = 0.0;
+          for (int p = 0; p < data->getNDim(); ++p)
+          {
+            double min = DBL_MAX;
+            double max = -DBL_MAX;
+            for (int l = 0; l < nint; ++l)
+            {
+              for (int k = 0; k < ndeg; ++k)
+              {
+                if (min > data->getProfile(i, p, k + ndeg*l)) min = data->getProfile(i, p, k + ndeg*l);
+                if (max < data->getProfile(i, p, k + ndeg*l)) max = data->getProfile(i, p, k + ndeg*l);
+              }
+            }
+            nrm += (max - min) * (max - min);
+          }
+          Graph.rbegin()->y(j) = sqrt(nrm);
+        }
+      } else
+      if (y >= YParameter0)
+      {
+        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          if (y != YParameter0)
+            Graph.rbegin()->y(j) = data->getPar(i, y - YParameter0);
+          else
+            Graph.rbegin()->y(j) = 
+              data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
+        }
+      } else std::cout << "Bad Y coord\n";
+      ++yadded;
+      // set the beginning and the end
+      const int end = Graph.rbegin()->x.Size()-1;
+      if (bskip != 0)
+      {
+        Graph.rbegin()->x(0) = pxend;
+        Graph.rbegin()->y(0) = pyend;
+      }
+      if (eskip != 0)
+      {
+        // The end is incorrectly set.
+        pxend = (Graph.rbegin()->x(end) + Graph.rbegin()->x(end-1))/2;
+        pyend = (Graph.rbegin()->y(end) + Graph.rbegin()->y(end-1))/2;
+        Graph.rbegin()->x(end) = pxend;
+        Graph.rbegin()->y(end) = pyend;
+      }
+      addPlotLine(--Graph.end(), QPen(plcolor), true, stab_ini);
+      stab_ini = !stab_ini;
     }
-    ++xadded;
   }
+  // Extra bits
+  // The profile
   if (x == XMesh && y == YProfile)
   {
     const int ndeg = data->getNDeg();
@@ -446,57 +556,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
     ++yadded;
     addPlotLine(--Graph.end(), QPen(plcolor), true);
   }
-  if (y >= YParameter0 && (x != XMesh && x != XRealMultiplier))
-  {
-    for (int i = 0; i < data->getNPoints(); i++)
-    {
-      Graph.rbegin()->y(i) = data->getPar(i, y - YParameter0);
-    }
-    ++yadded;
-    addPlotLine(--Graph.end(), QPen(plcolor), true);
-  }
-  if (y == YAmplitude && (x != XMesh && x != XRealMultiplier))
-  {
-    for (int i = 0; i < data->getNPoints(); i++)
-    {
-      const int ndeg = data->getNDeg();
-      const int nint = data->getNInt();
-      double nrm = 0.0;
-      for (int p = 0; p < data->getNDim(); ++p)
-      {
-        double min = DBL_MAX;
-        double max = -DBL_MAX;
-        for (int j = 0; j < nint; ++j)
-        {
-          for (int k = 0; k < ndeg; ++k)
-          {
-            if (min > data->getProfile(i, p, k + ndeg*j)) min = data->getProfile(i, p, k + ndeg * j);
-            if (max < data->getProfile(i, p, k + ndeg*j)) max = data->getProfile(i, p, k + ndeg * j);
-          }
-        }
-        nrm += (max - min) * (max - min);
-      }
-      Graph.rbegin()->y(i) = sqrt(nrm);
-    }
-    ++yadded;
-    addPlotLine(--Graph.end(), QPen(plcolor), true);
-  }
-  if (y == YL2Norm && (x != XMesh && x != XRealMultiplier))
-  {
-    Vector elem(false);
-    qSharedPointerConstCast<mat4Data>(data)->getElemRef(0, elem);
-    Matrix metric(elem.Size(), elem.Size());
-    NColloc::getMetric(metric, elem);
-    Vector prof(false), msh(false);
-    for (int i = 0; i < data->getNPoints(); i++)
-    {
-      qSharedPointerConstCast<mat4Data>(data)->getMeshRef(i, msh);
-      qSharedPointerConstCast<mat4Data>(data)->getProfileRef(i, prof);
-      Graph.rbegin()->y(i) = NColloc::integrate(prof, prof, metric, msh, data->getNDim());
-    }
-    ++yadded;
-    addPlotLine(--Graph.end(), QPen(plcolor), true);
-  }
+  // Unit circle
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
     // plot the unit circle
@@ -519,6 +579,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
     ++yadded;
     addPlotPoint(--Graph.end(), QPen(plcolor), PlotMarkerCross, true);
   }
+  // multipliers
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
     for (int r = 0; r < data->getNMul(); r++)
@@ -534,59 +595,62 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       }
       ++xadded;
       ++yadded;
-//       addPlotPoint(--Graph.end(), QPen(plcolor), 0);
       addPlotLine(--Graph.end(), QPen(plcolor), true);
     }
   }
   // add stability
-  std::vector<int>     stabidx;
-  std::vector<int>     bifidx;
-  std::vector<BifType> biftype;
-  if ((x == XLabel || x >= XParameter0) && xadded != 0 && xadded == yadded)
+  if ((x > XSeparator && y > YSeparator) || y == YAbsMultiplier)
   {
-    int k, k_p = 0;
-    bool stab = false;
-    do
+    std::list<PlotItem>::const_iterator itc = Graph.end();
+    for (int i = 0; i < xadded; ++i) --itc;
+    for (unsigned int i = 0; i < bifidx.size(); i++)
     {
-      k = data->getNextBifurcation(k_p, &stab);
-      if (k != -1)
+      Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
+      Graph.rbegin()->x.Init(1);
+      Graph.rbegin()->y.Init(1);
+      
+      if (y != YAbsMultiplier)
       {
-        bifidx.push_back(k);
-        biftype.push_back(data->getBifurcationType(k));
-        if (stab) stabidx.push_back(k);
-        k_p = k;
-      }
-    }
-    while (k != -1);
-    std::list<PlotItem>::const_iterator it = --Graph.end();
-    if (it->x.Size() == data->getNPoints())
-    {
-      for (unsigned int i = 0; i < bifidx.size(); i++)
-      {
-        Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
-        Graph.rbegin()->x.Init(1);
-        Graph.rbegin()->y.Init(1);
-        Graph.rbegin()->x(0) = (it->x(bifidx[i] - 1) + it->x(bifidx[i])) / 2.0;
-        if (y == YAbsMultiplier) Graph.rbegin()->y(0) = 1.0;
-        else Graph.rbegin()->y(0) = (it->y(bifidx[i] - 1) + it->y(bifidx[i])) / 2.0;
-        ++xadded;
-        ++yadded;
-        switch (biftype[i])
+        unsigned int k = 1, k2;
+        while ((bifidx[i] > stabidx[k]) && k < stabidx.size()) ++k;
+        const bool stbif = (bifidx[i] == stabidx[k]);
+        if (k > 1) k2 = bifidx[i] - stabidx[k-1] + 1;
+        else k2 = bifidx[i] - stabidx[k-1];
+        
+        std::list<PlotItem>::const_iterator it = itc;
+        for (unsigned int p = 0; p < k-1; ++p) ++it;
+        
+        if (stbif)
         {
-          case BifLP:
-            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerSquare, false);
-            break;
-          case BifPD:
-            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerTriangle, false);
-            break;
-          case BifNS:
-            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false);
-            break;
-          default:
-            addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCross, false);
-            break;
-        } 
+          Graph.rbegin()->x(0) = it->x(it->x.Size()-1);
+          Graph.rbegin()->y(0) = it->y(it->x.Size()-1);
+        } else
+        {
+          Graph.rbegin()->x(0) = (it->x(k2 - 1) + it->x(k2)) / 2.0;
+          Graph.rbegin()->y(0) = (it->y(k2 - 1) + it->y(k2)) / 2.0;
+        }
+      } else
+      {
+        Graph.rbegin()->x(0) = (itc->x(bifidx[i] - 1) + itc->x(bifidx[i])) / 2.0;
+        Graph.rbegin()->y(0) = 1.0;
       }
+      ++xadded;
+      ++yadded;
+      switch (biftype[i])
+      {
+        case BifLP:
+          addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerSquare, false);
+          break;
+        case BifPD:
+          addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerTriangle, false);
+          break;
+        case BifNS:
+          addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false);
+          break;
+        default:
+          addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCross, false);
+          break;
+      } 
     }
   }
   for (std::list<PlotItem>::iterator it = ++start; it != Graph.end(); ++it)
@@ -667,7 +731,7 @@ static inline bool intersect(qreal& alpha, qreal& beta,
     return true;
   }
   return false;
-}                            
+}
 
 enum horizPosition
 {
