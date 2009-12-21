@@ -8,6 +8,6 @@ cmake -G "Unix Makefiles"\
 	-D CMAKE_C_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused -Wno-unknown-pragmas"\
 	-D CMAKE_CXX_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused -Wconversion"\
 	-D CMAKE_Fortran_FLAGS="-m64 -g -O3"\
-	-D CMAKE_INSTALL_PREFIX=$HOME/Apps/Knut\
+	-D CMAKE_INSTALL_PREFIX=$HOME/Applications/Knut\
 	-D CMAKE_BUILD_TYPE=RELWITHDEBINFO $SCRIPTDIR
 make
