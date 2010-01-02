@@ -119,7 +119,7 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const Array1D<Var>
   out << std::left << std::setfill(' ') << std::setw(2) <<  "TP" << ' '; // 3 at the end
   out << ' ' << std::left << std::setfill(' ') << std::setw(12) << "NORM" << "  "; // 2 at the end
   out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(cp - VarPAR0) << "  "; // 2 at the end
-  for (int j = 1; j < var.Size(); j++)
+  for (int j = 1; j < var.size(); j++)
   {
     out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(var(j) - VarPAR0) << "  "; // 2 at the end
   }
@@ -144,7 +144,7 @@ inline void parValuePrint(std::ostream& out, const Vector& par, Var cp, const Ar
   else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << par(cp - VarPAR0) << "  "; // 2 at the end
-  for (int j = 1; j < var.Size(); j++)
+  for (int j = 1; j < var.size(); j++)
   {
     out << std::right << std::setfill(' ') << std::setw(13) << par(var(j) - VarPAR0) << "  "; // 2 at the end
   }

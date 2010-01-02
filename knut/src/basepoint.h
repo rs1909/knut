@@ -42,7 +42,7 @@ class BasePoint
 
     inline void    setPar(Vector& p)
     {
-      for (int i = 0; (i < p.Size()) && (i < par.Size()); i++) par(i) = p(i);
+      for (int i = 0; (i < p.size()) && (i < par.size()); i++) par(i) = p(i);
     }
     inline Vector& getPar()
     {
@@ -51,11 +51,11 @@ class BasePoint
 
     inline void    setCont(int p)
     {
-      varMapCont(varMap.Size()) = p;
+      varMapCont(varMap.size()) = p;
     }
     inline int     getCont()
     {
-      return varMapCont(varMap.Size());
+      return varMapCont(varMap.size());
     }
     inline void    setRefIter(int i)
     {
@@ -149,19 +149,19 @@ class BasePoint
 inline void BasePoint::Update(HyperVector& X)
 {
   sol += X.getV1();
-  for (int i = 1; i < varMap.Size(); i++) par(varMap(i)) += X.getV3()(i - 1);
+  for (int i = 1; i < varMap.size(); i++) par(varMap(i)) += X.getV3()(i - 1);
 }
 
 inline void BasePoint::ContUpdate(HyperVector& X)
 {
   solNu += X.getV1();
-  for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
+  for (int i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
 }
 
 inline void BasePoint::AdaptUpdate(HyperVector& X)
 {
   sol += X.getV1();
-  for (int i = 1; i < varMapCont.Size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
+  for (int i = 1; i < varMapCont.size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
 }
 
 class mat4Data;
@@ -193,10 +193,10 @@ class PerSolPoint : public BasePoint
 
     inline void    setSym(Array1D<int>& sRe, Array1D<int>& sIm)
     {
-      P_ASSERT(sRe.Size() == sIm.Size());
-      rotRe.Init(sRe.Size());
-      rotIm.Init(sRe.Size());
-      for (int i = 0; i < sRe.Size(); i++)
+      P_ASSERT(sRe.size() == sIm.size());
+      rotRe.Init(sRe.size());
+      rotIm.Init(sRe.size());
+      for (int i = 0; i < sRe.size(); i++)
       {
         rotRe(i) = sRe(i);
         rotIm(i) = sIm(i);

@@ -152,7 +152,7 @@ class Array1D
       return &v[i];
     }
 
-    inline int Size() const
+    inline int size() const
     {
       return n;
     }
@@ -703,10 +703,10 @@ class Matrix : public Array2D<double>
     {
       return c;
     }
-    inline int Size() const
+    inline int size() const
     {
 #ifdef DEBUG
-      P_ASSERT_X((r == 1) || (c == 1), "Matrix::Size(): not a single row or column.\n");
+      P_ASSERT_X((r == 1) || (c == 1), "Matrix::size(): not a single row or column.\n");
 #endif // DEBUG
       return r*c;
     }
@@ -896,15 +896,15 @@ template< > inline Array1D< Vector >::Array1D(const Array1D< Vector >& V_) : des
 
 /// Member functions and Operators for __scal_vec_trans_rng
 template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v)
-    : rng(0, v.Size()), vec(v), alpha(1.0), tr(NoTrans)
+    : rng(0, v.size()), vec(v), alpha(1.0), tr(NoTrans)
 { }
 
 template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v, double a)
-    : rng(0, v.Size()), vec(v), alpha(a),   tr(NoTrans)
+    : rng(0, v.size()), vec(v), alpha(a),   tr(NoTrans)
 { }
 
 template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v, double a, enum cspblas_Trans t)
-    : rng(0, v.Size()), vec(v), alpha(a),   tr(t)
+    : rng(0, v.size()), vec(v), alpha(a),   tr(t)
 { }
 
 template< class VT > inline __scal_vec_trans_rng<VT>::__scal_vec_trans_rng(__scal_vec_trans<VT> v)
@@ -912,7 +912,7 @@ template< class VT > inline __scal_vec_trans_rng<VT>::__scal_vec_trans_rng(__sca
 { }
 
 template< >          inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(__scal_vec_trans<Vector> v)
-    : rng(0, v.vec.Size()), vec(v.vec), alpha(v.alpha), tr(v.tr)
+    : rng(0, v.vec.size()), vec(v.vec), alpha(v.alpha), tr(v.tr)
 { }
 
 template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans_rng<VT>::operator*(__scal_vec_trans_rng<Vector> v)

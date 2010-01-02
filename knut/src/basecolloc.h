@@ -90,7 +90,7 @@ class PerSolColloc : public BaseColloc
     }
     void setMesh(const Vector& msh)
     {
-      P_ASSERT_X(msh.Size() == nint + 1, "Error in PerSolColloc::setMesh : Bad dimensions.");
+      P_ASSERT_X(msh.size() == nint + 1, "Error in PerSolColloc::setMesh : Bad dimensions.");
       mesh = msh;
     }
     inline const Vector& getMesh()

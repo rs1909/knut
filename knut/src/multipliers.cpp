@@ -24,7 +24,7 @@ static inline void findTrivialIndices(const Vector& mulRe, const Vector& mulIm,
   }
   for (int j = 0; j < lp+pd+ns; ++j)
   {
-    for (int i = 0; i < mulRe.Size(); ++i)
+    for (int i = 0; i < mulRe.size(); ++i)
     {
       bool skip = false;
       for (int k = 0; k < j; ++k)
@@ -56,7 +56,7 @@ int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, 
   double dmin[NCRIT];
   findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin);
   int ustab = 0;
-  for (int i = 0; i < mulRe.Size(); ++i)
+  for (int i = 0; i < mulRe.size(); ++i)
   {
     const double mabs = (mulRe(i) * mulRe(i) + mulIm(i) * mulIm(i));
     bool ok = true;
@@ -77,7 +77,7 @@ BifType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, 
   findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin);
   double dminLP = DBL_MAX, dminPD = DBL_MAX, dminNS = DBL_MAX;
   int iminLP = -1, iminPD = -1, iminNS = -1;
-  for (int i = 0; i < mulRe.Size(); ++i)
+  for (int i = 0; i < mulRe.size(); ++i)
   {
     const double mre = mulRe(i);
     const double mim = mulIm(i);

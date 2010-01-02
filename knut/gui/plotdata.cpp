@@ -364,7 +364,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
     std::list<PlotItem>::const_iterator it;
     for (it = begin; it != end; it++)
     {
-      for (int k = 0; k < it->x.Size(); k++)
+      for (int k = 0; k < it->x.size(); k++)
       {
         if (it->x(k) > cvb.xmax) { cvb.xmax = it->x(k); toZoom = true; }
         if (it->x(k) < cvb.xmin) { cvb.xmin = it->x(k); toZoom = true; }
@@ -468,7 +468,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       {
         Vector elem(false);
         qSharedPointerConstCast<mat4Data>(data)->getElemRef(0, elem);
-        Matrix metric(elem.Size(), elem.Size());
+        Matrix metric(elem.size(), elem.size());
         NColloc::getMetric(metric, elem);
         Vector prof(false), msh(false);
         for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
@@ -515,7 +515,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       } else std::cout << "Bad Y coord\n";
       ++yadded;
       // set the beginning and the end
-      const int end = Graph.rbegin()->x.Size()-1;
+      const int end = Graph.rbegin()->x.size()-1;
       if (bskip != 0)
       {
         Graph.rbegin()->x(0) = pxend;
@@ -623,8 +623,8 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
                 
         if (stbif)
         {
-          Graph.rbegin()->x(0) = it->x(it->x.Size()-1);
-          Graph.rbegin()->y(0) = it->y(it->y.Size()-1);
+          Graph.rbegin()->x(0) = it->x(it->x.size()-1);
+          Graph.rbegin()->y(0) = it->y(it->y.size()-1);
         } else
         {
           Graph.rbegin()->x(0) = (it->x(k2 - 1) + it->x(k2)) / 2.0;
@@ -862,7 +862,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       ppath.append(PlotPolyLine(ppath.pen));
       ppath.last().path.moveTo(prevPoint);
       
-      for (int k = 1; k < i->x.Size(); k++)
+      for (int k = 1; k < i->x.size(); k++)
       {
         QPointF currentPoint(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)));
         pointOutside(ppath, BottomLeft, BottomRight, TopLeft, TopRight, prevPoint, currentPoint);
@@ -872,7 +872,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     if ((*i).type == PlotCircleType)
     {
       (*i).data.circle->pos.clear();
-      for (int k = 0; k < i->x.Size(); k++)
+      for (int k = 0; k < i->x.size(); k++)
       {
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         QRectF& rect = (*i).data.circle->point;
@@ -896,7 +896,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     if ((*i).type == PlotPolygonType)
     {
       (*i).data.polygon->pos.clear();
-      for (int k = 0; k < i->x.Size(); k++)
+      for (int k = 0; k < i->x.size(); k++)
       {
         const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
         if (Box->rect().contains(pt.x(), pt.y())) (*i).data.polygon->pos.push_back(pt);

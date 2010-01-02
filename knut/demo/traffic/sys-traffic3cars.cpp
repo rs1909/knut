@@ -34,7 +34,7 @@ int sys_nderi() { return 0; }
 
 void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0;
     out(1,idx) = par(2);
@@ -43,7 +43,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
 
 void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
 {
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0;
     if( vp == 2 ) out(1,idx) = 1.0;
@@ -60,7 +60,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
 {
 #define xx(i,j) yy(i-1,j-1,idx)
 #define f(i,j) out(i-1,idx)
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     if ( xx(4,2) > 1 ){
       f(1,1) = par(3) * ( par(4) * V(xx(4,2)) - xx(1,1) ); 
@@ -69,7 +69,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
     }
   }
 
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     if( xx(5,2) > 1 ){
       f(2,1) = par(3) * ( par(4) * V(xx(5,2)) - xx(2,1) ); 
@@ -78,7 +78,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
     }
   }
 
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     if( ( 3*par(1) - xx(5,2) - xx(4,2) ) > 1 ){
       f(3,1) = par(3) * ( par(4) * V( 3*par(1) - xx(5,2) - xx(4,2) ) - xx(3,1) );
@@ -87,7 +87,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
     }
   }
 
-  for (int idx = 0; idx < time.Size(); ++idx)
+  for (int idx = 0; idx < time.size(); ++idx)
   {
     f(4,1) = xx(2,1) - xx(1,1);
     f(5,1) = xx(3,1) - xx(2,1);

@@ -41,11 +41,11 @@ class PointTR : public BasePoint
     {
       colloc->ImportTan(xxDot->getV1(), Re, Im, alpha);
       xxDot->getV3().Clear();
-//       p1Dot = 0.0; // should be xxDot->getV3(varMap.Size()) ???
+//       p1Dot = 0.0; // should be xxDot->getV3(varMap.size()) ???
     }
     inline void    Start(double ds)
     {
-      for (int i = 0; i < xx->getV1().Size(); i++) xx->getV1()(i) += ds * (xxDot->getV1()(i));
+      for (int i = 0; i < xx->getV1().size(); i++) xx->getV1()(i) += ds * (xxDot->getV1()(i));
     }
 //     inline int     npar()
 //     {

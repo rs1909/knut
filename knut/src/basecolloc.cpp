@@ -19,7 +19,7 @@
 
 static void equidist(Vector& mesh)
 {
-  const int m = mesh.Size();
+  const int m = mesh.size();
   for (int i = 0; i < m; i++) mesh(i) = (double)i / ((double)m - 1);
 }
 
@@ -108,7 +108,7 @@ static const double legendre_roots[25][25] =
 
 static void poly_gau(Vector& roots)
 {
-  const int m = roots.Size();
+  const int m = roots.size();
   /* construct the matrix */
   P_ERROR_X3(m < static_cast<int>(sizeof(legendre_roots[0])/sizeof(double)), "Unavailable polynomial order ", m, ".");
   for (int i = 0; i < m; ++i)
@@ -129,8 +129,8 @@ inline static void col_mesh(Vector& V)
 
 static inline void poly_mul(Vector& pp, double bb, double aa)
 {
-  P_ASSERT_X1(pp(pp.Size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
-  for (int i = pp.Size() - 1; i > 0; --i)
+  P_ASSERT_X1(pp(pp.size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
+  for (int i = pp.size() - 1; i > 0; --i)
   {
     pp(i) = aa * pp(i) + bb * pp(i - 1);
   }
@@ -139,7 +139,7 @@ static inline void poly_mul(Vector& pp, double bb, double aa)
 
 static void poly_diff_int_trap(Matrix& sum, const Vector& t)
 {
-  const int dim = t.Size();
+  const int dim = t.size();
   const int DIVS = 8*dim;
   sum.Clear();
   Vector lout(dim);
@@ -163,7 +163,7 @@ static void poly_diff_int_trap(Matrix& sum, const Vector& t)
 
 static void poly_int_trap(Matrix& sum, const Vector& t)
 {
-  const int dim = t.Size();
+  const int dim = t.size();
   const int DIVS = 8*dim;
   sum.Clear();
   Vector lout(dim);
@@ -186,13 +186,13 @@ static void poly_int_trap(Matrix& sum, const Vector& t)
 static void poly_int(Matrix& out, const Vector& t)
 {
   int i, j, k;
-  Vector poly(2*t.Size());
-  Vector poly1(t.Size());
-  Vector poly2(t.Size());
+  Vector poly(2*t.size());
+  Vector poly1(t.size());
+  Vector poly2(t.size());
 
-  for (i = 0; i < t.Size(); i++)
+  for (i = 0; i < t.size(); i++)
   {
-    for (j = 0; j < t.Size(); j++)
+    for (j = 0; j < t.size(); j++)
     {
       poly.Clear();
       poly1.Clear();
@@ -202,7 +202,7 @@ static void poly_int(Matrix& out, const Vector& t)
       //      poly.Print();
       // i,j az out matrix indexe
       //      cout<<"in:poly_mul\n";
-      for (k = 0; k < t.Size(); k++)
+      for (k = 0; k < t.size(); k++)
       {
         if (k != i)
           poly_mul(poly1, 1.0, -t(k));
@@ -213,27 +213,27 @@ static void poly_int(Matrix& out, const Vector& t)
       poly2 /= poly_eval(poly2,t(j));
       poly_coeff_mul(poly, poly1, poly2);
       // integrate
-      for (k = 0; k < poly.Size(); k++) poly(k) /= k + 1.0;
+      for (k = 0; k < poly.size(); k++) poly(k) /= k + 1.0;
       out(i, j) = 0.0;
       // evaluate at x = 0..1
-      for (k = 0; k < poly.Size(); k++) out(i, j) += poly(k);
+      for (k = 0; k < poly.size(); k++) out(i, j) += poly(k);
     }
   }
 //   out.Clear();
-//   for (i = 0; i < t.Size(); i++) out(i,i) = 1.0/t.Size();
+//   for (i = 0; i < t.size(); i++) out(i,i) = 1.0/t.size();
 }
 
 static void poly_diff_int(Matrix& out, const Vector& t)
 {
   int i, j, k;
-  Vector poly(2*t.Size());
-  Vector poly1(t.Size());
-  Vector poly1_d(t.Size());
-  Vector poly2(t.Size());
+  Vector poly(2*t.size());
+  Vector poly1(t.size());
+  Vector poly1_d(t.size());
+  Vector poly2(t.size());
 
-  for (i = 0; i < t.Size(); i++)
+  for (i = 0; i < t.size(); i++)
   {
-    for (j = 0; j < t.Size(); j++)
+    for (j = 0; j < t.size(); j++)
     {
       poly.Clear();
       poly1.Clear();
@@ -244,7 +244,7 @@ static void poly_diff_int(Matrix& out, const Vector& t)
       //      poly.Print();
       // i,j az out matrix indexe
       //      cout<<"in:poly_mul\n";
-      for (k = 0; k < t.Size(); k++)
+      for (k = 0; k < t.size(); k++)
       {
         if (k != i)
           poly_mul(poly1, 1.0, -t(k));
@@ -256,10 +256,10 @@ static void poly_diff_int(Matrix& out, const Vector& t)
       poly_coeff_diff(poly1_d, poly1);
       poly_coeff_mul(poly, poly1_d, poly2);
       // integrate
-      for (k = 0; k < poly.Size(); k++) poly(k) /= k + 1.0;
+      for (k = 0; k < poly.size(); k++) poly(k) /= k + 1.0;
       out(i, j) = 0.0;
       // evaluate at x = 0..1
-      for (k = 0; k < poly.Size(); k++) out(i, j) += poly(k);
+      for (k = 0; k < poly.size(); k++) out(i, j) += poly(k);
     }
   }
 }
@@ -304,7 +304,7 @@ PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
 int PerSolColloc::meshlookup(const Vector& mesh, double t)
 {
   // binary search for in which interval is t-tau(k)
-  int mid, low = 0, up = mesh.Size() - 1;
+  int mid, low = 0, up = mesh.size() - 1;
   while (up - low > 1)
   {
     mid = low + (up - low) / 2;
@@ -322,14 +322,14 @@ int PerSolColloc::meshlookup(const Vector& mesh, double t)
 
 static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& eqf)
 {
-//   for (int i = 1; i < eqf.Size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
+//   for (int i = 1; i < eqf.size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
 //   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
   // now computing the new mesh
-  const int nint = oldmesh.Size()-1;
+  const int nint = oldmesh.size()-1;
   newmesh(0) = 0.0;
-  for (int i = 1; i < newmesh.Size()-1; i++)
+  for (int i = 1; i < newmesh.size()-1; i++)
   {
-    const double t = eqf(nint)*i/(newmesh.Size()-1);
+    const double t = eqf(nint)*i/(newmesh.size()-1);
     const int idx = PerSolColloc::meshlookup( eqf, t );
     const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
 //     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
@@ -337,15 +337,15 @@ static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& 
 //     if (eqf(i) < eqf(i-1)) std::cout<<"bad "<<eqf(i-1)<<", "<<eqf(i)<<"\n";
 //     if (newmesh(i) < newmesh(i-1)) std::cout<<"very bad "<<newmesh(i-1)<<", "<<newmesh(i)<<"\n";
   }
-  newmesh(newmesh.Size()-1) = 1.0;
+  newmesh(newmesh.size()-1) = 1.0;
 }
 
 static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, const Array1D< Array1D<double> >& lgr)
 {
-  int ndeg_ = lgr.Size() - 1;
-  int nint_ = mesh.Size() - 1;
-  P_ERROR_X1( profile.Size() % (ndeg_*nint_ + 1) == 0, "Wrong profile size.");
-  int ndim_ = profile.Size() / (ndeg_*nint_ + 1);
+  int ndeg_ = lgr.size() - 1;
+  int nint_ = mesh.size() - 1;
+  P_ERROR_X1( profile.size() % (ndeg_*nint_ + 1) == 0, "Wrong profile size.");
+  int ndim_ = profile.size() / (ndeg_*nint_ + 1);
   
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
@@ -392,7 +392,7 @@ static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, c
     hd(nint_,p) = hd(0,p);
   }
   // eqf contains the integral which has to be equidistributed
-  P_ERROR_X1( eqf.Size() == nint_+1, "EQF has wrong size.");
+  P_ERROR_X1( eqf.size() == nint_+1, "EQF has wrong size.");
   // when the derivatives are too small;
   eqf(0) = 0.0;
   // computing eqf
@@ -434,10 +434,10 @@ void PerSolColloc::meshAdapt_internal( Vector& newmesh, const Vector& profile )
 static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vector& profile, const Vector& mesh,
                            const Array1D< Array1D<double> >& old_lgr, const int ndim)
 {
-  const int old_nint = mesh.Size()-1;
-  const int old_ndeg = (profile.Size()/ndim - 1)/old_nint;
-  const int new_nint = newmesh.Size()-1;
-  const int new_ndeg = (newprofile.Size()/ndim - 1)/new_nint;
+  const int old_nint = mesh.size()-1;
+  const int old_ndeg = (profile.size()/ndim - 1)/old_nint;
+  const int new_nint = newmesh.size()-1;
+  const int new_ndeg = (newprofile.size()/ndim - 1)/new_nint;
   // creating the new profile with the same old meshINT
   for (int i = 0; i < new_nint; i++)
   {
@@ -459,7 +459,7 @@ static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vect
     }
   }
   for (int p = 0; p < ndim; p++)
-    newprofile(p+ndim*(new_ndeg*(newmesh.Size()-1))) = profile(p+ndim*(old_ndeg*(mesh.Size()-1)));
+    newprofile(p+ndim*(new_ndeg*(newmesh.size()-1))) = profile(p+ndim*(old_ndeg*(mesh.size()-1)));
 }
 
 void PerSolColloc::meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent)
@@ -527,10 +527,10 @@ void PerSolColloc::getDiffMetric(Matrix& mt, const Vector& t)
 void PerSolColloc::star(Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim)
 {
   const int t_deg = mt.Col() - 1;
-  const int t_int = (out.Size() / dim - 1) / t_deg;
-  P_ERROR(in.Size() == out.Size());
-  P_ERROR(out.Size() == dim*(t_deg*t_int + 1));
-  P_ERROR(msh.Size() == t_int + 1);
+  const int t_int = (out.size() / dim - 1) / t_deg;
+  P_ERROR(in.size() == out.size());
+  P_ERROR(out.size() == dim*(t_deg*t_int + 1));
+  P_ERROR(msh.size() == t_int + 1);
   out.Clear();
   for (int i = 0; i < t_int; ++i)
   {
@@ -559,10 +559,10 @@ double PerSolColloc::integrate(const Vector& v1, const Vector& v2, const Matrix&
 {
   double res = 0.0;
   const int t_deg = mt.Col() - 1;
-  const int t_int = (v1.Size() / dim - 1) / t_deg;
-  P_ERROR(v1.Size() == v2.Size());
-  P_ERROR(v1.Size() == dim*(t_deg*t_int + 1));
-  P_ERROR(msh.Size() == t_int + 1);
+  const int t_int = (v1.size() / dim - 1) / t_deg;
+  P_ERROR(v1.size() == v2.size());
+  P_ERROR(v1.size() == dim*(t_deg*t_int + 1));
+  P_ERROR(msh.size() == t_int + 1);
   for (int i = 0; i < t_int; ++i)
   {
     const double dx = msh(i + 1) - msh(i);
@@ -698,7 +698,7 @@ void PerSolColloc::PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>
   for (int i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < Re.Size(); j++)
+    for (int j = 0; j < Re.size(); j++)
     {
       // ez itt a matrixszorzas
       for (int k = 0; k < NDEG + 1; k++)
@@ -740,8 +740,8 @@ void PerSolColloc::pdMeshConvert(Vector& newprofile, Vector& newtangent, const V
     tmp_tangent(p+NDIM*(2*NINT*NDEG)) = tmp_tangent(p);
   }
   // constructing the new mesh
-  Vector eqf(tmp_mesh.Size());
-  for (int i = 0; i < eqf.Size(); ++i) eqf(i) = i;
+  Vector eqf(tmp_mesh.size());
+  for (int i = 0; i < eqf.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, tmp_mesh, eqf);
   profileConvert(newprofile, mesh, tmp_profile, tmp_mesh, lgr, NDIM);
   profileConvert(newtangent, mesh, tmp_tangent, tmp_mesh, lgr, NDIM);
@@ -758,9 +758,9 @@ void PerSolColloc::Import(Vector& newprofile, const Vector& oldprofile, const Ve
     poly_coeff_lgr(old_lgr(i), old_meshINT, i);
   }
 
-  Vector eqf(oldmesh.Size());
+  Vector eqf(oldmesh.size());
   if (adapt) meshAssess(eqf, oldmesh, oldprofile, old_lgr);
-  else for (int i = 0; i < oldmesh.Size(); ++i) eqf(i) = i;
+  else for (int i = 0; i < oldmesh.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, oldmesh, eqf);
   profileConvert(newprofile, mesh, oldprofile, oldmesh, old_lgr, NDIM);
 }
@@ -768,8 +768,8 @@ void PerSolColloc::Import(Vector& newprofile, const Vector& oldprofile, const Ve
 // it exports for CollocTR and PointTR, so no last value is necessary
 void PerSolColloc::Export(Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in)
 {
-  int nint_ = mshint.Size() - 1;
-  int ndeg_ = mshdeg.Size() - 1;
+  int nint_ = mshint.size() - 1;
+  int ndeg_ = mshdeg.size() - 1;
   Vector in_mesh(NDEG + 1);
   Vector in_lgr(NDEG + 1);
 

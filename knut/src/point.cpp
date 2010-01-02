@@ -60,11 +60,11 @@ void Point::Construct()
   BasePoint::Construct();
   
   // a) setting the test functionals b) determining the number of trivial multipliers
-  testFunct.Init(eqn.Size());
+  testFunct.Init(eqn.size());
   nTrivMulLP = 0;
   nTrivMulPD = 0;
   nTrivMulNS = 0;
-  for (int i = 1; i < eqn.Size(); i++)
+  for (int i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -115,7 +115,7 @@ void Point::Construct()
 // private
 void Point::Destruct()
 {
-  for (int i=0; i<testFunct.Size(); ++i) delete testFunct(i);
+  for (int i=0; i<testFunct.size(); ++i) delete testFunct(i);
   BasePoint::Destruct();
 }
 
@@ -144,7 +144,7 @@ void Point::Jacobian(
     colloc->RHS_x(AA.getA11(), par, sol);
     colloc->RHS(RHS.getV1(), par, sol);
 
-    for (int i = 1; i < varMap.Size(); i++)
+    for (int i = 1; i < varMap.size(); i++)
     {
       if (varMap(i) < NPAR)
       {
@@ -167,7 +167,7 @@ void Point::Jacobian(
 //
 // ---------------------------------------------------------------------------------------------------------------- //
 
-  for (int i = 1; i < eqn.Size(); i++)
+  for (int i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -175,7 +175,7 @@ void Point::Jacobian(
       case EqnPhase:
         colloc->PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.Size(); j++)
+        for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -195,7 +195,7 @@ void Point::Jacobian(
       case EqnPhaseRot:
         colloc->PhaseRotStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.Size(); j++)
+        for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -218,7 +218,7 @@ void Point::Jacobian(
       case EqnTFLPAUTROT:
         RHS.getV3()(i - 1) = testFunct(i)->Funct(*colloc, par, sol);
         testFunct(i)->Funct_x(AA.getA31(i - 1), *colloc, par, sol);
-        for (int j = 1; j < varMap.Size(); j++)
+        for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -240,7 +240,7 @@ void Point::Jacobian(
         testFunct(i)->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
                          cos(par(NPAR + ParAngle)), sin(par(NPAR + ParAngle)));
         testFunct(i)->Funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
-        for (int j = 1; j < varMap.Size(); j++)
+        for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -269,11 +269,11 @@ void Point::Jacobian(
   {
     // copying the tangent
     if (dim1 != 0) colloc->Star(AA.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().Size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       RHS.getV3()(dim3) = ds - colloc->IntegrateCont(xxDot->getV1(), sol, solPrev);
-      for (int j = 1; j < varMapCont.Size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (int j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {
@@ -295,7 +295,7 @@ void Point::Jacobian(
 void Point::SwitchTFHB(double ds, std::ostream& out)
 {
   int idx = -1;
-  for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   P_ERROR_X1(idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
   TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
   Vector QRE(NDIM), QIM(NDIM);
@@ -377,7 +377,7 @@ void Point::SwitchTFLP(BranchSW type, double ds)
 
 void Point::SwitchTFPD(double ds)
 {
-  Vector tan(xxDot->getV1().Size());
+  Vector tan(xxDot->getV1().size());
   TestFunct* tf = new TestFunct(*colloc, -1.0);
   tf->setKernelTolerance(KernEps, KernIter);
   tf->Funct(*colloc, par, sol);
@@ -439,8 +439,8 @@ void Point::Write(std::ofstream& file)
   file << NPAR + ParEnd << "\t";
   for (int i = 0; i < NPAR + ParEnd; i++) file << par(i) << "\t";
 
-  file << mRe.Size() << "\t";
-  for (int i = 0; i < mRe.Size(); i++) file << mRe(i) << "\t" << mIm(i) << "\t";
+  file << mRe.size() << "\t";
+  for (int i = 0; i < mRe.size(); i++) file << mRe(i) << "\t" << mIm(i) << "\t";
 
   file << NDIM << "\t";
   file << NINT << "\t";
@@ -466,7 +466,7 @@ void Point::Read(std::ifstream& file)
   for (int i = 0; i < NPAR + ParEnd; i++) file >> par(i);
 
   file >> nmul_;
-  P_ERROR_X3(mRe.Size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
+  P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
   for (int i = 0; i < nmul_; i++)
   {
     file >> mRe(i);
@@ -510,7 +510,7 @@ void Point::ReadNull(std::ifstream& file)
   for (int i = 0; i < NPAR + ParEnd; i++) file >> tmp;
 
   file >> nmul_;
-  P_ERROR_X3(mRe.Size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
+  P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
   for (int i = 0; i < nmul_; i++)
   {
     file >> tmp;
@@ -529,9 +529,9 @@ void Point::ReadNull(std::ifstream& file)
 
 void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg)   // starting data for tori: tangent
 {
-  Vector TRe(sol.Size()), TIm(sol.Size());
+  Vector TRe(sol.size()), TIm(sol.size());
   int idx = 0;
-  for (int i=0; i<eqn.Size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct(idx));
   if (tf)
   {

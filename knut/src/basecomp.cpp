@@ -76,17 +76,17 @@ void BaseComp::run(const char* branchFile)
     screenout.precision(6);
 
 //    screenout << "- REFINE -\n";
-//    for( int i=0; i<eqn_refine.Size(); i++ ) screenout<<EqnToStr( eqn_refine(i) )<<", ";
+//    for( int i=0; i<eqn_refine.size(); i++ ) screenout<<EqnToStr( eqn_refine(i) )<<", ";
 //    screenout << '\n';
-//    for( int i=0; i<var_refine.Size(); i++ ) screenout<<VarToStr( var_refine(i) )<<", ";
+//    for( int i=0; i<var_refine.size(); i++ ) screenout<<VarToStr( var_refine(i) )<<", ";
 //    screenout << "\n- START -\n";
-//    for( int i=0; i<eqn_start.Size(); i++ ) screenout<<EqnToStr( eqn_start(i) )<<", ";
+//    for( int i=0; i<eqn_start.size(); i++ ) screenout<<EqnToStr( eqn_start(i) )<<", ";
 //    screenout << '\n';
-//    for( int i=0; i<var_start.Size(); i++ ) screenout<<VarToStr( var_start(i) )<<", ";
+//    for( int i=0; i<var_start.size(); i++ ) screenout<<VarToStr( var_start(i) )<<", ";
 //    screenout << "\n- CONTINUE -\n";
-//    for( int i=0; i<eqn.Size(); i++ ) screenout<<EqnToStr( eqn(i) )<<", ";
+//    for( int i=0; i<eqn.size(); i++ ) screenout<<EqnToStr( eqn(i) )<<", ";
 //    screenout << '\n';
-//    for( int i=0; i<var.Size(); i++ ) screenout<<VarToStr( var(i) )<<", ";
+//    for( int i=0; i<var.size(); i++ ) screenout<<VarToStr( var(i) )<<", ";
 //    screenout << "\n--\n";
 //    print(screenout);
 
@@ -110,7 +110,7 @@ void BaseComp::run(const char* branchFile)
       // setting the symmetric components
       Array1D<int> sre(params->getSymReSize());
       Array1D<int> sim(params->getSymReSize());
-      for (int i = 0; i < sre.Size(); ++i)
+      for (int i = 0; i < sre.size(); ++i)
       {
         sre(i) = params->getSymRe(i);
         sim(i) = params->getSymIm(i);
@@ -147,7 +147,7 @@ void BaseComp::run(const char* branchFile)
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
-      for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
+      for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
       //
       parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
@@ -193,7 +193,7 @@ void BaseComp::run(const char* branchFile)
       double norm = 0.0;
       const int ithist = ITSTEPS;
       Array1D<int> it(ithist);
-      for (int i = 0; i < it.Size(); i++) it(i) = 3;
+      for (int i = 0; i < it.size(); i++) it(i) = 3;
       int itpos = 0;
       int printedln = 0;
       double ds = params->getDs();
@@ -213,7 +213,7 @@ void BaseComp::run(const char* branchFile)
         if (params->getStab()) pt.Stability();
         ustabprev = ustab;
         ustab = pt.UStab();
-        for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
+        for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
         norm = pt.Norm();
         // console output
         const bool endpoint = i == params->getSteps()-1;
@@ -257,7 +257,7 @@ void BaseComp::run(const char* branchFile)
         // branch output
         if (branchFile)
         {
-          for (int j = 0; j < par.Size(); j++) ff << par(j) << "\t";
+          for (int j = 0; j < par.size(); j++) ff << par(j) << "\t";
           ff << "\t" << norm << "\t" << pt.NormMX() << "\t" << ustab << "\n";
           ff.flush();
         }
@@ -270,7 +270,7 @@ void BaseComp::run(const char* branchFile)
             (fabs(ds) / 2.0 > fabs(params->getDsMin())) && 
             (fabs(ds) / 2.0 < fabs(params->getDsMax()))) ds /= 2.0;
         bool decr = true;
-        for (int l = 0; l < it.Size(); l++) if (!(it(l) < ITLIM1)) decr = false;
+        for (int l = 0; l < it.size(); l++) if (!(it(l) < ITLIM1)) decr = false;
         if ( decr && 
             (fabs(ds)*1.414 > fabs(params->getDsMin())) && 
             (fabs(ds)*1.414 < fabs(params->getDsMax()))) ds *= 1.414;
@@ -310,14 +310,14 @@ void BaseComp::run(const char* branchFile)
       {
         if (dynamic_cast<Point*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
         Point& pt = *dynamic_cast<Point*>(pt_ptr);
-        Sol.Init(pt.getSol().Size());
-        TRe.Init(pt.getSol().Size());
-        TIm.Init(pt.getSol().Size());
+        Sol.Init(pt.getSol().size());
+        TRe.Init(pt.getSol().size());
+        TIm.Init(pt.getSol().size());
 
         // making the mesh for the conversion
         Vector meshint(params->getNInt1() + 1), meshdeg(params->getNDeg1() + 1);
-        for (int i = 0; i < meshint.Size(); i++) meshint(i) = (double)i / (params->getNInt1());
-        for (int i = 0; i < meshdeg.Size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
+        for (int i = 0; i < meshint.size(); i++) meshint(i) = (double)i / (params->getNInt1());
+        for (int i = 0; i < meshdeg.size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
 
         // getting the sol and tangents
         screenout << "\nSwitching to the torus.\n"; print(screenout);
@@ -325,7 +325,7 @@ void BaseComp::run(const char* branchFile)
         pt.SwitchTFTRTan(TRe, TIm, alpha, meshint, meshdeg);
 
         // getting the parameters
-        for (int j = 0; j < par.Size(); j++) par(j) = pt.getPar()(j);
+        for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
 
         // destroy point, construct PointTR
         delete pt_ptr;
@@ -372,7 +372,7 @@ void BaseComp::run(const char* branchFile)
         }
         // same as for periodic orbits
         int it = pttr.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
-        for (int j = 0; j < par.Size(); j++) par(j) = pttr.getPar()(j);
+        for (int j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
         double norm = pttr.Norm();
         if (i % 24 == 0)
         {
@@ -386,7 +386,7 @@ void BaseComp::run(const char* branchFile)
         print(screenout);
         if (branchFile)
         {
-          for (int j = 0; j < par.Size(); j++) ff << par(j) << "\t";
+          for (int j = 0; j < par.size(); j++) ff << par(j) << "\t";
           ff << norm << "\n";
           ff.flush();
         }

@@ -13,7 +13,7 @@ int sys_nderi(){ return 2; }
 
 void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0; out(1,idx) = par(3);
   }
@@ -21,7 +21,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
 
 void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     switch( vp ) {
       case 0:
@@ -38,7 +38,7 @@ void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1
 
 void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel)
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = par(1)*x(0,0,idx) + par(2)*x(0,1,idx)/(1+pow(x(0,1,idx), 10));
   }
@@ -47,7 +47,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
 void sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel,
          int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
     if( (nx == 1) && (np == 0) ) {

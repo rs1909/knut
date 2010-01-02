@@ -44,7 +44,7 @@ void Matrix::StrPlot(GnuPlot& pl)
 
 void Matrix::Eigval(Vector& wr, Vector& wi)
 {
-  if ((this->r != this->c) || (this->r != wr.Size()) || (this->r != wi.Size()))
+  if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
     cout << "eigval: wrong dimensions" << '\n';
     exit(-1);
@@ -93,7 +93,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi)
 
 void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
 {
-  if ((this->r != this->c) || (this->r != wr.Size()) || (this->r != wi.Size()))
+  if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
     cout << "eigval: wrong dimensions" << '\n';
     exit(-1);
@@ -143,8 +143,8 @@ void MatFact::Fact()
 void MatFact::Solve(Vector& x, const Vector& b, bool trans)
 {
   P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
-  P_ASSERT_X(b.Size() == this->c, "MatFact::Solve Vector sizes differ: M-V\n");
-  P_ASSERT_X(b.Size() == x.Size(), "MatFact::Solve Vector sizes differ: V-V\n");
+  P_ASSERT_X(b.size() == this->c, "MatFact::Solve Vector sizes differ: M-V\n");
+  P_ASSERT_X(b.size() == x.size(), "MatFact::Solve Vector sizes differ: V-V\n");
 
   const Matrix& AA = *this;
   double det;

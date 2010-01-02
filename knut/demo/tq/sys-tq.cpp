@@ -170,7 +170,7 @@ int sys_nderi() { return 2; }
 void sys_p_tau( Array2D<double>& vout, const Array1D<double>& time, const Array1D<double>& par )
 {
 #define out(i) vout(i,idx)
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     out(0) = 0.0;
     out(1) = 1.0*par(0)/par(3);
@@ -182,7 +182,7 @@ void sys_p_tau( Array2D<double>& vout, const Array1D<double>& time, const Array1
 void sys_p_dtau( Array2D<double>& vout, const Array1D<double>& time, const Array1D<double>& par, int vp )
 {
 #define out(i) vout(i,idx)
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     switch( vp )
     {
@@ -208,7 +208,7 @@ void sys_p_rhs( Array2D<double>& vout, const Array1D<double>& time, const Array3
 {
 #define out(i) vout(i,idx)
 #define xx(i,j) yy(i,j,idx)
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     const double t = time(idx);
     double g;
@@ -234,7 +234,7 @@ void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time, const Array
 #define out(i,j) mout(i,j,idx)
 #define xx(i,j) yy(i,j,idx)
 #define vv(i,j) ww(i,j,idx)
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     const double t = time(idx);
     double g;

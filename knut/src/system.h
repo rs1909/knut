@@ -49,7 +49,7 @@ class System
       if (v_p_tau != 0) (*v_p_tau)(out, time, par);
       else
       {
-        for (int i=0; i<time.Size(); ++i)
+        for (int i=0; i<time.size(); ++i)
         {
           Vector tout(out, i);
           (*v_tau)(tout, time(i), par);
@@ -61,7 +61,7 @@ class System
       if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
       else
       {
-        for (int i=0; i<time.Size(); ++i)
+        for (int i=0; i<time.size(); ++i)
         {
           Vector tout(out, i);
           (*v_dtau)(tout, time(i), par, vp);
@@ -73,7 +73,7 @@ class System
       if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
       else
       {
-        for (int i=0; i<time.Size(); ++i)
+        for (int i=0; i<time.size(); ++i)
         {
           Vector vout(out, i);
           Matrix xxin(x, i);
@@ -91,7 +91,7 @@ class System
           (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
         } else
         {
-          for (int i=0; i<time.Size(); ++i)
+          for (int i=0; i<time.size(); ++i)
           {
             Matrix mout(out, i);
             Matrix xxin(x, i);

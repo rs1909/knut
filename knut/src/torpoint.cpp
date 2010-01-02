@@ -47,7 +47,7 @@ void PointTR::Jacobian
   Array1D<int>     JacVar(nvar + 1);
 
   // it is just for the first equation i.e. EqnTORSol
-  for (int i = 1; i < varMap.Size(); i++)
+  for (int i = 1; i < varMap.size(); i++)
   {
     JacVar(i-1) = varMap(i);
     A13(i-1) = & jac.getA13(i-1);
@@ -55,7 +55,7 @@ void PointTR::Jacobian
 
   // first the phase conditions
   int ph0 = -1, ph1 = -1;
-  for (int i = 1; i < eqn.Size(); i++)
+  for (int i = 1; i < eqn.size(); i++)
   {
     if (eqn(i) == EqnTORPhase0)
     {
@@ -88,7 +88,7 @@ void PointTR::Jacobian
   jac.getA11().Check();
   // the other equations
   // Currently: none
-  for (int i = 1; i < eqn.Size(); i++)
+  for (int i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -107,11 +107,11 @@ void PointTR::Jacobian
   {
     // copying the tangent
     if (dim1 != 0) colloc->Star(jac.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().Size(); i++) jac.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (int i = 0; i < xxDot->getV3().size(); i++) jac.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       rhs.getV3()(dim3) = ds - (jac.getA31(dim3) * sol - jac.getA31(dim3) * solPrev);
-      for (int j = 1; j < varMap.Size(); ++j) rhs.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (int j = 1; j < varMap.size(); ++j) rhs.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {

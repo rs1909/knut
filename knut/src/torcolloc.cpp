@@ -83,12 +83,12 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   lobatto(mesh2);
   gauss(col1);
   gauss(col2);
-  for (int i = 0; i < mesh1.Size(); i++)
+  for (int i = 0; i < mesh1.size(); i++)
   {
     poly_coeff_lgr(lgr1(i), mesh1, i);
     poly_coeff_diff(dlg1(i), lgr1(i));
   }
-  for (int i = 0; i < mesh2.Size(); i++)
+  for (int i = 0; i < mesh2.size(); i++)
   {
     poly_coeff_lgr(lgr2(i), mesh2, i);
     poly_coeff_diff(dlg2(i), lgr2(i));
@@ -155,7 +155,7 @@ void CollocTR::Init(const Vector& sol, const Vector& par)
   sys->p_tau(p_tau, time1, par);
 
   p_xx.Clear();
-  for (int idx = 0; idx < time1.Size(); ++idx)
+  for (int idx = 0; idx < time1.size(); ++idx)
   {
     t1[0] = time1(idx);
     t2[0] = time2(idx);
@@ -237,7 +237,7 @@ void CollocTR::Init(const Vector& sol, const Vector& par)
       }
     }
   }
-//   for (int idx = 0; idx < time1.Size(); ++idx) std::cout<<p_xx(0, NTAU, idx)<<"\t";
+//   for (int idx = 0; idx < time1.size(); ++idx) std::cout<<p_xx(0, NTAU, idx)<<"\t";
 //   std::cout<<"\np_xx(0,...) was\n";
   delete[] t2;
   delete[] t1;
@@ -257,13 +257,13 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 {
   A.Clear();
   rhs.Clear();
-  for (int r = 0; r < var.Size(); r++) Avar(r)->Clear();
+  for (int r = 0; r < var.size(); r++) Avar(r)->Clear();
   // rhs doesn't need to be cleared
 
   // creates kk, ee, rr & interpolates p_xx & gets p_tau
 //   Init(sol, par);
   // builds up the structure of the sparse matrix
-  for (int idx = 0; idx < time1.Size(); ++idx)
+  for (int idx = 0; idx < time1.size(); ++idx)
   {
     const int lend = NDIM * (rr(ee((NTAU+1)*(ndeg1+1)*(ndeg2+1)-1,idx),idx) + 1);
     for (int p = 0; p < NDIM; p++) A.NewL(lend);
@@ -271,7 +271,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 
   // the right-hand side
   sys->p_rhs(p_fx, time1, p_xx, par, 0);
-  for (int idx = 0; idx < time1.Size(); ++idx)
+  for (int idx = 0; idx < time1.size(); ++idx)
   {
     for (int p = 0; p < NDIM; p++) 
     {
@@ -280,7 +280,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
   }
 
   // derivatives w.r.t the parameters
-  for (int r = 0; r < var.Size(); r++)
+  for (int r = 0; r < var.size(); r++)
   {
     Vector& deri = *Avar(r);
     deri.Clear();
@@ -289,7 +289,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 //!!!!!!!!!!!!!!!!!
     if (var(r) == 0)
     {
-      for (int idx = 0; idx < time1.Size(); ++idx)
+      for (int idx = 0; idx < time1.size(); ++idx)
       {
         for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = -p_fx(p,idx);
       }
@@ -298,7 +298,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
       {
         int nx = 1, vx = k, np = 0, vp = 0;
         sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
-        for (int idx = 0; idx < time1.Size(); ++idx)
+        for (int idx = 0; idx < time1.size(); ++idx)
         {
           for (int p = 0; p < NDIM; p++)
           {
@@ -324,7 +324,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
     {
       int nx = 0, vx = 0, np = 1, vp = var(r);
       sys->p_deri(p_dfp, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
-      for (int idx = 0; idx < time1.Size(); ++idx)
+      for (int idx = 0; idx < time1.size(); ++idx)
       {
         for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = - par(0) * p_dfp(p, 0, idx);
       }
@@ -339,7 +339,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 //!!!!!!!!!!!!!!!!!
     if (var(r) == RHO)
     {
-      for (int idx = 0; idx < time1.Size(); ++idx)
+      for (int idx = 0; idx < time1.size(); ++idx)
       {
         for (int p = 0; p < NDIM; p++) deri(p + NDIM*idx) = p_xx(p, NTAU + 1, idx);
       }
@@ -348,7 +348,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
       {
         const int nx = 1, vx = k, np = 0, vp = 0;
         sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
-        for (int idx = 0; idx < time1.Size(); ++idx)
+        for (int idx = 0; idx < time1.size(); ++idx)
         {
           const double d = -p_tau(k, idx);
           for (int p = 0; p < NDIM; p++)
@@ -376,7 +376,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
       sys->p_deri(p_dfx, time1, p_xx, par, 0, nx, &vx, np, &vp, p_dummy);
     }
 
-    for (int idx = 0; idx < time1.Size(); ++idx)
+    for (int idx = 0; idx < time1.size(); ++idx)
     {
       double tk1, tk2;
       if (k != 0)

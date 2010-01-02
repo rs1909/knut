@@ -552,11 +552,11 @@ void mat4Data::setPar(int n, const Vector& par)
 {
   if (wperm && n < ncols)
   {
-    if (par.Size() <= npar)
+    if (par.size() <= npar)
     {
-      for (int i = 0; i < par.Size(); ++i)
+      for (int i = 0; i < par.size(); ++i)
         elem(par_offset, i, n) = par(i);
-      for (int i = par.Size(); i < npar; ++i)
+      for (int i = par.size(); i < npar; ++i)
         elem(par_offset, i, n) = 0.0;
     }
     else
@@ -572,16 +572,16 @@ void mat4Data::setPar(int n, const Vector& par)
 
 void mat4Data::setMul(int n, const Vector& re, const Vector& im)
 {
-  if (wperm && n < ncols && re.Size() == im.Size())
+  if (wperm && n < ncols && re.size() == im.size())
   {
-    if (re.Size() <= nmul)
+    if (re.size() <= nmul)
     {
-      for (int i = 0; i < re.Size(); ++i)
+      for (int i = 0; i < re.size(); ++i)
       {
         elem(mul_offset, i, n) = re(i);
         elem_im(mul_offset, i, n) = im(i);
       }
-      for (int i = re.Size(); i < nmul; ++i)
+      for (int i = re.size(); i < nmul; ++i)
       {
         elem(mul_offset, i, n) = 0.0;
         elem_im(mul_offset, i, n) = 0.0;
@@ -602,7 +602,7 @@ void mat4Data::setElem(int n, const Vector& el)
 {
   if (wperm && n < ncols)
   {
-    if (el.Size() == ndeg + 1)
+    if (el.size() == ndeg + 1)
     {
       for (int i = 0; i < ndeg + 1; ++i)
         elem(elem_offset, i, n) = el(i);
@@ -622,7 +622,7 @@ void mat4Data::setMesh(int n, const Vector& mesh)
 {
   if (wperm && n < ncols)
   {
-    if (mesh.Size() == nint + 1)
+    if (mesh.size() == nint + 1)
     {
       for (int i = 0; i < nint + 1; ++i)
         elem(mesh_offset, i, n) = mesh(i);
@@ -642,7 +642,7 @@ void mat4Data::setProfile(int n, const Vector& prof)
 {
   if (wperm && n < ncols)
   {
-    if (prof.Size() == ndim*(ndeg*nint + 1))
+    if (prof.size() == ndim*(ndeg*nint + 1))
     {
       const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
       if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
@@ -663,7 +663,7 @@ void mat4Data::setProfile(int n, const Vector& prof)
 void mat4Data::getBlanket(int n, Vector& blanket)
 {
   const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
-  if ((blanket.Size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
+  if ((blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
   {
     for (int i = 0; i < ndim*(ndeg1*nint1*ndeg2*nint2); ++i) blanket(i) = elem(blanket_offset, i, n);
   }
@@ -678,7 +678,7 @@ void mat4Data::setBlanket(int n, const Vector& blanket)
 {
   if (wperm && n < ncols)
   {
-    if (blanket.Size() == ndim*(ndeg1*nint1*ndeg2*nint2))
+    if (blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))
     {
       const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
       if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
@@ -716,9 +716,9 @@ void mat4Data::getPar(int n, Vector& par) const
 {
   if (n < ncols)
   {
-    if (par.Size() <= npar)
+    if (par.size() <= npar)
     {
-      for (int i = 0; i < par.Size(); ++i)
+      for (int i = 0; i < par.size(); ++i)
         par(i) = elem(par_offset, i, n);
     }
     else
@@ -734,9 +734,9 @@ void mat4Data::getPar(int n, Vector& par) const
 
 void mat4Data::getMul(int n, Vector& re, Vector& im) const
 {
-  if (n < ncols && re.Size() == im.Size())
+  if (n < ncols && re.size() == im.size())
   {
-    const int sz = std::min<int>(re.Size(), nmul);
+    const int sz = std::min<int>(re.size(), nmul);
     for (int i = 0; i < sz; ++i)
     {
       re(i) = elem(mul_offset, i, n);
@@ -753,7 +753,7 @@ void mat4Data::getElem(int n, Vector& el) const
 {
   if (n < ncols)
   {
-    if (el.Size() == ndeg + 1)
+    if (el.size() == ndeg + 1)
     {
       for (int i = 0; i < ndeg + 1; ++i)
         el(i) = elem(elem_offset, i, n);
@@ -773,7 +773,7 @@ void mat4Data::getMesh(int n, Vector& mesh) const
 {
   if (n < ncols)
   {
-    if (mesh.Size() == nint + 1)
+    if (mesh.size() == nint + 1)
     {
       for (int i = 0; i < nint + 1; ++i)
         mesh(i) = elem(mesh_offset, i, n);
@@ -793,7 +793,7 @@ void mat4Data::getProfile(int n, Vector& prof) const
 {
   if (n < ncols)
   {
-    if (prof.Size() == ndim*(ndeg*nint + 1))
+    if (prof.size() == ndim*(ndeg*nint + 1))
     {
       for (int i = 0; i < ndim*(ndeg*nint + 1); ++i)
         prof(i) = elem(prof_offset, i, n);

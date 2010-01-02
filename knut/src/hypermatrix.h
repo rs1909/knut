@@ -261,22 +261,22 @@ template<class FACT> HyMatrix<FACT> :: ~HyMatrix()
 }
 
 //  BEM temporaries
-//  Vector v( _b.Size() ); == A.Size()                     bem_v
-//  Vector vStar( _b.Size() );                             bem_vStar
-//  Vector w( _b.Size() );                                 bem_w
-//  Vector f1( _b.Size() );                                bem_f1;
+//  Vector v( _b.size() ); == A.size()                     bem_v
+//  Vector vStar( _b.size() );                             bem_vStar
+//  Vector w( _b.size() );                                 bem_w
+//  Vector f1( _b.size() );                                bem_f1;
 
 //  GMBE temporaries
-//  Vector xi( _A32.Size() ); == dim2                      gmbe_xi;
+//  Vector xi( _A32.size() ); == dim2                      gmbe_xi;
 //  Vector cc( _A31 ); == dim1                             gmbe_cc
 //  Vector fr( F2 ); == dim2                               cm_fr
 
 // GMBEW temporaries
-//  JagVector2D xi( bord, _A32(0).Size() );  -> different  gmbew_xi
+//  JagVector2D xi( bord, _A32(0).size() );  -> different  gmbew_xi
 //  JagVector2D cc( _A31 );                  -> different  gmbew_cc
 //  Matrix dd( bord, bord );                               gmbew_dd
 //  Vector gg( bord );                                     gmbew_gg
-//  Vector fr( F2.Size() ); -> same as GMBE                cm_fr
+//  Vector fr( F2.size() ); -> same as GMBE                cm_fr
 //  Vector gr( bord );                                     gmbew_gr
 //  Vector yy( bord );                                     gmbew_yy
 //  Matrix m_beta( bord, bord );                           gmbew_m_beta
@@ -469,7 +469,7 @@ void HyMatrix<FACT>::Check(const Vector& x, const double& z, const Vector& f, co
   const JagVector2D&  _A13 = *A13;
   const JagVector2D&  _A31 = *A31;
   const Matrix&       _A33 = *A33;
-  Vector              R1(x.Size());
+  Vector              R1(x.size());
   double              R3;
   Multiply<trans>(R1, R3, x, z);
   if (A11)
@@ -498,7 +498,7 @@ void HyMatrix<FACT>::Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1
     else         R1 = !_A11 * X1;
     if (A33)
     {
-      for (int i = 0; i < X1.Size(); i++)
+      for (int i = 0; i < X1.size(); i++)
       {
         for (int j = 0; j < bord; j++)
         {
@@ -550,8 +550,8 @@ void HyMatrix<FACT>::Check(int bord, const Vector& X1, const Vector& X3, const V
   const FACT&         _A11 = *A11;
   const Matrix&       _A33 = *A33;
   //multiply back...
-  Vector R1(X1.Size());
-  Vector R3(X3.Size());
+  Vector R1(X1.size());
+  Vector R3(X3.size());
   Multiply<trans>(bord, R1, R3, X1, X3);
   if (A11)
   {
@@ -618,7 +618,7 @@ void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F)
   {
     A11->Solve(X.getV1(), F.getV1());
   }
-  // Check( X, F, F.getV3().Size() );
+  // Check( X, F, F.getV3().size() );
 }
 
 template<class FACT>
@@ -641,7 +641,7 @@ void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F, int bord)
   {
     A11->Solve(X.getV1(), F.getV1());
   }
-  // Check( X, F, F.getV3().Size() );
+  // Check( X, F, F.getV3().size() );
 }
 
 template<class FACT>

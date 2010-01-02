@@ -386,7 +386,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   //
@@ -453,7 +453,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     // sys_out << endl;
   }
 
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   //
@@ -508,7 +508,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     // sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintParDerivs(sys_out, vf0);
@@ -549,7 +549,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     // sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintXandParJacobians(sys_out, vf0);
@@ -593,7 +593,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintHessiansTimesV(sys_out, vf0);
@@ -674,7 +674,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    // par_(0) is the period.\n";
   GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
   sys_out << endl;
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   sys_out << "        out(0,idx) = 0.0;\n";
@@ -735,7 +735,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    // par_(0) is the period.\n";
   GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
   sys_out << endl;
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   sys_out << "        out(0,idx) = 0.0;\n";
@@ -889,7 +889,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.Size(); ++idx)\n";
+  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   //

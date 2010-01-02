@@ -32,7 +32,7 @@ template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& 
   V.Clear();
   for (int idx = 0; idx < NINT*NDEG + 1; idx++)
   {
-    for (int k = 0; k < Re.Size(); k++)
+    for (int k = 0; k < Re.size(); k++)
     {
       if (trans)
       {
@@ -50,7 +50,7 @@ template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& 
 
 inline void conjugate(Vector& out, const Vector& inp)
 {
-  for (int i = 0; i < out.Size() / 2; ++i)
+  for (int i = 0; i < out.size() / 2; ++i)
   {
     out(2*i)   = -inp(2 * i + 1);
     out(2*i + 1) =  inp(2 * i);
@@ -324,9 +324,9 @@ void TestFunctCPLX::Funct_x(Vector& func1, Vector& func2,
 
 void TestFunctCPLX::Switch(Vector& Re, Vector& Im, double& alpha)
 {
-  P_ASSERT_X((2*Re.Size() == vv.Size()) && (2*Im.Size() == vv.Size()), "TestFunctCPLX::Switch: Bad sizes\n");
+  P_ASSERT_X((2*Re.size() == vv.size()) && (2*Im.size() == vv.size()), "TestFunctCPLX::Switch: Bad sizes\n");
   std::cout << "zRe=" << ZRe << ", zIm=" << ZIm << "\n";
-  for (int i = 0; i < Re.Size(); i++)
+  for (int i = 0; i < Re.size(); i++)
   {
     Re(i) = vv(2 * i);
     Im(i) = vv(2 * i + 1);

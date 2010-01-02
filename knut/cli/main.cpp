@@ -17,12 +17,12 @@
 
 inline void parNamePrint(Vector& /*par*/, int npar, Array1D<Var>& var)
 {
-  for (int j = 1; j < var.Size(); j++) std::cout << "\t" << parType(npar, var(j) - VarPAR0) << parNum(npar, var(j) - VarPAR0) << "\t";
+  for (int j = 1; j < var.size(); j++) std::cout << "\t" << parType(npar, var(j) - VarPAR0) << parNum(npar, var(j) - VarPAR0) << "\t";
 }
 
 inline void parValuePrint(Vector& par, int /*npar*/, Array1D<Var>& var)
 {
-  for (int j = 1; j < var.Size(); j++) std::cout << "\t" << par(var(j) - VarPAR0);
+  for (int j = 1; j < var.size(); j++) std::cout << "\t" << par(var(j) - VarPAR0);
 }
 
 

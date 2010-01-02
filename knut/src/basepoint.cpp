@@ -199,7 +199,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     P_MESSAGE3("Invalid point type ", Pt, ".");
     break;
   }
-  P_ERROR_X4(tab.nparx == parx.Size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.Size());
+  P_ERROR_X4(tab.nparx == parx.size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.size());
   eqnr.Init(tab.neqn);
   varr.Init(tab.neqn);
   for (int i = 0; i < tab.neqn; i++)
@@ -212,7 +212,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
 
 BasePoint::BasePoint(System& sys_, const Array1D<Eqn>& eqn_, const Array1D<Var>& var_, 
           const int solsize, const int nz_jac_) :
-    var(var_), eqn(eqn_), varMap(var_.Size()), varMapCont(var_.Size() + 1),
+    var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1),
     sol(solsize), par(sys_.npar() + ParEnd),
     solNu(solsize), parNu(sys_.npar() + ParEnd)
 {
@@ -243,30 +243,30 @@ void BasePoint::Reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
   HyperVector* xxDot_temp = 0;
   if (xxDot) xxDot_temp = new HyperVector(*xxDot);
   Destruct();
-  eqn.Init(eqn_.Size());
+  eqn.Init(eqn_.size());
   eqn = eqn_;
-  var.Init(var_.Size());
+  var.Init(var_.size());
   var = var_;
-  varMap.Init(var_.Size());
-  varMapCont.Init(var_.Size() + 1);
+  varMap.Init(var_.size());
+  varMapCont.Init(var_.size() + 1);
   Construct();
   xxDot->getV1() = xxDot_temp->getV1();
-  for (int i = 0; i < std::min<int>(xxDot_temp->getV3().Size(), xxDot->getV3().Size()); ++i)
+  for (int i = 0; i < std::min<int>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
     xxDot->getV3()(i) = xxDot_temp->getV3()(i);
   delete xxDot_temp;
 }
 
 void BasePoint::Construct()
 {
-  P_ERROR_X1((eqn.Size() != 0) && (var.Size() != 0) && (eqn.Size() == var.Size()), "Number of equations and variables do not agree.");
-  dim3 = eqn.Size() - 1;
+  P_ERROR_X1((eqn.size() != 0) && (var.size() != 0) && (eqn.size() == var.size()), "Number of equations and variables do not agree.");
+  dim3 = eqn.size() - 1;
 
-  for (int i = 1; i < var.Size(); i++)
+  for (int i = 1; i < var.size(); i++)
   {
-    P_ERROR_X5((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < par.Size()), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i, ".");
+    P_ERROR_X5((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < par.size()), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i, ".");
     varMap(i) = var(i) - VarPAR0;
   }
-  for (int i = 0; i < var.Size(); i++) varMapCont(i) = varMap(i);
+  for (int i = 0; i < var.size(); i++) varMapCont(i) = varMap(i);
 
   xxDot   = new HyperVector(dim1, 0, dim3 + 1);
   xxDotNu = new HyperVector(dim1, 0, dim3 + 1);
@@ -391,8 +391,8 @@ int BasePoint::Continue(double ds, bool jacstep)
   double Xnorm, Dnorm, Rnorm, Tnorm;
 
   parNu = par;
-  for (int i = 0; i < solNu.Size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
-  for (int i = 1; i < varMapCont.Size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
+  for (int i = 0; i < solNu.size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
+  for (int i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
   xxDotNu->getV1() = xxDot->getV1();
   xxDotNu->getV3() = xxDot->getV3();
 
@@ -439,12 +439,12 @@ int BasePoint::Continue(double ds, bool jacstep)
     double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
     double Xnorm = sqrt(basecolloc->Integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
     std::cout << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
+    for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
     std::cout << '\n';
 
     xx->getV1() = solNu;
     xx->getV1() -= sol;
-    for (int i = 1; i < varMapCont.Size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
+    for (int i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
 
     Pnorm = sqrt(xx->getV3()(dim3) * xx->getV3()(dim3)) / ds;
     Xnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1())) / ds;
@@ -452,7 +452,7 @@ int BasePoint::Continue(double ds, bool jacstep)
     for (int i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
     Onorm = sqrt(Onorm) / ds;
     std::cout << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.Size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
+    for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
     std::cout << '\n';
     /// END OF CHECKING
 #endif
@@ -515,7 +515,7 @@ int PerSolPoint::StartTF(bool findangle, std::ostream& out)
     Stability();
     double dmin = 10.0;
     int imin = 0;
-    for (int i = 0; i < mRe.Size(); i++)
+    for (int i = 0; i < mRe.size(); i++)
     {
       if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
       {

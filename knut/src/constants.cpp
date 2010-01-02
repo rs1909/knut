@@ -560,7 +560,7 @@ bool NConstants::toEqnVar(System& sys,
   bool phaseRot = false;
   bool needTF = false;
   findangle = false;
-  for (int i = 0; i < eqn.Size(); i++)
+  for (int i = 0; i < eqn.size(); i++)
   {
     if ((eqn(i) == EqnPhase) || (eqn(i) == EqnTORPhase0)) aut = true;
     if (eqn(i) == EqnPhaseRot) phaseRot = true;
@@ -587,8 +587,8 @@ bool NConstants::toEqnVar(System& sys,
       eqn_refine(1) = EqnPhase;
       eqn_refine(2) = EqnPhaseRot;
       var_refine(0) = var(0);
-      var_refine(1) = var(var.Size() - 2);
-      var_refine(2) = var(var.Size() - 1);
+      var_refine(1) = var(var.size() - 2);
+      var_refine(2) = var(var.size() - 1);
     }
     else
     {
@@ -598,7 +598,7 @@ bool NConstants::toEqnVar(System& sys,
       eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhase;
       var_refine(0) = var(0);
-      var_refine(1) = var(var.Size() - 1);
+      var_refine(1) = var(var.size() - 1);
     }
   }
   else
@@ -611,7 +611,7 @@ bool NConstants::toEqnVar(System& sys,
       eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhaseRot;
       var_refine(0) = var(0);
-      var_refine(1) = var(var.Size() - 1);
+      var_refine(1) = var(var.size() - 1);
     }
     else
     {
@@ -626,9 +626,9 @@ bool NConstants::toEqnVar(System& sys,
   {
       Array1D<Eqn> ee(eqn_refine);
       Array1D<Var> vv(var_refine);
-      eqn_refine.Init(ee.Size()-1);
-      var_refine.Init(ee.Size()-1);
-      for (int i = 0, j = 0; i < ee.Size(); ++i)
+      eqn_refine.Init(ee.size()-1);
+      var_refine.Init(ee.size()-1);
+      for (int i = 0, j = 0; i < ee.size(); ++i)
       {
         if (ee(i) != EqnPhase) { eqn_refine(j) = ee(i); var_refine(j) = vv(j); ++j; }
       }
@@ -658,13 +658,13 @@ bool NConstants::toEqnVar(System& sys,
       eqn_temp = EqnTFPD;
       goto tfskip;
 tfskip:
-      eqn_start.Init(eqn_refine.Size() + 1);
-      var_start.Init(var_refine.Size() + 1);
+      eqn_start.Init(eqn_refine.size() + 1);
+      var_start.Init(var_refine.size() + 1);
       eqn_start(0) = eqn_refine(0);
       var_start(0) = var_refine(0);
       eqn_start(1) = eqn_temp;
-      var_start(var_refine.Size()) = getCp();
-      for (int i = 1; i < eqn_refine.Size(); i++)
+      var_start(var_refine.size()) = getCp();
+      for (int i = 1; i < eqn_refine.size(); i++)
       {
         eqn_start(i + 1) = eqn_refine(i);
         var_start(i) = var_refine(i);
@@ -673,15 +673,15 @@ tfskip:
       break;
     case TFTRSwitch:
     case TFHBSwitch:
-      eqn_start.Init(eqn_refine.Size() + 2);
-      var_start.Init(var_refine.Size() + 2);
+      eqn_start.Init(eqn_refine.size() + 2);
+      var_start.Init(var_refine.size() + 2);
       eqn_start(0) = eqn_refine(0);
       var_start(0) = var_refine(0);
       eqn_start(1) = EqnTFCPLX_RE;
       eqn_start(2) = EqnTFCPLX_IM;
       var_start(1) = (Var)(VarPAR0 + sys.npar() + ParAngle); // CH
-      var_start(var_refine.Size() + 1) = getCp();
-      for (int i = 1; i < eqn_refine.Size(); i++)
+      var_start(var_refine.size() + 1) = getCp();
+      for (int i = 1; i < eqn_refine.size(); i++)
       {
         eqn_start(i + 2) = eqn_refine(i);
         var_start(i + 1) = var_refine(i);
@@ -690,8 +690,8 @@ tfskip:
       findangle = true;
       break;
     default:
-      eqn_start.Init(eqn.Size());
-      var_start.Init(var.Size());
+      eqn_start.Init(eqn.size());
+      var_start.Init(var.size());
       eqn_start = eqn;
       var_start = var;
       break;

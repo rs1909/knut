@@ -321,13 +321,13 @@ struct eigvalcomp : public std::binary_function<int, int, bool>
 
 void StabMatrix::Eigval(Vector& wr, Vector& wi)
 {
-  P_ERROR_X1((wr.Size() == wi.Size()) && (wr.Size() > 1), "Real and imaginary vectors are not of the same size.");
+  P_ERROR_X1((wr.size() == wi.size()) && (wr.size() > 1), "Real and imaginary vectors are not of the same size.");
 
   int     IDO      = 0;
   char    BMAT     = 'I';
-  int     N        = AI.Size() * A0.Col();
+  int     N        = AI.size() * A0.Col();
   char    WHICH[]  = {'L', 'M'};
-  int     NEV      = wr.Size() - 1;
+  int     NEV      = wr.size() - 1;
   double  TOL      = knut_dlamch("EPS", 3);
 //  RESID is defined in the class
   int     NCV      = 2 * NEV + 1;
@@ -367,27 +367,27 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
       double* in = &(WORKD[IPNTR[0] - 1]);
       double* out = &(WORKD[IPNTR[1] - 1]);
       // these are the unit operators above the diagonal
-      for (int i = 0; i < AI.Size() - 1; i++)
+      for (int i = 0; i < AI.size() - 1; i++)
       {
         for (int j = 0; j < A0.Col(); j++) out[j + i*A0.Col()] = in[j + (i+1)*A0.Col()];
       }
       // the last row: multiplication and solution
-      for (int i = 0; i < AI.Size(); i++)
+      for (int i = 0; i < AI.size(); i++)
       {
         if (i == 0)
         {
-          AI(AI.Size() - 1).AX(tvec, in, 1.0, false);
+          AI(AI.size() - 1).AX(tvec, in, 1.0, false);
         }
         else
         {
-          if (AI(AI.Size() - 1 - i).GetNZ() != 0)
+          if (AI(AI.size() - 1 - i).GetNZ() != 0)
           {
-            AI(AI.Size() - 1 - i).AX(tvec2, in + i*A0.Col(), 1.0, false);
+            AI(AI.size() - 1 - i).AX(tvec2, in + i*A0.Col(), 1.0, false);
             for (int j = 0; j < A0.Col(); j++) tvec[j] += tvec2[j];
           }
         }
       }
-      A0.Solve(out + (AI.Size() - 1)*A0.Col(), tvec);
+      A0.Solve(out + (AI.size() - 1)*A0.Col(), tvec);
     }
   }
   while ((IDO == 1) || (IDO == -1));
@@ -425,7 +425,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;
   eigvalcomp aa(DR, DI);
   std::sort(sortindex, sortindex + IPARAM[4], aa);
-  const int eigstart = wr.Size() - IPARAM[4];
+  const int eigstart = wr.size() - IPARAM[4];
   for (int i = 0; i < IPARAM[4]; i++)
   {
     wr(eigstart+i) = DR[sortindex[i]];

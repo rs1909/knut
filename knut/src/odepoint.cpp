@@ -53,7 +53,7 @@ void ODEPoint::Jacobian
   {
     colloc->RHS_x(AA.getA11(), par, sol);
     colloc->RHS(RHS.getV1(), par, sol);
-    for (int i = 1; i < varMap.Size(); i++)
+    for (int i = 1; i < varMap.size(); i++)
     {
       if (varMap(i) < NPAR)
       {
@@ -71,7 +71,7 @@ void ODEPoint::Jacobian
   } else P_MESSAGE3("Invalid first equation, that is not EqnODESol: ", eqn(0), ".");
   // ADDITIONAL EQUATIONS
   // ONLY THE PHASE CONDITION AT THE MOMENT
-  for (int i = 1; i < eqn.Size(); i++)
+  for (int i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -79,7 +79,7 @@ void ODEPoint::Jacobian
       case EqnPhase:
         colloc->PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.Size(); j++)
+        for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -105,11 +105,11 @@ void ODEPoint::Jacobian
   {
     // copying the tangent
     if (dim1 != 0) colloc->Star(AA.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().Size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       RHS.getV3()(dim3) = ds - colloc->IntegrateCont(xxDot->getV1(), sol, solPrev);
-      for (int j = 1; j < varMapCont.Size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (int j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {

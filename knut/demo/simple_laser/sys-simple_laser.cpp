@@ -18,7 +18,7 @@ int sys_nderi(){ return 2; }
 
 void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0;
     out(1,idx) = par(6);
@@ -27,7 +27,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
 
 void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par,                       const int vp )
 {
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     // it is a constant delay
     out(0,idx) = 0.0;
@@ -50,7 +50,7 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
   const double SN = sin((bb + omega_0)*tau);
   const double CS = cos((bb + omega_0)*tau);
 
-  for (int idx=0; idx < time.Size(); ++idx)
+  for (int idx=0; idx < time.size(); ++idx)
   {
     // state variables
     const double Are = xx(0,0,idx);
@@ -81,7 +81,7 @@ const double omega_0 = par(7);
 const double SN = sin((bb + omega_0)*tau);
 const double CS = cos((bb + omega_0)*tau);
 
-for (int idx=0; idx<time.Size(); ++idx)
+for (int idx=0; idx<time.size(); ++idx)
 {
   const double Are = xx(0,0,idx);
   const double Aim = xx(1,0,idx);

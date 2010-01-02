@@ -620,7 +620,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
   const int n = ndim();
   const int m = 2 * ntau() + 1;
 
-  p_resize(time.Size());
+  p_resize(time.size());
   // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
   if ((nx == 1) && (np == 0))
   {
@@ -630,8 +630,8 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
     {
       for (int p = 0; p < n; p++) 
         for (int q = 0; q < m; q++) 
-          for (int idx=0; idx < time.Size(); ++idx) p_xx_eps(p,q,idx) = p_xx(p,q,idx);
-      for (int idx=0; idx < time.Size(); ++idx)
+          for (int idx=0; idx < time.size(); ++idx) p_xx_eps(p,q,idx) = p_xx(p,q,idx);
+      for (int idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x1 + rel_eps_x1 * fabs(p_xx(j, vx[0],idx));
         p_xx_eps(j, vx[0],idx) = p_xx(j, vx[0],idx) + eps;
@@ -639,7 +639,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
       p_rhs(p_fx_eps, time, p_xx_eps, par, sel);
       for (int p = 0; p < n; p++)
       {
-        for (int idx=0; idx < time.Size(); ++idx)
+        for (int idx=0; idx < time.size(); ++idx)
           out(p, j, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / (p_xx_eps(j, vx[0],idx) - p_xx(j, vx[0],idx));
       }
     }
@@ -655,7 +655,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
     p_rhs(p_fx_eps, time, p_xx, par_eps, sel);
     for (int p = 0; p < n; p++)
     {
-      for (int idx=0; idx < time.Size(); ++idx) out(p, 0, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / eps;
+      for (int idx=0; idx < time.size(); ++idx) out(p, 0, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / eps;
     }
   }
   // second derivatives w.r.t. x
@@ -667,8 +667,8 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
       p_deri(p2_dfx, time, p_xx, par, sel, 1, &vx[0], 0, vp, p_vv);
       for (int p = 0; p < n; p++) 
         for (int q = 0; q < m; q++) 
-          for (int idx=0; idx < time.Size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
-      for (int idx=0; idx < time.Size(); ++idx)
+          for (int idx=0; idx < time.size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
+      for (int idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x2 + rel_eps_x2 * fabs(p_xx(j, vx[1], idx));
         p2_xx_eps(j, vx[1], idx) += eps;
@@ -676,12 +676,12 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
       p_deri(p2_dfx_eps, time, p2_xx_eps, par, sel, 1, &vx[0], 0, vp, p_vv);
       for (int p = 0; p < n; p++)
       {
-        for (int idx=0; idx < time.Size(); ++idx) out(p, j, idx) = 0.0;
+        for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) = 0.0;
         for (int q = 0; q < n; q++)
         {
-          for (int idx=0; idx < time.Size(); ++idx) out(p, j, idx) += (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) * p_vv(q, vx[0], idx);
+          for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) += (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) * p_vv(q, vx[0], idx);
         }
-        for (int idx=0; idx < time.Size(); ++idx) out(p, j, idx) /= (p2_xx_eps(j, vx[1], idx) - p_xx(j, vx[1], idx));
+        for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) /= (p2_xx_eps(j, vx[1], idx) - p_xx(j, vx[1], idx));
       }
     }
 //     std::cout<<">";
@@ -699,7 +699,7 @@ void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, con
     {
       for (int q = 0; q < n; q++)
       {
-        for (int idx=0; idx < time.Size(); ++idx) out(p, q, idx) = (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) / eps;
+        for (int idx=0; idx < time.size(); ++idx) out(p, q, idx) = (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) / eps;
       }
     }
 //     std::cout<<">";

@@ -227,8 +227,8 @@ class StabMatrix
 
     StabMatrix(int nmat_, int n_, int nz) : A0('R', n_,  nz), AI(nmat_)
     {
-      for (int i = 0; i < AI.Size(); i++) AI(i).Init('R', n_, n_, nz);
-      RESID = new double[ AI.Size() * n_ + 1 ];
+      for (int i = 0; i < AI.size(); i++) AI(i).Init('R', n_, n_, nz);
+      RESID = new double[ AI.size() * n_ + 1 ];
       isINIT = false;
     }
     ~StabMatrix()
@@ -238,7 +238,7 @@ class StabMatrix
 
     int                nmat()
     {
-      return AI.Size();
+      return AI.size();
     }
     SpFact&            getA0()
     {
