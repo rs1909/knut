@@ -511,9 +511,9 @@ System::~System()
 
 static inline void AX(Vector & res, const Matrix& M, const Vector& v)
 {
-  for (int i = 0; i < M.Row(); i++)
+  for (int i = 0; i < M.row(); i++)
   {
-    for (int j = 0; j < M.Col(); j++)
+    for (int j = 0; j < M.col(); j++)
     {
       res(i) = 0.0;
       res(i) += M(i, j) * v(j);

@@ -133,7 +133,7 @@ void ODEColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
       const int idx = j + i * NDEG;
       for (int k = 0; k < NDIM; k++)
       {
-        // std::cout<<"InterR: "<<idx<<", "<<out(idx).Row()<<", "<<out(idx).Col()<<", "<<k<<", "<<p<<"\n";
+        // std::cout<<"InterR: "<<idx<<", "<<out(idx).row()<<", "<<out(idx).col()<<", "<<k<<", "<<p<<"\n";
         solData(k, 0, idx) = 0.0;
         solData(k, 1, idx) = 0.0;
         for (int l = 0; l < NDEG + 1; l++)

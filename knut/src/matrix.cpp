@@ -86,7 +86,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi)
   int info;
 
   knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
-             wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
+             wr.pointer(), wi.pointer(), vl.m, &ldvl, vr.m, &ldvr,
              work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
 }
@@ -110,13 +110,13 @@ void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
 
   char jobvl = 'V', jobvr = 'V';
   int  n = this->r, lda = this->r;
-  int  ldvl = vl.Row(), ldvr = vr.Row();
+  int  ldvl = vl.row(), ldvr = vr.row();
   Matrix work(this->r, 10);
   int  lwork = 10 * (this->r);
   int  info;
 
   knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
-             wr.Pointer(), wi.Pointer(), vl.m, &ldvl, vr.m, &ldvr,
+             wr.pointer(), wi.pointer(), vl.m, &ldvl, vr.m, &ldvr,
              work.m, &lwork, &info, 1, 1);
   if (info != 0) cout << "Error code" << info << '\n';
 }
@@ -176,7 +176,7 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
       int nrhs = 1;
 
       knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
-                  ipiv, &equed, NULL, NULL, b.v, &n, x.Pointer(), &n,
+                  ipiv, &equed, NULL, NULL, b.v, &n, x.pointer(), &n,
                   &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
       if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
       break;
@@ -189,15 +189,15 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
 void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
 {
   P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
-  P_ASSERT_X(b.Col() != x.Col(), "MatFact::Solve Matrix columns differ\n");
-  P_ASSERT_X((b.Row() == this->c) && (b.Row() == x.Row()), "MatFact::Solve Matrix rows differ\n");
+  P_ASSERT_X(b.col() != x.col(), "MatFact::Solve Matrix columns differ\n");
+  P_ASSERT_X((b.row() == this->c) && (b.row() == x.row()), "MatFact::Solve Matrix rows differ\n");
 
   const Matrix& AA = *this;
   double det;
   switch (this->r)
   {
     case 1:
-      for (int i = 0; i < b.Col(); i++)
+      for (int i = 0; i < b.col(); i++)
       {
         x(0, i) = b(0, i) / AA(0, 0);
       }
@@ -206,7 +206,7 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       det = 1.0 / (AA(0, 0) * AA(1, 1) - AA(0, 1) * AA(1, 0));
       if (!trans)
       {
-        for (int i = 0; i < b.Col(); i++)
+        for (int i = 0; i < b.col(); i++)
         {
           x(0, i) = det * (AA(1, 1) * b(0, i) - AA(0, 1) * b(1, i));
           x(1, i) = det * (-AA(1, 0) * b(0, i) + AA(0, 0) * b(1, i));
@@ -214,7 +214,7 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       }
       else
       {
-        for (int i = 0; i < b.Col(); i++)
+        for (int i = 0; i < b.col(); i++)
         {
           x(0, i) = det * (AA(1, 1) * b(0, i) - AA(1, 0) * b(1, i));
           x(1, i) = det * (-AA(0, 1) * b(0, i) + AA(0, 0) * b(1, i));
@@ -227,13 +227,13 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       char FACT = 'F', equed = 'N', TRANS;
       if (trans) TRANS = 'T';
       else TRANS = 'N';
-      double *fberr = new double[2*b.Col()+1];
+      double *fberr = new double[2*b.col()+1];
       int n = this->r;
-      int nrhs = b.Col();
+      int nrhs = b.col();
 
       knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
                   ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
-                  &rcond, fberr, fberr + b.Col(), work, iwork, &info, 1, 1, 1);
+                  &rcond, fberr, fberr + b.col(), work, iwork, &info, 1, 1, 1);
 
       if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
       delete[] fberr;

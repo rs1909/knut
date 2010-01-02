@@ -109,12 +109,12 @@ class SpMatrix
     inline void AX(double* out, const double* in, double alpha, bool trans) const;
     inline void AXpY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const;
 
-    inline int Row() const
+    inline int row() const
     {
       if (format == 'R') return n;
       else return m;
     }
-    inline int Col() const
+    inline int col() const
     {
       if (format == 'R') return m;
       else return n;

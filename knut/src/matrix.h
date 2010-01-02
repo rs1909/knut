@@ -139,12 +139,12 @@ class Array1D
       for (int j = 0; j < n; j++) v[j] = T();
     } // it was T(0), but for built in types it must be the same
 
-    inline T *Pointer()
+    inline T *pointer()
     {
       return v;
     }
 
-    inline T *Pointer(const int i)
+    inline T *pointer(const int i)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < n && i >= 0, "Array1D::bound11&");
@@ -264,12 +264,12 @@ class Array2D
       clear();
     }
 
-    inline T *Pointer()
+    inline T *pointer()
     {
       return m;
     }
 
-    inline T *Pointer(const int i, const int j)
+    inline T *pointer(const int i, const int j)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
@@ -278,7 +278,7 @@ class Array2D
       return &m[i + r*j];
     }
 
-    inline const T *Pointer(const int i, const int j) const
+    inline const T *pointer(const int i, const int j) const
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
@@ -469,11 +469,11 @@ class rng
 template< class VT > class __scal_vec_trans_rng : public rng
 {
   public:
-    inline __scal_vec_trans_rng(const VT& v)                                        : rng(0, v.Row(), 0, v.Col()), vec(v), alpha(1.0), tr(NoTrans)
+    inline __scal_vec_trans_rng(const VT& v)                                        : rng(0, v.row(), 0, v.col()), vec(v), alpha(1.0), tr(NoTrans)
     { }
-    inline __scal_vec_trans_rng(const VT& v, double a)                              : rng(0, v.Row(), 0, v.Col()), vec(v), alpha(a),   tr(NoTrans)
+    inline __scal_vec_trans_rng(const VT& v, double a)                              : rng(0, v.row(), 0, v.col()), vec(v), alpha(a),   tr(NoTrans)
     { }
-    inline __scal_vec_trans_rng(const VT& v, double a, enum cspblas_Trans t)        : rng(0, v.Row(), 0, v.Col()), vec(v), alpha(a),   tr(t)
+    inline __scal_vec_trans_rng(const VT& v, double a, enum cspblas_Trans t)        : rng(0, v.row(), 0, v.col()), vec(v), alpha(a),   tr(t)
     { }
     inline __scal_vec_trans_rng(const VT& v, rng r)                                 : rng(r), vec(v), alpha(1.0), tr(NoTrans)
     { }
@@ -695,11 +695,11 @@ class Matrix : public Array2D<double>
     inline virtual ~Matrix()
     { }
 
-    inline int Row() const
+    inline int row() const
     {
       return r;
     }
-    inline int Col() const
+    inline int col() const
     {
       return c;
     }
@@ -844,13 +844,13 @@ class MatFact : public Matrix
       fact = false;
     }
 
-    inline int  Row() const
+    inline int  row() const
     {
-      return Matrix::Row();
+      return Matrix::row();
     }
-    inline int  Col() const
+    inline int  col() const
     {
-      return Matrix::Col();
+      return Matrix::col();
     }
 
     void Fact();
@@ -908,7 +908,7 @@ template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vecto
 { }
 
 template< class VT > inline __scal_vec_trans_rng<VT>::__scal_vec_trans_rng(__scal_vec_trans<VT> v)
-    : rng(0, v.vec.Row(), 0, v.vec.Col()), vec(v.vec), alpha(v.alpha), tr(v.tr)
+    : rng(0, v.vec.row(), 0, v.vec.col()), vec(v.vec), alpha(v.alpha), tr(v.tr)
 { }
 
 template< >          inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(__scal_vec_trans<Vector> v)

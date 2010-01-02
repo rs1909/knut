@@ -186,8 +186,8 @@ void CollocTR::init(const Vector& sol, const Vector& par)
     }
 
     // sorting
-    comp aa(kk.Pointer(0,idx));
-    std::sort(ee.Pointer(0,idx), ee.Pointer(0,idx) + (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1), aa);
+    comp aa(kk.pointer(0,idx));
+    std::sort(ee.pointer(0,idx), ee.pointer(0,idx) + (NTAU + 1)*(ndeg1 + 1)*(ndeg2 + 1), aa);
 
     // filtering same indices
     rr(ee(0,idx),idx) = 0;

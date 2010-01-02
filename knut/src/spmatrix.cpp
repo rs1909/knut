@@ -280,7 +280,7 @@ void SpFact::Solve(Vector& x, const Vector& b, bool trans)
     P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
   }
 
-  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.Pointer(), b.v, Numeric, Control, 0, Wi, W);
+  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(), b.v, Numeric, Control, 0, Wi, W);
   P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
 }
 
@@ -302,7 +302,7 @@ void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
 
   for (int i = 0; i < b.c; i++)
   {
-    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.Pointer(0, i), b.Pointer(0, i), Numeric, Control, 0, Wi, W);
+    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(0, i), b.pointer(0, i), Numeric, Control, 0, Wi, W);
     P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
   }
 }
@@ -325,7 +325,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
 
   int     IDO      = 0;
   char    BMAT     = 'I';
-  int     N        = AI.size() * A0.Col();
+  int     N        = AI.size() * A0.col();
   char    WHICH[]  = {'L', 'M'};
   int     NEV      = wr.size() - 1;
   double  TOL      = knut_dlamch("EPS", 3);
@@ -354,8 +354,8 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
   if (isINIT) INFO = 1;
   else INFO = 0;
 
-  double* tvec = new double[A0.Col()+1];
-  double* tvec2 = new double[A0.Col()+1];
+  double* tvec = new double[A0.col()+1];
+  double* tvec2 = new double[A0.col()+1];
 
   // int it=0;
   do
@@ -369,7 +369,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
       // these are the unit operators above the diagonal
       for (int i = 0; i < AI.size() - 1; i++)
       {
-        for (int j = 0; j < A0.Col(); j++) out[j + i*A0.Col()] = in[j + (i+1)*A0.Col()];
+        for (int j = 0; j < A0.col(); j++) out[j + i*A0.col()] = in[j + (i+1)*A0.col()];
       }
       // the last row: multiplication and solution
       for (int i = 0; i < AI.size(); i++)
@@ -382,12 +382,12 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
         {
           if (AI(AI.size() - 1 - i).GetNZ() != 0)
           {
-            AI(AI.size() - 1 - i).AX(tvec2, in + i*A0.Col(), 1.0, false);
-            for (int j = 0; j < A0.Col(); j++) tvec[j] += tvec2[j];
+            AI(AI.size() - 1 - i).AX(tvec2, in + i*A0.col(), 1.0, false);
+            for (int j = 0; j < A0.col(); j++) tvec[j] += tvec2[j];
           }
         }
       }
-      A0.Solve(out + (AI.size() - 1)*A0.Col(), tvec);
+      A0.Solve(out + (AI.size() - 1)*A0.col(), tvec);
     }
   }
   while ((IDO == 1) || (IDO == -1));

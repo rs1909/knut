@@ -327,8 +327,8 @@ inline void HyMatrix<FACT> :: __BEMWS
 
   for (int k = j; k > 0; k--)
   {
-    const int len   = A.Col() + k - 1;
-    const int aalen = A.Col();
+    const int len   = A.col() + k - 1;
+    const int aalen = A.col();
     const int ddlen = k - 1;
     const int idx   = k - 1;
 
@@ -349,8 +349,8 @@ inline void HyMatrix<FACT> :: __BEMWS
 
   for (int k = 1; k <= j; k++)
   {
-    const int len   = A.Col() + k - 1;
-    const int aalen = A.Col();
+    const int len   = A.col() + k - 1;
+    const int aalen = A.col();
     const int ddlen = k - 1;
     const int idx   = k - 1;
 
@@ -377,8 +377,8 @@ inline void HyMatrix<FACT> :: __BEMWF
 {
   for (int k = 1; k < bord + 1; k++)
   {
-    const int len   = A.Col() + k - 1;
-    const int aalen = A.Col();
+    const int len   = A.col() + k - 1;
+    const int aalen = A.col();
     const int ddlen = k - 1;
     const int idx   = k - 1;
 
@@ -428,13 +428,13 @@ inline void HyMatrix<FACT> :: __BEMW
 {
   __BEMWF<T, trans>(bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar);
 
-  for (int i = 0; i < A.Row(); i++) F(bord)(i)           = f(i);      // dcopy with range : F(bord)[rng(0,A.Row)] = f;
-  for (int i = 0; i < bord; i++)    F(bord)(A.Row() + i) = g(i);      // dcopy with range : F(bord)[rng(A.Row,A.Row+bord)] = g[rng(0,bord)];
+  for (int i = 0; i < A.row(); i++) F(bord)(i)           = f(i);      // dcopy with range : F(bord)[rng(0,A.Row)] = f;
+  for (int i = 0; i < bord; i++)    F(bord)(A.row() + i) = g(i);      // dcopy with range : F(bord)[rng(A.Row,A.Row+bord)] = g[rng(0,bord)];
 
   __BEMWS<T, trans>(A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, trans);
 
-  for (int i = 0; i < A.Row(); i++) x(i) = X(bord)(i);                // dcopy with range : x = X(bord)[rng(0,A.Row)];
-  for (int i = 0; i < bord; i++)    y(i) = X(bord)(A.Row() + i);      // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
+  for (int i = 0; i < A.row(); i++) x(i) = X(bord)(i);                // dcopy with range : x = X(bord)[rng(0,A.Row)];
+  for (int i = 0; i < bord; i++)    y(i) = X(bord)(A.row() + i);      // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
 }
 
 template<class FACT> template<bool trans>
@@ -605,13 +605,13 @@ void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F)
   if (A33 != 0)
   {
     // MBEW v BEM
-    if (A33->Col() == 1)
+    if (A33->col() == 1)
     {
       Solve(X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0));
     }
     else
     {
-      Solve(A33->Col(), X.getV1(), X.getV3(), F.getV1(), F.getV3());
+      Solve(A33->col(), X.getV1(), X.getV3(), F.getV1(), F.getV3());
     }
   }
   else
@@ -648,9 +648,9 @@ template<class FACT>
 void HyMatrix<FACT>::SolveDIRECT(HyperVector& X, const HyperVector& F)
 {
   int dim1, dim3;
-  if (A11) dim1 = A11->Col();
+  if (A11) dim1 = A11->col();
   else dim1 = 0;
-  if (A33) dim3 = A33->Col();
+  if (A33) dim3 = A33->col();
   else dim3 = 0;
 
   SpFact* A11S = A11;
