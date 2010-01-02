@@ -420,7 +420,7 @@ void NColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& so
   }
 }
 
-void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
+void NColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
 {
 #ifdef DEBUG
   count_RHS++;
@@ -441,7 +441,7 @@ void NColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
   }
 }
 
-void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
+void NColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
 {
 #ifdef DEBUG
   count_RHS_p++;
@@ -519,7 +519,7 @@ void NColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int a
 }
 
 
-void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
+void NColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 {
 #ifdef DEBUG
   count_RHS_x++;
@@ -580,7 +580,7 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 
 
 //! its very different from all of them
-void NColloc::StabJac(StabMatrix& AB, const Vector& par)
+void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
 {
 #ifdef DEBUG
   count_StabJac++;

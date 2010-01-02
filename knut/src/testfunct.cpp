@@ -96,10 +96,10 @@ void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
   int it = 0;
   do
   {
-    AHAT.Multiply<false>(rhs, one, vv, gg);
+    AHAT.multiply<false>(rhs, one, vv, gg);
     one -= 1.0;
     AHAT.solve(vvdiff, ggdiff, rhs, one);
-    AHAT.Multiply<true>(rhs, one, uu, hh);
+    AHAT.multiply<true>(rhs, one, uu, hh);
     one -= 1.0;
     AHAT.solveTr(uudiff, hhdiff, rhs, one);
     vv -= vvdiff;
@@ -136,10 +136,10 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 
   col.CharJac_x(AHAT.getA11(), par, ZZ);
 
-  AHAT.Multiply<false>(rhs, one, vv, gg);
+  AHAT.multiply<false>(rhs, one, vv, gg);
   one -= 1.0;
   AHAT.solve(vvdiff, ggdiff, rhs, one);
-  AHAT.Multiply<true>(rhs, one, uu, hh);
+  AHAT.multiply<true>(rhs, one, uu, hh);
   one -= 1.0;
   AHAT.solveTr(uudiff, hhdiff, rhs, one);
   vv -= vvdiff;

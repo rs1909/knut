@@ -33,12 +33,12 @@ class NColloc : public PerSolColloc
 
     // continuation of solution
 
-    void RHS(Vector& rhs, const Vector& par, const Vector& sol);
-    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
-    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
+    void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol);
+    void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
+    void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
 
     // for stability computation
-    void StabJac(StabMatrix& AB, const Vector& par);
+    void jacobianOfStability(StabMatrix& AB, const Vector& par);
     // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
     // However, the variables will be contained within the NColloc class
 

@@ -119,28 +119,28 @@ template< class FACT > class HyMatrix
 
     void solve(HyperVector& X, const HyperVector& F, int bord);
 
-    template<bool trans> void Multiply(HyperVector& X, const HyperVector& F, int bord);
+    template<bool trans> void multiply(HyperVector& X, const HyperVector& F, int bord);
 
-    void Check(const HyperVector& X, const HyperVector& F, int bord);
+    void check(const HyperVector& X, const HyperVector& F, int bord);
 
-    void SolveDIRECT(HyperVector& X, const HyperVector& F);
+    void solveDirect(HyperVector& X, const HyperVector& F);
 
     void solve(Vector& x, const Vector& f)
     {
       A11->solve(x, f);
     }
 
-    template<bool trans> void Multiply(Vector& R1, double& R3, const Vector& X1, const double& X3);
+    template<bool trans> void multiply(Vector& R1, double& R3, const Vector& X1, const double& X3);
 
-    template<bool trans> void Check(const Vector& x, const double& z, const Vector& f, const double& h);
+    template<bool trans> void check(const Vector& x, const double& z, const Vector& f, const double& h);
 
     void solve(Vector& x, double& z, const Vector& f, const double& h);   // BEM
 
     void solveTr(Vector& x, double& z, const Vector& f, const double& h);   // BEM
 
-    template<bool trans> void Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3);
+    template<bool trans> void multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3);
 
-    template<bool trans> void Check(int bord, const Vector& x, const Vector& z, const Vector& f, const Vector& h);
+    template<bool trans> void check(int bord, const Vector& x, const Vector& z, const Vector& f, const Vector& h);
 
     void solve(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
 
@@ -438,7 +438,7 @@ inline void HyMatrix<FACT> :: __BEMW
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Multiply(Vector& R1, double& R3, const Vector& X1, const double& X3)
+void HyMatrix<FACT>::multiply(Vector& R1, double& R3, const Vector& X1, const double& X3)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
@@ -463,7 +463,7 @@ void HyMatrix<FACT>::Multiply(Vector& R1, double& R3, const Vector& X1, const do
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Check(const Vector& x, const double& z, const Vector& f, const double& h)
+void HyMatrix<FACT>::check(const Vector& x, const double& z, const Vector& f, const double& h)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
@@ -471,7 +471,7 @@ void HyMatrix<FACT>::Check(const Vector& x, const double& z, const Vector& f, co
   const Matrix&       _A33 = *A33;
   Vector              R1(x.size());
   double              R3;
-  Multiply<trans>(R1, R3, x, z);
+  multiply<trans>(R1, R3, x, z);
   if (A11)
   {
     R1 -= f;
@@ -485,7 +485,7 @@ void HyMatrix<FACT>::Check(const Vector& x, const double& z, const Vector& f, co
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3)
+void HyMatrix<FACT>::multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
@@ -538,13 +538,13 @@ void HyMatrix<FACT>::Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Multiply(HyperVector& X, const HyperVector& F, int bord)
+void HyMatrix<FACT>::multiply(HyperVector& X, const HyperVector& F, int bord)
 {
-  Multiply<trans> (bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
+  multiply<trans> (bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::Check(int bord, const Vector& X1, const Vector& X3, const Vector& F1, const Vector& F3)
+void HyMatrix<FACT>::check(int bord, const Vector& X1, const Vector& X3, const Vector& F1, const Vector& F3)
 {
   // this may be buggy with some compilers
   const FACT&         _A11 = *A11;
@@ -552,7 +552,7 @@ void HyMatrix<FACT>::Check(int bord, const Vector& X1, const Vector& X3, const V
   //multiply back...
   Vector R1(X1.size());
   Vector R3(X3.size());
-  Multiply<trans>(bord, R1, R3, X1, X3);
+  multiply<trans>(bord, R1, R3, X1, X3);
   if (A11)
   {
     R1 -= F1;
@@ -566,9 +566,9 @@ void HyMatrix<FACT>::Check(int bord, const Vector& X1, const Vector& X3, const V
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Check(const HyperVector& X, const HyperVector& F, int bord)
+void HyMatrix<FACT>::check(const HyperVector& X, const HyperVector& F, int bord)
 {
-  Check<false>(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
+  check<false>(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
 
 // Wrapper functions
@@ -618,7 +618,7 @@ void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F)
   {
     A11->solve(X.getV1(), F.getV1());
   }
-  // Check( X, F, F.getV3().size() );
+  // check( X, F, F.getV3().size() );
 }
 
 template<class FACT>
@@ -641,11 +641,11 @@ void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F, int bord)
   {
     A11->solve(X.getV1(), F.getV1());
   }
-  // Check( X, F, F.getV3().size() );
+  // check( X, F, F.getV3().size() );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::SolveDIRECT(HyperVector& X, const HyperVector& F)
+void HyMatrix<FACT>::solveDirect(HyperVector& X, const HyperVector& F)
 {
   int dim1, dim3;
   if (A11) dim1 = A11->col();
@@ -694,7 +694,7 @@ void HyMatrix<FACT>::SolveDIRECT(HyperVector& X, const HyperVector& F)
   for (int i = 0; i < dim1; i++)  X.getV1()(i) = XX(i);
   for (int i = 0; i < dim3; i++)  X.getV3()(i) = XX(dim1 + i);
 
-//  Check( X, F );
+//  check( X, F );
   std::cout << "DR ";
 
 }

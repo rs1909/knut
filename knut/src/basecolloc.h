@@ -48,8 +48,8 @@ class PerSolColloc : public BaseColloc
 
     void   star(Vector& out, const Vector& sol);
     double integrate(const Vector& v1, const Vector& v2);
-    double IntegrateDerivative(const Vector& v1, const Vector& v2);
-    double IntegrateCont(const Vector& v1, const Vector& v2, const Vector& v3);
+    double integrateWithDerivative(const Vector& v1, const Vector& v2);
+    double integrateWithCp(const Vector& v1, const Vector& v2, const Vector& v3);
 
     void   phaseStar(Vector& V1, const Vector& V2);
     void   phaseRotationStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
@@ -62,9 +62,9 @@ class PerSolColloc : public BaseColloc
 
     // continuation of solution
 
-    virtual void RHS(Vector& rhs, const Vector& par, const Vector& sol) = 0;
-    virtual void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, int p) = 0;   // sol is currently not needed
-    virtual void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol) = 0;          // sol is currently not needed
+    virtual void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol) = 0;
+    virtual void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p) = 0;   // sol is currently not needed
+    virtual void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol) = 0;          // sol is currently not needed
 
     // supplementary
     inline int nDim() const

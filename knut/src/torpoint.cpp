@@ -84,7 +84,7 @@ void PointTR::jacobian(
 
   // jacobian, derivatives of the right-hand side
   colloc->jacobian(jac.getA11(), A13, rhs.getV1(), par, sol, JacVar);
-  jac.getA11().Check();
+  jac.getA11().check();
   // the other equations
   // Currently: none
   for (int i = 1; i < eqn.size(); i++)

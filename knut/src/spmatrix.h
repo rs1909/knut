@@ -125,7 +125,7 @@ class SpMatrix
     virtual void clear();
     virtual void clear(char F);
     /// checks the structure of the matrix
-    void Check();
+    void check();
 
     // Fill in routines
     /// Creates a new line in the matrix
@@ -217,7 +217,7 @@ class SpFact : public SpMatrix
     void luFactorize();
 };
 
-// void NColloc::StabJac( StabMat& AB, const Vector& par, const JagMatrix3D& solData );
+// void NColloc::jacobianOfStability( StabMat& AB, const Vector& par, const JagMatrix3D& solData );
 // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
 // However the variables will be contained within the NColloc class
 

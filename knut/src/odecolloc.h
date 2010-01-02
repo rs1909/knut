@@ -32,10 +32,10 @@ class ODEColloc : public PerSolColloc
 
     // continuation of solution
 
-    void RHS(Vector& rhs, const Vector& par, const Vector& sol);
-    void RHS_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
-    void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
-    void StabJac(SpMatrix& A, const Vector& par);
+    void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol);
+    void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
+    void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
+    void jacobianOfStability(SpMatrix& A, const Vector& par);
 
   private:
     

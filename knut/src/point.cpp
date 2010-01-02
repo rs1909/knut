@@ -141,14 +141,14 @@ void Point::jacobian(
 
   if (eqn(0) == EqnSol)
   {
-    colloc->RHS_x(AA.getA11(), par, sol);
-    colloc->RHS(RHS.getV1(), par, sol);
+    colloc->rightHandSide_x(AA.getA11(), par, sol);
+    colloc->rightHandSide(RHS.getV1(), par, sol);
 
     for (int i = 1; i < varMap.size(); i++)
     {
       if (varMap(i) < NPAR)
       {
-        colloc->RHS_p(AA.getA13(i - 1), par, sol, varMap(i));
+        colloc->rightHandSide_p(AA.getA13(i - 1), par, sol, varMap(i));
       }
       else if (varMap(i) - NPAR == ParAngle)
       {
@@ -272,7 +272,7 @@ void Point::jacobian(
     for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
-      RHS.getV3()(dim3) = ds - colloc->IntegrateCont(xxDot->getV1(), sol, solPrev);
+      RHS.getV3()(dim3) = ds - colloc->integrateWithCp(xxDot->getV1(), sol, solPrev);
       for (int j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
@@ -405,7 +405,7 @@ void Point::Stability()
 
   colloc->init(sol, par);
 
-  colloc->StabJac(jacStab, par);
+  colloc->jacobianOfStability(jacStab, par);
 
   jacStab.eigenvalues(mRe, mIm);
 //  mRe.print();

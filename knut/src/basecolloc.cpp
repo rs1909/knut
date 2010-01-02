@@ -646,7 +646,7 @@ double PerSolColloc::integrate(const Vector& V1, const Vector& V2)
   return res + head;
 }
 
-double PerSolColloc::IntegrateCont(const Vector& V1, const Vector& V2, const Vector& V3)
+double PerSolColloc::integrateWithCp(const Vector& V1, const Vector& V2, const Vector& V3)
 {
   double res = 0.0, head = 0.0;
   for (int i = 0; i < NINT; i++)

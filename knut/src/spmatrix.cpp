@@ -21,7 +21,7 @@ using namespace std;
 //                                                                           //
 // **************************************************************************//
 
-void SpMatrix::Check()
+void SpMatrix::check()
 {
   bool ok = true;
   for (int j = 0; j < n && ok; j++)
@@ -30,7 +30,7 @@ void SpMatrix::Check()
     {
       if (Ai[k-1] >= Ai[k] || Ai[k] < 0 || Ai[k-1] < 0)
       {
-        std::cerr << "SpMatrix::Check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
+        std::cerr << "SpMatrix::check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
         ok = false;
       }
     }
@@ -41,7 +41,7 @@ void SpMatrix::Check()
     {
       if (!isfinite(Ax[k]))
       {
-        std::cerr << "SpMatrix::Check(): NaN at (" << j << "," << Ai[k] << ")\n";
+        std::cerr << "SpMatrix::check(): NaN at (" << j << "," << Ai[k] << ")\n";
         ok = false;
       }
     }

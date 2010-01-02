@@ -173,7 +173,7 @@ void ODEColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& 
   }
 }
 
-void ODEColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
+void ODEColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
 {
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -191,7 +191,7 @@ void ODEColloc::RHS(Vector& rhs, const Vector& par, const Vector& sol)
   }
 }
 
-void ODEColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
+void ODEColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -226,12 +226,12 @@ void ODEColloc::RHS_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int
   }
 }
 
-void ODEColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
+void ODEColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 {
   RHS_jacobian<true>(A, par);
 }
 
-void ODEColloc::StabJac(SpMatrix& A, const Vector& par)
+void ODEColloc::jacobianOfStability(SpMatrix& A, const Vector& par)
 {
   RHS_jacobian<false>(A, par);
 }

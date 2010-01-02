@@ -362,7 +362,7 @@ int BasePoint::tangent(bool adapt)
   int it = 0;
   do
   {
-    jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
+    jac->multiply<false>(*rhs, *xxDot, dim3 + 1);
     rhs->getV3()(dim3) -= 1.0;
     jac->solve(*xx, *rhs);
     xxDot->getV1() -= xx->getV1();
@@ -420,7 +420,7 @@ int BasePoint::nextStep(double ds, bool jacstep)
     // updating the tangent
     if (!jacstep)
     {
-      jac->Multiply<false>(*rhs, *xxDotNu, dim3 + 1);
+      jac->multiply<false>(*rhs, *xxDotNu, dim3 + 1);
       rhs->getV3()(dim3) -= 1.0;
       jac->solve(*xx, *rhs);
       xxDotNu->getV1() -= xx->getV1();
