@@ -18,8 +18,8 @@ class BaseColloc
 {
   public:
     virtual void   init(const Vector& sol, const Vector& par) = 0;
-    virtual void   Star(Vector& out, const Vector& sol) = 0;
-    virtual double Integrate(const Vector& v1, const Vector& v2) = 0;
+    virtual void   star(Vector& out, const Vector& sol) = 0;
+    virtual double integrate(const Vector& v1, const Vector& v2) = 0;
     virtual void   meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent) = 0;
 };
 
@@ -36,9 +36,9 @@ class PerSolColloc : public BaseColloc
     virtual void init(const Vector& sol, const Vector& par) = 0;
     void meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent);
 
-    virtual void Interpolate(Array3D<double>& out, const Vector& sol) = 0;
-    virtual void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol) = 0;
-    virtual void InterpolateMSH(Array3D<double>& out, const Vector& sol) = 0;
+    virtual void interpolate(Array3D<double>& out, const Vector& sol) = 0;
+    virtual void interpolateComplex(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol) = 0;
+    virtual void interpolateOnMesh(Array3D<double>& out, const Vector& sol) = 0;
 
     static void   getMetric(Matrix& mt, const Vector& t);
     static void   getDiffMetric(Matrix& mt, const Vector& t);
@@ -46,16 +46,16 @@ class PerSolColloc : public BaseColloc
     static double integrate(const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim);
     static int meshlookup(const Vector& mesh, double t);
 
-    void   Star(Vector& out, const Vector& sol);
-    double Integrate(const Vector& v1, const Vector& v2);
+    void   star(Vector& out, const Vector& sol);
+    double integrate(const Vector& v1, const Vector& v2);
     double IntegrateDerivative(const Vector& v1, const Vector& v2);
     double IntegrateCont(const Vector& v1, const Vector& v2, const Vector& v3);
 
-    void   PhaseStar(Vector& V1, const Vector& V2);
-    void   PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
+    void   phaseStar(Vector& V1, const Vector& V2);
+    void   phaseRotationStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
 
-    void   Import(Vector& out, const Vector& in, const Vector& mesh, int deg_, bool adapt);
-    void   Export(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
+    void   importProfile(Vector& out, const Vector& in, const Vector& mesh, int deg_, bool adapt);
+    void   exportProfile(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
     void   pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
@@ -67,19 +67,19 @@ class PerSolColloc : public BaseColloc
     virtual void RHS_x(SpMatrix& A, const Vector& par, const Vector& sol) = 0;          // sol is currently not needed
 
     // supplementary
-    inline int Ndim() const
+    inline int nDim() const
     {
       return ndim;
     }
-    inline int Npar() const
+    inline int nPar() const
     {
       return npar;
     }
-    inline int Nint() const
+    inline int nInt() const
     {
       return nint;
     }
-    inline int Ndeg() const
+    inline int nDeg() const
     {
       return ndeg;
     }

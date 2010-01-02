@@ -100,10 +100,10 @@ void ODEColloc::init(const Vector& sol, const Vector& par)
     ttMSH(1, l, NDEG*NINT) = ttMSH(1, l, 0);
   }
   // evaluate the solution and its derivatives at the collocation points
-  Interpolate(solData, sol);
+  interpolate(solData, sol);
 }
 
-void ODEColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
+void ODEColloc::interpolate(Array3D<double>& solData, const Vector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {
@@ -124,7 +124,7 @@ void ODEColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
   }
 }
 
-void ODEColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
+void ODEColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {
@@ -148,7 +148,7 @@ void ODEColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void ODEColloc::InterpolateCPLX(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
+void ODEColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {

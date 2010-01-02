@@ -106,7 +106,7 @@ void PointTR::Jacobian
   if (cont)
   {
     // copying the tangent
-    if (dim1 != 0) colloc->Star(jac.getA31(dim3), xxDot->getV1());
+    if (dim1 != 0) colloc->star(jac.getA31(dim3), xxDot->getV1());
     for (int i = 0; i < xxDot->getV3().size(); i++) jac.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {

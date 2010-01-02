@@ -24,8 +24,8 @@ ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nin
   persolcolloc = colloc;
   Construct();
   FillSol(sys_);
-  par(colloc->Npar() + ParAngle) = 0.0;
-  par(colloc->Npar() + ParRot) = 0.0;
+  par(colloc->nPar() + ParAngle) = 0.0;
+  par(colloc->nPar() + ParRot) = 0.0;
 }
 
 ODEPoint::~ODEPoint()
@@ -34,10 +34,10 @@ ODEPoint::~ODEPoint()
   Destruct();
 }
 
-#define NDIM (colloc->Ndim())
-#define NPAR (colloc->Npar())
-#define NINT (colloc->Nint())
-#define NDEG (colloc->Ndeg())
+#define NDIM (colloc->nDim())
+#define NPAR (colloc->nPar())
+#define NINT (colloc->nInt())
+#define NDEG (colloc->nDeg())
 
 // its unmodified from point.cpp. Only some stuff is removed.
 void ODEPoint::Jacobian
@@ -77,7 +77,7 @@ void ODEPoint::Jacobian
     {
         // Phase conditions.
       case EqnPhase:
-        colloc->PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
+        colloc->phaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
         for (int j = 1; j < varMap.size(); j++)
         {
@@ -104,7 +104,7 @@ void ODEPoint::Jacobian
   if (cont)
   {
     // copying the tangent
-    if (dim1 != 0) colloc->Star(AA.getA31(dim3), xxDot->getV1());
+    if (dim1 != 0) colloc->star(AA.getA31(dim3), xxDot->getV1());
     for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {

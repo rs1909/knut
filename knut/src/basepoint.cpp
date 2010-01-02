@@ -325,8 +325,8 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
       AdaptUpdate(*xx);
     }
     // computing norms to determine convergence
-    Xnorm = sqrt(basecolloc->Integrate(sol, sol));
-    Dnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
+    Xnorm = sqrt(basecolloc->integrate(sol, sol));
+    Dnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
     if(!adapt)
     {
       out << " " << it << "\t" << Dnorm / (1.0 + Xnorm) << "\t" << Xnorm << "\t" << Dnorm << '\n';
@@ -351,7 +351,7 @@ int BasePoint::Tangent(bool adapt)
     // setting up a random tangent
     xxDot->getV1().random();
     xxDot->getV3().random();
-    norm = sqrt(basecolloc->Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
+    norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
     xxDot->getV1() /= norm;
     xxDot->getV3() /= norm;
   }
@@ -367,12 +367,12 @@ int BasePoint::Tangent(bool adapt)
     jac->solve(*xx, *rhs);
     xxDot->getV1() -= xx->getV1();
     xxDot->getV3() -= xx->getV3();
-    diffnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    norm = sqrt(basecolloc->Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
+    diffnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
+    norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
     xxDot->getV1() /= norm;
     xxDot->getV3() /= norm;
     // putting back the tangent...
-    if (dim1 != 0) basecolloc->Star(jac->getA31(dim3), xxDot->getV1());
+    if (dim1 != 0) basecolloc->star(jac->getA31(dim3), xxDot->getV1());
     for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
   while ((++it < KernIter) && (diffnorm > KernEps));
@@ -408,9 +408,9 @@ int BasePoint::Continue(double ds, bool jacstep)
 
     ContUpdate(*xx);
 
-    Rnorm = sqrt(basecolloc->Integrate(rhs->getV1(), rhs->getV1()) + (rhs->getV3()) * (rhs->getV3()));
-    Xnorm = sqrt(basecolloc->Integrate(solNu, solNu));
-    Dnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
+    Rnorm = sqrt(basecolloc->integrate(rhs->getV1(), rhs->getV1()) + (rhs->getV3()) * (rhs->getV3()));
+    Xnorm = sqrt(basecolloc->integrate(solNu, solNu));
+    Dnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
     conv = (Dnorm / (1.0 + Xnorm) >= ContEps) || (Rnorm / (1.0 + Xnorm) >= ContEps);
 
 #ifdef DEBUG
@@ -425,7 +425,7 @@ int BasePoint::Continue(double ds, bool jacstep)
       jac->solve(*xx, *rhs);
       xxDotNu->getV1() -= xx->getV1();
       xxDotNu->getV3() -= xx->getV3();
-      Tnorm = sqrt(basecolloc->Integrate(xxDotNu->getV1(), xxDotNu->getV1()) + (xxDotNu->getV3()) * (xxDotNu->getV3()));
+      Tnorm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1()) + (xxDotNu->getV3()) * (xxDotNu->getV3()));
       xxDotNu->getV1() /= Tnorm;
       xxDotNu->getV3() /= Tnorm;
     }
@@ -437,7 +437,7 @@ int BasePoint::Continue(double ds, bool jacstep)
 #ifdef DEBUG
     /// checking the tangent and the secant
     double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
-    double Xnorm = sqrt(basecolloc->Integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
+    double Xnorm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
     std::cout << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
     for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
     std::cout << '\n';
@@ -447,7 +447,7 @@ int BasePoint::Continue(double ds, bool jacstep)
     for (int i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
 
     Pnorm = sqrt(xx->getV3()(dim3) * xx->getV3()(dim3)) / ds;
-    Xnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1())) / ds;
+    Xnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1())) / ds;
     Onorm = 0;
     for (int i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
     Onorm = sqrt(Onorm) / ds;
@@ -472,32 +472,32 @@ int BasePoint::Continue(double ds, bool jacstep)
   return it;
 }
 
-#define NDIM persolcolloc->Ndim()
+#define NDIM persolcolloc->nDim()
 #define NTAU persolcolloc->Ntau()
-#define NPAR persolcolloc->Npar()
-#define NINT persolcolloc->Nint()
-#define NDEG persolcolloc->Ndeg()
+#define NPAR persolcolloc->nPar()
+#define NINT persolcolloc->nInt()
+#define NDEG persolcolloc->nDeg()
 
 // private
 void PerSolPoint::FillSol(System& sys_)
 {
-  Vector fx(persolcolloc->Ndim());
+  Vector fx(persolcolloc->nDim());
 
   sys_.stpar(par);
   par(NPAR+ParPeriod) = 1.0;
 
-  for (int i = 0; i < persolcolloc->Nint(); i++)
+  for (int i = 0; i < persolcolloc->nInt(); i++)
   {
-    for (int d = 0; d <  persolcolloc->Ndeg(); d++)
+    for (int d = 0; d <  persolcolloc->nDeg(); d++)
     {
       sys_.stsol(fx, persolcolloc->Profile(i, d));
-      for (int j = 0; j < persolcolloc->Ndim(); j++)
+      for (int j = 0; j < persolcolloc->nDim(); j++)
       {
         sol(NDIM*(i*NDEG + d) + j) = fx(j);
       }
     }
   }
-  for (int j = 0; j < persolcolloc->Ndim(); j++)
+  for (int j = 0; j < persolcolloc->nDim(); j++)
   {
     sol(NDIM*NDEG*NINT + j) = sol(j);
   }
@@ -581,10 +581,10 @@ void PerSolPoint::BinaryRead(mat4Data& data, int n)
     if (amp < 1e-6)
     {
       std::cerr << "Warning: importing without mesh adaptation.\n";
-      persolcolloc->Import(sol, tmp, msh, data.getNDeg(), false);
+      persolcolloc->importProfile(sol, tmp, msh, data.getNDeg(), false);
     } else
     {
-      persolcolloc->Import(sol, tmp, msh, data.getNDeg(), true);
+      persolcolloc->importProfile(sol, tmp, msh, data.getNDeg(), true);
     }
   }
   data.unlock();

@@ -28,9 +28,9 @@ class CollocTR : public BaseColloc
     // these are easy
     void PhaseONE(Vector& ph, Vector& presol);                                       // implemented
     void PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol);                        // implemented
-    double Integrate(const Vector& ph1, const Vector& ph2);
+    double integrate(const Vector& ph1, const Vector& ph2);
     double IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3);
-    void Star(Vector& ph1, const Vector& ph2);
+    void star(Vector& ph1, const Vector& ph2);
 
     void ImportSol(Vector& out, Vector& in);
     void ImportTan(Vector& out, Vector& Re, Vector& Im, double alpha);

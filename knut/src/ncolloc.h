@@ -25,9 +25,9 @@ class NColloc : public PerSolColloc
 
     void init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
 
-    void Interpolate(Array3D<double>& out, const Vector& sol);
-    void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
-    void InterpolateMSH(Array3D<double>& out, const Vector& sol);
+    void interpolate(Array3D<double>& out, const Vector& sol);
+    void interpolateComplex(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
+    void interpolateOnMesh(Array3D<double>& out, const Vector& sol);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 

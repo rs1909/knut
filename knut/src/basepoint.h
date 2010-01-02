@@ -85,8 +85,8 @@ class BasePoint
     inline double  Norm()
     {
       // double e=0;
-      // for( int j=0; j<colloc->Ndim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
-      return sqrt(basecolloc->Integrate(sol, sol));
+      // for( int j=0; j<colloc->nDim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
+      return sqrt(basecolloc->integrate(sol, sol));
     }
 /// END BASE CLASS
   protected:
@@ -227,9 +227,9 @@ class PerSolPoint : public BasePoint
     }
     inline double NormMX()
     {
-      const int ndeg = persolcolloc->Nint();
-      const int nint = persolcolloc->Nint();
-      const int ndim = persolcolloc->Ndim();
+      const int ndeg = persolcolloc->nInt();
+      const int nint = persolcolloc->nInt();
+      const int ndim = persolcolloc->nDim();
       return Amplitude(sol, ndim, ndeg, nint);
     }
     

@@ -46,7 +46,7 @@ class Point : public PerSolPoint
     void    SwitchTFHB(double ds, std::ostream& out);   // switches branch with testFunct
     void    SwitchTRSol(Vector& Sol, const Vector& mshint, const Vector& mshdeg)
     {
-      colloc->Export(Sol, mshint, mshdeg, sol);
+      colloc->exportProfile(Sol, mshint, mshdeg, sol);
     } // starting data for tori: solution
     void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
  
@@ -54,9 +54,9 @@ class Point : public PerSolPoint
     inline void    print(char* file)
     {
       std::ofstream ff(file);
-      for (int i = 0; i < colloc->Nint()*colloc->Ndeg() + 1; i++)
+      for (int i = 0; i < colloc->nInt()*colloc->nDeg() + 1; i++)
       {
-        for (int j = 0; j < colloc->Ndim(); j++) ff << sol(colloc->Ndim()*i + j) << "\t";
+        for (int j = 0; j < colloc->nDim(); j++) ff << sol(colloc->nDim()*i + j) << "\t";
         ff << "\n";
       }
     }

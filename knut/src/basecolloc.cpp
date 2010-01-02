@@ -587,7 +587,7 @@ double PerSolColloc::integrate(const Vector& v1, const Vector& v2, const Matrix&
   return res;
 }
 
-void PerSolColloc::Star(Vector& V1, const Vector& V2)
+void PerSolColloc::star(Vector& V1, const Vector& V2)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -617,7 +617,7 @@ void PerSolColloc::Star(Vector& V1, const Vector& V2)
 #endif
 }
 
-double PerSolColloc::Integrate(const Vector& V1, const Vector& V2)
+double PerSolColloc::integrate(const Vector& V1, const Vector& V2)
 {
   double res = 0.0, head = 0.0;
   for (int i = 0; i < NINT; i++)
@@ -673,7 +673,7 @@ double PerSolColloc::IntegrateCont(const Vector& V1, const Vector& V2, const Vec
   return res + head;
 }
 
-void PerSolColloc::PhaseStar(Vector& V1, const Vector& V2)
+void PerSolColloc::phaseStar(Vector& V1, const Vector& V2)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -692,7 +692,7 @@ void PerSolColloc::PhaseStar(Vector& V1, const Vector& V2)
   }
 }
 
-void PerSolColloc::PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im)
+void PerSolColloc::phaseRotationStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -747,7 +747,7 @@ void PerSolColloc::pdMeshConvert(Vector& newprofile, Vector& newtangent, const V
   profileConvert(newtangent, mesh, tmp_tangent, tmp_mesh, lgr, NDIM);
 }
 
-void PerSolColloc::Import(Vector& newprofile, const Vector& oldprofile, const Vector& oldmesh, int old_ndeg, bool adapt)
+void PerSolColloc::importProfile(Vector& newprofile, const Vector& oldprofile, const Vector& oldmesh, int old_ndeg, bool adapt)
 {
   Vector old_meshINT(old_ndeg+1);
   repr_mesh(old_meshINT);
@@ -766,7 +766,7 @@ void PerSolColloc::Import(Vector& newprofile, const Vector& oldprofile, const Ve
 }
 
 // it exports for CollocTR and PointTR, so no last value is necessary
-void PerSolColloc::Export(Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in)
+void PerSolColloc::exportProfile(Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in)
 {
   int nint_ = mshint.size() - 1;
   int ndeg_ = mshdeg.size() - 1;

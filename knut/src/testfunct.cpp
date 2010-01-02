@@ -21,11 +21,11 @@
 #include <fstream>
 #endif
 
-#define NDIM (col.Ndim())
-#define NDEG (col.Ndeg())
-#define NINT (col.Nint())
+#define NDIM (col.nDim())
+#define NDEG (col.nDeg())
+#define NINT (col.nInt())
 #define NTAU (col.Ntau())
-#define NPAR (col.Npar())
+#define NPAR (col.nPar())
 
 template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im)
 {
@@ -179,7 +179,7 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 
 double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
-  col.Interpolate(vvData, vv);
+  col.interpolate(vvData, vv);
   col.CharJac_x_p(A_p, par, vvData, ZZ, alpha);
   const double gg_p = (uu * A_p);
 //  std::cout<<"GP "<<alpha<<":"<<gg_p;
@@ -188,7 +188,7 @@ double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/
 
 void   TestFunct::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.Interpolate(vvData, vv);
+  col.interpolate(vvData, vv);
   col.CharJac_x_x(A_x, par, vvData, ZZ);
   func = !A_x * uu; // positive, because the test function is not negated in the Jacobian
 //  func *= 100.0;
@@ -284,7 +284,7 @@ void TestFunctCPLX::Funct(double& f1, double& f2,
   conjugate(AHAT.getA13(1), AHAT.getA13(0));
   conjugate(AHAT.getA31(1), AHAT.getA31(0));
   // for later use
-  col.InterpolateCPLX(vvDataRe, vvDataIm, AHAT.getA31(0)/*vv*/);
+  col.interpolateComplex(vvDataRe, vvDataIm, AHAT.getA31(0)/*vv*/);
 
   f1 = gg(0);
   f2 = gg(1);
@@ -431,10 +431,10 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
   col.CharJac_x(AHAT.getA11(), par, ZZ);
   col.CharJac_mB(mB, par, ZZ);
 
-  col.InterpolateMSH(solMSHData, sol);
+  col.interpolateOnMesh(solMSHData, sol);
   col.CharJac_MSHphi(phi, par, solMSHData);
 
-  col.Star(AHAT.getA31(0), phi);
+  col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
   AHAT.getA13(1).random();
@@ -486,10 +486,10 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
   col.CharJac_x(AHAT.getA11(), par, ZZ);
   col.CharJac_mB(mB, par, ZZ);
 
-  col.InterpolateMSH(solMSHData, sol);
+  col.interpolateOnMesh(solMSHData, sol);
   col.CharJac_MSHphi(phi, par, solMSHData);
 
-  col.Star(AHAT.getA31(0), phi);
+  col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
   // continuing the non-trivial kernel
@@ -504,8 +504,8 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
   AHAT.getA33(0, 1) = nrm_u * hh2(0);
 
   // for subsequent use
-  col.Interpolate(phiData, phi);
-  col.Interpolate(vv2Data, vv2);
+  col.interpolate(phiData, phi);
+  col.interpolate(vv2Data, vv2);
 
 //  std::cout<<"TF: "<<gg2(1)<<", "<<hh2(1)<<":"<<gg2(0)<<", "<<hh2(0)<<"\n";
 //  if( gg2(1) > 0.0 ) std::cout<<"\t+++\n";
@@ -529,7 +529,7 @@ double TestFunctLPAUT::Funct_p(NColloc& col, const Vector& par, const Vector& /*
   temp = mB * DpPhi;
   temp += mB_p;
 
-  const double gg_p = (uu2 * A_p) + gg2(0) * (uu2 * temp) + hh2(0) * col.Integrate(DpPhi, vv2);
+  const double gg_p = (uu2 * A_p) + gg2(0) * (uu2 * temp) + hh2(0) * col.integrate(DpPhi, vv2);
 //  std::cout<<"GP "<<alpha<<":"<<gg_p;
   return gg_p;
 }
@@ -547,7 +547,7 @@ void   TestFunctLPAUT::Funct_x(Vector& func, NColloc& col, const Vector& par, co
   func += gg2(0) * temp;
 
   col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, vv2);
-  col.Star(temp, DxPhi);
+  col.star(temp, DxPhi);
   func += hh2(0) * temp;
 }
 
@@ -598,16 +598,16 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
   col.CharJac_x(AHAT.getA11(), par, ZZ);
   col.CharJac_mB(mB, par, ZZ);
 
-  col.InterpolateMSH(solMSHData, sol);
+  col.interpolateOnMesh(solMSHData, sol);
   col.CharJac_MSHphi(phi, par, solMSHData);
 
   temp = AHAT.getA11() * phi;
 //   std::cout << "temp: " << temp*temp << " phi: " << phi*phi << "\n";
-  col.Star(AHAT.getA31(0), phi);
+  col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
   rotbord<false>(LAM, col, sol, Re, Im);
-  col.Star(AHAT.getA31(1), LAM);
+  col.star(AHAT.getA31(1), LAM);
   AHAT.getA13(1) = mB * LAM;
 
   AHAT.getA13(2).random();
@@ -667,17 +667,17 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
   col.CharJac_x(AHAT.getA11(), par, ZZ);
   col.CharJac_mB(mB, par, ZZ);
 
-  col.InterpolateMSH(solMSHData, sol);
+  col.interpolateOnMesh(solMSHData, sol);
   col.CharJac_MSHphi(phi, par, solMSHData);
 
 //  temp = AHAT.getA11() * phi;
 //  std::cout<<"temp: "<<temp*temp<<" phi: "<<phi*phi<<"\n";
 
-  col.Star(AHAT.getA31(0), phi);
+  col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
   rotbord<false>(LAM, col, sol, Re, Im);
-  col.Star(AHAT.getA31(1), LAM);
+  col.star(AHAT.getA31(1), LAM);
   AHAT.getA13(1) = mB * LAM;
 
 //  temp = AHAT.getA11() * LAM;
@@ -695,9 +695,9 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
   AHAT.getA33(1, 2) = nrm_u * hh3(1);
 
   // for subsequent use
-  col.Interpolate(phiData, phi);
-  col.Interpolate(LAMData, LAM);
-  col.Interpolate(vv3Data, vv3);
+  col.interpolate(phiData, phi);
+  col.interpolate(LAMData, LAM);
+  col.interpolate(vv3Data, vv3);
 //  std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
 //   if (gg3(2) > 0.0) std::cout << "\t+++\n";
@@ -721,7 +721,7 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
   temp = mB * DpPhi;
   col.CharJac_mB_p(mB_p, par, phiData, ZZ, alpha);
   temp += mB_p;
-  gg_p += gg3(0) * (uu3 * temp) + hh3(0) * col.Integrate(DpPhi, vv3);
+  gg_p += gg3(0) * (uu3 * temp) + hh3(0) * col.integrate(DpPhi, vv3);
   // second LAM ( mB * LAM -> only mB_p is nonzero )
   col.CharJac_mB_p(mB_p, par, LAMData, ZZ, alpha);
   gg_p += gg3(1) * (uu3 * mB_p);
@@ -733,7 +733,7 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
 
 void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.Interpolate(vv3Data, vv3);
+  col.interpolate(vv3Data, vv3);
   col.CharJac_x_x(A_x, par, vv3Data, ZZ);
   func = !A_x * uu3;
 
@@ -752,11 +752,11 @@ void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par,
   func += gg3(1) * DxLAM;
 
   col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, vv3);
-  col.Star(temp, DxPhi);
+  col.star(temp, DxPhi);
   func += hh3(0) * temp;
 
   rotbord<true>(DxLAM, col, vv3, Re, Im);
-  col.Star(temp, DxLAM);
+  col.star(temp, DxLAM);
   func += hh3(1) * temp;
 }
 
@@ -932,9 +932,9 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
   AHAT.getA33(1, 2) = nrm_u * hh3(1);
 
   // for subsequent use
-  col.Interpolate(vv1Data, vv1);
-  col.Interpolate(vv2Data, vv2);
-  col.Interpolate(vv3Data, vv3);
+  col.interpolate(vv1Data, vv1);
+  col.interpolate(vv2Data, vv2);
+  col.interpolate(vv3Data, vv3);
 
   if (gg3(2) > 0.0) std::cout << "\t+++\n";
   else               std::cout << "\t---\n";

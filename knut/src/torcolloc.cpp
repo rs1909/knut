@@ -501,7 +501,7 @@ void CollocTR::PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol)
   }
 }
 
-double CollocTR::Integrate(const Vector& ph1, const Vector& ph2)
+double CollocTR::integrate(const Vector& ph1, const Vector& ph2)
 {
   double res = 0.0;
   for (int i2 = 0; i2 < nint2; i2++)
@@ -532,7 +532,7 @@ double CollocTR::Integrate(const Vector& ph1, const Vector& ph2)
   return res;
 }
 
-void CollocTR::Star(Vector& ph1, const Vector& ph2)
+void CollocTR::star(Vector& ph1, const Vector& ph2)
 {
   ph1.clear();
   for (int i2 = 0; i2 < nint2; i2++)
@@ -636,7 +636,7 @@ void CollocTR::ImportTan(Vector& out, Vector& Re, Vector& Im, double alpha)
       }
     }
   }
-  double norm = sqrt(Integrate(out, out));
+  double norm = sqrt(integrate(out, out));
   out /= norm;
 }
 

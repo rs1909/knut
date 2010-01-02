@@ -320,7 +320,7 @@ void NColloc::init(const Vector& sol, const Vector& par)
   sys->p_tau(p_tau, time, par);
   sys->p_tau(p_tauMSH, timeMSH, par);
   // evaluate the solution and its derivatives at the collocation points
-  Interpolate(solData, sol);
+  interpolate(solData, sol);
   // diagnostics
 #ifdef DEBUG
   count_print();
@@ -328,7 +328,7 @@ void NColloc::init(const Vector& sol, const Vector& par)
 #endif
 }
 
-void NColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
+void NColloc::interpolate(Array3D<double>& solData, const Vector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT; ++idx)   // i: interval; j: which collocation point
   {
@@ -367,7 +367,7 @@ void NColloc::Interpolate(Array3D<double>& solData, const Vector& sol)
   }
 }
 
-void NColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
+void NColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)
   {
@@ -390,7 +390,7 @@ void NColloc::InterpolateMSH(Array3D<double>& solData, const Vector& sol)
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void NColloc::InterpolateCPLX(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
+void NColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {

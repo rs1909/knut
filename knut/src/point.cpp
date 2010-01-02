@@ -22,11 +22,11 @@
 #include <cmath>
 #include <cfloat>
 
-#define NDIM colloc->Ndim()
+#define NDIM colloc->nDim()
 #define NTAU colloc->Ntau()
-#define NPAR colloc->Npar()
-#define NINT colloc->Nint()
-#define NDEG colloc->Ndeg()
+#define NPAR colloc->nPar()
+#define NINT colloc->nInt()
+#define NDEG colloc->nDeg()
 
 
 Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
@@ -173,7 +173,7 @@ void Point::Jacobian(
     {
         // Phase conditions.
       case EqnPhase:
-        colloc->PhaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
+        colloc->phaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
         for (int j = 1; j < varMap.size(); j++)
         {
@@ -193,7 +193,7 @@ void Point::Jacobian(
         RHS.getV3()(i - 1) = -(AA.getA31(i - 1) * sol);
         break;
       case EqnPhaseRot:
-        colloc->PhaseRotStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
+        colloc->phaseRotationStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
         // other variables
         for (int j = 1; j < varMap.size(); j++)
         {
@@ -268,7 +268,7 @@ void Point::Jacobian(
   if (cont)
   {
     // copying the tangent
-    if (dim1 != 0) colloc->Star(AA.getA31(dim3), xxDot->getV1());
+    if (dim1 != 0) colloc->star(AA.getA31(dim3), xxDot->getV1());
     for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
@@ -327,7 +327,7 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
 #endif
     }
   }
-  const double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
+  const double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().clear();
   Vector eql(NDIM);
@@ -368,7 +368,7 @@ void Point::SwitchTFLP(BranchSW type, double ds)
   tf->Funct(*colloc, par, sol);
   tf->Switch(xxDot->getV1());
   delete tf;
-  double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
+  double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().clear();
 
@@ -391,7 +391,7 @@ void Point::SwitchTFPD(double ds)
   solNu = sol;
   colloc->pdMeshConvert(sol, xxDot->getV1(), solNu, tan);
 
-  double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
+  double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().clear();
   sol += ds * xxDot->getV1();
@@ -497,7 +497,7 @@ void Point::Read(std::ifstream& file)
     Vector in(NDIM*(nint_*ndeg_ + 1));
 
     for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
-    colloc->Import(sol, in, msh, ndeg_, true);
+    colloc->importProfile(sol, in, msh, ndeg_, true);
   }
 }
 
@@ -536,8 +536,8 @@ void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& m
   if (tf)
   {
     tf->Switch(TRe, TIm, alpha);
-    colloc->Export(Re, mshint, mshdeg, TRe);
-    colloc->Export(Im, mshint, mshdeg, TIm);
+    colloc->exportProfile(Re, mshint, mshdeg, TRe);
+    colloc->exportProfile(Im, mshint, mshdeg, TIm);
   }
   else
   {
