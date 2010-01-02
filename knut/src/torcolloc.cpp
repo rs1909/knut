@@ -253,7 +253,7 @@ void CollocTR::init(const Vector& sol, const Vector& par)
 //
 //***************************************************************************
 
-void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
+void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
 {
   A.clear();
   rhs.clear();

@@ -23,17 +23,16 @@ PointTR::PointTR(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1
 
   P_ERROR_X1((eqn(0) == EqnTORSol) && (var(0) == VarTORSol), "The first equation must the boundary value problem of the periodic solution.");
 
-  BasePoint::Construct();
+  BasePoint::construct();
 }
 
 PointTR::~PointTR()
 {
-  BasePoint::Destruct();
+  BasePoint::destruct();
   delete colloc;
 }
 
-void PointTR::Jacobian
-(
+void PointTR::jacobian(
   HyperMatrix& jac, HyperVector& rhs, // output
   Vector& parPrev,  Vector& par,      // parameters
   Vector& solPrev,  Vector& sol,      // solution
@@ -84,7 +83,7 @@ void PointTR::Jacobian
   }
 
   // jacobian, derivatives of the right-hand side
-  colloc->Jacobian(jac.getA11(), A13, rhs.getV1(), par, sol, JacVar);
+  colloc->jacobian(jac.getA11(), A13, rhs.getV1(), par, sol, JacVar);
   jac.getA11().Check();
   // the other equations
   // Currently: none

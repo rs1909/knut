@@ -23,7 +23,7 @@ class CollocTR : public BaseColloc
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
     void init(const Vector& sol, const Vector& par);
-    void Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var);
+    void jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var);
     // not yet implemented
     // these are easy
     void PhaseONE(Vector& ph, Vector& presol);                                       // implemented

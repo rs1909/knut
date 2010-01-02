@@ -237,26 +237,26 @@ BasePoint::~BasePoint()
 
 // public
 // remember that this ereases the state variables except sol, qq, par xxDot
-void BasePoint::Reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
+void BasePoint::reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
 
 {
   HyperVector* xxDot_temp = 0;
   if (xxDot) xxDot_temp = new HyperVector(*xxDot);
-  Destruct();
+  destruct();
   eqn.init(eqn_.size());
   eqn = eqn_;
   var.init(var_.size());
   var = var_;
   varMap.init(var_.size());
   varMapCont.init(var_.size() + 1);
-  Construct();
+  construct();
   xxDot->getV1() = xxDot_temp->getV1();
   for (int i = 0; i < std::min<int>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
     xxDot->getV3()(i) = xxDot_temp->getV3()(i);
   delete xxDot_temp;
 }
 
-void BasePoint::Construct()
+void BasePoint::construct()
 {
   P_ERROR_X1((eqn.size() != 0) && (var.size() != 0) && (eqn.size() == var.size()), "Number of equations and variables do not agree.");
   dim3 = eqn.size() - 1;
@@ -279,7 +279,7 @@ void BasePoint::Construct()
 }
 
 // private
-void BasePoint::Destruct()
+void BasePoint::destruct()
 {
   delete jac;
 
@@ -291,7 +291,7 @@ void BasePoint::Destruct()
 }
 
 // this will adapt the mesh whenever it is specified
-int BasePoint::Refine(std::ostream& out, bool adapt)
+int BasePoint::refine(std::ostream& out, bool adapt)
 {
   // here solNu is the previous solution
   if (adapt)
@@ -315,14 +315,14 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
 
     if (!adapt)
     {
-      Jacobian(*jac, *rhs, parNu, par, solNu, sol, varMap, 0.0, false);
+      jacobian(*jac, *rhs, parNu, par, solNu, sol, varMap, 0.0, false);
       jac->solve(*xx, *rhs, dim3);
-      Update(*xx);
+      update(*xx);
     } else
     {
-      Jacobian(*jac, *rhs, parNu, par, solNu, sol, varMapCont, 0.0, true);
+      jacobian(*jac, *rhs, parNu, par, solNu, sol, varMapCont, 0.0, true);
       jac->solve(*xx, *rhs, dim3+1);
-      AdaptUpdate(*xx);
+      updateWithAdaptation(*xx);
     }
     // computing norms to determine convergence
     Xnorm = sqrt(basecolloc->integrate(sol, sol));
@@ -340,7 +340,7 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
   return it;
 }
 
-int BasePoint::Tangent(bool adapt)
+int BasePoint::tangent(bool adapt)
 {
   double norm;
 
@@ -356,7 +356,7 @@ int BasePoint::Tangent(bool adapt)
     xxDot->getV3() /= norm;
   }
   // az RHS-t feleslegesen szamolja ki && the first qq should be qq0
-  Jacobian(*jac, *rhs, par, par, sol, sol, varMapCont, 0.0, true);
+  jacobian(*jac, *rhs, par, par, sol, sol, varMapCont, 0.0, true);
 
   double diffnorm = 1.0;
   int it = 0;
@@ -386,7 +386,7 @@ int BasePoint::Tangent(bool adapt)
   return it;
 }
 
-int BasePoint::Continue(double ds, bool jacstep)
+int BasePoint::nextStep(double ds, bool jacstep)
 {
   double Xnorm, Dnorm, Rnorm, Tnorm;
 
@@ -402,11 +402,11 @@ int BasePoint::Continue(double ds, bool jacstep)
   {
     basecolloc->init(solNu, parNu);
 
-    Jacobian(*jac, *rhs, par, parNu, sol, solNu, varMapCont, 0.0, true);
+    jacobian(*jac, *rhs, par, parNu, sol, solNu, varMapCont, 0.0, true);
 
     jac->solve(*xx, *rhs);
 
-    ContUpdate(*xx);
+    updateWithCp(*xx);
 
     Rnorm = sqrt(basecolloc->integrate(rhs->getV1(), rhs->getV1()) + (rhs->getV3()) * (rhs->getV3()));
     Xnorm = sqrt(basecolloc->integrate(solNu, solNu));
@@ -541,7 +541,7 @@ int PerSolPoint::StartTF(bool findangle, std::ostream& out)
     out << "    Z = " << zRe << " + I*" << zIm << "\n" 
            "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
   }
-  return Refine(out);
+  return refine(out);
 }
 
 void PerSolPoint::BinaryWrite(mat4Data& data, int n)

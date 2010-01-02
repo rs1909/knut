@@ -60,8 +60,7 @@ class PointTR : public BasePoint
 //     void JacobianFixed(Vector& sol, Vector& presol, Vector& par, Vector& prepar, bool cont);
 //     void JacobianVarying(Array1D<Vector*> A13, Array1D<int>& JacVar,
 //                          Vector& sol, Vector& presol, Vector& par, Vector& prepar, bool cont, double ds);
-    void Jacobian
-    (
+    void jacobian(
       HyperMatrix& AA, HyperVector& RHS, // output
       Vector& parPrev, Vector& par,      // parameters
       Vector& solPrev, Vector& sol,      // solution

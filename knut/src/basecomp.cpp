@@ -126,12 +126,12 @@ void BaseComp::run(const char* branchFile)
 
       screenout   << "\n---      Refine supplied solution      ---\n";
       print(screenout);
-      pt.Refine(screenout);
+      pt.refine(screenout);
       print(screenout);
       if (needFN)
       {
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
-        pt.Reset(eqn_start, var_start);
+        pt.reset(eqn_start, var_start);
         pt.setCont(params->getCp() - VarPAR0);
         pt.StartTF(findangle, screenout);   // it only computes the characteristic multiplier refines the solution
         print(screenout);
@@ -151,7 +151,7 @@ void BaseComp::run(const char* branchFile)
       //
       parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
-      parValuePrint(screenout, par, params->getCp(), var, -1, BifNone, pt.Norm(), 0, 0);
+      parValuePrint(screenout, par, params->getCp(), var, -1, BifNone, pt.norm(), 0, 0);
       screenout << "\n";
       print(screenout);
 
@@ -179,10 +179,10 @@ void BaseComp::run(const char* branchFile)
           screenout << "\nFinding the tangent.\n";
           pt.setCont(params->getCp() - VarPAR0);
           print(screenout);
-          pt.Tangent();
+          pt.tangent();
           break;
       }
-      pt.Reset(eqn, var);
+      pt.reset(eqn, var);
       pt.setCont(params->getCp() - VarPAR0);
 
       // if no stability computation then clear the previously computed multipliers
@@ -201,7 +201,7 @@ void BaseComp::run(const char* branchFile)
       {
         itpos = (itpos + 1) % ithist;
         //
-        it(itpos) = pt.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
+        it(itpos) = pt.nextStep(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
         if (stopFlag)
         {
           deleteData();
@@ -214,7 +214,7 @@ void BaseComp::run(const char* branchFile)
         ustabprev = ustab;
         ustab = pt.UStab();
         for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
-        norm = pt.Norm();
+        norm = pt.norm();
         // console output
         const bool endpoint = i == params->getSteps()-1;
         const bool stabchange = (i != 0) && (ustab != ustabprev);
@@ -237,8 +237,8 @@ void BaseComp::run(const char* branchFile)
         // adapt mesh if necessary
         if ((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
         {
-          const int itad = pt.Refine(screenout,true);
-          const int ittan = pt.Tangent(true);
+          const int itad = pt.refine(screenout,true);
+          const int ittan = pt.tangent(true);
           if (toprint || (i != 0  && ustab != ustabprev))
           {
             screenout << " " << itad << " " << ittan;
@@ -351,7 +351,7 @@ void BaseComp::run(const char* branchFile)
           pttr.ReadBinary(istr, params->getLabel()-1);
           screenout << "\nFinding the tangent.\n"; print(screenout);
           pttr.setCont(params->getCp() - VarPAR0);
-          pttr.Tangent();
+          pttr.tangent();
         } else
         {
           P_MESSAGE1("A torus cannot be started from scratch.");
@@ -371,9 +371,9 @@ void BaseComp::run(const char* branchFile)
           return;
         }
         // same as for periodic orbits
-        int it = pttr.Continue(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
+        int it = pttr.nextStep(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
         for (int j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
-        double norm = pttr.Norm();
+        double norm = pttr.norm();
         if (i % 24 == 0)
         {
           parNamePrint(screenout, npar, params->getCp(), var, parNames);

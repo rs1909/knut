@@ -25,10 +25,10 @@ class BasePoint
     BasePoint(System& sys, const Array1D<Eqn>& eqn_, const Array1D<Var>& var_, 
           const int solsize, const int nz_jac_);
     virtual ~BasePoint();
-    void    Reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_);
-    int     Refine(std::ostream& str = std::cout, bool adapt = false);
-    int     Tangent(bool adapt = false);
-    int     Continue(double ds, bool jacstep);
+    void    reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_);
+    int     refine(std::ostream& str = std::cout, bool adapt = false);
+    int     tangent(bool adapt = false);
+    int     nextStep(double ds, bool jacstep);
 
     // supplementary
     inline void    setSol(Vector& s)
@@ -82,7 +82,7 @@ class BasePoint
       KernEps = d;
     }
 
-    inline double  Norm()
+    inline double  norm()
     {
       // double e=0;
       // for( int j=0; j<colloc->nDim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
@@ -90,22 +90,21 @@ class BasePoint
     }
 /// END BASE CLASS
   protected:
-    virtual void Construct();
-    virtual void Destruct();
+    virtual void construct();
+    virtual void destruct();
 
     // should be moved to BaseColloc? Does it use any internal data?
     // this is a wrapper to collocation routines, so it can be here...
-    virtual void Jacobian
-    (
+    virtual void jacobian(
       HyperMatrix& AA, HyperVector& RHS, // output
       Vector& parPrev, Vector& par,      // parameters
       Vector& solPrev, Vector& sol,      // solution
       Array1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     ) = 0;
-    inline void   Update(HyperVector& X);                            // sol,   par              += X
-    inline void   ContUpdate(HyperVector& X);                        // solNu, parNu, parNu(cp) += X
-    inline void   AdaptUpdate(HyperVector& X);                        // sol,   par,   par(cp)   += X
+    inline void   update(HyperVector& X);                            // sol,   par              += X
+    inline void   updateWithCp(HyperVector& X);                        // solNu, parNu, parNu(cp) += X
+    inline void   updateWithAdaptation(HyperVector& X);                        // sol,   par,   par(cp)   += X
 
     // convergence parameters
     double       RefEps;
@@ -146,19 +145,19 @@ class BasePoint
     BaseColloc*  basecolloc;
 };
 
-inline void BasePoint::Update(HyperVector& X)
+inline void BasePoint::update(HyperVector& X)
 {
   sol += X.getV1();
   for (int i = 1; i < varMap.size(); i++) par(varMap(i)) += X.getV3()(i - 1);
 }
 
-inline void BasePoint::ContUpdate(HyperVector& X)
+inline void BasePoint::updateWithCp(HyperVector& X)
 {
   solNu += X.getV1();
   for (int i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
 }
 
-inline void BasePoint::AdaptUpdate(HyperVector& X)
+inline void BasePoint::updateWithAdaptation(HyperVector& X)
 {
   sol += X.getV1();
   for (int i = 1; i < varMapCont.size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
@@ -237,8 +236,8 @@ class PerSolPoint : public BasePoint
     void BinaryWrite(mat4Data& data, int n);
 
   protected:
-//    virtual void Construct();
-//    virtual void Destruct();
+//    virtual void construct();
+//    virtual void destruct();
     void         FillSol(System& sys_);
 
     // multipliers

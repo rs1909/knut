@@ -22,7 +22,7 @@ ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nin
   colloc = new ODEColloc(sys_, nint, ndeg);
   basecolloc = colloc;
   persolcolloc = colloc;
-  Construct();
+  construct();
   FillSol(sys_);
   par(colloc->nPar() + ParAngle) = 0.0;
   par(colloc->nPar() + ParRot) = 0.0;
@@ -31,7 +31,7 @@ ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nin
 ODEPoint::~ODEPoint()
 {
   delete colloc;
-  Destruct();
+  destruct();
 }
 
 #define NDIM (colloc->nDim())
@@ -40,8 +40,7 @@ ODEPoint::~ODEPoint()
 #define NDEG (colloc->nDeg())
 
 // its unmodified from point.cpp. Only some stuff is removed.
-void ODEPoint::Jacobian
-(
+void ODEPoint::jacobian(
   HyperMatrix& AA, HyperVector& RHS, // output
   Vector& parPrev, Vector& par,      // parameters
   Vector& solPrev, Vector& sol,      // solution

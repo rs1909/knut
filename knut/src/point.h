@@ -66,15 +66,14 @@ class Point : public PerSolPoint
 
   private:
 
-    void    Construct();
-    void    Destruct();
+    void    construct();
+    void    destruct();
 
     // internal member-functions
 //   inline double SolNorm( Vector& sol, Vector& par );
 
 /// MAKE IT VIRTUAL
-    void Jacobian
-    (
+    void jacobian(
       HyperMatrix& AA, HyperVector& RHS,                      // output
       Vector& parPrev, Vector& par,                           // parameters
       Vector& solPrev, Vector& sol,                           // solution

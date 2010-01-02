@@ -31,8 +31,7 @@ class ODEPoint : public PerSolPoint
     virtual void SwitchTFPD(double ds) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
     virtual void SwitchTFHB(double ds, std::ostream& out) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
   private:
-    virtual void Jacobian
-    (
+    virtual void jacobian(
       HyperMatrix& AA, HyperVector& RHS, // output
       Vector& parPrev, Vector& par,      // parameters
       Vector& solPrev, Vector& sol,      // solution

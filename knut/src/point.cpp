@@ -37,7 +37,7 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
   basecolloc = colloc;
   persolcolloc = colloc;
 
-  Construct();
+  construct();
   FillSol(sys_);
   par(NPAR + ParAngle) = 0.0;
   par(NPAR + ParRot) = 0.0;
@@ -45,7 +45,7 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
 
 Point::~Point()
 {
-  Destruct();
+  destruct();
   delete colloc;
 }
 
@@ -53,11 +53,11 @@ Point::~Point()
 // What does it construct?
 // charMat
 // xxDot, xx, rhs, jac
-void Point::Construct()
+void Point::construct()
 {
   P_ERROR_X1((eqn(0) == EqnSol) && (var(0) == VarSol), "The first equation must be the boundary value problem of the periodic solution.");
 
-  BasePoint::Construct();
+  BasePoint::construct();
   
   // a) setting the test functionals b) determining the number of trivial multipliers
   testFunct.init(eqn.size());
@@ -113,10 +113,10 @@ void Point::Construct()
 }
 
 // private
-void Point::Destruct()
+void Point::destruct()
 {
   for (int i=0; i<testFunct.size(); ++i) delete testFunct(i);
-  BasePoint::Destruct();
+  BasePoint::destruct();
 }
 
 // **************************************************************************************************************** //
@@ -125,7 +125,7 @@ void Point::Destruct()
 //
 // **************************************************************************************************************** //
 
-void Point::Jacobian(
+void Point::jacobian(
   HyperMatrix& AA, HyperVector& RHS,                      // output
   Vector& parPrev, Vector& par,                           // parameters
   Vector& solPrev, Vector& sol,                           // solution
