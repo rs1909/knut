@@ -23,7 +23,7 @@
 #include <cfloat>
 
 #define NDIM colloc->nDim()
-#define NTAU colloc->Ntau()
+#define NTAU colloc->nTau()
 #define NPAR colloc->nPar()
 #define NINT colloc->nInt()
 #define NDEG colloc->nDeg()

@@ -674,7 +674,7 @@ void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
 }
 
 // similar to RHS_x but with one boundary condition only and multiplied by Z
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Z)
+void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -744,7 +744,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Z)
 
 
 // this has to be changed only to packed complex.
-void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Re, double Im)
+void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -848,7 +848,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Re, double Im)
 
 // REAL
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
+void NColloc::jotf_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_x_p++;
@@ -984,7 +984,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
 
 // COMPLEX
 
-void NColloc::CharJac_x_p(Vector& V, const Vector& par,
+void NColloc::jotf_x_p(Vector& V, const Vector& par,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im, int alpha)
 {
@@ -1143,7 +1143,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z)
+void NColloc::jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x_x++;
@@ -1220,7 +1220,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
   }
 }
 
-void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
+void NColloc::jotf_x_x(SpMatrix& A, const Vector& par,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
                           double Re, double Im)
 {
@@ -1336,7 +1336,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
 
 // this is for CharmatCPLX
 
-void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
+void NColloc::jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
                           const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im)
 {
 #ifdef DEBUG
@@ -1394,7 +1394,7 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
 //! from now CharmatLPAUT
 //!
 
-void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, double Z)
+void NColloc::jotf_mB(SpMatrix& B, const Vector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB++;
@@ -1453,7 +1453,7 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, double Z)
 
 // same as CharJac_x_p, but only writes the B part
 
-void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
+void NColloc::jotf_mB_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_mB_p++;
@@ -1591,7 +1591,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
 }
 
 // like x_x but write bpart only
-void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& phiData, double Z)
+void NColloc::jotf_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB_x++;
@@ -1678,7 +1678,7 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
 //! this is also for CharmatLPAUT: for computing q_0 and its derivatives: q_0, D_x q_0, D_p q_0
 //!
 
-void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solMSHData)
+void NColloc::jotf_trivialKernelOnMesh(Vector& V, const Vector& par, const Array3D<double>& solMSHData)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi++;
@@ -1691,7 +1691,7 @@ void NColloc::CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>
   }
 }
 
-void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha)
+void NColloc::jotf_trivialKernelOnMesh_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi_p++;

@@ -24,7 +24,7 @@
 #define NDIM (col.nDim())
 #define NDEG (col.nDeg())
 #define NINT (col.nInt())
-#define NTAU (col.Ntau())
+#define NTAU (col.nTau())
 #define NPAR (col.nPar())
 
 template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im)
@@ -76,7 +76,7 @@ TestFunct::~TestFunct()
 void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   // creating the matrix
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
   AHAT.getA13(0).random();
   AHAT.getA31(0).random();
   AHAT.getA33()(0, 0) = 0.0;
@@ -134,7 +134,7 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
     first = false;
   }
 
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
 
   AHAT.multiply<false>(rhs, one, vv, gg);
   one -= 1.0;
@@ -180,7 +180,7 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   col.interpolate(vvData, vv);
-  col.CharJac_x_p(A_p, par, vvData, ZZ, alpha);
+  col.jotf_x_p(A_p, par, vvData, ZZ, alpha);
   const double gg_p = (uu * A_p);
 //  std::cout<<"GP "<<alpha<<":"<<gg_p;
   return gg_p; // positive, because the test function is not negated in the Jacobian
@@ -189,7 +189,7 @@ double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/
 void   TestFunct::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.interpolate(vvData, vv);
-  col.CharJac_x_x(A_x, par, vvData, ZZ);
+  col.jotf_x_x(A_x, par, vvData, ZZ);
   func = !A_x * uu; // positive, because the test function is not negated in the Jacobian
 //  func *= 100.0;
 }
@@ -226,7 +226,7 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
 {
   ZRe = Re;
   ZIm = Im;
-  col.CharJac_x(AHAT.getA11(), par, Re, Im);
+  col.jotf_x(AHAT.getA11(), par, Re, Im);
   AHAT.getA13(0).random();
   AHAT.getA31(0).random();
   AHAT.getA33().clear();
@@ -276,7 +276,7 @@ void TestFunctCPLX::Funct(double& f1, double& f2,
 
   ZRe = Re;
   ZIm = Im;
-  col.CharJac_x(AHAT.getA11(), par, Re, Im);
+  col.jotf_x(AHAT.getA11(), par, Re, Im);
   AHAT.solve(2, vv, gg, rhs, one);
   AHAT.solveTr(2, uu, hh, rhs, one);
   AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
@@ -299,7 +299,7 @@ void TestFunctCPLX::Funct_p(double& f1, double& f2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/,
                             int alpha)
 {
-  col.CharJac_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
+  col.jotf_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
   f1 = (AHAT.getA13(0)/*uu*/ * A_p);
   f2 = (AHAT.getA13(1)/*uu^conj*/ * A_p);
 }
@@ -307,7 +307,7 @@ void TestFunctCPLX::Funct_p(double& f1, double& f2,
 void TestFunctCPLX::Funct_z(double& f1, double& f2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.CharJac_x_z(A_p, par, AHAT.getA31(0), vvDataRe, vvDataIm, ZRe, ZIm);
+  col.jotf_x_z(A_p, par, AHAT.getA31(0), vvDataRe, vvDataIm, ZRe, ZIm);
   const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
   const double dzim = (AHAT.getA13(1)/*uu^conj*/ * A_p);
   f1 = (-dzim * ZRe - dzre * ZIm);
@@ -317,7 +317,7 @@ void TestFunctCPLX::Funct_z(double& f1, double& f2,
 void TestFunctCPLX::Funct_x(Vector& func1, Vector& func2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.CharJac_x_x(A_x, par, vvDataRe, vvDataIm, ZRe, ZIm);
+  col.jotf_x_x(A_x, par, vvDataRe, vvDataIm, ZRe, ZIm);
   func1 = !A_x * AHAT.getA13(0); /*uu*/
   func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
 }
@@ -428,11 +428,11 @@ TestFunctLPAUT::~TestFunctLPAUT()
 void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
 {
   // creating the matrix
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   col.interpolateOnMesh(solMSHData, sol);
-  col.CharJac_MSHphi(phi, par, solMSHData);
+  col.jotf_trivialKernelOnMesh(phi, par, solMSHData);
 
   col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
@@ -483,11 +483,11 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
     first = false;
   }
 
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   col.interpolateOnMesh(solMSHData, sol);
-  col.CharJac_MSHphi(phi, par, solMSHData);
+  col.jotf_trivialKernelOnMesh(phi, par, solMSHData);
 
   col.star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
@@ -515,12 +515,12 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
 
 double TestFunctLPAUT::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
-  col.CharJac_x_p(A_p, par, vv2Data, ZZ, alpha);
-  col.CharJac_mB_p(mB_p, par, phiData, ZZ, alpha);
+  col.jotf_x_p(A_p, par, vv2Data, ZZ, alpha);
+  col.jotf_mB_p(mB_p, par, phiData, ZZ, alpha);
 
-  col.CharJac_MSHphi_p(DpPhi, par, solMSHData, alpha);
+  col.jotf_trivialKernelOnMesh_p(DpPhi, par, solMSHData, alpha);
   // check
-//  col.CharJac_x_p( temp, par, phiData, ZZ, alpha );
+//  col.jotf_x_p( temp, par, phiData, ZZ, alpha );
 //  std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
 //  temp = AHAT.getA11() * DpPhi;
 //  std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
@@ -536,8 +536,8 @@ double TestFunctLPAUT::Funct_p(NColloc& col, const Vector& par, const Vector& /*
 
 void   TestFunctLPAUT::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.CharJac_x_x(A_x, par, vv2Data, ZZ);
-  col.CharJac_mB_x(mB_x, par, phiData, ZZ);
+  col.jotf_x_x(A_x, par, vv2Data, ZZ);
+  col.jotf_mB_x(mB_x, par, phiData, ZZ);
   func = !A_x * uu2;
 
   temp = !mB * uu2;
@@ -595,11 +595,11 @@ TestFunctLPAUTROT::~TestFunctLPAUTROT()
 void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
 {
   // creating the matrix
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   col.interpolateOnMesh(solMSHData, sol);
-  col.CharJac_MSHphi(phi, par, solMSHData);
+  col.jotf_trivialKernelOnMesh(phi, par, solMSHData);
 
   temp = AHAT.getA11() * phi;
 //   std::cout << "temp: " << temp*temp << " phi: " << phi*phi << "\n";
@@ -664,11 +664,11 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
     first = false;
   }
 
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   col.interpolateOnMesh(solMSHData, sol);
-  col.CharJac_MSHphi(phi, par, solMSHData);
+  col.jotf_trivialKernelOnMesh(phi, par, solMSHData);
 
 //  temp = AHAT.getA11() * phi;
 //  std::cout<<"temp: "<<temp*temp<<" phi: "<<phi*phi<<"\n";
@@ -707,11 +707,11 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
 
 double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
-  col.CharJac_x_p(A_p, par, vv3Data, ZZ, alpha);
-  col.CharJac_MSHphi_p(DpPhi, par, solMSHData, alpha);
+  col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
+  col.jotf_trivialKernelOnMesh_p(DpPhi, par, solMSHData, alpha);
   double gg_p = (uu3 * A_p);
   // check
-//  col.CharJac_x_p( temp, par, phiData, ZZ, alpha );
+//  col.jotf_x_p( temp, par, phiData, ZZ, alpha );
 //  std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
 //  temp = AHAT.getA11() * DpPhi;
 //  std::cout<<"t: "<<alpha<<", "<<temp*temp<<"\n";
@@ -719,11 +719,11 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
   // end check
   // first phi
   temp = mB * DpPhi;
-  col.CharJac_mB_p(mB_p, par, phiData, ZZ, alpha);
+  col.jotf_mB_p(mB_p, par, phiData, ZZ, alpha);
   temp += mB_p;
   gg_p += gg3(0) * (uu3 * temp) + hh3(0) * col.integrate(DpPhi, vv3);
   // second LAM ( mB * LAM -> only mB_p is nonzero )
-  col.CharJac_mB_p(mB_p, par, LAMData, ZZ, alpha);
+  col.jotf_mB_p(mB_p, par, LAMData, ZZ, alpha);
   gg_p += gg3(1) * (uu3 * mB_p);
 
 //  if( alpha==0 ) gg_p *= 22.0;
@@ -734,17 +734,17 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
 void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.interpolate(vv3Data, vv3);
-  col.CharJac_x_x(A_x, par, vv3Data, ZZ);
+  col.jotf_x_x(A_x, par, vv3Data, ZZ);
   func = !A_x * uu3;
 
   temp = !mB * uu3;
   col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, temp);
   func += gg3(0) * DxPhi;
-  col.CharJac_mB_x(mB_x, par, phiData, ZZ);
+  col.jotf_mB_x(mB_x, par, phiData, ZZ);
   temp = !mB_x * uu3;
   func += gg3(0) * temp;
 
-  col.CharJac_mB_x(mB_x, par, LAMData, ZZ);
+  col.jotf_mB_x(mB_x, par, LAMData, ZZ);
   temp = !mB_x * uu3;
   func += gg3(1) * temp;
 
@@ -815,8 +815,8 @@ TestFunctLPAUTROT_X::~TestFunctLPAUTROT_X()
 void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   // creating the matrix
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   vv1.random();
   uu1.random();
@@ -895,8 +895,8 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
     first = false;
   }
 
-  col.CharJac_x(AHAT.getA11(), par, ZZ);
-  col.CharJac_mB(mB, par, ZZ);
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  col.jotf_mB(mB, par, ZZ);
 
   AHAT.getA13(0) = uu1;
   AHAT.getA13(1) = uu2;
@@ -943,10 +943,10 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
 
 double TestFunctLPAUTROT_X::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
-  col.CharJac_x_p(A_p, par, vv3Data, ZZ, alpha);
-  col.CharJac_mB_p(mB_p, par, vv1Data, ZZ, alpha);
+  col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
+  col.jotf_mB_p(mB_p, par, vv1Data, ZZ, alpha);
   temp = gg3(0) * mB_p;
-  col.CharJac_mB_p(mB_p, par, vv2Data, ZZ, alpha);
+  col.jotf_mB_p(mB_p, par, vv2Data, ZZ, alpha);
   temp += gg3(1) * mB_p;
 
   double gg_p = (uu3 * A_p) + (uu3 * temp);
@@ -956,12 +956,12 @@ double TestFunctLPAUTROT_X::Funct_p(NColloc& col, const Vector& par, const Vecto
 
 void   TestFunctLPAUTROT_X::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
-  col.CharJac_x_x(A_x, par, vv3Data, ZZ);
+  col.jotf_x_x(A_x, par, vv3Data, ZZ);
   func = !A_x * uu3;
-  col.CharJac_mB_x(mB_x, par, vv1Data, ZZ);
+  col.jotf_mB_x(mB_x, par, vv1Data, ZZ);
   temp = !mB_x * uu3;
   func += gg3(0) * temp;
-  col.CharJac_mB_x(mB_x, par, vv2Data, ZZ);
+  col.jotf_mB_x(mB_x, par, vv2Data, ZZ);
   temp = !mB_x * uu3;
   func += gg3(1) * temp;
 }

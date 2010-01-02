@@ -44,32 +44,33 @@ class NColloc : public PerSolColloc
 
     // continuation of bifurcations -> characteristic matrices
 
-    inline int Ntau() const { return ntau; }
+    inline int nTau() const { return ntau; }
 
-    void CharJac_x(SpMatrix& A, const Vector& par, double Z);
-    void CharJac_x(SpMatrix& A, const Vector& par, double ZRe, double ZIm);
+    // Jacobian of the test funtional: jotf
+    void jotf_x(SpMatrix& A, const Vector& par, double Z);
+    void jotf_x(SpMatrix& A, const Vector& par, double ZRe, double ZIm);
 
-    void CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int p);
-    void CharJac_x_p(Vector& V, const Vector& par,
+    void jotf_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int p);
+    void jotf_x_p(Vector& V, const Vector& par,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double ZRe, double ZIm, int p);
 
-    void CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
-    void CharJac_x_x(SpMatrix& A, const Vector& par,
+    void jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
+    void jotf_x_x(SpMatrix& A, const Vector& par,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
 
-    void CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
+    void jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
       const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
     // we do need Re, Im
 
     // for the autonomous FOLD bifurcation
-    void CharJac_mB(SpMatrix& A, const Vector& par, double Z);
-    void CharJac_mB_p(Vector& V,   const Vector& par, const Array3D<double>& phiData, double Z, int alpha);
-    void CharJac_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
+    void jotf_mB(SpMatrix& A, const Vector& par, double Z);
+    void jotf_mB_p(Vector& V,   const Vector& par, const Array3D<double>& phiData, double Z, int alpha);
+    void jotf_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
 
     // autonomous trivial eigenvector
-    void CharJac_MSHphi(Vector& V, const Vector& par, const Array3D<double>& solMSHData);
-    template<bool trans> void CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi);
-    void CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha);
+    void jotf_trivialKernelOnMesh(Vector& V, const Vector& par, const Array3D<double>& solMSHData);
+    template<bool trans> void jotf_trivialKernelOnMesh_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi);
+    void jotf_trivialKernelOnMesh_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha);
 
   private:
 
@@ -236,7 +237,7 @@ class NColloc : public PerSolColloc
 #define NDEG ndeg
 #define NMAT nmat
 
-template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi)
+template<bool trans> void NColloc::jotf_trivialKernelOnMesh_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi_x++;

@@ -473,7 +473,7 @@ int BasePoint::nextStep(double ds, bool jacstep)
 }
 
 #define NDIM persolcolloc->nDim()
-#define NTAU persolcolloc->Ntau()
+#define NTAU persolcolloc->nTau()
 #define NPAR persolcolloc->nPar()
 #define NINT persolcolloc->nInt()
 #define NDEG persolcolloc->nDeg()
