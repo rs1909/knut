@@ -125,7 +125,7 @@ void ODEPoint::Stability()
     matrixInitialCondition(i,i) = 1.0;
   }
   colloc->StabJac(jacStab, par);
-  jacStab.Solve(matrixSolution, matrixInitialCondition);
+  jacStab.solve(matrixSolution, matrixInitialCondition);
   for (int i = 0; i < NDIM; ++i)
   {
     for (int j = 0; j< NDIM; ++j)
@@ -133,5 +133,5 @@ void ODEPoint::Stability()
       monodromyMatrix(i,j) = matrixSolution(NDIM*NDEG*NINT+i,j);
     }
   }
-  monodromyMatrix.Eigval(mRe, mIm);
+  monodromyMatrix.eigenvalues(mRe, mIm);
 }

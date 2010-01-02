@@ -611,13 +611,13 @@ class Vector : public Array1D<double>
 
 #ifndef KNUTSYS_H
 
-    inline void Print() const
+    inline void print() const
     {
       for (int j = 0; j < n; j++) std::cout << v[j] << '\t';
       std::cout << '\n';
     }
 
-    inline void Rand()
+    inline void random()
     {
       static int idist = 2;
       static int iseed[4] =
@@ -733,9 +733,9 @@ class Matrix : public Array2D<double>
     // obsolote
     inline Matrix& operator=(const __op_mul_vec_plus_vec_rng<SpMatrix, Matrix>);
 
-    void Eigval(Vector& re, Vector& im);
-    void Eigval(Vector& re, Vector& im, Matrix& lev, Matrix& rev);
-    void StrPlot(GnuPlot& pl);
+    void eigenvalues(Vector& re, Vector& im);
+    void eigenvalues(Vector& re, Vector& im, Matrix& lev, Matrix& rev);
+    void sparsityPlot(GnuPlot& pl);
 
     /* operators */
 
@@ -764,7 +764,7 @@ class Matrix : public Array2D<double>
       return __scal_vec_trans_rng<Matrix>(*this, r_);
     }
 
-    inline void Print()
+    inline void print()
     {
       double sum = 0.0;
       for (int i = 0; i < r; i++)
@@ -839,7 +839,7 @@ class MatFact : public Matrix
       return *this;
     }
 
-    inline void New()
+    inline void modified()
     {
       fact = false;
     }
@@ -853,9 +853,9 @@ class MatFact : public Matrix
       return Matrix::col();
     }
 
-    void Fact();
-    void Solve(Vector& X, const Vector& B, bool TRANS = false);
-    void Solve(Matrix& X, const Matrix& B, bool TRANS = false);
+    void luFactorize();
+    void solve(Vector& X, const Vector& B, bool TRANS = false);
+    void solve(Matrix& X, const Matrix& B, bool TRANS = false);
 };
 
 typedef Array1D< Matrix > JagMatrix3D;

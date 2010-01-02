@@ -252,7 +252,7 @@ class VectorField : public Symbol
     
     bool testHasNonconstantDelay() { return HasNonconstantDelay; }
 
-    void Print(void);
+    void print(void);
     void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
     void Knut_ConvertStateToZlags(GiNaC::ex& f);
     void Knut_PrintParDerivs(std::ostream &dout, const std::vector<GiNaC::ex> &e);

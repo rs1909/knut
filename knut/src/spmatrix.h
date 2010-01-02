@@ -152,7 +152,7 @@ class SpMatrix
     void Swap();
     // these are used for debugging only
     /// plots the structure of the matrix
-    void StrPlot(GnuPlot& pl);
+    void sparsityPlot(GnuPlot& pl);
     /// prints out Ap
     void PrintAp()
     {
@@ -160,7 +160,7 @@ class SpMatrix
       std::cout << '\n';
     }
     /// prints the whole matrix onto the screen
-    void Print();
+    void print();
 };
 
 // **************************************************************************//
@@ -192,7 +192,7 @@ class SpFact : public SpMatrix
     }
     ~SpFact();
 
-    inline void New()
+    inline void modified()
     {
       fact = false;
     }
@@ -204,17 +204,17 @@ class SpFact : public SpMatrix
     void clear();
     void clear(char F);
 
-    void Solve(double* x, double* b, bool trans = false);
-    void Solve(Vector& x, const Vector& b, bool trans = false);
-    void Solve(Matrix& x, const Matrix& b, bool trans = false);
+    void solve(double* x, double* b, bool trans = false);
+    void solve(Vector& x, const Vector& b, bool trans = false);
+    void solve(Matrix& x, const Matrix& b, bool trans = false);
     /// get the diagonal of the Upper factor
     int GetDX(Vector& V)
     {
-      if (!fact) Fact();
+      if (!fact) luFactorize();
       return umfpack_di_get_numeric(0, 0, 0, 0, 0, 0, 0, 0, V.v, 0, 0, Numeric);
     }
   private:
-    void Fact();
+    void luFactorize();
 };
 
 // void NColloc::StabJac( StabMat& AB, const Vector& par, const JagMatrix3D& solData );
@@ -253,7 +253,7 @@ class StabMatrix
       return AI(i);
     }
 
-    void Eigval(Vector& wr, Vector& wi);
+    void eigenvalues(Vector& wr, Vector& wi);
 
   private:
 

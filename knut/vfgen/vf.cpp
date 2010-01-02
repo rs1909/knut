@@ -565,7 +565,7 @@ int VectorField::ProcessSymbols(void)
   return rval;
 }
 
-void VectorField::Print(void)
+void VectorField::print(void)
 {
   cout << "Name:       " << Name();
   cout << "   Independent Variable: " << IndependentVariable << endl;

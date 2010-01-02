@@ -51,7 +51,7 @@ class Point : public PerSolPoint
     void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
  
     void    Plot(GnuPlot& pl);
-    inline void    Print(char* file)
+    inline void    print(char* file)
     {
       std::ofstream ff(file);
       for (int i = 0; i < colloc->Nint()*colloc->Ndeg() + 1; i++)

@@ -407,9 +407,9 @@ void Point::Stability()
 
   colloc->StabJac(jacStab, par);
 
-  jacStab.Eigval(mRe, mIm);
-//  mRe.Print();
-//  mIm.Print();
+  jacStab.eigenvalues(mRe, mIm);
+//  mRe.print();
+//  mIm.print();
 }
 
 void Point::Plot(GnuPlot& pl)

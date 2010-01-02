@@ -25,7 +25,7 @@ using namespace std;
 // **************************************************************************//
 
 
-void Matrix::StrPlot(GnuPlot& pl)
+void Matrix::sparsityPlot(GnuPlot& pl)
 {
   pl.Plot(0, "with points ps 0.1");
 
@@ -42,7 +42,7 @@ void Matrix::StrPlot(GnuPlot& pl)
   pl.Show();
 }
 
-void Matrix::Eigval(Vector& wr, Vector& wi)
+void Matrix::eigenvalues(Vector& wr, Vector& wi)
 {
   if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
@@ -91,7 +91,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi)
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
-void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
+void Matrix::eigenvalues(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
 {
   if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
@@ -123,7 +123,7 @@ void Matrix::Eigval(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
 
 // MatFact routines
 
-void MatFact::Fact()
+void MatFact::luFactorize()
 {
   P_ASSERT_X(this->r == this->c, "MatFact::Fact wrong dimensions");
 
@@ -140,7 +140,7 @@ void MatFact::Fact()
   fact = true;
 }
 
-void MatFact::Solve(Vector& x, const Vector& b, bool trans)
+void MatFact::solve(Vector& x, const Vector& b, bool trans)
 {
   P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
   P_ASSERT_X(b.size() == this->c, "MatFact::Solve Vector sizes differ: M-V\n");
@@ -167,7 +167,7 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
       }
       break;
     default:
-      if (!fact) Fact();
+      if (!fact) luFactorize();
 
       char FACT = 'F', equed = 'N', TRANS;
       if (trans) TRANS = 'T';
@@ -186,7 +186,7 @@ void MatFact::Solve(Vector& x, const Vector& b, bool trans)
 //  cout<<"dim: "<<this->r<<" b: "<<sqrt(b*b)<<" e: "<<sqrt(err*err)<<"\n";
 }
 
-void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
+void MatFact::solve(Matrix& x, const Matrix& b, bool trans)
 {
   P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
   P_ASSERT_X(b.col() != x.col(), "MatFact::Solve Matrix columns differ\n");
@@ -222,7 +222,7 @@ void MatFact::Solve(Matrix& x, const Matrix& b, bool trans)
       }
       break;
     default:
-      if (!fact) Fact();
+      if (!fact) luFactorize();
 
       char FACT = 'F', equed = 'N', TRANS;
       if (trans) TRANS = 'T';

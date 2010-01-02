@@ -199,7 +199,7 @@ static void poly_int(Matrix& out, const Vector& t)
       poly2.clear();
       poly1(0) = 1.0;
       poly2(0) = 1.0;
-      //      poly.Print();
+      //      poly.print();
       // i,j az out matrix indexe
       //      cout<<"in:poly_mul\n";
       for (k = 0; k < t.size(); k++)
@@ -241,7 +241,7 @@ static void poly_diff_int(Matrix& out, const Vector& t)
       poly2.clear();
       poly1(0) = 1.0;
       poly2(0) = 1.0;
-      //      poly.Print();
+      //      poly.print();
       // i,j az out matrix indexe
       //      cout<<"in:poly_mul\n";
       for (k = 0; k < t.size(); k++)
@@ -289,10 +289,10 @@ PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
   
   poly_int_trap(metric, meshINT);
   poly_diff_int_trap(metricPhase, meshINT);
-//  meshINT.Print();
-//  col.Print();
-//  metric.Print();
-//  metricPhase.Print();
+//  meshINT.print();
+//  col.print();
+//  metric.print();
+//  metricPhase.print();
 
   // computes the largrange coefficients
   for (int i = 0; i < ndeg+1; i++)
@@ -785,7 +785,7 @@ void PerSolColloc::Export(Vector& outs, const Vector& mshint, const Vector& mshd
       double c = (t - mesh(k)) / (mesh(k + 1) - mesh(k));  // mesh is the interval mesh in the class
 
       poly_lgr(in_mesh, in_lgr, c);
-      // in_lgr.Print();
+      // in_lgr.print();
       for (int p = 0; p < NDIM; p++)
       {
         outs(p + NDIM*(j + i*ndeg_)) = 0.0;

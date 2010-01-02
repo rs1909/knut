@@ -136,7 +136,7 @@ void NColloc::init(const Vector& sol, const Vector& par)
       kkS(0, idx) = i;
       kkI(0, idx) = i;
       poly_dlg(meshINT, out, col(j));
-      // out.Print(); std::cout<<"SS\n";
+      // out.print(); std::cout<<"SS\n";
       for (int k = 0; k < NDEG + 1; k++)
       {
         tt(0, k, idx) = out(k) / h0;
@@ -1179,7 +1179,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
     {
       vx[0] = r;        // CHANGE THIS to 0
       sys->p_deri(p_t_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
-      //std::cout<<"t_dfx "; t_dfx.Print();
+      //std::cout<<"t_dfx "; t_dfx.print();
       for (int ra = 0; ra < NDIM; ra++)
       {
         for (int rb = 0; rb < NDIM; rb++)
@@ -1280,7 +1280,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
         vx[0] = r;        // CHANGE THIS to 0
         sys->p_deri(p_t_dfxRe, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataRe);
         sys->p_deri(p_t_dfxIm, time, solData, par, 0, nx, &vx[0], np, &vp, phiDataIm);
-        //std::cout<<"t_dfx "; t_dfx.Print();
+        //std::cout<<"t_dfx "; t_dfx.print();
         for (int ra = 0; ra < NDIM; ra++)
         {
           for (int rb = 0; rb < NDIM; rb++)
@@ -1293,7 +1293,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
           }
         }
       }
-      //std::cout<<"dfx "; dfx.Print();
+      //std::cout<<"dfx "; dfx.print();
     }
     for (int idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -1635,7 +1635,7 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
     {
       vx[0] = r;        // CHANGE THIS to 0
       sys->p_deri(p_t_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
-      //std::cout<<"t_dfx "; t_dfx.Print();
+      //std::cout<<"t_dfx "; t_dfx.print();
       for (int ra = 0; ra < NDIM; ra++)
       {
         for (int rb = 0; rb < NDIM; rb++)

@@ -115,9 +115,9 @@ template< class FACT > class HyMatrix
       Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
     );
 
-    void Solve(HyperVector& X, const HyperVector& F);
+    void solve(HyperVector& X, const HyperVector& F);
 
-    void Solve(HyperVector& X, const HyperVector& F, int bord);
+    void solve(HyperVector& X, const HyperVector& F, int bord);
 
     template<bool trans> void Multiply(HyperVector& X, const HyperVector& F, int bord);
 
@@ -125,26 +125,26 @@ template< class FACT > class HyMatrix
 
     void SolveDIRECT(HyperVector& X, const HyperVector& F);
 
-    void Solve(Vector& x, const Vector& f)
+    void solve(Vector& x, const Vector& f)
     {
-      A11->Solve(x, f);
+      A11->solve(x, f);
     }
 
     template<bool trans> void Multiply(Vector& R1, double& R3, const Vector& X1, const double& X3);
 
     template<bool trans> void Check(const Vector& x, const double& z, const Vector& f, const double& h);
 
-    void Solve(Vector& x, double& z, const Vector& f, const double& h);   // BEM
+    void solve(Vector& x, double& z, const Vector& f, const double& h);   // BEM
 
-    void SolveTR(Vector& x, double& z, const Vector& f, const double& h);   // BEM
+    void solveTr(Vector& x, double& z, const Vector& f, const double& h);   // BEM
 
     template<bool trans> void Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3);
 
     template<bool trans> void Check(int bord, const Vector& x, const Vector& z, const Vector& f, const Vector& h);
 
-    void Solve(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
+    void solve(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
 
-    void SolveTR(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
+    void solveTr(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
 
   protected:
 
@@ -294,10 +294,10 @@ inline void HyMatrix<FACT> :: __BEM(T& _A, Vector& _b, Vector& _bStar, double& _
   double y1, y2;
 
   // Doolittle
-  _A.Solve(bem_vStar, _bStar, !trans);                              // Step 1.
+  _A.solve(bem_vStar, _bStar, !trans);                              // Step 1.
   deltaStar = _d - bem_vStar * _b;                                  // Step 2. Scalar + ddot
   // Crout
-  _A.Solve(bem_v, _b, trans);                                       // Step 3.
+  _A.solve(bem_v, _b, trans);                                       // Step 3.
   delta = _d - _bStar * bem_v;                                      // Step 4. Scalar + ddot
   // approx Y
   y1 = (g - bem_vStar * f) / deltaStar;                             // Step 5. Scalar + ddot
@@ -307,7 +307,7 @@ inline void HyMatrix<FACT> :: __BEM(T& _A, Vector& _b, Vector& _bStar, double& _
   g1 = g - _d * y1;                                                 // Step 7. Scalar
 
   // residual corrections
-  _A.Solve(bem_w, bem_f1, trans);                                   // Step 8.
+  _A.solve(bem_w, bem_f1, trans);                                   // Step 8.
   y2 = (g1 - _bStar * bem_w) / delta;                               // Step 9. Scalar + ddot
   bem_w -= y2 * bem_v;                                              // Step 10. daxpy
   x = bem_w;
@@ -344,7 +344,7 @@ inline void HyMatrix<FACT> :: __BEMWS
     G(k) = F(k)(len) - D(idx, idx) * Y(k);
   }
 
-  A.Solve(X(0), F(0), trans);
+  A.solve(X(0), F(0), trans);
   double ypp;
 
   for (int k = 1; k <= j; k++)
@@ -573,33 +573,33 @@ void HyMatrix<FACT>::Check(const HyperVector& X, const HyperVector& F, int bord)
 
 // Wrapper functions
 template<class FACT>
-void HyMatrix<FACT>::Solve(Vector& x, double& z, const Vector& f, const double& h)   // BEM
+void HyMatrix<FACT>::solve(Vector& x, double& z, const Vector& f, const double& h)   // BEM
 {
   __BEM<FACT, false>(*A11, (*A13)(0), (*A31)(0), (*A33)(0, 0), x, z, f, h, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1);
 }
 
 template<class FACT>
-void HyMatrix<FACT>::SolveTR(Vector& x, double& z, const Vector& f, const double& h)   // BEM
+void HyMatrix<FACT>::solveTr(Vector& x, double& z, const Vector& f, const double& h)   // BEM
 {
   __BEM<FACT, true>(*A11, (*A31)(0), (*A13)(0), (*A33)(0, 0), x, z, f, h, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1);
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Solve(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
+void HyMatrix<FACT>::solve(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
 {
   __BEMW<FACT, false>(bord, *A11, *A13, *A31, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<false>( bord, X1, X3, F1, F3 );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::SolveTR(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
+void HyMatrix<FACT>::solveTr(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
 {
   __BEMW<FACT, true>(bord, *A11, *A31, *A13, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<true>( bord, X1, X3, F1, F3 );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F)
+void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F)
 {
   P_ASSERT_X(A11 != 0, "HyMatrix::Solve Error");
   if (A33 != 0)
@@ -607,22 +607,22 @@ void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F)
     // MBEW v BEM
     if (A33->col() == 1)
     {
-      Solve(X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0));
+      solve(X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0));
     }
     else
     {
-      Solve(A33->col(), X.getV1(), X.getV3(), F.getV1(), F.getV3());
+      solve(A33->col(), X.getV1(), X.getV3(), F.getV1(), F.getV3());
     }
   }
   else
   {
-    A11->Solve(X.getV1(), F.getV1());
+    A11->solve(X.getV1(), F.getV1());
   }
   // Check( X, F, F.getV3().size() );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F, int bord)
+void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F, int bord)
 {
   P_ASSERT_X(A11 != 0, "HyMatrix::Solve Error");
   if (A33 != 0)
@@ -630,16 +630,16 @@ void HyMatrix<FACT>::Solve(HyperVector& X, const HyperVector& F, int bord)
     // MBEW v BEM
     if (bord == 1)
     {
-      Solve(X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0));
+      solve(X.getV1(), X.getV3()(0), F.getV1(), F.getV3()(0));
     }
     else
     {
-      Solve(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
+      solve(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
     }
   }
   else
   {
-    A11->Solve(X.getV1(), F.getV1());
+    A11->solve(X.getV1(), F.getV1());
   }
   // Check( X, F, F.getV3().size() );
 }
@@ -689,7 +689,7 @@ void HyMatrix<FACT>::SolveDIRECT(HyperVector& X, const HyperVector& F)
     FF(dim1 + i) = F.getV3()(i);
   }
 
-  AA.Solve(XX, FF);
+  AA.solve(XX, FF);
 
   for (int i = 0; i < dim1; i++)  X.getV1()(i) = XX(i);
   for (int i = 0; i < dim3; i++)  X.getV3()(i) = XX(dim1 + i);

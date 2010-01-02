@@ -316,12 +316,12 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
     if (!adapt)
     {
       Jacobian(*jac, *rhs, parNu, par, solNu, sol, varMap, 0.0, false);
-      jac->Solve(*xx, *rhs, dim3);
+      jac->solve(*xx, *rhs, dim3);
       Update(*xx);
     } else
     {
       Jacobian(*jac, *rhs, parNu, par, solNu, sol, varMapCont, 0.0, true);
-      jac->Solve(*xx, *rhs, dim3+1);
+      jac->solve(*xx, *rhs, dim3+1);
       AdaptUpdate(*xx);
     }
     // computing norms to determine convergence
@@ -349,8 +349,8 @@ int BasePoint::Tangent(bool adapt)
   if (!adapt)
   {
     // setting up a random tangent
-    xxDot->getV1().Rand();
-    xxDot->getV3().Rand();
+    xxDot->getV1().random();
+    xxDot->getV3().random();
     norm = sqrt(basecolloc->Integrate(xxDot->getV1(), xxDot->getV1()) + (xxDot->getV3()) * (xxDot->getV3()));
     xxDot->getV1() /= norm;
     xxDot->getV3() /= norm;
@@ -364,7 +364,7 @@ int BasePoint::Tangent(bool adapt)
   {
     jac->Multiply<false>(*rhs, *xxDot, dim3 + 1);
     rhs->getV3()(dim3) -= 1.0;
-    jac->Solve(*xx, *rhs);
+    jac->solve(*xx, *rhs);
     xxDot->getV1() -= xx->getV1();
     xxDot->getV3() -= xx->getV3();
     diffnorm = sqrt(basecolloc->Integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
@@ -404,7 +404,7 @@ int BasePoint::Continue(double ds, bool jacstep)
 
     Jacobian(*jac, *rhs, par, parNu, sol, solNu, varMapCont, 0.0, true);
 
-    jac->Solve(*xx, *rhs);
+    jac->solve(*xx, *rhs);
 
     ContUpdate(*xx);
 
@@ -422,7 +422,7 @@ int BasePoint::Continue(double ds, bool jacstep)
     {
       jac->Multiply<false>(*rhs, *xxDotNu, dim3 + 1);
       rhs->getV3()(dim3) -= 1.0;
-      jac->Solve(*xx, *rhs);
+      jac->solve(*xx, *rhs);
       xxDotNu->getV1() -= xx->getV1();
       xxDotNu->getV3() -= xx->getV3();
       Tnorm = sqrt(basecolloc->Integrate(xxDotNu->getV1(), xxDotNu->getV1()) + (xxDotNu->getV3()) * (xxDotNu->getV3()));

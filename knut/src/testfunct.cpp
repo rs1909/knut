@@ -77,8 +77,8 @@ void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   // creating the matrix
   col.CharJac_x(AHAT.getA11(), par, ZZ);
-  AHAT.getA13(0).Rand();
-  AHAT.getA31(0).Rand();
+  AHAT.getA13(0).random();
+  AHAT.getA31(0).random();
   AHAT.getA33()(0, 0) = 0.0;
   // norming the borders
   AHAT.getA31(0) /= sqrt(AHAT.getA31(0) * AHAT.getA31(0));
@@ -98,10 +98,10 @@ void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
   {
     AHAT.Multiply<false>(rhs, one, vv, gg);
     one -= 1.0;
-    AHAT.Solve(vvdiff, ggdiff, rhs, one);
+    AHAT.solve(vvdiff, ggdiff, rhs, one);
     AHAT.Multiply<true>(rhs, one, uu, hh);
     one -= 1.0;
-    AHAT.SolveTR(uudiff, hhdiff, rhs, one);
+    AHAT.solveTr(uudiff, hhdiff, rhs, one);
     vv -= vvdiff;
     gg -= ggdiff;
     uu -= uudiff;
@@ -138,10 +138,10 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 
   AHAT.Multiply<false>(rhs, one, vv, gg);
   one -= 1.0;
-  AHAT.Solve(vvdiff, ggdiff, rhs, one);
+  AHAT.solve(vvdiff, ggdiff, rhs, one);
   AHAT.Multiply<true>(rhs, one, uu, hh);
   one -= 1.0;
-  AHAT.SolveTR(uudiff, hhdiff, rhs, one);
+  AHAT.solveTr(uudiff, hhdiff, rhs, one);
   vv -= vvdiff;
   gg -= ggdiff;
   uu -= uudiff;
@@ -227,8 +227,8 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
   ZRe = Re;
   ZIm = Im;
   col.CharJac_x(AHAT.getA11(), par, Re, Im);
-  AHAT.getA13(0).Rand();
-  AHAT.getA31(0).Rand();
+  AHAT.getA13(0).random();
+  AHAT.getA31(0).random();
   AHAT.getA33().clear();
   // norming the borders
   AHAT.getA31(0) /= sqrt(AHAT.getA31(0) * AHAT.getA31(0));
@@ -246,8 +246,8 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
   int it = 0;
   do
   {
-    AHAT.Solve(2, vv, gg, rhs, one);
-    AHAT.SolveTR(2, uu, hh, rhs, one);
+    AHAT.solve(2, vv, gg, rhs, one);
+    AHAT.solveTr(2, uu, hh, rhs, one);
     udiff = AHAT.getA13(0);
     udiff -= uu;
     vdiff = AHAT.getA31(0);
@@ -277,8 +277,8 @@ void TestFunctCPLX::Funct(double& f1, double& f2,
   ZRe = Re;
   ZIm = Im;
   col.CharJac_x(AHAT.getA11(), par, Re, Im);
-  AHAT.Solve(2, vv, gg, rhs, one);
-  AHAT.SolveTR(2, uu, hh, rhs, one);
+  AHAT.solve(2, vv, gg, rhs, one);
+  AHAT.solveTr(2, uu, hh, rhs, one);
   AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
   AHAT.getA31(0) = (1.0 / sqrt(vv * vv)) * vv;
   conjugate(AHAT.getA13(1), AHAT.getA13(0));
@@ -437,8 +437,8 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
   col.Star(AHAT.getA31(0), phi);
   AHAT.getA13(0) = mB * phi;
 
-  AHAT.getA13(1).Rand();
-  AHAT.getA31(1).Rand();
+  AHAT.getA13(1).random();
+  AHAT.getA31(1).random();
   AHAT.getA33().clear(); // 2x2 matrix
   // norming the borders
   AHAT.getA31(1) /= sqrt(AHAT.getA31(1) * AHAT.getA31(1));
@@ -454,8 +454,8 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
   int it = 0;
   do
   {
-    AHAT.Solve(2, vv2, gg2, rhs, one2);
-    AHAT.SolveTR(2, uu2, hh2, rhs, one2);
+    AHAT.solve(2, vv2, gg2, rhs, one2);
+    AHAT.solveTr(2, uu2, hh2, rhs, one2);
     u2diff = AHAT.getA13(1);
     u2diff -= uu2;
     h2diff = AHAT.getA33(0, 1) - hh2(0);
@@ -493,8 +493,8 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
   AHAT.getA13(0) = mB * phi;
 
   // continuing the non-trivial kernel
-  AHAT.Solve(2, vv2, gg2, rhs, one2);
-  AHAT.SolveTR(2, uu2, hh2, rhs, one2);
+  AHAT.solve(2, vv2, gg2, rhs, one2);
+  AHAT.solveTr(2, uu2, hh2, rhs, one2);
 
   const double nrm_v = (1.0 / sqrt(vv2 * vv2 + gg2(0) * gg2(0)));
   const double nrm_u = (1.0 / sqrt(uu2 * uu2 + hh2(0) * hh2(0)));
@@ -610,8 +610,8 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
   col.Star(AHAT.getA31(1), LAM);
   AHAT.getA13(1) = mB * LAM;
 
-  AHAT.getA13(2).Rand();
-  AHAT.getA31(2).Rand();
+  AHAT.getA13(2).random();
+  AHAT.getA31(2).random();
   // norming the borders
   AHAT.getA31(2) /= sqrt(AHAT.getA31(2) * AHAT.getA31(2));
   AHAT.getA13(2) /= sqrt(AHAT.getA13(2) * AHAT.getA13(2));
@@ -629,8 +629,8 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
   int it = 0;
   do
   {
-    AHAT.Solve(3, vv3, gg3, rhs3, one3);
-    AHAT.SolveTR(3, uu3, hh3, rhs3, one3);
+    AHAT.solve(3, vv3, gg3, rhs3, one3);
+    AHAT.solveTr(3, uu3, hh3, rhs3, one3);
     u3diff = AHAT.getA13(2);
     u3diff -= uu3;
     h30diff = AHAT.getA33(0, 2) - hh3(0);
@@ -683,8 +683,8 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
 //  temp = AHAT.getA11() * LAM;
 //  std::cout<<"temp: "<<temp*temp<<" LAM: "<<LAM*LAM<<"\n";
 
-  AHAT.Solve(3, vv3, gg3, rhs3, one3);
-  AHAT.SolveTR(3, uu3, hh3, rhs3, one3);
+  AHAT.solve(3, vv3, gg3, rhs3, one3);
+  AHAT.solveTr(3, uu3, hh3, rhs3, one3);
   const double nrm_v = (1.0 / sqrt(vv3 * vv3 + gg3(0) * gg3(0) + gg3(1) * gg3(1)));
   const double nrm_u = (1.0 / sqrt(uu3 * uu3 + hh3(0) * hh3(0) + hh3(1) * hh3(1)));
   AHAT.getA31(2)   = nrm_v * vv3;
@@ -818,10 +818,10 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   col.CharJac_x(AHAT.getA11(), par, ZZ);
   col.CharJac_mB(mB, par, ZZ);
 
-  vv1.Rand();
-  uu1.Rand();
-  vv2.Rand();
-  uu2.Rand();
+  vv1.random();
+  uu1.random();
+  vv2.random();
+  uu2.random();
 
   vv1 /= sqrt(vv1 * vv1);
   uu1 /= sqrt(uu1 * uu1);
@@ -844,10 +844,10 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   one2(1) = 1.0;
   for (int i = 0; i < kernIter; i++)
   {
-    AHAT.Solve(2, vv1, gg1, rhs, one1);
-    AHAT.Solve(2, vv2, gg2, rhs, one2);
-    AHAT.SolveTR(2, uu1, hh1, rhs, one1);
-    AHAT.SolveTR(2, uu2, hh2, rhs, one2);
+    AHAT.solve(2, vv1, gg1, rhs, one1);
+    AHAT.solve(2, vv2, gg2, rhs, one2);
+    AHAT.solveTr(2, uu1, hh1, rhs, one1);
+    AHAT.solveTr(2, uu2, hh2, rhs, one2);
     const double nrm_v1 = (1.0 / sqrt(vv1 * vv1));
     const double nrm_v2 = (1.0 / sqrt(vv2 * vv2));
     const double nrm_u1 = (1.0 / sqrt(uu1 * uu1));
@@ -861,8 +861,8 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   AHAT.getA13(0) = mB * vv1;
   AHAT.getA13(1) = mB * vv2;
 
-  vv3.Rand();
-  uu3.Rand();
+  vv3.random();
+  uu3.random();
   vv3 /= sqrt(vv1 * vv1);
   uu3 /= sqrt(uu1 * uu1);
   AHAT.getA13(2) = uu3;
@@ -873,8 +873,8 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   one3(2) = 1.0;
   for (int i = 0; i < kernIter; i++)
   {
-    AHAT.Solve(3, vv3, gg3, rhs, one3);
-    AHAT.SolveTR(3, uu3, hh3, rhs, one3);
+    AHAT.solve(3, vv3, gg3, rhs, one3);
+    AHAT.solveTr(3, uu3, hh3, rhs, one3);
     const double nrm_v = (1.0 / sqrt(vv3 * vv3 + gg3(0) * gg3(0) + gg3(1) * gg3(1)));
     const double nrm_u = (1.0 / sqrt(uu3 * uu3 + hh3(0) * hh3(0) + hh3(1) * hh3(1)));
     AHAT.getA31(2)   = nrm_v * vv3;
@@ -901,10 +901,10 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
   AHAT.getA13(0) = uu1;
   AHAT.getA13(1) = uu2;
 
-  AHAT.Solve(2, vv1, gg1, rhs, one1);
-  AHAT.Solve(2, vv2, gg2, rhs, one2);
-  AHAT.SolveTR(2, uu1, hh1, rhs, one1);
-  AHAT.SolveTR(2, uu2, hh2, rhs, one2);
+  AHAT.solve(2, vv1, gg1, rhs, one1);
+  AHAT.solve(2, vv2, gg2, rhs, one2);
+  AHAT.solveTr(2, uu1, hh1, rhs, one1);
+  AHAT.solveTr(2, uu2, hh2, rhs, one2);
   const double nrm_v1 = (1.0 / sqrt(vv1 * vv1));
   const double nrm_v2 = (1.0 / sqrt(vv2 * vv2));
   const double nrm_u1 = (1.0 / sqrt(uu1 * uu1));
@@ -920,8 +920,8 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
 //  temp = AHAT.getA11() * LAM;
 //  std::cout<<"temp: "<<temp*temp<<" LAM: "<<LAM*LAM<<"\n";
 
-  AHAT.Solve(3, vv3, gg3, rhs, one3);
-  AHAT.SolveTR(3, uu3, hh3, rhs, one3);
+  AHAT.solve(3, vv3, gg3, rhs, one3);
+  AHAT.solveTr(3, uu3, hh3, rhs, one3);
   const double nrm_v = (1.0 / sqrt(vv3 * vv3 + gg3(0) * gg3(0) + gg3(1) * gg3(1)));
   const double nrm_u = (1.0 / sqrt(uu3 * uu3 + hh3(0) * hh3(0) + hh3(1) * hh3(1)));
   AHAT.getA31(2)   = nrm_v * vv3;

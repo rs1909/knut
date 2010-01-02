@@ -74,7 +74,7 @@ void SpMatrix::Swap()
   m = nt;
 }
 
-void SpMatrix::StrPlot(GnuPlot& pl)
+void SpMatrix::sparsityPlot(GnuPlot& pl)
 {
   pl.SetPointSize(0.8);
   pl.Plot(0, "with points");
@@ -89,7 +89,7 @@ void SpMatrix::StrPlot(GnuPlot& pl)
   pl.Show();
 }
 
-void SpMatrix::Print()
+void SpMatrix::print()
 {
   for (int i = 0; i < n; i++)
   {
@@ -217,7 +217,7 @@ static const char* sp_umf_error(int status)
   }
 }
 
-void SpFact::Fact()
+void SpFact::luFactorize()
 {
   if (!fact)
   {
@@ -235,7 +235,7 @@ void SpFact::Fact()
         std::cerr << "The diagonal of the factorized matrix is being dumped:\n";
         Vector DX(n);
         GetDX(DX);
-        DX.Print();
+        DX.print();
       }
       P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': (", status, ") ", sp_umf_error(status));
     }
@@ -244,9 +244,9 @@ void SpFact::Fact()
   }
 }
 
-void SpFact::Solve(double* x, double* b, bool trans)
+void SpFact::solve(double* x, double* b, bool trans)
 {
-  if (!fact) Fact();
+  if (!fact) luFactorize();
   int status, sys;
 
   if (format == 'C')
@@ -263,9 +263,9 @@ void SpFact::Solve(double* x, double* b, bool trans)
   status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x, b, Numeric, Control, 0, Wi, W);
 }
 
-void SpFact::Solve(Vector& x, const Vector& b, bool trans)
+void SpFact::solve(Vector& x, const Vector& b, bool trans)
 {
-  if (!fact) Fact();
+  if (!fact) luFactorize();
   int status, sys;
 
   if (format == 'C')
@@ -284,9 +284,9 @@ void SpFact::Solve(Vector& x, const Vector& b, bool trans)
   P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
 }
 
-void SpFact::Solve(Matrix& x, const Matrix &b, bool trans)
+void SpFact::solve(Matrix& x, const Matrix &b, bool trans)
 {
-  if (!fact) Fact();
+  if (!fact) luFactorize();
   int status, sys;
   if (format == 'C')
   {
@@ -319,7 +319,7 @@ struct eigvalcomp : public std::binary_function<int, int, bool>
   }
 };
 
-void StabMatrix::Eigval(Vector& wr, Vector& wi)
+void StabMatrix::eigenvalues(Vector& wr, Vector& wi)
 {
   P_ERROR_X1((wr.size() == wi.size()) && (wr.size() > 1), "Real and imaginary vectors are not of the same size.");
 
@@ -387,7 +387,7 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
           }
         }
       }
-      A0.Solve(out + (AI.size() - 1)*A0.col(), tvec);
+      A0.solve(out + (AI.size() - 1)*A0.col(), tvec);
     }
   }
   while ((IDO == 1) || (IDO == -1));
