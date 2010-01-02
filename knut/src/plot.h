@@ -46,7 +46,7 @@ class GnuPlot
     void AddSData(unsigned int n, double x, double y);
     void Show();
     void Save(const char * filename);
-    void Clear();
+    void clear();
 };
 
 #endif

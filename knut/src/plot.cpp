@@ -112,7 +112,7 @@ void GnuPlot::Save(const char * filename)
   fputs((pl.str()).c_str(), prg);
   fflush(prg);
 }
-void GnuPlot::Clear()
+void GnuPlot::clear()
 {
   fputs("clear\nreset\n", prg);
   fflush(prg);

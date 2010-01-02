@@ -24,7 +24,7 @@ class ODEColloc : public PerSolColloc
     ~ODEColloc()
     {}
 
-    void Init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
+    void init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
 
     void Interpolate(Array3D<double>& out, const Vector& sol);
     void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);

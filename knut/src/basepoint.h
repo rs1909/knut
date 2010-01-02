@@ -182,8 +182,8 @@ class PerSolPoint : public BasePoint
     int StartTF(bool findangle, std::ostream& out);
     inline void    setSym(int n, int* sRe, int* sIm)
     {
-      rotRe.Init(n);
-      rotIm.Init(n);
+      rotRe.init(n);
+      rotIm.init(n);
       for (int i = 0; i < n; i++)
       {
         rotRe(i) = sRe[i];
@@ -194,8 +194,8 @@ class PerSolPoint : public BasePoint
     inline void    setSym(Array1D<int>& sRe, Array1D<int>& sIm)
     {
       P_ASSERT(sRe.size() == sIm.size());
-      rotRe.Init(sRe.size());
-      rotIm.Init(sRe.size());
+      rotRe.init(sRe.size());
+      rotIm.init(sRe.size());
       for (int i = 0; i < sRe.size(); i++)
       {
         rotRe(i) = sRe(i);
@@ -205,7 +205,7 @@ class PerSolPoint : public BasePoint
 
     int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
     BifType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
-    void    clearStability() { mRe.Clear(); mIm.Clear(); }
+    void    clearStability() { mRe.clear(); mIm.clear(); }
     static inline double  Amplitude(const Vector& sol, int ndim, int ndeg, int nint)
     {
       double nrm = 0.0;

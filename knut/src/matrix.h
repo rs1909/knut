@@ -73,19 +73,19 @@ class Array1D
 
     inline Array1D(int i) : n(i), v(new T[i]), destructable(true)
     {
-      Clear();
+      clear();
     }
 
     // specially for JagMatrix2D i.e. Array1D< Vector >, which is indexed as (i)(j)
     inline Array1D(int i, int j) : n(i), v(new T[i]), destructable(true)
     {
-      for (int r = 0; r < i; r++) v[r].Init(j);
+      for (int r = 0; r < i; r++) v[r].init(j);
     }
 
     // specially for JagMatrix3D i.e. Array1D< Matrix >, which is indexed as (i)(j,k)
     inline Array1D(int i, int j, int k) : n(i), v(new T[i]), destructable(true)
     {
-      for (int r = 0; r < i; r++) v[r].Init(j, k);
+      for (int r = 0; r < i; r++) v[r].init(j, k);
     }
 
     inline Array1D(const Array1D<T>& V_) : n(V_.n), v(new T[V_.n]), destructable(true)
@@ -103,18 +103,18 @@ class Array1D
       if (destructable) delete[] v;
     }
 
-    inline void Init(int i)
+    inline void init(int i)
     {
       if (destructable)
       {
         delete[] v;
         n = i;
         v = new T[i];
-        Clear();
+        clear();
       } else throw(-1);
     }
 
-    inline void Init(const Array1D<T>& V_)
+    inline void init(const Array1D<T>& V_)
     {
       if (destructable)
       {
@@ -125,7 +125,7 @@ class Array1D
       } else throw(-1);
     }
 
-    inline void Init(T *data, int i)
+    inline void init(T *data, int i)
     {
       if (!destructable)
       {
@@ -134,7 +134,7 @@ class Array1D
       } else throw(-1);
     }
 
-    inline void Clear()
+    inline void clear()
     {
       for (int j = 0; j < n; j++) v[j] = T();
     } // it was T(0), but for built in types it must be the same
@@ -236,7 +236,7 @@ class Array2D
     inline Array2D(int _r, int _c) : r(_r), c(_c), destructable(true)
     {
       m = new T[r*c+1];
-      Clear();
+      clear();
     }
 
     inline Array2D(const Array2D<T>& M) : r(M.r), c(M.c), destructable(true)
@@ -254,14 +254,14 @@ class Array2D
     inline int dim1() const { return r; }
     inline int dim2() const { return c; }
 
-    inline void Init(int _r, int _c)
+    inline void init(int _r, int _c)
     {
       P_ASSERT_X(destructable, "Array2D<T>::Init : trying to resize a non-destructable a");
       delete[] m;
       r = _r;
       c = _c;
       m = new T[r*c+1];
-      Clear();
+      clear();
     }
 
     inline T *Pointer()
@@ -287,7 +287,7 @@ class Array2D
       return &m[i + r*j];
     }
 
-    inline void Clear()
+    inline void clear()
     {
       for (int i = 0; i < r*c; i++) m[i] = T(0);
     }
@@ -358,7 +358,7 @@ class Array3D
     inline Array3D(int _d1, int _d2, int _d3) : d1(_d1), d2(_d2), d3(_d3)
     {
       m = new T[d1*d2*d3+1];
-      Clear();
+      clear();
     }
 
     inline Array3D(const Array3D<T>& M) : d1(M.d1), d2(M.d2), d3(M.d3)
@@ -375,17 +375,17 @@ class Array3D
     inline int dim1() const { return d1; }
     inline int dim2() const { return d2; }
     inline int dim3() const { return d3; }
-    inline void Init(int _d1, int _d2, int _d3)
+    inline void init(int _d1, int _d2, int _d3)
     {
       delete[] m;
       d1 = _d1;
       d2 = _d2;
       d3 = _d3;
       m = new T[d1*d2*d3+1];
-      Clear();
+      clear();
     }
 
-    inline void Clear()
+    inline void clear()
     {
       for (int i = 0; i < d1*d2*d3; i++) m[i] = 0;
     }
@@ -862,36 +862,36 @@ typedef Array1D< Matrix > JagMatrix3D;
 typedef Array1D< Vector > JagVector2D;
 
 /// specialized versions of the Clear function
-template< > inline void Array1D< Array1D<int> >::Clear()
+template< > inline void Array1D< Array1D<int> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array1D<double> >::Clear()
+template< > inline void Array1D< Array1D<double> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Vector >::Clear()
+template< > inline void Array1D< Vector >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array2D<int> >::Clear()
+template< > inline void Array1D< Array2D<int> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array2D<double> >::Clear()
+template< > inline void Array1D< Array2D<double> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Matrix >::Clear()
+template< > inline void Array1D< Matrix >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].Clear();
+  for (int i = 0; i < n; i++) v[i].clear();
 }
 
 template< > inline Array1D< Vector >::Array1D(const Array1D< Vector >& V_) : destructable(true)
 {
   n = V_.n;
   v = new Vector[V_.n];
-  for (int i = 0; i < V_.n; i++) v[i].Init(V_.v[i]);
+  for (int i = 0; i < V_.n; i++) v[i].init(V_.v[i]);
 }
 
 /// Member functions and Operators for __scal_vec_trans_rng

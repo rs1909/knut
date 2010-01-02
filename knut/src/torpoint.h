@@ -40,7 +40,7 @@ class PointTR : public BasePoint
     inline void    ImportTan(Vector& Re, Vector& Im, double alpha)
     {
       colloc->ImportTan(xxDot->getV1(), Re, Im, alpha);
-      xxDot->getV3().Clear();
+      xxDot->getV3().clear();
 //       p1Dot = 0.0; // should be xxDot->getV3(varMap.size()) ???
     }
     inline void    Start(double ds)

@@ -49,7 +49,7 @@ ODEColloc::ODEColloc(System& _sys, const int _nint, const int _ndeg)
 ///    tt(j,l,i) : j == 0, interp the solution
 ///                j == 1, interp derivative
 ///
-void ODEColloc::Init(const Vector& sol, const Vector& par)
+void ODEColloc::init(const Vector& sol, const Vector& par)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -239,7 +239,7 @@ void ODEColloc::StabJac(SpMatrix& A, const Vector& par)
 template <bool periodic>
 void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
 {
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)

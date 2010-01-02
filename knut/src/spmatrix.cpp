@@ -108,7 +108,7 @@ void SpMatrix::Print()
 //                                                                           //
 // **************************************************************************//
 
-void SpFact::Init(int nn_)
+void SpFact::init(int nn_)
 {
   fact = false;
   Numeric = 0;
@@ -123,17 +123,17 @@ void SpFact::Init(int nn_)
 
 SpFact::SpFact(char F, int nn_, int mm_, int nz) : SpMatrix(F, nn_, mm_, nz)
 {
-  Init(nn_);
+  init(nn_);
 }
 
 SpFact::SpFact(char F, int nn_, int nz) : SpMatrix(F, nn_, nn_, nz)
 {
-  Init(nn_);
+  init(nn_);
 }
 
 SpFact::SpFact(SpMatrix& M) : SpMatrix(M)
 {
-  Init(n);
+  init(n);
 }
 
 SpFact::~SpFact()
@@ -145,9 +145,9 @@ SpFact::~SpFact()
   delete[] Wi;
 }
 
-void SpFact::Clear()
+void SpFact::clear()
 {
-  SpMatrix::Clear();
+  SpMatrix::clear();
   if (Numeric != 0)
   {
     P_ASSERT_X(fact, "Matrix was not factorized.");
@@ -157,9 +157,9 @@ void SpFact::Clear()
   fact = false;
 }
 
-void SpFact::Clear(char F)
+void SpFact::clear(char F)
 {
-  SpMatrix::Clear(F);
+  SpMatrix::clear(F);
   if (Numeric != 0)
   {
     P_ASSERT_X(fact, "Matrix was not factorized.");
@@ -418,8 +418,8 @@ void StabMatrix::Eigval(Vector& wr, Vector& wi)
 //   std::cout<<"INFO2:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
 
-  wr.Clear();
-  wi.Clear();
+  wr.clear();
+  wi.clear();
   // sorting eigenvalues;
   int* sortindex = new int[IPARAM[4]+1];
   for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;

@@ -537,8 +537,8 @@ bool NConstants::toEqnVar(System& sys,
   // initializing the equations and variables
   if (getPointType() == SolUser)
   {
-    eqn.Init(getEqnsNumSize());
-    var.Init(getVarsNumSize());
+    eqn.init(getEqnsNumSize());
+    var.init(getVarsNumSize());
     for (int i = 0; i < getEqnsNumSize(); i++)
     {
       eqn(i) = getEqns(i);
@@ -581,8 +581,8 @@ bool NConstants::toEqnVar(System& sys,
     if (phaseRot)
     {
       // std::cout<<"Phase and PhaseRot\n";
-      eqn_refine.Init(3);
-      var_refine.Init(3);
+      eqn_refine.init(3);
+      var_refine.init(3);
       eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhase;
       eqn_refine(2) = EqnPhaseRot;
@@ -593,8 +593,8 @@ bool NConstants::toEqnVar(System& sys,
     else
     {
       // std::cout<<"Phase\n";
-      eqn_refine.Init(2);
-      var_refine.Init(2);
+      eqn_refine.init(2);
+      var_refine.init(2);
       eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhase;
       var_refine(0) = var(0);
@@ -606,8 +606,8 @@ bool NConstants::toEqnVar(System& sys,
     if (phaseRot)
     {
       // this happens when a steady state solution of a laser is computed
-      eqn_refine.Init(2);
-      var_refine.Init(2);
+      eqn_refine.init(2);
+      var_refine.init(2);
       eqn_refine(0) = eqn(0);
       eqn_refine(1) = EqnPhaseRot;
       var_refine(0) = var(0);
@@ -615,8 +615,8 @@ bool NConstants::toEqnVar(System& sys,
     }
     else
     {
-      eqn_refine.Init(1);
-      var_refine.Init(1);
+      eqn_refine.init(1);
+      var_refine.init(1);
       eqn_refine(0) = eqn(0);
       var_refine(0) = var(0);
     }
@@ -626,8 +626,8 @@ bool NConstants::toEqnVar(System& sys,
   {
       Array1D<Eqn> ee(eqn_refine);
       Array1D<Var> vv(var_refine);
-      eqn_refine.Init(ee.size()-1);
-      var_refine.Init(ee.size()-1);
+      eqn_refine.init(ee.size()-1);
+      var_refine.init(ee.size()-1);
       for (int i = 0, j = 0; i < ee.size(); ++i)
       {
         if (ee(i) != EqnPhase) { eqn_refine(j) = ee(i); var_refine(j) = vv(j); ++j; }
@@ -658,8 +658,8 @@ bool NConstants::toEqnVar(System& sys,
       eqn_temp = EqnTFPD;
       goto tfskip;
 tfskip:
-      eqn_start.Init(eqn_refine.size() + 1);
-      var_start.Init(var_refine.size() + 1);
+      eqn_start.init(eqn_refine.size() + 1);
+      var_start.init(var_refine.size() + 1);
       eqn_start(0) = eqn_refine(0);
       var_start(0) = var_refine(0);
       eqn_start(1) = eqn_temp;
@@ -673,8 +673,8 @@ tfskip:
       break;
     case TFTRSwitch:
     case TFHBSwitch:
-      eqn_start.Init(eqn_refine.size() + 2);
-      var_start.Init(var_refine.size() + 2);
+      eqn_start.init(eqn_refine.size() + 2);
+      var_start.init(var_refine.size() + 2);
       eqn_start(0) = eqn_refine(0);
       var_start(0) = var_refine(0);
       eqn_start(1) = EqnTFCPLX_RE;
@@ -690,8 +690,8 @@ tfskip:
       findangle = true;
       break;
     default:
-      eqn_start.Init(eqn.size());
-      var_start.Init(var.size());
+      eqn_start.init(eqn.size());
+      var_start.init(var.size());
       eqn_start = eqn;
       var_start = var;
       break;

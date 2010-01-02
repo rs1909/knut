@@ -22,7 +22,7 @@ class CollocTR : public BaseColloc
     CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
-    void Init(const Vector& sol, const Vector& par);
+    void init(const Vector& sol, const Vector& par);
     void Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var);
     // not yet implemented
     // these are easy

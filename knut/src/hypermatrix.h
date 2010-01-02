@@ -220,10 +220,10 @@ template<class FACT> HyMatrix<FACT> :: HyMatrix(int i, int j, int k, int nz) :
 
     for (int r = 0; r < k + 1; r++)
     {
-      (*VV1)(r).Init(i + r);
-      (*VV1Star)(r).Init(i + r);
-      (*XX1)(r).Init(i + r);
-      (*FF1)(r).Init(i + r);
+      (*VV1)(r).init(i + r);
+      (*VV1Star)(r).init(i + r);
+      (*XX1)(r).init(i + r);
+      (*FF1)(r).init(i + r);
     }
   }
   else
@@ -510,7 +510,7 @@ void HyMatrix<FACT>::Multiply(int bord, Vector& R1, Vector& R3, const Vector& X1
   }
   else
   {
-    R1.Clear();
+    R1.clear();
   }
   for (int i = 0; i < bord; i++)
   {

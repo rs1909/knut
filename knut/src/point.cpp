@@ -60,7 +60,7 @@ void Point::Construct()
   BasePoint::Construct();
   
   // a) setting the test functionals b) determining the number of trivial multipliers
-  testFunct.Init(eqn.size());
+  testFunct.init(eqn.size());
   nTrivMulLP = 0;
   nTrivMulPD = 0;
   nTrivMulNS = 0;
@@ -152,7 +152,7 @@ void Point::Jacobian(
       }
       else if (varMap(i) - NPAR == ParAngle)
       {
-        AA.getA13(i - 1).Clear();
+        AA.getA13(i - 1).clear();
       }
       else
       {
@@ -329,7 +329,7 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
   }
   const double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
-  xxDot->getV3().Clear();
+  xxDot->getV3().clear();
   Vector eql(NDIM);
   for (int p = 0; p < NDIM; ++p) eql(p) = sol(p);
   for (int i = 0; i < NDEG*NINT + 1; ++i)
@@ -345,8 +345,8 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
 
 void Point::SwitchTFLP(BranchSW type, double ds)
 {
-  xxDot->getV1().Clear();
-  xxDot->getV3().Clear();
+  xxDot->getV1().clear();
+  xxDot->getV3().clear();
 
   baseTestFunct* tf = 0;
   switch (type)
@@ -370,7 +370,7 @@ void Point::SwitchTFLP(BranchSW type, double ds)
   delete tf;
   double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
-  xxDot->getV3().Clear();
+  xxDot->getV3().clear();
 
   sol += ds * xxDot->getV1();
 }
@@ -393,17 +393,17 @@ void Point::SwitchTFPD(double ds)
 
   double norm = sqrt(colloc->Integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
-  xxDot->getV3().Clear();
+  xxDot->getV3().clear();
   sol += ds * xxDot->getV1();
 }
 
 
 void Point::Stability()
 {
-  mRe.Clear();
-  mIm.Clear();
+  mRe.clear();
+  mIm.clear();
 
-  colloc->Init(sol, par);
+  colloc->init(sol, par);
 
   colloc->StabJac(jacStab, par);
 

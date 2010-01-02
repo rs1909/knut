@@ -443,8 +443,8 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       int bskip = 0, eskip = 0;
       if (b == 1) bskip == 0; else bskip = 1;
       if (b == stabidx.size()-1) eskip == 0; else eskip = 1;
-      Graph.rbegin()->x.Init(stabidx[b] - stabidx[b-1] + bskip + eskip);
-      Graph.rbegin()->y.Init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      Graph.rbegin()->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      Graph.rbegin()->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
       
       // X Coordinate
       if (x == XLabel)
@@ -540,8 +540,8 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
     const int ndeg = data->getNDeg();
     const int nint = data->getNInt();
     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.Init(ndeg*nint + 1);
-    Graph.rbegin()->y.Init(ndeg*nint + 1);
+    Graph.rbegin()->x.init(ndeg*nint + 1);
+    Graph.rbegin()->y.init(ndeg*nint + 1);
     for (int i = 0; i < nint; i++)
     {
       for (int j = 0; j < ndeg; j++)
@@ -561,15 +561,15 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
   {
     // plot the unit circle
     Graph.push_back(PlotItem(data, PlotAuxiliary, x, y, pt, dim));
-    Graph.rbegin()->x.Init(1);
-    Graph.rbegin()->y.Init(1);
+    Graph.rbegin()->x.init(1);
+    Graph.rbegin()->y.init(1);
     Graph.rbegin()->x(0) = 0.0;
     Graph.rbegin()->y(0) = 0.0;
     addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false, 1, true);
     // plotting the multipliers
     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.Init(data->getNMul());
-    Graph.rbegin()->y.Init(data->getNMul());
+    Graph.rbegin()->x.init(data->getNMul());
+    Graph.rbegin()->y.init(data->getNMul());
     for (int i = 0; i < data->getNMul(); i++)
     {
       Graph.rbegin()->x(i) = data->getMulRe(pt, i);
@@ -585,8 +585,8 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
     for (int r = 0; r < data->getNMul(); r++)
     {
       Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-      Graph.rbegin()->x.Init(data->getNPoints());
-      Graph.rbegin()->y.Init(data->getNPoints());
+      Graph.rbegin()->x.init(data->getNPoints());
+      Graph.rbegin()->y.init(data->getNPoints());
       for (int i = 0; i < data->getNPoints(); i++)
       {
         if (x >= XParameter0) Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
@@ -606,8 +606,8 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
     for (unsigned int i = 0; i < bifidx.size(); ++i)
     {
       Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
-      Graph.rbegin()->x.Init(1);
-      Graph.rbegin()->y.Init(1);
+      Graph.rbegin()->x.init(1);
+      Graph.rbegin()->y.init(1);
       
       if (y != YAbsMultiplier)
       {

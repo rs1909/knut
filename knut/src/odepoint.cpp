@@ -61,7 +61,7 @@ void ODEPoint::Jacobian
       }
       else if (varMap(i) - NPAR == ParAngle)
       {
-        AA.getA13(i - 1).Clear();
+        AA.getA13(i - 1).clear();
       }
       else
       {

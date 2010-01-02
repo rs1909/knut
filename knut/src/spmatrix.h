@@ -48,20 +48,20 @@ class SpMatrix
     { }
     inline SpMatrix(char F, int n_, int m_, int nz)
     {
-      Init(F, n_, m_, nz);
+      init(F, n_, m_, nz);
     }
     inline SpMatrix(char F, int n_, int nz)
     {
-      Init(F, n_, n_, nz);
+      init(F, n_, n_, nz);
     }
     inline SpMatrix(const SpMatrix& M)
     {
-      Init(M);
+      init(M);
     }
     inline virtual ~SpMatrix();
 
-    inline void Init(char F, int n_, int m_, int nz);
-    inline void Init(const SpMatrix& M);
+    inline void init(char F, int n_, int m_, int nz);
+    inline void init(const SpMatrix& M);
 
     inline void mmx(enum cspblas_Trans trans, double* out, const double* in, double alpha) const
     {
@@ -122,8 +122,8 @@ class SpMatrix
 
     /// clear the matrix
     /// these have to be virtual, because these might be called as SpFact
-    virtual void Clear();
-    virtual void Clear(char F);
+    virtual void clear();
+    virtual void clear(char F);
     /// checks the structure of the matrix
     void Check();
 
@@ -182,7 +182,7 @@ class SpFact : public SpMatrix
     double *W;
 
   public:
-    void Init(int nn_);
+    void init(int nn_);
     SpFact(char F, int n_, int m_, int nz);
     SpFact(char F, int n_, int nz);
     SpFact(SpMatrix& M);
@@ -201,8 +201,8 @@ class SpFact : public SpMatrix
     {
       Control[UMFPACK_IRSTEP] = N;
     }
-    void Clear();
-    void Clear(char F);
+    void clear();
+    void clear(char F);
 
     void Solve(double* x, double* b, bool trans = false);
     void Solve(Vector& x, const Vector& b, bool trans = false);
@@ -227,7 +227,7 @@ class StabMatrix
 
     StabMatrix(int nmat_, int n_, int nz) : A0('R', n_,  nz), AI(nmat_)
     {
-      for (int i = 0; i < AI.size(); i++) AI(i).Init('R', n_, n_, nz);
+      for (int i = 0; i < AI.size(); i++) AI(i).init('R', n_, n_, nz);
       RESID = new double[ AI.size() * n_ + 1 ];
       isINIT = false;
     }
@@ -266,7 +266,7 @@ class StabMatrix
 
 // Implementation of SpMatrix
 
-inline void SpMatrix::Init(char F, int n_, int m_, int nz)
+inline void SpMatrix::init(char F, int n_, int m_, int nz)
 {
   if ((F != 'R') && (F != 'C')) std::cout << "SpMatrix::CONSTRUCTOR: invalid format specification.\n";
   format = F;
@@ -287,7 +287,7 @@ inline void SpMatrix::Init(char F, int n_, int m_, int nz)
   }
 }
 
-inline void SpMatrix::Init(const SpMatrix& M)
+inline void SpMatrix::init(const SpMatrix& M)
 {
   format = M.format;
   n = M.n;
@@ -315,7 +315,7 @@ inline SpMatrix::~SpMatrix()
   delete []Ax;
 }
 
-inline void SpMatrix::Clear()
+inline void SpMatrix::clear()
 {
 
   for (int i = 0; i < n + 1; i++)
@@ -330,7 +330,7 @@ inline void SpMatrix::Clear()
   }
 }
 
-inline void SpMatrix::Clear(char F)
+inline void SpMatrix::clear(char F)
 {
 
   for (int i = 0; i < n + 1; i++)

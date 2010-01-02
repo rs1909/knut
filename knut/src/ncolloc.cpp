@@ -103,7 +103,7 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat) :
 ///    ttMSH(j,l,i) : j = k, the delay. Here, we don't shift as in others
 ///                   it contains only the middle of tt j=1...NDEG at indices j=0...NDEG-1
 ///
-void NColloc::Init(const Vector& sol, const Vector& par)
+void NColloc::init(const Vector& sol, const Vector& par)
 {
   Array1D<double> t(NTAU+1);
   Array1D<double> tMSH(NTAU);
@@ -524,7 +524,7 @@ void NColloc::RHS_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
 #ifdef DEBUG
   count_RHS_x++;
 #endif
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -585,8 +585,8 @@ void NColloc::StabJac(StabMatrix& AB, const Vector& par)
 #ifdef DEBUG
   count_StabJac++;
 #endif
-  AB.getA0().Clear('R');
-  for (int s = 0; s < NMAT; s++) AB.getAI(s).Clear('R');
+  AB.getA0().clear('R');
+  for (int s = 0; s < NMAT; s++) AB.getAI(s).clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -679,7 +679,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Z)
 #ifdef DEBUG
   count_CharJac_x++;
 #endif
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -749,7 +749,7 @@ void NColloc::CharJac_x(SpMatrix& A, const Vector& par, double Re, double Im)
 #ifdef DEBUG
   count_CharJac_x++;
 #endif
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -853,7 +853,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
 #ifdef DEBUG
   count_CharJac_x_p++;
 #endif
-  V.Clear();
+  V.clear();
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -871,7 +871,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       np = 0;
       vx[0] = k;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.Clear(); //OK this is cleared, but why here?
+      p_fx.clear(); //OK this is cleared, but why here?
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
         for (int p = 0; p < NDIM; p++)
@@ -931,7 +931,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par, const Array3D<double>& p
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.Clear();
+      p_fx.clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
         for (int p = 0; p < NDIM; p++)
@@ -991,7 +991,7 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
 #ifdef DEBUG
   count_CharJac_x_p++;
 #endif
-  V.Clear();
+  V.clear();
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -1022,8 +1022,8 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       np = 0;
       vx[0] = k;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fxRe.Clear(); //OK this is cleared, but why here?
-      p_fxIm.Clear();
+      p_fxRe.clear(); //OK this is cleared, but why here?
+      p_fxIm.clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
         for (int p = 0; p < NDIM; p++)
@@ -1087,8 +1087,8 @@ void NColloc::CharJac_x_p(Vector& V, const Vector& par,
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fxRe.Clear();
-      p_fxIm.Clear();
+      p_fxRe.clear();
+      p_fxIm.clear();
       for (int idx = 0; idx < NDEG*NINT; ++idx)
       {
         for (int p = 0; p < NDIM; p++)
@@ -1150,7 +1150,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
 #endif
   Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -1173,8 +1173,8 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par, const Array3D<double>&
     int nx = 2, vx[2], np = 0, vp;
     vx[1] = k - 1;  // CHANGE THIS to 1
 
-    p_dfx.Clear();
-    p_t_dfx.Clear();
+    p_dfx.clear();
+    p_t_dfx.clear();
     for (int r = 0; r < NTAU; r++)
     {
       vx[0] = r;        // CHANGE THIS to 0
@@ -1230,7 +1230,7 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
   Array3D<double> p_t_dfxRe(NDIM, NDIM, NDEG*NINT);
   Array3D<double> p_t_dfxIm(NDIM, NDIM, NDEG*NINT);
 
-  A.Clear('R');
+  A.clear('R');
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -1271,10 +1271,10 @@ void NColloc::CharJac_x_x(SpMatrix& A, const Vector& par,
     {
       vx[1] = k - 1;  // CHANGE THIS to 1
 
-      p_dfxRe.Clear();
-      p_t_dfxRe.Clear();
-      p_dfxIm.Clear();
-      p_t_dfxIm.Clear();
+      p_dfxRe.clear();
+      p_t_dfxRe.clear();
+      p_dfxIm.clear();
+      p_t_dfxIm.clear();
       for (int r = 0; r < NTAU; r++)
       {
         vx[0] = r;        // CHANGE THIS to 0
@@ -1342,7 +1342,7 @@ void NColloc::CharJac_x_z(Vector& V, const Vector& par, const Vector& phi,
 #ifdef DEBUG
   count_CharJac_x_z++;
 #endif
-  V.Clear();
+  V.clear();
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -1399,7 +1399,7 @@ void NColloc::CharJac_mB(SpMatrix& B, const Vector& par, double Z)
 #ifdef DEBUG
   count_CharJac_mB++;
 #endif
-  B.Clear('R');
+  B.clear('R');
 
   Vector ZP(NMAT + 1);
   ZP(0) = 1.0;
@@ -1460,7 +1460,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
 #endif
   Matrix t_dfx(NDIM, NDIM);
 
-  V.Clear();
+  V.clear();
 
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -1486,7 +1486,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       np = 0;
       vx[0] = k;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.Clear(); //OK this is cleared, but why here?
+      p_fx.clear(); //OK this is cleared, but why here?
       for (int p = 0; p < NDIM; p++)
       {
         for (int q = 0; q < NDIM; q++)
@@ -1543,7 +1543,7 @@ void NColloc::CharJac_mB_p(Vector& V, const Vector& par, const Array3D<double>& 
       vx[0] = k;
       vp = alpha; // though, this last is never changed...
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.Clear();
+      p_fx.clear();
       for (int p = 0; p < NDIM; p++)
       {
         for (int q = 0; q < NDIM; q++)
@@ -1598,7 +1598,7 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
 #endif
   Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
-  B.Clear('R');
+  B.clear('R');
 
   // boundary conditions: no boundary condition
   for (int r = 0; r < NDIM; r++)
@@ -1629,8 +1629,8 @@ void NColloc::CharJac_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>
     int nx = 2, vx[2], np = 0, vp;
     vx[1] = k - 1;  // CHANGE THIS to 1
 
-    p_dfx.Clear();
-    p_t_dfx.Clear();
+    p_dfx.clear();
+    p_t_dfx.clear();
     for (int r = 0; r < NTAU; r++)
     {
       vx[0] = r;        // CHANGE THIS to 0
@@ -1696,7 +1696,7 @@ void NColloc::CharJac_MSHphi_p(Vector& V, const Vector& par, const Array3D<doubl
 #ifdef DEBUG
   count_CharJac_MSHphi_p++;
 #endif
-  V.Clear(); /// it is not cleared otherwise!!!!
+  V.clear(); /// it is not cleared otherwise!!!!
 
   // boundary conditions
   if (alpha == 0)

@@ -29,7 +29,7 @@
 
 template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im)
 {
-  V.Clear();
+  V.clear();
   for (int idx = 0; idx < NINT*NDEG + 1; idx++)
   {
     for (int k = 0; k < Re.size(); k++)
@@ -73,7 +73,7 @@ TestFunct::TestFunct(NColloc& col, double Z) :
 TestFunct::~TestFunct()
 {}
 
-void TestFunct::Init(NColloc& col, const Vector& par, const Vector& /*sol*/)
+void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   // creating the matrix
   col.CharJac_x(AHAT.getA11(), par, ZZ);
@@ -89,7 +89,7 @@ void TestFunct::Init(NColloc& col, const Vector& par, const Vector& /*sol*/)
   double gg = 0.0;
   double hh = 0.0;
 
-  rhs.Clear();
+  rhs.clear();
 
   double ggdiff, hhdiff;
   double diffnorm = 1.0;
@@ -130,7 +130,7 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
 
   if (first)
   {
-    Init(col, par, sol);
+    init(col, par, sol);
     first = false;
   }
 
@@ -221,7 +221,7 @@ TestFunctCPLX::TestFunctCPLX(NColloc& col) :
 TestFunctCPLX::~TestFunctCPLX()
 {}
 
-void TestFunctCPLX::Init(NColloc& col, const Vector& par, const Vector& /*sol*/,
+void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
                          double Re, double Im)
 {
   ZRe = Re;
@@ -229,7 +229,7 @@ void TestFunctCPLX::Init(NColloc& col, const Vector& par, const Vector& /*sol*/,
   col.CharJac_x(AHAT.getA11(), par, Re, Im);
   AHAT.getA13(0).Rand();
   AHAT.getA31(0).Rand();
-  AHAT.getA33().Clear();
+  AHAT.getA33().clear();
   // norming the borders
   AHAT.getA31(0) /= sqrt(AHAT.getA31(0) * AHAT.getA31(0));
   AHAT.getA13(0) /= sqrt(AHAT.getA13(0) * AHAT.getA13(0));
@@ -237,7 +237,7 @@ void TestFunctCPLX::Init(NColloc& col, const Vector& par, const Vector& /*sol*/,
   conjugate(AHAT.getA31(1), AHAT.getA31(0));
   conjugate(AHAT.getA13(1), AHAT.getA13(0));
 
-  rhs.Clear();
+  rhs.clear();
   one(0) = 1.0;
   one(1) = 0.0;
 
@@ -270,7 +270,7 @@ void TestFunctCPLX::Funct(double& f1, double& f2,
 {
   if (first)
   {
-    Init(col, par, sol, Re, Im);
+    init(col, par, sol, Re, Im);
     first = false;
   }
 
@@ -425,7 +425,7 @@ TestFunctLPAUT::TestFunctLPAUT(NColloc& col, double Z) :
 TestFunctLPAUT::~TestFunctLPAUT()
 {}
 
-void TestFunctLPAUT::Init(NColloc& col, const Vector& par, const Vector& sol)
+void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
 {
   // creating the matrix
   col.CharJac_x(AHAT.getA11(), par, ZZ);
@@ -439,7 +439,7 @@ void TestFunctLPAUT::Init(NColloc& col, const Vector& par, const Vector& sol)
 
   AHAT.getA13(1).Rand();
   AHAT.getA31(1).Rand();
-  AHAT.getA33().Clear(); // 2x2 matrix
+  AHAT.getA33().clear(); // 2x2 matrix
   // norming the borders
   AHAT.getA31(1) /= sqrt(AHAT.getA31(1) * AHAT.getA31(1));
   AHAT.getA13(1) /= sqrt(AHAT.getA13(1) * AHAT.getA13(1));
@@ -479,7 +479,7 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   if (first)
   {
-    Init(col, par, sol);
+    init(col, par, sol);
     first = false;
   }
 
@@ -592,7 +592,7 @@ TestFunctLPAUTROT::TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int
 TestFunctLPAUTROT::~TestFunctLPAUTROT()
 {}
 
-void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol)
+void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
 {
   // creating the matrix
   col.CharJac_x(AHAT.getA11(), par, ZZ);
@@ -615,13 +615,13 @@ void TestFunctLPAUTROT::Init(NColloc& col, const Vector& par, const Vector& sol)
   // norming the borders
   AHAT.getA31(2) /= sqrt(AHAT.getA31(2) * AHAT.getA31(2));
   AHAT.getA13(2) /= sqrt(AHAT.getA13(2) * AHAT.getA13(2));
-  AHAT.getA33().Clear(); // 2x2 matrix
+  AHAT.getA33().clear(); // 2x2 matrix
 
   // generating the non-trivial kernel
   one3(0) = 0.0;
   one3(1) = 0.0;
   one3(2) = 1.0;
-  rhs3.Clear();
+  rhs3.clear();
 
   Vector v3diff(vv3), u3diff(uu3);
   double g30diff, h30diff, g31diff, h31diff;
@@ -660,7 +660,7 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
 {
   if (first)
   {
-    Init(col, par, sol);
+    init(col, par, sol);
     first = false;
   }
 
@@ -812,7 +812,7 @@ TestFunctLPAUTROT_X::TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D
 TestFunctLPAUTROT_X::~TestFunctLPAUTROT_X()
 {}
 
-void TestFunctLPAUTROT_X::Init(NColloc& col, const Vector& par, const Vector& /*sol*/)
+void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   // creating the matrix
   col.CharJac_x(AHAT.getA11(), par, ZZ);
@@ -836,8 +836,8 @@ void TestFunctLPAUTROT_X::Init(NColloc& col, const Vector& par, const Vector& /*
   AHAT.getA31(0) = vv1;
   AHAT.getA31(1) = vv2;
 
-  AHAT.getA33().Clear();
-  rhs.Clear();
+  AHAT.getA33().clear();
+  rhs.clear();
   one1(0) = 1.0;
   one1(1) = 0.0;
   one2(0) = 0.0;
@@ -891,7 +891,7 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
 {
   if (first)
   {
-    Init(col, par, sol);
+    init(col, par, sol);
     first = false;
   }
 

@@ -127,14 +127,14 @@ class System
       if ( sz > p_size )
       {
         p_size = sz;
-        p_fx.Init(ndim(), p_size);
-        p_fx_eps.Init(ndim(), p_size);
-        p_dfx.Init(ndim(), ndim(), p_size);
-        p_dfx_eps.Init(ndim(), ndim(), p_size);
-        p_xx_eps.Init(ndim(), 2*ntau()+1, p_size);
-        p2_dfx.Init(ndim(), ndim(), p_size);
-        p2_dfx_eps.Init(ndim(), ndim(), p_size);
-        p2_xx_eps.Init(ndim(), 2*ntau()+1, p_size);
+        p_fx.init(ndim(), p_size);
+        p_fx_eps.init(ndim(), p_size);
+        p_dfx.init(ndim(), ndim(), p_size);
+        p_dfx_eps.init(ndim(), ndim(), p_size);
+        p_xx_eps.init(ndim(), 2*ntau()+1, p_size);
+        p2_dfx.init(ndim(), ndim(), p_size);
+        p2_dfx_eps.init(ndim(), ndim(), p_size);
+        p2_xx_eps.init(ndim(), 2*ntau()+1, p_size);
       }
     }
 

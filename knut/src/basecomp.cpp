@@ -310,9 +310,9 @@ void BaseComp::run(const char* branchFile)
       {
         if (dynamic_cast<Point*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
         Point& pt = *dynamic_cast<Point*>(pt_ptr);
-        Sol.Init(pt.getSol().size());
-        TRe.Init(pt.getSol().size());
-        TIm.Init(pt.getSol().size());
+        Sol.init(pt.getSol().size());
+        TRe.init(pt.getSol().size());
+        TIm.init(pt.getSol().size());
 
         // making the mesh for the conversion
         Vector meshint(params->getNInt1() + 1), meshdeg(params->getNDeg1() + 1);

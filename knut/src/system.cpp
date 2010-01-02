@@ -492,13 +492,13 @@ System::System(const std::string& shobj, int usederi)
 
   nderi = std::min ( (*v_nderi)(), usederi );
   
-  f.Init(ndim()), f_eps.Init(ndim());
-  f2.Init(ndim()), f_eps2.Init(ndim());
-  xx_eps.Init(ndim(), 2 * ntau() + 1);
-  xx_eps2.Init(ndim(), 2 * ntau() + 1);
-  par_eps.Init(npar() + ParEnd);
-  dxx2.Init(ndim(), ndim()), dxx_eps2.Init(ndim(), ndim());
-  vt.Init(ndim());
+  f.init(ndim()), f_eps.init(ndim());
+  f2.init(ndim()), f_eps2.init(ndim());
+  xx_eps.init(ndim(), 2 * ntau() + 1);
+  xx_eps2.init(ndim(), 2 * ntau() + 1);
+  par_eps.init(npar() + ParEnd);
+  dxx2.init(ndim(), ndim()), dxx_eps2.init(ndim(), ndim());
+  vt.init(ndim());
 
   p_size = 0;
   p_resize(1);

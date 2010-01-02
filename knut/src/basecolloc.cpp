@@ -141,7 +141,7 @@ static void poly_diff_int_trap(Matrix& sum, const Vector& t)
 {
   const int dim = t.size();
   const int DIVS = 8*dim;
-  sum.Clear();
+  sum.clear();
   Vector lout(dim);
   Vector dout(dim);
   double d;
@@ -165,7 +165,7 @@ static void poly_int_trap(Matrix& sum, const Vector& t)
 {
   const int dim = t.size();
   const int DIVS = 8*dim;
-  sum.Clear();
+  sum.clear();
   Vector lout(dim);
   double d;
   for (int k = 0; k < DIVS; ++k)
@@ -194,9 +194,9 @@ static void poly_int(Matrix& out, const Vector& t)
   {
     for (j = 0; j < t.size(); j++)
     {
-      poly.Clear();
-      poly1.Clear();
-      poly2.Clear();
+      poly.clear();
+      poly1.clear();
+      poly2.clear();
       poly1(0) = 1.0;
       poly2(0) = 1.0;
       //      poly.Print();
@@ -219,7 +219,7 @@ static void poly_int(Matrix& out, const Vector& t)
       for (k = 0; k < poly.size(); k++) out(i, j) += poly(k);
     }
   }
-//   out.Clear();
+//   out.clear();
 //   for (i = 0; i < t.size(); i++) out(i,i) = 1.0/t.size();
 }
 
@@ -235,10 +235,10 @@ static void poly_diff_int(Matrix& out, const Vector& t)
   {
     for (j = 0; j < t.size(); j++)
     {
-      poly.Clear();
-      poly1.Clear();
-      poly1_d.Clear();
-      poly2.Clear();
+      poly.clear();
+      poly1.clear();
+      poly1_d.clear();
+      poly2.clear();
       poly1(0) = 1.0;
       poly2(0) = 1.0;
       //      poly.Print();
@@ -531,7 +531,7 @@ void PerSolColloc::star(Vector& out, const Vector& in, const Matrix& mt, const V
   P_ERROR(in.size() == out.size());
   P_ERROR(out.size() == dim*(t_deg*t_int + 1));
   P_ERROR(msh.size() == t_int + 1);
-  out.Clear();
+  out.clear();
   for (int i = 0; i < t_int; ++i)
   {
     const double dx = msh(i + 1) - msh(i);
@@ -589,7 +589,7 @@ double PerSolColloc::integrate(const Vector& v1, const Vector& v2, const Matrix&
 
 void PerSolColloc::Star(Vector& V1, const Vector& V2)
 {
-  V1.Clear();
+  V1.clear();
   for (int i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
@@ -675,7 +675,7 @@ double PerSolColloc::IntegrateCont(const Vector& V1, const Vector& V2, const Vec
 
 void PerSolColloc::PhaseStar(Vector& V1, const Vector& V2)
 {
-  V1.Clear();
+  V1.clear();
   for (int i = 0; i < NINT; i++)
   {
     for (int j = 0; j < NDIM; j++)
@@ -694,7 +694,7 @@ void PerSolColloc::PhaseStar(Vector& V1, const Vector& V2)
 
 void PerSolColloc::PhaseRotStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im)
 {
-  V1.Clear();
+  V1.clear();
   for (int i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);

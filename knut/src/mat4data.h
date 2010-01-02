@@ -89,11 +89,11 @@ class mat4Data
     }
     void getMulReRef(int n, Vector& el)
     {
-      el.Init(&elem(mul_offset, 0, n), nmul);
+      el.init(&elem(mul_offset, 0, n), nmul);
     }
     void getMulImRef(int n, Vector& el)
     {
-      el.Init(&elem_im(mul_offset, 0, n), nmul);
+      el.init(&elem_im(mul_offset, 0, n), nmul);
     }
     // j == 0 : LP, j == 1 : PD, j == 2, NS
     int    getNTrivMul(const int j) const
@@ -111,7 +111,7 @@ class mat4Data
     }
     void   getElemRef(int n, Vector& el)
     {
-      el.Init(&elem(elem_offset, 0, n), ndeg + 1);
+      el.init(&elem(elem_offset, 0, n), ndeg + 1);
     }
     void   getMesh(int n, Vector& mesh) const;
     double getMesh(int n, int j) const
@@ -120,7 +120,7 @@ class mat4Data
     }
     void   getMeshRef(int n, Vector& mesh)
     {
-      mesh.Init(&elem(mesh_offset, 0, n), nint + 1);
+      mesh.init(&elem(mesh_offset, 0, n), nint + 1);
     }
     void   getProfile(int n, Vector& profile) const;
     double getProfile(int n, int d, int j) const
@@ -129,7 +129,7 @@ class mat4Data
     }
     void   getProfileRef(int n, Vector& profile)
     {
-      profile.Init(&elem(prof_offset, 0, n), ndim*(ndeg*nint + 1));
+      profile.init(&elem(prof_offset, 0, n), ndim*(ndeg*nint + 1));
     }
 
     int  getNDim() const

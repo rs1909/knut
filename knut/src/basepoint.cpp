@@ -200,8 +200,8 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
     break;
   }
   P_ERROR_X4(tab.nparx == parx.size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.size());
-  eqnr.Init(tab.neqn);
-  varr.Init(tab.neqn);
+  eqnr.init(tab.neqn);
+  varr.init(tab.neqn);
   for (int i = 0; i < tab.neqn; i++)
   {
     eqnr(i) = tab.eqns[i];
@@ -243,12 +243,12 @@ void BasePoint::Reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
   HyperVector* xxDot_temp = 0;
   if (xxDot) xxDot_temp = new HyperVector(*xxDot);
   Destruct();
-  eqn.Init(eqn_.size());
+  eqn.init(eqn_.size());
   eqn = eqn_;
-  var.Init(var_.size());
+  var.init(var_.size());
   var = var_;
-  varMap.Init(var_.size());
-  varMapCont.Init(var_.size() + 1);
+  varMap.init(var_.size());
+  varMapCont.init(var_.size() + 1);
   Construct();
   xxDot->getV1() = xxDot_temp->getV1();
   for (int i = 0; i < std::min<int>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
@@ -303,7 +303,7 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
   solNu = sol;
   parNu = par;
 
-  xx->getV3().Clear();
+  xx->getV3().clear();
 
   if(!adapt) out << "IT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
 
@@ -311,7 +311,7 @@ int BasePoint::Refine(std::ostream& out, bool adapt)
   double Xnorm, Dnorm;
   do
   {
-    basecolloc->Init(sol, par);
+    basecolloc->init(sol, par);
 
     if (!adapt)
     {
@@ -344,7 +344,7 @@ int BasePoint::Tangent(bool adapt)
 {
   double norm;
 
-  basecolloc->Init(sol, par);
+  basecolloc->init(sol, par);
 
   if (!adapt)
   {
@@ -400,7 +400,7 @@ int BasePoint::Continue(double ds, bool jacstep)
   bool conv;
   do
   {
-    basecolloc->Init(solNu, parNu);
+    basecolloc->init(solNu, parNu);
 
     Jacobian(*jac, *rhs, par, parNu, sol, solNu, varMapCont, 0.0, true);
 

@@ -24,12 +24,12 @@ class baseTestFunct
     baseTestFunct() { kernEps = TF_KERNEPS; kernIter = TF_NKERNITER; }
     virtual        ~baseTestFunct()
     {}
-    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol) = 0;
+    virtual void   init(NColloc& col, const Vector& par, const Vector& sol) = 0;
     virtual double Funct(NColloc& col, const Vector& par, const Vector& sol) = 0;
     virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha) = 0;
     virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par) = 0;
 
-    virtual void Init(NColloc& col, const Vector& par, const Vector& sol,
+    virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) = 0;
     virtual void Funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) = 0;
@@ -52,12 +52,12 @@ class TestFunct : public baseTestFunct
   public:
     TestFunct(NColloc& col, double Z);
     ~TestFunct();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    void   init(NColloc& col, const Vector& par, const Vector& sol);
     double Funct(NColloc& col, const Vector& par, const Vector& sol);
     double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
-    void Init(NColloc&, const Vector&, const Vector&, double, double)
+    void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
     void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
@@ -88,7 +88,7 @@ class TestFunctCPLX : public baseTestFunct
   public:
     TestFunctCPLX(NColloc& col);
     ~TestFunctCPLX();
-    void   Init(NColloc&, const Vector&, const Vector&)
+    void   init(NColloc&, const Vector&, const Vector&)
     {}
     double Funct(NColloc&, const Vector&, const Vector&)
     {
@@ -101,7 +101,7 @@ class TestFunctCPLX : public baseTestFunct
     void   Funct_x(Vector&, NColloc&, const Vector&, const Vector&)
     {}
 
-    void Init(NColloc& col, const Vector& par, const Vector& sol,
+    void init(NColloc& col, const Vector& par, const Vector& sol,
               double Re, double Im);
     void Funct(double& f1, double& f2,
                NColloc& col, const Vector& par, const Vector& sol, double Re, double Im);
@@ -138,12 +138,12 @@ class TestFunctLPAUT : public baseTestFunct
   public:
     TestFunctLPAUT(NColloc& col, double Z);
     ~TestFunctLPAUT();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    void   init(NColloc& col, const Vector& par, const Vector& sol);
     double Funct(NColloc& col, const Vector& par, const Vector& sol);
     double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
-    void Init(NColloc&, const Vector&, const Vector&, double, double)
+    void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
     void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
@@ -184,12 +184,12 @@ class TestFunctLPAUTROT : public baseTestFunct
   public:
     TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    void   init(NColloc& col, const Vector& par, const Vector& sol);
     double Funct(NColloc& col, const Vector& par, const Vector& sol);
     double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
-    void Init(NColloc&, const Vector&, const Vector&, double, double)
+    void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
     void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
@@ -235,12 +235,12 @@ class TestFunctLPAUTROT_X : public baseTestFunct
   public:
     TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT_X();
-    void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    void   init(NColloc& col, const Vector& par, const Vector& sol);
     double Funct(NColloc& col, const Vector& par, const Vector& sol);
     double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
-    void Init(NColloc&, const Vector&, const Vector&, double, double)
+    void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
     void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
@@ -297,7 +297,7 @@ class TestFunctIntersect : public baseTestFunct
     virtual        ~TestFunctIntersect()
     {}
     // only first derivatives
-    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    virtual void   init(NColloc& col, const Vector& par, const Vector& sol);
     // return value
     virtual double Funct(NColloc& col, const Vector& par, const Vector& sol);
     // derivative w.r.t. alpha
@@ -306,7 +306,7 @@ class TestFunctIntersect : public baseTestFunct
     virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
     // these are not implemented
-    virtual void Init(NColloc& col, const Vector& par, const Vector& sol,
+    virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) { }
     virtual void Funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) { }
@@ -327,7 +327,7 @@ class TestFunctGrazing : public baseTestFunct
     virtual        ~TestFunctGrazing()
     {}
     // set up second derivatives
-    virtual void   Init(NColloc& col, const Vector& par, const Vector& sol);
+    virtual void   init(NColloc& col, const Vector& par, const Vector& sol);
     // return value
     virtual double Funct(NColloc& col, const Vector& par, const Vector& sol);
     // derivative w.r.t. alpha
@@ -336,7 +336,7 @@ class TestFunctGrazing : public baseTestFunct
     virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
     // these are not implemented
-    virtual void Init(NColloc& col, const Vector& par, const Vector& sol,
+    virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) { }
     virtual void Funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) { }

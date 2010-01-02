@@ -88,7 +88,7 @@ void poly_d2lg(const Vector& t, Vector& out, double c)
 ///
 void poly_coeff_lgr(Array1D<double>& out, const Array1D<double>& t, int i)
 {
-  out.Clear();
+  out.clear();
   out(0) = 1.0;
   for (int j = 0; j < t.size(); j++)
   {
@@ -105,7 +105,7 @@ void poly_coeff_lgr(Array1D<double>& out, const Array1D<double>& t, int i)
 void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>& in2)
 {
   P_ASSERT_X1(out.size() > (in1.size() - 1) + (in2.size() - 1), "poly_coeff_mul: wrong dimensions.");
-  out.Clear();
+  out.clear();
   for (int i = 0; i < in1.size(); i++)
   {
     for (int j = 0; j < in2.size(); j++)
@@ -119,7 +119,7 @@ void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>&
 ///
 void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
 {
-  out.Clear();
+  out.clear();
   for (int i = 0; i < in.size() - 1; i++)
   {
     out(i + 1) = in(i) / (i + 1);
@@ -131,7 +131,7 @@ void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
 ///
 void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in)
 {
-  out.Clear();
+  out.clear();
   for (int i = 1; i < in.size(); i++)
   {
     out(i - 1) = in(i) * i;

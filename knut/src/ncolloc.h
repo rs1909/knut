@@ -23,7 +23,7 @@ class NColloc : public PerSolColloc
 
     ~NColloc() {}
 
-    void Init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
+    void init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
 
     void Interpolate(Array3D<double>& out, const Vector& sol);
     void InterpolateCPLX(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
@@ -241,7 +241,7 @@ template<bool trans> void NColloc::CharJac_MSHphi_x(Vector& V, const Vector& par
 #ifdef DEBUG
   count_CharJac_MSHphi_x++;
 #endif
-  V.Clear(); // it is not cleared otherwise!!!!
+  V.clear(); // it is not cleared otherwise!!!!
 
   for (int k = 0; k < NTAU; k++)
   {

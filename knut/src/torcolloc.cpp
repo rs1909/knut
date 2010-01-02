@@ -101,10 +101,10 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   {
     for (int k = 0; k < ndeg1 + 1; k++)
     {
-      mlg1.Clear();
-      mlgd1.Clear();
-      ilg1.Clear();
-      ilgd1.Clear();
+      mlg1.clear();
+      mlgd1.clear();
+      ilg1.clear();
+      ilgd1.clear();
       poly_coeff_mul(mlg1,  lgr1(i), lgr1(k));
       poly_coeff_mul(mlgd1, dlg1(i), lgr1(k));
       poly_coeff_int(ilg1,  mlg1);
@@ -117,10 +117,10 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   {
     for (int l = 0; l < ndeg2 + 1; l++)
     {
-      mlg2.Clear();
-      mlgd2.Clear();
-      ilg2.Clear();
-      ilgd2.Clear();
+      mlg2.clear();
+      mlgd2.clear();
+      ilg2.clear();
+      ilgd2.clear();
       poly_coeff_mul(mlg2,  lgr2(j), lgr2(l));
       poly_coeff_mul(mlgd2, dlg2(j), lgr2(l));
       poly_coeff_int(ilg2,  mlg2);
@@ -131,7 +131,7 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   }
 }
 
-void CollocTR::Init(const Vector& sol, const Vector& par)
+void CollocTR::init(const Vector& sol, const Vector& par)
 {
   double* t1 = new double[NTAU+1];
   double* t2 = new double[NTAU+1];
@@ -154,7 +154,7 @@ void CollocTR::Init(const Vector& sol, const Vector& par)
 
   sys->p_tau(p_tau, time1, par);
 
-  p_xx.Clear();
+  p_xx.clear();
   for (int idx = 0; idx < time1.size(); ++idx)
   {
     t1[0] = time1(idx);
@@ -255,13 +255,13 @@ void CollocTR::Init(const Vector& sol, const Vector& par)
 
 void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
 {
-  A.Clear();
-  rhs.Clear();
-  for (int r = 0; r < var.size(); r++) Avar(r)->Clear();
+  A.clear();
+  rhs.clear();
+  for (int r = 0; r < var.size(); r++) Avar(r)->clear();
   // rhs doesn't need to be cleared
 
   // creates kk, ee, rr & interpolates p_xx & gets p_tau
-//   Init(sol, par);
+//   init(sol, par);
   // builds up the structure of the sparse matrix
   for (int idx = 0; idx < time1.size(); ++idx)
   {
@@ -283,7 +283,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
   for (int r = 0; r < var.size(); r++)
   {
     Vector& deri = *Avar(r);
-    deri.Clear();
+    deri.clear();
 //!!!!!!!!!!!!!!!!!
 //!BEGIN w.r.t the period
 //!!!!!!!!!!!!!!!!!
@@ -441,7 +441,7 @@ void CollocTR::Jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 
 void CollocTR::PhaseONE(Vector& ph, Vector& presol)
 {
-  ph.Clear();
+  ph.clear();
   for (int i2 = 0; i2 < nint2; i2++)
   {
     for (int i1 = 0; i1 < nint1; i1++)
@@ -471,8 +471,8 @@ void CollocTR::PhaseONE(Vector& ph, Vector& presol)
 
 void CollocTR::PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol)
 {
-  ph0.Clear();
-  ph1.Clear();
+  ph0.clear();
+  ph1.clear();
   for (int i2 = 0; i2 < nint2; i2++)
   {
     for (int i1 = 0; i1 < nint1; i1++)
@@ -534,7 +534,7 @@ double CollocTR::Integrate(const Vector& ph1, const Vector& ph2)
 
 void CollocTR::Star(Vector& ph1, const Vector& ph2)
 {
-  ph1.Clear();
+  ph1.clear();
   for (int i2 = 0; i2 < nint2; i2++)
   {
     for (int i1 = 0; i1 < nint1; i1++)
