@@ -27,32 +27,32 @@ class PointTR : public BasePoint
 
     inline void    setRho(double rho)
     {
-      par(colloc->Sys().npar() + ParRot) = rho;
+      par(colloc->system().npar() + ParRot) = rho;
       std::cout << "RHO: " << rho << "\n";
       std::cout << "par(0): " << par(0) << "\n";
     }
 
     // making starting solution from a periodic solution
-    inline void    ImportSol(Vector& Sol) // "Sol" is already a torus with zero diameter
+    inline void    importSolution(Vector& Sol) // "Sol" is already a torus with zero diameter
     {
-      colloc->ImportSol(xx->getV1(), Sol);
+      colloc->importSolution(xx->getV1(), Sol);
     }
-    inline void    ImportTan(Vector& Re, Vector& Im, double alpha)
+    inline void    importTangent(Vector& Re, Vector& Im, double alpha)
     {
-      colloc->ImportTan(xxDot->getV1(), Re, Im, alpha);
+      colloc->importTangent(xxDot->getV1(), Re, Im, alpha);
       xxDot->getV3().clear();
 //       p1Dot = 0.0; // should be xxDot->getV3(varMap.size()) ???
     }
-    inline void    Start(double ds)
+    inline void    startingPoint(double ds)
     {
       for (int i = 0; i < xx->getV1().size(); i++) xx->getV1()(i) += ds * (xxDot->getV1()(i));
     }
 //     inline int     npar()
 //     {
-//       return colloc->Sys().npar();
+//       return colloc->system().npar();
 //     }
-    void           ReadBinary(mat4Data& data, int n);
-    void           WriteBinary(mat4Data& data, int n);
+    void           loadPoint(mat4Data& data, int n);
+    void           savePoint(mat4Data& data, int n);
 
   private:
 

@@ -593,7 +593,7 @@ double CollocTR::IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3)
   return res;
 }
 
-void CollocTR::ImportSol(Vector& out, Vector& in)
+void CollocTR::importSolution(Vector& out, Vector& in)
 {
   for (int i2 = 0; i2 < nint2; i2++)
   {
@@ -614,7 +614,7 @@ void CollocTR::ImportSol(Vector& out, Vector& in)
   }
 }
 
-void CollocTR::ImportTan(Vector& out, Vector& Re, Vector& Im, double alpha)
+void CollocTR::importTangent(Vector& out, Vector& Re, Vector& Im, double alpha)
 {
   // alpha /= 2.0;
   for (int i2 = 0; i2 < nint2; i2++)

@@ -32,8 +32,8 @@ class CollocTR : public BaseColloc
     double IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3);
     void star(Vector& ph1, const Vector& ph2);
 
-    void ImportSol(Vector& out, Vector& in);
-    void ImportTan(Vector& out, Vector& Re, Vector& Im, double alpha);
+    void importSolution(Vector& out, Vector& in);
+    void importTangent(Vector& out, Vector& Re, Vector& Im, double alpha);
     void Save(const char* dat, const char* idx, const Vector& in);
     void meshAdapt(Vector& newsol, const Vector& sol, Vector& newtan, const Vector& tan) { newsol = sol; newtan = tan; }
 
@@ -66,7 +66,7 @@ class CollocTR : public BaseColloc
     //utils
     inline int idxmap(int j1, int j2, int i1, int i2);
     inline int idxkk(int j1, int j2, int k);
-    inline System& Sys()
+    inline System& system()
     {
       return *sys;
     }

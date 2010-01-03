@@ -336,9 +336,9 @@ void BaseComp::run(const char* branchFile)
       // these next three functions could be only one
       if (params->getBranchSW() == TFTRSwitch)
       {
-        pttr.ImportSol(Sol);
-        pttr.ImportTan(TRe, TIm, alpha);
-        pttr.Start(params->getDsStart());
+        pttr.importSolution(Sol);
+        pttr.importTangent(TRe, TIm, alpha);
+        pttr.startingPoint(params->getDsStart());
         pttr.setPar(par);
         pttr.setRho(alpha / (2.0*M_PI));
         pttr.setCont(params->getCp() - VarPAR0);
@@ -348,7 +348,7 @@ void BaseComp::run(const char* branchFile)
         if (params->getLabel() != 0)
         {
           mat4Data istr(params->getInputFile());
-          pttr.ReadBinary(istr, params->getLabel()-1);
+          pttr.loadPoint(istr, params->getLabel()-1);
           screenout << "\nFinding the tangent.\n"; print(screenout);
           pttr.setCont(params->getCp() - VarPAR0);
           pttr.tangent();
@@ -390,7 +390,7 @@ void BaseComp::run(const char* branchFile)
           ff << norm << "\n";
           ff.flush();
         }
-        pttr.WriteBinary(data(), i);
+        pttr.savePoint(data(), i);
         dataUpdated();
       }
       deleteData();
