@@ -25,22 +25,22 @@ class baseTestFunct
     virtual        ~baseTestFunct()
     {}
     virtual void   init(NColloc& col, const Vector& par, const Vector& sol) = 0;
-    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol) = 0;
-    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha) = 0;
-    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par) = 0;
+    virtual double funct(NColloc& col, const Vector& par, const Vector& sol) = 0;
+    virtual double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha) = 0;
+    virtual void   funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par) = 0;
 
     virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) = 0;
-    virtual void Funct(double& f1, double& f2,
+    virtual void funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) = 0;
-    virtual void Funct_p(double& f1, double& f2,
+    virtual void funct_p(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol,
                          int alpha) = 0;
-    virtual void Funct_z(double& f1, double& f2,
+    virtual void funct_z(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol) = 0;
-    virtual void Funct_x(Vector& func1, Vector& func2,
+    virtual void funct_x(Vector& func1, Vector& func2,
                          NColloc& col, const Vector& par, const Vector& sol) = 0;
-    virtual void Switch(Vector& phi) = 0;
+    virtual void kernel(Vector& phi) = 0;
     virtual void setKernelTolerance(double eps, int iter) { kernEps = eps; kernIter = iter; }
   protected:
     double kernEps;
@@ -53,21 +53,21 @@ class TestFunct : public baseTestFunct
     TestFunct(NColloc& col, double Z);
     ~TestFunct();
     void   init(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
+    double funct(NColloc& col, const Vector& par, const Vector& sol);
+    double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    void   funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
     void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
+    void funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
+    void funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
+    void funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
+    void funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
     {}
-    void Switch(Vector& phi);
+    void kernel(Vector& phi);
 
   private:
     bool        first;
@@ -90,32 +90,32 @@ class TestFunctCPLX : public baseTestFunct
     ~TestFunctCPLX();
     void   init(NColloc&, const Vector&, const Vector&)
     {}
-    double Funct(NColloc&, const Vector&, const Vector&)
+    double funct(NColloc&, const Vector&, const Vector&)
     {
       return 0.0;
     }
-    double Funct_p(NColloc&, const Vector&, const Vector&, int)
+    double funct_p(NColloc&, const Vector&, const Vector&, int)
     {
       return 0.0;
     }
-    void   Funct_x(Vector&, NColloc&, const Vector&, const Vector&)
+    void   funct_x(Vector&, NColloc&, const Vector&, const Vector&)
     {}
 
     void init(NColloc& col, const Vector& par, const Vector& sol,
               double Re, double Im);
-    void Funct(double& f1, double& f2,
+    void funct(double& f1, double& f2,
                NColloc& col, const Vector& par, const Vector& sol, double Re, double Im);
-    void Funct_p(double& f1, double& f2,
+    void funct_p(double& f1, double& f2,
                  NColloc& col, const Vector& par, const Vector& sol,
                  int alpha);
-    void Funct_z(double& f1, double& f2,
+    void funct_z(double& f1, double& f2,
                  NColloc& col, const Vector& par, const Vector& sol);
-    void Funct_x(Vector& func1, Vector& func2,
+    void funct_x(Vector& func1, Vector& func2,
                  NColloc& col, const Vector& par, const Vector& sol);
-    inline void Switch(Vector&)
+    inline void kernel(Vector&)
     {}
-    void   Switch(Vector& Re, Vector& Im, double& alpha);
-    double SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par);
+    void   kernel(Vector& Re, Vector& Im, double& alpha);
+    double kernelComplex(Vector& Re, Vector& Im, NColloc& col, const Vector& par);
 
   private:
     bool        first;
@@ -139,21 +139,21 @@ class TestFunctLPAUT : public baseTestFunct
     TestFunctLPAUT(NColloc& col, double Z);
     ~TestFunctLPAUT();
     void   init(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
+    double funct(NColloc& col, const Vector& par, const Vector& sol);
+    double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    void   funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
     void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
+    void funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
+    void funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
+    void funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
+    void funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
     {}
-    void Switch(Vector& phi);
+    void kernel(Vector& phi);
 
   private:
     bool        first;
@@ -185,21 +185,21 @@ class TestFunctLPAUTROT : public baseTestFunct
     TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT();
     void   init(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
+    double funct(NColloc& col, const Vector& par, const Vector& sol);
+    double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    void   funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
     void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
+    void funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
+    void funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
+    void funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
+    void funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
     {}
-    void Switch(Vector& phi);
+    void kernel(Vector& phi);
 
   private:
     bool         first;
@@ -236,21 +236,21 @@ class TestFunctLPAUTROT_X : public baseTestFunct
     TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z);
     ~TestFunctLPAUTROT_X();
     void   init(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct(NColloc& col, const Vector& par, const Vector& sol);
-    double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
-    void   Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
+    double funct(NColloc& col, const Vector& par, const Vector& sol);
+    double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    void   funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& sol);
 
     void init(NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
+    void funct(double&, double&, NColloc&, const Vector&, const Vector&, double, double)
     {}
-    void Funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
+    void funct_p(double&, double&, NColloc&, const Vector&, const Vector&, int)
     {}
-    void Funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
+    void funct_z(double&, double&, NColloc&, const Vector&, const Vector&)
     {}
-    void Funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
+    void funct_x(Vector&, Vector&, NColloc&, const Vector&, const Vector&)
     {}
-    void Switch(Vector& phi);
+    void kernel(Vector& phi);
 
   private:
     bool         first;
@@ -299,25 +299,25 @@ class TestFunctIntersect : public baseTestFunct
     // only first derivatives
     virtual void   init(NColloc& col, const Vector& par, const Vector& sol);
     // return value
-    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol);
+    virtual double funct(NColloc& col, const Vector& par, const Vector& sol);
     // derivative w.r.t. alpha
-    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    virtual double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     // derivative w.r.t. state variables
-    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
+    virtual void   funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
     // these are not implemented
     virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) { }
-    virtual void Funct(double& f1, double& f2,
+    virtual void funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) { }
-    virtual void Funct_p(double& f1, double& f2,
+    virtual void funct_p(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol,
                          int alpha) { }
-    virtual void Funct_z(double& f1, double& f2,
+    virtual void funct_z(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol) { }
-    virtual void Funct_x(Vector& func1, Vector& func2,
+    virtual void funct_x(Vector& func1, Vector& func2,
                          NColloc& col, const Vector& par, const Vector& sol) { }
-    virtual void Switch(Vector& phi) { }
+    virtual void kernel(Vector& phi) { }
 };
 
 class TestFunctGrazing : public baseTestFunct
@@ -329,25 +329,25 @@ class TestFunctGrazing : public baseTestFunct
     // set up second derivatives
     virtual void   init(NColloc& col, const Vector& par, const Vector& sol);
     // return value
-    virtual double Funct(NColloc& col, const Vector& par, const Vector& sol);
+    virtual double funct(NColloc& col, const Vector& par, const Vector& sol);
     // derivative w.r.t. alpha
-    virtual double Funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
+    virtual double funct_p(NColloc& col, const Vector& par, const Vector& sol, int alpha);
     // derivative w.r.t. state variables
-    virtual void   Funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
+    virtual void   funct_x(Vector& func, NColloc& col, const Vector& sol, const Vector& par);
 
     // these are not implemented
     virtual void init(NColloc& col, const Vector& par, const Vector& sol,
                       double Re, double Im) { }
-    virtual void Funct(double& f1, double& f2,
+    virtual void funct(double& f1, double& f2,
                        NColloc& col, const Vector& par, const Vector& sol, double Re, double Im) { }
-    virtual void Funct_p(double& f1, double& f2,
+    virtual void funct_p(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol,
                          int alpha) { }
-    virtual void Funct_z(double& f1, double& f2,
+    virtual void funct_z(double& f1, double& f2,
                          NColloc& col, const Vector& par, const Vector& sol) { }
-    virtual void Funct_x(Vector& func1, Vector& func2,
+    virtual void funct_x(Vector& func1, Vector& func2,
                          NColloc& col, const Vector& par, const Vector& sol) { }
-    virtual void Switch(Vector& phi) { }
+    virtual void kernel(Vector& phi) { }
 };
 
 #endif

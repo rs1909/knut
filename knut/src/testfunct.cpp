@@ -121,7 +121,7 @@ void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
-double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
+double TestFunct::funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   double one = 1.0;
   double gg = 0.0;
@@ -177,7 +177,7 @@ double TestFunct::Funct(NColloc& col, const Vector& par, const Vector& sol)
   return gg;
 }
 
-double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double TestFunct::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   col.interpolate(vvData, vv);
   col.jotf_x_p(A_p, par, vvData, ZZ, alpha);
@@ -186,7 +186,7 @@ double TestFunct::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/
   return gg_p; // positive, because the test function is not negated in the Jacobian
 }
 
-void   TestFunct::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   TestFunct::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.interpolate(vvData, vv);
   col.jotf_x_x(A_x, par, vvData, ZZ);
@@ -194,7 +194,7 @@ void   TestFunct::Funct_x(Vector& func, NColloc& col, const Vector& par, const V
 //  func *= 100.0;
 }
 
-void   TestFunct::Switch(Vector& phi)
+void   TestFunct::kernel(Vector& phi)
 {
   phi = vv;
 }
@@ -265,7 +265,7 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
-void TestFunctCPLX::Funct(double& f1, double& f2,
+void TestFunctCPLX::funct(double& f1, double& f2,
                           NColloc& col, const Vector& par, const Vector& sol, double Re, double Im)
 {
   if (first)
@@ -295,7 +295,7 @@ void TestFunctCPLX::Funct(double& f1, double& f2,
 //  else               std::cout<<"\t---\n";
 }
 
-void TestFunctCPLX::Funct_p(double& f1, double& f2,
+void TestFunctCPLX::funct_p(double& f1, double& f2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/,
                             int alpha)
 {
@@ -304,7 +304,7 @@ void TestFunctCPLX::Funct_p(double& f1, double& f2,
   f2 = (AHAT.getA13(1)/*uu^conj*/ * A_p);
 }
 
-void TestFunctCPLX::Funct_z(double& f1, double& f2,
+void TestFunctCPLX::funct_z(double& f1, double& f2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.jotf_x_z(A_p, par, AHAT.getA31(0), vvDataRe, vvDataIm, ZRe, ZIm);
@@ -314,7 +314,7 @@ void TestFunctCPLX::Funct_z(double& f1, double& f2,
   f2 = (dzre * ZRe - dzim * ZIm);
 }
 
-void TestFunctCPLX::Funct_x(Vector& func1, Vector& func2,
+void TestFunctCPLX::funct_x(Vector& func1, Vector& func2,
                             NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vvDataRe, vvDataIm, ZRe, ZIm);
@@ -322,7 +322,7 @@ void TestFunctCPLX::Funct_x(Vector& func1, Vector& func2,
   func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
 }
 
-void TestFunctCPLX::Switch(Vector& Re, Vector& Im, double& alpha)
+void TestFunctCPLX::kernel(Vector& Re, Vector& Im, double& alpha)
 {
   P_ASSERT_X((2*Re.size() == vv.size()) && (2*Im.size() == vv.size()), "TestFunctCPLX::Switch: Bad sizes\n");
   std::cout << "zRe=" << ZRe << ", zIm=" << ZIm << "\n";
@@ -341,7 +341,7 @@ void TestFunctCPLX::Switch(Vector& Re, Vector& Im, double& alpha)
   }
 }
 
-double TestFunctCPLX::SwitchHB(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
+double TestFunctCPLX::kernelComplex(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
 {
   // computing the period of the new branch
   double period = par(0);
@@ -475,7 +475,7 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
   if (diffnorm > kernEps) std::cout << "TestFunctLPAUT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 }
 
-double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
+double TestFunctLPAUT::funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   if (first)
   {
@@ -513,7 +513,7 @@ double TestFunctLPAUT::Funct(NColloc& col, const Vector& par, const Vector& sol)
   return gg2(1);
 }
 
-double TestFunctLPAUT::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double TestFunctLPAUT::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv2Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, phiData, ZZ, alpha);
@@ -534,7 +534,7 @@ double TestFunctLPAUT::Funct_p(NColloc& col, const Vector& par, const Vector& /*
   return gg_p;
 }
 
-void   TestFunctLPAUT::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   TestFunctLPAUT::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vv2Data, ZZ);
   col.jotf_mB_x(mB_x, par, phiData, ZZ);
@@ -551,7 +551,7 @@ void   TestFunctLPAUT::Funct_x(Vector& func, NColloc& col, const Vector& par, co
   func += hh2(0) * temp;
 }
 
-void   TestFunctLPAUT::Switch(Vector& phi)
+void   TestFunctLPAUT::kernel(Vector& phi)
 {
   phi = vv2;
 }
@@ -656,7 +656,7 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
 //   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
-double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& sol)
+double TestFunctLPAUTROT::funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   if (first)
   {
@@ -705,7 +705,7 @@ double TestFunctLPAUTROT::Funct(NColloc& col, const Vector& par, const Vector& s
   return gg3(2);
 }
 
-double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double TestFunctLPAUTROT::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_trivialKernelOnMesh_p(DpPhi, par, solMSHData, alpha);
@@ -731,7 +731,7 @@ double TestFunctLPAUTROT::Funct_p(NColloc& col, const Vector& par, const Vector&
   return gg_p;
 }
 
-void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   TestFunctLPAUTROT::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.interpolate(vv3Data, vv3);
   col.jotf_x_x(A_x, par, vv3Data, ZZ);
@@ -760,7 +760,7 @@ void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par,
   func += hh3(1) * temp;
 }
 
-void   TestFunctLPAUTROT::Switch(Vector& phi)
+void   TestFunctLPAUTROT::kernel(Vector& phi)
 {
   phi = vv3;
 }
@@ -887,7 +887,7 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
-double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector& sol)
+double TestFunctLPAUTROT_X::funct(NColloc& col, const Vector& par, const Vector& sol)
 {
   if (first)
   {
@@ -941,7 +941,7 @@ double TestFunctLPAUTROT_X::Funct(NColloc& col, const Vector& par, const Vector&
   return gg3(2);
 }
 
-double TestFunctLPAUTROT_X::Funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double TestFunctLPAUTROT_X::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, vv1Data, ZZ, alpha);
@@ -954,7 +954,7 @@ double TestFunctLPAUTROT_X::Funct_p(NColloc& col, const Vector& par, const Vecto
   return gg_p;
 }
 
-void   TestFunctLPAUTROT_X::Funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   TestFunctLPAUTROT_X::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vv3Data, ZZ);
   func = !A_x * uu3;
@@ -966,7 +966,7 @@ void   TestFunctLPAUTROT_X::Funct_x(Vector& func, NColloc& col, const Vector& pa
   func += gg3(1) * temp;
 }
 
-void   TestFunctLPAUTROT_X::Switch(Vector& phi)
+void   TestFunctLPAUTROT_X::kernel(Vector& phi)
 {
   phi = vv3;
 }

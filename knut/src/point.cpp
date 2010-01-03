@@ -216,13 +216,13 @@ void Point::jacobian(
       case EqnTFPD:
       case EqnTFLPAUT:
       case EqnTFLPAUTROT:
-        RHS.getV3()(i - 1) = testFunct(i)->Funct(*colloc, par, sol);
-        testFunct(i)->Funct_x(AA.getA31(i - 1), *colloc, par, sol);
+        RHS.getV3()(i - 1) = testFunct(i)->funct(*colloc, par, sol);
+        testFunct(i)->funct_x(AA.getA31(i - 1), *colloc, par, sol);
         for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            AA.getA33()(i - 1, j - 1) = testFunct(i)->Funct_p(*colloc, par, sol, varMap(j));
+            AA.getA33()(i - 1, j - 1) = testFunct(i)->funct_p(*colloc, par, sol, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
@@ -237,18 +237,18 @@ void Point::jacobian(
       case EqnTFCPLX_RE:
         P_ERROR_X3(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test functional are not paired at position ", varMap(i), ".");
-        testFunct(i)->Funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
+        testFunct(i)->funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
                          cos(par(NPAR + ParAngle)), sin(par(NPAR + ParAngle)));
-        testFunct(i)->Funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
+        testFunct(i)->funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
         for (int j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
-            testFunct(i)->Funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol, varMap(j));
+            testFunct(i)->funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol, varMap(j));
           }
           else if (varMap(j) - NPAR == ParAngle)
           {
-            testFunct(i)->Funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol);
+            testFunct(i)->funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol);
           }
           else
           {
@@ -300,7 +300,7 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
   TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
   Vector QRE(NDIM), QIM(NDIM);
 
-  par(0) = tf->SwitchHB(QRE, QIM, *colloc, par);
+  par(0) = tf->kernelComplex(QRE, QIM, *colloc, par);
   out << "    T = " << par(0) << ", arg(Z) = " << par(NPAR + ParAngle) / (2*M_PI) << " * 2Pi\n";
 
 #ifdef DEBUG
@@ -365,8 +365,8 @@ void Point::SwitchTFLP(BranchSW type, double ds)
       break;
   }
   tf->setKernelTolerance(KernEps, KernIter);
-  tf->Funct(*colloc, par, sol);
-  tf->Switch(xxDot->getV1());
+  tf->funct(*colloc, par, sol);
+  tf->kernel(xxDot->getV1());
   delete tf;
   double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
@@ -380,8 +380,8 @@ void Point::SwitchTFPD(double ds)
   Vector tan(xxDot->getV1().size());
   TestFunct* tf = new TestFunct(*colloc, -1.0);
   tf->setKernelTolerance(KernEps, KernIter);
-  tf->Funct(*colloc, par, sol);
-  tf->Switch(tan);
+  tf->funct(*colloc, par, sol);
+  tf->kernel(tan);
   delete tf;
 
   // setting the period two double
@@ -535,7 +535,7 @@ void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& m
   TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct(idx));
   if (tf)
   {
-    tf->Switch(TRe, TIm, alpha);
+    tf->kernel(TRe, TIm, alpha);
     colloc->exportProfile(Re, mshint, mshdeg, TRe);
     colloc->exportProfile(Im, mshint, mshdeg, TIm);
   }
