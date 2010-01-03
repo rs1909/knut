@@ -195,21 +195,21 @@ int sys_ndim(){ return 2; }
 int sys_npar(){ return 2; }
 int sys_ntau(){ return 3; }
 
-// void System::tau( Vector& out, double t )
+// void KNSystem::tau( KNVector& out, double t )
 // {
 //   out(0) = 0.0;
 //   out(1) = 0.5;
 //   out(2) = 1.0;
 // }
 
-void sys_tau( Vector& out, double t, const Vector& par )
+void sys_tau( KNVector& out, double t, const KNVector& par )
 {
 	out(0) = 0.0;
 	out(1) = 0.5*par(0);
 	out(2) = 1.0*par(0);
 }
 
-void sys_dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( KNVector& out, double t, const KNVector& par, int vp )
 {
 	switch( vp )
 	{
@@ -229,7 +229,7 @@ void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 	}
 }
 
-void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
+void sys_rhs( KNVector& out, double t, const KNMatrix& x, const KNVector& par )
 {
   double g;
   if( (t < 0)||(t > 1) ) cout << "rhs: t is not element of the interval\n";
@@ -246,8 +246,8 @@ void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
   out(1) = -x(0,0) - 2*ZETA*x(1,0) + g*par(1)*scf( phi, x(0,0), x(0,1), x(0,2) );
 }
 
-void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
-	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
+void sys_deri( KNMatrix &out, double t, const KNMatrix& x, const KNVector& par, 
+	       int nx, const int* vx, int np, const int* vp, const KNMatrix& vv )
 {
   double g;
   if( (t < 0)||(t > 1) ) cout << "deri: t is not element of the interval\n";
@@ -440,14 +440,14 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
 // 	}
 // }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
 	par(0) = 2.0*1.31*M_PI;
 	//par(0) = 31.270490;//2*2*M_PI/(3675.0/60.0/146.8);
 	par(1) = 0.0;
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
 	out(0) = 0.0;//1.0+2.7*0.4*(0.0*0.3*sin(2*M_PI*t) - 1.0*0.7*cos(2*2*M_PI*t)- 1.0*0.6*cos(3*2*M_PI*t));
 	out(1) = 0.0;//0.7*0.4*(0.0*0.3*sin(2*M_PI*t) - 1.0*0.7*cos(2*2*M_PI*t)- 1.0*0.6*cos(3*2*M_PI*t));

@@ -167,7 +167,7 @@ int sys_npar(){ return 2; }
 int sys_ntau(){ return 3; }
 int sys_nderi() { return 2; }
 
-void sys_p_tau( Array2D<double>& vout, const Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
 #define out(i) vout(i,idx)
   for (int idx=0; idx < time.size(); ++idx)
@@ -179,7 +179,7 @@ void sys_p_tau( Array2D<double>& vout, const Array1D<double>& time, const Array1
 #undef out
 }
 
-void sys_p_dtau( Array2D<double>& vout, const Array1D<double>& time, const Array1D<double>& par, int vp )
+void sys_p_dtau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray1D<double>& par, int vp )
 {
 #define out(i) vout(i,idx)
   for (int idx=0; idx < time.size(); ++idx)
@@ -204,7 +204,7 @@ void sys_p_dtau( Array2D<double>& vout, const Array1D<double>& time, const Array
 #undef out
 }
 
-void sys_p_rhs( Array2D<double>& vout, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel )
+void sys_p_rhs( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel )
 {
 #define out(i) vout(i,idx)
 #define xx(i,j) yy(i,j,idx)
@@ -229,7 +229,7 @@ void sys_p_rhs( Array2D<double>& vout, const Array1D<double>& time, const Array3
 #undef xx
 }
 
-void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel, int nx, const int* vx, int np, const int* vp, const Array3D<double>& ww )
+void sys_p_deri( KNArray3D<double>& mout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& ww )
 {
 #define out(i,j) mout(i,j,idx)
 #define xx(i,j) yy(i,j,idx)
@@ -425,13 +425,13 @@ void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time, const Array
 #undef ww
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   par(0) = 14.75;
   par(1) = 0.00;
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
   out(0) = 0.0;
   out(1) = 0.0;

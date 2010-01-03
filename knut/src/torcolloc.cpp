@@ -35,7 +35,7 @@ struct comp : public std::binary_function<int, int, bool>
 
 //-----------------------------------------------------------------------------------------------
 //
-//    CollocTR CLASS
+//    KNDdeTorusCollocation CLASS
 //
 //-----------------------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ struct comp : public std::binary_function<int, int, bool>
 #include "torcolloc.h"
 #include "pointtype.h"
 
-CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_) :
+KNDdeTorusCollocation::KNDdeTorusCollocation(KNSystem& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_) :
     sys(&sys_),
     ndim(sys_.ndim()), ntau(sys_.ntau()), npar(sys_.npar()),
     ndeg1(ndeg1_), ndeg2(ndeg2_), nint1(nint1_), nint2(nint2_),
@@ -131,7 +131,7 @@ CollocTR::CollocTR(System& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
   }
 }
 
-void CollocTR::init(const Vector& sol, const Vector& par)
+void KNDdeTorusCollocation::init(const KNVector& sol, const KNVector& par)
 {
   double* t1 = new double[NTAU+1];
   double* t2 = new double[NTAU+1];
@@ -253,7 +253,7 @@ void CollocTR::init(const Vector& sol, const Vector& par)
 //
 //***************************************************************************
 
-void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vector& par, Vector& sol, Array1D<int>& var)
+void KNDdeTorusCollocation::jacobian(KNSparseMatrix& A, KNArray1D< KNVector* > Avar, KNVector& rhs, KNVector& par, KNVector& sol, KNArray1D<int>& var)
 {
   A.clear();
   rhs.clear();
@@ -282,7 +282,7 @@ void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
   // derivatives w.r.t the parameters
   for (int r = 0; r < var.size(); r++)
   {
-    Vector& deri = *Avar(r);
+    KNVector& deri = *Avar(r);
     deri.clear();
 //!!!!!!!!!!!!!!!!!
 //!BEGIN w.r.t the period
@@ -439,7 +439,7 @@ void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
 //
 //***************************************************************************************
 
-void CollocTR::PhaseONE(Vector& ph, Vector& presol)
+void KNDdeTorusCollocation::PhaseONE(KNVector& ph, KNVector& presol)
 {
   ph.clear();
   for (int i2 = 0; i2 < nint2; i2++)
@@ -469,7 +469,7 @@ void CollocTR::PhaseONE(Vector& ph, Vector& presol)
   }
 }
 
-void CollocTR::PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol)
+void KNDdeTorusCollocation::PhaseBOTH(KNVector& ph0, KNVector& ph1, KNVector& presol)
 {
   ph0.clear();
   ph1.clear();
@@ -501,7 +501,7 @@ void CollocTR::PhaseBOTH(Vector& ph0, Vector& ph1, Vector& presol)
   }
 }
 
-double CollocTR::integrate(const Vector& ph1, const Vector& ph2)
+double KNDdeTorusCollocation::integrate(const KNVector& ph1, const KNVector& ph2)
 {
   double res = 0.0;
   for (int i2 = 0; i2 < nint2; i2++)
@@ -532,7 +532,7 @@ double CollocTR::integrate(const Vector& ph1, const Vector& ph2)
   return res;
 }
 
-void CollocTR::star(Vector& ph1, const Vector& ph2)
+void KNDdeTorusCollocation::star(KNVector& ph1, const KNVector& ph2)
 {
   ph1.clear();
   for (int i2 = 0; i2 < nint2; i2++)
@@ -562,7 +562,7 @@ void CollocTR::star(Vector& ph1, const Vector& ph2)
   }
 }
 
-double CollocTR::IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3)
+double KNDdeTorusCollocation::IntegrateDIFF(KNVector& ph1, KNVector& ph2, KNVector& ph3)
 {
   double res = 0.0;
   for (int i2 = 0; i2 < nint2; i2++)
@@ -593,7 +593,7 @@ double CollocTR::IntegrateDIFF(Vector& ph1, Vector& ph2, Vector& ph3)
   return res;
 }
 
-void CollocTR::importSolution(Vector& out, Vector& in)
+void KNDdeTorusCollocation::importSolution(KNVector& out, KNVector& in)
 {
   for (int i2 = 0; i2 < nint2; i2++)
   {
@@ -614,7 +614,7 @@ void CollocTR::importSolution(Vector& out, Vector& in)
   }
 }
 
-void CollocTR::importTangent(Vector& out, Vector& Re, Vector& Im, double alpha)
+void KNDdeTorusCollocation::importTangent(KNVector& out, KNVector& Re, KNVector& Im, double alpha)
 {
   // alpha /= 2.0;
   for (int i2 = 0; i2 < nint2; i2++)
@@ -640,7 +640,7 @@ void CollocTR::importTangent(Vector& out, Vector& Re, Vector& Im, double alpha)
   out /= norm;
 }
 
-void CollocTR::Save(const char* dat, const char* idx, const Vector& in)
+void KNDdeTorusCollocation::Save(const char* dat, const char* idx, const KNVector& in)
 {
   // writing to file for plotting
   std::ofstream ff(dat);

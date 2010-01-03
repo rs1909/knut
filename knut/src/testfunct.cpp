@@ -27,7 +27,7 @@
 #define NTAU (col.nTau())
 #define NPAR (col.nPar())
 
-template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& IN, Array1D<int>& Re, Array1D<int>& Im)
+template<bool trans> inline void rotbord(KNVector& V, KNDdeBvpCollocation& col, const KNVector& IN, KNArray1D<int>& Re, KNArray1D<int>& Im)
 {
   V.clear();
   for (int idx = 0; idx < NINT*NDEG + 1; idx++)
@@ -48,7 +48,7 @@ template<bool trans> inline void rotbord(Vector& V, NColloc& col, const Vector& 
   }
 }
 
-inline void conjugate(Vector& out, const Vector& inp)
+inline void conjugate(KNVector& out, const KNVector& inp)
 {
   for (int i = 0; i < out.size() / 2; ++i)
   {
@@ -57,7 +57,7 @@ inline void conjugate(Vector& out, const Vector& inp)
   }
 }
 
-TestFunct::TestFunct(NColloc& col, double Z) :
+KNTestFunctional::KNTestFunctional(KNDdeBvpCollocation& col, double Z) :
     ZZ(Z),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 1, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
     A_p(NDIM*(NDEG*NINT + 1)),
@@ -70,10 +70,10 @@ TestFunct::TestFunct(NColloc& col, double Z) :
   first = true;
 }
 
-TestFunct::~TestFunct()
+KNTestFunctional::~KNTestFunctional()
 {}
 
-void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
+void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   // creating the matrix
   col.jotf_x(AHAT.getA11(), par, ZZ);
@@ -117,11 +117,11 @@ void TestFunct::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
 #endif
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
-  if (diffnorm > kernEps) std::cout << "TestFunct::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  if (diffnorm > kernEps) std::cout << "KNTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
-double TestFunct::funct(NColloc& col, const Vector& par, const Vector& sol)
+double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   double one = 1.0;
   double gg = 0.0;
@@ -177,7 +177,7 @@ double TestFunct::funct(NColloc& col, const Vector& par, const Vector& sol)
   return gg;
 }
 
-double TestFunct::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double KNTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
   col.interpolate(vvData, vv);
   col.jotf_x_p(A_p, par, vvData, ZZ, alpha);
@@ -186,7 +186,7 @@ double TestFunct::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/
   return gg_p; // positive, because the test function is not negated in the Jacobian
 }
 
-void   TestFunct::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   KNTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.interpolate(vvData, vv);
   col.jotf_x_x(A_x, par, vvData, ZZ);
@@ -194,7 +194,7 @@ void   TestFunct::funct_x(Vector& func, NColloc& col, const Vector& par, const V
 //  func *= 100.0;
 }
 
-void   TestFunct::kernel(Vector& phi)
+void   KNTestFunctional::kernel(KNVector& phi)
 {
   phi = vv;
 }
@@ -203,7 +203,7 @@ void   TestFunct::kernel(Vector& phi)
 /// test function for TORUS BIFURCATIONS
 /// ---------------------------------------------------------
 
-TestFunctCPLX::TestFunctCPLX(NColloc& col) :
+KNComplexTestFunctional::KNComplexTestFunctional(KNDdeBvpCollocation& col) :
     first(true),
     AHAT(2*NDIM*(NDEG*NINT + 1), 0, 2, 4*NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
     A_p(2*NDIM*(NDEG*NINT + 1)),
@@ -218,10 +218,10 @@ TestFunctCPLX::TestFunctCPLX(NColloc& col) :
     vvDataIm(NDIM, NTAU + 1, NDEG*NINT)
 {}
 
-TestFunctCPLX::~TestFunctCPLX()
+KNComplexTestFunctional::~KNComplexTestFunctional()
 {}
 
-void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
+void KNComplexTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/,
                          double Re, double Im)
 {
   ZRe = Re;
@@ -241,7 +241,7 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
   one(0) = 1.0;
   one(1) = 0.0;
 
-  Vector vdiff(vv), udiff(uu);
+  KNVector vdiff(vv), udiff(uu);
   double diffnorm = 1.0;
   int it = 0;
   do
@@ -261,12 +261,12 @@ void TestFunctCPLX::init(NColloc& col, const Vector& par, const Vector& /*sol*/,
     conjugate(AHAT.getA31(1), AHAT.getA31(0));
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
-  if (diffnorm > kernEps) std::cout << "TestFunctCPLX::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  if (diffnorm > kernEps) std::cout << "KNComplexTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
 }
 
-void TestFunctCPLX::funct(double& f1, double& f2,
-                          NColloc& col, const Vector& par, const Vector& sol, double Re, double Im)
+void KNComplexTestFunctional::funct(double& f1, double& f2,
+                          KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, double Re, double Im)
 {
   if (first)
   {
@@ -295,8 +295,8 @@ void TestFunctCPLX::funct(double& f1, double& f2,
 //  else               std::cout<<"\t---\n";
 }
 
-void TestFunctCPLX::funct_p(double& f1, double& f2,
-                            NColloc& col, const Vector& par, const Vector& /*sol*/,
+void KNComplexTestFunctional::funct_p(double& f1, double& f2,
+                            KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/,
                             int alpha)
 {
   col.jotf_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
@@ -304,8 +304,8 @@ void TestFunctCPLX::funct_p(double& f1, double& f2,
   f2 = (AHAT.getA13(1)/*uu^conj*/ * A_p);
 }
 
-void TestFunctCPLX::funct_z(double& f1, double& f2,
-                            NColloc& col, const Vector& par, const Vector& /*sol*/)
+void KNComplexTestFunctional::funct_z(double& f1, double& f2,
+                            KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_z(A_p, par, AHAT.getA31(0), vvDataRe, vvDataIm, ZRe, ZIm);
   const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
@@ -314,17 +314,17 @@ void TestFunctCPLX::funct_z(double& f1, double& f2,
   f2 = (dzre * ZRe - dzim * ZIm);
 }
 
-void TestFunctCPLX::funct_x(Vector& func1, Vector& func2,
-                            NColloc& col, const Vector& par, const Vector& /*sol*/)
+void KNComplexTestFunctional::funct_x(KNVector& func1, KNVector& func2,
+                            KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vvDataRe, vvDataIm, ZRe, ZIm);
   func1 = !A_x * AHAT.getA13(0); /*uu*/
   func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
 }
 
-void TestFunctCPLX::kernel(Vector& Re, Vector& Im, double& alpha)
+void KNComplexTestFunctional::kernel(KNVector& Re, KNVector& Im, double& alpha)
 {
-  P_ASSERT_X((2*Re.size() == vv.size()) && (2*Im.size() == vv.size()), "TestFunctCPLX::Switch: Bad sizes\n");
+  P_ASSERT_X((2*Re.size() == vv.size()) && (2*Im.size() == vv.size()), "KNComplexTestFunctional::Switch: Bad sizes\n");
   std::cout << "zRe=" << ZRe << ", zIm=" << ZIm << "\n";
   for (int i = 0; i < Re.size(); i++)
   {
@@ -341,7 +341,7 @@ void TestFunctCPLX::kernel(Vector& Re, Vector& Im, double& alpha)
   }
 }
 
-double TestFunctCPLX::kernelComplex(Vector& Re, Vector& Im, NColloc& col, const Vector& par)
+double KNComplexTestFunctional::kernelComplex(KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par)
 {
   // computing the period of the new branch
   double period = par(0);
@@ -397,7 +397,7 @@ double TestFunctCPLX::kernelComplex(Vector& Re, Vector& Im, NColloc& col, const 
 /// test function for FOLD BIFURCATIONS in autonomous systems
 /// ---------------------------------------------------------
 
-TestFunctLPAUT::TestFunctLPAUT(NColloc& col, double Z) :
+KNLpAutTestFunctional::KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z) :
     ZZ(Z),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 2, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
     A_p(NDIM*(NDEG*NINT + 1)),
@@ -422,10 +422,10 @@ TestFunctLPAUT::TestFunctLPAUT(NColloc& col, double Z) :
   first = true;
 }
 
-TestFunctLPAUT::~TestFunctLPAUT()
+KNLpAutTestFunctional::~KNLpAutTestFunctional()
 {}
 
-void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
+void KNLpAutTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   // creating the matrix
   col.jotf_x(AHAT.getA11(), par, ZZ);
@@ -448,7 +448,7 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
   one2(0) = 0.0;
   one2(1) = 1.0;
 
-  Vector v2diff(vv2), u2diff(uu2);
+  KNVector v2diff(vv2), u2diff(uu2);
   double g2diff, h2diff;
   double diffnorm = 1.0;
   int it = 0;
@@ -472,10 +472,10 @@ void TestFunctLPAUT::init(NColloc& col, const Vector& par, const Vector& sol)
     AHAT.getA33(0, 1) = nrm_v * hh2(0);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
-  if (diffnorm > kernEps) std::cout << "TestFunctLPAUT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  if (diffnorm > kernEps) std::cout << "KNLpAutTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 }
 
-double TestFunctLPAUT::funct(NColloc& col, const Vector& par, const Vector& sol)
+double KNLpAutTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   if (first)
   {
@@ -513,7 +513,7 @@ double TestFunctLPAUT::funct(NColloc& col, const Vector& par, const Vector& sol)
   return gg2(1);
 }
 
-double TestFunctLPAUT::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double KNLpAutTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv2Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, phiData, ZZ, alpha);
@@ -534,7 +534,7 @@ double TestFunctLPAUT::funct_p(NColloc& col, const Vector& par, const Vector& /*
   return gg_p;
 }
 
-void   TestFunctLPAUT::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   KNLpAutTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vv2Data, ZZ);
   col.jotf_mB_x(mB_x, par, phiData, ZZ);
@@ -551,7 +551,7 @@ void   TestFunctLPAUT::funct_x(Vector& func, NColloc& col, const Vector& par, co
   func += hh2(0) * temp;
 }
 
-void   TestFunctLPAUT::kernel(Vector& phi)
+void   KNLpAutTestFunctional::kernel(KNVector& phi)
 {
   phi = vv2;
 }
@@ -560,7 +560,7 @@ void   TestFunctLPAUT::kernel(Vector& phi)
 /// test function for FOLD BIFURCATIONS in autonomous systems with SIMMETRY
 /// -----------------------------------------------------------------------
 
-TestFunctLPAUTROT::TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z) :
+KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNArray1D<int> CRe, KNArray1D<int> CIm, double Z) :
     ZZ(Z),
     Re(CRe), Im(CIm),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 3, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
@@ -589,10 +589,10 @@ TestFunctLPAUTROT::TestFunctLPAUTROT(NColloc& col, Array1D<int> CRe, Array1D<int
   first = true;
 }
 
-TestFunctLPAUTROT::~TestFunctLPAUTROT()
+KNLpAutRotTestFunctional::~KNLpAutRotTestFunctional()
 {}
 
-void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
+void KNLpAutRotTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   // creating the matrix
   col.jotf_x(AHAT.getA11(), par, ZZ);
@@ -623,7 +623,7 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
   one3(2) = 1.0;
   rhs3.clear();
 
-  Vector v3diff(vv3), u3diff(uu3);
+  KNVector v3diff(vv3), u3diff(uu3);
   double g30diff, h30diff, g31diff, h31diff;
   double diffnorm = 1.0;
   int it = 0;
@@ -652,11 +652,11 @@ void TestFunctLPAUTROT::init(NColloc& col, const Vector& par, const Vector& sol)
     AHAT.getA33(1, 2) = nrm_u * hh3(1);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
-  if (diffnorm > kernEps) std::cout << "TestFunctLPAUTROT::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
+  if (diffnorm > kernEps) std::cout << "KNLpAutRotTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
-double TestFunctLPAUTROT::funct(NColloc& col, const Vector& par, const Vector& sol)
+double KNLpAutRotTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   if (first)
   {
@@ -705,7 +705,7 @@ double TestFunctLPAUTROT::funct(NColloc& col, const Vector& par, const Vector& s
   return gg3(2);
 }
 
-double TestFunctLPAUTROT::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double KNLpAutRotTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_trivialKernelOnMesh_p(DpPhi, par, solMSHData, alpha);
@@ -731,7 +731,7 @@ double TestFunctLPAUTROT::funct_p(NColloc& col, const Vector& par, const Vector&
   return gg_p;
 }
 
-void   TestFunctLPAUTROT::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   KNLpAutRotTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.interpolate(vv3Data, vv3);
   col.jotf_x_x(A_x, par, vv3Data, ZZ);
@@ -760,7 +760,7 @@ void   TestFunctLPAUTROT::funct_x(Vector& func, NColloc& col, const Vector& par,
   func += hh3(1) * temp;
 }
 
-void   TestFunctLPAUTROT::kernel(Vector& phi)
+void   KNLpAutRotTestFunctional::kernel(KNVector& phi)
 {
   phi = vv3;
 }
@@ -770,7 +770,7 @@ void   TestFunctLPAUTROT::kernel(Vector& phi)
 /// EXTENDED
 /// -----------------------------------------------------------------------
 
-TestFunctLPAUTROT_X::TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D<int> CIm, double Z) :
+KNLpAutRotTestFunctional2::KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, KNArray1D<int> CRe, KNArray1D<int> CIm, double Z) :
     ZZ(Z),
     Re(CRe), Im(CIm),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 3, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
@@ -809,10 +809,10 @@ TestFunctLPAUTROT_X::TestFunctLPAUTROT_X(NColloc& col, Array1D<int> CRe, Array1D
   first = true;
 }
 
-TestFunctLPAUTROT_X::~TestFunctLPAUTROT_X()
+KNLpAutRotTestFunctional2::~KNLpAutRotTestFunctional2()
 {}
 
-void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*sol*/)
+void KNLpAutRotTestFunctional2::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   // creating the matrix
   col.jotf_x(AHAT.getA11(), par, ZZ);
@@ -887,7 +887,7 @@ void TestFunctLPAUTROT_X::init(NColloc& col, const Vector& par, const Vector& /*
   std::cout << "TF: " << gg3(2) << ", " << hh3(2) << "\n";
 }
 
-double TestFunctLPAUTROT_X::funct(NColloc& col, const Vector& par, const Vector& sol)
+double KNLpAutRotTestFunctional2::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   if (first)
   {
@@ -941,7 +941,7 @@ double TestFunctLPAUTROT_X::funct(NColloc& col, const Vector& par, const Vector&
   return gg3(2);
 }
 
-double TestFunctLPAUTROT_X::funct_p(NColloc& col, const Vector& par, const Vector& /*sol*/, int alpha)
+double KNLpAutRotTestFunctional2::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, vv1Data, ZZ, alpha);
@@ -954,7 +954,7 @@ double TestFunctLPAUTROT_X::funct_p(NColloc& col, const Vector& par, const Vecto
   return gg_p;
 }
 
-void   TestFunctLPAUTROT_X::funct_x(Vector& func, NColloc& col, const Vector& par, const Vector& /*sol*/)
+void   KNLpAutRotTestFunctional2::funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vv3Data, ZZ);
   func = !A_x * uu3;
@@ -966,7 +966,7 @@ void   TestFunctLPAUTROT_X::funct_x(Vector& func, NColloc& col, const Vector& pa
   func += gg3(1) * temp;
 }
 
-void   TestFunctLPAUTROT_X::kernel(Vector& phi)
+void   KNLpAutRotTestFunctional2::kernel(KNVector& phi)
 {
   phi = vv3;
 }

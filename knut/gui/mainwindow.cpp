@@ -43,7 +43,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   QGridLayout* symmetryGrid = new QGridLayout();
   QGridLayout* torusGrid = new QGridLayout();
 
-  tabWidget->addTab(systemWidget, QString("System"));
+  tabWidget->addTab(systemWidget, QString("KNSystem"));
   tabWidget->addTab(numericsWidget, QString("Numerics"));
   tabWidget->addTab(symmetryWidget, QString("Symmetry"));
   tabWidget->addTab(torusWidget, QString("Torus"));
@@ -363,8 +363,8 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   connect(&parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
 
   // connecting exceptions
-  connect(&compThread, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
-  connect(&parameters, SIGNAL(exceptionOccured(const knutException&)), this, SLOT(externalException(const knutException&)));
+  connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));
+  connect(&parameters, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));
   connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)));
   // text output
   connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
@@ -505,8 +505,8 @@ void MainWindow::outputPlot()
       QVBoxLayout *outputPlotLayout = new QVBoxLayout();
       connect(outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()));
       connect(outputPlotWindow, SIGNAL(openFile(const QString&)), this, SLOT(openOutputMatFile(const QString&)));
-      connect(&compThread, SIGNAL(dataChanged(const QSharedPointer<const mat4Data>&)), 
-              outputPlotWindow, SLOT(updatePlot(const QSharedPointer<const mat4Data>&)));
+      connect(&compThread, SIGNAL(dataChanged(const QSharedPointer<const KNDataFile>&)), 
+              outputPlotWindow, SLOT(updatePlot(const QSharedPointer<const KNDataFile>&)));
 
       outputPlotLayout->addWidget(outputPlotWindow);
       outputPlotLayout->setMargin(0);
@@ -526,10 +526,10 @@ void MainWindow::outputPlot()
 void MainWindow::openInputMatFile(const QString& fileName)
 {
   try {
-    inputMatFile = QSharedPointer<const mat4Data>(new mat4Data(fileName.toStdString()));
+    inputMatFile = QSharedPointer<const KNDataFile>(new KNDataFile(fileName.toStdString()));
     if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
   }
-  catch (knutException ex) 
+  catch (KNException ex) 
   {
     externalException(ex);
   }
@@ -543,9 +543,9 @@ void MainWindow::openOutputMatFile(const QString& fileName)
     else 
     {
       try {
-        outputMatFile = QSharedPointer<const mat4Data>(new mat4Data(outputFile->text().toStdString()));
+        outputMatFile = QSharedPointer<const KNDataFile>(new KNDataFile(outputFile->text().toStdString()));
       }
-      catch (knutException ex) 
+      catch (KNException ex) 
       {
         externalException(ex);
       }
@@ -559,9 +559,9 @@ void MainWindow::openOutputMatFile(const QString& fileName)
     } else
     {
       try {
-        outputMatFile = QSharedPointer<const mat4Data>(new mat4Data(fileName.toStdString()));
+        outputMatFile = QSharedPointer<const KNDataFile>(new KNDataFile(fileName.toStdString()));
       }
-      catch (knutException ex) 
+      catch (KNException ex) 
       {
         externalException(ex);
       }
@@ -609,11 +609,11 @@ void MainWindow::compileSystem()
     QString newfile(fileName);
     newfile.replace(QString(".cpp"), QString(".so"));
     try {
-      System::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
+      KNSystem::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
       sysname->setText(QDir::current().relativeFilePath(newfile));
       setSysNameParameter();
     }
-    catch (knutException ex)
+    catch (KNException ex)
     {
       externalException(ex);
     }
@@ -622,15 +622,15 @@ void MainWindow::compileSystem()
 
 void MainWindow::generateSystem()
 {
-  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "KNVector field definition (*.vf)");
   if (!fileName.isEmpty() && compilerProcess == 0)
   {
     try {
-      System::generateSystem(fileName.toStdString(), executableDir.toStdString());
+      KNSystem::generateSystem(fileName.toStdString(), executableDir.toStdString());
       sysname->setText(QDir::current().relativeFilePath(fileName +".so"));
       setSysNameParameter();
     }
-    catch (knutException ex)
+    catch (KNException ex)
     {
       externalException(ex);
     }
@@ -806,7 +806,7 @@ void MainWindow::loadFile(const QString &fileName)
     QDir::setCurrent(QFileInfo(fileName).absolutePath());
     parameters.loadXmlFile(fileName.toStdString());
   }
-  catch (knutException ex)
+  catch (KNException ex)
   {
     externalException(ex);
   }

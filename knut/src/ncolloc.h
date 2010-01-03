@@ -15,114 +15,114 @@
 #include "matrix.h"
 #include "spmatrix.h"
 
-class NColloc : public PerSolColloc
+class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    NColloc(System& _sys, const int nint, const int ndeg, int nmat);        // computes mesh, metric, metricD
+    KNDdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg, int nmat);        // computes mesh, metric, metricD
 
-    ~NColloc() {}
+    ~KNDdeBvpCollocation() {}
 
-    void init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
+    void init(const KNVector& sol, const KNVector& par);   // computes time, kk, ee, dd, rr ...
 
-    void interpolate(Array3D<double>& out, const Vector& sol);
-    void interpolateComplex(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
-    void interpolateOnMesh(Array3D<double>& out, const Vector& sol);
+    void interpolate(KNArray3D<double>& out, const KNVector& sol);
+    void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol);
+    void interpolateOnMesh(KNArray3D<double>& out, const KNVector& sol);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 
     // continuation of solution
 
-    void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol);
-    void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
-    void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
+    void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
+    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p);   // sol is currently not needed
+    void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol);          // sol is currently not needed
 
     // for stability computation
-    void jacobianOfStability(StabMatrix& AB, const Vector& par);
+    void jacobianOfStability(KNSparseMatrixPolynomial& AB, const KNVector& par);
     // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
-    // However, the variables will be contained within the NColloc class
+    // However, the variables will be contained within the KNDdeBvpCollocation class
 
     // continuation of bifurcations -> characteristic matrices
 
     inline int nTau() const { return ntau; }
 
     // Jacobian of the test funtional: jotf
-    void jotf_x(SpMatrix& A, const Vector& par, double Z);
-    void jotf_x(SpMatrix& A, const Vector& par, double ZRe, double ZIm);
+    void jotf_x(KNSparseMatrix& A, const KNVector& par, double Z);
+    void jotf_x(KNSparseMatrix& A, const KNVector& par, double ZRe, double ZIm);
 
-    void jotf_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int p);
-    void jotf_x_p(Vector& V, const Vector& par,
-      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double ZRe, double ZIm, int p);
+    void jotf_x_p(KNVector& V, const KNVector& par, const KNArray3D<double>& phiData, double Z, int p);
+    void jotf_x_p(KNVector& V, const KNVector& par,
+      const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double ZRe, double ZIm, int p);
 
-    void jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
-    void jotf_x_x(SpMatrix& A, const Vector& par,
-      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
+    void jotf_x_x(KNSparseMatrix& A, const KNVector& par, const KNArray3D<double>& phiData, double Z);
+    void jotf_x_x(KNSparseMatrix& A, const KNVector& par,
+      const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double Re, double Im);
 
-    void jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
-      const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im);
+    void jotf_x_z(KNVector& V, const KNVector& par, const KNVector& phi,
+      const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double Re, double Im);
     // we do need Re, Im
 
     // for the autonomous FOLD bifurcation
-    void jotf_mB(SpMatrix& A, const Vector& par, double Z);
-    void jotf_mB_p(Vector& V,   const Vector& par, const Array3D<double>& phiData, double Z, int alpha);
-    void jotf_mB_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z);
+    void jotf_mB(KNSparseMatrix& A, const KNVector& par, double Z);
+    void jotf_mB_p(KNVector& V,   const KNVector& par, const KNArray3D<double>& phiData, double Z, int alpha);
+    void jotf_mB_x(KNSparseMatrix& A, const KNVector& par, const KNArray3D<double>& phiData, double Z);
 
     // autonomous trivial eigenvector
-    void jotf_trivialKernelOnMesh(Vector& V, const Vector& par, const Array3D<double>& solMSHData);
-    template<bool trans> void jotf_trivialKernelOnMesh_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi);
-    void jotf_trivialKernelOnMesh_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha);
+    void jotf_trivialKernelOnMesh(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData);
+    template<bool trans> void jotf_trivialKernelOnMesh_x(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, const KNVector& phi);
+    void jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, int alpha);
 
   private:
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
-    inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDX(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDAT(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDAT(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     // for CharJac_x
-    inline int& WRIDXCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline int& WRIDXCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
-    inline double& WRDATCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline double& WRDATCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
     // for CharJac_x_x
-    inline int& WRIDXCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXCPLXM(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATCPLXM(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXS(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    double& WRDATS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    double& WRDATS(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXI(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATI(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
@@ -131,50 +131,50 @@ class NColloc : public PerSolColloc
     const int nmat;
 
     // these store the structure of the sparse matrix NO SEPARATION
-    Array2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
-    Array2D<int> ee;   // dim(NTAU+1,NDEG*NINT) : the ordering of kk
-    Array2D<int> dd;   // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
-    Array2D<int> rr;   // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
+    KNArray2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
+    KNArray2D<int> ee;   // dim(NTAU+1,NDEG*NINT) : the ordering of kk
+    KNArray2D<int> dd;   // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
+    KNArray2D<int> rr;   // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
 
     // these store the structure of the sparse matrix WITH SEPARATION
-    Array2D<int> kkS;  // same as kk, but not folded back
-    Array2D<int> eeS;  //  ...
-    Array2D<int> rrS;  //  ...
-    Array2D<int> ddS;  //  ...
-    Array2D<int> mmS;  // which matrix are we in
-    Array2D<int> szS;  // szI(mmI( . ,idx),idx) size of the line within the matrix mmS
+    KNArray2D<int> kkS;  // same as kk, but not folded back
+    KNArray2D<int> eeS;  //  ...
+    KNArray2D<int> rrS;  //  ...
+    KNArray2D<int> ddS;  //  ...
+    KNArray2D<int> mmS;  // which matrix are we in
+    KNArray2D<int> szS;  // szI(mmI( . ,idx),idx) size of the line within the matrix mmS
 
     // For the stability matrices
-    Array2D<int> kkI;
-    Array2D<int> eeI;
-    Array2D<int> rrI;
-    Array2D<int> ddI;
-    Array2D<int> mmI;
-    Array2D<int> szI;
+    KNArray2D<int> kkI;
+    KNArray2D<int> eeI;
+    KNArray2D<int> rrI;
+    KNArray2D<int> ddI;
+    KNArray2D<int> mmI;
+    KNArray2D<int> szI;
 
-    Array2D<int> kkMSH; // dim(NTAU+1,NDEG*NINT+1) : which delay to which interval
+    KNArray2D<int> kkMSH; // dim(NTAU+1,NDEG*NINT+1) : which delay to which interval
 
-    Array3D<double> tt;       // interpolation at the collocation points
-    Array3D<double> ttMSH;    // interpolation at the representation points. I guess its the identity
+    KNArray3D<double> tt;       // interpolation at the collocation points
+    KNArray3D<double> ttMSH;    // interpolation at the representation points. I guess its the identity
 
     // for rhs, and derivatives
-    // Matrix fx, dfx, t_dfx, dummy
-    Array3D<double>  solData;
-    Array2D<double>  p_tau;
-    Array2D<double>  p_dtau;
-    Array2D<double>  p_fx;
-    Array3D<double>  p_dfx;
-    Array3D<double>  p_dfp;
-    Array2D<double>& p_fxRe;
-    Array2D<double>  p_fxIm;
-    Array3D<double>& p_dfxRe;
-    Array3D<double>  p_dfxIm;
-    Array2D<double>  p_tauMSH;
-    Array2D<double>  p_dtauMSH;
-    Array2D<double>  p_fxMSH;
-    Array3D<double>  p_dfxMSH;
-    Array3D<double>  p_dfpMSH;
-    Array3D<double>  p_dummy;
+    // KNMatrix fx, dfx, t_dfx, dummy
+    KNArray3D<double>  solData;
+    KNArray2D<double>  p_tau;
+    KNArray2D<double>  p_dtau;
+    KNArray2D<double>  p_fx;
+    KNArray3D<double>  p_dfx;
+    KNArray3D<double>  p_dfp;
+    KNArray2D<double>& p_fxRe;
+    KNArray2D<double>  p_fxIm;
+    KNArray3D<double>& p_dfxRe;
+    KNArray3D<double>  p_dfxIm;
+    KNArray2D<double>  p_tauMSH;
+    KNArray2D<double>  p_dtauMSH;
+    KNArray2D<double>  p_fxMSH;
+    KNArray3D<double>  p_dfxMSH;
+    KNArray3D<double>  p_dfpMSH;
+    KNArray3D<double>  p_dummy;
 
 #ifdef DEBUG
     // DIAGNOSTICS
@@ -237,7 +237,7 @@ class NColloc : public PerSolColloc
 #define NDEG ndeg
 #define NMAT nmat
 
-template<bool trans> void NColloc::jotf_trivialKernelOnMesh_x(Vector& V, const Vector& par, const Array3D<double>& solMSHData, const Vector& phi)
+template<bool trans> void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_x(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, const KNVector& phi)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi_x++;

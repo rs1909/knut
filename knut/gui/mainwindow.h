@@ -32,7 +32,7 @@ class QGridLayout;
 class QPushButton;
 class QLabel;
 class QProcess;
-class mat4Data;
+class KNDataFile;
 class plotWindow;
 
 class EqnVarTableView;
@@ -44,7 +44,7 @@ class MainWindow : public QMainWindow
   public:
     MainWindow(const QString& appDir, const QString& fileName);
         
-    static void showException(QWidget* parent, const knutException& ex)
+    static void showException(QWidget* parent, const KNException& ex)
     {
       QMessageBox::critical(parent, "Critical error", 
         QString("%1\nThis has occurred in file '%2' at line %3.")
@@ -371,7 +371,7 @@ class MainWindow : public QMainWindow
     void setIadParameter(int d) { parameters.nsetIad(d); }
     void setNPrParameter(int d) { parameters.nsetNPr(d); }    
     
-    void externalException(const knutException& ex)
+    void externalException(const KNException& ex)
     {
       showException(this, ex);
     }
@@ -496,8 +496,8 @@ class MainWindow : public QMainWindow
     QAction *aboutAct;
     QAction *aboutQtAct;
     
-    QSharedPointer<const mat4Data> inputMatFile;
-    QSharedPointer<const mat4Data> outputMatFile;
+    QSharedPointer<const KNDataFile> inputMatFile;
+    QSharedPointer<const KNDataFile> outputMatFile;
 };
 
 #endif

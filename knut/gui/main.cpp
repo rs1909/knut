@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
       {
         QFileInfo lib(s);
         // remove system libraries
-        if (!lib.path().contains("/usr/lib") && !lib.path().contains("/System"))
+        if (!lib.path().contains("/usr/lib") && !lib.path().contains("/KNSystem"))
         {
           std::cout << s << '\n';
         }
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     QDir::setCurrent(cfInfo.absolutePath());
     
     params.loadXmlFile(cfInfo.fileName().toStdString());
-    CLIComp comp(params);
+    KNCliContinuation comp(params);
     params.printXmlFile(std::cout);
     comp.run();
   } else
@@ -118,9 +118,9 @@ int main(int argc, char *argv[])
     QObject::connect(openEvent, SIGNAL(open(const QString&)), &mainWin, SLOT(loadFile(const QString&)));
 #endif
 
-    qRegisterMetaType<knutException>("knutException");
+    qRegisterMetaType<KNException>("KNException");
     qRegisterMetaType<std::string>("std::string");
-    qRegisterMetaType<std::string>("QSharedPointer<const mat4Data>");
+    qRegisterMetaType<std::string>("QSharedPointer<const KNDataFile>");
     mainWin.show();
     return app.exec();
   }

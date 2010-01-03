@@ -13,18 +13,18 @@
 #include "pointtype.h"
 #include "basepoint.h"
 
-class System;
-class Vector;
-class HyperVector;
-class ODEColloc;
-template< class T > class Array1D;
+class KNSystem;
+class KNVector;
+class KNBlockVector;
+class KNOdeBvpCollocation;
+template< class T > class KNArray1D;
 
-class ODEPoint : public PerSolPoint
+class KNOdePeriodicSolution : public KNAbstractPeriodicSolution
 {
   public:
 
-    ODEPoint(System& sys, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg);
-    ~ODEPoint();
+    KNOdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg);
+    ~KNOdePeriodicSolution();
     
     virtual void Stability();
     virtual void SwitchTFLP(BranchSW type, double ds) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
@@ -32,18 +32,18 @@ class ODEPoint : public PerSolPoint
     virtual void SwitchTFHB(double ds, std::ostream& out) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
   private:
     virtual void jacobian(
-      HyperMatrix& AA, HyperVector& RHS, // output
-      Vector& parPrev, Vector& par,      // parameters
-      Vector& solPrev, Vector& sol,      // solution
-      Array1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+      KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
+      KNVector& parPrev, KNVector& par,      // parameters
+      KNVector& solPrev, KNVector& sol,      // solution
+      KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     );
     
-    ODEColloc* colloc;
-    SpFact     jacStab;
-    Matrix     matrixInitialCondition;
-    Matrix     matrixSolution;
-    Matrix     monodromyMatrix;
+    KNOdeBvpCollocation* colloc;
+    KNLuSparseMatrix     jacStab;
+    KNMatrix     matrixInitialCondition;
+    KNMatrix     matrixSolution;
+    KNMatrix     monodromyMatrix;
 };
 
 #endif // ODEPOINT_H

@@ -25,11 +25,11 @@ extern "C"
 
 // **************************************************************************//
 //                                                                           //
-// **********************        SpMatrix Class        **********************//
+// **********************        KNSparseMatrix Class        **********************//
 //                                                                           //
 // **************************************************************************//
 
-class SpMatrix
+class KNSparseMatrix
 {
 
   protected:
@@ -44,24 +44,24 @@ class SpMatrix
 
   public:
 
-    inline SpMatrix() : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0)
+    inline KNSparseMatrix() : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0)
     { }
-    inline SpMatrix(char F, int n_, int m_, int nz)
+    inline KNSparseMatrix(char F, int n_, int m_, int nz)
     {
       init(F, n_, m_, nz);
     }
-    inline SpMatrix(char F, int n_, int nz)
+    inline KNSparseMatrix(char F, int n_, int nz)
     {
       init(F, n_, n_, nz);
     }
-    inline SpMatrix(const SpMatrix& M)
+    inline KNSparseMatrix(const KNSparseMatrix& M)
     {
       init(M);
     }
-    inline virtual ~SpMatrix();
+    inline virtual ~KNSparseMatrix();
 
     inline void init(char F, int n_, int m_, int nz);
-    inline void init(const SpMatrix& M);
+    inline void init(const KNSparseMatrix& M);
 
     inline void mmx(enum cspblas_Trans trans, double* out, const double* in, double alpha) const
     {
@@ -81,29 +81,29 @@ class SpMatrix
       cspblas_mmxmpym(format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs);
     }
 
-    inline __op_mul_vec<SpMatrix, Vector>     operator*(const Vector& v) const
+    inline __op_mul_vec<KNSparseMatrix, KNVector>     operator*(const KNVector& v) const
     {
-      return __op_mul_vec<SpMatrix, Vector>(__scal_vec_trans<SpMatrix>(*this), __scal_vec_trans<Vector>(v));
+      return __op_mul_vec<KNSparseMatrix, KNVector>(__scal_vec_trans<KNSparseMatrix>(*this), __scal_vec_trans<KNVector>(v));
     }
-    inline __op_mul_vec<SpMatrix, Matrix>     operator*(const Matrix& v) const
+    inline __op_mul_vec<KNSparseMatrix, KNMatrix>     operator*(const KNMatrix& v) const
     {
-      return __op_mul_vec<SpMatrix, Matrix>(__scal_vec_trans<SpMatrix>(*this), __scal_vec_trans<Matrix>(v));
+      return __op_mul_vec<KNSparseMatrix, KNMatrix>(__scal_vec_trans<KNSparseMatrix>(*this), __scal_vec_trans<KNMatrix>(v));
     }
-    inline __op_mul_vec_rng<SpMatrix, Vector> operator*(const __scal_vec_trans_rng<Vector> v) const
+    inline __op_mul_vec_rng<KNSparseMatrix, KNVector> operator*(const __scal_vec_trans_rng<KNVector> v) const
     {
-      return __op_mul_vec_rng<SpMatrix, Vector>(__scal_vec_trans_rng<SpMatrix>(*this), v);
+      return __op_mul_vec_rng<KNSparseMatrix, KNVector>(__scal_vec_trans_rng<KNSparseMatrix>(*this), v);
     }
-    inline __op_mul_vec_rng<SpMatrix, Matrix> operator*(const __scal_vec_trans_rng<Matrix> v) const
+    inline __op_mul_vec_rng<KNSparseMatrix, KNMatrix> operator*(const __scal_vec_trans_rng<KNMatrix> v) const
     {
-      return __op_mul_vec_rng<SpMatrix, Matrix>(__scal_vec_trans_rng<SpMatrix>(*this), v);
+      return __op_mul_vec_rng<KNSparseMatrix, KNMatrix>(__scal_vec_trans_rng<KNSparseMatrix>(*this), v);
     }
-    inline __scal_vec_trans<SpMatrix>        operator!() const
+    inline __scal_vec_trans<KNSparseMatrix>        operator!() const
     {
-      return __scal_vec_trans<SpMatrix>(*this, 1.0, Trans);
+      return __scal_vec_trans<KNSparseMatrix>(*this, 1.0, Trans);
     }
-    inline __scal_vec_trans_rng<SpMatrix>    operator[ ](const rng r) const
+    inline __scal_vec_trans_rng<KNSparseMatrix>    operator[ ](const rng r) const
     {
-      return __scal_vec_trans_rng<SpMatrix>(*this, r);
+      return __scal_vec_trans_rng<KNSparseMatrix>(*this, r);
     }
 
     inline void timesX(double* out, const double* in, double alpha, bool trans) const;
@@ -121,7 +121,7 @@ class SpMatrix
     }
 
     /// clear the matrix
-    /// these have to be virtual, because these might be called as SpFact
+    /// these have to be virtual, because these might be called as KNLuSparseMatrix
     virtual void clear();
     virtual void clear(char F);
     /// checks the structure of the matrix
@@ -165,11 +165,11 @@ class SpMatrix
 
 // **************************************************************************//
 //                                                                           //
-// **********************         SpFact Class         **********************//
+// **********************         KNLuSparseMatrix Class         **********************//
 //                                                                           //
 // **************************************************************************//
 
-class SpFact : public SpMatrix
+class KNLuSparseMatrix : public KNSparseMatrix
 {
   private:
 
@@ -183,14 +183,14 @@ class SpFact : public SpMatrix
 
   public:
     void init(int nn_);
-    SpFact(char F, int n_, int m_, int nz);
-    SpFact(char F, int n_, int nz);
-    SpFact(SpMatrix& M);
-    inline SpFact(SpFact&) : SpMatrix('F', 1, 1)
+    KNLuSparseMatrix(char F, int n_, int m_, int nz);
+    KNLuSparseMatrix(char F, int n_, int nz);
+    KNLuSparseMatrix(KNSparseMatrix& M);
+    inline KNLuSparseMatrix(KNLuSparseMatrix&) : KNSparseMatrix('F', 1, 1)
     {
-      std::cout << "SpFact::SpFact(SpFact&): not implemented\n";
+      std::cout << "KNLuSparseMatrix::KNLuSparseMatrix(SpFact&): not implemented\n";
     }
-    ~SpFact();
+    ~KNLuSparseMatrix();
 
     inline void modified()
     {
@@ -205,10 +205,10 @@ class SpFact : public SpMatrix
     void clear(char F);
 
     void solve(double* x, double* b, bool trans = false);
-    void solve(Vector& x, const Vector& b, bool trans = false);
-    void solve(Matrix& x, const Matrix& b, bool trans = false);
+    void solve(KNVector& x, const KNVector& b, bool trans = false);
+    void solve(KNMatrix& x, const KNMatrix& b, bool trans = false);
     /// get the diagonal of the Upper factor
-    int GetDX(Vector& V)
+    int GetDX(KNVector& V)
     {
       if (!fact) luFactorize();
       return umfpack_di_get_numeric(0, 0, 0, 0, 0, 0, 0, 0, V.v, 0, 0, Numeric);
@@ -217,21 +217,21 @@ class SpFact : public SpMatrix
     void luFactorize();
 };
 
-// void NColloc::jacobianOfStability( StabMat& AB, const Vector& par, const JagMatrix3D& solData );
+// void KNDdeBvpCollocation::jacobianOfStability( StabMat& AB, const KNVector& par, const JagMatrix3D& solData );
 // this computes its own matrix structures, because it is nowhere else needed: kkSI, eeSI, rrSI, ddSI, etc.
-// However the variables will be contained within the NColloc class
+// However the variables will be contained within the KNDdeBvpCollocation class
 
-class StabMatrix
+class KNSparseMatrixPolynomial
 {
   public:
 
-    StabMatrix(int nmat_, int n_, int nz) : A0('R', n_,  nz), AI(nmat_)
+    KNSparseMatrixPolynomial(int nmat_, int n_, int nz) : A0('R', n_,  nz), AI(nmat_)
     {
       for (int i = 0; i < AI.size(); i++) AI(i).init('R', n_, n_, nz);
       RESID = new double[ AI.size() * n_ + 1 ];
       isINIT = false;
     }
-    ~StabMatrix()
+    ~KNSparseMatrixPolynomial()
     {
       delete[] RESID;
     }
@@ -240,35 +240,35 @@ class StabMatrix
     {
       return AI.size();
     }
-    SpFact&            getA0()
+    KNLuSparseMatrix&            getA0()
     {
       return A0;
     }
-    Array1D<SpMatrix>& getAI()
+    KNArray1D<KNSparseMatrix>& getAI()
     {
       return AI;
     }
-    SpMatrix&          getAI(int i)
+    KNSparseMatrix&          getAI(int i)
     {
       return AI(i);
     }
 
-    void eigenvalues(Vector& wr, Vector& wi);
+    void eigenvalues(KNVector& wr, KNVector& wi);
 
   private:
 
-    SpFact             A0;
-    Array1D<SpMatrix>  AI;
+    KNLuSparseMatrix             A0;
+    KNArray1D<KNSparseMatrix>  AI;
 
     double* RESID;
     bool    isINIT;
 };
 
-// Implementation of SpMatrix
+// Implementation of KNSparseMatrix
 
-inline void SpMatrix::init(char F, int n_, int m_, int nz)
+inline void KNSparseMatrix::init(char F, int n_, int m_, int nz)
 {
-  if ((F != 'R') && (F != 'C')) std::cout << "SpMatrix::CONSTRUCTOR: invalid format specification.\n";
+  if ((F != 'R') && (F != 'C')) std::cout << "KNSparseMatrix::CONSTRUCTOR: invalid format specification.\n";
   format = F;
   n = 0;
   m = m_;
@@ -287,7 +287,7 @@ inline void SpMatrix::init(char F, int n_, int m_, int nz)
   }
 }
 
-inline void SpMatrix::init(const SpMatrix& M)
+inline void KNSparseMatrix::init(const KNSparseMatrix& M)
 {
   format = M.format;
   n = M.n;
@@ -308,14 +308,14 @@ inline void SpMatrix::init(const SpMatrix& M)
   }
 }
 
-inline SpMatrix::~SpMatrix()
+inline KNSparseMatrix::~KNSparseMatrix()
 {
   delete []Ap;
   delete []Ai;
   delete []Ax;
 }
 
-inline void SpMatrix::clear()
+inline void KNSparseMatrix::clear()
 {
 
   for (int i = 0; i < n + 1; i++)
@@ -330,7 +330,7 @@ inline void SpMatrix::clear()
   }
 }
 
-inline void SpMatrix::clear(char F)
+inline void KNSparseMatrix::clear(char F)
 {
 
   for (int i = 0; i < n + 1; i++)
@@ -346,14 +346,14 @@ inline void SpMatrix::clear(char F)
   }
 }
 
-inline int SpMatrix::newLine(int size_)
+inline int KNSparseMatrix::newLine(int size_)
 {
   n++;
   Ap[n] = Ap[n-1] + size_;
   return n -1;
 }
 
-inline int& SpMatrix::writeIndex(int l, int e)
+inline int& KNSparseMatrix::writeIndex(int l, int e)
 {
 #ifdef DEBUG
 //   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
@@ -367,7 +367,7 @@ inline int& SpMatrix::writeIndex(int l, int e)
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline double& SpMatrix::writeData(int l, int e)
+inline double& KNSparseMatrix::writeData(int l, int e)
 {
 #ifdef DEBUG
   P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
@@ -380,54 +380,54 @@ inline double& SpMatrix::writeData(int l, int e)
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline int SpMatrix::lineLength(int n_)
+inline int KNSparseMatrix::lineLength(int n_)
 {
 #ifdef DEBUG
-  P_ASSERT_X(n_ < n, "SpMatrix::GetL: Error\n");
+  P_ASSERT_X(n_ < n, "KNSparseMatrix::GetL: Error\n");
 #endif
   return Ap[n_+1] - Ap[n_];
 }
 
-inline void SpMatrix::timesX(double* out, const double* in, double alpha, bool trans) const
+inline void KNSparseMatrix::timesX(double* out, const double* in, double alpha, bool trans) const
 {
   mmx(trans ? Trans : NoTrans, out, in, alpha);
 }
 
-inline void SpMatrix::timesXPlusY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const
+inline void KNSparseMatrix::timesXPlusY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const
 {
   mmxpy(trans ? Trans : NoTrans, out, in, alpha, Y, beta);
 }
 
-// End of implementation of SpMatrix
+// End of implementation of KNSparseMatrix
 
 
-// Implementation of Vector
+// Implementation of KNVector
 
-inline Vector& Vector::operator=(const __op_mul_vec<SpMatrix, Vector> R)
+inline KNVector& KNVector::operator=(const __op_mul_vec<KNSparseMatrix, KNVector> R)
 {
   R.op.vec.mmx(R.op.tr, this->v, R.vecA.vec.v, R.op.alpha);
-//  std::cout<<"__op_mul_vec<Matrix,Vector>\n";
+//  std::cout<<"__op_mul_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
-inline Vector& Vector::operator=(const __op_mul_vec_plus_vec<SpMatrix, Vector> R)
+inline KNVector& KNVector::operator=(const __op_mul_vec_plus_vec<KNSparseMatrix, KNVector> R)
 {
   R.op.vec.mmxpy(R.op.tr, this->v, R.vecA.vec.v, R.op.alpha, R.vecB.vec.v, R.vecB.alpha);
-//  std::cout<<"__op_mul_vec_plus_vec<Matrix,Vector>\n";
+//  std::cout<<"__op_mul_vec_plus_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
-inline Matrix& Matrix::operator=(const __op_mul_vec<SpMatrix, Matrix> R)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec<KNSparseMatrix, KNMatrix> R)
 {
   R.op.vec.mmxm(R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecA.vec.c);
-//  std::cout<<"__op_mul_vec<Matrix,Matrix>\n";
+//  std::cout<<"__op_mul_vec<KNMatrix,Matrix>\n";
   return *this;
 }
 
-inline Matrix& Matrix::operator=(const __op_mul_vec_plus_vec<SpMatrix, Matrix> R)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec_plus_vec<KNSparseMatrix, KNMatrix> R)
 {
   R.op.vec.mmxmpym(R.op.tr, this->m, this->r, R.vecA.vec.m, R.vecA.vec.r, R.op.alpha, R.vecB.vec.m, R.vecB.vec.r, R.vecB.alpha, R.vecB.vec.c);
-//  std::cout<<"__op_mul_vec_plus_vec<Matrix,Matrix>\n";
+//  std::cout<<"__op_mul_vec_plus_vec<KNMatrix,Matrix>\n";
   return *this;
 }
 

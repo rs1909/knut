@@ -9,8 +9,8 @@
 
 #include "compthread.h"
 
-MThread::MThread(const NConstants& constants, QObject* parent) 
-  : QThread(parent), BaseComp(constants)
+MThread::MThread(const KNConstants& constants, QObject* parent) 
+  : QThread(parent), KNAbstractContinuation(constants)
 {
 }
 
@@ -20,7 +20,7 @@ MThread::~MThread()
 
 void MThread::run()
 {
-  BaseComp::run();
+  KNAbstractContinuation::run();
 }
 
 void MThread::print(std::ostringstream& str)
@@ -28,22 +28,22 @@ void MThread::print(std::ostringstream& str)
   emit printToScreen(str.str()); str.str("");
 }
 
-void MThread::raiseException(const knutException& ex)
+void MThread::raiseException(const KNException& ex)
 {
   emit exceptionOccured(ex);
 }
 
-void MThread::setData(mat4Data* data)
+void MThread::setData(KNDataFile* data)
 {
-  output = QSharedPointer<mat4Data>(data);
+  output = QSharedPointer<KNDataFile>(data);
 }
 
-mat4Data& MThread::data()
+KNDataFile& MThread::data()
 {
   return *output;
 }
 
-const QSharedPointer<mat4Data>& MThread::dataPointer()
+const QSharedPointer<KNDataFile>& MThread::dataPointer()
 {
   return output;
 }
@@ -55,7 +55,7 @@ void MThread::deleteData()
 
 void MThread::dataUpdated()
 {
-  emit dataChanged( qSharedPointerConstCast<mat4Data>(output) );
+  emit dataChanged( qSharedPointerConstCast<KNDataFile>(output) );
 }
 
 // SLOT:

@@ -376,7 +376,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 
 #endif
 
-System::System(const std::string& shobj, int usederi)
+KNSystem::KNSystem(const std::string& shobj, int usederi)
 {
   std::string objname(shobj);
   if (shobj.find('/') == std::string::npos) objname = "./" + shobj;
@@ -504,12 +504,12 @@ System::System(const std::string& shobj, int usederi)
   p_resize(1);
 }
 
-System::~System()
+KNSystem::~KNSystem()
 {
   if (handle != 0) tdlclose(handle);
 }
 
-static inline void timesX(Vector & res, const Matrix& M, const Vector& v)
+static inline void timesX(KNVector & res, const KNMatrix& M, const KNVector& v)
 {
   for (int i = 0; i < M.row(); i++)
   {
@@ -521,7 +521,7 @@ static inline void timesX(Vector & res, const Matrix& M, const Vector& v)
   }
 }
 
-void System::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
+void KNSystem::compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir)
 {
   std::ifstream file(cxxfile.c_str());
   std::string cxxcode, buf;
@@ -532,7 +532,7 @@ void System::compileSystem(const std::string& cxxfile, const std::string& shobj,
   runCompiler(cxxcode, shobj, executableDir);
 }
 
-void System::generateSystem(const std::string& vffile, const std::string& executableDir)
+void KNSystem::generateSystem(const std::string& vffile, const std::string& executableDir)
 {
 #ifdef GINAC_FOUND
   // parsing the vector field file
@@ -549,7 +549,7 @@ void System::generateSystem(const std::string& vffile, const std::string& execut
 }
 
 // Static member. Compile if necessary
-void System::makeSystem(const std::string& shobj, const std::string& executableDir)
+void KNSystem::makeSystem(const std::string& shobj, const std::string& executableDir)
 {
   // convert the name first from .so to .cpp
   std::string cxxfile(shobj);
@@ -607,8 +607,8 @@ void System::makeSystem(const std::string& shobj, const std::string& executableD
   }
 }
 
-void System::p_discrderi( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& p_xx, const Vector& par, int sel, 
-                          int nx, const int* vx, int np, const int* vp, const Array3D<double>& p_vv )
+void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, int sel, 
+                          int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& p_vv )
 {
   const double abs_eps_x1 = 1e-6;
   const double rel_eps_x1 = 1e-6;

@@ -50,11 +50,11 @@ extern "C"
 
 #endif
 
-template<class T> class Array2D;
-template<class T> class Array3D;
+template<class T> class KNArray2D;
+template<class T> class KNArray3D;
 
 template<class T>
-class Array1D
+class KNArray1D
 {
 
   protected:
@@ -65,40 +65,40 @@ class Array1D
     const bool destructable;
   public:
 
-    inline Array1D() : n(0), v(0), destructable(true)
+    inline KNArray1D() : n(0), v(0), destructable(true)
     { }
 
-    inline Array1D(bool b) : n(0), v(0), destructable(false)
+    inline KNArray1D(bool b) : n(0), v(0), destructable(false)
     { }
 
-    inline Array1D(int i) : n(i), v(new T[i]), destructable(true)
+    inline KNArray1D(int i) : n(i), v(new T[i]), destructable(true)
     {
       clear();
     }
 
-    // specially for JagMatrix2D i.e. Array1D< Vector >, which is indexed as (i)(j)
-    inline Array1D(int i, int j) : n(i), v(new T[i]), destructable(true)
+    // specially for JagMatrix2D i.e. KNArray1D< KNVector >, which is indexed as (i)(j)
+    inline KNArray1D(int i, int j) : n(i), v(new T[i]), destructable(true)
     {
       for (int r = 0; r < i; r++) v[r].init(j);
     }
 
-    // specially for JagMatrix3D i.e. Array1D< Matrix >, which is indexed as (i)(j,k)
-    inline Array1D(int i, int j, int k) : n(i), v(new T[i]), destructable(true)
+    // specially for JagMatrix3D i.e. KNArray1D< KNMatrix >, which is indexed as (i)(j,k)
+    inline KNArray1D(int i, int j, int k) : n(i), v(new T[i]), destructable(true)
     {
       for (int r = 0; r < i; r++) v[r].init(j, k);
     }
 
-    inline Array1D(const Array1D<T>& V_) : n(V_.n), v(new T[V_.n]), destructable(true)
+    inline KNArray1D(const KNArray1D<T>& V_) : n(V_.n), v(new T[V_.n]), destructable(true)
     {
       *this = V_;
     }
 
-    inline Array1D(T *data, int i) : n(i), v(data), destructable(false)
+    inline KNArray1D(T *data, int i) : n(i), v(data), destructable(false)
     { }
 
-    inline Array1D(const Array2D<T>& v, int i);
+    inline KNArray1D(const KNArray2D<T>& v, int i);
 
-    inline virtual ~Array1D()
+    inline virtual ~KNArray1D()
     {
       if (destructable) delete[] v;
     }
@@ -114,7 +114,7 @@ class Array1D
       } else throw(-1);
     }
 
-    inline void init(const Array1D<T>& V_)
+    inline void init(const KNArray1D<T>& V_)
     {
       if (destructable)
       {
@@ -147,7 +147,7 @@ class Array1D
     inline T *pointer(const int i)
     {
 #ifdef DEBUG
-      P_ASSERT_X(i < n && i >= 0, "Array1D::bound11&");
+      P_ASSERT_X(i < n && i >= 0, "KNArray1D::bound11&");
 #endif
       return &v[i];
     }
@@ -157,10 +157,10 @@ class Array1D
       return n;
     }
 
-    inline Array1D<T>& operator=(const Array1D<T>& V)
+    inline KNArray1D<T>& operator=(const KNArray1D<T>& V)
     {
 #ifdef DEBUG
-      P_ASSERT_X(n == V.n, "Array1D::operator=(): incompatible sizes\n");
+      P_ASSERT_X(n == V.n, "KNArray1D::operator=(): incompatible sizes\n");
 #endif
       for (int i = 0; i < V.n; i++) v[i] = V.v[i];
       return *this;
@@ -169,7 +169,7 @@ class Array1D
     inline T& operator()(int i)
     {
 #ifdef DEBUG
-      P_ASSERT_X(i < n && i >= 0, "Array1D::bound11&");
+      P_ASSERT_X(i < n && i >= 0, "KNArray1D::bound11&");
 #endif
       return v[i];
     }
@@ -188,7 +188,7 @@ class Array1D
         T *pt;
       public:
         iterator() : pt(0) {}
-        iterator( const Array1D<T>::iterator& it ) : pt(it.pt) {}
+        iterator( const KNArray1D<T>::iterator& it ) : pt(it.pt) {}
         iterator& operator= (const iterator& it) { pt = it.pt; return *this; }
         iterator  operator+ ( int i ) const { iterator it; it.pt = pt+i; return it; }
         iterator  operator- ( int i ) const { iterator it; it.pt = pt-i; return it; }
@@ -202,7 +202,7 @@ class Array1D
         iterator& operator++(int) { ++pt; return *this; }
         iterator& operator--(int) { --pt; return *this; }
         bool      operator< (const iterator& it) const { return pt < it.pt; }
-        friend class Array1D<T>;
+        friend class KNArray1D<T>;
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef T                        value_type;
         typedef std::ptrdiff_t           difference_type;
@@ -216,7 +216,7 @@ class Array1D
 
 
 template<class T>
-class Array2D
+class KNArray2D
 {
 
   protected:
@@ -226,28 +226,28 @@ class Array2D
   private:
     const bool destructable;
   public:
-    inline Array2D() : destructable(true)
+    inline KNArray2D() : destructable(true)
     {
       r = 0;
       c = 0;
       m = 0;
     }
 
-    inline Array2D(int _r, int _c) : r(_r), c(_c), destructable(true)
+    inline KNArray2D(int _r, int _c) : r(_r), c(_c), destructable(true)
     {
       m = new T[r*c+1];
       clear();
     }
 
-    inline Array2D(const Array2D<T>& M) : r(M.r), c(M.c), destructable(true)
+    inline KNArray2D(const KNArray2D<T>& M) : r(M.r), c(M.c), destructable(true)
     {
       m = new T[r*c+1];
       for (int i = 0; i < r*c; i++) m[i] = M.m[i];
     }
 
-    inline Array2D(const Array3D<T>& v, int i);
+    inline KNArray2D(const KNArray3D<T>& v, int i);
 
-    inline virtual ~Array2D()
+    inline virtual ~KNArray2D()
     {
       if (destructable) delete[] m;
     }
@@ -256,7 +256,7 @@ class Array2D
 
     inline void init(int _r, int _c)
     {
-      P_ASSERT_X(destructable, "Array2D<T>::Init : trying to resize a non-destructable a");
+      P_ASSERT_X(destructable, "KNArray2D<T>::Init : trying to resize a non-destructable a");
       delete[] m;
       r = _r;
       c = _c;
@@ -292,10 +292,10 @@ class Array2D
       for (int i = 0; i < r*c; i++) m[i] = T(0);
     }
 
-    inline Array2D<T>& operator= (const Array2D<T>& M)
+    inline KNArray2D<T>& operator= (const KNArray2D<T>& M)
     {
 #ifdef DEBUG
-      P_ASSERT_X(M.r == r && M.c == c, "Array2D<T>::operator= : incompatible sizes");
+      P_ASSERT_X(M.r == r && M.c == c, "KNArray2D<T>::operator= : incompatible sizes");
 #endif
       for (int i = 0; i < r*c; i++) m[i] = M.m[i];
       return *this;
@@ -336,11 +336,11 @@ class Array2D
 #endif
       return m[i];
     }
-    friend class Array1D<T>;
+    friend class KNArray1D<T>;
 };
 
 template<class T>
-class Array3D
+class KNArray3D
 {
 
   protected:
@@ -349,25 +349,25 @@ class Array3D
     int d1, d2, d3;
 
   public:
-    inline Array3D()
+    inline KNArray3D()
     {
       d1 = d2 = d3 = 0;
       m = 0;
     }
 
-    inline Array3D(int _d1, int _d2, int _d3) : d1(_d1), d2(_d2), d3(_d3)
+    inline KNArray3D(int _d1, int _d2, int _d3) : d1(_d1), d2(_d2), d3(_d3)
     {
       m = new T[d1*d2*d3+1];
       clear();
     }
 
-    inline Array3D(const Array3D<T>& M) : d1(M.d1), d2(M.d2), d3(M.d3)
+    inline KNArray3D(const KNArray3D<T>& M) : d1(M.d1), d2(M.d2), d3(M.d3)
     {
       m = new T[d1*d2*d3+1];
       for (int i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
     }
 
-    inline virtual ~Array3D()
+    inline virtual ~KNArray3D()
     {
       delete[] m;
     }
@@ -390,10 +390,10 @@ class Array3D
       for (int i = 0; i < d1*d2*d3; i++) m[i] = 0;
     }
 
-    inline Array3D<T>& operator= (const Array3D<T>& M)
+    inline KNArray3D<T>& operator= (const KNArray3D<T>& M)
     {
 #ifdef DEBUG
-      P_ASSERT_X((M.d1 == d1) && (M.d2 == d2) && (M.d3 == d3), "Array3D<T>::operator= : incompatible sizes\n");
+      P_ASSERT_X((M.d1 == d1) && (M.d2 == d2) && (M.d3 == d3), "KNArray3D<T>::operator= : incompatible sizes\n");
 #endif
       for (int i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
       return *this;
@@ -416,10 +416,10 @@ class Array3D
 #endif
       return m[i + d1*(j + d2*k)];
     }
-    friend class Array2D<T>;
+    friend class KNArray2D<T>;
 };
 
-template<class T> inline Array1D<T>::Array1D(const Array2D<T>& vec, int i) : destructable(false)
+template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, int i) : destructable(false)
 {
 #ifdef DEBUG
   P_ASSERT_X((i < vec.c), "bound\n");
@@ -428,7 +428,7 @@ template<class T> inline Array1D<T>::Array1D(const Array2D<T>& vec, int i) : des
   n = vec.r;
 }
 
-template<class T> inline Array2D<T>::Array2D(const Array3D<T>& vec, int i) : destructable(false)
+template<class T> inline KNArray2D<T>::KNArray2D(const KNArray3D<T>& vec, int i) : destructable(false)
 {
 #ifdef DEBUG
   P_ASSERT_X((i < vec.d3), "bound\n");
@@ -440,9 +440,9 @@ template<class T> inline Array2D<T>::Array2D(const Array3D<T>& vec, int i) : des
 
 #ifndef KNUTSYS_H
 
-class SpMatrix;
-class Matrix;
-class Vector;
+class KNSparseMatrix;
+class KNMatrix;
+class KNVector;
 
 template< class MT >           class __scal_vec_trans;
 template< class MT, class VT > class __op_mul_vec;
@@ -491,10 +491,10 @@ template< class VT > class __scal_vec_trans_rng : public rng
     {
       return __scal_vec_trans_rng<VT>(-alpha, *this, tr);
     }
-    inline __op_mul_vec_rng< VT, Vector > operator*(__scal_vec_trans_rng<Vector> v);
-    inline __op_mul_vec_rng< VT, Matrix > operator*(__scal_vec_trans_rng<Matrix> v);
-    inline __op_mul_vec_rng< VT, Vector > operator*(const Vector& v);
-    inline __op_mul_vec_rng< VT, Matrix > operator*(const Matrix& v);
+    inline __op_mul_vec_rng< VT, KNVector > operator*(__scal_vec_trans_rng<KNVector> v);
+    inline __op_mul_vec_rng< VT, KNMatrix > operator*(__scal_vec_trans_rng<KNMatrix> v);
+    inline __op_mul_vec_rng< VT, KNVector > operator*(const KNVector& v);
+    inline __op_mul_vec_rng< VT, KNMatrix > operator*(const KNMatrix& v);
 
     const VT& vec;
     const double alpha;
@@ -548,10 +548,10 @@ template< class VT > class __scal_vec_trans
     {
       return __scal_vec_trans<VT>(-alpha, vec, tr);
     }
-    inline __op_mul_vec< VT, Vector >                    operator*(const Vector& v);
-    inline __op_mul_vec< VT, Matrix >                    operator*(const Matrix& v);
-    inline __op_mul_vec_rng< VT, Vector >                operator*(__scal_vec_trans_rng<Vector> v);
-    inline __op_mul_vec_rng< VT, Matrix >                operator*(__scal_vec_trans_rng<Matrix> v);
+    inline __op_mul_vec< VT, KNVector >                    operator*(const KNVector& v);
+    inline __op_mul_vec< VT, KNMatrix >                    operator*(const KNMatrix& v);
+    inline __op_mul_vec_rng< VT, KNVector >                operator*(__scal_vec_trans_rng<KNVector> v);
+    inline __op_mul_vec_rng< VT, KNMatrix >                operator*(__scal_vec_trans_rng<KNMatrix> v);
 
     const VT& vec;
     double alpha;
@@ -586,27 +586,27 @@ template< class MT, class VT > class __op_mul_vec_plus_vec : public __op_mul_vec
 
 #endif // KNUTSYS_H
 
-class Vector : public Array1D<double>
+class KNVector : public KNArray1D<double>
 {
 
   public:
 
-    inline Vector()
+    inline KNVector()
     { }
 
-    inline Vector(int i) : Array1D<double>(i)
+    inline KNVector(int i) : KNArray1D<double>(i)
     { }
 
-    inline Vector(bool b) : Array1D<double>(b)
+    inline KNVector(bool b) : KNArray1D<double>(b)
     { }
 
-    inline Vector(const Vector& V) : Array1D<double>(V)
+    inline KNVector(const KNVector& V) : KNArray1D<double>(V)
     { }
 
-    inline Vector(const Array2D<double>& m, int i) : Array1D<double>(m,i)
+    inline KNVector(const KNArray2D<double>& m, int i) : KNArray1D<double>(m,i)
     { }
 
-    inline virtual ~Vector()
+    inline virtual ~KNVector()
     { }
 
 #ifndef KNUTSYS_H
@@ -628,71 +628,71 @@ class Vector : public Array1D<double>
       knut_dlarnv(&idist, iseed, &N, v);
     }
 
-    inline Vector& operator= (const Vector& V);
-    inline Vector& operator+=(const Vector& V);
-    inline Vector& operator-=(const Vector& V);
-    inline Vector& operator/=(double div);
-    inline Vector& operator*=(double mul);
-    inline double  operator*(const Vector& V) const;
+    inline KNVector& operator= (const KNVector& V);
+    inline KNVector& operator+=(const KNVector& V);
+    inline KNVector& operator-=(const KNVector& V);
+    inline KNVector& operator/=(double div);
+    inline KNVector& operator*=(double mul);
+    inline double  operator*(const KNVector& V) const;
 
-    // Matrix operations
-    inline Vector& operator= (const __scal_vec_trans<Vector>);
-    inline Vector& operator+=(const __scal_vec_trans<Vector>);
-    inline Vector& operator-=(const __scal_vec_trans<Vector>);
-    inline Vector& operator= (const __op_mul_vec<Matrix, Vector>);
-    inline Vector& operator+=(const __op_mul_vec<Matrix, Vector>);
-    inline Vector& operator-=(const __op_mul_vec<Matrix, Vector>);
-    inline Vector& operator+=(const __op_mul_vec_plus_vec<Matrix, Vector>);
-    inline Vector& operator-=(const __op_mul_vec_plus_vec<Matrix, Vector>);
-    // for SpMatrix
-    inline Vector& operator= (const __op_mul_vec<SpMatrix, Vector>);
+    // KNMatrix operations
+    inline KNVector& operator= (const __scal_vec_trans<KNVector>);
+    inline KNVector& operator+=(const __scal_vec_trans<KNVector>);
+    inline KNVector& operator-=(const __scal_vec_trans<KNVector>);
+    inline KNVector& operator= (const __op_mul_vec<KNMatrix, KNVector>);
+    inline KNVector& operator+=(const __op_mul_vec<KNMatrix, KNVector>);
+    inline KNVector& operator-=(const __op_mul_vec<KNMatrix, KNVector>);
+    inline KNVector& operator+=(const __op_mul_vec_plus_vec<KNMatrix, KNVector>);
+    inline KNVector& operator-=(const __op_mul_vec_plus_vec<KNMatrix, KNVector>);
+    // for KNSparseMatrix
+    inline KNVector& operator= (const __op_mul_vec<KNSparseMatrix, KNVector>);
     // obsolote
-    inline Vector& operator= (const __op_mul_vec_plus_vec<SpMatrix, Vector>);
+    inline KNVector& operator= (const __op_mul_vec_plus_vec<KNSparseMatrix, KNVector>);
     /// with ranges
-    inline Vector& operator=(const __scal_vec_trans_rng<Vector>);
-    inline Vector& operator=(const __op_mul_vec_rng<Matrix, Vector>);
+    inline KNVector& operator=(const __scal_vec_trans_rng<KNVector>);
+    inline KNVector& operator=(const __op_mul_vec_rng<KNMatrix, KNVector>);
     // obsolote
-    inline Vector& operator=(const __op_mul_vec_plus_vec_rng<Matrix, Vector>);
-    // for SpMatrix
-    inline Vector& operator=(const __op_mul_vec_rng<SpMatrix, Vector>);
+    inline KNVector& operator=(const __op_mul_vec_plus_vec_rng<KNMatrix, KNVector>);
+    // for KNSparseMatrix
+    inline KNVector& operator=(const __op_mul_vec_rng<KNSparseMatrix, KNVector>);
     // obsolote
-    inline Vector& operator=(const __op_mul_vec_plus_vec_rng<SpMatrix, Vector>);
+    inline KNVector& operator=(const __op_mul_vec_plus_vec_rng<KNSparseMatrix, KNVector>);
 
-    inline __scal_vec_trans<Vector>     operator-() const
+    inline __scal_vec_trans<KNVector>     operator-() const
     {
-      return __scal_vec_trans<Vector>(*this, -1.0);
+      return __scal_vec_trans<KNVector>(*this, -1.0);
     }
-    inline __scal_vec_trans_rng<Vector> operator[ ](const rng r) const
+    inline __scal_vec_trans_rng<KNVector> operator[ ](const rng r) const
     {
-      return __scal_vec_trans_rng<Vector>(*this, r);
+      return __scal_vec_trans_rng<KNVector>(*this, r);
     }
 
 #endif // KNUTSYS_H
 
-    friend class SpMatrix;
-    friend class SpFact;
-    friend class Matrix;
-    friend class MatFact;
+    friend class KNSparseMatrix;
+    friend class KNLuSparseMatrix;
+    friend class KNMatrix;
+    friend class KNLuMatrix;
 
 };
 
-class Matrix : public Array2D<double>
+class KNMatrix : public KNArray2D<double>
 {
   public:
 
-    inline Matrix()
+    inline KNMatrix()
     { }
 
-    inline Matrix(int i, int j) : Array2D<double>(i, j)
+    inline KNMatrix(int i, int j) : KNArray2D<double>(i, j)
     { }
 
-    inline Matrix(const Matrix& M) : Array2D<double>(M)
+    inline KNMatrix(const KNMatrix& M) : KNArray2D<double>(M)
     { }
 
-    inline Matrix(const Array3D<double>& m, int i) : Array2D<double>(m,i)
+    inline KNMatrix(const KNArray3D<double>& m, int i) : KNArray2D<double>(m,i)
     { }
 
-    inline virtual ~Matrix()
+    inline virtual ~KNMatrix()
     { }
 
     inline int row() const
@@ -706,62 +706,62 @@ class Matrix : public Array2D<double>
     inline int size() const
     {
 #ifdef DEBUG
-      P_ASSERT_X((r == 1) || (c == 1), "Matrix::size(): not a single row or column.\n");
+      P_ASSERT_X((r == 1) || (c == 1), "KNMatrix::size(): not a single row or column.\n");
 #endif // DEBUG
       return r*c;
     }
 
 #ifndef KNUTSYS_H
 
-    inline Matrix& operator= (const __scal_vec_trans<Matrix>);
-    inline Matrix& operator= (const __op_mul_vec<Matrix, Matrix>);
-    inline Matrix& operator+=(const __op_mul_vec<Matrix, Matrix>);
-    inline Matrix& operator-=(const __op_mul_vec<Matrix, Matrix>);
+    inline KNMatrix& operator= (const __scal_vec_trans<KNMatrix>);
+    inline KNMatrix& operator= (const __op_mul_vec<KNMatrix, KNMatrix>);
+    inline KNMatrix& operator+=(const __op_mul_vec<KNMatrix, KNMatrix>);
+    inline KNMatrix& operator-=(const __op_mul_vec<KNMatrix, KNMatrix>);
     // obsolote
-    inline Matrix& operator=(const __op_mul_vec_plus_vec<Matrix, Matrix>);
-    // with SpMatrix
-    inline Matrix& operator=(const __op_mul_vec<SpMatrix, Matrix>);
+    inline KNMatrix& operator=(const __op_mul_vec_plus_vec<KNMatrix, KNMatrix>);
+    // with KNSparseMatrix
+    inline KNMatrix& operator=(const __op_mul_vec<KNSparseMatrix, KNMatrix>);
     // obsolote
-    inline Matrix& operator=(const __op_mul_vec_plus_vec<SpMatrix, Matrix>);
+    inline KNMatrix& operator=(const __op_mul_vec_plus_vec<KNSparseMatrix, KNMatrix>);
     /// with ranges
-    inline Matrix& operator=(const __scal_vec_trans_rng<Matrix>);
-    inline Matrix& operator=(const __op_mul_vec_rng<Matrix, Matrix>);
+    inline KNMatrix& operator=(const __scal_vec_trans_rng<KNMatrix>);
+    inline KNMatrix& operator=(const __op_mul_vec_rng<KNMatrix, KNMatrix>);
     // obsolote
-    inline Matrix& operator=(const __op_mul_vec_plus_vec_rng<Matrix, Matrix>);
-    // with SpMatrix
-    inline Matrix& operator=(const __op_mul_vec_rng<SpMatrix, Matrix>);
+    inline KNMatrix& operator=(const __op_mul_vec_plus_vec_rng<KNMatrix, KNMatrix>);
+    // with KNSparseMatrix
+    inline KNMatrix& operator=(const __op_mul_vec_rng<KNSparseMatrix, KNMatrix>);
     // obsolote
-    inline Matrix& operator=(const __op_mul_vec_plus_vec_rng<SpMatrix, Matrix>);
+    inline KNMatrix& operator=(const __op_mul_vec_plus_vec_rng<KNSparseMatrix, KNMatrix>);
 
-    void eigenvalues(Vector& re, Vector& im);
-    void eigenvalues(Vector& re, Vector& im, Matrix& lev, Matrix& rev);
+    void eigenvalues(KNVector& re, KNVector& im);
+    void eigenvalues(KNVector& re, KNVector& im, KNMatrix& lev, KNMatrix& rev);
     void sparsityPlot(GnuPlot& pl);
 
     /* operators */
 
-    inline __op_mul_vec<Matrix, Vector>     operator*(const Vector& v) const
+    inline __op_mul_vec<KNMatrix, KNVector>     operator*(const KNVector& v) const
     {
-      return __op_mul_vec<Matrix, Vector>(__scal_vec_trans<Matrix>(*this), __scal_vec_trans<Vector>(v));
+      return __op_mul_vec<KNMatrix, KNVector>(__scal_vec_trans<KNMatrix>(*this), __scal_vec_trans<KNVector>(v));
     }
-    inline __op_mul_vec<Matrix, Matrix>     operator*(const Matrix& v) const
+    inline __op_mul_vec<KNMatrix, KNMatrix>     operator*(const KNMatrix& v) const
     {
-      return __op_mul_vec<Matrix, Matrix>(__scal_vec_trans<Matrix>(*this), __scal_vec_trans<Matrix>(v));
+      return __op_mul_vec<KNMatrix, KNMatrix>(__scal_vec_trans<KNMatrix>(*this), __scal_vec_trans<KNMatrix>(v));
     }
-    inline __op_mul_vec_rng<Matrix, Vector> operator*(const __scal_vec_trans_rng<Vector> v) const
+    inline __op_mul_vec_rng<KNMatrix, KNVector> operator*(const __scal_vec_trans_rng<KNVector> v) const
     {
-      return __op_mul_vec_rng<Matrix, Vector>(__scal_vec_trans_rng<Matrix>(*this), v);
+      return __op_mul_vec_rng<KNMatrix, KNVector>(__scal_vec_trans_rng<KNMatrix>(*this), v);
     }
-    inline __op_mul_vec_rng<Matrix, Matrix> operator*(const __scal_vec_trans_rng<Matrix> v) const
+    inline __op_mul_vec_rng<KNMatrix, KNMatrix> operator*(const __scal_vec_trans_rng<KNMatrix> v) const
     {
-      return __op_mul_vec_rng<Matrix, Matrix>(__scal_vec_trans_rng<Matrix>(*this), v);
+      return __op_mul_vec_rng<KNMatrix, KNMatrix>(__scal_vec_trans_rng<KNMatrix>(*this), v);
     }
-    inline __scal_vec_trans<Matrix>        operator!() const
+    inline __scal_vec_trans<KNMatrix>        operator!() const
     {
-      return __scal_vec_trans<Matrix>(*this, 1.0, Trans);
+      return __scal_vec_trans<KNMatrix>(*this, 1.0, Trans);
     }
-    inline __scal_vec_trans_rng<Matrix>    operator[ ](const rng r_) const
+    inline __scal_vec_trans_rng<KNMatrix>    operator[ ](const rng r_) const
     {
-      return __scal_vec_trans_rng<Matrix>(*this, r_);
+      return __scal_vec_trans_rng<KNMatrix>(*this, r_);
     }
 
     inline void print()
@@ -781,15 +781,15 @@ class Matrix : public Array2D<double>
 
 #endif // KNUTSYS_H
 
-    friend class Vector;
-    friend class MatFact;
-    friend class SpMatrix;
-    friend class SpFact;
+    friend class KNVector;
+    friend class KNLuMatrix;
+    friend class KNSparseMatrix;
+    friend class KNLuSparseMatrix;
 };
 
 #ifndef KNUTSYS_H
 
-class MatFact : public Matrix
+class KNLuMatrix : public KNMatrix
 {
 
     bool     fact; // == true if factorized
@@ -801,12 +801,12 @@ class MatFact : public Matrix
     int  info;
     // for solving
     double rcond;
-    double ferr;  // in case of Vector these are just double
+    double ferr;  // in case of KNVector these are just double
     double berr;
 
   public:
 
-    inline MatFact(int _r, int _c) : Matrix(_r, _c)
+    inline KNLuMatrix(int _r, int _c) : KNMatrix(_r, _c)
     {
       fact = false;
       mf = new double[r*c+1];
@@ -815,7 +815,7 @@ class MatFact : public Matrix
       iwork = new int[this->r];
     }
 
-    inline MatFact(const Matrix& M) : Matrix(M)
+    inline KNLuMatrix(const KNMatrix& M) : KNMatrix(M)
     {
       fact = false;
       mf = new double[r*c+1];
@@ -824,7 +824,7 @@ class MatFact : public Matrix
       iwork = new int[this->r];
     }
 
-    inline virtual ~MatFact()
+    inline virtual ~KNLuMatrix()
     {
       delete[] iwork;
       delete[] work;
@@ -832,10 +832,10 @@ class MatFact : public Matrix
       delete[] mf;
     }
 
-    inline MatFact& operator=(MatFact& M)
+    inline KNLuMatrix& operator=(KNLuMatrix& M)
     {
-      Matrix::operator=(M);
-      std::cout << "Copying MatFact is not yet implemented, though the Matrix part will be copied normally\n";
+      KNMatrix::operator=(M);
+      std::cout << "Copying KNLuMatrix is not yet implemented, though the KNMatrix part will be copied normally\n";
       return *this;
     }
 
@@ -846,64 +846,64 @@ class MatFact : public Matrix
 
     inline int  row() const
     {
-      return Matrix::row();
+      return KNMatrix::row();
     }
     inline int  col() const
     {
-      return Matrix::col();
+      return KNMatrix::col();
     }
 
     void luFactorize();
-    void solve(Vector& X, const Vector& B, bool TRANS = false);
-    void solve(Matrix& X, const Matrix& B, bool TRANS = false);
+    void solve(KNVector& X, const KNVector& B, bool TRANS = false);
+    void solve(KNMatrix& X, const KNMatrix& B, bool TRANS = false);
 };
 
-typedef Array1D< Matrix > JagMatrix3D;
-typedef Array1D< Vector > JagVector2D;
+typedef KNArray1D< KNMatrix > JagMatrix3D;
+typedef KNArray1D< KNVector > JagVector2D;
 
 /// specialized versions of the Clear function
-template< > inline void Array1D< Array1D<int> >::clear()
+template< > inline void KNArray1D< KNArray1D<int> >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array1D<double> >::clear()
+template< > inline void KNArray1D< KNArray1D<double> >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Vector >::clear()
+template< > inline void KNArray1D< KNVector >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array2D<int> >::clear()
+template< > inline void KNArray1D< KNArray2D<int> >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Array2D<double> >::clear()
+template< > inline void KNArray1D< KNArray2D<double> >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
-template< > inline void Array1D< Matrix >::clear()
+template< > inline void KNArray1D< KNMatrix >::clear()
 {
   for (int i = 0; i < n; i++) v[i].clear();
 }
 
-template< > inline Array1D< Vector >::Array1D(const Array1D< Vector >& V_) : destructable(true)
+template< > inline KNArray1D< KNVector >::KNArray1D(const KNArray1D< KNVector >& V_) : destructable(true)
 {
   n = V_.n;
-  v = new Vector[V_.n];
+  v = new KNVector[V_.n];
   for (int i = 0; i < V_.n; i++) v[i].init(V_.v[i]);
 }
 
 /// Member functions and Operators for __scal_vec_trans_rng
-template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v)
+template<> inline __scal_vec_trans_rng<KNVector>::__scal_vec_trans_rng(const KNVector& v)
     : rng(0, v.size()), vec(v), alpha(1.0), tr(NoTrans)
 { }
 
-template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v, double a)
+template<> inline __scal_vec_trans_rng<KNVector>::__scal_vec_trans_rng(const KNVector& v, double a)
     : rng(0, v.size()), vec(v), alpha(a),   tr(NoTrans)
 { }
 
-template<> inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(const Vector& v, double a, enum cspblas_Trans t)
+template<> inline __scal_vec_trans_rng<KNVector>::__scal_vec_trans_rng(const KNVector& v, double a, enum cspblas_Trans t)
     : rng(0, v.size()), vec(v), alpha(a),   tr(t)
 { }
 
@@ -911,28 +911,28 @@ template< class VT > inline __scal_vec_trans_rng<VT>::__scal_vec_trans_rng(__sca
     : rng(0, v.vec.row(), 0, v.vec.col()), vec(v.vec), alpha(v.alpha), tr(v.tr)
 { }
 
-template< >          inline __scal_vec_trans_rng<Vector>::__scal_vec_trans_rng(__scal_vec_trans<Vector> v)
+template< >          inline __scal_vec_trans_rng<KNVector>::__scal_vec_trans_rng(__scal_vec_trans<KNVector> v)
     : rng(0, v.vec.size()), vec(v.vec), alpha(v.alpha), tr(v.tr)
 { }
 
-template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans_rng<VT>::operator*(__scal_vec_trans_rng<Vector> v)
+template< class VT > inline __op_mul_vec_rng< VT, KNVector > __scal_vec_trans_rng<VT>::operator*(__scal_vec_trans_rng<KNVector> v)
 {
-  return __op_mul_vec_rng< VT, Vector >(*this, v);
+  return __op_mul_vec_rng< VT, KNVector >(*this, v);
 }
 
-template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans_rng<VT>::operator*(__scal_vec_trans_rng<Matrix> v)
+template< class VT > inline __op_mul_vec_rng< VT, KNMatrix > __scal_vec_trans_rng<VT>::operator*(__scal_vec_trans_rng<KNMatrix> v)
 {
-  return __op_mul_vec_rng< VT, Matrix >(*this, v);
+  return __op_mul_vec_rng< VT, KNMatrix >(*this, v);
 }
 
-template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans_rng<VT>::operator*(const Vector& v)
+template< class VT > inline __op_mul_vec_rng< VT, KNVector > __scal_vec_trans_rng<VT>::operator*(const KNVector& v)
 {
-  return __op_mul_vec_rng< VT, Vector >(*this, __scal_vec_trans_rng<Vector>(v));
+  return __op_mul_vec_rng< VT, KNVector >(*this, __scal_vec_trans_rng<KNVector>(v));
 }
 
-template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans_rng<VT>::operator*(const Matrix& v)
+template< class VT > inline __op_mul_vec_rng< VT, KNMatrix > __scal_vec_trans_rng<VT>::operator*(const KNMatrix& v)
 {
-  return __op_mul_vec_rng< VT, Matrix >(*this, __scal_vec_trans_rng<Matrix>(v));
+  return __op_mul_vec_rng< VT, KNMatrix >(*this, __scal_vec_trans_rng<KNMatrix>(v));
 }
 
 
@@ -969,24 +969,24 @@ template< class MT, class VT > inline __op_mul_vec_plus_vec_rng<MT, VT>   __op_m
 
 
 /// Member functions and Operators for __scal_vec_trans
-template< class VT > inline __op_mul_vec< VT, Vector >     __scal_vec_trans<VT>::operator*(const Vector& v)
+template< class VT > inline __op_mul_vec< VT, KNVector >     __scal_vec_trans<VT>::operator*(const KNVector& v)
 {
-  return __op_mul_vec< VT, Vector >(*this, __scal_vec_trans<Vector>(v));
+  return __op_mul_vec< VT, KNVector >(*this, __scal_vec_trans<KNVector>(v));
 }
 
-template< class VT > inline __op_mul_vec< VT, Matrix >     __scal_vec_trans<VT>::operator*(const Matrix& v)
+template< class VT > inline __op_mul_vec< VT, KNMatrix >     __scal_vec_trans<VT>::operator*(const KNMatrix& v)
 {
-  return __op_mul_vec< VT, Matrix >(*this, __scal_vec_trans<Matrix>(v));
+  return __op_mul_vec< VT, KNMatrix >(*this, __scal_vec_trans<KNMatrix>(v));
 }
 
-template< class VT > inline __op_mul_vec_rng< VT, Vector > __scal_vec_trans<VT>::operator*(__scal_vec_trans_rng<Vector> v)
+template< class VT > inline __op_mul_vec_rng< VT, KNVector > __scal_vec_trans<VT>::operator*(__scal_vec_trans_rng<KNVector> v)
 {
-  return __op_mul_vec_rng< VT, Vector >(__scal_vec_trans_rng<VT>(*this), v);
+  return __op_mul_vec_rng< VT, KNVector >(__scal_vec_trans_rng<VT>(*this), v);
 }
 
-template< class VT > inline __op_mul_vec_rng< VT, Matrix > __scal_vec_trans<VT>::operator*(__scal_vec_trans_rng<Matrix> v)
+template< class VT > inline __op_mul_vec_rng< VT, KNMatrix > __scal_vec_trans<VT>::operator*(__scal_vec_trans_rng<KNMatrix> v)
 {
-  return __op_mul_vec_rng< VT, Matrix >(__scal_vec_trans_rng<VT>(*this), v);
+  return __op_mul_vec_rng< VT, KNMatrix >(__scal_vec_trans_rng<VT>(*this), v);
 }
 
 
@@ -1023,19 +1023,19 @@ template< class MT, class VT > inline __op_mul_vec_plus_vec<MT, VT>      __op_mu
 
 
 /// The global operators
-inline __scal_vec_trans < Vector >                      operator*(double a, const Vector& v)
+inline __scal_vec_trans < KNVector >                      operator*(double a, const KNVector& v)
 {
-  return __scal_vec_trans<Vector>(v, a);
+  return __scal_vec_trans<KNVector>(v, a);
 }
 
-inline __scal_vec_trans < Matrix >                      operator*(double a, const Matrix& v)
+inline __scal_vec_trans < KNMatrix >                      operator*(double a, const KNMatrix& v)
 {
-  return __scal_vec_trans<Matrix>(v, a);
+  return __scal_vec_trans<KNMatrix>(v, a);
 }
 
-inline __scal_vec_trans < SpMatrix >                    operator*(double a, const SpMatrix& v)
+inline __scal_vec_trans < KNSparseMatrix >                    operator*(double a, const KNSparseMatrix& v)
 {
-  return __scal_vec_trans<SpMatrix>(v, a);
+  return __scal_vec_trans<KNSparseMatrix>(v, a);
 }
 
 template< class VT > inline __scal_vec_trans < VT  >    operator*(double a, __scal_vec_trans< VT > v)
@@ -1048,66 +1048,66 @@ template< class VT > inline __scal_vec_trans_rng < VT > operator*(double a, __sc
   return __scal_vec_trans_rng<VT>(v.vec, v, a * v.alpha, v.tr);
 }
 
-inline __scal_vec_trans < Vector >                      operator-(const Vector& v)
+inline __scal_vec_trans < KNVector >                      operator-(const KNVector& v)
 {
-  return __scal_vec_trans<Vector>(v, -1.0);
+  return __scal_vec_trans<KNVector>(v, -1.0);
 }
 
-inline __scal_vec_trans < Matrix >                      operator-(const Matrix& v)
+inline __scal_vec_trans < KNMatrix >                      operator-(const KNMatrix& v)
 {
-  return __scal_vec_trans<Matrix>(v, -1.0);
+  return __scal_vec_trans<KNMatrix>(v, -1.0);
 }
 
-inline __scal_vec_trans < SpMatrix >                    operator-(const SpMatrix& v)
+inline __scal_vec_trans < KNSparseMatrix >                    operator-(const KNSparseMatrix& v)
 {
-  return __scal_vec_trans<SpMatrix>(v, -1.0);
+  return __scal_vec_trans<KNSparseMatrix>(v, -1.0);
 }
 
-// Implementation of Vector
+// Implementation of KNVector
 
-inline Vector& Vector::operator=(const Vector& V)
+inline KNVector& KNVector::operator=(const KNVector& V)
 {
 #ifdef DEBUG
-  P_ASSERT_X(n == V.n, "Vector::operator=(): incompatible sizes\n");
+  P_ASSERT_X(n == V.n, "KNVector::operator=(): incompatible sizes\n");
 #endif // DEBUG
   BLAS_dcopy(n, V.v, 1, v, 1);
   return *this;
 }
 
-inline Vector& Vector::operator+=(const Vector& V)
+inline KNVector& KNVector::operator+=(const KNVector& V)
 {
 #ifdef DEBUG
-  P_ASSERT_X(n == V.n, "Vector::operator+=(): incompatible sizes\n");
+  P_ASSERT_X(n == V.n, "KNVector::operator+=(): incompatible sizes\n");
 #endif // DEBUG
   BLAS_daxpy(n, 1.0, V.v, 1, v, 1);
   return *this;
 }
 
-inline Vector& Vector::operator-=(const Vector& V)
+inline KNVector& KNVector::operator-=(const KNVector& V)
 {
 #ifdef DEBUG
-  P_ASSERT_X(n == V.n, "Vector::operator-=(): incompatible sizes\n");
+  P_ASSERT_X(n == V.n, "KNVector::operator-=(): incompatible sizes\n");
 #endif // DEBUG
   BLAS_daxpy(n, -1.0, V.v, 1, v, 1);
   return *this;
 }
 
-inline Vector& Vector::operator/=(double div)
+inline KNVector& KNVector::operator/=(double div)
 {
   BLAS_dscal(n, 1.0 / div, v, 1);
   return *this;
 }
 
-inline Vector& Vector::operator*=(double mul)
+inline KNVector& KNVector::operator*=(double mul)
 {
   BLAS_dscal(n, mul, v, 1);
   return *this;
 }
 
-inline double Vector::operator*(const Vector& V) const
+inline double KNVector::operator*(const KNVector& V) const
 {
 #ifdef DEBUG
-  P_ASSERT_X(n == V.n, "Vector::operator*(): incompatible sizes\n");
+  P_ASSERT_X(n == V.n, "KNVector::operator*(): incompatible sizes\n");
 #endif // DEBUG
   return BLAS_ddot(n, V.v, 1, v, 1);
 }
@@ -1116,7 +1116,7 @@ inline double Vector::operator*(const Vector& V) const
 
 // scal_vec_trans
 
-inline Vector& Vector::operator=(const __scal_vec_trans<Vector> R)
+inline KNVector& KNVector::operator=(const __scal_vec_trans<KNVector> R)
 {
   BLAS_dcopy(n, R.vec.v, 1, v, 1);
   BLAS_dscal(n, R.alpha, v, 1);
@@ -1124,14 +1124,14 @@ inline Vector& Vector::operator=(const __scal_vec_trans<Vector> R)
   return *this;
 }
 
-inline Vector& Vector::operator+=(const __scal_vec_trans<Vector> R)
+inline KNVector& KNVector::operator+=(const __scal_vec_trans<KNVector> R)
 {
   BLAS_daxpy(n, R.alpha, R.vec.v, 1, v, 1);
 //  std::cout<<" += __scal_vec\n";
   return *this;
 }
 
-inline Vector& Vector::operator-=(const __scal_vec_trans<Vector> R)
+inline KNVector& KNVector::operator-=(const __scal_vec_trans<KNVector> R)
 {
   BLAS_daxpy(n, -R.alpha, R.vec.v, 1, v, 1);
 //  std::cout<<"-= __scal_vec\n";
@@ -1140,139 +1140,139 @@ inline Vector& Vector::operator-=(const __scal_vec_trans<Vector> R)
 
 // op_mul_vec
 
-inline Vector& Vector::operator=(const __op_mul_vec<Matrix, Vector> R)
+inline KNVector& KNVector::operator=(const __op_mul_vec<KNMatrix, KNVector> R)
 {
   BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 0.0, this->v, 1);
-//  std::cout<<"__op_mul_vec<Matrix,Vector>\n";
+//  std::cout<<"__op_mul_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
-inline Vector& Vector::operator+=(const __op_mul_vec<Matrix, Vector> R)
+inline KNVector& KNVector::operator+=(const __op_mul_vec<KNMatrix, KNVector> R)
 {
   BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
-//  std::cout<<"+= __op_mul_vec<Matrix,Vector>\n";
+//  std::cout<<"+= __op_mul_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
-inline Vector& Vector::operator-=(const __op_mul_vec<Matrix, Vector> R)
+inline KNVector& KNVector::operator-=(const __op_mul_vec<KNMatrix, KNVector> R)
 {
   BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
-//  std::cout<<"-= __op_mul_vec<Matrix,Vector>\n";
+//  std::cout<<"-= __op_mul_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
 // op_mul_vec_plus_vec, but only += and -=
 
-inline Vector& Vector::operator+=(const __op_mul_vec_plus_vec<Matrix, Vector> R)
+inline KNVector& KNVector::operator+=(const __op_mul_vec_plus_vec<KNMatrix, KNVector> R)
 {
   BLAS_daxpy(n, R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
   BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
-  std::cout << "+=__op_mul_vec_plus_vec<Matrix,Vector>\n";
+  std::cout << "+=__op_mul_vec_plus_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
-inline Vector& Vector::operator-=(const __op_mul_vec_plus_vec<Matrix, Vector> R)
+inline KNVector& KNVector::operator-=(const __op_mul_vec_plus_vec<KNMatrix, KNVector> R)
 {
   BLAS_daxpy(n, -R.vecB.alpha, R.vecB.vec.v, 1, v, 1);
   BLAS_dgemv(R.op.tr == Trans ? 'T' : 'N', R.op.vec.r, R.op.vec.c, -R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.v, 1, 1.0, this->v, 1);
-  std::cout << "-=__op_mul_vec_plus_vec<Matrix,Vector>\n";
+  std::cout << "-=__op_mul_vec_plus_vec<KNMatrix,KNVector>\n";
   return *this;
 }
 
 /// WITH RANGES
 
-inline Vector& Vector::operator=(const __scal_vec_trans_rng<Vector>)
+inline KNVector& KNVector::operator=(const __scal_vec_trans_rng<KNVector>)
 {
   P_ASSERT_X(false, "__scal_vec_rng\n");
   return *this;
 }
 
-inline Vector& Vector::operator=(const __op_mul_vec_rng<Matrix, Vector>)
+inline KNVector& KNVector::operator=(const __op_mul_vec_rng<KNMatrix, KNVector>)
 {
   // cblas_dgemv( ... )
-  P_ASSERT_X(false, "__op_mul_vec_rngMatrix,Vector>\n");
+  P_ASSERT_X(false, "__op_mul_vec_rngMatrix,KNVector>\n");
   return *this;
 }
 
-inline Vector& Vector::operator=(const __op_mul_vec_plus_vec_rng<Matrix, Vector>)
+inline KNVector& KNVector::operator=(const __op_mul_vec_plus_vec_rng<KNMatrix, KNVector>)
 {
-  P_ASSERT_X(false, "__op_mul_vec_plus_vec_rng<Matrix,Vector>\n");
+  P_ASSERT_X(false, "__op_mul_vec_plus_vec_rng<KNMatrix,KNVector>\n");
   return *this;
 }
 
-// End of implementation of Vector
+// End of implementation of KNVector
 
-// Implementation of Matrix
+// Implementation of KNMatrix
 
-inline Matrix& Matrix::operator=(const __scal_vec_trans<Matrix>)
+inline KNMatrix& KNMatrix::operator=(const __scal_vec_trans<KNMatrix>)
 {
   P_ASSERT_X(false, "__scal_vec\n");
   return *this;
 }
 
-inline Matrix& Matrix::operator=(const __op_mul_vec<Matrix, Matrix> R)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec<KNMatrix, KNMatrix> R)
 {
   BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, 0.0, this->m, this->r);
-  P_ASSERT_X(false, "= __op_mul_vec<Matrix,Matrix>\n");
+  P_ASSERT_X(false, "= __op_mul_vec<KNMatrix,Matrix>\n");
   return *this;
 }
 
-inline Matrix& Matrix::operator+=(const __op_mul_vec<Matrix, Matrix> R)
+inline KNMatrix& KNMatrix::operator+=(const __op_mul_vec<KNMatrix, KNMatrix> R)
 {
   BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, 1.0, this->m, this->r);
-  P_ASSERT_X(false, "+= __op_mul_vec<Matrix,Matrix>\n");
+  P_ASSERT_X(false, "+= __op_mul_vec<KNMatrix,Matrix>\n");
   return *this;
 }
 
-inline Matrix& Matrix::operator-=(const __op_mul_vec<Matrix, Matrix> R)
+inline KNMatrix& KNMatrix::operator-=(const __op_mul_vec<KNMatrix, KNMatrix> R)
 {
   BLAS_dgemm(R.op.tr == Trans ? 'T' : 'N', 'N',
               this->r, this->c, R.op.tr == Trans ? R.op.vec.r : R.op.vec.c, R.op.alpha, R.op.vec.m, R.op.vec.r,
               R.vecA.vec.m, R.vecA.vec.r, -1.0, this->m, this->r);
-  P_ASSERT_X(false, "-= __op_mul_vec<Matrix,Matrix>\n");
+  P_ASSERT_X(false, "-= __op_mul_vec<KNMatrix,Matrix>\n");
   return *this;
 }
 
 // obsolote : op_mul_vec_plus_vec
 
-inline Matrix& Matrix::operator=(const __op_mul_vec_plus_vec<Matrix, Matrix>)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec_plus_vec<KNMatrix, KNMatrix>)
 {
-  P_ASSERT_X(false, "__op_mul_vec_plus_vec<Matrix,Matrix>\n");
+  P_ASSERT_X(false, "__op_mul_vec_plus_vec<KNMatrix,Matrix>\n");
   return *this;
 }
 
 /// WITH RANGES
 
-inline Matrix& Matrix::operator=(const __scal_vec_trans_rng<Matrix>)
+inline KNMatrix& KNMatrix::operator=(const __scal_vec_trans_rng<KNMatrix>)
 {
   P_ASSERT_X(false, "__scal_vec_rng\n");
   return *this;
 }
 
-inline Matrix& Matrix::operator=(const __op_mul_vec_rng<Matrix, Matrix>)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec_rng<KNMatrix, KNMatrix>)
 {
   // cblas_dgemm( ... );
-  P_ASSERT_X(false, "__op_mul_vec_rngMatrix,Matrix>\n");
+  P_ASSERT_X(false, "__op_mul_vec_rngMatrix,KNMatrix>\n");
   return *this;
 }
 
 // obsolote
-inline Matrix& Matrix::operator=(const __op_mul_vec_plus_vec_rng<Matrix, Matrix>)
+inline KNMatrix& KNMatrix::operator=(const __op_mul_vec_plus_vec_rng<KNMatrix, KNMatrix>)
 {
-  P_ASSERT_X(false, "__op_mul_vec_plus_vec_rng<Matrix,Matrix>\n");
+  P_ASSERT_X(false, "__op_mul_vec_plus_vec_rng<KNMatrix,Matrix>\n");
   return *this;
 }
 
-// End of implementation of Matrix
+// End of implementation of KNMatrix
 
 #endif // KNUTSYS_H
 

@@ -133,18 +133,18 @@ union PlotItemUnion
 class PlotItem
 {
   public:
-    PlotItem(const QSharedPointer<const mat4Data>& mat, PlotDataType type,
+    PlotItem(const QSharedPointer<const KNDataFile>& mat, PlotDataType type,
              PlotXVariable x, PlotYVariable y, int pt, int dim)
      : dataType(type), source(mat.data()), varX(x), varY(y), point(pt), dimension(dim) {}
-    bool isFrom(const QSharedPointer<const mat4Data>& mat) { return source == mat.data(); }
+    bool isFrom(const QSharedPointer<const KNDataFile>& mat) { return source == mat.data(); }
     PlotItemUnion data;
     PlotType      type;
     PlotDataType  dataType;
-    Vector        x;
-    Vector        y;
+    KNVector        x;
+    KNVector        y;
     unsigned int  number;
     bool          principal;
-    const mat4Data *source;
+    const KNDataFile *source;
     const PlotXVariable varX;
     const PlotYVariable varY;
     const int     point;
@@ -164,14 +164,14 @@ class PlotData : public QGraphicsScene
   public:
     PlotData(QObject *parent = 0);
     ~PlotData();
-    bool addPlot(const QSharedPointer<const mat4Data>& mat, 
+    bool addPlot(const QSharedPointer<const KNDataFile>& mat, 
       PlotXVariable x, PlotYVariable y, int pt, int dim);
     void clearAll();
     void clear(unsigned int n);
     int  nplots();
     QColor getColor(unsigned int n);
     void setColor(unsigned int n, QColor& Color);
-    void updatePlot(const QSharedPointer<const mat4Data>& mat);
+    void updatePlot(const QSharedPointer<const KNDataFile>& mat);
     
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);

@@ -15,48 +15,48 @@
 #include "plot.h"
 #include <cmath>
 
-class HyperVector
+class KNBlockVector
 {
   public:
 
-    inline HyperVector(int i, int, int k) : V1(i), V3(k)
+    inline KNBlockVector(int i, int, int k) : V1(i), V3(k)
     { }
-    inline HyperVector(const HyperVector& hv) : V1(hv.V1), V3(hv.V3)
+    inline KNBlockVector(const KNBlockVector& hv) : V1(hv.V1), V3(hv.V3)
     { }
-    inline ~HyperVector()
+    inline ~KNBlockVector()
     { }
 
-    inline Vector& getV1()
+    inline KNVector& getV1()
     {
       return V1;
     }
-    inline const Vector& getV1() const
+    inline const KNVector& getV1() const
     {
       return V1;
     }
-    inline Vector& getV3()
+    inline KNVector& getV3()
     {
       return V3;
     }
-    inline const Vector& getV3() const
+    inline const KNVector& getV3() const
     {
       return V3;
     }
 
   private:
 
-    Vector V1;
-    Vector V3;
+    KNVector V1;
+    KNVector V3;
 };
 
-// #define FACT SpFact
-template< class FACT > class HyMatrix
+// #define FACT KNLuSparseMatrix
+template< class FACT > class KNBlockMatrix
 {
   public:
 
     // constructing Sparse-Dense type hypermatrix
-    HyMatrix(int i, int, int k, int nz);
-    ~HyMatrix();
+    KNBlockMatrix(int i, int, int k, int nz);
+    ~KNBlockMatrix();
 
     inline FACT&        getA11()
     {
@@ -66,7 +66,7 @@ template< class FACT > class HyMatrix
     {
       return *A13;
     }
-    inline Vector&      getA13(int i)
+    inline KNVector&      getA13(int i)
     {
       return (*A13)(i);
     }
@@ -74,11 +74,11 @@ template< class FACT > class HyMatrix
     {
       return *A31;
     }
-    inline Vector&      getA31(int i)
+    inline KNVector&      getA31(int i)
     {
       return (*A31)(i);
     }
-    inline Matrix&      getA33()
+    inline KNMatrix&      getA33()
     {
       return *A33;
     }
@@ -89,62 +89,62 @@ template< class FACT > class HyMatrix
 
     template< class T, bool trans > inline void __BEM
     (
-      T& _A, Vector& _b, Vector& _bStar, double& _d,
-      Vector& x, double& y, const Vector& f, const double& g,
-      Vector& bem_v, Vector& bem_vStar, Vector& bem_w, Vector& bem_f1
+      T& _A, KNVector& _b, KNVector& _bStar, double& _d,
+      KNVector& x, double& y, const KNVector& f, const double& g,
+      KNVector& bem_v, KNVector& bem_vStar, KNVector& bem_w, KNVector& bem_f1
     );
     template< class T, bool DTR > inline void __BEMWS
     (
-      T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
-      JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
-      int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans
+      T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
+      JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
+      int j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
     );
     template< class T, bool DTR > inline void __BEMWF
     (
       int bord,
-      T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
-      JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
-      JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector& deltaStar
+      T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix& D,
+      JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector& G,
+      JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector& deltaStar
     );
     template< class T, bool trans > inline void __BEMW
     (
       int bord,
-      T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
-      JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
-      JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector&       deltaStar,
-      Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
+      T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
+      JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
+      JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector&       deltaStar,
+      KNVector&      x,  KNVector&      y,      const KNVector& f,     const KNVector& g
     );
 
-    void solve(HyperVector& X, const HyperVector& F);
+    void solve(KNBlockVector& X, const KNBlockVector& F);
 
-    void solve(HyperVector& X, const HyperVector& F, int bord);
+    void solve(KNBlockVector& X, const KNBlockVector& F, int bord);
 
-    template<bool trans> void multiply(HyperVector& X, const HyperVector& F, int bord);
+    template<bool trans> void multiply(KNBlockVector& X, const KNBlockVector& F, int bord);
 
-    void check(const HyperVector& X, const HyperVector& F, int bord);
+    void check(const KNBlockVector& X, const KNBlockVector& F, int bord);
 
-    void solveDirect(HyperVector& X, const HyperVector& F);
+    void solveDirect(KNBlockVector& X, const KNBlockVector& F);
 
-    void solve(Vector& x, const Vector& f)
+    void solve(KNVector& x, const KNVector& f)
     {
       A11->solve(x, f);
     }
 
-    template<bool trans> void multiply(Vector& R1, double& R3, const Vector& X1, const double& X3);
+    template<bool trans> void multiply(KNVector& R1, double& R3, const KNVector& X1, const double& X3);
 
-    template<bool trans> void check(const Vector& x, const double& z, const Vector& f, const double& h);
+    template<bool trans> void check(const KNVector& x, const double& z, const KNVector& f, const double& h);
 
-    void solve(Vector& x, double& z, const Vector& f, const double& h);   // BEM
+    void solve(KNVector& x, double& z, const KNVector& f, const double& h);   // BEM
 
-    void solveTr(Vector& x, double& z, const Vector& f, const double& h);   // BEM
+    void solveTr(KNVector& x, double& z, const KNVector& f, const double& h);   // BEM
 
-    template<bool trans> void multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3);
+    template<bool trans> void multiply(int bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3);
 
-    template<bool trans> void check(int bord, const Vector& x, const Vector& z, const Vector& f, const Vector& h);
+    template<bool trans> void check(int bord, const KNVector& x, const KNVector& z, const KNVector& f, const KNVector& h);
 
-    void solve(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
+    void solve(int bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
 
-    void solveTr(int bord, Vector& x, Vector& z, const Vector& f, const Vector& h);   // BEMW
+    void solveTr(int bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
 
   protected:
 
@@ -153,7 +153,7 @@ template< class FACT > class HyMatrix
     FACT*    A11;
     JagVector2D* A13;
     JagVector2D* A31;
-    Matrix*   A33;
+    KNMatrix*   A33;
 
   private:
     // temporary storage for factorization
@@ -162,24 +162,24 @@ template< class FACT > class HyMatrix
     JagVector2D* VV1;
     JagVector2D* VV1Star;
     JagVector2D* FF1;
-    Vector*   GG1;
+    KNVector*   GG1;
     JagVector2D* XX1;
-    Vector*   YY1;
-    Vector*   delta1;
-    Vector*   delta1Star;
+    KNVector*   YY1;
+    KNVector*   delta1;
+    KNVector*   delta1Star;
 
     // BEM temporaries
-    Vector         bem_v_1;
-    Vector         bem_vStar_1;
-    Vector         bem_w_1;
-    Vector         bem_f1_1;
-    Vector         bem_v_2;
-    Vector         bem_vStar_2;
-    Vector         bem_w_2;
-    Vector         bem_f1_2;
+    KNVector         bem_v_1;
+    KNVector         bem_vStar_1;
+    KNVector         bem_w_1;
+    KNVector         bem_f1_1;
+    KNVector         bem_v_2;
+    KNVector         bem_vStar_2;
+    KNVector         bem_w_2;
+    KNVector         bem_f1_2;
 };
 
-typedef HyMatrix<SpFact> HyperMatrix;
+typedef KNBlockMatrix<KNLuSparseMatrix> KNSparseBlockMatrix;
 
 ///--------------------------------
 ///
@@ -188,7 +188,7 @@ typedef HyMatrix<SpFact> HyperMatrix;
 ///--------------------------------
 
 // constructing Sparse-Dense type hypermatrix
-template<class FACT> HyMatrix<FACT> :: HyMatrix(int i, int j, int k, int nz) :
+template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(int i, int j, int k, int nz) :
     bem_v_1(i),
     bem_vStar_1(i),
     bem_w_1(i),
@@ -201,7 +201,7 @@ template<class FACT> HyMatrix<FACT> :: HyMatrix(int i, int j, int k, int nz) :
   // constructing the data members
   if (i != 0) A11 = new FACT('R', i, nz);
   else A11 = 0;
-  if (k != 0) A33 = new Matrix(k, k);
+  if (k != 0) A33 = new KNMatrix(k, k);
   else A33 = 0;
 
   if ((i != 0) && (k != 0))
@@ -212,11 +212,11 @@ template<class FACT> HyMatrix<FACT> :: HyMatrix(int i, int j, int k, int nz) :
     VV1 = new JagVector2D(k + 1);
     VV1Star = new JagVector2D(k + 1);
     FF1 = new JagVector2D(k + 1);
-    GG1 = new Vector(k + 1);
+    GG1 = new KNVector(k + 1);
     XX1 = new JagVector2D(k + 1);
-    YY1 = new Vector(k + 1);
-    delta1 = new Vector(k + 1);
-    delta1Star = new Vector(k + 1);
+    YY1 = new KNVector(k + 1);
+    delta1 = new KNVector(k + 1);
+    delta1Star = new KNVector(k + 1);
 
     for (int r = 0; r < k + 1; r++)
     {
@@ -242,7 +242,7 @@ template<class FACT> HyMatrix<FACT> :: HyMatrix(int i, int j, int k, int nz) :
   }
 }
 
-template<class FACT> HyMatrix<FACT> :: ~HyMatrix()
+template<class FACT> KNBlockMatrix<FACT> :: ~KNBlockMatrix()
 {
   // deleting the data members
   delete A11;
@@ -261,32 +261,32 @@ template<class FACT> HyMatrix<FACT> :: ~HyMatrix()
 }
 
 //  BEM temporaries
-//  Vector v( _b.size() ); == A.size()                     bem_v
-//  Vector vStar( _b.size() );                             bem_vStar
-//  Vector w( _b.size() );                                 bem_w
-//  Vector f1( _b.size() );                                bem_f1;
+//  KNVector v( _b.size() ); == A.size()                     bem_v
+//  KNVector vStar( _b.size() );                             bem_vStar
+//  KNVector w( _b.size() );                                 bem_w
+//  KNVector f1( _b.size() );                                bem_f1;
 
 //  GMBE temporaries
-//  Vector xi( _A32.size() ); == dim2                      gmbe_xi;
-//  Vector cc( _A31 ); == dim1                             gmbe_cc
-//  Vector fr( F2 ); == dim2                               cm_fr
+//  KNVector xi( _A32.size() ); == dim2                      gmbe_xi;
+//  KNVector cc( _A31 ); == dim1                             gmbe_cc
+//  KNVector fr( F2 ); == dim2                               cm_fr
 
 // GMBEW temporaries
 //  JagVector2D xi( bord, _A32(0).size() );  -> different  gmbew_xi
 //  JagVector2D cc( _A31 );                  -> different  gmbew_cc
-//  Matrix dd( bord, bord );                               gmbew_dd
-//  Vector gg( bord );                                     gmbew_gg
-//  Vector fr( F2.size() ); -> same as GMBE                cm_fr
-//  Vector gr( bord );                                     gmbew_gr
-//  Vector yy( bord );                                     gmbew_yy
-//  Matrix m_beta( bord, bord );                           gmbew_m_beta
+//  KNMatrix dd( bord, bord );                               gmbew_dd
+//  KNVector gg( bord );                                     gmbew_gg
+//  KNVector fr( F2.size() ); -> same as GMBE                cm_fr
+//  KNVector gr( bord );                                     gmbew_gr
+//  KNVector yy( bord );                                     gmbew_yy
+//  KNMatrix m_beta( bord, bord );                           gmbew_m_beta
 
 // BEM
 // swap b and bStar if trans==true
 template<class FACT> template<class T, bool trans>
-inline void HyMatrix<FACT> :: __BEM(T& _A, Vector& _b, Vector& _bStar, double& _d,
-                                    Vector& x, double& y, const Vector& f, const double& g,
-                                    Vector& bem_v, Vector& bem_vStar, Vector& bem_w, Vector& bem_f1)
+inline void KNBlockMatrix<FACT> :: __BEM(T& _A, KNVector& _b, KNVector& _bStar, double& _d,
+                                    KNVector& x, double& y, const KNVector& f, const double& g,
+                                    KNVector& bem_v, KNVector& bem_vStar, KNVector& bem_w, KNVector& bem_f1)
 {
 
   double delta, deltaStar;
@@ -317,11 +317,11 @@ inline void HyMatrix<FACT> :: __BEM(T& _A, Vector& _b, Vector& _bStar, double& _
 
 // interchange B and BStar when DTR is true
 template<class FACT> template<class T, bool DTR>
-inline void HyMatrix<FACT> :: __BEMWS
+inline void KNBlockMatrix<FACT> :: __BEMWS
 (
-  T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
-  JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
-  int j, const JagVector2D& V, const JagVector2D& VStar, const Vector& delta, const Vector& deltaStar, bool trans
+  T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
+  JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
+  int j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
 )
 {
 
@@ -367,12 +367,12 @@ inline void HyMatrix<FACT> :: __BEMWS
 
 // interchange B and BStar, when DTR is true
 template<class FACT> template<class T, bool DTR>
-inline void HyMatrix<FACT> :: __BEMWF
+inline void KNBlockMatrix<FACT> :: __BEMWF
 (
   int bord,
-  T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix& D,
-  JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector& G,
-  JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector& deltaStar
+  T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix& D,
+  JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector& G,
+  JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector& deltaStar
 )
 {
   for (int k = 1; k < bord + 1; k++)
@@ -417,13 +417,13 @@ inline void HyMatrix<FACT> :: __BEMWF
 // BEMW
 // for trans == true interchange the borders
 template<class FACT> template<class T, bool trans>
-inline void HyMatrix<FACT> :: __BEMW
+inline void KNBlockMatrix<FACT> :: __BEMW
 (
   int bord,
-  T&           A,  JagVector2D& B,      JagVector2D&  BStar, Matrix&       D,
-  JagVector2D& X,  Vector&      Y,      JagVector2D&  F,     Vector&       G,
-  JagVector2D& V,  JagVector2D& VStar,  Vector&       delta, Vector&       deltaStar,
-  Vector&      x,  Vector&      y,      const Vector& f,     const Vector& g
+  T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
+  JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
+  JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector&       deltaStar,
+  KNVector&      x,  KNVector&      y,      const KNVector& f,     const KNVector& g
 )
 {
   __BEMWF<T, trans>(bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar);
@@ -438,12 +438,12 @@ inline void HyMatrix<FACT> :: __BEMW
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::multiply(Vector& R1, double& R3, const Vector& X1, const double& X3)
+void KNBlockMatrix<FACT>::multiply(KNVector& R1, double& R3, const KNVector& X1, const double& X3)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
   const JagVector2D&  _A31 = *A31;
-  const Matrix&       _A33 = *A33;
+  const KNMatrix&       _A33 = *A33;
 
   if (A11)
   {
@@ -463,13 +463,13 @@ void HyMatrix<FACT>::multiply(Vector& R1, double& R3, const Vector& X1, const do
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::check(const Vector& x, const double& z, const Vector& f, const double& h)
+void KNBlockMatrix<FACT>::check(const KNVector& x, const double& z, const KNVector& f, const double& h)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
   const JagVector2D&  _A31 = *A31;
-  const Matrix&       _A33 = *A33;
-  Vector              R1(x.size());
+  const KNMatrix&       _A33 = *A33;
+  KNVector              R1(x.size());
   double              R3;
   multiply<trans>(R1, R3, x, z);
   if (A11)
@@ -485,12 +485,12 @@ void HyMatrix<FACT>::check(const Vector& x, const double& z, const Vector& f, co
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::multiply(int bord, Vector& R1, Vector& R3, const Vector& X1, const Vector& X3)
+void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
   const JagVector2D&  _A31 = *A31;
-  const Matrix&       _A33 = *A33;
+  const KNMatrix&       _A33 = *A33;
 
   if (A11)
   {
@@ -538,20 +538,20 @@ void HyMatrix<FACT>::multiply(int bord, Vector& R1, Vector& R3, const Vector& X1
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::multiply(HyperVector& X, const HyperVector& F, int bord)
+void KNBlockMatrix<FACT>::multiply(KNBlockVector& X, const KNBlockVector& F, int bord)
 {
   multiply<trans> (bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
 
 template<class FACT> template<bool trans>
-void HyMatrix<FACT>::check(int bord, const Vector& X1, const Vector& X3, const Vector& F1, const Vector& F3)
+void KNBlockMatrix<FACT>::check(int bord, const KNVector& X1, const KNVector& X3, const KNVector& F1, const KNVector& F3)
 {
   // this may be buggy with some compilers
   const FACT&         _A11 = *A11;
-  const Matrix&       _A33 = *A33;
+  const KNMatrix&       _A33 = *A33;
   //multiply back...
-  Vector R1(X1.size());
-  Vector R3(X3.size());
+  KNVector R1(X1.size());
+  KNVector R3(X3.size());
   multiply<trans>(bord, R1, R3, X1, X3);
   if (A11)
   {
@@ -566,42 +566,42 @@ void HyMatrix<FACT>::check(int bord, const Vector& X1, const Vector& X3, const V
 }
 
 template<class FACT>
-void HyMatrix<FACT>::check(const HyperVector& X, const HyperVector& F, int bord)
+void KNBlockMatrix<FACT>::check(const KNBlockVector& X, const KNBlockVector& F, int bord)
 {
   check<false>(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
 
 // Wrapper functions
 template<class FACT>
-void HyMatrix<FACT>::solve(Vector& x, double& z, const Vector& f, const double& h)   // BEM
+void KNBlockMatrix<FACT>::solve(KNVector& x, double& z, const KNVector& f, const double& h)   // BEM
 {
   __BEM<FACT, false>(*A11, (*A13)(0), (*A31)(0), (*A33)(0, 0), x, z, f, h, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1);
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solveTr(Vector& x, double& z, const Vector& f, const double& h)   // BEM
+void KNBlockMatrix<FACT>::solveTr(KNVector& x, double& z, const KNVector& f, const double& h)   // BEM
 {
   __BEM<FACT, true>(*A11, (*A31)(0), (*A13)(0), (*A33)(0, 0), x, z, f, h, bem_v_1, bem_vStar_1, bem_w_1, bem_f1_1);
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solve(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
+void KNBlockMatrix<FACT>::solve(int bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
 {
   __BEMW<FACT, false>(bord, *A11, *A13, *A31, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<false>( bord, X1, X3, F1, F3 );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solveTr(int bord, Vector& X1, Vector& X3, const Vector& F1, const Vector& F3)   // BEMW
+void KNBlockMatrix<FACT>::solveTr(int bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
 {
   __BEMW<FACT, true>(bord, *A11, *A31, *A13, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<true>( bord, X1, X3, F1, F3 );
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F)
+void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F)
 {
-  P_ASSERT_X(A11 != 0, "HyMatrix::Solve Error");
+  P_ASSERT_X(A11 != 0, "KNBlockMatrix::Solve Error");
   if (A33 != 0)
   {
     // MBEW v BEM
@@ -622,9 +622,9 @@ void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F)
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F, int bord)
+void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F, int bord)
 {
-  P_ASSERT_X(A11 != 0, "HyMatrix::Solve Error");
+  P_ASSERT_X(A11 != 0, "KNBlockMatrix::Solve Error");
   if (A33 != 0)
   {
     // MBEW v BEM
@@ -645,7 +645,7 @@ void HyMatrix<FACT>::solve(HyperVector& X, const HyperVector& F, int bord)
 }
 
 template<class FACT>
-void HyMatrix<FACT>::solveDirect(HyperVector& X, const HyperVector& F)
+void KNBlockMatrix<FACT>::solveDirect(KNBlockVector& X, const KNBlockVector& F)
 {
   int dim1, dim3;
   if (A11) dim1 = A11->col();
@@ -653,10 +653,10 @@ void HyMatrix<FACT>::solveDirect(HyperVector& X, const HyperVector& F)
   if (A33) dim3 = A33->col();
   else dim3 = 0;
 
-  SpFact* A11S = A11;
+  KNLuSparseMatrix* A11S = A11;
 
-  SpFact  AA('R', dim1 + dim3, A11S->nonzeros() + (dim1 + dim3)*(dim3) + dim1*dim3 + 10);
-  Vector  XX(dim1 + dim3), FF(dim1 + dim3);
+  KNLuSparseMatrix  AA('R', dim1 + dim3, A11S->nonzeros() + (dim1 + dim3)*(dim3) + dim1*dim3 + 10);
+  KNVector  XX(dim1 + dim3), FF(dim1 + dim3);
 
   for (int i = 0; i < dim1; i++)
   {

@@ -246,7 +246,7 @@ class VarType : public genMap<Var>
 };
 
 // IMPLEMENT THE SIGNALS AND SLOTS IN MAINWINDOW.[H,CPP]
-class NConstantsQtGui : public QObject, public NConstants
+class NConstantsQtGui : public QObject, public KNConstants
 {
   Q_OBJECT
   private:
@@ -313,9 +313,9 @@ class NConstantsQtGui : public QObject, public NConstants
     {
       try
       {
-        NConstants::setSysNameText(str, testing);
+        KNConstants::setSysNameText(str, testing);
       }
-      catch(knutException ex)
+      catch(KNException ex)
       {
         if (testing) emit sendMessage(QString::fromStdString(ex.getMessage().str()));
         else emit exceptionOccured(ex);
@@ -329,7 +329,7 @@ class NConstantsQtGui : public QObject, public NConstants
     virtual void constantChanged(const char* name) { emit constantChangedSignal(name); }
   signals:
     void constantChangedSignal(const char* name);
-    void exceptionOccured(const knutException&);
+    void exceptionOccured(const KNException&);
     void sendMessage(const QString & message);
 };
 

@@ -589,7 +589,7 @@ void VectorField::print(void)
   cout << "Expressions (equation list): " ;
   cout << expreqn_list << endl;
 
-  cout << "Vector field: " << endl;
+  cout << "KNVector field: " << endl;
   for (unsigned i = 0; i < varvecfield_list.nops(); ++i)
   {
     cout << "   " << varvecfield_list[i] << endl;

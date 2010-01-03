@@ -12,7 +12,7 @@
 #include "config.h"
 
 
-void knutException::removePath()
+void KNException::removePath()
 {
   std::string::size_type loc = file.find(KNUT_SOURCE_DIR);
   if (loc != std::string::npos)

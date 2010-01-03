@@ -30,7 +30,7 @@ struct PtTab
 };
 
 // not even member function public
-BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_)
+BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_)
 {
   PtTab tab;
   const Var PANGLE = (Var)(VarPAR0 + npar_ + ParAngle);
@@ -210,7 +210,7 @@ BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<V
   return tab.sw;
 }
 
-BasePoint::BasePoint(System& sys_, const Array1D<Eqn>& eqn_, const Array1D<Var>& var_, 
+KNAbstractPoint::KNAbstractPoint(KNSystem& sys_, const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
           const int solsize, const int nz_jac_) :
     var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1),
     sol(solsize), par(sys_.npar() + ParEnd),
@@ -230,18 +230,18 @@ BasePoint::BasePoint(System& sys_, const Array1D<Eqn>& eqn_, const Array1D<Var>&
   // DO NOT CALL Construct! It will be called from its children!
 }
 
-BasePoint::~BasePoint()
+KNAbstractPoint::~KNAbstractPoint()
 {
   // DO NOT CALL Destruct! It will be called from its children!
 }
 
 // public
 // remember that this ereases the state variables except sol, qq, par xxDot
-void BasePoint::reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
+void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_)
 
 {
-  HyperVector* xxDot_temp = 0;
-  if (xxDot) xxDot_temp = new HyperVector(*xxDot);
+  KNBlockVector* xxDot_temp = 0;
+  if (xxDot) xxDot_temp = new KNBlockVector(*xxDot);
   destruct();
   eqn.init(eqn_.size());
   eqn = eqn_;
@@ -256,7 +256,7 @@ void BasePoint::reset(const Array1D<Eqn>& eqn_, const Array1D<Var>& var_)
   delete xxDot_temp;
 }
 
-void BasePoint::construct()
+void KNAbstractPoint::construct()
 {
   P_ERROR_X1((eqn.size() != 0) && (var.size() != 0) && (eqn.size() == var.size()), "Number of equations and variables do not agree.");
   dim3 = eqn.size() - 1;
@@ -268,18 +268,18 @@ void BasePoint::construct()
   }
   for (int i = 0; i < var.size(); i++) varMapCont(i) = varMap(i);
 
-  xxDot   = new HyperVector(dim1, 0, dim3 + 1);
-  xxDotNu = new HyperVector(dim1, 0, dim3 + 1);
+  xxDot   = new KNBlockVector(dim1, 0, dim3 + 1);
+  xxDotNu = new KNBlockVector(dim1, 0, dim3 + 1);
 
-  xx      = new HyperVector(dim1, 0, dim3 + 1);
+  xx      = new KNBlockVector(dim1, 0, dim3 + 1);
 
-  rhs     = new HyperVector(dim1, 0, dim3 + 1);
+  rhs     = new KNBlockVector(dim1, 0, dim3 + 1);
 
-  jac     = new HyperMatrix(dim1, 0, dim3 + 1, nz_jac);
+  jac     = new KNSparseBlockMatrix(dim1, 0, dim3 + 1, nz_jac);
 }
 
 // private
-void BasePoint::destruct()
+void KNAbstractPoint::destruct()
 {
   delete jac;
 
@@ -291,7 +291,7 @@ void BasePoint::destruct()
 }
 
 // this will adapt the mesh whenever it is specified
-int BasePoint::refine(std::ostream& out, bool adapt)
+int KNAbstractPoint::refine(std::ostream& out, bool adapt)
 {
   // here solNu is the previous solution
   if (adapt)
@@ -340,7 +340,7 @@ int BasePoint::refine(std::ostream& out, bool adapt)
   return it;
 }
 
-int BasePoint::tangent(bool adapt)
+int KNAbstractPoint::tangent(bool adapt)
 {
   double norm;
 
@@ -376,7 +376,7 @@ int BasePoint::tangent(bool adapt)
     for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
   while ((++it < KernIter) && (diffnorm > KernEps));
-  if (diffnorm > KernEps) std::cerr << "Point::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
+  if (diffnorm > KernEps) std::cerr << "KNDdePeriodicSolution::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
   if (!adapt && (xxDot->getV3()(dim3) < 0.0))
   {
     xxDot->getV1() *= -1.0;
@@ -386,7 +386,7 @@ int BasePoint::tangent(bool adapt)
   return it;
 }
 
-int BasePoint::nextStep(double ds, bool jacstep)
+int KNAbstractPoint::nextStep(double ds, bool jacstep)
 {
   double Xnorm, Dnorm, Rnorm, Tnorm;
 
@@ -479,9 +479,9 @@ int BasePoint::nextStep(double ds, bool jacstep)
 #define NDEG persolcolloc->nDeg()
 
 // private
-void PerSolPoint::FillSol(System& sys_)
+void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
 {
-  Vector fx(persolcolloc->nDim());
+  KNVector fx(persolcolloc->nDim());
 
   sys_.stpar(par);
   par(NPAR+ParPeriod) = 1.0;
@@ -508,7 +508,7 @@ void PerSolPoint::FillSol(System& sys_)
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-int PerSolPoint::StartTF(bool findangle, std::ostream& out)
+int KNAbstractPeriodicSolution::StartTF(bool findangle, std::ostream& out)
 {
   if (findangle)
   {
@@ -544,7 +544,7 @@ int PerSolPoint::StartTF(bool findangle, std::ostream& out)
   return refine(out);
 }
 
-void PerSolPoint::BinaryWrite(mat4Data& data, int n)
+void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
 {
   data.lock();
   data.setNTrivMul(0, nTrivMulLP);
@@ -559,10 +559,10 @@ void PerSolPoint::BinaryWrite(mat4Data& data, int n)
   data.unlock();
 }
 
-void PerSolPoint::BinaryRead(mat4Data& data, int n)
+void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, int n)
 {
   data.lock();
-  Vector msh(data.getNInt() + 1);
+  KNVector msh(data.getNInt() + 1);
   P_ERROR_X1(data.getNPar() == (NPAR + ParEnd), "Wrong number of parameters in the input MAT file.");
   data.getPar(n, par);
   data.getMul(n, mRe, mIm);
@@ -575,7 +575,7 @@ void PerSolPoint::BinaryRead(mat4Data& data, int n)
   }
   else
   {
-    Vector tmp(data.getNDim()*(data.getNDeg()*data.getNInt() + 1));
+    KNVector tmp(data.getNDim()*(data.getNDeg()*data.getNInt() + 1));
     data.getProfile(n, tmp);
     const double amp = Amplitude(tmp, data.getNDim(), data.getNDeg(), data.getNInt());
     if (amp < 1e-6)

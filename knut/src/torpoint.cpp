@@ -14,36 +14,36 @@
 #include "torpoint.h"
 #include "mat4data.h"
 
-PointTR::PointTR(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
-  : BasePoint(sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
+KNDdeTorusSolution::KNDdeTorusSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
+  : KNAbstractPoint(sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
     sys_.ndim()*(ndeg1_*nint1_)*(ndeg2_*nint2_)*sys_.ndim()*(sys_.ntau()+1)*(ndeg1_+1)*(ndeg2_+1))
 {
-  colloc = new CollocTR(sys_, ndeg1_, ndeg2_, nint1_, nint2_);
+  colloc = new KNDdeTorusCollocation(sys_, ndeg1_, ndeg2_, nint1_, nint2_);
   basecolloc = colloc;
 
   P_ERROR_X1((eqn(0) == EqnTORSol) && (var(0) == VarTORSol), "The first equation must the boundary value problem of the periodic solution.");
 
-  BasePoint::construct();
+  KNAbstractPoint::construct();
 }
 
-PointTR::~PointTR()
+KNDdeTorusSolution::~KNDdeTorusSolution()
 {
-  BasePoint::destruct();
+  KNAbstractPoint::destruct();
   delete colloc;
 }
 
-void PointTR::jacobian(
-  HyperMatrix& jac, HyperVector& rhs, // output
-  Vector& parPrev,  Vector& par,      // parameters
-  Vector& solPrev,  Vector& sol,      // solution
-  Array1D<int>&     varMap,           // contains the variables. If cont => contains the P0 too.
+void KNDdeTorusSolution::jacobian(
+  KNSparseBlockMatrix& jac, KNBlockVector& rhs, // output
+  KNVector& parPrev,  KNVector& par,      // parameters
+  KNVector& solPrev,  KNVector& sol,      // solution
+  KNArray1D<int>&     varMap,           // contains the variables. If cont => contains the P0 too.
   double ds, bool cont                // ds stepsize, cont: true if continuation
 )
 {
   // uses also: eqn, var
   const int        nvar = dim3;
-  Array1D<Vector*> A13(nvar + 1);
-  Array1D<int>     JacVar(nvar + 1);
+  KNArray1D<KNVector*> A13(nvar + 1);
+  KNArray1D<int>     JacVar(nvar + 1);
 
   // it is just for the first equation i.e. EqnTORSol
   for (int i = 1; i < varMap.size(); i++)
@@ -125,13 +125,13 @@ void PointTR::jacobian(
 #define NINT1 colloc->Nint1()
 #define NINT2 colloc->Nint2()
 
-void PointTR::loadPoint(mat4Data& data, int n)
+void KNDdeTorusSolution::loadPoint(KNDataFile& data, int n)
 {
   data.getBlanket(n, sol);
   data.getPar(n, par);
 }
 
-void PointTR::savePoint(mat4Data& data, int n)
+void KNDdeTorusSolution::savePoint(KNDataFile& data, int n)
 {
   data.setPar(n, par);
   for (int i = 0; i < NINT1; ++i)

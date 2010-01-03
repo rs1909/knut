@@ -17,7 +17,7 @@
 #include <fstream>
 #endif /*DEBUG*/
 
-static void equidist(Vector& mesh)
+static void equidist(KNVector& mesh)
 {
   const int m = mesh.size();
   for (int i = 0; i < m; i++) mesh(i) = (double)i / ((double)m - 1);
@@ -106,7 +106,7 @@ static const double legendre_roots[25][25] =
     0.772710735694192,0.824046825968634,0.8700620957880745,0.9100009930382996,
     0.9432077635144789,0.9691372760420776,0.9873642779936926,0.9975936099955564}};
 
-static void poly_gau(Vector& roots)
+static void poly_gau(KNVector& roots)
 {
   const int m = roots.size();
   /* construct the matrix */
@@ -117,17 +117,17 @@ static void poly_gau(Vector& roots)
   }
 }
 
-inline static void repr_mesh(Vector& V)
+inline static void repr_mesh(KNVector& V)
 {
   equidist(V);
 }
 
-inline static void col_mesh(Vector& V)
+inline static void col_mesh(KNVector& V)
 {
   poly_gau(V);
 }
 
-static inline void poly_mul(Vector& pp, double bb, double aa)
+static inline void poly_mul(KNVector& pp, double bb, double aa)
 {
   P_ASSERT_X1(pp(pp.size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
   for (int i = pp.size() - 1; i > 0; --i)
@@ -137,13 +137,13 @@ static inline void poly_mul(Vector& pp, double bb, double aa)
   pp(0) = aa * pp(0);
 }
 
-static void poly_diff_int_trap(Matrix& sum, const Vector& t)
+static void poly_diff_int_trap(KNMatrix& sum, const KNVector& t)
 {
   const int dim = t.size();
   const int DIVS = 8*dim;
   sum.clear();
-  Vector lout(dim);
-  Vector dout(dim);
+  KNVector lout(dim);
+  KNVector dout(dim);
   double d;
   for (int k = 0; k < DIVS; ++k)
   {
@@ -161,12 +161,12 @@ static void poly_diff_int_trap(Matrix& sum, const Vector& t)
   }
 }
 
-static void poly_int_trap(Matrix& sum, const Vector& t)
+static void poly_int_trap(KNMatrix& sum, const KNVector& t)
 {
   const int dim = t.size();
   const int DIVS = 8*dim;
   sum.clear();
-  Vector lout(dim);
+  KNVector lout(dim);
   double d;
   for (int k = 0; k < DIVS; ++k)
   {
@@ -183,12 +183,12 @@ static void poly_int_trap(Matrix& sum, const Vector& t)
   }
 }
 
-static void poly_int(Matrix& out, const Vector& t)
+static void poly_int(KNMatrix& out, const KNVector& t)
 {
   int i, j, k;
-  Vector poly(2*t.size());
-  Vector poly1(t.size());
-  Vector poly2(t.size());
+  KNVector poly(2*t.size());
+  KNVector poly1(t.size());
+  KNVector poly2(t.size());
 
   for (i = 0; i < t.size(); i++)
   {
@@ -223,13 +223,13 @@ static void poly_int(Matrix& out, const Vector& t)
 //   for (i = 0; i < t.size(); i++) out(i,i) = 1.0/t.size();
 }
 
-static void poly_diff_int(Matrix& out, const Vector& t)
+static void poly_diff_int(KNMatrix& out, const KNVector& t)
 {
   int i, j, k;
-  Vector poly(2*t.size());
-  Vector poly1(t.size());
-  Vector poly1_d(t.size());
-  Vector poly2(t.size());
+  KNVector poly(2*t.size());
+  KNVector poly1(t.size());
+  KNVector poly1_d(t.size());
+  KNVector poly2(t.size());
 
   for (i = 0; i < t.size(); i++)
   {
@@ -269,7 +269,7 @@ static void poly_diff_int(Matrix& out, const Vector& t)
 #define NINT nint
 #define NDEG ndeg
 
-PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
+KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg) :
     ndim(_sys.ndim()), npar(_sys.npar()),
     nint(_nint), ndeg(_ndeg),
     time(nint*ndeg),
@@ -301,7 +301,7 @@ PerSolColloc::PerSolColloc(System& _sys, const int _nint, const int _ndeg) :
   }
 }
 
-int PerSolColloc::meshlookup(const Vector& mesh, double t)
+int KNAbstractBvpCollocation::meshlookup(const KNVector& mesh, double t)
 {
   // binary search for in which interval is t-tau(k)
   int mid, low = 0, up = mesh.size() - 1;
@@ -320,7 +320,7 @@ int PerSolColloc::meshlookup(const Vector& mesh, double t)
 //
 //----------------------------------------------------------------------------
 
-static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& eqf)
+static void meshConstruct(KNVector& newmesh, const KNVector& oldmesh, const KNVector& eqf)
 {
 //   for (int i = 1; i < eqf.size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
 //   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
@@ -330,7 +330,7 @@ static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& 
   for (int i = 1; i < newmesh.size()-1; i++)
   {
     const double t = eqf(nint)*i/(newmesh.size()-1);
-    const int idx = PerSolColloc::meshlookup( eqf, t );
+    const int idx = KNAbstractBvpCollocation::meshlookup( eqf, t );
     const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
 //     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
     newmesh(i) = oldmesh(idx) + d*(oldmesh(idx+1)-oldmesh(idx));
@@ -340,7 +340,7 @@ static void meshConstruct(Vector& newmesh, const Vector& oldmesh, const Vector& 
   newmesh(newmesh.size()-1) = 1.0;
 }
 
-static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, const Array1D< Array1D<double> >& lgr)
+static void meshAssess(KNVector& eqf, const KNVector& mesh, const KNVector& profile, const KNArray1D< KNArray1D<double> >& lgr)
 {
   int ndeg_ = lgr.size() - 1;
   int nint_ = mesh.size() - 1;
@@ -350,7 +350,7 @@ static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, c
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
   const double hmach = 1e-6;
-  Matrix hd(nint_+1, ndim_);
+  KNMatrix hd(nint_+1, ndim_);
   for (int i = 0; i < nint_; i++)
   {
     for (int p = 0; p < ndim_; p++)
@@ -424,15 +424,15 @@ static void meshAssess(Vector& eqf, const Vector& mesh, const Vector& profile, c
   if (small_deri) for (int i = 0; i < nint_+1; ++i) eqf(i) = i;
 }
 
-void PerSolColloc::meshAdapt_internal( Vector& newmesh, const Vector& profile )
+void KNAbstractBvpCollocation::meshAdapt_internal( KNVector& newmesh, const KNVector& profile )
 {
-  Vector eqf(NINT+1);
+  KNVector eqf(NINT+1);
   meshAssess(eqf, mesh, profile, lgr);
   meshConstruct(newmesh, mesh, eqf);
 }
 
-static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vector& profile, const Vector& mesh,
-                           const Array1D< Array1D<double> >& old_lgr, const int ndim)
+static void profileConvert(KNVector& newprofile, const KNVector& newmesh, const KNVector& profile, const KNVector& mesh,
+                           const KNArray1D< KNArray1D<double> >& old_lgr, const int ndim)
 {
   const int old_nint = mesh.size()-1;
   const int old_ndeg = (profile.size()/ndim - 1)/old_nint;
@@ -444,7 +444,7 @@ static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vect
     for (int j = 0; j < new_ndeg; j++)
     {
       const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/new_ndeg;
-      int idx = PerSolColloc::meshlookup( mesh, t );
+      int idx = KNAbstractBvpCollocation::meshlookup( mesh, t );
       const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
       for (int p = 0; p < ndim; p++)
         newprofile(p+ndim*(j+i*new_ndeg)) = 0.0;
@@ -462,14 +462,14 @@ static void profileConvert(Vector& newprofile, const Vector& newmesh, const Vect
     newprofile(p+ndim*(new_ndeg*(newmesh.size()-1))) = profile(p+ndim*(old_ndeg*(mesh.size()-1)));
 }
 
-void PerSolColloc::meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent)
+void KNAbstractBvpCollocation::meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent)
 {
   // saving the solution into solNu
 #ifdef DEBUG
-  Vector profile_tmp(profile);
+  KNVector profile_tmp(profile);
 #endif
 
-  Vector newmesh(mesh);
+  KNVector newmesh(mesh);
   meshAdapt_internal(newmesh, profile);
   profileConvert(newprofile, newmesh, profile, mesh, lgr, NDIM);
   profileConvert(newtangent, newmesh, tangent, mesh, lgr, NDIM);
@@ -514,17 +514,17 @@ void PerSolColloc::meshAdapt(Vector& newprofile, const Vector& profile, Vector& 
 //
 //----------------------------------------------------------------------------
 
-void PerSolColloc::getMetric(Matrix& mt, const Vector& t)
+void KNAbstractBvpCollocation::getMetric(KNMatrix& mt, const KNVector& t)
 {
   poly_int(mt, t);
 }
 
-void PerSolColloc::getDiffMetric(Matrix& mt, const Vector& t)
+void KNAbstractBvpCollocation::getDiffMetric(KNMatrix& mt, const KNVector& t)
 {
   poly_int(mt, t);
 }
 
-void PerSolColloc::star(Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim)
+void KNAbstractBvpCollocation::star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, int dim)
 {
   const int t_deg = mt.col() - 1;
   const int t_int = (out.size() / dim - 1) / t_deg;
@@ -555,7 +555,7 @@ void PerSolColloc::star(Vector& out, const Vector& in, const Matrix& mt, const V
 #endif
 }
 
-double PerSolColloc::integrate(const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim)
+double KNAbstractBvpCollocation::integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, int dim)
 {
   double res = 0.0;
   const int t_deg = mt.col() - 1;
@@ -587,7 +587,7 @@ double PerSolColloc::integrate(const Vector& v1, const Vector& v2, const Matrix&
   return res;
 }
 
-void PerSolColloc::star(Vector& V1, const Vector& V2)
+void KNAbstractBvpCollocation::star(KNVector& V1, const KNVector& V2)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -617,7 +617,7 @@ void PerSolColloc::star(Vector& V1, const Vector& V2)
 #endif
 }
 
-double PerSolColloc::integrate(const Vector& V1, const Vector& V2)
+double KNAbstractBvpCollocation::integrate(const KNVector& V1, const KNVector& V2)
 {
   double res = 0.0, head = 0.0;
   for (int i = 0; i < NINT; i++)
@@ -646,7 +646,7 @@ double PerSolColloc::integrate(const Vector& V1, const Vector& V2)
   return res + head;
 }
 
-double PerSolColloc::integrateWithCp(const Vector& V1, const Vector& V2, const Vector& V3)
+double KNAbstractBvpCollocation::integrateWithCp(const KNVector& V1, const KNVector& V2, const KNVector& V3)
 {
   double res = 0.0, head = 0.0;
   for (int i = 0; i < NINT; i++)
@@ -673,7 +673,7 @@ double PerSolColloc::integrateWithCp(const Vector& V1, const Vector& V2, const V
   return res + head;
 }
 
-void PerSolColloc::phaseStar(Vector& V1, const Vector& V2)
+void KNAbstractBvpCollocation::phaseStar(KNVector& V1, const KNVector& V2)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -692,7 +692,7 @@ void PerSolColloc::phaseStar(Vector& V1, const Vector& V2)
   }
 }
 
-void PerSolColloc::phaseRotationStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im)
+void KNAbstractBvpCollocation::phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<int>& Re, const KNArray1D<int>& Im)
 {
   V1.clear();
   for (int i = 0; i < NINT; i++)
@@ -713,11 +713,11 @@ void PerSolColloc::phaseRotationStar(Vector& V1, const Vector& V2, const Array1D
   }
 }
 
-void PerSolColloc::pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent)
+void KNAbstractBvpCollocation::pdMeshConvert(KNVector& newprofile, KNVector& newtangent, const KNVector& oldprofile, const KNVector& oldtangent)
 {
-  Vector tmp_mesh(2*NINT+1);
-  Vector tmp_profile(NDIM*(2*NINT*NDEG+1));
-  Vector tmp_tangent(NDIM*(2*NINT*NDEG+1));
+  KNVector tmp_mesh(2*NINT+1);
+  KNVector tmp_profile(NDIM*(2*NINT*NDEG+1));
+  KNVector tmp_tangent(NDIM*(2*NINT*NDEG+1));
   for (int i = 0; i < NINT; ++i)
   {
     tmp_mesh(i) = 0.0 + 0.5*mesh(i);
@@ -740,38 +740,38 @@ void PerSolColloc::pdMeshConvert(Vector& newprofile, Vector& newtangent, const V
     tmp_tangent(p+NDIM*(2*NINT*NDEG)) = tmp_tangent(p);
   }
   // constructing the new mesh
-  Vector eqf(tmp_mesh.size());
+  KNVector eqf(tmp_mesh.size());
   for (int i = 0; i < eqf.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, tmp_mesh, eqf);
   profileConvert(newprofile, mesh, tmp_profile, tmp_mesh, lgr, NDIM);
   profileConvert(newtangent, mesh, tmp_tangent, tmp_mesh, lgr, NDIM);
 }
 
-void PerSolColloc::importProfile(Vector& newprofile, const Vector& oldprofile, const Vector& oldmesh, int old_ndeg, bool adapt)
+void KNAbstractBvpCollocation::importProfile(KNVector& newprofile, const KNVector& oldprofile, const KNVector& oldmesh, int old_ndeg, bool adapt)
 {
-  Vector old_meshINT(old_ndeg+1);
+  KNVector old_meshINT(old_ndeg+1);
   repr_mesh(old_meshINT);
 
-  Array1D< Array1D<double> > old_lgr(old_ndeg+1, old_ndeg+1);
+  KNArray1D< KNArray1D<double> > old_lgr(old_ndeg+1, old_ndeg+1);
   for (int i = 0; i < old_ndeg+1; i++)
   {
     poly_coeff_lgr(old_lgr(i), old_meshINT, i);
   }
 
-  Vector eqf(oldmesh.size());
+  KNVector eqf(oldmesh.size());
   if (adapt) meshAssess(eqf, oldmesh, oldprofile, old_lgr);
   else for (int i = 0; i < oldmesh.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, oldmesh, eqf);
   profileConvert(newprofile, mesh, oldprofile, oldmesh, old_lgr, NDIM);
 }
 
-// it exports for CollocTR and PointTR, so no last value is necessary
-void PerSolColloc::exportProfile(Vector& outs, const Vector& mshint, const Vector& mshdeg, const Vector& in)
+// it exports for KNDdeTorusCollocation and KNDdeTorusSolution, so no last value is necessary
+void KNAbstractBvpCollocation::exportProfile(KNVector& outs, const KNVector& mshint, const KNVector& mshdeg, const KNVector& in)
 {
   int nint_ = mshint.size() - 1;
   int ndeg_ = mshdeg.size() - 1;
-  Vector in_mesh(NDEG + 1);
-  Vector in_lgr(NDEG + 1);
+  KNVector in_mesh(NDEG + 1);
+  KNVector in_lgr(NDEG + 1);
 
   for (int i = 0; i < NDEG + 1; i++) in_mesh(i) = i * 1.0 / NDEG;
 

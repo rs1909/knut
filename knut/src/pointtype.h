@@ -182,9 +182,9 @@ inline const char* VarToStr(Var var)
   }
 }
 
-template< class T > class Array1D;
+template< class T > class KNArray1D;
 
 // helper function, implemented in basepoint.cpp
-BranchSW PtToEqnVar(Array1D<Eqn>& eqnr, Array1D<Var>& varr, PtType Pt, Array1D<Var> parx, int npar_);
+BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_);
 
 #endif

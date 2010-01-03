@@ -29,11 +29,11 @@
 #define NDEG colloc->nDeg()
 
 
-Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
+KNDdePeriodicSolution::KNDdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
 //     colloc(sys_, nint, ndeg, nmat),
     jacStab(nmat, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg + 1))
 {
-  colloc = new NColloc(sys_, nint, ndeg, nmat);
+  colloc = new KNDdeBvpCollocation(sys_, nint, ndeg, nmat);
   basecolloc = colloc;
   persolcolloc = colloc;
 
@@ -43,7 +43,7 @@ Point::Point(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int
   par(NPAR + ParRot) = 0.0;
 }
 
-Point::~Point()
+KNDdePeriodicSolution::~KNDdePeriodicSolution()
 {
   destruct();
   delete colloc;
@@ -53,11 +53,11 @@ Point::~Point()
 // What does it construct?
 // charMat
 // xxDot, xx, rhs, jac
-void Point::construct()
+void KNDdePeriodicSolution::construct()
 {
   P_ERROR_X1((eqn(0) == EqnSol) && (var(0) == VarSol), "The first equation must be the boundary value problem of the periodic solution.");
 
-  BasePoint::construct();
+  KNAbstractPoint::construct();
   
   // a) setting the test functionals b) determining the number of trivial multipliers
   testFunct.init(eqn.size());
@@ -70,29 +70,29 @@ void Point::construct()
     {
       case EqnTFLP:
         P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
-        testFunct(i) = new TestFunct(*colloc, 1.0);
+        testFunct(i) = new KNTestFunctional(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFPD:
         P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
-        testFunct(i) = new TestFunct(*colloc, -1.0);
+        testFunct(i) = new KNTestFunctional(*colloc, -1.0);
         ++nTrivMulPD;
         break;
       case EqnTFLPAUT:
         P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
-        testFunct(i) = new TestFunctLPAUT(*colloc, 1.0);
+        testFunct(i) = new KNLpAutTestFunctional(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFLPAUTROT:
         P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
-        testFunct(i) = new TestFunctLPAUTROT(*colloc, rotRe, rotIm, 1.0);
+        testFunct(i) = new KNLpAutRotTestFunctional(*colloc, rotRe, rotIm, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test functional are not paired.");
         P_ERROR(testFunct(i) == 0);
-        testFunct(i) = new TestFunctCPLX(*colloc);
+        testFunct(i) = new KNComplexTestFunctional(*colloc);
         nTrivMulNS += 2;
         break;
       case EqnTFCPLX_IM:
@@ -113,10 +113,10 @@ void Point::construct()
 }
 
 // private
-void Point::destruct()
+void KNDdePeriodicSolution::destruct()
 {
   for (int i=0; i<testFunct.size(); ++i) delete testFunct(i);
-  BasePoint::destruct();
+  KNAbstractPoint::destruct();
 }
 
 // **************************************************************************************************************** //
@@ -125,11 +125,11 @@ void Point::destruct()
 //
 // **************************************************************************************************************** //
 
-void Point::jacobian(
-  HyperMatrix& AA, HyperVector& RHS,                      // output
-  Vector& parPrev, Vector& par,                           // parameters
-  Vector& solPrev, Vector& sol,                           // solution
-  Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
+void KNDdePeriodicSolution::jacobian(
+  KNSparseBlockMatrix& AA, KNBlockVector& RHS,                      // output
+  KNVector& parPrev, KNVector& par,                           // parameters
+  KNVector& solPrev, KNVector& sol,                           // solution
+  KNArray1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
   double ds, bool cont)                                              // cont: true if continuation
 {
 // uses also: eqn, var, varMapCont
@@ -292,13 +292,13 @@ void Point::jacobian(
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
 
-void Point::SwitchTFHB(double ds, std::ostream& out)
+void KNDdePeriodicSolution::SwitchTFHB(double ds, std::ostream& out)
 {
   int idx = -1;
   for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   P_ERROR_X1(idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
-  TestFunctCPLX *tf = static_cast<TestFunctCPLX*>(testFunct(idx));
-  Vector QRE(NDIM), QIM(NDIM);
+  KNComplexTestFunctional *tf = static_cast<KNComplexTestFunctional*>(testFunct(idx));
+  KNVector QRE(NDIM), QIM(NDIM);
 
   par(0) = tf->kernelComplex(QRE, QIM, *colloc, par);
   out << "    T = " << par(0) << ", arg(Z) = " << par(NPAR + ParAngle) / (2*M_PI) << " * 2Pi\n";
@@ -330,7 +330,7 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
   const double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));
   xxDot->getV1() /= norm;
   xxDot->getV3().clear();
-  Vector eql(NDIM);
+  KNVector eql(NDIM);
   for (int p = 0; p < NDIM; ++p) eql(p) = sol(p);
   for (int i = 0; i < NDEG*NINT + 1; ++i)
   {
@@ -343,22 +343,22 @@ void Point::SwitchTFHB(double ds, std::ostream& out)
 
 /// Switching with the test functionals!!!
 
-void Point::SwitchTFLP(BranchSW type, double ds)
+void KNDdePeriodicSolution::SwitchTFLP(BranchSW type, double ds)
 {
   xxDot->getV1().clear();
   xxDot->getV3().clear();
 
-  baseTestFunct* tf = 0;
+  KNAbstractTestFunctional* tf = 0;
   switch (type)
   {
     case TFBRSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunct(*colloc, 1.0));
+      tf = static_cast<KNAbstractTestFunctional*>(new KNTestFunctional(*colloc, 1.0));
       break;
     case TFBRAUTSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunctLPAUT(*colloc, 1.0));
+      tf = static_cast<KNAbstractTestFunctional*>(new KNLpAutTestFunctional(*colloc, 1.0));
       break;
     case TFBRAUTROTSwitch:
-      tf = static_cast<baseTestFunct*>(new TestFunctLPAUTROT(*colloc, rotRe, rotIm, 1.0));
+      tf = static_cast<KNAbstractTestFunctional*>(new KNLpAutRotTestFunctional(*colloc, rotRe, rotIm, 1.0));
       break;
     default:
       return;
@@ -375,10 +375,10 @@ void Point::SwitchTFLP(BranchSW type, double ds)
   sol += ds * xxDot->getV1();
 }
 
-void Point::SwitchTFPD(double ds)
+void KNDdePeriodicSolution::SwitchTFPD(double ds)
 {
-  Vector tan(xxDot->getV1().size());
-  TestFunct* tf = new TestFunct(*colloc, -1.0);
+  KNVector tan(xxDot->getV1().size());
+  KNTestFunctional* tf = new KNTestFunctional(*colloc, -1.0);
   tf->setKernelTolerance(KernEps, KernIter);
   tf->funct(*colloc, par, sol);
   tf->kernel(tan);
@@ -398,7 +398,7 @@ void Point::SwitchTFPD(double ds)
 }
 
 
-void Point::Stability()
+void KNDdePeriodicSolution::Stability()
 {
   mRe.clear();
   mIm.clear();
@@ -412,7 +412,7 @@ void Point::Stability()
 //  mIm.print();
 }
 
-void Point::Plot(GnuPlot& pl)
+void KNDdePeriodicSolution::Plot(GnuPlot& pl)
 {
   pl.SetPointSize(0.8);
 
@@ -432,9 +432,9 @@ void Point::Plot(GnuPlot& pl)
 /// INPUT & OUTPUT
 ///--------------------------------
 
-void Point::Write(std::ofstream& file)
+void KNDdePeriodicSolution::Write(std::ofstream& file)
 {
-  Vector msh(colloc->getMesh());
+  KNVector msh(colloc->getMesh());
 
   file << NPAR + ParEnd << "\t";
   for (int i = 0; i < NPAR + ParEnd; i++) file << par(i) << "\t";
@@ -458,7 +458,7 @@ void Point::Write(std::ofstream& file)
   file.flush();
 }
 
-void Point::Read(std::ifstream& file)
+void KNDdePeriodicSolution::Read(std::ifstream& file)
 {
   int npar_, nmul_, ndim_, nint_, ndeg_;
   file >> npar_;
@@ -479,7 +479,7 @@ void Point::Read(std::ifstream& file)
 
   P_ERROR_X3(NDIM == ndim_, "Not compatible input file (NDIM) ", ndim_, ".");
 
-  Vector msh(nint_ + 1);
+  KNVector msh(nint_ + 1);
   double t;
   for (int i = 0; i < ndeg_*nint_ + 1; i++)
   {
@@ -494,14 +494,14 @@ void Point::Read(std::ifstream& file)
   }
   else
   {
-    Vector in(NDIM*(nint_*ndeg_ + 1));
+    KNVector in(NDIM*(nint_*ndeg_ + 1));
 
     for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
     colloc->importProfile(sol, in, msh, ndeg_, true);
   }
 }
 
-void Point::ReadNull(std::ifstream& file)
+void KNDdePeriodicSolution::ReadNull(std::ifstream& file)
 {
   double tmp;
   int npar_, nmul_, ndim_, nint_, ndeg_;
@@ -527,12 +527,12 @@ void Point::ReadNull(std::ifstream& file)
   for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> tmp;
 }
 
-void Point::SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg)   // starting data for tori: tangent
+void KNDdePeriodicSolution::SwitchTFTRTan(KNVector& Re, KNVector& Im, double& alpha, const KNVector& mshint, const KNVector& mshdeg)   // starting data for tori: tangent
 {
-  Vector TRe(sol.size()), TIm(sol.size());
+  KNVector TRe(sol.size()), TIm(sol.size());
   int idx = 0;
   for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
-  TestFunctCPLX* tf = static_cast< TestFunctCPLX* >(testFunct(idx));
+  KNComplexTestFunctional* tf = static_cast< KNComplexTestFunctional* >(testFunct(idx));
   if (tf)
   {
     tf->kernel(TRe, TIm, alpha);

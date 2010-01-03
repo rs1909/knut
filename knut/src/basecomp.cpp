@@ -16,14 +16,14 @@
 #define ITLIM1 3
 #define ITLIM2 5
 
-void BaseComp::run(const char* branchFile)
+void KNAbstractContinuation::run(const char* branchFile)
 {
-  System *sys = 0;
+  KNSystem *sys = 0;
   try
   {
-    sys = new System(params->getSysName(), params->getNDeri());
+    sys = new KNSystem(params->getSysName(), params->getNDeri());
   }
-  catch (knutException ex)
+  catch (KNException ex)
   {
     raiseException(ex);
     delete sys;
@@ -34,7 +34,7 @@ void BaseComp::run(const char* branchFile)
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
 
-  Vector par(sys->npar() + ParEnd);
+  KNVector par(sys->npar() + ParEnd);
   std::ofstream ff;
   if (branchFile)
   {
@@ -50,12 +50,12 @@ void BaseComp::run(const char* branchFile)
   //
   //-----------------------------------------------------------------------------------------------------------
 
-  Array1D<Eqn> eqn; // used for continuation
-  Array1D<Var> var; // used for continuation
-  Array1D<Eqn> eqn_refine;
-  Array1D<Var> var_refine;
-  Array1D<Eqn> eqn_start;
-  Array1D<Var> var_start;
+  KNArray1D<Eqn> eqn; // used for continuation
+  KNArray1D<Var> var; // used for continuation
+  KNArray1D<Eqn> eqn_refine;
+  KNArray1D<Var> var_refine;
+  KNArray1D<Eqn> eqn_start;
+  KNArray1D<Var> var_start;
   bool         findangle;
 
   //-----------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ void BaseComp::run(const char* branchFile)
   //
   //-----------------------------------------------------------------------------------------------------------
 
-  PerSolPoint* pt_ptr = 0;
+  KNAbstractPeriodicSolution* pt_ptr = 0;
   try
   {
     const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
@@ -94,10 +94,10 @@ void BaseComp::run(const char* branchFile)
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
     if (eqn_start(0) != EqnTORSol)
     {
-      if (eqn_start(0) == EqnSol) pt_ptr = new Point(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
-      else if (eqn_start(0) == EqnODESol) pt_ptr = new ODEPoint(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
+      else if (eqn_start(0) == EqnODESol) pt_ptr = new KNOdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
-      PerSolPoint& pt = *pt_ptr;
+      KNAbstractPeriodicSolution& pt = *pt_ptr;
   
       pt.setContIter(params->getNItC());
       pt.setRefIter(params->getNItR());
@@ -108,8 +108,8 @@ void BaseComp::run(const char* branchFile)
       pt.setCont(params->getCp() - VarPAR0);
   
       // setting the symmetric components
-      Array1D<int> sre(params->getSymReSize());
-      Array1D<int> sim(params->getSymReSize());
+      KNArray1D<int> sre(params->getSymReSize());
+      KNArray1D<int> sim(params->getSymReSize());
       for (int i = 0; i < sre.size(); ++i)
       {
         sre(i) = params->getSymRe(i);
@@ -120,7 +120,7 @@ void BaseComp::run(const char* branchFile)
       // load the initial guess
       if (params->getLabel() != 0)
       {
-        mat4Data istr(params->getInputFile());
+        KNDataFile istr(params->getInputFile());
         pt.BinaryRead(istr, params->getLabel()-1);
       }
 
@@ -140,8 +140,8 @@ void BaseComp::run(const char* branchFile)
     // start the continuation!
     if (eqn(0) != EqnTORSol)
     {
-      PerSolPoint& pt = *pt_ptr;
-      setData(new mat4Data(params->getOutputFile(), params->getParNames(),
+      KNAbstractPeriodicSolution& pt = *pt_ptr;
+      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
                            params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
                            params->getNInt(), params->getNDeg(), params->getNMul()));
 
@@ -192,7 +192,7 @@ void BaseComp::run(const char* branchFile)
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
       const int ithist = ITSTEPS;
-      Array1D<int> it(ithist);
+      KNArray1D<int> it(ithist);
       for (int i = 0; i < it.size(); i++) it(i) = 3;
       int itpos = 0;
       int printedln = 0;
@@ -295,7 +295,7 @@ void BaseComp::run(const char* branchFile)
     }
     else
     {
-      setData(new mat4Data(params->getOutputFile(), params->getParNames(),
+      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
                            params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
                            params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
 
@@ -304,18 +304,18 @@ void BaseComp::run(const char* branchFile)
 
       // construct the initial torus
       double alpha;
-      Vector Sol;
-      Vector TRe, TIm;
+      KNVector Sol;
+      KNVector TRe, TIm;
       if (params->getBranchSW() == TFTRSwitch)
       {
-        if (dynamic_cast<Point*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
-        Point& pt = *dynamic_cast<Point*>(pt_ptr);
+        if (dynamic_cast<KNDdePeriodicSolution*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
+        KNDdePeriodicSolution& pt = *dynamic_cast<KNDdePeriodicSolution*>(pt_ptr);
         Sol.init(pt.getSol().size());
         TRe.init(pt.getSol().size());
         TIm.init(pt.getSol().size());
 
         // making the mesh for the conversion
-        Vector meshint(params->getNInt1() + 1), meshdeg(params->getNDeg1() + 1);
+        KNVector meshint(params->getNInt1() + 1), meshdeg(params->getNDeg1() + 1);
         for (int i = 0; i < meshint.size(); i++) meshint(i) = (double)i / (params->getNInt1());
         for (int i = 0; i < meshdeg.size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
 
@@ -327,11 +327,11 @@ void BaseComp::run(const char* branchFile)
         // getting the parameters
         for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
 
-        // destroy point, construct PointTR
+        // destroy point, construct KNDdeTorusSolution
         delete pt_ptr;
         pt_ptr = 0;
       }
-      PointTR pttr(*sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
+      KNDdeTorusSolution pttr(*sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
       // construct the solution tangent from the eigenvectors
       // these next three functions could be only one
       if (params->getBranchSW() == TFTRSwitch)
@@ -347,7 +347,7 @@ void BaseComp::run(const char* branchFile)
       {
         if (params->getLabel() != 0)
         {
-          mat4Data istr(params->getInputFile());
+          KNDataFile istr(params->getInputFile());
           pttr.loadPoint(istr, params->getLabel()-1);
           screenout << "\nFinding the tangent.\n"; print(screenout);
           pttr.setCont(params->getCp() - VarPAR0);
@@ -399,7 +399,7 @@ void BaseComp::run(const char* branchFile)
     delete pt_ptr;
     delete sys;
   }
-  catch (knutException ex)
+  catch (KNException ex)
   {
     delete pt_ptr;
     delete sys;

@@ -11,7 +11,7 @@ int sys_npar(){ return 4; }
 int sys_ntau(){ return 2; }
 int sys_nderi(){ return 2; }
 
-void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -19,7 +19,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
+void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par, int vp )
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -36,7 +36,7 @@ void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1
   }
 }
 
-void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel)
+void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, int sel)
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -44,8 +44,8 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
   }
 }
 
-void sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3D<double>& x, const Array1D<double>& par, int sel,
-         int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
+void sys_p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, int sel,
+         int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -123,13 +123,13 @@ void sys_p_deri( Array3D<double>& out, const Array1D<double>& time, const Array3
   }
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   par(0) = 2.0; // 5.3918; 
   par(1) = -1.0; par(2) = 1.5; par(3) = 2.0;
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
   out(0) = pow((1.0-1.5)/(-1.0), 1.0/10.0);
 }

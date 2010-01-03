@@ -13,13 +13,13 @@ int sys_npar(){ return 14; }
 int sys_ntau(){ return 2; }
 int sys_nderi(){ return 0; }
  
-void sys_tau( Vector& out, double t, const Vector& par )
+void sys_tau( KNVector& out, double t, const KNVector& par )
 {
 	out(0) = 0.0;
 	out(1) = par(12);
 }
 
-void sys_dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( KNVector& out, double t, const KNVector& par, int vp )
 {
 	// it is a constant delay
 	out(0) = 0.0;
@@ -27,7 +27,7 @@ void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 	else out(1) = 0.0;	
 }
 
-void sys_rhs( Vector& out, double t, const Matrix& yy, const Vector& par )
+void sys_rhs( KNVector& out, double t, const KNMatrix& yy, const KNVector& par )
 {
 
 #define xx(a,b) yy(a-1,b-1)
@@ -66,13 +66,13 @@ out(4)=(tmp*(-(par(5)*par(9)*sin(phi)*xx(1,2))
                 -par(5)*par(9)*xx(5,1)))/par(9);
 }
 
-void sys_deri( Matrix &out, double t, const Matrix& xx, const Vector& par, 
-	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
+void sys_deri( KNMatrix &out, double t, const KNMatrix& xx, const KNVector& par, 
+	       int nx, const int* vx, int np, const int* vp, const KNMatrix& vv )
 {
 
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   par(0) = 10.0;
   par(1) = 5.000000000000e+00;
@@ -89,7 +89,7 @@ void sys_stpar( Vector& par )
   par(12) = 5.000000000000e+02;
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
   out(0) = -0.24721;
   out(1) = -1.86705;

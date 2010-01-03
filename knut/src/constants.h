@@ -72,7 +72,7 @@
       constantChanged(#name); \
     }
 
-class NConstants
+class KNConstants
 {
   private:
     
@@ -127,7 +127,7 @@ class NConstants
   public:
     // for double, int, char
     // for i in `g++ -E -DEXTRACT_NAMES constants.h | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
-    NConstants() : label(0), cpType(0), cpNum(0), branchSW(NOSwitch), 
+    KNConstants() : label(0), cpType(0), cpNum(0), branchSW(NOSwitch), 
       nInt(0), nDeg(0), nMul(0), stab(false), nMat(0), 
       nInt1(0), nInt2(0), nDeg1(0), nDeg2(0), steps(0), 
       iad(0), nPr(0), cpMin(0), cpMax(0), ds(0), dsMin(0), 
@@ -136,7 +136,7 @@ class NConstants
     { }
     // to extract the dependencies run:
     // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;
-    NConstants(const NConstants& src) : 
+    KNConstants(const KNConstants& src) : 
       inputFile(src.inputFile), outputFile(src.outputFile), sysname(src.sysname), 
       label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), 
       branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), 
@@ -149,12 +149,12 @@ class NConstants
       nItC(src.nItC), nItR(src.nItR), nItK(src.nItK), symRe(src.symRe), symIm(src.symIm), 
       nDeri(src.nDeri), nPar(src.nPar), nDim(src.nDim) 
     { }
-    ~NConstants() { }
+    ~KNConstants() { }
     // for setting up the continuation
-    bool toEqnVar(System& sys,
-                  Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
-                  Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
-                  Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, bool& findangle);
+    bool toEqnVar(KNSystem& sys,
+                  KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
+                  KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
+                  KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle);
     void loadXmlFile(const std::string &fileName);
     void saveXmlFile(const std::string &fileName);
     void printXmlFile(std::ostream& file);
@@ -207,7 +207,7 @@ class NConstants
       parNames[getNPar()+ParAngle] = "Angle (NS)";
       parNames[getNPar()+ParRot] = "Rotation num.";      
     }
-    void initDimensions(const System* sys)
+    void initDimensions(const KNSystem* sys)
     {
       setNPar(sys->npar());
       setNDim(sys->ndim());
@@ -222,14 +222,14 @@ class NConstants
     virtual void setSysNameText(const std::string& str, bool testing = false)
     {
       setSysName(str);
-      System* sys = 0;
+      KNSystem* sys = 0;
       try
       {
-        sys = new System(sysname, getNDeri());
+        sys = new KNSystem(sysname, getNDeri());
         initDimensions(sys);
         delete sys;
       }
-      catch (knutException ex)
+      catch (KNException ex)
       {
         delete sys;
         setNPar(0);

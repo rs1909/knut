@@ -20,12 +20,12 @@ using namespace std;
 
 // **************************************************************************//
 //                                                                           //
-// **********************          Matrix Class        **********************//
+// **********************          KNMatrix Class        **********************//
 //                                                                           //
 // **************************************************************************//
 
 
-void Matrix::sparsityPlot(GnuPlot& pl)
+void KNMatrix::sparsityPlot(GnuPlot& pl)
 {
   pl.Plot(0, "with points ps 0.1");
 
@@ -42,14 +42,14 @@ void Matrix::sparsityPlot(GnuPlot& pl)
   pl.Show();
 }
 
-void Matrix::eigenvalues(Vector& wr, Vector& wi)
+void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi)
 {
   if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
     cout << "eigval: wrong dimensions" << '\n';
     exit(-1);
   }
-  const Matrix& AA = *this;
+  const KNMatrix& AA = *this;
 
   if (this->r == 1)
   {
@@ -78,10 +78,10 @@ void Matrix::eigenvalues(Vector& wr, Vector& wi)
   }
 
   char    jobvl = 'N', jobvr = 'N';
-  Matrix  vl(this->r, 1), vr(this->r, 1);
+  KNMatrix  vl(this->r, 1), vr(this->r, 1);
   int n = this->r, lda = this->r;
   int ldvl = 1, ldvr = 1;
-  Matrix  work(this->r, 4);
+  KNMatrix  work(this->r, 4);
   int lwork = 4 * (this->r);
   int info;
 
@@ -91,7 +91,7 @@ void Matrix::eigenvalues(Vector& wr, Vector& wi)
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
-void Matrix::eigenvalues(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
+void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi, KNMatrix& vl, KNMatrix& vr)
 {
   if ((this->r != this->c) || (this->r != wr.size()) || (this->r != wi.size()))
   {
@@ -111,7 +111,7 @@ void Matrix::eigenvalues(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
   char jobvl = 'V', jobvr = 'V';
   int  n = this->r, lda = this->r;
   int  ldvl = vl.row(), ldvr = vr.row();
-  Matrix work(this->r, 10);
+  KNMatrix work(this->r, 10);
   int  lwork = 10 * (this->r);
   int  info;
 
@@ -121,11 +121,11 @@ void Matrix::eigenvalues(Vector& wr, Vector& wi, Matrix& vl, Matrix& vr)
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
-// MatFact routines
+// KNLuMatrix routines
 
-void MatFact::luFactorize()
+void KNLuMatrix::luFactorize()
 {
-  P_ASSERT_X(this->r == this->c, "MatFact::Fact wrong dimensions");
+  P_ASSERT_X(this->r == this->c, "KNLuMatrix::Fact wrong dimensions");
 
   char FACT = 'N', trans = 'N', equed = 'N';
   int n = this->r;
@@ -136,17 +136,17 @@ void MatFact::luFactorize()
               &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
 
   // cout<<"work(1): "<<work[0]<<" rcond< "<<rcond<<"\n";
-  if (info != 0) cout << "MatFact::Fact: Error code" << info << '\n';
+  if (info != 0) cout << "KNLuMatrix::Fact: Error code" << info << '\n';
   fact = true;
 }
 
-void MatFact::solve(Vector& x, const Vector& b, bool trans)
+void KNLuMatrix::solve(KNVector& x, const KNVector& b, bool trans)
 {
-  P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
-  P_ASSERT_X(b.size() == this->c, "MatFact::Solve Vector sizes differ: M-V\n");
-  P_ASSERT_X(b.size() == x.size(), "MatFact::Solve Vector sizes differ: V-V\n");
+  P_ASSERT_X(this->r == this->c, "KNLuMatrix::Solve not a square matrix\n");
+  P_ASSERT_X(b.size() == this->c, "KNLuMatrix::Solve KNVector sizes differ: M-V\n");
+  P_ASSERT_X(b.size() == x.size(), "KNLuMatrix::Solve KNVector sizes differ: V-V\n");
 
-  const Matrix& AA = *this;
+  const KNMatrix& AA = *this;
   double det;
   switch (this->r)
   {
@@ -178,21 +178,21 @@ void MatFact::solve(Vector& x, const Vector& b, bool trans)
       knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
                   ipiv, &equed, NULL, NULL, b.v, &n, x.pointer(), &n,
                   &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
-      if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
+      if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';
       break;
   }
-//  Vector err(b);
+//  KNVector err(b);
 //  timesXPlusY( err, x, b, 1.0, -1.0, trans );
 //  cout<<"dim: "<<this->r<<" b: "<<sqrt(b*b)<<" e: "<<sqrt(err*err)<<"\n";
 }
 
-void MatFact::solve(Matrix& x, const Matrix& b, bool trans)
+void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
 {
-  P_ASSERT_X(this->r == this->c, "MatFact::Solve not a square matrix\n");
-  P_ASSERT_X(b.col() != x.col(), "MatFact::Solve Matrix columns differ\n");
-  P_ASSERT_X((b.row() == this->c) && (b.row() == x.row()), "MatFact::Solve Matrix rows differ\n");
+  P_ASSERT_X(this->r == this->c, "KNLuMatrix::Solve not a square matrix\n");
+  P_ASSERT_X(b.col() != x.col(), "KNLuMatrix::Solve KNMatrix columns differ\n");
+  P_ASSERT_X((b.row() == this->c) && (b.row() == x.row()), "KNLuMatrix::Solve KNMatrix rows differ\n");
 
-  const Matrix& AA = *this;
+  const KNMatrix& AA = *this;
   double det;
   switch (this->r)
   {
@@ -235,7 +235,7 @@ void MatFact::solve(Matrix& x, const Matrix& b, bool trans)
                   ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
                   &rcond, fberr, fberr + b.col(), work, iwork, &info, 1, 1, 1);
 
-      if (info != 0) cout << "MatFact::Solve: Error code" << info << '\n';
+      if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';
       delete[] fberr;
       break;
   }

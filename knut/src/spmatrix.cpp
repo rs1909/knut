@@ -17,11 +17,11 @@ using namespace std;
 
 // **************************************************************************//
 //                                                                           //
-// **********************        SpMatrix Class        **********************//
+// **********************        KNSparseMatrix Class        **********************//
 //                                                                           //
 // **************************************************************************//
 
-void SpMatrix::check()
+void KNSparseMatrix::check()
 {
   bool ok = true;
   for (int j = 0; j < n && ok; j++)
@@ -30,7 +30,7 @@ void SpMatrix::check()
     {
       if (Ai[k-1] >= Ai[k] || Ai[k] < 0 || Ai[k-1] < 0)
       {
-        std::cerr << "SpMatrix::check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
+        std::cerr << "KNSparseMatrix::check() in row=" << j << ", col=(" << Ai[k-1] << ">=" << Ai[k] << ")\n";
         ok = false;
       }
     }
@@ -41,17 +41,17 @@ void SpMatrix::check()
     {
       if (!isfinite(Ax[k]))
       {
-        std::cerr << "SpMatrix::check(): NaN at (" << j << "," << Ai[k] << ")\n";
+        std::cerr << "KNSparseMatrix::check(): NaN at (" << j << "," << Ai[k] << ")\n";
         ok = false;
       }
     }
   }
-  if (ok) std::cerr << "Matrix tested VALID.\n";
-  else std::cerr << "Matrix tested INVALID. (Only the first error is shown.)\n";
+  if (ok) std::cerr << "KNMatrix tested VALID.\n";
+  else std::cerr << "KNMatrix tested INVALID. (Only the first error is shown.)\n";
   std::cerr.flush();
 }
 
-void SpMatrix::swap()
+void KNSparseMatrix::swap()
 {
   int *Rp = new int[n+1];
   int *Ri = new int[size];
@@ -74,7 +74,7 @@ void SpMatrix::swap()
   m = nt;
 }
 
-void SpMatrix::sparsityPlot(GnuPlot& pl)
+void KNSparseMatrix::sparsityPlot(GnuPlot& pl)
 {
   pl.SetPointSize(0.8);
   pl.Plot(0, "with points");
@@ -89,7 +89,7 @@ void SpMatrix::sparsityPlot(GnuPlot& pl)
   pl.Show();
 }
 
-void SpMatrix::print()
+void KNSparseMatrix::print()
 {
   for (int i = 0; i < n; i++)
   {
@@ -104,11 +104,11 @@ void SpMatrix::print()
 
 // **************************************************************************//
 //                                                                           //
-// **********************         SpFact Class         **********************//
+// **********************         KNLuSparseMatrix Class         **********************//
 //                                                                           //
 // **************************************************************************//
 
-void SpFact::init(int nn_)
+void KNLuSparseMatrix::init(int nn_)
 {
   fact = false;
   Numeric = 0;
@@ -121,22 +121,22 @@ void SpFact::init(int nn_)
 //  Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
 }
 
-SpFact::SpFact(char F, int nn_, int mm_, int nz) : SpMatrix(F, nn_, mm_, nz)
+KNLuSparseMatrix::KNLuSparseMatrix(char F, int nn_, int mm_, int nz) : KNSparseMatrix(F, nn_, mm_, nz)
 {
   init(nn_);
 }
 
-SpFact::SpFact(char F, int nn_, int nz) : SpMatrix(F, nn_, nn_, nz)
+KNLuSparseMatrix::KNLuSparseMatrix(char F, int nn_, int nz) : KNSparseMatrix(F, nn_, nn_, nz)
 {
   init(nn_);
 }
 
-SpFact::SpFact(SpMatrix& M) : SpMatrix(M)
+KNLuSparseMatrix::KNLuSparseMatrix(KNSparseMatrix& M) : KNSparseMatrix(M)
 {
   init(n);
 }
 
-SpFact::~SpFact()
+KNLuSparseMatrix::~KNLuSparseMatrix()
 {
   if (Numeric != 0) umfpack_di_free_numeric(&Numeric);
   Numeric = 0;
@@ -145,24 +145,24 @@ SpFact::~SpFact()
   delete[] Wi;
 }
 
-void SpFact::clear()
+void KNLuSparseMatrix::clear()
 {
-  SpMatrix::clear();
+  KNSparseMatrix::clear();
   if (Numeric != 0)
   {
-    P_ASSERT_X(fact, "Matrix was not factorized.");
+    P_ASSERT_X(fact, "KNMatrix was not factorized.");
     umfpack_di_free_numeric(&Numeric);
     Numeric = 0;
   }
   fact = false;
 }
 
-void SpFact::clear(char F)
+void KNLuSparseMatrix::clear(char F)
 {
-  SpMatrix::clear(F);
+  KNSparseMatrix::clear(F);
   if (Numeric != 0)
   {
-    P_ASSERT_X(fact, "Matrix was not factorized.");
+    P_ASSERT_X(fact, "KNMatrix was not factorized.");
     umfpack_di_free_numeric(&Numeric);
     Numeric = 0;
   }
@@ -217,7 +217,7 @@ static const char* sp_umf_error(int status)
   }
 }
 
-void SpFact::luFactorize()
+void KNLuSparseMatrix::luFactorize()
 {
   if (!fact)
   {
@@ -233,7 +233,7 @@ void SpFact::luFactorize()
       if (status == UMFPACK_WARNING_singular_matrix)
       {
         std::cerr << "The diagonal of the factorized matrix is being dumped:\n";
-        Vector DX(n);
+        KNVector DX(n);
         GetDX(DX);
         DX.print();
       }
@@ -244,7 +244,7 @@ void SpFact::luFactorize()
   }
 }
 
-void SpFact::solve(double* x, double* b, bool trans)
+void KNLuSparseMatrix::solve(double* x, double* b, bool trans)
 {
   if (!fact) luFactorize();
   int status, sys;
@@ -263,7 +263,7 @@ void SpFact::solve(double* x, double* b, bool trans)
   status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x, b, Numeric, Control, 0, Wi, W);
 }
 
-void SpFact::solve(Vector& x, const Vector& b, bool trans)
+void KNLuSparseMatrix::solve(KNVector& x, const KNVector& b, bool trans)
 {
   if (!fact) luFactorize();
   int status, sys;
@@ -284,7 +284,7 @@ void SpFact::solve(Vector& x, const Vector& b, bool trans)
   P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
 }
 
-void SpFact::solve(Matrix& x, const Matrix &b, bool trans)
+void KNLuSparseMatrix::solve(KNMatrix& x, const KNMatrix &b, bool trans)
 {
   if (!fact) luFactorize();
   int status, sys;
@@ -319,7 +319,7 @@ struct eigvalcomp : public std::binary_function<int, int, bool>
   }
 };
 
-void StabMatrix::eigenvalues(Vector& wr, Vector& wi)
+void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
 {
   P_ERROR_X1((wr.size() == wi.size()) && (wr.size() > 1), "Real and imaginary vectors are not of the same size.");
 

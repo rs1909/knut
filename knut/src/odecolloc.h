@@ -15,75 +15,75 @@
 #include "matrix.h"
 #include "spmatrix.h"
 
-class ODEColloc : public PerSolColloc
+class KNOdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    ODEColloc(System& _sys, const int nint, const int ndeg);        // computes mesh, metric, metricD
+    KNOdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg);        // computes mesh, metric, metricD
 
-    ~ODEColloc()
+    ~KNOdeBvpCollocation()
     {}
 
-    void init(const Vector& sol, const Vector& par);   // computes time, kk, ee, dd, rr ...
+    void init(const KNVector& sol, const KNVector& par);   // computes time, kk, ee, dd, rr ...
 
-    void interpolate(Array3D<double>& out, const Vector& sol);
-    void interpolateComplex(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol);
-    void interpolateOnMesh(Array3D<double>& out, const Vector& sol);
+    void interpolate(KNArray3D<double>& out, const KNVector& sol);
+    void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol);
+    void interpolateOnMesh(KNArray3D<double>& out, const KNVector& sol);
 
     // continuation of solution
 
-    void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol);
-    void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p);   // sol is currently not needed
-    void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol);          // sol is currently not needed
-    void jacobianOfStability(SpMatrix& A, const Vector& par);
+    void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
+    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p);   // sol is currently not needed
+    void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol);          // sol is currently not needed
+    void jacobianOfStability(KNSparseMatrix& A, const KNVector& par);
 
   private:
     
-    template <bool periodic> void RHS_jacobian(SpMatrix& A, const Vector& par);
+    template <bool periodic> void RHS_jacobian(KNSparseMatrix& A, const KNVector& par);
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
-    inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
+    inline int& WRIDX(KNSparseMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
     {
       return A.writeIndex(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
-    inline double& WRDAT(SpMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
+    inline double& WRDAT(KNSparseMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
     {
       return A.writeData(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
     // for CharJac_x
-    inline int& WRIDXCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
+    inline int& WRIDXCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }
 
-    inline double& WRDATCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
+    inline double& WRDATCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }
 
 
     // it stores all the collocation data
-    Array3D<double> tt;       // interpolation at the collocation points
-    Array3D<double> ttMSH;    // interpolation at the representation points
+    KNArray3D<double> tt;       // interpolation at the collocation points
+    KNArray3D<double> ttMSH;    // interpolation at the representation points
 
     // for rhs, and derivatives
 
-    Array3D<double>  solData;
-    Array2D<double>  p_fx;
-    Array3D<double>  p_dfx;
-    Array3D<double>  p_dfp;
-    Array2D<double>& p_fxRe;
-    Array2D<double>  p_fxIm;
-    Array3D<double>& p_dfxRe;
-    Array3D<double>  p_dfxIm;
-    Array2D<double>  p_tauMSH;
-    Array2D<double>  p_dtauMSH;
-    Array2D<double>  p_fxMSH;
-    Array3D<double>  p_dfxMSH;
-    Array3D<double>  p_dfpMSH;
-    Array3D<double>  p_dummy;
+    KNArray3D<double>  solData;
+    KNArray2D<double>  p_fx;
+    KNArray3D<double>  p_dfx;
+    KNArray3D<double>  p_dfp;
+    KNArray2D<double>& p_fxRe;
+    KNArray2D<double>  p_fxIm;
+    KNArray3D<double>& p_dfxRe;
+    KNArray3D<double>  p_dfxIm;
+    KNArray2D<double>  p_tauMSH;
+    KNArray2D<double>  p_dtauMSH;
+    KNArray2D<double>  p_fxMSH;
+    KNArray3D<double>  p_dfxMSH;
+    KNArray3D<double>  p_dfpMSH;
+    KNArray3D<double>  p_dummy;
 };
 
 #endif

@@ -10,7 +10,7 @@
 #include "polynomial.h"
 #include <cmath>
 
-void poly_lgr(const Vector& t, Vector &out, double c)
+void poly_lgr(const KNVector& t, KNVector &out, double c)
 {
 
   P_ASSERT_X1(t.size() == out.size(), "poly_lgr: wrong dimensions");
@@ -27,7 +27,7 @@ void poly_lgr(const Vector& t, Vector &out, double c)
   }
 }
 
-void poly_dlg(const Vector& t, Vector& out, double c)
+void poly_dlg(const KNVector& t, KNVector& out, double c)
 {
   int j, k, l;
   double f;
@@ -52,7 +52,7 @@ void poly_dlg(const Vector& t, Vector& out, double c)
   }
 }
 
-void poly_d2lg(const Vector& t, Vector& out, double c)
+void poly_d2lg(const KNVector& t, KNVector& out, double c)
 {
   int i, j, k, l;
   double f;
@@ -86,7 +86,7 @@ void poly_d2lg(const Vector& t, Vector& out, double c)
 /// returns the coefficient of the lagrangian interpolation of a
 /// function at the i-th point on the mesh t
 ///
-void poly_coeff_lgr(Array1D<double>& out, const Array1D<double>& t, int i)
+void poly_coeff_lgr(KNArray1D<double>& out, const KNArray1D<double>& t, int i)
 {
   out.clear();
   out(0) = 1.0;
@@ -102,7 +102,7 @@ void poly_coeff_lgr(Array1D<double>& out, const Array1D<double>& t, int i)
 /// multiplies the two polynomials in1, in2 in out
 /// out = (in1(0) + in1(1)*x + ... + in1(n)*x^n) * (in2(0) + in2(1)*x + ... + in2(n)*x^n)
 ///
-void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>& in2)
+void poly_coeff_mul(KNArray1D<double>& out, KNArray1D<double>& in1, KNArray1D<double>& in2)
 {
   P_ASSERT_X1(out.size() > (in1.size() - 1) + (in2.size() - 1), "poly_coeff_mul: wrong dimensions.");
   out.clear();
@@ -117,7 +117,7 @@ void poly_coeff_mul(Array1D<double>& out, Array1D<double>& in1, Array1D<double>&
 
 /// integrates the polynomial in and writes the result in out
 ///
-void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
+void poly_coeff_int(KNArray1D<double>& out, KNArray1D<double>& in)
 {
   out.clear();
   for (int i = 0; i < in.size() - 1; i++)
@@ -129,7 +129,7 @@ void poly_coeff_int(Array1D<double>& out, Array1D<double>& in)
 
 /// differentiate the polynomial in and write to out
 ///
-void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in)
+void poly_coeff_diff(KNArray1D<double>& out, KNArray1D<double>& in)
 {
   out.clear();
   for (int i = 1; i < in.size(); i++)
@@ -140,7 +140,7 @@ void poly_coeff_diff(Array1D<double>& out, Array1D<double>& in)
 
 /// evaluate the polynomial in at point c
 ///
-double poly_eval(const Array1D<double>& in, double c)
+double poly_eval(const KNArray1D<double>& in, double c)
 {
   double tmp = in(in.size() - 1);
   for (int i = in.size() - 1; i > 0; --i)
@@ -153,7 +153,7 @@ double poly_eval(const Array1D<double>& in, double c)
 /// computes the lobatto mesh on [0,1] 
 /// this is defined on the boundary
 ///
-void lobatto(Array1D<double>& mesh)
+void lobatto(KNArray1D<double>& mesh)
 {
   const int N = mesh.size() - 1;
   if (mesh.size() > 1) for (int i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((i * M_PI) / N));
@@ -162,13 +162,13 @@ void lobatto(Array1D<double>& mesh)
 /// computes the gauss mesh on [0,1] 
 /// this is defined on the boundary
 ///
-void gauss(Array1D<double>& mesh)
+void gauss(KNArray1D<double>& mesh)
 {
   const int N = mesh.size();
   if (mesh.size() > 1) for (int i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((2.0 * i + 1.0) / (2.0 * N + 2) * M_PI));
 }
 
-double poly_lgr_eval( const Array1D<double>& t, int i, double c)
+double poly_lgr_eval( const KNArray1D<double>& t, int i, double c)
 {
   double res = 1.0;
   for (int j = 0; j < t.size(); j++)
@@ -181,7 +181,7 @@ double poly_lgr_eval( const Array1D<double>& t, int i, double c)
   return res;
 }
 
-double poly_dlg_eval( const Array1D<double>& t, int i, double c)
+double poly_dlg_eval( const KNArray1D<double>& t, int i, double c)
 {
   double res = 0.0;
   for (int k = 0; k < t.size(); ++k)

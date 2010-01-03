@@ -139,7 +139,7 @@ static inline const char* c2s(char *buf, char c)
   return buf;
 }
 
-void NConstants::loadXmlFile(const std::string &fileName)
+void KNConstants::loadXmlFile(const std::string &fileName)
 {
   FILE *fp;
   mxml_node_t *tree;
@@ -332,7 +332,7 @@ void NConstants::loadXmlFile(const std::string &fileName)
   mxmlDelete(tree);
 }
 
-void NConstants::saveXmlFile(const std::string &fileName)
+void KNConstants::saveXmlFile(const std::string &fileName)
 {
   std::ofstream file(fileName.c_str());
   printXmlFile(file);
@@ -343,7 +343,7 @@ static inline void mxmlNewDouble(mxml_node_t *node, double dbl)
   mxmlNewTextf(node, 0, "%.15E", dbl);
 }
 
-void NConstants::printXmlFile(std::ostream& file)
+void KNConstants::printXmlFile(std::ostream& file)
 {
   char cbuf[2];
   mxml_node_t *node = 0;
@@ -529,10 +529,10 @@ void NConstants::printXmlFile(std::ostream& file)
   mxmlDelete(xml);
 }
 
-bool NConstants::toEqnVar(System& sys,
-                          Array1D<Eqn>& eqn, Array1D<Var>& var,                 // input
-                          Array1D<Eqn>& eqn_refine, Array1D<Var>& var_refine,   // output
-                          Array1D<Eqn>& eqn_start, Array1D<Var>& var_start, bool& findangle)
+bool KNConstants::toEqnVar(KNSystem& sys,
+                          KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
+                          KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
+                          KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle)
 {
   // initializing the equations and variables
   if (getPointType() == SolUser)
@@ -547,7 +547,7 @@ bool NConstants::toEqnVar(System& sys,
   }
   else
   {
-    Array1D<Var> L_PARX(getParxNumSize());
+    KNArray1D<Var> L_PARX(getParxNumSize());
     for (int i = 0; i < getParxNumSize(); i++)
     {
       L_PARX(i) = getParx(i);
@@ -624,8 +624,8 @@ bool NConstants::toEqnVar(System& sys,
 
   if (getBranchSW() == TFHBSwitch)
   {
-      Array1D<Eqn> ee(eqn_refine);
-      Array1D<Var> vv(var_refine);
+      KNArray1D<Eqn> ee(eqn_refine);
+      KNArray1D<Var> vv(var_refine);
       eqn_refine.init(ee.size()-1);
       var_refine.init(ee.size()-1);
       for (int i = 0, j = 0; i < ee.size(); ++i)

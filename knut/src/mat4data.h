@@ -30,19 +30,19 @@
 # define int32_t INT32
 #endif
 
-class mat4Data
+class KNDataFile
 {
   public:
 
     // opens the file, determines its size, maps the memory from file, sets up variables
     // Constructor for periodic orbits
-    mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
+    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
     // Constructor for quasi-periodic orbits
-    mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
+    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
     // Constructor for opening an existing file
-    mat4Data(const std::string& fileName);
+    KNDataFile(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
-    ~mat4Data();
+    ~KNDataFile();
     
 #ifndef WIN32
     void   lock() const { if (flock(file, LOCK_EX) != 0) std::cerr<<"Error locking\n"; }
@@ -55,13 +55,13 @@ class mat4Data
     const std::string& getFileName() const { return matFileName; }
     // resets the tables (no locking)
     void   initHeaders();
-    void   setPar(int n, const Vector& par);
+    void   setPar(int n, const KNVector& par);
     void   setParNames(const std::vector<std::string>& parNames);
     void   getParNames(std::vector<std::string>& parNames) const;
-    void   setMul(int n, const Vector& real, const Vector& imag);
-    void   setElem(int n, const Vector& el);
-    void   setMesh(int n, const Vector& mesh);
-    void   setProfile(int n, const Vector& profile);
+    void   setMul(int n, const KNVector& real, const KNVector& imag);
+    void   setElem(int n, const KNVector& el);
+    void   setMesh(int n, const KNVector& mesh);
+    void   setProfile(int n, const KNVector& profile);
     void   setMesh1(int n, int j, double d)
     {
       elem(mesh1_offset, j, n) = d;
@@ -70,15 +70,15 @@ class mat4Data
     {
       elem(mesh2_offset, j, n) = d;
     }
-    void   getBlanket(int n, Vector& blanket);
-    void   setBlanket(int n, const Vector& blanket);
+    void   getBlanket(int n, KNVector& blanket);
+    void   setBlanket(int n, const KNVector& blanket);
 
-    void   getPar(int n, Vector& par) const;
+    void   getPar(int n, KNVector& par) const;
     double getPar(int n, int j) const
     {
       return elem(par_offset, j, n);
     }
-    void   getMul(int n, Vector& real, Vector& imag) const;
+    void   getMul(int n, KNVector& real, KNVector& imag) const;
     double getMulRe(int n, int j) const
     {
       return elem(mul_offset, j, n);
@@ -87,11 +87,11 @@ class mat4Data
     {
       return elem_im(mul_offset, j, n);
     }
-    void getMulReRef(int n, Vector& el)
+    void getMulReRef(int n, KNVector& el)
     {
       el.init(&elem(mul_offset, 0, n), nmul);
     }
-    void getMulImRef(int n, Vector& el)
+    void getMulImRef(int n, KNVector& el)
     {
       el.init(&elem_im(mul_offset, 0, n), nmul);
     }
@@ -104,30 +104,30 @@ class mat4Data
     {
       ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j] = i;
     }
-    void   getElem(int n, Vector& el) const;
+    void   getElem(int n, KNVector& el) const;
     double getElem(int n, int j) const
     {
       return elem(elem_offset, j, n);
     }
-    void   getElemRef(int n, Vector& el)
+    void   getElemRef(int n, KNVector& el)
     {
       el.init(&elem(elem_offset, 0, n), ndeg + 1);
     }
-    void   getMesh(int n, Vector& mesh) const;
+    void   getMesh(int n, KNVector& mesh) const;
     double getMesh(int n, int j) const
     {
       return elem(mesh_offset, j, n);
     }
-    void   getMeshRef(int n, Vector& mesh)
+    void   getMeshRef(int n, KNVector& mesh)
     {
       mesh.init(&elem(mesh_offset, 0, n), nint + 1);
     }
-    void   getProfile(int n, Vector& profile) const;
+    void   getProfile(int n, KNVector& profile) const;
     double getProfile(int n, int d, int j) const
     {
       return elem(prof_offset, d + ndim*j, n);
     }
-    void   getProfileRef(int n, Vector& profile)
+    void   getProfileRef(int n, KNVector& profile)
     {
       profile.init(&elem(prof_offset, 0, n), ndim*(ndeg*nint + 1));
     }
@@ -215,11 +215,11 @@ class mat4Data
         return (size_t)ncols;
       }
     };
-    static inline size_t createMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols);
-    static inline size_t createComplexMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols);
-    static inline void writeMatrixHeader(void* address, size_t offset, mat4Data::header* hd, const char* name);
+    static inline size_t createMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols);
+    static inline size_t createComplexMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols);
+    static inline void writeMatrixHeader(void* address, size_t offset, KNDataFile::header* hd, const char* name);
 
-    off_t findMatrix(const char* name, mat4Data::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="");
+    off_t findMatrix(const char* name, KNDataFile::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="");
     void openReadOnly(const std::string& fileName);
 
     void resizeMatrix(const char* name, int newcol);

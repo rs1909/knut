@@ -160,13 +160,13 @@ int sys_npar(){ return 3; }
 int sys_ntau(){ return 2; }
 int sys_nderi(){ return 2; }
 
-void sys_tau( Vector& out, double t, const Vector& par )
+void sys_tau( KNVector& out, double t, const KNVector& par )
 {
   out(0) = 0.0;
   out(1) = par(0);
 }
 
-void sys_dtau( Vector& out, double t, const Vector& par, int vp )
+void sys_dtau( KNVector& out, double t, const KNVector& par, int vp )
 {
 	switch( vp )
 	{
@@ -184,7 +184,7 @@ void sys_dtau( Vector& out, double t, const Vector& par, int vp )
 	}
 }
 
-void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
+void sys_rhs( KNVector& out, double t, const KNMatrix& x, const KNVector& par )
 {
   if( (t < 0)||(t > 1) ){ std::cout << "rhs: t is not element of the interval\n"; }
   double g;
@@ -197,8 +197,8 @@ void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
   out(1) = -x(0,0) - 2*ZETA*x(1,0) + g*par(2)*scf( phi, x(0,0), x(0,1) );
 }
 
-void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
-	       int nx, const int* vx, int np, const int* vp, const Matrix& vv )
+void sys_deri( KNMatrix &out, double t, const KNMatrix& x, const KNVector& par, 
+	       int nx, const int* vx, int np, const int* vp, const KNMatrix& vv )
 {
   if( (t < 0)||(t > 1) ){ std::cout << "deri: t is not element of the interval\n"; }
   double g;
@@ -331,14 +331,14 @@ void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par,
   }
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   par(0) = 1.31*M_PI;//31.270490/2.0;//2*2*M_PI/(3675.0/60.0/146.8);
   par(1) = par(0);
   par(2) = 0.0;
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
   out(0) = 0.0;//1.0+2.7*0.4*(0.0*0.3*sin(2*M_PI*t) - 1.0*0.7*cos(2*2*M_PI*t)- 1.0*0.6*cos(3*2*M_PI*t));
   out(1) = 0.0;//0.7*0.4*(0.0*0.3*sin(2*M_PI*t) - 1.0*0.7*cos(2*2*M_PI*t)- 1.0*0.6*cos(3*2*M_PI*t));

@@ -15,12 +15,12 @@
 // #include "constants.h" included in basecomp
 // #include <iostream> included in basecomp
 
-inline void parNamePrint(Vector& /*par*/, int npar, Array1D<Var>& var)
+inline void parNamePrint(KNVector& /*par*/, int npar, KNArray1D<Var>& var)
 {
   for (int j = 1; j < var.size(); j++) std::cout << "\t" << parType(npar, var(j) - VarPAR0) << parNum(npar, var(j) - VarPAR0) << "\t";
 }
 
-inline void parValuePrint(Vector& par, int /*npar*/, Array1D<Var>& var)
+inline void parValuePrint(KNVector& par, int /*npar*/, KNArray1D<Var>& var)
 {
   for (int j = 1; j < var.size(); j++) std::cout << "\t" << par(var(j) - VarPAR0);
 }
@@ -29,7 +29,7 @@ inline void parValuePrint(Vector& par, int /*npar*/, Array1D<Var>& var)
 int main(int argc, const char** argv)
 {
   // parameters
-  NConstants*  params = 0;
+  KNConstants*  params = 0;
   const char*  constFile = 0;
   const char*  branchFile = 0;
 
@@ -44,7 +44,7 @@ int main(int argc, const char** argv)
         {
           case 'c':
             constFile = argv[++acnt];
-            params = new NConstants;
+            params = new KNConstants;
             params->loadXmlFile(constFile);
 //            params->printXmlFile(std::cout);
             break;
@@ -74,13 +74,13 @@ int main(int argc, const char** argv)
       exit(1);
     }
   
-    CLIComp comp(*params);
+    KNCliContinuation comp(*params);
     if (branchFile == 0) comp.run();
     else comp.run(branchFile);
   }
-  catch (knutException ex)
+  catch (KNException ex)
   {
-    CLIComp::printException(ex);
+    KNCliContinuation::printException(ex);
 #ifdef DEBUG
     throw(-1);
 #endif

@@ -4,21 +4,21 @@
 #include "constants.h"
 #include "mat4data.h"
 
-class BaseComp
+class KNAbstractContinuation
 {
   public:
-    BaseComp(const NConstants& constants) : stopFlag(false)
+    KNAbstractContinuation(const KNConstants& constants) : stopFlag(false)
     {
-      params = new NConstants(constants);
+      params = new KNConstants(constants);
     }
-    virtual ~BaseComp()
+    virtual ~KNAbstractContinuation()
     {
       delete params;
     }
-    void setConstants(const NConstants& constants)
+    void setConstants(const KNConstants& constants)
     {
       delete params;
-      params = new NConstants(constants);
+      params = new KNConstants(constants);
     }
     void run(const char* branchFile);
     void run() { run(0); }
@@ -27,37 +27,37 @@ class BaseComp
       stopFlag = flag;
     }
     virtual void print(std::ostringstream& str) = 0;
-    virtual void raiseException(const knutException& ex) = 0;
-    virtual void setData(mat4Data* data) = 0;
-    virtual mat4Data& data() = 0;
+    virtual void raiseException(const KNException& ex) = 0;
+    virtual void setData(KNDataFile* data) = 0;
+    virtual KNDataFile& data() = 0;
     virtual void deleteData() = 0;
     virtual void dataUpdated() = 0;
   protected:
-    NConstants* params;
+    KNConstants* params;
     bool        stopFlag;
 };
 
-class CLIComp : public BaseComp
+class KNCliContinuation : public KNAbstractContinuation
 {
   public:
-    CLIComp(const NConstants& constants) : BaseComp(constants), output(0) { }
-    ~CLIComp() { }
+    KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0) { }
+    ~KNCliContinuation() { }
     void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
-    static void printException(const knutException& ex)
+    static void printException(const KNException& ex)
     {
       std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
     }
-    void raiseException(const knutException& ex)
+    void raiseException(const KNException& ex)
     {
       printException(ex);
       exit(-1);
     }
-    void setData(mat4Data* data) { output = data; }
-    mat4Data& data() { return *output; }
+    void setData(KNDataFile* data) { output = data; }
+    KNDataFile& data() { return *output; }
     void deleteData() { delete output; output = 0; }
     void dataUpdated() { }
   private:
-    mat4Data* output;
+    KNDataFile* output;
 };
 
 #endif

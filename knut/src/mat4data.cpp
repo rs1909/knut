@@ -36,7 +36,7 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
-off_t mat4Data::findMatrix(const char* name, mat4Data::header* found, bool test, int32_t r, int32_t c, int32_t imag, const char* fileName)
+off_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool test, int32_t r, int32_t c, int32_t imag, const char* fileName)
 {
   struct header hd;
   off_t cur_off = 0;
@@ -55,8 +55,8 @@ off_t mat4Data::findMatrix(const char* name, mat4Data::header* found, bool test,
       // Checking the parameters
       if (r != -1) P_ERROR_X5(hd.mrows == r, "Wrong number of rows of '", name, "' in file '", fileName, "'.");
       if (c != -1) P_ERROR_X5(hd.ncols == c, "Wrong number of columns of '", name, "' in file '", fileName, "'.");
-      if ((imag != -1)&&(imag == 0)) if (hd.imagf != 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has complex elements, but real was expected.");
-      if ((imag != -1)&&(imag != 0)) if (hd.imagf == 0) P_MESSAGE5("Matrix '", name, "' in file '", fileName, "' has real elements, but complex was expected.");
+      if ((imag != -1)&&(imag == 0)) if (hd.imagf != 0) P_MESSAGE5("KNMatrix '", name, "' in file '", fileName, "' has complex elements, but real was expected.");
+      if ((imag != -1)&&(imag != 0)) if (hd.imagf == 0) P_MESSAGE5("KNMatrix '", name, "' in file '", fileName, "' has real elements, but complex was expected.");
       return cur_off;
     }
     cur_off += cur_size;
@@ -172,34 +172,34 @@ static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::str
 #endif
 
 // returns the size of the whole data
-inline size_t mat4Data::createMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols)
+inline size_t KNDataFile::createMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 0;
-  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header));
-  return sizeof(mat4Data::header) + hd->namelen + rows * cols * sizeof(double);
+  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(KNDataFile::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(KNDataFile::header));
+  return sizeof(KNDataFile::header) + hd->namelen + rows * cols * sizeof(double);
 }
 
 // returns the size of the whole data
-inline size_t mat4Data::createComplexMatrixHeader(mat4Data::header* hd, const char* name, int32_t rows, int32_t cols)
+inline size_t KNDataFile::createComplexMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols)
 {
   hd->type = byte_order();
   hd->mrows = rows;
   hd->ncols = cols;
   hd->imagf = 1;
-  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(mat4Data::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(mat4Data::header));
-  return sizeof(mat4Data::header) + hd->namelen + 2 * rows * cols * sizeof(double);
+  hd->namelen = static_cast<int32_t>(((strlen(name) + sizeof(KNDataFile::header) + 1) / sizeof(double) + 1) * sizeof(double) - sizeof(KNDataFile::header));
+  return sizeof(KNDataFile::header) + hd->namelen + 2 * rows * cols * sizeof(double);
 }
 
-inline void mat4Data::writeMatrixHeader(void* address, size_t offset, mat4Data::header* hd, const char* name)
+inline void KNDataFile::writeMatrixHeader(void* address, size_t offset, KNDataFile::header* hd, const char* name)
 {
-  strncpy((char*)address + offset + sizeof(mat4Data::header), name, hd->namelen);
-  *((mat4Data::header*)((char*)address + offset)) = *hd;
+  strncpy((char*)address + offset + sizeof(KNDataFile::header), name, hd->namelen);
+  *((KNDataFile::header*)((char*)address + offset)) = *hd;
 }
 
-mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
+KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
   : matFileName(fileName)
 {
   wperm = true;
@@ -276,7 +276,7 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   unlock();
 }
 
-void mat4Data::setParNames(const std::vector<std::string>& parNames)
+void KNDataFile::setParNames(const std::vector<std::string>& parNames)
 {
   for (size_t i=0; i<parNames.size(); ++i)
   {
@@ -291,7 +291,7 @@ void mat4Data::setParNames(const std::vector<std::string>& parNames)
   }
 }
 
-void mat4Data::getParNames(std::vector<std::string>& parNames) const
+void KNDataFile::getParNames(std::vector<std::string>& parNames) const
 {
   parNames.resize(getRows(parnames_offset));
   char* buf = new char[getCols(parnames_offset)+1];
@@ -307,7 +307,7 @@ void mat4Data::getParNames(std::vector<std::string>& parNames) const
   delete[] buf;
 }
 
-mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
+KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
   : matFileName(fileName)
 {
   wperm = true;
@@ -393,18 +393,18 @@ mat4Data::mat4Data(const std::string& fileName, const std::vector<std::string>& 
   unlock();
 }
 
-mat4Data::mat4Data(const std::string& fileName)
+KNDataFile::KNDataFile(const std::string& fileName)
   : matFileName(fileName)
 {
   wperm = false;
   this->openReadOnly(fileName);
 }
 
-void mat4Data::resizeMatrix(const char* name, int newcol)
+void KNDataFile::resizeMatrix(const char* name, int newcol)
 {
   header mathead;
   off_t matoffset;
-  if ((matoffset = findMatrix(name, &mathead)) == -1) P_MESSAGE3("Matrix '", name, "' cannot be found.");
+  if ((matoffset = findMatrix(name, &mathead)) == -1) P_MESSAGE3("KNMatrix '", name, "' cannot be found.");
   P_ASSERT_X1(mathead.ncols >= newcol, "Cannot increase the size of the matrix.");
   char* to = (char*)address + matoffset + mathead.enddata(newcol);
   char* from = (char*)address + matoffset + mathead.enddata(mathead.ncols);
@@ -422,7 +422,7 @@ void mat4Data::resizeMatrix(const char* name, int newcol)
   writeMatrixHeader(address, matoffset, &mathead, name);
 }
 
-void mat4Data::condenseData()
+void KNDataFile::condenseData()
 {
   // condense the fields so that it is only the size of npoints, where it counts
   if (wperm)
@@ -442,7 +442,7 @@ void mat4Data::condenseData()
   }
 }
 
-void mat4Data::initHeaders()
+void KNDataFile::initHeaders()
 {
   npoints_offset = findMatrix("knut_npoints", &npoints_header, true, 1, 1, 0, matFileName.c_str());
   
@@ -495,7 +495,7 @@ void mat4Data::initHeaders()
   }
 }
 
-void mat4Data::openReadOnly(const std::string& fileName)
+void KNDataFile::openReadOnly(const std::string& fileName)
 {
 #ifndef WIN32
   address = mmapFileRead(file, fileName, size);
@@ -509,7 +509,7 @@ void mat4Data::openReadOnly(const std::string& fileName)
 
 // WARNING This creates a large file and then shrinks it
 // Use mmremap instead so that only the smaller file is written.
-mat4Data::~mat4Data()
+KNDataFile::~KNDataFile()
 {
 #ifndef WIN32
   size_t oldsize = size;
@@ -548,7 +548,7 @@ mat4Data::~mat4Data()
 #endif
 }
 
-void mat4Data::setPar(int n, const Vector& par)
+void KNDataFile::setPar(int n, const KNVector& par)
 {
   if (wperm && n < ncols)
   {
@@ -570,7 +570,7 @@ void mat4Data::setPar(int n, const Vector& par)
   }
 }
 
-void mat4Data::setMul(int n, const Vector& re, const Vector& im)
+void KNDataFile::setMul(int n, const KNVector& re, const KNVector& im)
 {
   if (wperm && n < ncols && re.size() == im.size())
   {
@@ -598,7 +598,7 @@ void mat4Data::setMul(int n, const Vector& re, const Vector& im)
   }
 }
 
-void mat4Data::setElem(int n, const Vector& el)
+void KNDataFile::setElem(int n, const KNVector& el)
 {
   if (wperm && n < ncols)
   {
@@ -618,7 +618,7 @@ void mat4Data::setElem(int n, const Vector& el)
   }
 }
 
-void mat4Data::setMesh(int n, const Vector& mesh)
+void KNDataFile::setMesh(int n, const KNVector& mesh)
 {
   if (wperm && n < ncols)
   {
@@ -638,7 +638,7 @@ void mat4Data::setMesh(int n, const Vector& mesh)
   }
 }
 
-void mat4Data::setProfile(int n, const Vector& prof)
+void KNDataFile::setProfile(int n, const KNVector& prof)
 {
   if (wperm && n < ncols)
   {
@@ -660,7 +660,7 @@ void mat4Data::setProfile(int n, const Vector& prof)
   }
 }
 
-void mat4Data::getBlanket(int n, Vector& blanket)
+void KNDataFile::getBlanket(int n, KNVector& blanket)
 {
   const int curr_npoints = static_cast<int>(elem(npoints_offset, 0, 0));
   if ((blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
@@ -674,7 +674,7 @@ void mat4Data::getBlanket(int n, Vector& blanket)
 }
 
 // write in order size() = [ ndeg1*nint1, ndeg2*nint2, ndim ]
-void mat4Data::setBlanket(int n, const Vector& blanket)
+void KNDataFile::setBlanket(int n, const KNVector& blanket)
 {
   if (wperm && n < ncols)
   {
@@ -712,7 +712,7 @@ void mat4Data::setBlanket(int n, const Vector& blanket)
   }
 }
 
-void mat4Data::getPar(int n, Vector& par) const
+void KNDataFile::getPar(int n, KNVector& par) const
 {
   if (n < ncols)
   {
@@ -732,7 +732,7 @@ void mat4Data::getPar(int n, Vector& par) const
   }
 }
 
-void mat4Data::getMul(int n, Vector& re, Vector& im) const
+void KNDataFile::getMul(int n, KNVector& re, KNVector& im) const
 {
   if (n < ncols && re.size() == im.size())
   {
@@ -749,7 +749,7 @@ void mat4Data::getMul(int n, Vector& re, Vector& im) const
   }
 }
 
-void mat4Data::getElem(int n, Vector& el) const
+void KNDataFile::getElem(int n, KNVector& el) const
 {
   if (n < ncols)
   {
@@ -769,7 +769,7 @@ void mat4Data::getElem(int n, Vector& el) const
   }
 }
 
-void mat4Data::getMesh(int n, Vector& mesh) const
+void KNDataFile::getMesh(int n, KNVector& mesh) const
 {
   if (n < ncols)
   {
@@ -789,7 +789,7 @@ void mat4Data::getMesh(int n, Vector& mesh) const
   }
 }
 
-void mat4Data::getProfile(int n, Vector& prof) const
+void KNDataFile::getProfile(int n, KNVector& prof) const
 {
   if (n < ncols)
   {
@@ -809,30 +809,30 @@ void mat4Data::getProfile(int n, Vector& prof) const
   }
 }
 
-int mat4Data::getUnstableMultipliers(int n) const
+int KNDataFile::getUnstableMultipliers(int n) const
 {
-  Vector mulRe(false), mulIm(false);
-  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
-  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  KNVector mulRe(false), mulIm(false);
+  const_cast<KNDataFile*>(this)->getMulReRef(n, mulRe);
+  const_cast<KNDataFile*>(this)->getMulImRef(n, mulIm);
   const int lp = getNTrivMul(0);
   const int pd = getNTrivMul(1);
   const int ns = getNTrivMul(2);
   return unstableMultipliers(mulRe, mulIm, lp, pd, ns);
 }
 
-int mat4Data::getNextBifurcation(int n, bool* stab) const
+int KNDataFile::getNextBifurcation(int n, bool* stab) const
 {
-  Vector mulRe(false), mulIm(false);
-  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
-  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  KNVector mulRe(false), mulIm(false);
+  const_cast<KNDataFile*>(this)->getMulReRef(n, mulRe);
+  const_cast<KNDataFile*>(this)->getMulImRef(n, mulIm);
   const int lp = getNTrivMul(0);
   const int pd = getNTrivMul(1);
   const int ns = getNTrivMul(2);
   int p_ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns);
   for (int i = n + 1; i < getNPoints(); ++i)
   {
-    const_cast<mat4Data*>(this)->getMulReRef(i, mulRe);
-    const_cast<mat4Data*>(this)->getMulImRef(i, mulIm);
+    const_cast<KNDataFile*>(this)->getMulReRef(i, mulRe);
+    const_cast<KNDataFile*>(this)->getMulImRef(i, mulIm);
     int ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns);
     if (ustab != p_ustab) 
     {
@@ -848,11 +848,11 @@ int mat4Data::getNextBifurcation(int n, bool* stab) const
   return -1;
 }
 
-BifType  mat4Data::getBifurcationType(int n) const
+BifType  KNDataFile::getBifurcationType(int n) const
 {
-  Vector mulRe(false), mulIm(false);
-  const_cast<mat4Data*>(this)->getMulReRef(n, mulRe);
-  const_cast<mat4Data*>(this)->getMulImRef(n, mulIm);
+  KNVector mulRe(false), mulIm(false);
+  const_cast<KNDataFile*>(this)->getMulReRef(n, mulRe);
+  const_cast<KNDataFile*>(this)->getMulImRef(n, mulIm);
   const int lp = getNTrivMul(0);
   const int pd = getNTrivMul(1);
   const int ns = getNTrivMul(2);

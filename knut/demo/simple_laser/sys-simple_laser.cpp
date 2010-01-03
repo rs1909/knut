@@ -16,7 +16,7 @@ int sys_nderi(){ return 2; }
 
 // VECTORIZED DEF.
 
-void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -25,7 +25,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par,                       const int vp )
+void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par,                       const int vp )
 {
   for (int idx=0; idx < time.size(); ++idx)
   {
@@ -36,8 +36,8 @@ void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1
   }
 }
 
-void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
-                const Array3D<double>& xx, const Array1D<double>& par, int sel )
+void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
+                const KNArray3D<double>& xx, const KNArray1D<double>& par, int sel )
 {
   // parameters
   const double alpha = par(1);
@@ -65,10 +65,10 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time,
   }
 }
 
-void sys_p_deri( Array3D<double>& mout, const Array1D<double>& time,
-                 const Array3D<double>& xx, const Array1D<double>& par, int sel,
+void sys_p_deri( KNArray3D<double>& mout, const KNArray1D<double>& time,
+                 const KNArray3D<double>& xx, const KNArray1D<double>& par, int sel,
                  const int nx, const int* vx, const int np, const int* vp,
-                 const Array3D<double>& vv )
+                 const KNArray3D<double>& vv )
 {
 #define out(i,j) mout(i,j,idx)
 const double alpha = par(1);
@@ -522,7 +522,7 @@ for (int idx=0; idx<time.size(); ++idx)
 #undef out
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   // bb controls the solution
   const double bb      = -0.0002;//;-0.00483423*0.98;
@@ -546,9 +546,9 @@ void sys_stpar( Vector& par )
 // 	std::cout<<"kappa "<< kappa << "\n";
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
-  Vector par(8);
+  KNVector par(8);
   sys_stpar(par);
   // parameters
   const double alpha = par(1);

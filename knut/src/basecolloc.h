@@ -12,59 +12,59 @@
 
 #include "matrix.h"
 
-class System;
+class KNSystem;
 
-class BaseColloc
+class KNAbstractCollocation
 {
   public:
-    virtual void   init(const Vector& sol, const Vector& par) = 0;
-    virtual void   star(Vector& out, const Vector& sol) = 0;
-    virtual double integrate(const Vector& v1, const Vector& v2) = 0;
-    virtual void   meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent) = 0;
+    virtual void   init(const KNVector& sol, const KNVector& par) = 0;
+    virtual void   star(KNVector& out, const KNVector& sol) = 0;
+    virtual double integrate(const KNVector& v1, const KNVector& v2) = 0;
+    virtual void   meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent) = 0;
 };
 
 // It can contain mesh adaptation, importing exporting reading writing to file
 // the data structures, mesh, meshINT, col are the same.
-class PerSolColloc : public BaseColloc
+class KNAbstractBvpCollocation : public KNAbstractCollocation
 {
   public:
 
-    PerSolColloc(System& sys, const int nint, const int ndeg);
+    KNAbstractBvpCollocation(KNSystem& sys, const int nint, const int ndeg);
 
-    virtual ~PerSolColloc() {}
+    virtual ~KNAbstractBvpCollocation() {}
 
-    virtual void init(const Vector& sol, const Vector& par) = 0;
-    void meshAdapt(Vector& newprofile, const Vector& profile, Vector& newtangent, const Vector& tangent);
+    virtual void init(const KNVector& sol, const KNVector& par) = 0;
+    void meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent);
 
-    virtual void interpolate(Array3D<double>& out, const Vector& sol) = 0;
-    virtual void interpolateComplex(Array3D<double>& outRe, Array3D<double>& outIm, const Vector& sol) = 0;
-    virtual void interpolateOnMesh(Array3D<double>& out, const Vector& sol) = 0;
+    virtual void interpolate(KNArray3D<double>& out, const KNVector& sol) = 0;
+    virtual void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol) = 0;
+    virtual void interpolateOnMesh(KNArray3D<double>& out, const KNVector& sol) = 0;
 
-    static void   getMetric(Matrix& mt, const Vector& t);
-    static void   getDiffMetric(Matrix& mt, const Vector& t);
-    static void   star(Vector& out, const Vector& in, const Matrix& mt, const Vector& msh, int dim);
-    static double integrate(const Vector& v1, const Vector& v2, const Matrix& mt, const Vector& msh, int dim);
-    static int meshlookup(const Vector& mesh, double t);
+    static void   getMetric(KNMatrix& mt, const KNVector& t);
+    static void   getDiffMetric(KNMatrix& mt, const KNVector& t);
+    static void   star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, int dim);
+    static double integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, int dim);
+    static int meshlookup(const KNVector& mesh, double t);
 
-    void   star(Vector& out, const Vector& sol);
-    double integrate(const Vector& v1, const Vector& v2);
-    double integrateWithDerivative(const Vector& v1, const Vector& v2);
-    double integrateWithCp(const Vector& v1, const Vector& v2, const Vector& v3);
+    void   star(KNVector& out, const KNVector& sol);
+    double integrate(const KNVector& v1, const KNVector& v2);
+    double integrateWithDerivative(const KNVector& v1, const KNVector& v2);
+    double integrateWithCp(const KNVector& v1, const KNVector& v2, const KNVector& v3);
 
-    void   phaseStar(Vector& V1, const Vector& V2);
-    void   phaseRotationStar(Vector& V1, const Vector& V2, const Array1D<int>& Re, const Array1D<int>& Im);
+    void   phaseStar(KNVector& V1, const KNVector& V2);
+    void   phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<int>& Re, const KNArray1D<int>& Im);
 
-    void   importProfile(Vector& out, const Vector& in, const Vector& mesh, int deg_, bool adapt);
-    void   exportProfile(Vector& out, const Vector& mshint, const Vector& mshdeg, const Vector& in);
-    void   pdMeshConvert(Vector& newprofile, Vector& newtangent, const Vector& oldprofile, const Vector& oldtangent);
+    void   importProfile(KNVector& out, const KNVector& in, const KNVector& mesh, int deg_, bool adapt);
+    void   exportProfile(KNVector& out, const KNVector& mshint, const KNVector& mshdeg, const KNVector& in);
+    void   pdMeshConvert(KNVector& newprofile, KNVector& newtangent, const KNVector& oldprofile, const KNVector& oldtangent);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 
     // continuation of solution
 
-    virtual void rightHandSide(Vector& rhs, const Vector& par, const Vector& sol) = 0;
-    virtual void rightHandSide_p(Vector& rhs, const Vector& par, const Vector& sol, int p) = 0;   // sol is currently not needed
-    virtual void rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& sol) = 0;          // sol is currently not needed
+    virtual void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol) = 0;
+    virtual void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p) = 0;   // sol is currently not needed
+    virtual void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol) = 0;          // sol is currently not needed
 
     // supplementary
     inline int nDim() const
@@ -84,16 +84,16 @@ class PerSolColloc : public BaseColloc
       return ndeg;
     }
 
-    inline const Vector& getElem()
+    inline const KNVector& getElem()
     {
       return meshINT;
     }
-    void setMesh(const Vector& msh)
+    void setMesh(const KNVector& msh)
     {
-      P_ASSERT_X(msh.size() == nint + 1, "Error in PerSolColloc::setMesh : Bad dimensions.");
+      P_ASSERT_X(msh.size() == nint + 1, "Error in KNAbstractBvpCollocation::setMesh : Bad dimensions.");
       mesh = msh;
     }
-    inline const Vector& getMesh()
+    inline const KNVector& getMesh()
     {
       return mesh;
     }
@@ -105,10 +105,10 @@ class PerSolColloc : public BaseColloc
   protected:
 
     // helper functions
-    void meshAdapt_internal( Vector& newmesh, const Vector& profile );
+    void meshAdapt_internal( KNVector& newmesh, const KNVector& profile );
 
     // the equations
-    System* sys;
+    KNSystem* sys;
 
     const int ndim;
     const int npar;
@@ -116,20 +116,20 @@ class PerSolColloc : public BaseColloc
     const int nint;
     const int ndeg;
 
-    Vector    time;
-    Array1D<double> timeMSH;  // the representation points
+    KNVector    time;
+    KNArray1D<double> timeMSH;  // the representation points
 
     // matrix for integration
-    Matrix metric;
+    KNMatrix metric;
     // integration with derivatives (for phase conditions)
-    Matrix metricPhase;
+    KNMatrix metricPhase;
 
-    Vector mesh;
-    Vector meshINT;
-    Vector col;
-    Array1D< Array1D<double> > lgr;
+    KNVector mesh;
+    KNVector meshINT;
+    KNVector col;
+    KNArray1D< KNArray1D<double> > lgr;
     // internal use for the initialization
-    Vector out;
+    KNVector out;
 };
 
 #endif /*BASECOLLOC_H*/

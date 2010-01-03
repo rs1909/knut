@@ -400,7 +400,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
 // 1. x > XSeparator, y > YSeparator
 //    - We draw stability in this case with dashed lines
 // 2. everything else doesn't change.
-bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable x, PlotYVariable y, 
+bool PlotData::addPlot(const QSharedPointer<const KNDataFile>& data, PlotXVariable x, PlotYVariable y, 
   int pt, int dim)
 {
   int xadded = 0;
@@ -466,16 +466,16 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
       // Y Coordinate
       if (y == YL2Norm)
       {
-        Vector elem(false);
-        qSharedPointerConstCast<mat4Data>(data)->getElemRef(0, elem);
-        Matrix metric(elem.size(), elem.size());
-        NColloc::getMetric(metric, elem);
-        Vector prof(false), msh(false);
+        KNVector elem(false);
+        qSharedPointerConstCast<KNDataFile>(data)->getElemRef(0, elem);
+        KNMatrix metric(elem.size(), elem.size());
+        KNDdeBvpCollocation::getMetric(metric, elem);
+        KNVector prof(false), msh(false);
         for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
-          qSharedPointerConstCast<mat4Data>(data)->getMeshRef(i, msh);
-          qSharedPointerConstCast<mat4Data>(data)->getProfileRef(i, prof);
-          Graph.rbegin()->y(j) = NColloc::integrate(prof, prof, metric, msh, data->getNDim());
+          qSharedPointerConstCast<KNDataFile>(data)->getMeshRef(i, msh);
+          qSharedPointerConstCast<KNDataFile>(data)->getProfileRef(i, prof);
+          Graph.rbegin()->y(j) = KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim());
         }
       } else
       if (y == YAmplitude)
@@ -688,7 +688,7 @@ bool PlotData::addPlot(const QSharedPointer<const mat4Data>& data, PlotXVariable
   }
 }
 
-void PlotData::updatePlot(const QSharedPointer<const mat4Data>& mat)
+void PlotData::updatePlot(const QSharedPointer<const KNDataFile>& mat)
 {
   int it = 0;
   std::list<PlotItem>::iterator first = Graph.end();

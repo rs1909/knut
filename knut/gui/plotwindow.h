@@ -33,7 +33,7 @@ class plotWindow : public QMainWindow
 {
     Q_OBJECT
   public:
-    plotWindow(const QSharedPointer<const mat4Data>& mat, QWidget *parent = 0);
+    plotWindow(const QSharedPointer<const KNDataFile>& mat, QWidget *parent = 0);
     plotWindow(QWidget *parent = 0);
     ~plotWindow();
     bool isDataSet()
@@ -43,7 +43,7 @@ class plotWindow : public QMainWindow
   private:
     void setupPlotWindow();
     // variables
-    QSharedPointer<const mat4Data> data;
+    QSharedPointer<const KNDataFile> data;
     PlotData plotdata;
     QGraphicsView *plot;
     // gui elements
@@ -67,9 +67,9 @@ class plotWindow : public QMainWindow
     void exportSvg();
   public slots:
     // sets the data file
-    void setData(const QSharedPointer<const mat4Data>& mat);
+    void setData(const QSharedPointer<const KNDataFile>& mat);
     // is called when the computing thread made a step
-    void updatePlot(const QSharedPointer<const mat4Data>& data);
+    void updatePlot(const QSharedPointer<const KNDataFile>& data);
   signals:
     // gets emitted when a new file is opened
     // this makes the system open the file and the will called

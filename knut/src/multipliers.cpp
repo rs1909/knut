@@ -13,7 +13,7 @@
 #include "matrix.h"
 #include "pointtype.h"
 
-static inline void findTrivialIndices(const Vector& mulRe, const Vector& mulIm,
+static inline void findTrivialIndices(const KNVector& mulRe, const KNVector& mulIm,
                                       const int lp, const int pd, const int ns,
                                       int *imin, double* dmin)
 {
@@ -48,7 +48,7 @@ static inline void findTrivialIndices(const Vector& mulRe, const Vector& mulIm,
   }
 }
 
-int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
+int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns)
 {
 #define NCRIT 6
   P_ERROR_X1(lp + pd + ns < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
@@ -67,7 +67,7 @@ int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, 
 #undef NCRIT
 }
 
-BifType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns)
+BifType bifurcationType(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns)
 {
 #define NCRIT 6
   const int aut = lp+pd+ns;

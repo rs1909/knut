@@ -12,9 +12,9 @@
 
 #include "pointtype.h"
 
-class Vector;
+class KNVector;
 
-int unstableMultipliers(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns);
-BifType bifurcationType(const Vector& mulRe, const Vector& mulIm, const int lp, const int pd, const int ns);
+int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns);
+BifType bifurcationType(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns);
 
 #endif

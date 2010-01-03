@@ -14,30 +14,30 @@
 #include <QThread>
 #include <QSharedPointer>
 
-class mat4Data;
+class KNDataFile;
 
-class MThread : public QThread, public BaseComp
+class MThread : public QThread, public KNAbstractContinuation
 {
     Q_OBJECT
   public:
-    MThread(const NConstants& constants, QObject* parent = 0);
+    MThread(const KNConstants& constants, QObject* parent = 0);
     ~MThread();
     void run();
     void print(std::ostringstream& str);
-    void raiseException(const knutException& ex);
-    void setData(mat4Data* data);
-    mat4Data& data();
-    const QSharedPointer<mat4Data>& dataPointer();
+    void raiseException(const KNException& ex);
+    void setData(KNDataFile* data);
+    KNDataFile& data();
+    const QSharedPointer<KNDataFile>& dataPointer();
     void deleteData();
     void dataUpdated();
   public slots:
     void consolePrint(const std::string& str);
 
   signals:
-    void exceptionOccured(const knutException& ex);
+    void exceptionOccured(const KNException& ex);
     void printToScreen(const std::string& str);
-    void dataChanged(const QSharedPointer<const mat4Data>& mat);
+    void dataChanged(const QSharedPointer<const KNDataFile>& mat);
 
   private:
-    QSharedPointer<mat4Data> output;
+    QSharedPointer<KNDataFile> output;
 };

@@ -328,7 +328,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   //
   sys_out << csrc;
   sys_out << "//" << endl;
-  sys_out << "// Knut System Definition file for the VFGEN vector field: " << Name() << endl;
+  sys_out << "// Knut KNSystem Definition file for the VFGEN vector field: " << Name() << endl;
   sys_out << "//" << endl;
   PrintVFGENComment(sys_out, "// ");
   sys_out << "//" << endl;
@@ -351,7 +351,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << endl;
   sys_out << "extern \"C\" {\n";
   sys_out << endl;
-  sys_out << "int sys_ndim()  { return " << nv << "; }  // System dimension\n";
+  sys_out << "int sys_ndim()  { return " << nv << "; }  // KNSystem dimension\n";
   sys_out << "int sys_npar()  { return " << par_shift + np << "; }  // Number of parameters, plus one (for the period)\n";
   sys_out << "int sys_ntau()  { return " << 1 + Delays.size() << "; }  // Number of delays, plus one\n";
   sys_out << "int sys_nderi() { return 2; }  // Order of derivatives computed here\n";
@@ -364,7 +364,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//" << endl;
   sys_out << "// sys_p_rhs(...) computes the vector field.\n";
   sys_out << "//" << endl;
-  sys_out << "void sys_p_rhs(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_, int sel)\n";
+  sys_out << "void sys_p_rhs(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, int sel)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -430,7 +430,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// with respect to the k-th delayed vector.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_jacx(Array3D<double>& jac_, const Array1D<double>& time, int k, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_jacx(KNArray3D<double>& jac_, const KNArray1D<double>& time, int k, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -486,7 +486,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// with respect to the j-th parameter.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_jacp(Array3D<double>& jac_, const Array1D<double>& time, int j, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_jacp(KNArray3D<double>& jac_, const KNArray1D<double>& time, int j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -526,7 +526,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// with respect to the k-th delayed state vector and the j-th parameter.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_jacxp(Array3D<double>& jac_, const Array1D<double>& time, int k, int j, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_jacxp(KNArray3D<double>& jac_, const KNArray1D<double>& time, int k, int j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -569,7 +569,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// then multiplies this by the m-th column of v to obtain a matrix.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_hess_times_v(Array3D<double>& jac_, const Array1D<double>& time, int k1, int k2, int m, const Array3D<double>& v_, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_hess_times_v(KNArray3D<double>& jac_, const KNArray1D<double>& time, int k1, int k2, int m, const KNArray3D<double>& v_, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -633,7 +633,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//\n";
   // Function definition starts here.
   sys_out << "//" << endl;
-  sys_out << "void sys_p_deri(Array3D<double>& jac_, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_, int sel,\nint nx_, const int* vx_, int np_, const int* vp_, const Array3D<double>& v_)\n";
+  sys_out << "void sys_p_deri(KNArray3D<double>& jac_, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, int sel,\nint nx_, const int* vx_, int np_, const int* vp_, const KNArray3D<double>& v_)\n";
   sys_out << "{\n";
   sys_out << "    if (nx_ == 1 & np_ == 0)\n";
   sys_out << "        " << Name() << "_jacx(jac_, time, vx_[0], Zlags_, par_);\n";
@@ -658,7 +658,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// sys_p_tau(...) computes the vector of delays.\n";
   sys_out << "//" << endl;
   sys_out << endl;
-  sys_out << "void sys_p_tau(Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par_)\n";
+  sys_out << "void sys_p_tau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -718,7 +718,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << endl;
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "void sys_p_dtau(Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par_, int p_)\n";
+  sys_out << "void sys_p_dtau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_, int p_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -767,7 +767,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   // ***************************************************************************
   // Starting parameters
   // ***************************************************************************
-  sys_out << "void sys_stpar(Vector& par_)\n";
+  sys_out << "void sys_stpar(KNVector& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -803,7 +803,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   // ***************************************************************************
   // Starting solution
   // ***************************************************************************
-  sys_out << "void sys_stsol(Vector& out, double t)\n";
+  sys_out << "void sys_stsol(KNVector& out, double t)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -867,7 +867,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   // Event functions
   // ***************************************************************************
   sys_out << "//" << endl;
-  sys_out << "void sys_p_event(Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& Zlags_, const Array1D<double>& par_)\n";
+  sys_out << "void sys_p_event(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {

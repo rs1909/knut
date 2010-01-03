@@ -25,8 +25,8 @@
 #define NINT nint
 #define NDEG ndeg
 
-ODEColloc::ODEColloc(System& _sys, const int _nint, const int _ndeg)
-    : PerSolColloc(_sys, _nint, _ndeg),
+KNOdeBvpCollocation::KNOdeBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg)
+    : KNAbstractBvpCollocation(_sys, _nint, _ndeg),
     tt(2, ndeg + 1, ndeg*nint),
     ttMSH(2, ndeg + 1, ndeg*nint + 1),
     solData(ndim, 2 + 1, ndeg*nint),
@@ -49,7 +49,7 @@ ODEColloc::ODEColloc(System& _sys, const int _nint, const int _ndeg)
 ///    tt(j,l,i) : j == 0, interp the solution
 ///                j == 1, interp derivative
 ///
-void ODEColloc::init(const Vector& sol, const Vector& par)
+void KNOdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
 {
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -103,7 +103,7 @@ void ODEColloc::init(const Vector& sol, const Vector& par)
   interpolate(solData, sol);
 }
 
-void ODEColloc::interpolate(Array3D<double>& solData, const Vector& sol)
+void KNOdeBvpCollocation::interpolate(KNArray3D<double>& solData, const KNVector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {
@@ -124,7 +124,7 @@ void ODEColloc::interpolate(Array3D<double>& solData, const Vector& sol)
   }
 }
 
-void ODEColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
+void KNOdeBvpCollocation::interpolateOnMesh(KNArray3D<double>& solData, const KNVector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {
@@ -148,7 +148,7 @@ void ODEColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void ODEColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
+void KNOdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArray3D<double>& solDataIm, const KNVector& sol)
 {
   for (int i = 0; i < NINT; ++i)
   {
@@ -173,7 +173,7 @@ void ODEColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& 
   }
 }
 
-void ODEColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
+void KNOdeBvpCollocation::rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol)
 {
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -191,7 +191,7 @@ void ODEColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
   }
 }
 
-void ODEColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
+void KNOdeBvpCollocation::rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
@@ -226,18 +226,18 @@ void ODEColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*
   }
 }
 
-void ODEColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
+void KNOdeBvpCollocation::rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& /*sol*/)
 {
   RHS_jacobian<true>(A, par);
 }
 
-void ODEColloc::jacobianOfStability(SpMatrix& A, const Vector& par)
+void KNOdeBvpCollocation::jacobianOfStability(KNSparseMatrix& A, const KNVector& par)
 {
   RHS_jacobian<false>(A, par);
 }
 
 template <bool periodic>
-void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
+void KNOdeBvpCollocation::RHS_jacobian(KNSparseMatrix& A, const KNVector& par )
 {
   A.clear('R');
 

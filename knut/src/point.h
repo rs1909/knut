@@ -30,13 +30,13 @@
 #include "pointtype.h"
 #include "mat4data.h"
 
-class Point : public PerSolPoint
+class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
 {
   public:
 
     // constructor
-    Point(System& sys, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS, int nmat = BMATRICES);
-    virtual ~Point();
+    KNDdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS, int nmat = BMATRICES);
+    virtual ~KNDdePeriodicSolution();
 
     void    Stability();
 
@@ -44,11 +44,11 @@ class Point : public PerSolPoint
     void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
     void    SwitchTFPD(double ds);   // switches branch with testFunct
     void    SwitchTFHB(double ds, std::ostream& out);   // switches branch with testFunct
-    void    SwitchTRSol(Vector& Sol, const Vector& mshint, const Vector& mshdeg)
+    void    SwitchTRSol(KNVector& Sol, const KNVector& mshint, const KNVector& mshdeg)
     {
       colloc->exportProfile(Sol, mshint, mshdeg, sol);
     } // starting data for tori: solution
-    void    SwitchTFTRTan(Vector& Re, Vector& Im, double& alpha, const Vector& mshint, const Vector& mshdeg);   // starting data for tori: tangent WITH testFunct
+    void    SwitchTFTRTan(KNVector& Re, KNVector& Im, double& alpha, const KNVector& mshint, const KNVector& mshdeg);   // starting data for tori: tangent WITH testFunct
  
     void    Plot(GnuPlot& pl);
     inline void    print(char* file)
@@ -70,35 +70,35 @@ class Point : public PerSolPoint
     void    destruct();
 
     // internal member-functions
-//   inline double SolNorm( Vector& sol, Vector& par );
+//   inline double SolNorm( KNVector& sol, KNVector& par );
 
 /// MAKE IT VIRTUAL
     void jacobian(
-      HyperMatrix& AA, HyperVector& RHS,                      // output
-      Vector& parPrev, Vector& par,                           // parameters
-      Vector& solPrev, Vector& sol,                           // solution
-      Array1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
+      KNSparseBlockMatrix& AA, KNBlockVector& RHS,                      // output
+      KNVector& parPrev, KNVector& par,                           // parameters
+      KNVector& solPrev, KNVector& sol,                           // solution
+      KNArray1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
 
 
     // multipliers
-//    Vector       mRe;
-//    Vector       mIm;
+//    KNVector       mRe;
+//    KNVector       mIm;
     // number of trivial multipliers
 //    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
 
     // for the rotation phase conditions
-//    Array1D<int> rotRe;
-//    Array1D<int> rotIm;
+//    KNArray1D<int> rotRe;
+//    KNArray1D<int> rotIm;
 
     // stability matrix
-    StabMatrix   jacStab;
+    KNSparseMatrixPolynomial   jacStab;
 
     // test functionals
-    Array1D<baseTestFunct*> testFunct;
+    KNArray1D<KNAbstractTestFunctional*> testFunct;
     // for collocation
-    NColloc*     colloc;
+    KNDdeBvpCollocation*     colloc;
 };
 
 //-------------------------------------------------------//
@@ -108,7 +108,7 @@ class Point : public PerSolPoint
 //     0  0.000000e+00  0.000000e+00  0.000000e+00   0    0
 //-------------------------------------------------------//
 
-inline void parNamePrint(std::ostream& out, int npar, Var cp, const Array1D<Var>& var, const std::vector<std::string>& parNames)
+inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Var>& var, const std::vector<std::string>& parNames)
 {
 //   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
@@ -126,7 +126,7 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const Array1D<Var>
   out << std::left << std::setfill(' ') << std::setw(2) << "IT";
 }
 
-inline void parValuePrint(std::ostream& out, const Vector& par, Var cp, const Array1D<Var>& var, int lb, BifType tp, double norm, int ustab, int it)
+inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const KNArray1D<Var>& var, int lb, BifType tp, double norm, int ustab, int it)
 {
   out.fill(' ');
   out.unsetf(std::ios::adjustfield);

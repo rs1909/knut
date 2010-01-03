@@ -26,7 +26,7 @@
 
 
 //
-// the NColloc class
+// the KNDdeBvpCollocation class
 //
 
 #define NDIM ndim
@@ -36,8 +36,8 @@
 #define NDEG ndeg
 #define NMAT nmat
 
-NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat) :
-    PerSolColloc(_sys, _nint, _ndeg),
+KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg, int _nmat) :
+    KNAbstractBvpCollocation(_sys, _nint, _ndeg),
     ntau(_sys.ntau()), nmat(_nmat),
 
     kk(ntau + 1, nint*ndeg), ee(ntau + 1, nint*ndeg),
@@ -103,10 +103,10 @@ NColloc::NColloc(System& _sys, const int _nint, const int _ndeg, int _nmat) :
 ///    ttMSH(j,l,i) : j = k, the delay. Here, we don't shift as in others
 ///                   it contains only the middle of tt j=1...NDEG at indices j=0...NDEG-1
 ///
-void NColloc::init(const Vector& sol, const Vector& par)
+void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
 {
-  Array1D<double> t(NTAU+1);
-  Array1D<double> tMSH(NTAU);
+  KNArray1D<double> t(NTAU+1);
+  KNArray1D<double> tMSH(NTAU);
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -328,7 +328,7 @@ void NColloc::init(const Vector& sol, const Vector& par)
 #endif
 }
 
-void NColloc::interpolate(Array3D<double>& solData, const Vector& sol)
+void KNDdeBvpCollocation::interpolate(KNArray3D<double>& solData, const KNVector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT; ++idx)   // i: interval; j: which collocation point
   {
@@ -367,7 +367,7 @@ void NColloc::interpolate(Array3D<double>& solData, const Vector& sol)
   }
 }
 
-void NColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
+void KNDdeBvpCollocation::interpolateOnMesh(KNArray3D<double>& solData, const KNVector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)
   {
@@ -390,7 +390,7 @@ void NColloc::interpolateOnMesh(Array3D<double>& solData, const Vector& sol)
 
 // in complex form on 2*i th places are the reals and on 2*i+1 th places the imaginary parts
 
-void NColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& solDataIm, const Vector& sol)
+void KNDdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArray3D<double>& solDataIm, const KNVector& sol)
 {
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
@@ -420,7 +420,7 @@ void NColloc::interpolateComplex(Array3D<double>& solDataRe, Array3D<double>& so
   }
 }
 
-void NColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
+void KNDdeBvpCollocation::rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol)
 {
 #ifdef DEBUG
   count_RHS++;
@@ -441,7 +441,7 @@ void NColloc::rightHandSide(Vector& rhs, const Vector& par, const Vector& sol)
   }
 }
 
-void NColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*sol*/, int alpha)
+void KNDdeBvpCollocation::rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& /*sol*/, int alpha)
 {
 #ifdef DEBUG
   count_RHS_p++;
@@ -519,7 +519,7 @@ void NColloc::rightHandSide_p(Vector& rhs, const Vector& par, const Vector& /*so
 }
 
 
-void NColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*sol*/)
+void KNDdeBvpCollocation::rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& /*sol*/)
 {
 #ifdef DEBUG
   count_RHS_x++;
@@ -580,7 +580,7 @@ void NColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*so
 
 
 //! its very different from all of them
-void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
+void KNDdeBvpCollocation::jacobianOfStability(KNSparseMatrixPolynomial& AB, const KNVector& par)
 {
 #ifdef DEBUG
   count_StabJac++;
@@ -674,7 +674,7 @@ void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
 }
 
 // similar to RHS_x but with one boundary condition only and multiplied by Z
-void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Z)
+void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -744,7 +744,7 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Z)
 
 
 // this has to be changed only to packed complex.
-void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
+void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double Re, double Im)
 {
 #ifdef DEBUG
   count_CharJac_x++;
@@ -775,7 +775,7 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
   }
 
   // computing the powers of the multiplier
-  Vector ZReP(NMAT + 1), ZImP(NMAT + 1);
+  KNVector ZReP(NMAT + 1), ZImP(NMAT + 1);
   ZReP(0) = 1.0;
   ZImP(0) = 0.0;
   ZReP(1) = Re;
@@ -848,7 +848,7 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
 
 // REAL
 
-void NColloc::jotf_x_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
+void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par, const KNArray3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_x_p++;
@@ -984,8 +984,8 @@ void NColloc::jotf_x_p(Vector& V, const Vector& par, const Array3D<double>& phiD
 
 // COMPLEX
 
-void NColloc::jotf_x_p(Vector& V, const Vector& par,
-                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
+void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
+                          const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm,
                           double Re, double Im, int alpha)
 {
 #ifdef DEBUG
@@ -1001,7 +1001,7 @@ void NColloc::jotf_x_p(Vector& V, const Vector& par,
   }
 
   // computing the powers of the multiplier
-  Vector ZReP(NMAT + 1), ZImP(NMAT + 1);
+  KNVector ZReP(NMAT + 1), ZImP(NMAT + 1);
   ZReP(0) = 1.0;
   ZImP(0) = 0.0;
   ZReP(1) = Re;
@@ -1143,12 +1143,12 @@ void NColloc::jotf_x_p(Vector& V, const Vector& par,
   }
 }
 
-void NColloc::jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& phiData, double Z)
+void KNDdeBvpCollocation::jotf_x_x(KNSparseMatrix& A, const KNVector& par, const KNArray3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_x_x++;
 #endif
-  Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
+  KNArray3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   A.clear('R');
 
@@ -1220,15 +1220,15 @@ void NColloc::jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& ph
   }
 }
 
-void NColloc::jotf_x_x(SpMatrix& A, const Vector& par,
-                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm,
+void KNDdeBvpCollocation::jotf_x_x(KNSparseMatrix& A, const KNVector& par,
+                          const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm,
                           double Re, double Im)
 {
 #ifdef DEBUG
   count_CharJac_x_x++;
 #endif
-  Array3D<double> p_t_dfxRe(NDIM, NDIM, NDEG*NINT);
-  Array3D<double> p_t_dfxIm(NDIM, NDIM, NDEG*NINT);
+  KNArray3D<double> p_t_dfxRe(NDIM, NDIM, NDEG*NINT);
+  KNArray3D<double> p_t_dfxIm(NDIM, NDIM, NDEG*NINT);
 
   A.clear('R');
 
@@ -1253,7 +1253,7 @@ void NColloc::jotf_x_x(SpMatrix& A, const Vector& par,
   }
 
   // computing the powers of the multiplier
-  Vector ZReP(NMAT + 1), ZImP(NMAT + 1);
+  KNVector ZReP(NMAT + 1), ZImP(NMAT + 1);
   ZReP(0) = 1.0;
   ZImP(0) = 0.0;
   ZReP(1) = Re;
@@ -1336,8 +1336,8 @@ void NColloc::jotf_x_x(SpMatrix& A, const Vector& par,
 
 // this is for CharmatCPLX
 
-void NColloc::jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
-                          const Array3D<double>& phiDataRe, const Array3D<double>& phiDataIm, double Re, double Im)
+void KNDdeBvpCollocation::jotf_x_z(KNVector& V, const KNVector& par, const KNVector& phi,
+                          const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double Re, double Im)
 {
 #ifdef DEBUG
   count_CharJac_x_z++;
@@ -1352,7 +1352,7 @@ void NColloc::jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
   }
 
   // computing the powers of the multiplier
-  Vector ZReP(NMAT + 1), ZImP(NMAT + 1);
+  KNVector ZReP(NMAT + 1), ZImP(NMAT + 1);
   ZReP(0) = 1.0;
   ZImP(0) = 0.0;
   ZReP(1) = Re;
@@ -1394,14 +1394,14 @@ void NColloc::jotf_x_z(Vector& V, const Vector& par, const Vector& phi,
 //! from now CharmatLPAUT
 //!
 
-void NColloc::jotf_mB(SpMatrix& B, const Vector& par, double Z)
+void KNDdeBvpCollocation::jotf_mB(KNSparseMatrix& B, const KNVector& par, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB++;
 #endif
   B.clear('R');
 
-  Vector ZP(NMAT + 1);
+  KNVector ZP(NMAT + 1);
   ZP(0) = 1.0;
   for (int r = 1; r < NMAT + 1; r++)
   {
@@ -1453,12 +1453,12 @@ void NColloc::jotf_mB(SpMatrix& B, const Vector& par, double Z)
 
 // same as CharJac_x_p, but only writes the B part
 
-void NColloc::jotf_mB_p(Vector& V, const Vector& par, const Array3D<double>& phiData, double Z, int alpha)
+void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNArray3D<double>& phiData, double Z, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_mB_p++;
 #endif
-  Matrix t_dfx(NDIM, NDIM);
+  KNMatrix t_dfx(NDIM, NDIM);
 
   V.clear();
 
@@ -1468,7 +1468,7 @@ void NColloc::jotf_mB_p(Vector& V, const Vector& par, const Array3D<double>& phi
     V(r) = 0.0;
   }
 
-  Vector ZP(NMAT + 1);
+  KNVector ZP(NMAT + 1);
   ZP(0) = 1.0;
   for (int r = 1; r < NMAT + 1; r++)
   {
@@ -1591,12 +1591,12 @@ void NColloc::jotf_mB_p(Vector& V, const Vector& par, const Array3D<double>& phi
 }
 
 // like x_x but write bpart only
-void NColloc::jotf_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& phiData, double Z)
+void KNDdeBvpCollocation::jotf_mB_x(KNSparseMatrix& B, const KNVector& par, const KNArray3D<double>& phiData, double Z)
 {
 #ifdef DEBUG
   count_CharJac_mB_x++;
 #endif
-  Array3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
+  KNArray3D<double> p_t_dfx(NDIM, NDIM, NDEG*NINT);
 
   B.clear('R');
 
@@ -1616,7 +1616,7 @@ void NColloc::jotf_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& p
     }
   }
 
-  Vector ZP(NMAT + 1);
+  KNVector ZP(NMAT + 1);
   ZP(0) = 1.0;
   for (int r = 1; r < NMAT + 1; r++)
   {
@@ -1678,7 +1678,7 @@ void NColloc::jotf_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& p
 //! this is also for CharmatLPAUT: for computing q_0 and its derivatives: q_0, D_x q_0, D_p q_0
 //!
 
-void NColloc::jotf_trivialKernelOnMesh(Vector& V, const Vector& par, const Array3D<double>& solMSHData)
+void KNDdeBvpCollocation::jotf_trivialKernelOnMesh(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi++;
@@ -1691,7 +1691,7 @@ void NColloc::jotf_trivialKernelOnMesh(Vector& V, const Vector& par, const Array
   }
 }
 
-void NColloc::jotf_trivialKernelOnMesh_p(Vector& V, const Vector& par, const Array3D<double>& solMSHData, int alpha)
+void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, int alpha)
 {
 #ifdef DEBUG
   count_CharJac_MSHphi_p++;

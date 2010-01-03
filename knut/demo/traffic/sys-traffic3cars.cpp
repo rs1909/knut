@@ -32,7 +32,7 @@ int sys_npar() { return 5; }
 int sys_ntau() { return 2; }
 int sys_nderi() { return 0; }
 
-void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par )
+void sys_p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
   for (int idx = 0; idx < time.size(); ++idx)
   {
@@ -41,7 +41,7 @@ void sys_p_tau( Array2D<double>& out, const Array1D<double>& time, const Array1D
   }
 }
 
-void sys_p_dtau( Array2D<double>& out, const Array1D<double>& time, const Array1D<double>& par, int vp )
+void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par, int vp )
 {
   for (int idx = 0; idx < time.size(); ++idx)
   {
@@ -56,7 +56,7 @@ static inline double V( double x )
   return pow( ( x - 1 ) / 1, 3.0 ) / ( pow( ( x - 1 ) / 1, 3.0 ) + 1);
 }
 
-void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel )
+void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel )
 {
 #define xx(i,j) yy(i-1,j-1,idx)
 #define f(i,j) out(i-1,idx)
@@ -94,13 +94,13 @@ void sys_p_rhs( Array2D<double>& out, const Array1D<double>& time, const Array3D
   }
 }
 
-void sys_p_deri( Array3D<double>&, const Array1D<double>& time, const Array3D<double>& yy, const Array1D<double>& par, int sel, 
-                 int nx, const int* vx, int np, const int* vp, const Array3D<double>& vv )
+void sys_p_deri( KNArray3D<double>&, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel, 
+                 int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
 {
 
 }
 
-void sys_stpar( Vector& par )
+void sys_stpar( KNVector& par )
 {
   par(0) = 1.1; // T the period length 
   par(1) = 2.0; // L/N
@@ -109,7 +109,7 @@ void sys_stpar( Vector& par )
   par(4) = 1.0; // v_0
 }
 
-void sys_stsol( Vector& out, double t )
+void sys_stsol( KNVector& out, double t )
 {
   out(0) = 0.5;// + 1.3*sin(2*M_PI*t);
   out(1) = 0.5;// + 1.3*(2*M_PI*t+2*M_PI/3);

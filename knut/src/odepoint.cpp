@@ -12,14 +12,14 @@
 #include "matrix.h"
 #include "hypermatrix.h"
 
-ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nint, int ndeg)
- : PerSolPoint(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
+KNOdePeriodicSolution::KNOdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg)
+ : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
    jacStab('R', sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1)),
    matrixInitialCondition(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
    matrixSolution(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
    monodromyMatrix(sys_.ndim(), sys_.ndim())
 {
-  colloc = new ODEColloc(sys_, nint, ndeg);
+  colloc = new KNOdeBvpCollocation(sys_, nint, ndeg);
   basecolloc = colloc;
   persolcolloc = colloc;
   construct();
@@ -28,7 +28,7 @@ ODEPoint::ODEPoint(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int nin
   par(colloc->nPar() + ParRot) = 0.0;
 }
 
-ODEPoint::~ODEPoint()
+KNOdePeriodicSolution::~KNOdePeriodicSolution()
 {
   delete colloc;
   destruct();
@@ -40,11 +40,11 @@ ODEPoint::~ODEPoint()
 #define NDEG (colloc->nDeg())
 
 // its unmodified from point.cpp. Only some stuff is removed.
-void ODEPoint::jacobian(
-  HyperMatrix& AA, HyperVector& RHS, // output
-  Vector& parPrev, Vector& par,      // parameters
-  Vector& solPrev, Vector& sol,      // solution
-  Array1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+void KNOdePeriodicSolution::jacobian(
+  KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
+  KNVector& parPrev, KNVector& par,      // parameters
+  KNVector& solPrev, KNVector& sol,      // solution
+  KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
   double ds, bool cont               // ds stepsize, cont: true if continuation
 )
 {
@@ -117,7 +117,7 @@ void ODEPoint::jacobian(
   }
 }
 
-void ODEPoint::Stability()
+void KNOdePeriodicSolution::Stability()
 {
   for (int i = 0; i < NDIM; ++i)
   {

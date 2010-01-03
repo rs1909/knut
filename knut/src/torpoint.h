@@ -10,8 +10,8 @@
 #ifndef TORPOINT_H
 #define TORPOINT_H
 
-class System;
-class mat4Data;
+class KNSystem;
+class KNDataFile;
 
 #include "matrix.h"
 #include "hypermatrix.h"
@@ -19,11 +19,11 @@ class mat4Data;
 #include "pointtype.h"
 #include "basepoint.h"
 
-class PointTR : public BasePoint
+class KNDdeTorusSolution : public KNAbstractPoint
 {
   public:
-    PointTR(System& sys_, Array1D<Eqn>& eqn_, Array1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
-    ~PointTR();
+    KNDdeTorusSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
+    ~KNDdeTorusSolution();
 
     inline void    setRho(double rho)
     {
@@ -33,11 +33,11 @@ class PointTR : public BasePoint
     }
 
     // making starting solution from a periodic solution
-    inline void    importSolution(Vector& Sol) // "Sol" is already a torus with zero diameter
+    inline void    importSolution(KNVector& Sol) // "Sol" is already a torus with zero diameter
     {
       colloc->importSolution(xx->getV1(), Sol);
     }
-    inline void    importTangent(Vector& Re, Vector& Im, double alpha)
+    inline void    importTangent(KNVector& Re, KNVector& Im, double alpha)
     {
       colloc->importTangent(xxDot->getV1(), Re, Im, alpha);
       xxDot->getV3().clear();
@@ -51,33 +51,33 @@ class PointTR : public BasePoint
 //     {
 //       return colloc->system().npar();
 //     }
-    void           loadPoint(mat4Data& data, int n);
-    void           savePoint(mat4Data& data, int n);
+    void           loadPoint(KNDataFile& data, int n);
+    void           savePoint(KNDataFile& data, int n);
 
   private:
 
-//     void ToJacVar(Array1D<Vector*>& A13, Array1D<int>& JacVar, bool cont);
-//     void JacobianFixed(Vector& sol, Vector& presol, Vector& par, Vector& prepar, bool cont);
-//     void JacobianVarying(Array1D<Vector*> A13, Array1D<int>& JacVar,
-//                          Vector& sol, Vector& presol, Vector& par, Vector& prepar, bool cont, double ds);
+//     void ToJacVar(KNArray1D<KNVector*>& A13, KNArray1D<int>& JacVar, bool cont);
+//     void JacobianFixed(KNVector& sol, KNVector& presol, KNVector& par, KNVector& prepar, bool cont);
+//     void JacobianVarying(KNArray1D<KNVector*> A13, KNArray1D<int>& JacVar,
+//                          KNVector& sol, KNVector& presol, KNVector& par, KNVector& prepar, bool cont, double ds);
     void jacobian(
-      HyperMatrix& AA, HyperVector& RHS, // output
-      Vector& parPrev, Vector& par,      // parameters
-      Vector& solPrev, Vector& sol,      // solution
-      Array1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+      KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
+      KNVector& parPrev, KNVector& par,      // parameters
+      KNVector& solPrev, KNVector& sol,      // solution
+      KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     );
 
-    inline const   Vector& getMesh1() const
+    inline const   KNVector& getMesh1() const
     {
       return colloc->getMesh1();
     }
-    inline const   Vector& getMesh2() const
+    inline const   KNVector& getMesh2() const
     {
       return colloc->getMesh2();
     }
 
-    CollocTR* colloc;
+    KNDdeTorusCollocation* colloc;
 };
 
 #endif
