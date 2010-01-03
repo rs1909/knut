@@ -77,54 +77,54 @@ class NColloc : public PerSolColloc
     // rINT and rDEG is included in idx. Only rDIM is necessary
     inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     inline double& WRDAT(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     // for CharJac_x
     inline int& WRIDXCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLi(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
+      return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
     inline double& WRDATCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLx(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
+      return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
     // for CharJac_x_x
     inline int& WRIDXCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     inline double& WRDATCPLXM(SpMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
+      return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     inline int& WRIDXS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
+      return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
     double& WRDATS(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
+      return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
     inline int& WRIDXI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
+      return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
     inline double& WRDATI(SpMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
+      return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
     const int ntau;

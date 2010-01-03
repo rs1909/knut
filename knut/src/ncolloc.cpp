@@ -529,11 +529,11 @@ void NColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*so
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(2);
-    A.WrLi(r, 0) = r;
-    A.WrLi(r, 1) = r + NDIM * NDEG * NINT;
-    A.WrLx(r, 0) = 1.0;
-    A.WrLx(r, 1) = -1.0;
+    A.newLine(2);
+    A.writeIndex(r, 0) = r;
+    A.writeIndex(r, 1) = r + NDIM * NDEG * NINT;
+    A.writeData(r, 0) = 1.0;
+    A.writeData(r, 1) = -1.0;
   }
 
   // MUST PRESERVE THE ORDER. DO NOT CHANGE THE LOOPS
@@ -541,7 +541,7 @@ void NColloc::rightHandSide_x(SpMatrix& A, const Vector& par, const Vector& /*so
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU,idx), idx) + 1) - dd(ee(NTAU,idx), idx))); // check the line
+      A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU,idx), idx) + 1) - dd(ee(NTAU,idx), idx))); // check the line
     }
   }
 
@@ -591,21 +591,21 @@ void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    AB.getA0().NewL(1);        // L
-    AB.getA0().WrLi(r, 0) = r;
-    AB.getA0().WrLx(r, 0) = 1.0;
+    AB.getA0().newLine(1);        // L
+    AB.getA0().writeIndex(r, 0) = r;
+    AB.getA0().writeData(r, 0) = 1.0;
 
     for (int s = 0; s < NMAT; s++)
     {
       if (s == 0)
       {
-        AB.getAI(s).NewL(1);        // M
-        AB.getAI(s).WrLi(r, 0) = r + NDIM * NDEG * NINT;
-        AB.getAI(s).WrLx(r, 0) = 1.0;
+        AB.getAI(s).newLine(1);        // M
+        AB.getAI(s).writeIndex(r, 0) = r + NDIM * NDEG * NINT;
+        AB.getAI(s).writeData(r, 0) = 1.0;
       }
       else
       {
-        AB.getAI(s).NewL(0);
+        AB.getAI(s).newLine(0);
       }
     }
   }
@@ -614,13 +614,13 @@ void NColloc::jacobianOfStability(StabMatrix& AB, const Vector& par)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      AB.getA0().NewL(NDIM*szI(0, idx));
+      AB.getA0().newLine(NDIM*szI(0, idx));
     }
     for (int s = 0; s < NMAT; s++)
     {
       for (int r = 0; r < NDIM; r++)
       {
-        AB.getAI(s).NewL(NDIM*szI(s + 1, idx));
+        AB.getAI(s).newLine(NDIM*szI(s + 1, idx));
       }
     }
   }
@@ -684,19 +684,19 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Z)
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(2);
-    A.WrLi(r, 0) = r;
-    A.WrLx(r, 0) = 1.0;
+    A.newLine(2);
+    A.writeIndex(r, 0) = r;
+    A.writeData(r, 0) = 1.0;
     // just for the test function
-    A.WrLi(r, 1) = NDIM * NINT * NDEG + r;
-    A.WrLx(r, 1) = - 1.0 * Z;
+    A.writeIndex(r, 1) = NDIM * NINT * NDEG + r;
+    A.writeData(r, 1) = - 1.0 * Z;
   }
 
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
+      A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
     }
   }
 
@@ -754,24 +754,24 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(3);      // Re
+    A.newLine(3);      // Re
     // L
-    A.WrLi(2*r, 0) = 2 * r;
-    A.WrLx(2*r, 0) = 1.0;
+    A.writeIndex(2*r, 0) = 2 * r;
+    A.writeData(2*r, 0) = 1.0;
     // -z M
-    A.WrLi(2*r, 1) = 2 * NDIM * NINT * NDEG + 2 * r;
-    A.WrLi(2*r, 2) = 2 * NDIM * NINT * NDEG + 2 * r + 1;
-    A.WrLx(2*r, 1) = -1.0 * Re;
-    A.WrLx(2*r, 2) = 1.0 * Im;
-    A.NewL(3);      // Im
+    A.writeIndex(2*r, 1) = 2 * NDIM * NINT * NDEG + 2 * r;
+    A.writeIndex(2*r, 2) = 2 * NDIM * NINT * NDEG + 2 * r + 1;
+    A.writeData(2*r, 1) = -1.0 * Re;
+    A.writeData(2*r, 2) = 1.0 * Im;
+    A.newLine(3);      // Im
     // L
-    A.WrLi(2*r + 1, 0) = 2 * r + 1;
-    A.WrLx(2*r + 1, 0) = 1.0;
+    A.writeIndex(2*r + 1, 0) = 2 * r + 1;
+    A.writeData(2*r + 1, 0) = 1.0;
     // -z M
-    A.WrLi(2*r + 1, 1) = 2 * NDIM * NINT * NDEG + 2 * r;
-    A.WrLi(2*r + 1, 2) = 2 * NDIM * NINT * NDEG + 2 * r + 1;
-    A.WrLx(2*r + 1, 1) = -1.0 * Im;
-    A.WrLx(2*r + 1, 2) = -1.0 * Re;
+    A.writeIndex(2*r + 1, 1) = 2 * NDIM * NINT * NDEG + 2 * r;
+    A.writeIndex(2*r + 1, 2) = 2 * NDIM * NINT * NDEG + 2 * r + 1;
+    A.writeData(2*r + 1, 1) = -1.0 * Im;
+    A.writeData(2*r + 1, 2) = -1.0 * Re;
   }
 
   // computing the powers of the multiplier
@@ -790,8 +790,8 @@ void NColloc::jotf_x(SpMatrix& A, const Vector& par, double Re, double Im)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
-      A.NewL(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
+      A.newLine(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
+      A.newLine(2*NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
     }
   }
 
@@ -1155,16 +1155,16 @@ void NColloc::jotf_x_x(SpMatrix& A, const Vector& par, const Array3D<double>& ph
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(1);
-    A.WrLi(r, 0) = r;
-    A.WrLx(r, 0) = 0.0;
+    A.newLine(1);
+    A.writeIndex(r, 0) = r;
+    A.writeData(r, 0) = 0.0;
   }
 
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
+      A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // check the line
     }
   }
 
@@ -1235,20 +1235,20 @@ void NColloc::jotf_x_x(SpMatrix& A, const Vector& par,
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    A.NewL(1);      // Re
-    A.WrLi(2*r, 0) = 2 * r;
-    A.WrLx(2*r, 0) = 0.0;
-    A.NewL(1);      // Im
-    A.WrLi(2*r + 1, 0) = 2 * r + 1;
-    A.WrLx(2*r + 1, 0) = 0.0;
+    A.newLine(1);      // Re
+    A.writeIndex(2*r, 0) = 2 * r;
+    A.writeData(2*r, 0) = 0.0;
+    A.newLine(1);      // Im
+    A.writeIndex(2*r + 1, 0) = 2 * r + 1;
+    A.writeData(2*r + 1, 0) = 0.0;
   }
 
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
-      A.NewL(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
+      A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Re
+      A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU, idx), idx) + 1) - dd(ee(NTAU, idx), idx))); // Im
     }
   }
 
@@ -1411,16 +1411,16 @@ void NColloc::jotf_mB(SpMatrix& B, const Vector& par, double Z)
   // boundary conditions: no boundary condition
   for (int r = 0; r < NDIM; r++)
   {
-    B.NewL(1);        // M
-    B.WrLi(r, 0) = r + NDIM * NDEG * NINT;
-    B.WrLx(r, 0) = -1.0;
+    B.newLine(1);        // M
+    B.writeIndex(r, 0) = r + NDIM * NDEG * NINT;
+    B.writeData(r, 0) = -1.0;
   }
 
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      B.NewL(NDIM*szS(1, idx));
+      B.newLine(NDIM*szS(1, idx));
     }
   }
 
@@ -1603,16 +1603,16 @@ void NColloc::jotf_mB_x(SpMatrix& B, const Vector& par, const Array3D<double>& p
   // boundary conditions: no boundary condition
   for (int r = 0; r < NDIM; r++)
   {
-    B.NewL(0);        // M
-//   B.WrLi(r,0) = r+NDIM*NDEG*NINT;
-//   B.WrLx(r,0) = 0.0;
+    B.newLine(0);        // M
+//   B.writeIndex(r,0) = r+NDIM*NDEG*NINT;
+//   B.writeData(r,0) = 0.0;
   }
 
   for (int idx = 0; idx < NDEG*NINT; ++idx)
   {
     for (int r = 0; r < NDIM; r++)
     {
-      B.NewL(NDIM*szS(1, idx));
+      B.newLine(NDIM*szS(1, idx));
     }
   }
 

@@ -266,7 +266,7 @@ void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
   for (int idx = 0; idx < time1.size(); ++idx)
   {
     const int lend = NDIM * (rr(ee((NTAU+1)*(ndeg1+1)*(ndeg2+1)-1,idx),idx) + 1);
-    for (int p = 0; p < NDIM; p++) A.NewL(lend);
+    for (int p = 0; p < NDIM; p++) A.newLine(lend);
   }
 
   // the right-hand side
@@ -405,8 +405,8 @@ void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
               for (int q = 0; q < NDIM; q++)
               {
                 // jacobian of rhs
-                A.WrLi(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
-                A.WrLx(p + NDIM*idx, q + NDIM*rr(idxK, idx)) -= cf * par(0) * p_dfx(p, q, idx);
+                A.writeIndex(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
+                A.writeData(p + NDIM*idx, q + NDIM*rr(idxK, idx)) -= cf * par(0) * p_dfx(p, q, idx);
               }
             }
           }
@@ -419,9 +419,9 @@ void CollocTR::jacobian(SpMatrix& A, Array1D< Vector* > Avar, Vector& rhs, Vecto
               for (int q = 0; q < NDIM; q++)
               {
                 // derivative part of the jacobian
-                A.WrLi(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
+                A.writeIndex(p + NDIM*idx, q + NDIM*rr(idxK, idx)) = q + NDIM * kk(idxK, idx);
                 if (p == q)
-                  A.WrLx(p + NDIM*idx, q + NDIM*rr(idxK, idx)) += cf1 + par(RHO) * cf2;
+                  A.writeData(p + NDIM*idx, q + NDIM*rr(idxK, idx)) += cf1 + par(RHO) * cf2;
               }
             }
           }

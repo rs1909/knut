@@ -51,7 +51,7 @@ void SpMatrix::check()
   std::cerr.flush();
 }
 
-void SpMatrix::Swap()
+void SpMatrix::swap()
 {
   int *Rp = new int[n+1];
   int *Ri = new int[size];
@@ -376,13 +376,13 @@ void StabMatrix::eigenvalues(Vector& wr, Vector& wi)
       {
         if (i == 0)
         {
-          AI(AI.size() - 1).AX(tvec, in, 1.0, false);
+          AI(AI.size() - 1).timesX(tvec, in, 1.0, false);
         }
         else
         {
-          if (AI(AI.size() - 1 - i).GetNZ() != 0)
+          if (AI(AI.size() - 1 - i).nonzeros() != 0)
           {
-            AI(AI.size() - 1 - i).AX(tvec2, in + i*A0.col(), 1.0, false);
+            AI(AI.size() - 1 - i).timesX(tvec2, in + i*A0.col(), 1.0, false);
             for (int j = 0; j < A0.col(); j++) tvec[j] += tvec2[j];
           }
         }

@@ -182,7 +182,7 @@ void MatFact::solve(Vector& x, const Vector& b, bool trans)
       break;
   }
 //  Vector err(b);
-//  AXpY( err, x, b, 1.0, -1.0, trans );
+//  timesXPlusY( err, x, b, 1.0, -1.0, trans );
 //  cout<<"dim: "<<this->r<<" b: "<<sqrt(b*b)<<" e: "<<sqrt(err*err)<<"\n";
 }
 

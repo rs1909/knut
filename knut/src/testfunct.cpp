@@ -541,12 +541,12 @@ void   TestFunctLPAUT::Funct_x(Vector& func, NColloc& col, const Vector& par, co
   func = !A_x * uu2;
 
   temp = !mB * uu2;
-  col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, temp);
+  col.jotf_trivialKernelOnMesh_x<true>(DxPhi, par, solMSHData, temp);
   func += gg2(0) * DxPhi;
   temp = !mB_x * uu2;
   func += gg2(0) * temp;
 
-  col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, vv2);
+  col.jotf_trivialKernelOnMesh_x<true>(DxPhi, par, solMSHData, vv2);
   col.star(temp, DxPhi);
   func += hh2(0) * temp;
 }
@@ -738,7 +738,7 @@ void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par,
   func = !A_x * uu3;
 
   temp = !mB * uu3;
-  col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, temp);
+  col.jotf_trivialKernelOnMesh_x<true>(DxPhi, par, solMSHData, temp);
   func += gg3(0) * DxPhi;
   col.jotf_mB_x(mB_x, par, phiData, ZZ);
   temp = !mB_x * uu3;
@@ -751,7 +751,7 @@ void   TestFunctLPAUTROT::Funct_x(Vector& func, NColloc& col, const Vector& par,
   rotbord<true>(DxLAM, col, uu3, Re, Im);
   func += gg3(1) * DxLAM;
 
-  col.CharJac_MSHphi_x<true>(DxPhi, par, solMSHData, vv3);
+  col.jotf_trivialKernelOnMesh_x<true>(DxPhi, par, solMSHData, vv3);
   col.star(temp, DxPhi);
   func += hh3(0) * temp;
 

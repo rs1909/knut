@@ -106,8 +106,8 @@ class SpMatrix
       return __scal_vec_trans_rng<SpMatrix>(*this, r);
     }
 
-    inline void AX(double* out, const double* in, double alpha, bool trans) const;
-    inline void AXpY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const;
+    inline void timesX(double* out, const double* in, double alpha, bool trans) const;
+    inline void timesXPlusY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const;
 
     inline int row() const
     {
@@ -129,32 +129,32 @@ class SpMatrix
 
     // Fill in routines
     /// Creates a new line in the matrix
-    inline int NewL(int size_);
+    inline int newLine(int size_);
     /// Writes or returns the row or column index
     /// into line `l' and the `e'-th element
-    inline int& WrLi(int l, int e);
+    inline int& writeIndex(int l, int e);
     /// Writes into line `l' and the `e'-th element
-    inline double& WrLx(int l, int e);
+    inline double& writeData(int l, int e);
     /// returns the length of the n_ -th line in the matrix
-    inline int GetL(int n_);
+    inline int lineLength(int n_);
     /// returns the nonzero elements in the matrix
-    inline int GetNZ()
+    inline int nonzeros()
     {
       return Ap[n];
     }
     /// returns the number of lines, e.g. columns or rows in the matrix depending on format
-    inline int GetN()
+    inline int lines()
     {
       return n;
     }
     // Computation routines
     /// transposes the matrix into the other format
-    void Swap();
+    void swap();
     // these are used for debugging only
     /// plots the structure of the matrix
     void sparsityPlot(GnuPlot& pl);
     /// prints out Ap
-    void PrintAp()
+    void printAp()
     {
       for (int i = 0; i < n + 1; i++) std::cout << Ap[i] << '\t';
       std::cout << '\n';
@@ -346,14 +346,14 @@ inline void SpMatrix::clear(char F)
   }
 }
 
-inline int SpMatrix::NewL(int size_)
+inline int SpMatrix::newLine(int size_)
 {
   n++;
   Ap[n] = Ap[n-1] + size_;
   return n -1;
 }
 
-inline int& SpMatrix::WrLi(int l, int e)
+inline int& SpMatrix::writeIndex(int l, int e)
 {
 #ifdef DEBUG
 //   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
@@ -367,7 +367,7 @@ inline int& SpMatrix::WrLi(int l, int e)
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline double& SpMatrix::WrLx(int l, int e)
+inline double& SpMatrix::writeData(int l, int e)
 {
 #ifdef DEBUG
   P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
@@ -380,7 +380,7 @@ inline double& SpMatrix::WrLx(int l, int e)
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline int SpMatrix::GetL(int n_)
+inline int SpMatrix::lineLength(int n_)
 {
 #ifdef DEBUG
   P_ASSERT_X(n_ < n, "SpMatrix::GetL: Error\n");
@@ -388,12 +388,12 @@ inline int SpMatrix::GetL(int n_)
   return Ap[n_+1] - Ap[n_];
 }
 
-inline void SpMatrix::AX(double* out, const double* in, double alpha, bool trans) const
+inline void SpMatrix::timesX(double* out, const double* in, double alpha, bool trans) const
 {
   mmx(trans ? Trans : NoTrans, out, in, alpha);
 }
 
-inline void SpMatrix::AXpY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const
+inline void SpMatrix::timesXPlusY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const
 {
   mmxpy(trans ? Trans : NoTrans, out, in, alpha, Y, beta);
 }

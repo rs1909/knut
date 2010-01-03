@@ -44,23 +44,23 @@ class ODEColloc : public PerSolColloc
     // rINT and rDEG is included in idx. Only rDIM is necessary
     inline int& WRIDX(SpMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
     {
-      return A.WrLi(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
+      return A.writeIndex(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
     inline double& WRDAT(SpMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
     {
-      return A.WrLx(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
+      return A.writeData(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
     // for CharJac_x
     inline int& WRIDXCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLi(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
+      return A.writeIndex(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }
 
     inline double& WRDATCPLX(SpMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
     {
-      return A.WrLx(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
+      return A.writeData(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }
 
 

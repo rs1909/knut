@@ -655,36 +655,36 @@ void HyMatrix<FACT>::solveDirect(HyperVector& X, const HyperVector& F)
 
   SpFact* A11S = A11;
 
-  SpFact  AA('R', dim1 + dim3, A11S->GetNZ() + (dim1 + dim3)*(dim3) + dim1*dim3 + 10);
+  SpFact  AA('R', dim1 + dim3, A11S->nonzeros() + (dim1 + dim3)*(dim3) + dim1*dim3 + 10);
   Vector  XX(dim1 + dim3), FF(dim1 + dim3);
 
   for (int i = 0; i < dim1; i++)
   {
-    AA.NewL(A11S->GetL(i) + dim3);
-    for (int j = 0; j < A11S->GetL(i); j++)
+    AA.newLine(A11S->lineLength(i) + dim3);
+    for (int j = 0; j < A11S->lineLength(i); j++)
     {
-      AA.WrLi(i, j) = A11S->WrLi(i, j);
-      AA.WrLx(i, j) = A11S->WrLx(i, j);
+      AA.writeIndex(i, j) = A11S->writeIndex(i, j);
+      AA.writeData(i, j) = A11S->writeData(i, j);
     }
     for (int j = 0; j < dim3; j++)
     {
-      AA.WrLi(i, A11S->GetL(i) + j) = dim1 + j;
-      AA.WrLx(i, A11S->GetL(i) + j) = getA13(j)(i);
+      AA.writeIndex(i, A11S->lineLength(i) + j) = dim1 + j;
+      AA.writeData(i, A11S->lineLength(i) + j) = getA13(j)(i);
     }
     FF(i) = F.getV1()(i);
   }
   for (int i = 0; i < dim3; i++)
   {
-    AA.NewL(dim1 + dim3);
+    AA.newLine(dim1 + dim3);
     for (int j = 0;j < dim1;j++)
     {
-      AA.WrLi(dim1 + i, j) = j;
-      AA.WrLx(dim1 + i, j) = getA31(i)(j);
+      AA.writeIndex(dim1 + i, j) = j;
+      AA.writeData(dim1 + i, j) = getA31(i)(j);
     }
     for (int j = 0;j < dim3;j++)
     {
-      AA.WrLi(dim1 + i, dim1 + j) = dim1 + j;
-      AA.WrLx(dim1 + i, dim1 + j) = getA33(i, j);
+      AA.writeIndex(dim1 + i, dim1 + j) = dim1 + j;
+      AA.writeData(dim1 + i, dim1 + j) = getA33(i, j);
     }
     FF(dim1 + i) = F.getV3()(i);
   }

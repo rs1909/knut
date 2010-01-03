@@ -509,7 +509,7 @@ System::~System()
   if (handle != 0) tdlclose(handle);
 }
 
-static inline void AX(Vector & res, const Matrix& M, const Vector& v)
+static inline void timesX(Vector & res, const Matrix& M, const Vector& v)
 {
   for (int i = 0; i < M.row(); i++)
   {

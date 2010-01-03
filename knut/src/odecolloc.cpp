@@ -244,14 +244,14 @@ void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
   // boundary conditions
   for (int r = 0; r < NDIM; r++)
   {
-    if (periodic) A.NewL(2);
-    else          A.NewL(1);
-    A.WrLi(r, 0) = r;
-    A.WrLx(r, 0) = 1.0;
+    if (periodic) A.newLine(2);
+    else          A.newLine(1);
+    A.writeIndex(r, 0) = r;
+    A.writeData(r, 0) = 1.0;
     if (periodic)
     {
-      A.WrLi(r, 1) = r + NDIM * NDEG * NINT;
-      A.WrLx(r, 1) = -1.0;
+      A.writeIndex(r, 1) = r + NDIM * NDEG * NINT;
+      A.writeData(r, 1) = -1.0;
     }
   }
 
@@ -260,7 +260,7 @@ void ODEColloc::RHS_jacobian(SpMatrix& A, const Vector& par )
   {
     for (int r = 0; r < NDIM; r++)
     {
-      A.NewL(NDIM*(NDEG + 1));
+      A.newLine(NDIM*(NDEG + 1));
     }
   }
 
