@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<KNException>("KNException");
     qRegisterMetaType<std::string>("std::string");
-    qRegisterMetaType<std::string>("QSharedPointer<const KNDataFile>");
+    qRegisterMetaType<std::string>("std::auto_ptr<const KNDataFile>");
     mainWin.show();
     return app.exec();
   }

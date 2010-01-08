@@ -10,7 +10,8 @@
 #include "plotdata.h"
 
 #include <QMainWindow>
-#include <QSharedPointer>
+#include <QFileInfo>
+
 class QLineEdit;
 class QComboBox;
 class QSpinBox;
@@ -33,17 +34,26 @@ class plotWindow : public QMainWindow
 {
     Q_OBJECT
   public:
-    plotWindow(const QSharedPointer<const KNDataFile>& mat, QWidget *parent = 0);
+    plotWindow(const QString& filename, QWidget *parent = 0);
     plotWindow(QWidget *parent = 0);
     ~plotWindow();
+    void init();
     bool isDataSet()
     {
       return data != 0;
     }
+    bool isThisData(const KNDataFile* dataFile)
+    {
+      QFileInfo f1(QString::fromStdString(data->getFileName()));
+      QFileInfo f2(QString::fromStdString(dataFile->getFileName()));
+//      std::cout << f1.canonicalFilePath().toStdString() << " v.s.\n"
+//                << f2.canonicalFilePath().toStdString() << "\n" << (int)(f1 == f2) << "\n";
+      return (f1.canonicalFilePath() == f2.canonicalFilePath());
+    }
   private:
     void setupPlotWindow();
     // variables
-    QSharedPointer<const KNDataFile> data;
+    const KNDataFile* data;
     PlotData plotdata;
     QGraphicsView *plot;
     // gui elements
@@ -57,6 +67,7 @@ class plotWindow : public QMainWindow
     QListWidget *plotSelect;
     std::list<QString> plotList;
     QString   shortFileName;
+    QFileInfo dataFileInfo;
   private slots:
     void addPlot();
     void clearPlot();
@@ -67,12 +78,16 @@ class plotWindow : public QMainWindow
     void exportSvg();
   public slots:
     // sets the data file
-    void setData(const QSharedPointer<const KNDataFile>& mat);
+    void setData(const KNDataFile* dataFile);
     // is called when the computing thread made a step
-    void updatePlot(const QSharedPointer<const KNDataFile>& data);
+    void updatePlot(const KNDataFile* dataFile);
   signals:
     // gets emitted when a new file is opened
     // this makes the system open the file and the will called
     // the setData slot to add the plot
     void openFile(const QString& filename);
+    // if the file is no longer in use, the signal is emitted
+    void closeFile(const KNDataFile* dataFile);
+    // called when plotting is finished
+    void updated();
 };

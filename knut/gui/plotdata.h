@@ -15,8 +15,8 @@
 #include <QPainterPath>
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
-#include <QSharedPointer>
 #include <QLinkedList>
+#include <QFileInfo>
 class QGraphicsSceneMouseEvent;
 
 #include <vector>
@@ -133,10 +133,12 @@ union PlotItemUnion
 class PlotItem
 {
   public:
-    PlotItem(const QSharedPointer<const KNDataFile>& mat, PlotDataType type,
+    PlotItem(const KNDataFile* mat, PlotDataType type,
              PlotXVariable x, PlotYVariable y, int pt, int dim)
-     : dataType(type), source(mat.data()), varX(x), varY(y), point(pt), dimension(dim) {}
-    bool isFrom(const QSharedPointer<const KNDataFile>& mat) { return source == mat.data(); }
+     : dataType(type),
+     sourcePath(QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath()),
+     varX(x), varY(y), point(pt), dimension(dim) {}
+    bool isFrom(const KNDataFile* mat) { return sourcePath == QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath(); }
     PlotItemUnion data;
     PlotType      type;
     PlotDataType  dataType;
@@ -144,7 +146,7 @@ class PlotItem
     KNVector        y;
     unsigned int  number;
     bool          principal;
-    const KNDataFile *source;
+    QString       sourcePath;
     const PlotXVariable varX;
     const PlotYVariable varY;
     const int     point;
@@ -164,14 +166,14 @@ class PlotData : public QGraphicsScene
   public:
     PlotData(QObject *parent = 0);
     ~PlotData();
-    bool addPlot(const QSharedPointer<const KNDataFile>& mat, 
+    bool addPlot(const KNDataFile* mat, 
       PlotXVariable x, PlotYVariable y, int pt, int dim);
     void clearAll();
     void clear(unsigned int n);
     int  nplots();
     QColor getColor(unsigned int n);
     void setColor(unsigned int n, QColor& Color);
-    void updatePlot(const QSharedPointer<const KNDataFile>& mat);
+    void updatePlot(const KNDataFile* mat);
     
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);

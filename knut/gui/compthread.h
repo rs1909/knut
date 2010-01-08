@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 #include <QThread>
-#include <QSharedPointer>
+#include <QMutex>
 
 class KNDataFile;
 
@@ -27,17 +27,23 @@ class MThread : public QThread, public KNAbstractContinuation
     void raiseException(const KNException& ex);
     void setData(KNDataFile* data);
     KNDataFile& data();
-    const QSharedPointer<KNDataFile>& dataPointer();
+    const KNDataFile* dataPointer();
     void deleteData();
     void dataUpdated();
   public slots:
     void consolePrint(const std::string& str);
+    void dataDeleteAck();
+    void dataChangedAck();
 
   signals:
     void exceptionOccured(const KNException& ex);
     void printToScreen(const std::string& str);
-    void dataChanged(const QSharedPointer<const KNDataFile>& mat);
+    void dataChanged(const KNDataFile* dataFile);
+    void dataDeleteReq();
+    void dataSet(const KNDataFile* dataFile);
 
   private:
-    QSharedPointer<KNDataFile> output;
+    KNDataFile* output;
+    bool changeQueued;
+    QMutex changeLock;
 };

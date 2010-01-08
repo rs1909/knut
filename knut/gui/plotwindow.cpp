@@ -37,19 +37,21 @@ plotWindow::plotWindow(QWidget *parent) :
   setupPlotWindow();
 }
 
-plotWindow::plotWindow(const QSharedPointer<const KNDataFile>& mat, QWidget *parent) :
-    QMainWindow(parent), data(mat)
+plotWindow::plotWindow(const QString& filename, QWidget *parent) :
+    QMainWindow(parent), dataFileInfo(filename)
 {
   setupPlotWindow();
-  if (!data) return;
-  if (data->isTorus()) return;
-  matfile->setText(QDir::current().relativeFilePath(data->getFileName().c_str()));
-  setData(mat);
+  matfile->setText(dataFileInfo.fileName());
 }
 
 plotWindow::~plotWindow()
 {
-  // empty: we don't allocate memory here
+  if (data) emit closeFile(data);
+}
+
+void plotWindow::init()
+{
+  emit openFile(dataFileInfo.absoluteFilePath());
 }
 
 void plotWindow::setupPlotWindow()
@@ -156,8 +158,9 @@ void plotWindow::setupPlotWindow()
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
 }
 
-void plotWindow::setData(const QSharedPointer<const KNDataFile>& mat)
+void plotWindow::setData(const KNDataFile* mat)
 {
+  if (mat == 0) { std::cout << "Can't set data\n"; return; }
   data = mat;
   matfile->setText(QDir::current().relativeFilePath(data->getFileName().c_str()));
   data->lock(); 
@@ -228,7 +231,7 @@ void plotWindow::addPlot()
   {
     data->lock();
     // make sure that the data is consistent
-    qSharedPointerConstCast<KNDataFile>(data)->initHeaders();
+    const_cast<KNDataFile*>(data)->initHeaders();
     if (!data->isTorus())
     {
       bool added = false;
@@ -307,7 +310,8 @@ void plotWindow::exportSvg()
   }
 }
 
-void plotWindow::updatePlot(const QSharedPointer<const KNDataFile>& data)
+void plotWindow::updatePlot(const KNDataFile* data)
 {
   plotdata.updatePlot(data);
+  emit updated();
 }

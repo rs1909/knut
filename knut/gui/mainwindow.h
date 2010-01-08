@@ -58,271 +58,9 @@ class MainWindow : public QMainWindow
     // and also from an event on MacOS
     void loadFile(const QString& fileName);
 
-    void setConstant(const char* name)
-    {
-      if (!strcmp(name,"inputFile"))
-      {
-        inputFile->blockSignals(true);
-        int cpos = inputFile->cursorPosition();
-        inputFile->setText(parameters.getInputFile().c_str());
-        inputFile->setCursorPosition(cpos);
-        inputFile->blockSignals(false);
-      }
-      else if (!strcmp(name,"outputFile"))
-      {
-        outputFile->blockSignals(true);
-        int cpos = outputFile->cursorPosition();
-        outputFile->setText(parameters.getOutputFile().c_str());
-        outputFile->setCursorPosition(cpos);
-        outputFile->blockSignals(false);
-      }
-      else if (!strcmp(name,"sysname"))
-      {
-        sysname->blockSignals(true);
-        int cpos = sysname->cursorPosition();
-        sysname->setText(parameters.getSysName().c_str());
-        sysname->setCursorPosition(cpos);
-        sysname->blockSignals(false);
-      }
-      else if (!strcmp(name,"label"))
-      {
-        label->blockSignals(true);
-        label->setValue(parameters.getLabel());
-        label->blockSignals(false);
-      }
-      else if (!strcmp(name,"pointType"))
-      {
-        pttype->blockSignals(true);
-        pttype->setCurrentIndex(static_cast<int>(parameters.getPointTypeIdx()));
-        pttype->blockSignals(false);
-      }
-      else if (!strcmp(name,"cpType"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"cpNum"))
-      {
-        cp->blockSignals(true);
-        cp->setCurrentIndex(static_cast<int>(parameters.getCpIdx()));
-        cp->blockSignals(false);
-      }
-      else if (!strcmp(name,"branchSW"))
-      {
-        branchsw->blockSignals(true);
-        branchsw->setCurrentIndex(static_cast<int>(parameters.getBranchSWIdx()));
-        branchsw->blockSignals(false);
-      }
-      else if (!strcmp(name,"parxType"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"parxNum"))
-      {
-        eqns->blockSignals(true);
-        eqns->setValue(parameters.getParxNumSize());
-        eqns->blockSignals(false);
-      }
-      else if (!strcmp(name,"eqnsType"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"eqnsNum"))
-      {
-        eqns->blockSignals(true);
-        eqns->setValue(parameters.getEqnsNumSize());
-        eqns->blockSignals(false);
-      }
-      else if (!strcmp(name,"varsType"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"varsNum"))
-      {
-        eqns->blockSignals(true);
-        eqns->setValue(parameters.getVarsNumSize());
-        eqns->blockSignals(false);
-      }
-      else if (!strcmp(name,"nInt"))
-      {
-        nint->blockSignals(true);
-        nint->setValue(parameters.getNInt());
-        nint->blockSignals(false);
-      }
-      else if (!strcmp(name,"nDeg"))
-      {
-        ndeg->blockSignals(true);
-        ndeg->setValue(parameters.getNDeg());
-        ndeg->blockSignals(false);
-      }
-      else if (!strcmp(name,"nMul"))
-      {
-        nmul->blockSignals(true);
-        nmul->setValue(parameters.getNMul());
-        nmul->blockSignals(false);
-      }
-      else if (!strcmp(name,"stab"))
-      {
-        stab->blockSignals(true);
-        if (parameters.getStab()) stab->setCheckState(Qt::Checked);
-        else stab->setCheckState(Qt::Unchecked);
-        stab->blockSignals(false);
-      }
-      else if (!strcmp(name,"nMat"))
-      {
-        nmat->blockSignals(true);
-        nmat->setValue(parameters.getNMat());
-        nmat->blockSignals(false);
-      }
-      else if (!strcmp(name,"nInt1"))
-      {
-        nint1->blockSignals(true);
-        nint1->setValue(parameters.getNInt1());
-        nint1->blockSignals(false);
-      }
-      else if (!strcmp(name,"nInt2"))
-      {
-        nint2->blockSignals(true);
-        nint2->setValue(parameters.getNInt2());
-        nint2->blockSignals(false);
-      }
-      else if (!strcmp(name,"nDeg1"))
-      {
-        ndeg1->blockSignals(true);
-        ndeg1->setValue(parameters.getNDeg1());
-        ndeg1->blockSignals(false);
-      }
-      else if (!strcmp(name,"nDeg2"))
-      {
-        ndeg2->blockSignals(true);
-        ndeg2->setValue(parameters.getNDeg2());
-        ndeg2->blockSignals(false);
-      }
-      else if (!strcmp(name,"steps"))
-      {
-        steps->blockSignals(true);
-        steps->setValue(parameters.getSteps());
-        steps->blockSignals(false);
-      }
-      else if (!strcmp(name,"iad"))
-      {
-        iad->blockSignals(true);
-        iad->setValue(parameters.getIad());
-        iad->blockSignals(false);
-      }
-      else if (!strcmp(name,"nPr"))
-      {
-        nPr->blockSignals(true);
-        nPr->setValue(parameters.getNPr());
-        nPr->blockSignals(false);
-      }
-      else if (!strcmp(name,"cpMin"))
-      {
-        cpMin->blockSignals(true);
-        cpMin->setText(QString::number(parameters.getCpMin(), 'g', 12));
-        cpMin->blockSignals(false);
-      }
-      else if (!strcmp(name,"cpMax"))
-      {
-        cpMax->blockSignals(true);
-        cpMax->setText(QString::number(parameters.getCpMax(), 'g', 12));
-        cpMax->blockSignals(false);
-      }
-      else if (!strcmp(name,"ds"))
-      {
-        ds->blockSignals(true);
-        ds->setText(QString::number(parameters.getDs(), 'g', 12));
-        ds->blockSignals(false);
-      }
-      else if (!strcmp(name,"dsMin"))
-      {
-        dsMin->blockSignals(true);
-        dsMin->setText(QString::number(parameters.getDsMin(), 'g', 12));
-        dsMin->blockSignals(false);
-      }
-      else if (!strcmp(name,"dsMax"))
-      {
-        dsMax->blockSignals(true);
-        dsMax->setText(QString::number(parameters.getDsMax(), 'g', 12));
-        dsMax->blockSignals(false);
-      }
-      else if (!strcmp(name,"dsStart"))
-      {
-        dsStart->blockSignals(true);
-        dsStart->setText(QString::number(parameters.getDsStart(), 'g', 12));
-        dsStart->blockSignals(false);
-      }
-      else if (!strcmp(name,"epsC"))
-      {
-        epsC->blockSignals(true);
-        epsC->setText(QString::number(parameters.getEpsC(), 'g', 12));
-        epsC->blockSignals(false);
-      }
-      else if (!strcmp(name,"epsR"))
-      {
-        epsR->blockSignals(true);
-        epsR->setText(QString::number(parameters.getEpsR(), 'g', 12));
-        epsR->blockSignals(false);
-      }
-      else if (!strcmp(name,"epsK"))
-      {
-        epsK->blockSignals(true);
-        epsK->setText(QString::number(parameters.getEpsK(), 'g', 12));
-        epsK->blockSignals(false);
-      }
-      else if (!strcmp(name,"nItC"))
-      {
-        nitC->blockSignals(true);
-        nitC->setValue(parameters.getNItC());
-        nitC->blockSignals(false);
-      }
-      else if (!strcmp(name,"nItR"))
-      {
-        nitR->blockSignals(true);
-        nitR->setValue(parameters.getNItR());
-        nitR->blockSignals(false);
-      }
-      else if (!strcmp(name,"nItK"))
-      {
-        nitK->blockSignals(true);
-        nitK->setValue(parameters.getNItK());
-        nitK->blockSignals(false);
-      }
-      else if (!strcmp(name,"symRe"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"symIm"))
-      {
-        nsym->blockSignals(true);
-        nsym->setValue(parameters.getSymImSize());
-        nsym->blockSignals(false);
-      }
-      else if (!strcmp(name,"nPar"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"nDim"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"nDeri"))
-      {
-        // Don't react!
-      }
-      else if (!strcmp(name,"translationMaps"))
-      {
-        cp->blockSignals(true);
-        int idx = cp->currentIndex();
-        cp->clear();
-        for (unsigned int i = 0; i < parameters.cpSize(); ++i) cp->addItem(parameters.cpString(i).c_str());
-        if (idx < cp->count()) cp->setCurrentIndex(idx);
-        cp->blockSignals(false);
-      }
-      else
-      {
-        P_MESSAGE3("No constant `", name, "' is defined in mainwindow.h.");
-      }
-    }
+    // Notifies about the constant change
+    // and fetches the value from parameters
+    void setConstant(const char* name);
     
     // this loads the file, not just sets the parameter
     // otherwise it would be `setSysName()'
@@ -385,6 +123,8 @@ class MainWindow : public QMainWindow
 
   private slots:
     void stopped();
+    void threadDataDelete();
+    void threadDataSet(const KNDataFile* dataFile);
     void stop();
     void newFile();
     void open();
@@ -409,7 +149,9 @@ class MainWindow : public QMainWindow
     void compileSystem();
     void generateSystem();
     void openInputMatFile(const QString& fileName);
+    void closeInputMatFile(const KNDataFile* dataFile);
     void openOutputMatFile(const QString& fileName);
+    void closeOutputMatFile(const KNDataFile* dataFile);
     
   private:
     inline bool inputAssert(std::istream& is);
@@ -496,8 +238,9 @@ class MainWindow : public QMainWindow
     QAction *aboutAct;
     QAction *aboutQtAct;
     
-    QSharedPointer<const KNDataFile> inputMatFile;
-    QSharedPointer<const KNDataFile> outputMatFile;
+    const KNDataFile* inputMatFile;
+    const KNDataFile* outputMatFile;
+    const KNDataFile* inThreadMatFile;
 };
 
 #endif

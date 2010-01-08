@@ -400,7 +400,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
 // 1. x > XSeparator, y > YSeparator
 //    - We draw stability in this case with dashed lines
 // 2. everything else doesn't change.
-bool PlotData::addPlot(const QSharedPointer<const KNDataFile>& data, PlotXVariable x, PlotYVariable y, 
+bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y, 
   int pt, int dim)
 {
   int xadded = 0;
@@ -467,14 +467,14 @@ bool PlotData::addPlot(const QSharedPointer<const KNDataFile>& data, PlotXVariab
       if (y == YL2Norm)
       {
         KNVector elem(false);
-        qSharedPointerConstCast<KNDataFile>(data)->getElemRef(0, elem);
+        const_cast<KNDataFile*>(data)->getElemRef(0, elem);
         KNMatrix metric(elem.size(), elem.size());
         KNDdeBvpCollocation::getMetric(metric, elem);
         KNVector prof(false), msh(false);
         for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
-          qSharedPointerConstCast<KNDataFile>(data)->getMeshRef(i, msh);
-          qSharedPointerConstCast<KNDataFile>(data)->getProfileRef(i, prof);
+          const_cast<KNDataFile*>(data)->getMeshRef(i, msh);
+          const_cast<KNDataFile*>(data)->getProfileRef(i, prof);
           Graph.rbegin()->y(j) = KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim());
         }
       } else
@@ -688,24 +688,53 @@ bool PlotData::addPlot(const QSharedPointer<const KNDataFile>& data, PlotXVariab
   }
 }
 
-void PlotData::updatePlot(const QSharedPointer<const KNDataFile>& mat)
+struct rcStruc
 {
-  int it = 0;
+  rcStruc(unsigned int n, PlotXVariable x, PlotYVariable y, int p, int d) : 
+    num(n), pt(p), dim(d), X(x), Y(y) {}
+  const unsigned int num;
+  const int pt;
+  const int dim;
+  const PlotXVariable X;
+  const PlotYVariable Y;
+};
+
+void PlotData::updatePlot(const KNDataFile* mat)
+{
+  unsigned int number = 0;
+  
+  std::list<rcStruc> lst;
+  
+  unsigned int ct_num = 0;
+  int ct_it = 0;
   std::list<PlotItem>::iterator first = Graph.end();
   std::list<PlotItem>::iterator last = Graph.end();
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
   {
+    if (ct_num != i->number) { ct_num = i->number; ++ct_it; }
     // only update if all the data is necessary
     if (i->isFrom(mat) && i->varX > XSeparator && i->varY > YSeparator)
     {
       // only select one of the, but recreate all of them
-      if (i->principal)
+      if (number != i->number)
       {
-        std::cout << "Recreate this! " << it++ << "\n";
+        number = i->number;
+        lst.push_back(rcStruc(ct_it, i->varX, i->varY, i->point, i->dimension));
       }
       if (first == Graph.end()) first = i;
       last = i;
     }
+  }
+  
+  int it = 0;
+  for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+  {
+    clear(i->num - it);
+    ++it;
+  }
+  for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+  {  
+    addPlot(mat, i->X, i->Y, i->pt, i->dim);
   }
 }
 

@@ -10,7 +10,7 @@
 #include "compthread.h"
 
 MThread::MThread(const KNConstants& constants, QObject* parent) 
-  : QThread(parent), KNAbstractContinuation(constants)
+  : QThread(parent), KNAbstractContinuation(constants), output(0), changeQueued(false)
 {
 }
 
@@ -35,7 +35,9 @@ void MThread::raiseException(const KNException& ex)
 
 void MThread::setData(KNDataFile* data)
 {
-  output = QSharedPointer<KNDataFile>(data);
+  output = data;
+//  std::cout << "MThread: new data\n";
+  emit dataSet(output);
 }
 
 KNDataFile& MThread::data()
@@ -43,22 +45,52 @@ KNDataFile& MThread::data()
   return *output;
 }
 
-const QSharedPointer<KNDataFile>& MThread::dataPointer()
+const KNDataFile* MThread::dataPointer()
 {
   return output;
 }
 
+// deleteData -> dataDeleteReq -> <MainWindow> -> dataDeleteAck
 void MThread::deleteData()
 {
-  output.clear();
+  if (output) emit dataDeleteReq();
 }
 
 void MThread::dataUpdated()
 {
-  emit dataChanged( qSharedPointerConstCast<KNDataFile>(output) );
+  changeLock.lock();
+  volatile bool queued = changeQueued;
+  changeLock.unlock();
+  if (!queued)
+  {
+    changeLock.lock();
+    changeQueued = true;
+    changeLock.unlock();
+//    std::cout << "+req " << queued << "\n";
+    emit dataChanged( const_cast<const KNDataFile*>(output) );
+  } else
+  {
+//    std::cout << "0req " << queued << "\n";
+  }
 }
 
-// SLOT:
+// SLOTS:
+
+void MThread::dataDeleteAck()
+{
+//  std::cout << "MThread: delete data\n";
+  delete output;
+  output = 0;
+}
+
+void MThread::dataChangedAck()
+{
+//  std::cout << "-ack\n";
+  changeLock.lock();
+  changeQueued = false;
+  changeLock.unlock();
+}
+
 void MThread::consolePrint(const std::string& str)
 {
   std::cout << str;

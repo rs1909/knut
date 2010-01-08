@@ -44,14 +44,9 @@ class KNDataFile
     // unmaps the memory, truncates the file if necessary, closes the file
     ~KNDataFile();
     
-#ifndef WIN32
-    void   lock() const { if (flock(file, LOCK_EX) != 0) std::cerr<<"Error locking\n"; }
-    void   unlock() const { if (flock(file, LOCK_UN) != 0) std::cerr<<"Error locking\n"; }
-#else
-    // No locking on windows. Use a proper operating system instead.
-    void   lock() const { }
-    void   unlock() const { }
-#endif
+    virtual void lock() const;
+    virtual void unlock() const;
+
     const std::string& getFileName() const { return matFileName; }
     // resets the tables (no locking)
     void   initHeaders();

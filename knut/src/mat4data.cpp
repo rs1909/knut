@@ -36,6 +36,27 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
+#ifndef WIN32
+
+void KNDataFile::lock() const
+{
+//  std::cout<<"L " << matFileName << "\n";
+  if (flock(file, LOCK_EX) != 0) std::cerr<<"Error locking\n";
+}
+
+void KNDataFile::unlock() const
+{
+//  std::cout<<"U " << matFileName << "\n";
+  if (flock(file, LOCK_UN) != 0) std::cerr<<"Error locking\n";
+}
+
+#else
+
+// No locking on windows. Use a proper operating system instead.
+void KNDataFile::lock() const { }
+void KNDataFile::unlock() const { }
+
+#endif
 off_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool test, int32_t r, int32_t c, int32_t imag, const char* fileName)
 {
   struct header hd;

@@ -546,6 +546,7 @@ int KNAbstractPeriodicSolution::StartTF(bool findangle, std::ostream& out)
 
 void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
 {
+//  std::cout << "DAT " << &data << "\n";
   data.lock();
   data.setNTrivMul(0, nTrivMulLP);
   data.setNTrivMul(1, nTrivMulPD);
