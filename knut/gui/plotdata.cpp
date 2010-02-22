@@ -23,6 +23,7 @@
 
 PlotData::PlotData(QObject *parent) :
     QGraphicsScene(parent),
+    xlog(false), ylog(false),
     AspectRatio(4.0 / 3.0),
     plotXSize(540), plotYSize(plotXSize / AspectRatio),
     FontSize(12), Box(0)
@@ -366,10 +367,10 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
     {
       for (int k = 0; k < it->x.size(); k++)
       {
-        if (it->x(k) > cvb.xmax) { cvb.xmax = it->x(k); toZoom = true; }
-        if (it->x(k) < cvb.xmin) { cvb.xmin = it->x(k); toZoom = true; }
-        if (it->y(k) > cvb.ymax) { cvb.ymax = it->y(k); toZoom = true; }
-        if (it->y(k) < cvb.ymin) { cvb.ymin = it->y(k); toZoom = true; }
+        if (xcoord(it->x(k)) > cvb.xmax) { cvb.xmax = xcoord(it->x(k)); toZoom = true; }
+        if (xcoord(it->x(k)) < cvb.xmin) { cvb.xmin = xcoord(it->x(k)); toZoom = true; }
+        if (ycoord(it->y(k)) > cvb.ymax) { cvb.ymax = ycoord(it->y(k)); toZoom = true; }
+        if (ycoord(it->y(k)) < cvb.ymin) { cvb.ymin = ycoord(it->y(k)); toZoom = true; }
       }
     }
     if (cvb.xmax == cvb.xmin ) { cvb.xmin *= 0.95; cvb.xmax *= 1.05; }
@@ -627,7 +628,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
           Graph.rbegin()->y(0) = it->y(it->y.size()-1);
         } else
         {
-          Graph.rbegin()->x(0) = (it->x(k2 - 1) + it->x(k2)) / 2.0;
+          Graph.rbegin()->x(0) = (it->x(k2 - 1) + xcoord(it->x(k2))) / 2.0;
           Graph.rbegin()->y(0) = (it->y(k2 - 1) + it->y(k2)) / 2.0;
         }
       } else
@@ -884,7 +885,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     if ((*i).type == PlotLineType)
     {
       PlotLine& ppath = *(*i).data.line;
-      QPointF prevPoint(xscale*(i->x(0) - cvb.xmin), yscale*(cvb.ymax - i->y(0)));
+      QPointF prevPoint(xscale*(xcoord(i->x(0)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(0))));
       
       // initializing ppath
       ppath.clear();
@@ -893,7 +894,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       
       for (int k = 1; k < i->x.size(); k++)
       {
-        QPointF currentPoint(xscale*(i->x(k) - cvb.xmin), yscale*(cvb.ymax - i->y(k)));
+        QPointF currentPoint(xscale*(xcoord(i->x(k)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(k))));
         pointOutside(ppath, BottomLeft, BottomRight, TopLeft, TopRight, prevPoint, currentPoint);
         prevPoint = currentPoint;
       }
@@ -903,7 +904,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       (*i).data.circle->pos.clear();
       for (int k = 0; k < i->x.size(); k++)
       {
-        const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
+        const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
         QRectF& rect = (*i).data.circle->point;
         QRectF& scaledRect = (*i).data.circle->scaledPoint;
         if ((*i).data.circle->scale)
@@ -927,7 +928,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       (*i).data.polygon->pos.clear();
       for (int k = 0; k < i->x.size(); k++)
       {
-        const QPointF pt = QPointF(xscale * (i->x(k) - cvb.xmin), yscale * (cvb.ymax - i->y(k)));
+        const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
         if (Box->rect().contains(pt.x(), pt.y())) (*i).data.polygon->pos.push_back(pt);
       }
       for (size_t p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];

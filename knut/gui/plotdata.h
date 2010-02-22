@@ -21,6 +21,7 @@ class QGraphicsSceneMouseEvent;
 
 #include <vector>
 #include <list>
+#include <cmath>
 
 #include "matrix.h"
 #include "mat4data.h"
@@ -175,6 +176,20 @@ class PlotData : public QGraphicsScene
     void setColor(unsigned int n, QColor& Color);
     void updatePlot(const KNDataFile* mat);
     
+  public slots:
+    void setXLog(int b)
+    {
+      bool tmp = xlog;
+      xlog = (b == Qt::Checked); 
+      if (xlog != tmp) dataToGraphics(Graph.begin(), Graph.end()); 
+    }
+    void setYLog(int b)
+    {
+      bool tmp = ylog;
+      ylog = (b == Qt::Checked); 
+      if (ylog != tmp) dataToGraphics(Graph.begin(), Graph.end()); 
+    }
+    
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
@@ -199,10 +214,14 @@ class PlotData : public QGraphicsScene
     void replot();
     void clearAxes();
     void labelColor();
+    inline double xcoord(double x) { if (xlog) { if (x>0) return log10(fabs(x)); else return 0; } else return x; }
+    inline double ycoord(double y) { if (ylog) { if (y>0) return log10(fabs(y)); else return 0; } else return y; }
 
     // geometry
     std::list<ViewBox> ZoomHistory;
     std::list<ViewBox>::iterator currZoom;
+    bool xlog;
+    bool ylog;
     // relative geometry
     const qreal AspectRatio;
     const qreal plotXSize, plotYSize;

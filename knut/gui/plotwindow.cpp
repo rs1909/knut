@@ -132,6 +132,11 @@ void plotWindow::setupPlotWindow()
   QToolButton *exportSvgButton = new QToolButton();
   exportSvgButton->setDefaultAction( exportSvgAct );
   connect( exportSvgAct, SIGNAL(triggered()), this, SLOT(exportSvg()) );
+  
+  QCheckBox* xLog = new QCheckBox();
+  QCheckBox* yLog = new QCheckBox();
+  connect( xLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setXLog(int)) );
+  connect( yLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setYLog(int)) );
 
   QSplitter *splitter = new QSplitter;
   splitter->addWidget(dockWidget);
@@ -153,6 +158,8 @@ void plotWindow::setupPlotWindow()
   topLayout->addWidget(clearAllPlotButton, 1, 7);
   topLayout->addWidget(printButton, 1, 8);
   topLayout->addWidget(exportSvgButton, 1, 9 );
+  topLayout->addWidget(xLog, 2, 1 );
+  topLayout->addWidget(yLog, 2, 2 );
 
   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
