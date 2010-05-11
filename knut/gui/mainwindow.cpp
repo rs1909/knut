@@ -819,6 +819,11 @@ void MainWindow::generateSystem()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  if (compThread.isRunning())
+  {
+    compThread.setStopFlag(true);
+    compThread.wait();
+  }
   writeSettings();
   qApp->quit();
   event->accept();

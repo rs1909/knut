@@ -2,8 +2,8 @@
 # CMAKE_OSX_ARCHITECTURES is necessary to remove other architectures
 SCRIPTDIR=${0/build-mac.sh/}
 cmake -G "Unix Makefiles"\
-	-D CMAKE_CXX_COMPILER="g++-4.2"\
-	-D CMAKE_C_COMPILER="gcc-4.2"\
+	-D CMAKE_CXX_COMPILER="g++"\
+	-D CMAKE_C_COMPILER="gcc"\
 	-D CMAKE_Fortran_COMPILER="gfortran"\
 	-D CMAKE_C_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused -Wno-unknown-pragmas"\
 	-D CMAKE_CXX_FLAGS="-m64 -g -O2 -W -Wall -Wno-unused -Wconversion"\
