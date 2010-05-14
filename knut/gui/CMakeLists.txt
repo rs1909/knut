@@ -63,10 +63,10 @@ IF(APPLE)
     MACOSX_BUNDLE_BUNDLE_NAME "Knut"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${PACKAGE_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
-    MACOSX_BUNDLE_COPYRIGHT "Copyright © 2002-2009, Robert Szalai")
+    MACOSX_BUNDLE_COPYRIGHT "${PACKAGE_COPYRIGHT}")
 
-# INSTALL( TARGETS Knut DESTINATION ${KNUT_BINARY_DIR})
-  ADD_CUSTOM_TARGET(frameworks
+  ADD_CUSTOM_COMMAND(TARGET Knut
+    POST_BUILD
     COMMAND
     mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Frameworks"\;
     mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/"\;
@@ -78,11 +78,10 @@ IF(APPLE)
     echo "[Paths]" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
     echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
     cmake -P ${KNUT_SOURCE_DIR}/createAppBundle.cmake ${KNUT_BINARY_DIR}\;
-    # COPYING THE WHOLE THING
-    rm -rf "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
-    mkdir -p "${CMAKE_INSTALL_PREFIX}/Knut.app"\;
-    cp -Rp "${KNUT_BINARY_DIR}/gui/Knut.app" "${CMAKE_INSTALL_PREFIX}"\;)
+)
 
+  INSTALL(DIRECTORY ${KNUT_BINARY_DIR}/gui/Knut.app DESTINATION ${CMAKE_INSTALL_PREFIX}
+    USE_SOURCE_PERMISSIONS)
 ENDIF(APPLE)
 
 IF(NOT APPLE)

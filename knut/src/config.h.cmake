@@ -7,6 +7,9 @@
 /* "SVN REVISION" */
 #define PACKAGE_REVISION "@PACKAGE_REVISION@"
 
+#define PACKAGE_COPYRIGHT "@PACKAGE_COPYRIGHT@"
+#define PACKAGE_URL "@PACKAGE_URL@"
+
 /* definitions for compiling a system definition file */
 #define CMAKE_CXX_COMPILER                  "@CMAKE_CXX_COMPILER@"
 #define CMAKE_CXX_FLAGS                     "@CMAKE_CXX_FLAGS@"

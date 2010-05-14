@@ -869,9 +869,8 @@ void MainWindow::about()
   QMessageBox::about(this, tr("About Knut"),
                      QString(tr(
                                "<h3>%1: A continuation software for delay-differential equations</h3>"
-                               "<p>Version %2 (%3), Copyright (c) 2002-2010 Robert Szalai</p>"
-                               "<p>Available at <a href=http://seis.bris.ac.uk/~rs1909/knut>"
-                               "http://seis.bris.ac.uk/~rs1909/knut</a></p>"
+                               "<p>Version %2 (%3), %4</p>"
+                               "<p>Available at <a href=%5> %5</a></p>"
                                "<p>This program is free software; you can redistribute it and/or "
                                "modify it under the terms of the "
                                "<a href=http://www.gnu.org/copyleft/gpl.html>GNU General Public License</a> "
@@ -884,7 +883,11 @@ void MainWindow::about()
                                "<p>You should have received a copy of the GNU General Public License "
                                "along with this program; if not, write to the Free Software "
                                "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</p>"
-                             )).arg(PACKAGE_NAME).arg(PACKAGE_VERSION).arg(PACKAGE_REVISION));
+                             )).arg(PACKAGE_NAME)
+                             .arg(PACKAGE_VERSION)
+                             .arg(PACKAGE_REVISION)
+                             .arg(PACKAGE_COPYRIGHT)
+                             .arg(PACKAGE_URL));
 }
 
 void MainWindow::createActions()
@@ -916,6 +919,7 @@ void MainWindow::createActions()
   connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
   saveAsAct = new QAction(QIcon(":/res/images/cr22-action-filesaveas.png"), tr("Save &As..."), this);
+  saveAsAct->setShortcut(tr("Ctrl+Shift+S"));
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 

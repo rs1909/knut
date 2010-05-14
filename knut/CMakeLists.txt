@@ -8,6 +8,8 @@ PROJECT( KNUT )
 SET( PACKAGE_NAME "Knut" )
 SET( PACKAGE_VERSION "2.0.0" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
+SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2010, Robert Szalai")
+SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
 
 SET( KNUT_GUI TRUE )
 
@@ -160,7 +162,7 @@ ELSE( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 
 #------------------------------------------------------------------------------
-# DISTRIBUTING WITH SVN
+# DISTRIBUTING WITH GIT
 #------------------------------------------------------------------------------
 
 SET( DIST_DIR ${PACKAGE_NAME}-${PACKAGE_VERSION} )
@@ -188,7 +190,10 @@ IF(APPLE)
   ADD_CUSTOM_TARGET( dmg
     COMMAND pushd ${CMAKE_INSTALL_PREFIX}\;
     rm -f "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
-    hdiutil create -volname "Knut" -srcfolder Knut.app/ -srcfolder matlab/ -srcfolder demo/ "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
+    hdiutil create -volname "Knut" -srcfolder Knut.app/ 
+      -srcfolder matlab/
+      -srcfolder demo/
+      "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg"\;
     popd\;)
 ENDIF(APPLE)
 
