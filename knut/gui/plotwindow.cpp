@@ -253,10 +253,13 @@ void plotWindow::addPlot()
       }
       if (added)
       {
-        plotSelect->addItem(QString("%1 : (%2, %3, L%4, D%5)")
+      	QListWidgetItem* item = new QListWidgetItem(QString("%1 : (%2, %3, L%4, D%5)")
           .arg(shortFileName).arg(xvarMap.at(static_cast<unsigned int>(xvar->currentIndex())).name)
           .arg(yvarMap.at(static_cast<unsigned int>(yvar->currentIndex())).name)
-          .arg(ptlabel->value()).arg(dim->value()));
+          .arg(ptlabel->value()).arg(dim->value()),
+          plotSelect);
+        item->setForeground(QBrush(plotdata.getColor(plotSelect->count())));
+        plotSelect->addItem(item);
       }
     }
     data->unlock();
