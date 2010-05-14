@@ -1,3 +1,46 @@
+Nov 30, 2009, version 5.5.0
+
+    * changed and simplified how UMFPACK connects to 64-bit BLAS
+    * added user-ordering function option (umfpack_*_fsymbolic)
+    * added interface to CHOLMOD's ordering methods (METIS, in particular)
+    * added an option to disable the search for singletons.  Disabling this
+        search for singletons can slow UMFPACK down quite a bit for some
+        matrices, but it does ensure that L is well-conditioned and that
+        any ill-conditioning of A is captured only in U.
+    * removed UMFPACK/MATLAB/GNUmakefile and UMFPACK/MATLAB/Makefile;
+        to compile the UMFPACK mexFunction, use umfpack_make.m in MATLAB.
+    * added "make install" and "make uninstall"
+
+May 20, 2009, version 5.4.0
+
+    * bug fix in umfpack_make.m for Windows
+    * disabled 2-by-2 strategy.  It conflicts with how structurally singular
+	matrices are handled.
+
+March 24, 2009, version 5.3.0
+
+    * bug fix for 2-by-2 strategy (diagonal map) for structurally singular
+	matrices
+
+    * compiler workaround for gcc 4.2.{3,4} in umf_singletons.c
+
+    * added additional timer options in umfpack_timer.c (for POSIX)
+
+Sept 22, 2008
+
+    * minor update to documentation; no change to code
+
+Nov 1, 2007, version 5.2.0
+
+    * change of license to GNU GPL from GNU LGPL.  This is the primary change to
+	this version.
+
+    * minor lint cleanup
+
+    * port to MATLAB 7.5 (added -lmwblas to mex command)
+
+    * added info output to the umfpack_btf command.
+
 May 31, 2007, version 5.1.0
 
     * port to 64-bit MATLAB

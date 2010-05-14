@@ -1,8 +1,8 @@
-SET( UMFINT_C umf_analyze.c umf_apply_order.c umf_colamd.c umf_free.c umf_fsize.c
+SET( UMFINT_C umf_analyze.c umf_apply_order.c umf_colamd.c umf_cholmod.c umf_free.c umf_fsize.c
 	umf_is_permutation.c umf_malloc.c umf_realloc.c umf_report_perm.c
 	umf_singletons.c )
 
-SET( UMFINT_H umf_analyze.h umf_apply_order.h umf_colamd.h umf_free.h umf_fsize.h
+SET( UMFINT_H umf_analyze.h umf_apply_order.h umf_colamd.h umf_cholmod.h umf_free.h umf_fsize.h
 	umf_is_permutation.h umf_malloc.h umf_realloc.h umf_report_perm.h
 	umf_singletons.h )
 
@@ -64,7 +64,7 @@ INCLUDE_DIRECTORIES(
 
 SET( FLT DINT ) # form DINT DLONG ZINT ZLONG 
 
-ADD_DEFINITIONS( -DNO_TIMER )
+ADD_DEFINITIONS( -DNO_TIMER -DNCHOLMOD )
 
 ADD_LIBRARY( umfpack
 	${UMFINT_C} ${UMFINT_H}
