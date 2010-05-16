@@ -115,6 +115,8 @@ class KNException
 #  define P_ERROR_X6(cond, arg1, arg2, arg3, arg4, arg5, arg6) do{ if(!(cond) ) throw(-1); }while(0)
 #  define P_ERROR_X7(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7) do{ if(!(cond) ) throw(-1); }while(0)
 #  define P_ERROR_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ if(!(cond) ) throw(-1); }while(0)
+#  define P_ERROR_X9(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) do{ if(!(cond) ) throw(-1); }while(0)
+#  define P_ERROR_X10(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) do{ if(!(cond) ) throw(-1); }while(0)
 
 #else
 
@@ -158,6 +160,10 @@ class KNException
     throw(KNException( std::string(__FILE__), __LINE__, KNMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7 )); }while(0)
 #  define P_ERROR_X8(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) do{ if(!(cond) ) \
     throw(KNException( std::string(__FILE__), __LINE__, KNMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8 )); }while(0)
+#  define P_ERROR_X9(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) do{ if(!(cond) ) \
+    throw(KNException( std::string(__FILE__), __LINE__, KNMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8<<arg9 )); }while(0)
+#  define P_ERROR_X10(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) do{ if(!(cond) ) \
+    throw(KNException( std::string(__FILE__), __LINE__, KNMessage("Assertion (" #cond ") has failed. ")<<arg1<<arg2<<arg3<<arg4<<arg5<<arg6<<arg7<<arg8<<arg9<<arg10 )); }while(0)
 
 #endif
 

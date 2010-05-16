@@ -12,6 +12,7 @@
 #endif
 #include "basecomp.h"
 #include "knerror.h"
+#include <unistd.h>
 // #include "constants.h" included in basecomp
 // #include <iostream> included in basecomp
 
@@ -30,7 +31,6 @@ int main(int argc, const char** argv)
 {
   // parameters
   KNConstants*  params = 0;
-  const char*  constFile = 0;
   const char*  branchFile = 0;
 
   try
@@ -43,9 +43,24 @@ int main(int argc, const char** argv)
         switch (argv[acnt][1])
         {
           case 'c':
-            constFile = argv[++acnt];
             params = new KNConstants;
-            params->loadXmlFile(constFile);
+            {
+              std::string constFile(argv[++acnt]);
+              std::string cfdir(constFile);
+              char*  cwd_ptr = getcwd(0, 0);
+              P_ERROR_X1(cwd_ptr != 0, "Cannot obtain CWD.");
+              std::string  cwd(cwd_ptr);
+              free(cwd_ptr);
+              cwd += '/';
+              
+              size_t found = cfdir.rfind('/');
+              if (found != std::string::npos) cfdir.erase(found);
+              chdir (cfdir.c_str());
+//               std::cout << "Changed directory " << cfdir.c_str() << "\n";
+//               std::cout << "Previous directory " << cwd.c_str() << "\n";
+              if (constFile[0] != '/') constFile.insert(0, cwd);
+              params->loadXmlFile(constFile);
+            }
 //            params->printXmlFile(std::cout);
             break;
           case 'b':
