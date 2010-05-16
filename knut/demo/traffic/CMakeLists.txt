@@ -2,7 +2,7 @@ SET( NAME traffic3cars )
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
 ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
-SET( CFILEDIR ${KNUT_SOURCE_DIR}/demo/traffic )
+SET( CFILEDIR ${CMAKE_INSTALL_PREFIX}/${KNUT_DEMO_DIR}/traffic )
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
 INSTALL( FILES sys-${NAME}.cpp
 	cfile-start-a.knut cfile-start-b.knut
@@ -12,21 +12,21 @@ INSTALL( FILES sys-${NAME}.cpp
 	README sys-trafficncars.cpp DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-1
-    COMMAND knut -c ${CFILEDIR}/cfile-start-a.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-start-a.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-2
-    COMMAND knut -c ${CFILEDIR}/cfile-start-b.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-start-b.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-3
-    COMMAND knut -c ${CFILEDIR}/cfile-nssw-a.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-nssw-a.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-4
-    COMMAND knut -c ${CFILEDIR}/cfile-nssw-b.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-nssw-b.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-5
-    COMMAND knut -c ${CFILEDIR}/cfile-lp-a.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-lp-a.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-6
-    COMMAND knut -c ${CFILEDIR}/cfile-lp-b.knut )
+    COMMAND exec knut -c ${CFILEDIR}/cfile-lp-b.knut )
 
 ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
