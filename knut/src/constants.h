@@ -23,6 +23,7 @@
   #include <cstdio>
 
   #include <climits>
+  #include <cfloat>
 
   static inline int toInt(long int x)
   {
@@ -128,11 +129,11 @@ class KNConstants
     // for double, int, char
     // for i in `g++ -E -DEXTRACT_NAMES constants.h | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
     KNConstants() : label(0), cpType(0), cpNum(0), branchSW(NOSwitch), 
-      nInt(0), nDeg(0), nMul(0), stab(false), nMat(0), 
-      nInt1(0), nInt2(0), nDeg1(0), nDeg2(0), steps(0), 
-      iad(0), nPr(0), cpMin(0), cpMax(0), ds(0), dsMin(0), 
-      dsMax(0), dsStart(0), epsC(0), epsR(0), epsK(0), 
-      nItC(0), nItR(0), nItK(0), nDeri(0), nPar(0), nDim(0)
+      nInt(10), nDeg(4), nMul(0), stab(false), nMat(1), 
+      nInt1(10), nInt2(4), nDeg1(4), nDeg2(4), steps(10), 
+      iad(3), nPr(1), cpMin(-DBL_MAX), cpMax(DBL_MAX), ds(1e-3), dsMin(1e-3), 
+      dsMax(1e-3), dsStart(1e-3), epsC(1e-5), epsR(1e-5), epsK(1e-5), 
+      nItC(5), nItR(12), nItK(12), nDeri(0), nPar(0), nDim(0)
     { }
     // to extract the dependencies run:
     // for i in `g++ -E -DEXTRACT_NAMES -DREMOVE_TYPES constants.h | grep private | sed -e s/\;.*//g -e s/.*private:\ //g`; do echo -n $i\(src.$i\),\ ; done;

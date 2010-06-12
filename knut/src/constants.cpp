@@ -273,6 +273,7 @@ void KNConstants::loadXmlFile(const std::string &fileName)
   
   nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
   setNPr(getNodeInteger(nd, 10));
+  P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
   
   nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
   setCpMin(getNodeReal(nd));
