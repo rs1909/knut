@@ -389,22 +389,8 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
-  //
-  // The following code assumes that the delays are single parameters,
-  // and not mathematical expressions.
-  //
-  // Expressions...
-  //
-  if (na > 0)
-    sys_out << "        // Expressions\n";
-  for (size_t i = 0; i < na; ++i)
-  {
-    ex f = exprformula_list[i];
-    Knut_ConvertStateToZlags(f);
-    sys_out << "        const double " << exprname_list[i] << " = " << f << ";" << endl;
-  }
-  sys_out << endl;
 
+  // The expressions are already substituted into the equations
   //
   // StateVariables...
   //
@@ -465,8 +451,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   vector<ex> vf0;
   for (size_t i = 0; i < nv; ++i)
   {
-    // Get the i^th formula, and substitute all expressions.
-    ex f = iterated_subs(varvecfield_list[i], expreqn_list);
+    ex f = varvecfield_list[i]; 
     // Convert the state variables and delay expressions to Zlags_
     Knut_ConvertStateToZlags(f);
     vf0.push_back(f);
@@ -622,7 +607,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//    Zlags_ = [ X(t) ";
   for (unsigned k = 0; k < Delays.size(); ++k)
   {
-    sys_out << "X(t-" << Delays[k] << ")";
+    sys_out << "X(t-(" << Delays[k] << "))";
     if (k < Delays.size() - 1)
       sys_out << " ";
   }
@@ -681,22 +666,8 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   int j = 1;
   for (vector<ex>::iterator p = Delays.begin(); p != Delays.end(); ++p)
   {
-    if (!is_a<symbol>(*p))
-      cerr << "Error: the delay expression " << *p << " is not a single symbol.\n";
-    else
-    {
-      int k = 0;
-      lst::const_iterator q;
-      for (q = parname_list.begin(); q != parname_list.end(); ++q)
-        if (*q == *p)
-          break;
-        else
-          ++k;
-      if (q == parname_list.end())
-        cerr << "Error: the delay expression " << *p << " is not a parameter.\n";
-      else
-        sys_out << "        out(" << j << ",idx) = " <<  *p << ";\n";
-    }
+    // TODO: check that delays don't depend on states
+    sys_out << "        out(" << j << ",idx) = " <<  *p << ";\n";
     ++j;
   }
   sys_out << "    }\n";
@@ -861,64 +832,13 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     sys_out << "    out[" << k + par_shift << "] = \"" << parname_list[k] << "\";\n";
   }
   sys_out << "}\n";
-  sys_out << "}  // extern \"C\"\n";
 
   // ***************************************************************************
   // Event functions
   // ***************************************************************************
-  sys_out << "//" << endl;
-  sys_out << "void sys_p_event(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
-  sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "    const double Pi = M_PI;\n";
-  }
-  //
-  // Constants...
-  //
-  for (size_t i = 0; i < nc; ++i)
-  {
-    sys_out << "    const double " << conname_list[i] << " = " << convalue_list[i] << ";" << endl;
-  }
-  //
-  // Parameters...
-  //
-  if (parname_list.nops() > 0)
-  {
-    sys_out << "    // Parameters (par_(0) is the period)\n";
-    GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
-    sys_out << endl;
-  }
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
-  sys_out << "    {\n";
-  sys_out << "        const double t = time(idx);\n";
-  //
-  // Expressions...
-  //
-  if (na > 0)
-    sys_out << "        // Expressions\n";
-  for (size_t i = 0; i < na; ++i)
-  {
-    ex f = exprformula_list[i];
-    Knut_ConvertStateToZlags(f);
-    sys_out << "        const double " << exprname_list[i] << " = " << f << ";" << endl;
-  }
   sys_out << endl;
-
-  //
-  // StateVariables...
-  //
-  // sys_out << "    vf_ = zeros(" << nv << ",1);" << endl;
-  sys_out << "        // Compute the vector field\n";
-  for (size_t i = 0; i < nf; ++i)
-  {
-    ex f = funcformula_list[i];
-//    if (f.has(delay(wild(1), wild(2)))) Knut_ConvertDelaysToZlags(f);
-    Knut_ConvertStateToZlags(f);
-    sys_out << "        out(" << i << ",idx)" << " = " << f << ";" << endl;
-  }
-  sys_out << "    }\n";
-  sys_out << "}\n";
+  // TODO: implement event functions          
+  sys_out << "}  // extern \"C\"\n";
 
   return;
 }

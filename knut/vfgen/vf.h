@@ -230,6 +230,10 @@ class VectorField : public Symbol
     VectorField();
     VectorField(const std::string& name, const std::string& descr);
     VectorField(const std::string& name, const std::string& descr, const std::string& indvar);
+    
+    // Destructor
+    ~VectorField();
+
 
     void AddConstant(Constant *c);
     void AddParameter(Parameter *p);

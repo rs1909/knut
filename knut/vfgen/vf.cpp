@@ -26,6 +26,7 @@
 #include <ginac/ginac.h>
 
 #include "vf.h"
+#include "codegen_utils.h"
 
 using namespace std;
 using namespace GiNaC;
@@ -215,9 +216,30 @@ Function::Function(const std::string& name, const std::string& descr) : FormulaS
 VectorField::VectorField(void) : IndependentVariable("t"), IsAutonomous(true) { }
 VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
 VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
-// TO DO: Create the destructor; it must delete the memory used
-//        by the vector<>s in VectorField.
 
+VectorField::~VectorField()
+{
+  for (int i=0; i<Constants.size(); ++i)
+  {
+    delete Constants[i];
+  }
+  for (int i=0; i<Parameters.size(); ++i)
+  {
+    delete Parameters[i];
+  }
+  for (int i=0; i<Expressions.size(); ++i)
+  {
+    delete Expressions[i];
+  }
+  for (int i=0; i<StateVariables.size(); ++i)
+  {
+    delete StateVariables[i];
+  }
+  for (int i=0; i<Functions.size(); ++i)
+  {
+    delete Functions[i];
+  }
+}
 
 void VectorField::AddConstant(Constant *p) { Constants.push_back(p); }
 void VectorField::AddParameter(Parameter *p) { Parameters.push_back(p); }
@@ -282,10 +304,10 @@ int VectorField::FindDelay(ex &del)
   unsigned k;
   for (k = 0; k < Delays.size(); ++k)
   {
-    // cerr << "FindDelay: Delays[" << k << "] = " << Delays[k] << endl;
+//     cerr << "FindDelay: Delays[" << k << "] = " << Delays[k] << " " << del << endl;
     if (Delays[k] == del)
     {
-      // cerr << "FindDelay: Found the delay " << del << " at Delays[" << k << "]\n";
+//       cerr << "FindDelay: Found the delay " << del << " at Delays[" << k << "]\n";
       found = true;
       break;
     }
@@ -410,23 +432,23 @@ int VectorField::ProcessSymbols(void)
     allsymbols.append(par);
   }
   // Process the parameters DEFAULTVALUE
-    for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
+  for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
+  {
+    bool isPeriod = !strcasecmp((*p)->Description().c_str(), "period");
+    string defval = (*p)->DefaultValue();
+    if (defval == "") defval = "0";
+    try
     {
-      bool isPeriod = !strcasecmp((*p)->Description().c_str(), "period");
-      string defval = (*p)->DefaultValue();
-      if (defval == "") defval = "0";
-      try
-      {
-        ex e(defval, allsymbols);
-        if (isPeriod) pardefval_list.prepend(e); else pardefval_list.append(e); 
-        if (has(e, Pi)) HasPi = true;
-      }
-      catch (exception &ep)
-      {
-        cerr << "The DefaultValue \"" << (*p)->DefaultValue() << "\" for the Parameter " << (*p)->Name() << " has an error: " << ep.what() << endl;
-        rval = -1;
-      }
+      ex e(defval, allsymbols);
+      if (isPeriod) pardefval_list.prepend(e); else pardefval_list.append(e); 
+      if (has(e, Pi)) HasPi = true;
     }
+    catch (exception &ep)
+    {
+      cerr << "The DefaultValue \"" << (*p)->DefaultValue() << "\" for the Parameter " << (*p)->Name() << " has an error: " << ep.what() << endl;
+      rval = -1;
+    }
+  }
 
   // At this point, allsymbols is a list of the ginac
   // symbols of the constants and parameters.
@@ -498,6 +520,7 @@ int VectorField::ProcessSymbols(void)
   }
 
   // Process the expressions NAME and FORMULA
+  // Check for the delays later and replace the delay with the full expression at the end
   for (vector<Expression *>::iterator e = Expressions.begin(); e != Expressions.end(); ++e)
   {
     symbol auxe(!(*e)->Latex().empty()
@@ -510,7 +533,6 @@ int VectorField::ProcessSymbols(void)
       ex f((*e)->Formula(), allsymbols);
       exprformula_list.append(f);
       expreqn_list.append(auxe == f);
-      CheckForDelay(f);
       if (has(f, Pi)) HasPi = true;
     }
     catch (exception &p)
@@ -534,7 +556,6 @@ int VectorField::ProcessSymbols(void)
     {
       ex f((*sv)->Formula(), allsymbols);
       varvecfield_list.append(f);
-      CheckForDelay(f);
       if (has(f, Pi)) HasPi = true;
       if (has(f, IndVar)) IsAutonomous = false;
     }
@@ -543,6 +564,14 @@ int VectorField::ProcessSymbols(void)
       cerr << "The Formula \"" << (*sv)->Formula() << "\" for the StateVariable " << (*sv)->Name() << " has an error: " << p.what() << endl;
       rval = -1;
     }
+  }
+
+  // checking for delays with everything substituted in the vectorfields
+  for (int i = 0; i < varvecfield_list.nops(); ++i)
+  {
+    ex f = iterated_subs(varvecfield_list[i], expreqn_list);
+    varvecfield_list[i] = f;
+    CheckForDelay(f);
   }
 
   // Functions
