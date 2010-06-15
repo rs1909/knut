@@ -542,7 +542,7 @@ void KNSystem::generateSystem(const std::string& vffile, const std::string& exec
   vf.ReadXML(vffile);
   int pserr = vf.ProcessSymbols();
   if (pserr == -1) P_MESSAGE1("Could not parse the vector filed definition.");
-  if (vf.testHasNonconstantDelay()) P_MESSAGE1("Nonconstant delays are not suported yet.");
+  if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
   vf.PrintKnut(cxxcode, options);
   runCompiler(cxxcode.str(), vffile + ".so", executableDir);
 #endif

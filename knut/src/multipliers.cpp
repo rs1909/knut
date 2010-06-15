@@ -13,6 +13,16 @@
 #include "matrix.h"
 #include "pointtype.h"
 
+// findTrivialIndices :
+// 	Input :
+//		mulRe : real part of the multipliers
+//		mulIm : imaginary part of the multipliers
+//		lp    : number of +1s to find
+//		pd    : number of -1s to find
+//		ns    : number of unit norms other than -1 or +1 to find
+//	Output :
+//		imin : array of indices of the found multipliers
+//		dmin : the distance from the target (should be small, but not checked)
 static inline void findTrivialIndices(const KNVector& mulRe, const KNVector& mulIm,
                                       const int lp, const int pd, const int ns,
                                       int *imin, double* dmin)
@@ -45,6 +55,10 @@ static inline void findTrivialIndices(const KNVector& mulRe, const KNVector& mul
         }
       }
     }
+  }
+  for (int j = 0; j < lp+pd; ++j)
+  {
+  	if (mulIm(imin[j]) != 0) std::cerr << "findTrivialIndices : Not a real multiplier\n";
   }
 }
 

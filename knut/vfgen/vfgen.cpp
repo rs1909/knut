@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   // Call the appropriate output function based on the first
   // command line argument.
   //
-  if (vf.testHasNonconstantDelay()) cerr << "Nonconstant delays are not suported yet. ";
+  if (vf.isStateDependentDelay()) cerr << "State dependent delays are not suported yet.\n";
   else vf.PrintKnut(std::cout, options);
   return(0);
 }  // end main()

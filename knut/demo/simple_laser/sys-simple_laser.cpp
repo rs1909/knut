@@ -223,7 +223,7 @@ for (int idx=0; idx<time.size(); ++idx)
             break;
           default:
             std::cout<< "not implemented nx=2, vx[0]=0, vx[1]="<<vx[1]<<"\n";
-            throw(-1);
+            // throw(-1);
             break;
         }
         break;

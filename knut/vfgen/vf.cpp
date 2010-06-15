@@ -213,29 +213,29 @@ Function::Function(const std::string& name, const std::string& descr) : FormulaS
 // VectorField Methods
 //
 
-VectorField::VectorField(void) : IndependentVariable("t"), IsAutonomous(true) { }
-VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
-VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true) { }
+VectorField::VectorField(void) : IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
+VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
+VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
 
 VectorField::~VectorField()
 {
-  for (int i=0; i<Constants.size(); ++i)
+  for (size_t i=0; i<Constants.size(); ++i)
   {
     delete Constants[i];
   }
-  for (int i=0; i<Parameters.size(); ++i)
+  for (size_t i=0; i<Parameters.size(); ++i)
   {
     delete Parameters[i];
   }
-  for (int i=0; i<Expressions.size(); ++i)
+  for (size_t i=0; i<Expressions.size(); ++i)
   {
     delete Expressions[i];
   }
-  for (int i=0; i<StateVariables.size(); ++i)
+  for (size_t i=0; i<StateVariables.size(); ++i)
   {
     delete StateVariables[i];
   }
-  for (int i=0; i<Functions.size(); ++i)
+  for (size_t i=0; i<Functions.size(); ++i)
   {
     delete Functions[i];
   }
@@ -372,11 +372,11 @@ void VectorField::CheckForDelay(const ex& f)
       ex del = iter->op(1);
       AddDelay(del);
       if (del.has(IndVar))
-        HasNonconstantDelay = true;  // time-dependent delay
+        TimeDependentDelay = true;  // time-dependent delay
       for (lst::const_iterator viter = varname_list.begin(); viter != varname_list.end(); ++viter)
       {
         if (del.has(*viter))
-          HasNonconstantDelay = true; // state-dependent delay
+          StateDependentDelay = true; // state-dependent delay
       }
     }
   }
@@ -387,7 +387,6 @@ int VectorField::ProcessSymbols(void)
   int rval = 0;
 
   IsDelay = false;
-  HasNonconstantDelay = false;
   HasPi   = false;
   HasPeriod = false;
   
@@ -630,7 +629,8 @@ void VectorField::print(void)
   }
   string tf[2] = {"false", "true"};
   cout << "IsDelay: " << tf[IsDelay] << endl;
-  cout << "HasNonconstantDelay: " << tf[HasNonconstantDelay] << endl;
+  cout << "TimeDependentDelay: " << tf[TimeDependentDelay] << endl;
+  cout << "StateDependentDelay: " << tf[StateDependentDelay] << endl;
   cout << "IsAutonomous: " << tf[IsAutonomous] << endl;
   cout << "HasPi: " << tf[HasPi] << endl;
 }

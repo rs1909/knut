@@ -218,7 +218,8 @@ class VectorField : public Symbol
     std::vector<StateVariable *> StateVariables;
     std::vector<Function *>      Functions;
     bool IsDelay;
-    bool HasNonconstantDelay;
+    bool TimeDependentDelay;
+    bool StateDependentDelay;
     bool HasPi;
     bool IsAutonomous;
     bool HasPeriod;
@@ -253,9 +254,9 @@ class VectorField : public Symbol
 
     void CheckForDelay(const GiNaC::ex& f);
     int  ProcessSymbols(void);
+    bool isTimeDependentDelay() { return TimeDependentDelay; }
+    bool isStateDependentDelay() { return StateDependentDelay; }
     
-    bool testHasNonconstantDelay() { return HasNonconstantDelay; }
-
     void print(void);
     void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
     void Knut_ConvertStateToZlags(GiNaC::ex& f);
