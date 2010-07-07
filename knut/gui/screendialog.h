@@ -1,27 +1,22 @@
-#include <QDialog>
 #include <QTextEdit>
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QSettings>
+#include <QCloseEvent>
 #include <string>
 #include <iostream>
 
-class screenDialog : public QDialog
+class screenDialog : public QTextEdit
 {
     Q_OBJECT
   public:
-    screenDialog(QWidget *parent = 0) : QDialog(parent)
+    screenDialog(QWidget *parent = 0) : QTextEdit(parent)
     {
-      display = new QTextEdit;
-      QVBoxLayout *layout = new QVBoxLayout;
-      layout->addWidget(display);
-      layout->setMargin(0);
-      this->setLayout(layout);
-      display->setLineWrapMode(QTextEdit::NoWrap);
-      display->setReadOnly(true);
+      setLineWrapMode(QTextEdit::NoWrap);
+      setReadOnly(true);
       QFont font("Courier");
       font.setFixedPitch(true);
-      display->setFont(font);
+      setFont(font);
 
       QSettings settings("Knut", "text window");
       QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
@@ -34,27 +29,32 @@ class screenDialog : public QDialog
       QSettings settings("Knut", "text window");
       settings.setValue("pos", pos());
       settings.setValue("size", size());
-      delete display;
+    }
+  signals:
+    void windowClosed();
+  protected:
+  	void closeEvent(QCloseEvent *event)
+ 	{
+ 	  emit windowClosed();
+      event->accept();
     }
   public slots:
     void setTitle(const std::string& str)
     {
-      display->setDocumentTitle(QString(str.c_str()));
+      setDocumentTitle(QString(str.c_str()));
     }
     void append(const std::string& str)
     {
-      QTextCursor cur = display->textCursor ();
+      QTextCursor cur = textCursor ();
       cur.movePosition(QTextCursor::End);
-      QScrollBar* bar = display->verticalScrollBar();
+      QScrollBar* bar = verticalScrollBar();
       const bool atEnd = (bar->maximum() == bar->value());
       cur.insertText(QString(str.c_str()));
       if (atEnd) bar->setValue(bar->maximum());
     }
     void setText(const QString& str)
     {
-      display->setPlainText(str);
-      display->setFontFamily("Courier");
+      setPlainText(str);
+      setFontFamily("Courier");
     }
-  private:
-    QTextEdit *display;
 };

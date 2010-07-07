@@ -9,8 +9,9 @@
 
 #include "plotdata.h"
 
-#include <QMainWindow>
+#include <QSplitter>
 #include <QFileInfo>
+#include <QCloseEvent>
 
 class QLineEdit;
 class QComboBox;
@@ -30,7 +31,7 @@ template <class T> class Translate
 typedef Translate<PlotXVariable> XTranslate;
 typedef Translate<PlotYVariable> YTranslate;
 
-class plotWindow : public QMainWindow
+class plotWindow : public QSplitter
 {
     Q_OBJECT
   public:
@@ -49,6 +50,12 @@ class plotWindow : public QMainWindow
 //      std::cout << f1.canonicalFilePath().toStdString() << " v.s.\n"
 //                << f2.canonicalFilePath().toStdString() << "\n" << (int)(f1 == f2) << "\n";
       return (f1.canonicalFilePath() == f2.canonicalFilePath());
+    }
+  protected:
+  	void closeEvent(QCloseEvent *event)
+ 	{
+ 	  emit windowClosed();
+      event->accept();
     }
   private:
     void setupPlotWindow();
@@ -82,6 +89,7 @@ class plotWindow : public QMainWindow
     // is called when the computing thread made a step
     void updatePlot(const KNDataFile* dataFile);
   signals:
+    void windowClosed();
     // gets emitted when a new file is opened
     // this makes the system open the file and the will called
     // the setData slot to add the plot

@@ -32,13 +32,13 @@
 #include <QSvgGenerator>
 
 plotWindow::plotWindow(QWidget *parent) :
-    QMainWindow(parent), data(0)
+    QSplitter(parent), data(0)
 {
   setupPlotWindow();
 }
 
 plotWindow::plotWindow(const QString& filename, QWidget *parent) :
-    QMainWindow(parent), dataFileInfo(filename)
+    QSplitter(parent), dataFileInfo(filename)
 {
   setupPlotWindow();
   matfile->setText(dataFileInfo.fileName());
@@ -138,10 +138,8 @@ void plotWindow::setupPlotWindow()
   connect( xLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setXLog(int)) );
   connect( yLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setYLog(int)) );
 
-  QSplitter *splitter = new QSplitter;
-  splitter->addWidget(dockWidget);
-  splitter->addWidget(centralWidget);
-  this->setCentralWidget(splitter);
+  this->addWidget(dockWidget);
+  this->addWidget(centralWidget);
 
   topLayout->addWidget(matfileLabel, 0, 0);
   topLayout->addWidget(xvarLabel, 0, 2);

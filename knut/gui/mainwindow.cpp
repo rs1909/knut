@@ -538,16 +538,9 @@ void MainWindow::inputPlot()
     inputPlotWindow->init();
     if (inputPlotWindow->isDataSet())
     {
-      QDialog *inputPlotDialog = new QDialog(this);
-      QVBoxLayout *inputPlotLayout = new QVBoxLayout();
-      connect(inputPlotDialog, SIGNAL(finished(int)), this, SLOT(inputPlotDestroyed()));
-      inputPlotLayout->addWidget(inputPlotWindow);
-      inputPlotLayout->setMargin(0);
-      inputPlotDialog->setLayout(inputPlotLayout);
-      inputPlotDialog->setWindowTitle("Plot - input data");
-      inputPlotDialog->setWindowFlags(Qt::Window);
-      inputPlotDialog->show();
-      inputPlotDialog->raise();
+      connect(inputPlotWindow, SIGNAL(windowClosed()), this, SLOT(inputPlotDestroyed()));
+      inputPlotWindow->setWindowTitle("Plot - input data");
+      inputPlotWindow->show();
     }
     else
     {
@@ -648,16 +641,10 @@ void MainWindow::outputPlot()
     outputPlotWindow->init();
     if (outputPlotWindow->isDataSet())
     {
-      QDialog *outputPlotDialog = new QDialog(this);
-      QVBoxLayout *outputPlotLayout = new QVBoxLayout();
-      connect(outputPlotDialog, SIGNAL(finished(int)), this, SLOT(outputPlotDestroyed()));
-      outputPlotLayout->addWidget(outputPlotWindow);
-      outputPlotLayout->setMargin(0);
-      outputPlotDialog->setLayout(outputPlotLayout);
-      outputPlotDialog->setWindowTitle("Plot - output data");
-      outputPlotDialog->setWindowFlags(Qt::Window);
-      outputPlotDialog->show();
-      outputPlotDialog->raise();
+      connect(outputPlotWindow, SIGNAL(windowClosed()), this, SLOT(outputPlotDestroyed()));
+      outputPlotWindow->setWindowTitle("Plot - output data");
+      outputPlotWindow->setWindowFlags(Qt::Window);
+      outputPlotWindow->show();
     }
     else
     {
@@ -746,7 +733,7 @@ void MainWindow::outputPlotDestroyed()
 void MainWindow::terminalViewDestroyed()
 {
 //  std::cout<<"TERM DESTROYED\n";
-//  delete terminalDialog;
+  delete terminalDialog;
   terminalDialog = 0;
 }
 
@@ -754,14 +741,12 @@ void MainWindow::terminalView()
 {
   if (terminalDialog == 0)
   {
-    terminalDialog = new screenDialog(this);
+    terminalDialog = new screenDialog(0);
+    connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
+    connect(terminalDialog, SIGNAL(windowClosed()), this, SLOT(terminalViewDestroyed()));
     terminalDialog->setWindowTitle("terminal view");
     terminalDialog->setText(terminalText);
-    terminalDialog->setWindowFlags(Qt::Window);
     terminalDialog->show();
-    terminalDialog->raise();
-    connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
-    connect(terminalDialog, SIGNAL(finished(int)), this, SLOT(terminalViewDestroyed()));
   } else
   {
     delete terminalDialog;
