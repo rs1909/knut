@@ -68,6 +68,14 @@ class KNSystem
         }
       }
     }
+    void   mass(KNArray1D<double>& out)
+    {
+      if (v_mass != 0)(*v_mass)(out);
+      else
+      {
+      	for(int i=0; i<out.size(); ++i) out(i) = 1.0;
+      }
+    }
     void   p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
     {
       if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
@@ -121,7 +129,6 @@ class KNSystem
   private:
     void   p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, int sel,
                         int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& p_vv );
-
     void   p_resize(int sz)
     {
       if ( sz > p_size )
@@ -145,6 +152,7 @@ class KNSystem
     typedef int(*tp_sys_nevent)();
     typedef void(*tp_sys_tau)(KNVector& out, double t, const KNVector& par);
     typedef void(*tp_sys_dtau)(KNVector& out, double t, const KNVector& par, int vp);
+    typedef void(*tp_sys_mass)(KNArray1D<double>& out);
     typedef void(*tp_sys_rhs)(KNVector& out, double t, const KNMatrix& x, const KNVector& par);
     typedef void(*tp_sys_deri)(KNMatrix& out, double t, const KNMatrix& x, const KNVector& par, int nx, const int* vx, int np, const int* vp, const KNMatrix& v);
     typedef void(*tp_sys_p_tau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
@@ -203,6 +211,7 @@ class KNSystem
     tp_sys_nevent   v_nevent;
     tp_sys_tau      v_tau;
     tp_sys_dtau     v_dtau;
+    tp_sys_mass     v_mass;
     tp_sys_rhs      v_rhs;
     tp_sys_deri     v_deri;
     tp_sys_p_tau    v_p_tau;

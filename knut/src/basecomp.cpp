@@ -94,7 +94,7 @@ void KNAbstractContinuation::run(const char* branchFile)
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
     if (eqn_start(0) != EqnTORSol)
     {
-      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul(), params->getNMat());
+      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul());
       else if (eqn_start(0) == EqnODESol) pt_ptr = new KNOdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
       KNAbstractPeriodicSolution& pt = *pt_ptr;
@@ -133,7 +133,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.reset(eqn_start, var_start);
         pt.setCont(params->getCp() - VarPAR0);
-        pt.StartTF(findangle, screenout);   // it only computes the characteristic multiplier refines the solution
+        if (findangle) pt.findAngle(screenout);   // it only computes the angle from the test functional
+        pt.refine(screenout);
         print(screenout);
       }
     }
@@ -210,7 +211,7 @@ void KNAbstractContinuation::run(const char* branchFile)
           return;
         }
         //
-        if (params->getStab()) pt.Stability();
+        if (params->getStab()) pt.Stability(false); // we just stepped: no init
         ustabprev = ustab;
         ustab = pt.UStab();
         for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);

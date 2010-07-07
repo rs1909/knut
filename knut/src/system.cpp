@@ -21,6 +21,8 @@ extern "C"{
 #ifndef WIN32
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
 #else
 #include <windows.h>
 #endif 
@@ -307,12 +309,33 @@ int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* erro
   else
   {
     /* Close our copy of the write (read) end of the file descriptor.  */
-    if (input)  if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
-    if (output) if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
-    if (error)  if (close (fdc_error[1]) == -1) P_MESSAGE2("close ", strerror(errno));
-    if (input)  *input = fdc_input[1];
-    if (output) *output = fdc_output[0];
-    if (error)  *error = fdc_error[0];
+    if (input)  
+    if (output) 
+    if (error)  
+    if (input)
+    {
+   	  if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
+   	  int iflags = fcntl(fdc_input[1], F_GETFL, 0);
+      iflags |= O_NONBLOCK;
+      fcntl(fdc_input[1], F_SETFL, iflags);
+   	  *input = fdc_input[1];
+    }   	  
+    if (output)
+    {
+   	  if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
+      int oflags = fcntl(fdc_output[0], F_GETFL, 0);
+      oflags |= O_NONBLOCK;
+      fcntl(fdc_output[0], F_SETFL, oflags);
+      *output = fdc_output[0];
+    }
+    if (error)
+    {
+      if (close (fdc_error[1]) == -1) P_MESSAGE2("close ", strerror(errno));
+      int eflags = fcntl(fdc_error[0], F_GETFL, 0);
+      eflags |= O_NONBLOCK;
+      fcntl(fdc_error[0], F_SETFL, eflags);
+      *error = fdc_error[0];
+    }
   }
   for (size_t k=0; k<arglist.size(); ++k) delete[] argv[k];
   return pid;
@@ -331,33 +354,75 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   // running the command
   int input, output, error;
   int pid = pipeOpen(arglist, &input, &output, &error);
-  write (input, cxxstring.c_str(), cxxstring.size());
-  if (close (input) == -1) P_MESSAGE2("Error closing input pipe: ", strerror(errno));
-
+  // we need to write and read until all of them are finished
+  bool outfin = false, infin = false, errfin = false;
+  // input
+  const char* cxxbuf = cxxstring.c_str();
+  ssize_t cxxlen = cxxstring.size(), wbytes = 0;
+  // output and err
+  pollfd fds[3] = {{input, POLLOUT, 0},{output, POLLIN, 0},{error, POLLIN, 0}};
   const size_t bufsize = 2048;
   char *out_buf = new char[bufsize];
   std::string out_str, err_str;
-  // Standard Output
-  for (;;)
-  {
-    ssize_t bytes = read(output, out_buf, bufsize-1);
-    out_buf[bytes] = '\0';
-    if (bytes == -1) P_MESSAGE2("Error reading standard output: ", strerror(errno));
-    if ((bytes == 0) || (bytes == -1)) break;
-    out_str.append(out_buf);
-  }
-  // Standard Error
-  for (;;)
-  {
-    ssize_t bytes = read(error, out_buf, bufsize-1);
-    out_buf[bytes] = '\0';
-    if (bytes == -1) P_MESSAGE2("Error reading standard error: ", strerror(errno));
-    if ((bytes == 0) || (bytes == -1)) break;
-    err_str.append(out_buf);
-  }
-  // closing the remaining pipes
-  if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
-  if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
+  int rct = 0, ect = 0;
+  do {
+    int pact = poll(fds, 3, 1000);
+//    std::cerr << "Pipes ready: " << pact 
+//    	<< " EV0 " <<  fds[0].revents 
+//    	<< " EV1 " <<  fds[1].revents
+//    	<< " EV2 " <<  fds[2].revents << " " << POLLOUT << " " << POLLIN <<"\n";
+    P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
+  	if (!infin && (fds[0].revents != 0))
+  	{
+      ssize_t obytes = write (input, cxxbuf, cxxlen-wbytes);
+//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
+      if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
+      else wbytes += obytes;
+	  if (wbytes == cxxlen) 
+	  { 
+	  	infin = true;
+	  	fds[0].events = 0;
+	    if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
+	  }
+  	}
+  	if (!outfin && (fds[1].revents != 0))
+  	{
+      ssize_t bytes = read(output, out_buf, bufsize-1);
+      ++rct;
+      if (bytes > 0)
+      {
+//        std::cerr << "runCompiler: stdout bytes " << bytes << "\n";
+      	out_buf[bytes] = '\0'; 
+      	out_str.append(out_buf);
+      } 
+      else if (bytes == 0)
+      {
+        outfin = true; // finished
+	  	fds[1].events = 0;
+      	if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
+      }
+      else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
+    }
+  	if (!errfin && (fds[2].revents != 0))
+  	{
+      ssize_t bytes = read(error, out_buf, bufsize-1);
+      ++ect;
+      if (bytes > 0)
+      {
+//        std::cerr << "runCompiler: stderr bytes " << bytes << "\n";
+      	out_buf[bytes] = '\0'; 
+      	err_str.append(out_buf);
+      } 
+      else if (bytes == 0) 
+      {
+      	errfin = true; // finished
+	  	fds[2].events = 0;
+      	if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
+      }
+      else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard error: ", strerror(errno));
+  	}
+  } while (!outfin || !infin || !errfin);
+//  std::cerr << "Waited for read " << rct << " and error " << ect << " cycles."; 
   // checking status of compiler
   int status = 0;
   pid_t retval = waitpid(-1, &status, 0);
@@ -448,6 +513,10 @@ KNSystem::KNSystem(const std::string& shobj, int usederi)
   tdlerror();    /* Clear any existing error */
   v_dtau = (tp_sys_dtau) fptr(tdlsym(handle, "sys_dtau"));
   if ((error = tdlerror()) != 0) v_dtau = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_mass = (tp_sys_mass) fptr(tdlsym(handle, "sys_mass"));
+  if ((error = tdlerror()) != 0) v_mass = 0;
   
   tdlerror();    /* Clear any existing error */
   v_rhs = (tp_sys_rhs) fptr(tdlsym(handle, "sys_rhs"));

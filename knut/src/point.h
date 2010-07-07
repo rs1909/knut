@@ -25,7 +25,6 @@
 #include <cmath>
 
 #define MULTIPLIERS 8
-#define BMATRICES 1
 
 #include "pointtype.h"
 #include "mat4data.h"
@@ -35,10 +34,10 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
   public:
 
     // constructor
-    KNDdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS, int nmat = BMATRICES);
+    KNDdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS);
     virtual ~KNDdePeriodicSolution();
 
-    void    Stability();
+    void    Stability(bool init);
 
     // algorithms
     void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
@@ -93,7 +92,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
 //    KNArray1D<int> rotIm;
 
     // stability matrix
-    KNSparseMatrixPolynomial   jacStab;
+    KNSparseMatrixPolynomial*  jacStab;
 
     // test functionals
     KNArray1D<KNAbstractTestFunctional*> testFunct;

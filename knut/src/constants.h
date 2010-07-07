@@ -95,7 +95,6 @@ class KNConstants
     KN_CONSTANT(       nDeg,       int,      getNDeg,       setNDeg,       nsetNDeg)
     KN_CONSTANT(       nMul,       int,      getNMul,       setNMul,       nsetNMul)
     KN_CONSTANT(       stab,       bool,     getStab,       setStab,       nsetStab)
-    KN_CONSTANT(       nMat,       int,      getNMat,       setNMat,       nsetNMat)
     KN_CONSTANT(       nInt1,      int,      getNInt1,      setNInt1,      nsetNInt1)
     KN_CONSTANT(       nInt2,      int,      getNInt2,      setNInt2,      nsetNInt2)
     KN_CONSTANT(       nDeg1,      int,      getNDeg1,      setNDeg1,      nsetNDeg1)
@@ -129,7 +128,7 @@ class KNConstants
     // for double, int, char
     // for i in `g++ -E -DEXTRACT_NAMES constants.h | grep -e "private:\ *double" -e "private:\ *int" -e "private:\ *char"| sed -e s/\;.*//g -e s/\ *private:\ *double//g -e s/\ *private:\ *int//g -e s/\ *private:\ *char//g`; do echo -n $i\(0\),\ ; done;
     KNConstants() : label(0), cpType(0), cpNum(0), branchSW(NOSwitch), 
-      nInt(10), nDeg(4), nMul(0), stab(false), nMat(1), 
+      nInt(10), nDeg(4), nMul(0), stab(false),
       nInt1(10), nInt2(4), nDeg1(4), nDeg2(4), steps(10), 
       iad(3), nPr(1), cpMin(-DBL_MAX), cpMax(DBL_MAX), ds(1e-3), dsMin(1e-3), 
       dsMax(1e-3), dsStart(1e-3), epsC(1e-5), epsR(1e-5), epsK(1e-5), 
@@ -142,7 +141,7 @@ class KNConstants
       label(src.label), pointType(src.pointType), cpType(src.cpType), cpNum(src.cpNum), 
       branchSW(src.branchSW), parxType(src.parxType), parxNum(src.parxNum), 
       eqnsType(src.eqnsType), eqnsNum(src.eqnsNum), varsType(src.varsType), varsNum(src.varsNum), 
-      nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab), nMat(src.nMat), 
+      nInt(src.nInt), nDeg(src.nDeg), nMul(src.nMul), stab(src.stab),
       nInt1(src.nInt1), nInt2(src.nInt2), nDeg1(src.nDeg1), nDeg2(src.nDeg2), 
       steps(src.steps), iad(src.iad), nPr(src.nPr), cpMin(src.cpMin), cpMax(src.cpMax), 
       ds(src.ds), dsMin(src.dsMin), dsMax(src.dsMax), dsStart(src.dsStart), 

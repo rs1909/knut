@@ -135,8 +135,11 @@ void VectorField::Knut_PrintJacobians(ostream &dout, const vector<ex> &vf0)
   // int np = parname_list.nops();
   // int na = exprname_list.nops();
   // int nf = funcname_list.nops();
-
   size_t nd = Delays.size();
+
+  std::vector<std::vector<size_t> > row(nd+1);
+  std::vector<std::vector<size_t> > col(nd+1);
+
   for (size_t k = 0; k < nd + 1; ++k)
   {
     if (k == 0)
@@ -160,10 +163,19 @@ void VectorField::Knut_PrintJacobians(ostream &dout, const vector<ex> &vf0)
         ex fj = f.subs(Zlags_(j, k) == vtmp_);
         ex df = fj.diff(vtmp_);
         df = df.subs(vtmp_ == Zlags_(j, k));
+        if (!df.is_zero()) { row[k].push_back(i); col[k].push_back(j); }
         dout << "            jac_(" << i << "," << j << ",idx)" << " = " << df << ";" << endl;
       }
     }
     dout << "        }\n";
+  }
+  for (size_t i=0; i<row.size(); ++i)
+  {
+    dout << "        // Sparsity structure for tau = " << i << "\n";
+    for (size_t j=0; j<row[i].size(); ++j)
+    {
+      dout << "        // (" << row[i][j] << ", " << col[i][j] << ")\n";
+    }
   }
 }
 
@@ -174,10 +186,14 @@ void VectorField::Knut_PrintXandParJacobians(ostream &dout, const vector<ex> &vf
   size_t np = parname_list.nops();
   // int na = exprname_list.nops();
   // int nf = funcname_list.nops();
+  size_t nd = Delays.size();
+  
   int par_shift = 1;
   if (HasPeriod) par_shift = 0;
 
-  size_t nd = Delays.size();
+  std::vector<std::vector<size_t> > row(np*(nd+1));
+  std::vector<std::vector<size_t> > col(np*(nd+1));
+
   for (size_t k = 0; k < nd + 1; ++k)
   {
     if (k == 0)
@@ -218,6 +234,7 @@ void VectorField::Knut_PrintXandParJacobians(ostream &dout, const vector<ex> &vf
           symbol p = ex_to<symbol>(parname_list[m]);
           df = df.diff(p);
           // if (df != 0)
+          if (!df.is_zero()) { row[k*np+m].push_back(i); col[k*np+m].push_back(j); }
           dout << "                jac_(" << i << "," << j << ",idx)" << " = " << df << ";" << endl;
         }
       }
@@ -225,6 +242,14 @@ void VectorField::Knut_PrintXandParJacobians(ostream &dout, const vector<ex> &vf
     }
   }
   dout << "        }\n";
+  for (size_t i=0; i<row.size(); ++i)
+  {
+    dout << "        // Sparsity structure for tau = " << i/np << " and p = " << i%np + par_shift << "\n";
+    for (size_t j=0; j<row[i].size(); ++j)
+    {
+      dout << "        // (" << row[i][j] << ", " << col[i][j] << ")\n";
+    }
+  }
 }
 
 ex pddec_second_deriv(const ex &f, size_t lag1, size_t var1, size_t lag2, size_t var2)
@@ -246,8 +271,11 @@ void VectorField::Knut_PrintHessiansTimesV(ostream &dout, const vector<ex> &vf0)
   // int np = parname_list.nops();
   // int na = exprname_list.nops();
   // int nf = funcname_list.nops();
-
   size_t nd = Delays.size();
+  
+  std::vector<std::vector<size_t> > row((nd+1)*(nd+1));
+  std::vector<std::vector<size_t> > col((nd+1)*(nd+1));
+  
   for (size_t k1 = 0; k1 < nd + 1; ++k1)
   {
     if (k1 == 0)
@@ -297,20 +325,32 @@ void VectorField::Knut_PrintHessiansTimesV(ostream &dout, const vector<ex> &vf0)
             }
           }
           if (os.str() != "")
+          {
             dout << "                jac_(" << i << "," << j << ",idx)" << " = " << os.str() << ";\n";
-          else
+            row[k1*(nd+1)+k2].push_back(i); col[k1*(nd+1)+k2].push_back(j);
+          } else
+          {
             dout << "                jac_(" << i << "," << j << ",idx) = 0.0;\n";
+          }
         }
-
       }
       dout << "            }\n";
     }
   }
   dout << "        }\n";
+  for (size_t i=0; i<row.size(); ++i)
+  {
+    dout << "        // Sparsity structure for k1 = " << i/(nd+1) << " and k2 = " << i%(nd+1) << "\n";
+    for (size_t j=0; j<row[i].size(); ++j)
+    {
+      dout << "        // (" << row[i][j] << ", " << col[i][j] << ")\n";
+    }
+  }
+
 }
 
 //
-// PrintKnut -- The PDDE-CONT code generator.
+// PrintKnut -- The Knut code generator.
 //
 
 void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
@@ -357,7 +397,25 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "int sys_nderi() { return 2; }  // Order of derivatives computed here\n";
   sys_out << "int sys_nevent() { return " << nf << "; }  // Number of event functions\n";
   sys_out << endl;
-
+  
+  bool hasMass = false;
+  for (vector<StateVariable *>::iterator sv = StateVariables.begin(); sv != StateVariables.end(); ++sv)
+  	if ((*sv)->Mass() != "") hasMass = true;
+  if (hasMass)
+  {
+    sys_out << "void sys_mass(KNArray1D<double>& out)   // diagonal mass matrix\n";
+    sys_out << "{\n";
+    int k = 0;
+  	for (vector<StateVariable *>::iterator sv = StateVariables.begin(); sv != StateVariables.end(); ++sv)
+  	{
+  	  if ((*sv)->Mass() != "") sys_out << "  out(" << k << ") = " << (*sv)->Mass() << ";\n";
+  	  else sys_out << "  out(" << k << ") = 1.0;\n";
+      ++k;
+  	}
+    sys_out << "}\n";
+    sys_out << endl;
+  }
+  
   // ***************************************************************************
   //  Create the vector field function sys_rhs
   // ***************************************************************************
@@ -620,13 +678,13 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//" << endl;
   sys_out << "void sys_p_deri(KNArray3D<double>& jac_, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, int sel,\nint nx_, const int* vx_, int np_, const int* vp_, const KNArray3D<double>& v_)\n";
   sys_out << "{\n";
-  sys_out << "    if (nx_ == 1 & np_ == 0)\n";
+  sys_out << "    if (nx_ == 1 && np_ == 0)\n";
   sys_out << "        " << Name() << "_jacx(jac_, time, vx_[0], Zlags_, par_);\n";
-  sys_out << "    else if (nx_ == 0 & np_ == 1)\n";
+  sys_out << "    else if (nx_ == 0 && np_ == 1)\n";
   sys_out << "        " << Name() << "_jacp(jac_, time, vp_[0], Zlags_, par_);\n";
-  sys_out << "    else if (nx_ == 1 & np_ == 1)\n";
+  sys_out << "    else if (nx_ == 1 && np_ == 1)\n";
   sys_out << "        " << Name() << "_jacxp(jac_,time, vx_[0], vp_[0], Zlags_, par_);\n";
-  sys_out << "    else if (nx_ == 2 & np_ == 0)\n";
+  sys_out << "    else if (nx_ == 2 && np_ == 0)\n";
   sys_out << "        " << Name() << "_hess_times_v(jac_,time,vx_[0],vx_[1],vx_[0],v_,Zlags_,par_);\n";
   sys_out << "    else\n";
   sys_out << "    {\n";

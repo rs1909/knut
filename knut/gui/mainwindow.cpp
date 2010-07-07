@@ -176,17 +176,15 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   // this has to reconfigure the table
   connect(eqns, SIGNAL(valueChanged(int)), this, SLOT(setNEqnsParameter(int)));
 
-  // setting NINT, NDEG, NMUL, STAB, NMAT
+  // setting NINT, NDEG, NMUL, STAB
   QLabel* nintLabel = new QLabel("NINT");
   QLabel* ndegLabel = new QLabel("NDEG");
   QLabel* nmulLabel = new QLabel("NMUL");
   QLabel* stabLabel = new QLabel("STAB");
-  QLabel* nmatLabel = new QLabel("NMAT");
   nintLabel->setToolTip(QString("Number of collocation intervals."));
   ndegLabel->setToolTip(QString("The degree of the piecewise polynomial."));
   nmulLabel->setToolTip(QString("Number of Floquet multipliers to be computed."));
   stabLabel->setToolTip(QString("Checked when stability information (the Floquet multipliers) is computed."));
-  nmatLabel->setToolTip(QString("An integer N (the smallest) such that tau<sub>max</sub>/T < N"));
   nint = new QSpinBox();
   nint->setRange(0, 0xffff);
   ndeg = new QSpinBox();
@@ -194,24 +192,19 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   nmul = new QSpinBox();
   nmul->setRange(0, 0xffff);
   stab = new QCheckBox();
-  nmat = new QSpinBox();
-  nmat->setRange(0, 0xffff);
 
   numericsGrid->addWidget(nintLabel, 0, 0, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(ndegLabel, 0, 1, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nmulLabel, 0, 2, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(stabLabel, 0, 4, Qt::AlignHCenter | Qt::AlignBottom);
-  numericsGrid->addWidget(nmatLabel, 0, 3, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nint, 1, 0);
   numericsGrid->addWidget(ndeg, 1, 1);
   numericsGrid->addWidget(nmul, 1, 2);
   numericsGrid->addWidget(stab, 1, 4, Qt::AlignHCenter);
-  numericsGrid->addWidget(nmat, 1, 3);
   connect(nint, SIGNAL(valueChanged(int)), this, SLOT(setNIntParameter(int)));
   connect(ndeg, SIGNAL(valueChanged(int)), this, SLOT(setNDegParameter(int)));
   connect(nmul, SIGNAL(valueChanged(int)), this, SLOT(setNMulParameter(int)));
   connect(stab, SIGNAL(stateChanged(int)), this, SLOT(setStabParameter(int)));
-  connect(nmat, SIGNAL(valueChanged(int)), this, SLOT(setNMatParameter(int)));
 
   QLabel* nint1Label = new QLabel("NINT1");
   QLabel* nint2Label = new QLabel("NINT2");
@@ -1140,12 +1133,6 @@ void MainWindow::setConstant(const char* name)
     if (parameters.getStab()) stab->setCheckState(Qt::Checked);
     else stab->setCheckState(Qt::Unchecked);
     stab->blockSignals(false);
-  }
-  else if (!strcmp(name,"nMat"))
-  {
-    nmat->blockSignals(true);
-    nmat->setValue(parameters.getNMat());
-    nmat->blockSignals(false);
   }
   else if (!strcmp(name,"nInt1"))
   {

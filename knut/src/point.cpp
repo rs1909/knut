@@ -29,11 +29,10 @@
 #define NDEG colloc->nDeg()
 
 
-KNDdePeriodicSolution::KNDdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul, int nmat) : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
-//     colloc(sys_, nint, ndeg, nmat),
-    jacStab(nmat, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg + 1))
+KNDdePeriodicSolution::KNDdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul) : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
+    jacStab(0)
 {
-  colloc = new KNDdeBvpCollocation(sys_, nint, ndeg, nmat);
+  colloc = new KNDdeBvpCollocation(sys_, nint, ndeg);
   basecolloc = colloc;
   persolcolloc = colloc;
 
@@ -46,6 +45,7 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn
 KNDdePeriodicSolution::~KNDdePeriodicSolution()
 {
   destruct();
+  delete jacStab;
   delete colloc;
 }
 
@@ -300,8 +300,25 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds, std::ostream& out)
   KNComplexTestFunctional *tf = static_cast<KNComplexTestFunctional*>(testFunct(idx));
   KNVector QRE(NDIM), QIM(NDIM);
 
-  par(0) = tf->kernelComplex(QRE, QIM, *colloc, par);
+  double newperiod = par(0);
+  double dist;
+  do {
+    dist = tf->kernelComplex(newperiod, QRE, QIM, *colloc, par);
+    if (dist < 0.01)
+   	  break;
+   	else
+   	{
+   	  par(0) /= 2.0;
+   	  findAngle(out);
+   	}
+  } while (true);
+  par(0) = newperiod;
+  
   out << "    T = " << par(0) << ", arg(Z) = " << par(NPAR + ParAngle) / (2*M_PI) << " * 2Pi\n";
+//   std::cerr << "Distance between the predicted and real critial eigenfunctions: " << dist << "\n";
+  P_ERROR_X3(dist < 0.01, "Cannot switch branches."
+    " The predicted and the computed eigenfunctions are not close enough."
+    " Check your selection of P0, perhaps it is not small enough. The distance (dist/norm1) is ", dist, ".");
 
 #ifdef DEBUG
   std::cout << "Printing: neweigenvec\n";
@@ -398,16 +415,33 @@ void KNDdePeriodicSolution::SwitchTFPD(double ds)
 }
 
 
-void KNDdePeriodicSolution::Stability()
+void KNDdePeriodicSolution::Stability(bool init)
 {
   mRe.clear();
   mIm.clear();
 
-  colloc->init(sol, par);
+  // it is not always necessary to initialize 
+  // especially not after a continuation step
+  if (init) colloc->init(sol, par);
+  int nmat = colloc->nMat();
 
-  colloc->jacobianOfStability(jacStab, par);
+  if (jacStab)
+  {
+  	if (jacStab->nmat() != nmat)
+  	{
+      std::cerr << "NMAT has changed from " << jacStab->nmat() << " to " << nmat << ".\n";
+  	  delete jacStab;
+  	  jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
+  	}
+  } else
+  {
+  	std::cerr << "New stability matrix with " << nmat << " B matrices.\n";
+  	jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
+  }
 
-  jacStab.eigenvalues(mRe, mIm);
+  colloc->jacobianOfStability(*jacStab, par);
+
+  jacStab->eigenvalues(mRe, mIm);
 //  mRe.print();
 //  mIm.print();
 }

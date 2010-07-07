@@ -150,6 +150,7 @@ class StateVariable : public FormulaSymbol
     std::string periodicto;
     std::string default_ic;
     std::string default_history;
+    std::string mass;
 
   public:
 
@@ -167,6 +168,8 @@ class StateVariable : public FormulaSymbol
     const std::string& DefaultInitialCondition(void) const;
     void DefaultHistory(const std::string& hist);
     const std::string& DefaultHistory(void) const;
+    void Mass(const std::string& hist);
+    const std::string& Mass(void) const;
 };
 
 
@@ -207,6 +210,8 @@ class VectorField : public Symbol
 
     GiNaC::lst allsymbols;
     GiNaC::symbol IndVar;
+    
+    std::vector<std::vector<double> > mass_matrix;
 
     // Everything is public, for now.
 //  public:

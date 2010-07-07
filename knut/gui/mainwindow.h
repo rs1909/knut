@@ -87,7 +87,6 @@ class MainWindow : public QMainWindow
     void setNDegParameter(int d) { parameters.nsetNDeg(d); }
     void setNMulParameter(int d) { parameters.nsetNMul(d); }
     void setStabParameter(int d) { parameters.nsetStab(d); }
-    void setNMatParameter(int d) { parameters.nsetNMat(d); }
     void setNInt1Parameter(int d) { parameters.nsetNInt1(d); }
     void setNInt2Parameter(int d) { parameters.nsetNInt2(d); }
     void setNDeg1Parameter(int d) { parameters.nsetNDeg1(d); }
@@ -197,7 +196,6 @@ class MainWindow : public QMainWindow
     QSpinBox  *ndeg;
     QSpinBox  *nmul;
     QCheckBox *stab;
-    QSpinBox  *nmat;
     QSpinBox  *nint1;
     QSpinBox  *nint2;
     QSpinBox  *ndeg1;

@@ -202,6 +202,8 @@ void   StateVariable::DefaultInitialCondition(const std::string& ic) { default_i
 const std::string& StateVariable::DefaultInitialCondition(void) const { return default_ic; }
 void   StateVariable::DefaultHistory(const std::string& hist) { default_history = hist; }
 const std::string& StateVariable::DefaultHistory() const { return default_history; }
+void   StateVariable::Mass(const std::string& ms) { mass = ms; }
+const std::string& StateVariable::Mass() const { return mass; }
 
 //
 // Function Methods
@@ -213,9 +215,9 @@ Function::Function(const std::string& name, const std::string& descr) : FormulaS
 // VectorField Methods
 //
 
-VectorField::VectorField(void) : IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
-VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
-VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), IsAutonomous(true), TimeDependentDelay(false), StateDependentDelay(false) { }
+VectorField::VectorField(void) : IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
+VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
+VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
 
 VectorField::~VectorField()
 {
@@ -566,7 +568,7 @@ int VectorField::ProcessSymbols(void)
   }
 
   // checking for delays with everything substituted in the vectorfields
-  for (int i = 0; i < varvecfield_list.nops(); ++i)
+  for (size_t i = 0; i < varvecfield_list.nops(); ++i)
   {
     ex f = iterated_subs(varvecfield_list[i], expreqn_list);
     varvecfield_list[i] = f;

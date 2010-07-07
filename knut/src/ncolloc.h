@@ -19,7 +19,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    KNDdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg, int nmat);        // computes mesh, metric, metricD
+    KNDdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg);        // computes mesh, metric, metricD
 
     ~KNDdeBvpCollocation() {}
 
@@ -45,6 +45,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
     // continuation of bifurcations -> characteristic matrices
 
     inline int nTau() const { return ntau; }
+    inline int nMat() const { return nmat; }
 
     // Jacobian of the test funtional: jotf
     void jotf_x(KNSparseMatrix& A, const KNVector& par, double Z);
@@ -128,7 +129,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
     }
 
     const int ntau;
-    const int nmat;
+    int nmat; // is the ceil( max(delays)/period )
 
     // these store the structure of the sparse matrix NO SEPARATION
     KNArray2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
@@ -159,6 +160,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 
     // for rhs, and derivatives
     // KNMatrix fx, dfx, t_dfx, dummy
+    KNArray1D<double>  mass;
     KNArray3D<double>  solData;
     KNArray2D<double>  p_tau;
     KNArray2D<double>  p_dtau;

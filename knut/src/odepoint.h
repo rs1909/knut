@@ -26,7 +26,7 @@ class KNOdePeriodicSolution : public KNAbstractPeriodicSolution
     KNOdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg);
     ~KNOdePeriodicSolution();
     
-    virtual void Stability();
+    virtual void Stability(bool init);
     virtual void SwitchTFLP(BranchSW type, double ds) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
     virtual void SwitchTFPD(double ds) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
     virtual void SwitchTFHB(double ds, std::ostream& out) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct

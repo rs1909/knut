@@ -115,7 +115,7 @@ class KNComplexTestFunctional : public KNAbstractTestFunctional
     inline void kernel(KNVector&)
     {}
     void   kernel(KNVector& Re, KNVector& Im, double& alpha);
-    double kernelComplex(KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par);
+    double kernelComplex(double& newperiod, KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par);
 
   private:
     bool        first;

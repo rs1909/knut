@@ -117,7 +117,7 @@ void KNOdePeriodicSolution::jacobian(
   }
 }
 
-void KNOdePeriodicSolution::Stability()
+void KNOdePeriodicSolution::Stability(bool init)
 {
   for (int i = 0; i < NDIM; ++i)
   {

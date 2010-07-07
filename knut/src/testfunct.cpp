@@ -341,7 +341,7 @@ void KNComplexTestFunctional::kernel(KNVector& Re, KNVector& Im, double& alpha)
   }
 }
 
-double KNComplexTestFunctional::kernelComplex(KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par)
+double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par)
 {
   // computing the period of the new branch
   double period = par(0);
@@ -385,12 +385,9 @@ double KNComplexTestFunctional::kernelComplex(KNVector& Re, KNVector& Im, KNDdeB
     #endif
     }
   }
-//   std::cerr << "Distance between the predicted and real critial eigenfunctions: " << dist/norm1 << "\n";
-  P_ERROR_X3(dist/norm1 < 0.01, "Cannot switch branches."
-    " The predicted and the computed eigenfunctions are not close enough."
-    " Check your selection of P0, perhaps it is not small enough. The distance (dist/norm1) is ", dist/norm1, ".");
 
-  return period;
+  newperiod = period;
+  return dist/norm1;
 }
 
 /// ---------------------------------------------------------

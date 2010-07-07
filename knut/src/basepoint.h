@@ -173,13 +173,13 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       : KNAbstractPoint(sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
     virtual ~KNAbstractPeriodicSolution() {}
     
-    virtual void Stability() = 0;
+    virtual void Stability(bool init) = 0;
     virtual void SwitchTFLP(BranchSW type, double ds) = 0;   // switches branch with testFunct
     virtual void SwitchTFPD(double ds) = 0;   // switches branch with testFunct
     virtual void SwitchTFHB(double ds, std::ostream& out) = 0;   // switches branch with testFunct
     
-    int StartTF(bool findangle, std::ostream& out);
-    inline void    setSym(int n, int* sRe, int* sIm)
+    virtual void findAngle(std::ostream& out);
+    inline  void setSym(int n, int* sRe, int* sIm)
     {
       rotRe.init(n);
       rotIm.init(n);

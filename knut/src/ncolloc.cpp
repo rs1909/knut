@@ -36,9 +36,9 @@
 #define NDEG ndeg
 #define NMAT nmat
 
-KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg, int _nmat) :
+KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg) :
     KNAbstractBvpCollocation(_sys, _nint, _ndeg),
-    ntau(_sys.ntau()), nmat(_nmat),
+    ntau(_sys.ntau()), nmat(1),
 
     kk(ntau + 1, nint*ndeg), ee(ntau + 1, nint*ndeg),
     dd(ntau + 1, nint*ndeg), rr(ntau + 1, nint*ndeg),
@@ -53,6 +53,7 @@ KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const int _nint, const 
 
     kkMSH(ntau, nint*ndeg + 1),tt(2*ntau + 1, ndeg + 1, ndeg*nint),
     ttMSH(2*ntau, ndeg + 1, ndeg*nint + 1),
+    mass(ndim),
     solData(ndim, 2*ntau + 1, ndeg*nint),
     p_tau(ntau, nint*ndeg), p_dtau(ntau, nint*ndeg),
     p_fx(ndim, nint*ndeg), p_dfx(ndim,ndim, nint*ndeg), p_dfp(ndim,1, nint*ndeg),
@@ -62,6 +63,7 @@ KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const int _nint, const 
     p_fxMSH(ndim, nint*ndeg+1), p_dfxMSH(ndim,ndim, nint*ndeg+1), p_dfpMSH(ndim,1, nint*ndeg+1),
     p_dummy(0,0,nint*ndeg+1)
 {
+  for (int i=0; i<mass.size(); ++i) mass(i) = 1.0;
 #ifdef DEBUG
   count_reset();
 #endif
@@ -107,6 +109,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
 {
   KNArray1D<double> t(NTAU+1);
   KNArray1D<double> tMSH(NTAU);
+  NMAT = 1;
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -122,6 +125,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   timeMSH(NDEG*NINT) = 1.0;
 
   sys->p_tau(p_tau, time, par); // this will be rescaled, so have to call it again
+  sys->mass(mass); // the derivatives will be multiplied by this
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -146,8 +150,9 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
       for (int k = 0; k < NTAU; k++)
       {
         p_tau(k,idx) /= par(0);
-        P_ERROR_X3(p_tau(k,idx) <= NMAT, "The scaled delay became greater then NMAT times the period. k=", k, ".");
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
+        if (ceil(p_tau(k,idx)) > NMAT) NMAT = (int)ceil(p_tau(k,idx));
+
         t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // nem szetvalasztott
 
         // binary search for in which interval is t-p_tau(k,idx)
@@ -351,6 +356,7 @@ void KNDdeBvpCollocation::interpolate(KNArray3D<double>& solData, const KNVector
       {
         solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
       }
+      solData(k, NTAU, idx) *= mass(k);
     }
     // x'(t-\tau_i)
     for (int p = 0; p < NTAU; p++)
@@ -416,6 +422,8 @@ void KNDdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArr
         solDataRe(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG))) * tt(0, l, idx);
         solDataIm(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG)) + 1) * tt(0, l, idx);
       }
+      solDataRe(k, NTAU, idx) *= mass(k);
+      solDataIm(k, NTAU, idx) *= mass(k);
     }
   }
 }
@@ -541,6 +549,7 @@ void KNDdeBvpCollocation::rightHandSide_x(KNSparseMatrix& A, const KNVector& par
   {
     for (int r = 0; r < NDIM; r++)
     {
+      // if sparse, NDIM is changed to the length of a line
       A.newLine(NDIM*((NDEG + 1)*(rr(ee(NTAU,idx), idx) + 1) - dd(ee(NTAU,idx), idx))); // check the line
     }
   }
@@ -564,7 +573,7 @@ void KNDdeBvpCollocation::rightHandSide_x(KNSparseMatrix& A, const KNVector& par
             WRIDX(A, idx, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
             if (k == 0)
             {
-              if (p == q) WRDAT(A, idx, p, k, l, q) += tt(0, l, idx);
+              if (p == q) WRDAT(A, idx, p, k, l, q) += mass(p)*tt(0, l, idx);
             }
             else
             {
@@ -646,7 +655,7 @@ void KNDdeBvpCollocation::jacobianOfStability(KNSparseMatrixPolynomial& AB, cons
               WRIDXI(AB.getA0(), idx, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
               if (k == 0)
               {
-                if (p == q) WRDATI(AB.getA0(), idx, p, k, l, q) += tt(0, l, idx);
+                if (p == q) WRDATI(AB.getA0(), idx, p, k, l, q) += mass(p)*tt(0, l, idx);
               }
               else
               {
@@ -659,7 +668,7 @@ void KNDdeBvpCollocation::jacobianOfStability(KNSparseMatrixPolynomial& AB, cons
               WRIDXI(AB.getAI(mmI(k, idx) - 1), idx, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
               if (k == 0)
               {
-//          if( p == q ) WRDATSB(B,idx, i,j,p, k,l,q) -= tt(0,l,idx);
+//          if( p == q ) WRDATSB(B,idx, i,j,p, k,l,q) -= mass(p)*tt(0,l,idx);
               }
               else
               {
@@ -722,7 +731,7 @@ void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double 
             WRIDX(A, idx, p, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
             if (k == 0)             // A
             {
-              if (p == q) WRDAT(A, idx, p, k, l, q) += tt(0, l, idx);
+              if (p == q) WRDAT(A, idx, p, k, l, q) += mass(p)*tt(0, l, idx);
             }
             else
             {
@@ -820,8 +829,8 @@ void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double 
             {
               if (p == q)
               {
-                WRDATCPLX(A, idx, p, 0, k, l, q, 0) += tt(0, l, idx);
-                WRDATCPLX(A, idx, p, 1, k, l, q, 1) += tt(0, l, idx);
+                WRDATCPLX(A, idx, p, 0, k, l, q, 0) += mass(p)*tt(0, l, idx);
+                WRDATCPLX(A, idx, p, 1, k, l, q, 1) += mass(p)*tt(0, l, idx);
               }
             }
             else
@@ -1309,8 +1318,8 @@ void KNDdeBvpCollocation::jotf_x_x(KNSparseMatrix& A, const KNVector& par,
             WRIDXCPLXM(A, idx, p, 1, k, l, q) = q + NDIM * (l + NDEG * kk(k, idx));
             if (k == 0)             // A
             {
-              // WRDATCPLX(A,idx, i,j,p,0, k,l,q,0) += tt(0,l,idx); // no derivative !!!!!!
-              // WRDATCPLX(A,idx, i,j,p,1, k,l,q,1) += tt(0,l,idx);
+              // WRDATCPLX(A,idx, i,j,p,0, k,l,q,0) += mass(p)*tt(0,l,idx); // no derivative !!!!!!
+              // WRDATCPLX(A,idx, i,j,p,1, k,l,q,1) += mass(p)*tt(0,l,idx);
             }
             else
             {

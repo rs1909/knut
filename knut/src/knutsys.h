@@ -27,6 +27,7 @@ extern "C"
   SYSEXPORT int    sys_nevent();
   SYSEXPORT void   sys_tau(KNVector& out, double t, const KNVector& par);
   SYSEXPORT void   sys_dtau(KNVector& out, double t, const KNVector& par, int vp);
+  SYSEXPORT void   sys_mass(KNArray1D<double>& out);
   SYSEXPORT void   sys_rhs(KNVector& out, double t, const KNMatrix& x, const KNVector& par);
   SYSEXPORT void   sys_deri(KNMatrix& out, double t, const KNMatrix& x, const KNVector& par, int nx, const int* vx, int np, const int* vp, const KNMatrix& v);
   SYSEXPORT void   sys_stpar(KNVector& par);

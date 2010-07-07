@@ -249,10 +249,7 @@ void KNConstants::loadXmlFile(const std::string &fileName)
 
   nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
   setStab(getNodeInteger(nd, 0) != 0);
-
-  nd = mxmlFindElement(root_nd, root_nd, "nmat", 0, 0, MXML_DESCEND_FIRST);
-  setNMat(getNodeInteger(nd, 1));
-
+  
   nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
   setNInt1(getNodeInteger(nd, 12));
   
@@ -439,9 +436,6 @@ void KNConstants::printXmlFile(std::ostream& file)
   
   node = mxmlNewElement(data, "stab");
   mxmlNewInteger(node, getStab());
-
-  node = mxmlNewElement(data, "nmat");
-  mxmlNewInteger(node, getNMat());
   
   node = mxmlNewElement(data, "nint1");
   mxmlNewInteger(node, getNInt1());

@@ -157,6 +157,10 @@ void VectorField::PrintXML(const std::string& cmdstr)
     {
       cout << " DefaultHistory=\"" << (*sv)->DefaultHistory() << "\"";
     }
+    if ((*sv)->Mass() != "")
+    {
+      cout << " Mass=\"" << (*sv)->Mass() << "\"";
+    }
     if ((*sv)->Latex() != "")
     {
       cout << " Latex=\"" << (*sv)->Latex() << "\"";
@@ -482,7 +486,7 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "DefaultInitialCondition" && attr != "Description"
           && attr != "Formula" && attr != "PeriodFrom" && attr != "PeriodTo"
-          && attr != "DefaultHistory" && attr != "Latex")
+          && attr != "DefaultHistory" && attr != "Mass" && attr != "Latex")
       {
         cerr << "Error: A StateVariable element has an unknown attribute: " << attr << endl;
         bad_attr = true;
@@ -565,6 +569,12 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       {
         string hist(attr);
         sv->DefaultHistory(hist);
+      }
+      attr = mxmlElementGetAttr(node, "Mass");
+      if (attr != NULL)
+      {
+        string mass(attr);
+        sv->Mass(mass);
       }
       attr = mxmlElementGetAttr(node, "Latex");
       if (attr != NULL)

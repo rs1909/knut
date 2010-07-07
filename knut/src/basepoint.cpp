@@ -508,40 +508,36 @@ void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-int KNAbstractPeriodicSolution::StartTF(bool findangle, std::ostream& out)
+void KNAbstractPeriodicSolution::findAngle(std::ostream& out)
 {
-  if (findangle)
+  Stability(true); // re-initialize the collocation just in case when the period changes
+  double dmin = 10.0;
+  int imin = 0;
+  for (int i = 0; i < mRe.size(); i++)
   {
-    Stability();
-    double dmin = 10.0;
-    int imin = 0;
-    for (int i = 0; i < mRe.size(); i++)
+    if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
     {
-      if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
+      if (fabs(mIm(i)) > MIN_NSIMAG)
       {
-        if (fabs(mIm(i)) > MIN_NSIMAG)
-        {
-          dmin = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
-          imin = i;
-        }
+        dmin = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
+        imin = i;
       }
     }
-    double zRe = mRe(imin);
-    double zIm = fabs(mIm(imin));
-    double nrm = sqrt(zRe * zRe + zIm * zIm);
-
-    if (zRe > 0)
-    {
-      par(NPAR + ParAngle) = atan(zIm / zRe);
-    }
-    else
-    {
-      par(NPAR + ParAngle) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
-    }
-    out << "    Z = " << zRe << " + I*" << zIm << "\n" 
-           "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
   }
-  return refine(out);
+  double zRe = mRe(imin);
+  double zIm = fabs(mIm(imin));
+  double nrm = sqrt(zRe * zRe + zIm * zIm);
+
+  if (zRe > 0)
+  {
+    par(NPAR + ParAngle) = atan(zIm / zRe);
+  }
+  else
+  {
+    par(NPAR + ParAngle) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
+  }
+  out << "    Z = " << zRe << " + I*" << zIm << "\n" 
+         "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
 }
 
 void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
