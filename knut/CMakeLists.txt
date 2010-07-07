@@ -111,6 +111,7 @@ SET( KNUT_FORTRAN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
 
 CONFIGURE_FILE( src/config.h.cmake src/config.h )
 CONFIGURE_FILE( knut.spec.cmake knut.spec )
+CONFIGURE_FILE( gui/MacOS/Info.plist.cmake gui/MacOS/Info.plist )
 CONFIGURE_FILE( doc/html/index.html.cmake doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 IF(WIN32)

@@ -22,7 +22,7 @@
 			<key>LSHandlerRank</key>
 			<string>Alternate</string>
 			<key>NSDocumentClass</key>
-			<string>cfile</string>
+			<string>knut</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -36,22 +36,20 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
-	<string>1.2.2</string>
+	<string>@PACKAGE_VERSION@</string>
 	<key>CFBundleName</key>
-	<string>Knut</string>
+	<string>@PACKAGE_NAME@</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2.2</string>
+	<string>@PACKAGE_VERSION@</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>tknut</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>@PACKAGE_REVISION@</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
-	<key>LSRequiresCarbon</key>
-	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2002-2009, Robert Szalai</string>
+	<string>@PACKAGE_COPYRIGHT@</string>
 </dict>
 </plist>
