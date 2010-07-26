@@ -23,7 +23,8 @@ class MThread : public QThread, public KNAbstractContinuation
     MThread(const KNConstants& constants, QObject* parent = 0);
     ~MThread();
     void run();
-    void print(std::ostringstream& str);
+    void printStream();
+    void clearLastLine() { emit printClearLastLine(); }
     void raiseException(const KNException& ex);
     void setData(KNDataFile* data);
     KNDataFile& data();
@@ -37,7 +38,8 @@ class MThread : public QThread, public KNAbstractContinuation
 
   signals:
     void exceptionOccured(const KNException& ex);
-    void printToScreen(const std::string& str);
+    void printClearLastLine();
+    void printToScreen(const std::string& str) const;
     void dataChanged(const KNDataFile* dataFile);
     void dataDeleteReq();
     void dataSet(const KNDataFile* dataFile);

@@ -151,7 +151,15 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
       {
         p_tau(k,idx) /= par(0);
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
-        if (ceil(p_tau(k,idx)) > NMAT) NMAT = (int)ceil(p_tau(k,idx));
+        if (ceil(p_tau(k,idx)) > NMAT)
+        {
+          int nmat_ = (int)ceil(p_tau(k,idx));
+          if (NMAT != nmat_)
+          {
+          	NMAT = nmat_;
+          	szI.init(NMAT + 1, NINT*NDEG);
+          }
+        }
 
         t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // nem szetvalasztott
 

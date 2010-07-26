@@ -145,6 +145,13 @@ class MainWindow : public QMainWindow
     {
       terminalText.append(QString(str.c_str()));
     }
+    void terminalClearLastLine()
+    {
+      int sz = terminalText.size();
+      int i = 0;
+      do { --sz; ++i; } while(terminalText[sz] != QChar('\n'));
+      terminalText.truncate(sz+1);
+    }
     void compileSystem();
     void generateSystem();
     void openInputMatFile(const QString& fileName);

@@ -12,8 +12,9 @@
 #include "matrix.h"
 #include "hypermatrix.h"
 
-KNOdePeriodicSolution::KNOdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg)
- : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
+KNOdePeriodicSolution::KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg)
+  : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
    jacStab('R', sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1)),
    matrixInitialCondition(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
    matrixSolution(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),

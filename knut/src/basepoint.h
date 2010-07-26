@@ -18,15 +18,19 @@
 #include <cfloat>
 
 class KNSystem;
+class KNAbstractContinuation;
 
 class KNAbstractPoint
 {
   public:
-    KNAbstractPoint(KNSystem& sys, const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
+    // members
+    KNAbstractPoint(); // not defined
+    KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys, 
+          const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
           const int solsize, const int nz_jac_);
     virtual ~KNAbstractPoint();
     void    reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_);
-    int     refine(std::ostream& str = std::cout, bool adapt = false);
+    int     refine(bool adapt = false);
     int     tangent(bool adapt = false);
     int     nextStep(double ds, bool jacstep);
 
@@ -88,6 +92,10 @@ class KNAbstractPoint
       // for( int j=0; j<colloc->nDim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
       return sqrt(basecolloc->integrate(sol, sol));
     }
+    std::ostream& outStream();
+    void printStream();
+    void printClearLastLine();
+    void setNotifyObject(KNAbstractContinuation* cnt);
 /// END BASE CLASS
   protected:
     virtual void construct();
@@ -143,6 +151,8 @@ class KNAbstractPoint
 
     // for collocation
     KNAbstractCollocation*  basecolloc;
+    
+    KNAbstractContinuation* notifyObject;
 };
 
 inline void KNAbstractPoint::update(KNBlockVector& X)
@@ -169,16 +179,19 @@ class KNAbstractBvpCollocation;
 class KNAbstractPeriodicSolution : public KNAbstractPoint
 {
   public:
-    KNAbstractPeriodicSolution(KNSystem& sys, const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, const int solsize, const int nz_jac_, const int nmul) 
-      : KNAbstractPoint(sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
+    KNAbstractPeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+      const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
+      const int solsize, const int nz_jac_, const int nmul) 
+      : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), 
+        nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
     virtual ~KNAbstractPeriodicSolution() {}
     
     virtual void Stability(bool init) = 0;
     virtual void SwitchTFLP(BranchSW type, double ds) = 0;   // switches branch with testFunct
     virtual void SwitchTFPD(double ds) = 0;   // switches branch with testFunct
-    virtual void SwitchTFHB(double ds, std::ostream& out) = 0;   // switches branch with testFunct
+    virtual void SwitchTFHB(double ds) = 0;   // switches branch with testFunct
     
-    virtual void findAngle(std::ostream& out);
+    virtual void findAngle();
     inline  void setSym(int n, int* sRe, int* sIm)
     {
       rotRe.init(n);

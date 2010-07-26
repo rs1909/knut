@@ -23,13 +23,14 @@ class KNOdePeriodicSolution : public KNAbstractPeriodicSolution
 {
   public:
 
-    KNOdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg);
+    KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg);
     ~KNOdePeriodicSolution();
     
     virtual void Stability(bool init);
     virtual void SwitchTFLP(BranchSW type, double ds) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
     virtual void SwitchTFPD(double ds) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
-    virtual void SwitchTFHB(double ds, std::ostream& out) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
+    virtual void SwitchTFHB(double ds) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
   private:
     virtual void jacobian(
       KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output

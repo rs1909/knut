@@ -14,8 +14,9 @@
 #include "torpoint.h"
 #include "mat4data.h"
 
-KNDdeTorusSolution::KNDdeTorusSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
-  : KNAbstractPoint(sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
+KNDdeTorusSolution::KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
+  : KNAbstractPoint(cnt, sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
     sys_.ndim()*(ndeg1_*nint1_)*(ndeg2_*nint2_)*sys_.ndim()*(sys_.ntau()+1)*(ndeg1_+1)*(ndeg2_+1))
 {
   colloc = new KNDdeTorusCollocation(sys_, ndeg1_, ndeg2_, nint1_, nint2_);

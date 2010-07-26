@@ -362,6 +362,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)));
   // text output
   connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
+  connect(&compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()));
 
   createActions();
   createMenus();
@@ -743,6 +744,7 @@ void MainWindow::terminalView()
   {
     terminalDialog = new screenDialog(0);
     connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
+    connect(&compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()));
     connect(terminalDialog, SIGNAL(windowClosed()), this, SLOT(terminalViewDestroyed()));
     terminalDialog->setWindowTitle("terminal view");
     terminalDialog->setText(terminalText);
@@ -780,7 +782,7 @@ void MainWindow::compileSystem()
 
 void MainWindow::generateSystem()
 {
-  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "KNVector field definition (*.vf)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");
   if (!fileName.isEmpty() && compilerProcess == 0)
   {
     try {

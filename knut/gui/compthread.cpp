@@ -23,9 +23,9 @@ void MThread::run()
   KNAbstractContinuation::run();
 }
 
-void MThread::print(std::ostringstream& str)
+void MThread::printStream()
 {
-  emit printToScreen(str.str()); str.str("");
+  emit printToScreen(screenout.str()); screenout.str("");
 }
 
 void MThread::raiseException(const KNException& ex)

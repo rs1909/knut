@@ -29,7 +29,9 @@
 #define NDEG colloc->nDeg()
 
 
-KNDdePeriodicSolution::KNDdePeriodicSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul) : KNAbstractPeriodicSolution(sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
+KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul) 
+  : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
     jacStab(0)
 {
   colloc = new KNDdeBvpCollocation(sys_, nint, ndeg);
@@ -292,8 +294,9 @@ void KNDdePeriodicSolution::jacobian(
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
 
-void KNDdePeriodicSolution::SwitchTFHB(double ds, std::ostream& out)
+void KNDdePeriodicSolution::SwitchTFHB(double ds)
 {
+  std::ostream& out = outStream();
   int idx = -1;
   for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   P_ERROR_X1(idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
@@ -309,7 +312,7 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds, std::ostream& out)
    	else
    	{
    	  par(0) /= 2.0;
-   	  findAngle(out);
+   	  findAngle();
    	}
   } while (true);
   par(0) = newperiod;
@@ -417,6 +420,7 @@ void KNDdePeriodicSolution::SwitchTFPD(double ds)
 
 void KNDdePeriodicSolution::Stability(bool init)
 {
+  std::ostream& out = outStream();
   mRe.clear();
   mIm.clear();
 
@@ -429,13 +433,17 @@ void KNDdePeriodicSolution::Stability(bool init)
   {
   	if (jacStab->nmat() != nmat)
   	{
-      std::cerr << "NMAT has changed from " << jacStab->nmat() << " to " << nmat << ".\n";
+  	  printClearLastLine();
+      out << "NMAT has changed from " << jacStab->nmat() << " to " << nmat << ".\n";
+      printStream();
   	  delete jacStab;
   	  jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
   	}
   } else
   {
-  	std::cerr << "New stability matrix with " << nmat << " B matrices.\n";
+  	printClearLastLine();
+  	out << "New stability matrix with " << nmat << " B matrices.\n";
+  	printStream();
   	jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
   }
 

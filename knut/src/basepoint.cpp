@@ -8,8 +8,11 @@
 // ------------------------------------------------------------------------- //
 
 #include "basepoint.h"
+#include "basecomp.h"
 #include "system.h"
 #include "mat4data.h"
+#include <sstream>
+
 
 // specified in the constants file
 #define REFEPS    (1E-5)
@@ -210,11 +213,13 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
   return tab.sw;
 }
 
-KNAbstractPoint::KNAbstractPoint(KNSystem& sys_, const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
-          const int solsize, const int nz_jac_) :
+KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys_, 
+ const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
+ const int solsize, const int nz_jac_) :
     var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1),
     sol(solsize), par(sys_.npar() + ParEnd),
-    solNu(solsize), parNu(sys_.npar() + ParEnd)
+    solNu(solsize), parNu(sys_.npar() + ParEnd),
+    notifyObject(cnt)
 {
   dim1   = solsize;
   nz_jac = nz_jac_;
@@ -233,6 +238,22 @@ KNAbstractPoint::KNAbstractPoint(KNSystem& sys_, const KNArray1D<Eqn>& eqn_, con
 KNAbstractPoint::~KNAbstractPoint()
 {
   // DO NOT CALL Destruct! It will be called from its children!
+}
+
+std::ostream& KNAbstractPoint::outStream()
+{
+  if (notifyObject) return notifyObject->outStream();
+  else return std::cout;
+}
+
+void KNAbstractPoint::printStream()
+{
+  if (notifyObject) notifyObject->printStream();
+}
+
+void KNAbstractPoint::printClearLastLine()
+{
+  if (notifyObject) notifyObject->clearLastLine();
 }
 
 // public
@@ -291,8 +312,9 @@ void KNAbstractPoint::destruct()
 }
 
 // this will adapt the mesh whenever it is specified
-int KNAbstractPoint::refine(std::ostream& out, bool adapt)
+int KNAbstractPoint::refine(bool adapt)
 {
+  std::ostream& out = outStream();
   // here solNu is the previous solution
   if (adapt)
   {
@@ -305,7 +327,7 @@ int KNAbstractPoint::refine(std::ostream& out, bool adapt)
 
   xx->getV3().clear();
 
-  if(!adapt) out << "IT\tERR\t\tSOLnorm\t\tDIFFnorm\n";
+  if(!adapt) { out << "IT\tERR\t\tSOLnorm\t\tDIFFnorm\n"; printStream(); }
 
   int it = 0;
   double Xnorm, Dnorm;
@@ -330,18 +352,23 @@ int KNAbstractPoint::refine(std::ostream& out, bool adapt)
     if(!adapt)
     {
       out << " " << it << "\t" << Dnorm / (1.0 + Xnorm) << "\t" << Xnorm << "\t" << Dnorm << '\n';
-      out.flush();
+      printStream();
     }
   }
   while ((Dnorm / (1.0 + Xnorm) >= RefEps) && (it++ < RefIter));
-  if (it >= RefIter) std::cerr << "Warning: refinement did not converge. "
-    << "CritNorm: " << Dnorm / (1.0 + Xnorm) << " SolNorm: " << Xnorm << " DiffNorm: " << Dnorm << '\n';
+  if (it >= RefIter)
+  {
+    out << "Warning: refinement did not converge. "
+        << "CritNorm: " << Dnorm / (1.0 + Xnorm) << " SolNorm: " << Xnorm << " DiffNorm: " << Dnorm << '\n';
+    printStream();
+  }
 
   return it;
 }
 
 int KNAbstractPoint::tangent(bool adapt)
 {
+  std::ostream& out = outStream();
   double norm;
 
   basecolloc->init(sol, par);
@@ -376,7 +403,11 @@ int KNAbstractPoint::tangent(bool adapt)
     for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
   while ((++it < KernIter) && (diffnorm > KernEps));
-  if (diffnorm > KernEps) std::cerr << "KNDdePeriodicSolution::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
+  if (diffnorm > KernEps)
+  {
+    out << "KNDdePeriodicSolution::Tangent: warning: No convergence in finding the singular vector. Residual = " << diffnorm << ", steps " << it << "\n";
+    printStream();
+  }
   if (!adapt && (xxDot->getV3()(dim3) < 0.0))
   {
     xxDot->getV1() *= -1.0;
@@ -388,6 +419,7 @@ int KNAbstractPoint::tangent(bool adapt)
 
 int KNAbstractPoint::nextStep(double ds, bool jacstep)
 {
+  std::ostream& out = outStream();
   double Xnorm, Dnorm, Rnorm, Tnorm;
 
   parNu = par;
@@ -414,8 +446,8 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     conv = (Dnorm / (1.0 + Xnorm) >= ContEps) || (Rnorm / (1.0 + Xnorm) >= ContEps);
 
 #ifdef DEBUG
-    std::cout << "Dnorm: " << Dnorm << " Rnorm: " << Rnorm << " Xnorm: " << Xnorm << "\n";
-    std::cout.flush();
+    out << "Dnorm: " << Dnorm << " Rnorm: " << Rnorm << " Xnorm: " << Xnorm << "\n";
+    printStream();
 #endif /*DEBUG*/
     // updating the tangent
     if (!jacstep)
@@ -430,6 +462,8 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
       xxDotNu->getV3() /= Tnorm;
     }
     // end updating tangent
+    out << '.';
+    printStream();
   }
   while (conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/ && (++it < ContIter));
   if (!conv)
@@ -438,9 +472,10 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     /// checking the tangent and the secant
     double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
     double Xnorm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
-    std::cout << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
+    out << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
     for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
-    std::cout << '\n';
+    out << '\n';
+    printStream();
 
     xx->getV1() = solNu;
     xx->getV1() -= sol;
@@ -451,9 +486,10 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     Onorm = 0;
     for (int i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
     Onorm = sqrt(Onorm) / ds;
-    std::cout << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
+    out << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
     for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
-    std::cout << '\n';
+    out << '\n';
+    printStream();
     /// END OF CHECKING
 #endif
 
@@ -469,6 +505,8 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     // P_MESSAGE1("");
 //  }
 
+  out << '|';
+  printStream();
   return it;
 }
 
@@ -508,8 +546,10 @@ void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-void KNAbstractPeriodicSolution::findAngle(std::ostream& out)
+void KNAbstractPeriodicSolution::findAngle()
 {
+  std::ostream& out = outStream();
+  
   Stability(true); // re-initialize the collocation just in case when the period changes
   double dmin = 10.0;
   int imin = 0;
@@ -538,6 +578,7 @@ void KNAbstractPeriodicSolution::findAngle(std::ostream& out)
   }
   out << "    Z = " << zRe << " + I*" << zIm << "\n" 
          "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
+  printStream();
 }
 
 void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
@@ -558,6 +599,7 @@ void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
 
 void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, int n)
 {
+  std::ostream& out = outStream();
   data.lock();
   KNVector msh(data.getNInt() + 1);
   P_ERROR_X1(data.getNPar() == (NPAR + ParEnd), "Wrong number of parameters in the input MAT file.");
@@ -577,7 +619,8 @@ void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, int n)
     const double amp = Amplitude(tmp, data.getNDim(), data.getNDeg(), data.getNInt());
     if (amp < 1e-6)
     {
-      std::cerr << "Warning: importing without mesh adaptation.\n";
+      out << "Warning: importing without mesh adaptation.\n";
+      printStream();
       persolcolloc->importProfile(sol, tmp, msh, data.getNDeg(), false);
     } else
     {

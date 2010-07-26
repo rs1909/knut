@@ -26,7 +26,9 @@ class KNAbstractContinuation
     {
       stopFlag = flag;
     }
-    virtual void print(std::ostringstream& str) = 0;
+    virtual std::ostream& outStream() { return screenout; };
+    virtual void printStream() = 0;
+    virtual void clearLastLine() = 0;
     virtual void raiseException(const KNException& ex) = 0;
     virtual void setData(KNDataFile* data) = 0;
     virtual KNDataFile& data() = 0;
@@ -35,6 +37,8 @@ class KNAbstractContinuation
   protected:
     KNConstants* params;
     bool        stopFlag;
+    // this is used within the thread
+    std::ostringstream screenout;
 };
 
 class KNCliContinuation : public KNAbstractContinuation
@@ -42,7 +46,8 @@ class KNCliContinuation : public KNAbstractContinuation
   public:
     KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0) { }
     ~KNCliContinuation() { }
-    void print(std::ostringstream& str) { std::cout<<str.str(); str.str(""); }
+    void printStream() { std::cout << screenout.str(); screenout.str(""); std::cout.flush(); }
+    virtual void clearLastLine() { };
     static void printException(const KNException& ex)
     {
       std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";

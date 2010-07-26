@@ -52,6 +52,13 @@ class screenDialog : public QTextEdit
       cur.insertText(QString(str.c_str()));
       if (atEnd) bar->setValue(bar->maximum());
     }
+    void clearLastLine()
+    {
+      QTextCursor cur = textCursor ();
+      cur.movePosition(QTextCursor::End);
+      cur.select(QTextCursor::LineUnderCursor);
+      cur.removeSelectedText();
+    }
     void setText(const QString& str)
     {
       setPlainText(str);

@@ -34,7 +34,8 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
   public:
 
     // constructor
-    KNDdePeriodicSolution(KNSystem& sys, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS);
+    KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS);
     virtual ~KNDdePeriodicSolution();
 
     void    Stability(bool init);
@@ -42,7 +43,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
     // algorithms
     void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
     void    SwitchTFPD(double ds);   // switches branch with testFunct
-    void    SwitchTFHB(double ds, std::ostream& out);   // switches branch with testFunct
+    void    SwitchTFHB(double ds);   // switches branch with testFunct
     void    SwitchTRSol(KNVector& Sol, const KNVector& mshint, const KNVector& mshdeg)
     {
       colloc->exportProfile(Sol, mshint, mshdeg, sol);

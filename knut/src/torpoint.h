@@ -22,7 +22,8 @@ class KNDataFile;
 class KNDdeTorusSolution : public KNAbstractPoint
 {
   public:
-    KNDdeTorusSolution(KNSystem& sys_, KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
+    KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
     ~KNDdeTorusSolution();
 
     inline void    setRho(double rho)

@@ -71,7 +71,6 @@ void KNAbstractContinuation::run(const char* branchFile)
     const int npar = sys->npar();
     std::vector<std::string> parNames = params->getParNames();
 
-    std::ostringstream screenout;
     screenout << std::scientific;
     screenout.precision(6);
 
@@ -88,14 +87,14 @@ void KNAbstractContinuation::run(const char* branchFile)
 //    screenout << '\n';
 //    for( int i=0; i<var.size(); i++ ) screenout<<VarToStr( var(i) )<<", ";
 //    screenout << "\n--\n";
-//    print(screenout);
+//    printStream();
 
     // If it is a periodic solution OR switching from per. solotion to torus
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
     if (eqn_start(0) != EqnTORSol)
     {
-      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul());
-      else if (eqn_start(0) == EqnODESol) pt_ptr = new KNOdePeriodicSolution(*sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul());
+      else if (eqn_start(0) == EqnODESol) pt_ptr = new KNOdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
       KNAbstractPeriodicSolution& pt = *pt_ptr;
   
@@ -125,17 +124,15 @@ void KNAbstractContinuation::run(const char* branchFile)
       }
 
       screenout   << "\n---      Refine supplied solution      ---\n";
-      print(screenout);
-      pt.refine(screenout);
-      print(screenout);
+      printStream();
+      pt.refine();
       if (needFN)
       {
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.reset(eqn_start, var_start);
         pt.setCont(params->getCp() - VarPAR0);
-        if (findangle) pt.findAngle(screenout);   // it only computes the angle from the test functional
-        pt.refine(screenout);
-        print(screenout);
+        if (findangle) pt.findAngle();   // it only computes the angle from the test functional
+        pt.refine();
       }
     }
     // start the continuation!
@@ -154,32 +151,32 @@ void KNAbstractContinuation::run(const char* branchFile)
       screenout << "\n";
       parValuePrint(screenout, par, params->getCp(), var, -1, BifNone, pt.norm(), 0, 0);
       screenout << "\n";
-      print(screenout);
+      printStream();
 
       // making tangents
       switch (params->getBranchSW())
       {
         case TFPDSwitch:
           screenout << "\nSwitching to the period two branch (TF).\n";
-          print(screenout);
+          printStream();
           pt.SwitchTFPD(params->getDsStart());
           break;
         case TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
-          print(screenout);
-          pt.SwitchTFHB(params->getDsStart(), screenout);
+          printStream();
+          pt.SwitchTFHB(params->getDsStart());
           break;
         case TFBRSwitch:
         case TFBRAUTSwitch:
         case TFBRAUTROTSwitch:
           screenout << "\nSwitching to the other branch (TF).\n";
-          print(screenout);
+          printStream();
           pt.SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart());
           break;
         default:
           screenout << "\nFinding the tangent.\n";
+          printStream();
           pt.setCont(params->getCp() - VarPAR0);
-          print(screenout);
           pt.tangent();
           break;
       }
@@ -226,30 +223,32 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (stabchange) bif = pt.testBif();
         if (toprint || stabchange || endpoint)
         {
+          // moves back the cursor to the beginning of the line
+          clearLastLine();
           if (printedln % 24 == 0)
           {
             parNamePrint(screenout, npar, params->getCp(), var, parNames);
             screenout << "\n";
           }
           parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, it(itpos));
-          print(screenout);
+          printStream();
           ++printedln;
         }
         // adapt mesh if necessary
         if ((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
         {
-          const int itad = pt.refine(screenout,true);
+          const int itad = pt.refine(true);
           const int ittan = pt.tangent(true);
           if (toprint || (i != 0  && ustab != ustabprev))
           {
             screenout << " " << itad << " " << ittan;
-            print(screenout);
+            printStream();
           }
         }
         if (toprint || stabchange)
         {
           screenout << "\n";
-          print(screenout);
+          printStream();
         }
         // file output
         pt.BinaryWrite(data(), i);
@@ -279,7 +278,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         {
           parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, it(itpos));
           screenout << '\n';
-          print(screenout);
+          printStream();
           break;
         }
         // stop continuation if CP has reached the bounds
@@ -288,7 +287,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         {
           parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
           screenout << '\n';
-          print(screenout);
+          printStream();
           break;
         }
       }
@@ -301,7 +300,7 @@ void KNAbstractContinuation::run(const char* branchFile)
                            params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
 
       screenout << "ENTERING THE TORUS CODE!\n";
-      print(screenout);
+      printStream();
 
       // construct the initial torus
       double alpha;
@@ -321,7 +320,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         for (int i = 0; i < meshdeg.size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
 
         // getting the sol and tangents
-        screenout << "\nSwitching to the torus.\n"; print(screenout);
+        screenout << "\nSwitching to the torus.\n";
+        printStream();
         pt.SwitchTRSol(Sol, meshint, meshdeg);
         pt.SwitchTFTRTan(TRe, TIm, alpha, meshint, meshdeg);
 
@@ -332,7 +332,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         delete pt_ptr;
         pt_ptr = 0;
       }
-      KNDdeTorusSolution pttr(*sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
+      KNDdeTorusSolution pttr(this, *sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
       // construct the solution tangent from the eigenvectors
       // these next three functions could be only one
       if (params->getBranchSW() == TFTRSwitch)
@@ -350,7 +350,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         {
           KNDataFile istr(params->getInputFile());
           pttr.loadPoint(istr, params->getLabel()-1);
-          screenout << "\nFinding the tangent.\n"; print(screenout);
+          screenout << "\nFinding the tangent.\n";
+          printStream();
           pttr.setCont(params->getCp() - VarPAR0);
           pttr.tangent();
         } else
@@ -380,11 +381,11 @@ void KNAbstractContinuation::run(const char* branchFile)
           parNamePrint(screenout, npar, params->getCp(), var, parNames);
           screenout << "\n";
         }
-        print(screenout);
+        printStream();
         // console output
         parValuePrint(screenout, par, params->getCp(), var, i, BifNone, norm, 0, it);
         screenout << "\n";
-        print(screenout);
+        printStream();
         if (branchFile)
         {
           for (int j = 0; j < par.size(); j++) ff << par(j) << "\t";

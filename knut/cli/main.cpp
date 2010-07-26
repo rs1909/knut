@@ -55,10 +55,11 @@ int main(int argc, const char** argv)
               
               size_t found = cfdir.rfind('/');
               if (found != std::string::npos) cfdir.erase(found);
+              else cfdir = cwd;
               int err = chdir (cfdir.c_str());
+//              std::cout << "Changed directory " << cfdir.c_str() << "\n";
+//              std::cout << "Previous directory " << cwd.c_str() << "\n";
               P_ERROR_X1(err == 0, "Error changing directory.");
-//               std::cout << "Changed directory " << cfdir.c_str() << "\n";
-//               std::cout << "Previous directory " << cwd.c_str() << "\n";
               if (constFile[0] != '/') constFile.insert(0, cwd);
               params->loadXmlFile(constFile);
             }
