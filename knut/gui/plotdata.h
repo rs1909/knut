@@ -177,19 +177,18 @@ class PlotData : public QGraphicsScene
     void updatePlot(const KNDataFile* mat);
     
   public slots:
-    void setXLog(int b)
+    void setAxes(int b)
     {
-      bool tmp = xlog;
-      xlog = (b == Qt::Checked); 
-      if (xlog != tmp) dataToGraphics(Graph.begin(), Graph.end()); 
+      bool xl = (b & 1) != 0;
+      bool yl = (b & 2) != 0;
+      if ((xlog != xl)||(ylog != yl))
+      {
+       xlog = xl;
+       ylog = yl;
+       dataToGraphics(Graph.begin(), Graph.end());
+      }
     }
-    void setYLog(int b)
-    {
-      bool tmp = ylog;
-      ylog = (b == Qt::Checked); 
-      if (ylog != tmp) dataToGraphics(Graph.begin(), Graph.end()); 
-    }
-    
+       
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);

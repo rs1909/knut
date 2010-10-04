@@ -49,9 +49,23 @@ plotWindow::~plotWindow()
   if (data) emit closeFile(data);
 }
 
-void plotWindow::init()
+void plotWindow::init(Var cp)
 {
   emit openFile(dataFileInfo.absoluteFilePath());
+  bool found = false;
+  for (int i=0; i < xvarMap.size(); ++i)
+  {
+       if ((xvarMap[i].value-XParameter0) == (cp-VarPAR0))
+       {
+         xvar->setCurrentIndex(i);
+         found = true;
+       }
+  }
+  if (found)
+  {
+       yvar->setCurrentIndex(2); // Amplitude
+       addPlot();
+  }
 }
 
 void plotWindow::setupPlotWindow()
@@ -133,10 +147,13 @@ void plotWindow::setupPlotWindow()
   exportSvgButton->setDefaultAction( exportSvgAct );
   connect( exportSvgAct, SIGNAL(triggered()), this, SLOT(exportSvg()) );
   
-  QCheckBox* xLog = new QCheckBox();
-  QCheckBox* yLog = new QCheckBox();
-  connect( xLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setXLog(int)) );
-  connect( yLog, SIGNAL(stateChanged(int)), &plotdata, SLOT(setYLog(int)) );
+  QComboBox* xyLog = new QComboBox;
+  xyLog->insertItem(0, "Linear");
+  xyLog->insertItem(1, "SemiLogX");
+  xyLog->insertItem(2, "SemiLogY");
+  xyLog->insertItem(3, "LogLog");
+  xyLog->setCurrentIndex(0);
+  connect( xyLog, SIGNAL(currentIndexChanged(int)), &plotdata, SLOT(setAxes(int)) );
 
   this->addWidget(dockWidget);
   this->addWidget(centralWidget);
@@ -156,8 +173,7 @@ void plotWindow::setupPlotWindow()
   topLayout->addWidget(clearAllPlotButton, 1, 7);
   topLayout->addWidget(printButton, 1, 8);
   topLayout->addWidget(exportSvgButton, 1, 9 );
-  topLayout->addWidget(xLog, 2, 1 );
-  topLayout->addWidget(yLog, 2, 2 );
+  topLayout->addWidget(xyLog, 2, 0 );
 
   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));

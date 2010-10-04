@@ -264,7 +264,7 @@ class KNDataFile
     void  *address;
     size_t size;
     int    ncols;
-    bool   wperm;
+    const bool wperm;
     int    ndim;
     int    npar;
     int    nint;

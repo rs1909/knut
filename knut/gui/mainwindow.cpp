@@ -536,7 +536,7 @@ void MainWindow::inputPlot()
     connect(inputPlotWindow, SIGNAL(updated()),
             &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
     compThread.dataChangedAck();
-    inputPlotWindow->init();
+    inputPlotWindow->init(parameters.getCp());
     if (inputPlotWindow->isDataSet())
     {
       connect(inputPlotWindow, SIGNAL(windowClosed()), this, SLOT(inputPlotDestroyed()));
@@ -574,14 +574,19 @@ void MainWindow::openInputMatFile(const QString& fileName)
     if (QFileInfo(fileName) != QFileInfo(QString::fromStdString(inputMatFile->getFileName())))
     {
       // if it is not used in computation -> safe to delete;
-      delete inputMatFile;
+      if (inputMatFile != inThreadMatFile) { delete inputMatFile; inputMatFile = 0; }
       try {
         inputMatFile = new KNDataFile(fileName.toStdString());
+//         std::cout << "mat4data that A " << inputMatFile << "\n";
 //        std::cout << "Openining (1)" << fileName.toStdString() << "\n";
       }
       catch (KNException ex) 
       {
+//        std::cout << "mat4data that B " << inputMatFile << "\n";
+        delete inputMatFile;
+        inputMatFile = 0;
         externalException(ex);
+        return;
       }
       if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
       return;
@@ -599,7 +604,10 @@ void MainWindow::openInputMatFile(const QString& fileName)
     }
     catch (KNException ex) 
     {
+      delete inputMatFile;
+      inputMatFile = 0;
       externalException(ex);
+      return;
     }
   }
 //  std::cout << "should not have ended up here.\n";
@@ -639,7 +647,7 @@ void MainWindow::outputPlot()
     connect(outputPlotWindow, SIGNAL(updated()),
             &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
     compThread.dataChangedAck();
-    outputPlotWindow->init();
+    outputPlotWindow->init(parameters.getCp());
     if (outputPlotWindow->isDataSet())
     {
       connect(outputPlotWindow, SIGNAL(windowClosed()), this, SLOT(outputPlotDestroyed()));
@@ -678,14 +686,17 @@ void MainWindow::openOutputMatFile(const QString& fileName)
     if (QFileInfo(fileName) != QFileInfo(QString::fromStdString(outputMatFile->getFileName())))
     {
       // if it is not used in computation -> safe to delete;
-      delete outputMatFile;
+      if (outputMatFile != inThreadMatFile) { delete outputMatFile; outputMatFile = 0; }
       try {
         outputMatFile = new KNDataFile(fileName.toStdString());
 //        std::cout << "Openining (1)" << fileName.toStdString() << "\n";
       }
       catch (KNException ex) 
       {
+        delete outputMatFile;
+        outputMatFile = 0;
         externalException(ex);
+        return;
       }
       if (outputPlotWindow) outputPlotWindow->setData(outputMatFile);
       return;
@@ -704,6 +715,7 @@ void MainWindow::openOutputMatFile(const QString& fileName)
     catch (KNException ex) 
     {
       externalException(ex);
+      return;
     }
   }
 //  std::cout << "should not have ended up here.\n";

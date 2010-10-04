@@ -221,9 +221,8 @@ inline void KNDataFile::writeMatrixHeader(void* address, size_t offset, KNDataFi
 }
 
 KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_)
-  : matFileName(fileName)
+  : matFileName(fileName), wperm(true)
 {
-  wperm = true;
   torus = false;
 
   ncols = steps_;
@@ -294,7 +293,8 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   writeMatrixHeader(address, mesh_offset, &mesh_header, mesh_string);
   writeMatrixHeader(address, prof_offset, &prof_header, prof_string);
   setParNames(parNames);
-  unlock();
+//   std::cout << "mat4data address WR1 " << address << "\n";
+  unlock();  
 }
 
 void KNDataFile::setParNames(const std::vector<std::string>& parNames)
@@ -329,9 +329,8 @@ void KNDataFile::getParNames(std::vector<std::string>& parNames) const
 }
 
 KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_)
-  : matFileName(fileName)
+  : matFileName(fileName), wperm(true)
 {
-  wperm = true;
   torus = true;
 
   ncols = steps_;
@@ -411,14 +410,14 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   writeMatrixHeader(address, mesh2_offset, &mesh2_header, mesh2_string);
   writeMatrixHeader(address, blanket_offset, &blanket_header, blanket_string);
   setParNames(parNames);
+//   std::cout << "mat4data address WR2 " << address << "\n";
   unlock();
 }
 
 KNDataFile::KNDataFile(const std::string& fileName)
-  : matFileName(fileName)
+  : matFileName(fileName), wperm(false)
 {
-  wperm = false;
-  this->openReadOnly(fileName);
+  openReadOnly(fileName);
 }
 
 void KNDataFile::resizeMatrix(const char* name, int newcol)
@@ -445,6 +444,7 @@ void KNDataFile::resizeMatrix(const char* name, int newcol)
 
 void KNDataFile::condenseData()
 {
+//   std::cout << "Writable " << wperm << "\n";
   // condense the fields so that it is only the size of npoints, where it counts
   if (wperm)
   {
@@ -525,6 +525,7 @@ void KNDataFile::openReadOnly(const std::string& fileName)
 #endif
   lock();
   initHeaders();
+//   std::cout << "mat4data address RD " << address << "\n";
   unlock();
 }
 
@@ -567,6 +568,8 @@ KNDataFile::~KNDataFile()
     CloseHandle(file);
   }
 #endif
+//   std::cout << "mat4data address CLOSE " << address << "\n";
+  address = 0;
 }
 
 void KNDataFile::setPar(int n, const KNVector& par)

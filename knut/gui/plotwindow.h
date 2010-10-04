@@ -8,6 +8,7 @@
 // ------------------------------------------------------------------------- //
 
 #include "plotdata.h"
+#include "pointtype.h"
 
 #include <QSplitter>
 #include <QFileInfo>
@@ -38,7 +39,7 @@ class plotWindow : public QSplitter
     plotWindow(const QString& filename, QWidget *parent = 0);
     plotWindow(QWidget *parent = 0);
     ~plotWindow();
-    void init();
+    void init(Var cp);
     bool isDataSet()
     {
       return data != 0;

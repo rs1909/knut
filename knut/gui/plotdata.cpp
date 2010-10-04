@@ -476,7 +476,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         {
           const_cast<KNDataFile*>(data)->getMeshRef(i, msh);
           const_cast<KNDataFile*>(data)->getProfileRef(i, prof);
-          Graph.rbegin()->y(j) = KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim());
+          Graph.rbegin()->y(j) = sqrt(KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim()));
         }
       } else
       if (y == YAmplitude)
@@ -486,8 +486,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           double nrm = 0.0;
-          for (int p = 0; p < data->getNDim(); ++p)
-          {
+          int p = dim;
+//          for (int p = 0; p < data->getNDim(); ++p)
+//          {
             double min = DBL_MAX;
             double max = -DBL_MAX;
             for (int l = 0; l < nint; ++l)
@@ -499,7 +500,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
               }
             }
             nrm += (max - min) * (max - min);
-          }
+//          }
           Graph.rbegin()->y(j) = sqrt(nrm);
         }
       } else
