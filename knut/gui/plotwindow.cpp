@@ -319,7 +319,7 @@ void plotWindow::print()
 
 void plotWindow::exportSvg()
 {
-  QString fileName = QFileDialog::getSaveFileName(this, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
+  QString fileName = QFileDialog::getSaveFileName(plot, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
   if( !fileName.isEmpty() )
   {
     QRectF sourceRect = plotdata.sceneRect();

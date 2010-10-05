@@ -26,7 +26,7 @@ PlotData::PlotData(QObject *parent) :
     xlog(false), ylog(false),
     AspectRatio(4.0 / 3.0),
     plotXSize(540), plotYSize(plotXSize / AspectRatio),
-    FontSize(12), Box(0)
+    FontSize(12), Box(0), unitCircleCount(0), unitCircleItem(0)
 {
   const ViewBox cvb =
     {
@@ -83,6 +83,7 @@ void PlotData::clear(unsigned int n)
     }
     if (it == n)
     {
+      if ((*i).isUnitCircle()) --unitCircleCount;
       if ((*i).type == PlotLineType)
       {
         for (PlotLine::const_iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
@@ -259,6 +260,13 @@ void PlotData::clearAll()
   ZoomHistory.clear();
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
+  unitCircleCount = 0;
+  if (unitCircleItem != 0)
+  {
+    removeItem(unitCircleItem);
+    delete unitCircleItem;
+    unitCircleItem = 0;
+  }
 }
 
 /// this computes the minimum and maximum value of an axis
@@ -561,13 +569,6 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   // Unit circle
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
-    // plot the unit circle
-    Graph.push_back(PlotItem(data, PlotAuxiliary, x, y, pt, dim));
-    Graph.rbegin()->x.init(1);
-    Graph.rbegin()->y.init(1);
-    Graph.rbegin()->x(0) = 0.0;
-    Graph.rbegin()->y(0) = 0.0;
-    addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false, 1, true);
     // plotting the multipliers
     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.init(data->getNMul());
@@ -580,6 +581,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     ++xadded;
     ++yadded;
     addPlotPoint(--Graph.end(), QPen(plcolor), PlotMarkerCross, true);
+    ++unitCircleCount;
   }
   // multipliers
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
@@ -1024,7 +1026,7 @@ void PlotData::makeBox()
   ViewBox cvb = *currZoom;
   // drawing the box
   if (Box == 0) Box = addRect(QRectF(0.0, 0.0, plotXSize, plotYSize), QPen(QBrush(Qt::SolidPattern), 2.0));
-//  Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
+  Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
 
   // drawing the ticks and tickmarks
   for (unsigned int i = 0; i < HText.size(); i++)
@@ -1148,6 +1150,24 @@ void PlotData::makeBox()
   {
     XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
     addItem(XCoordTextItems[i]);
+  }
+
+  // add unit circle if necessary
+  if (unitCircleItem != 0)
+  {
+    removeItem(unitCircleItem);
+    delete unitCircleItem;
+    unitCircleItem = 0;
+  }
+  if (unitCircleCount > 0)
+  {
+    const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
+    const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
+    const QPointF pos = QPointF(xscale * (xcoord(0.0) - cvb.xmin), yscale * (cvb.ymax - ycoord(0.0)));
+    QRectF scaledRect(-xscale, -yscale, 2*xscale, 2*yscale);
+    unitCircleItem = new QGraphicsEllipseItem(scaledRect, Box);
+    unitCircleItem->setPos(pos);
+    unitCircleItem->setPen(QPen(QBrush(Qt::SolidPattern), 1));
   }
 }
 

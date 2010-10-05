@@ -140,6 +140,7 @@ class PlotItem
      sourcePath(QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath()),
      varX(x), varY(y), point(pt), dimension(dim) {}
     bool isFrom(const KNDataFile* mat) { return sourcePath == QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath(); }
+    bool isUnitCircle() { return (varX == XRealMultiplier) && (varY == YImagMultiplier); } 
     PlotItemUnion data;
     PlotType      type;
     PlotDataType  dataType;
@@ -232,6 +233,9 @@ class PlotData : public QGraphicsScene
     QGraphicsRectItem selection;
     // data
     std::list<PlotItem> Graph;
+    // unitcircle
+    QGraphicsEllipseItem* unitCircleItem;
+    int unitCircleCount;
 
     // the plot box
     QGraphicsRectItem               *Box;
