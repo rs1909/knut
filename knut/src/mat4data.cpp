@@ -52,9 +52,21 @@ void KNDataFile::unlock() const
 
 #else
 
-// No locking on windows. Use a proper operating system instead.
-void KNDataFile::lock() const { }
-void KNDataFile::unlock() const { }
+void KNDataFile::lock() const
+{
+  // it is opened synchronous, so LockFileEx will wait until the lock is acquired
+  fileOverlapped->hEvent = 0;
+  fileOverlapped->Offset = 0;
+  fileOverlapped->OffsetHigh = 0;  
+  if( LockFileEx(file, LOCKFILE_EXCLUSIVE_LOCK, 0, filesize & 0xffffffff, filesize >> 32, fileOverlapped) != TRUE ) 
+    P_MESSAGE3("MAT file '", matFileName, "' cannot be locked.");
+}
+
+void KNDataFile::unlock() const
+{
+  if( UnlockFileEx(file, 0, filesize & 0xffffffff, filesize >> 32, fileOverlapped) != TRUE ) 
+    P_MESSAGE3("MAT file '", matFileName, "' cannot be unlocked.");
+}
 
 #endif
 off_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool test, int32_t r, int32_t c, int32_t imag, const char* fileName)

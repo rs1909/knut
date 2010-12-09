@@ -255,6 +255,7 @@ class KNDataFile
 
 #ifdef WIN32
     HANDLE file;
+    LPOVERLAPPED fileOverlapped;
     HANDLE mapHandle;
 #else
     int    file;
