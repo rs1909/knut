@@ -190,16 +190,13 @@ void KNAbstractContinuation::run(const char* branchFile)
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
       const int ithist = ITSTEPS;
-      KNArray1D<int> it(ithist);
-      for (int i = 0; i < it.size(); i++) it(i) = 3;
-      int itpos = 0;
       int printedln = 0;
       double ds = params->getDs();
       for (int i = 0; i < params->getSteps(); i++)  // 35
       {
-        itpos = (itpos + 1) % ithist;
         //
-        it(itpos) = pt.nextStep(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
+        double angle;
+        const int itc = pt.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
         if (stopFlag)
         {
           deleteData();
@@ -230,7 +227,7 @@ void KNAbstractContinuation::run(const char* branchFile)
             parNamePrint(screenout, npar, params->getCp(), var, parNames);
             screenout << "\n";
           }
-          parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, it(itpos));
+          parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, itc);
           printStream();
           ++printedln;
         }
@@ -262,21 +259,23 @@ void KNAbstractContinuation::run(const char* branchFile)
           ff.flush();
         }
         // step size adaptation
-        const int itc = it(itpos);
-        if ((itc > ITLIM1) && 
-            (fabs(ds) / 1.414 > fabs(params->getDsMin())) && 
-            (fabs(ds) / 1.414 < fabs(params->getDsMax()))) ds /= 1.414;
-        if ((itc > ITLIM2) && 
-            (fabs(ds) / 2.0 > fabs(params->getDsMin())) && 
-            (fabs(ds) / 2.0 < fabs(params->getDsMax()))) ds /= 2.0;
-        bool decr = true;
-        for (int l = 0; l < it.size(); l++) if (!(it(l) < ITLIM1)) decr = false;
-        if ( decr && 
-            (fabs(ds)*1.414 > fabs(params->getDsMin())) && 
-            (fabs(ds)*1.414 < fabs(params->getDsMax()))) ds *= 1.414;
-        if ((itc >= params->getNItC()) && (fabs(ds) / 2.0 < params->getDsMin()))
+        double dsmul1 = 1.0, dsmul2 = 1.0;
+        if      (itc < 2) dsmul1 = 2.0;
+        else if (itc < 3) dsmul1 = sqrt(2);
+        else if (itc < 4) dsmul1 = 1.0;
+        else if (itc < 5) dsmul1 = 1.0/sqrt(2);
+        else              dsmul1 = 1.0/2.0;
+        const double ATOL = 1.0/32;
+        if      (angle < M_PI/4*ATOL) dsmul2 = 2.0;
+        else if (angle < M_PI/3*ATOL) dsmul2 = sqrt(2);
+        else if (angle < M_PI/2*ATOL) dsmul2 = 1.0;
+        else if (angle < M_PI*ATOL) dsmul2 = 1.0/sqrt(2);
+        else                      dsmul2 = 1.0/2.0;
+        const double dsmul = fmin(dsmul1,dsmul2);
+        if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
+        else if ((itc >= params->getNItC()) && (fabs(ds)*dsmul < params->getDsMin()))
         {
-          parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, it(itpos));
+          parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, itc);
           screenout << '\n';
           printStream();
           break;
@@ -285,7 +284,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         if ((par(params->getCp() - VarPAR0) < params->getCpMin())||
             (par(params->getCp() - VarPAR0) > params->getCpMax()))
         {
-          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, it(itpos));
+          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, itc);
           screenout << '\n';
           printStream();
           break;
@@ -373,7 +372,8 @@ void KNAbstractContinuation::run(const char* branchFile)
           return;
         }
         // same as for periodic orbits
-        int it = pttr.nextStep(ds, (i == 0) && (params->getBranchSW() != NOSwitch));
+        double angle;
+        int it = pttr.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
         for (int j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
         double norm = pttr.norm();
         if (i % 24 == 0)

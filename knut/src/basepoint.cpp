@@ -417,7 +417,7 @@ int KNAbstractPoint::tangent(bool adapt)
   return it;
 }
 
-int KNAbstractPoint::nextStep(double ds, bool jacstep)
+int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
 {
   std::ostream& out = outStream();
   double Xnorm, Dnorm, Rnorm, Tnorm;
@@ -449,8 +449,8 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     out << "Dnorm: " << Dnorm << " Rnorm: " << Rnorm << " Xnorm: " << Xnorm << "\n";
     printStream();
 #endif /*DEBUG*/
-    // updating the tangent
-    if (!jacstep)
+    // updating the tangent if converged or jacstep == false
+    if (!jacstep || conv)
     {
       jac->multiply<false>(*rhs, *xxDotNu, dim3 + 1);
       rhs->getV3()(dim3) -= 1.0;
@@ -492,7 +492,15 @@ int KNAbstractPoint::nextStep(double ds, bool jacstep)
     printStream();
     /// END OF CHECKING
 #endif
-
+    
+    // find out how far was from the original solution
+    double tmax = 0.0;
+    sol += ds*xxDot->getV1();
+    sol -= solNu;
+    double XnormSQ = basecolloc->integrate(sol, sol);
+    for (int i = 1; i < varMapCont.size(); i++)
+      XnormSQ += pow(par(varMapCont(i)) + ds * xxDot->getV3()(i - 1) - parNu(varMapCont(i)),2);
+    angle = atan(sqrt(XnormSQ)/fabs(ds));
     // copying back the solution
     sol = solNu;
     par = parNu;

@@ -32,7 +32,7 @@ class KNAbstractPoint
     void    reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_);
     int     refine(bool adapt = false);
     int     tangent(bool adapt = false);
-    int     nextStep(double ds, bool jacstep);
+    int     nextStep(double ds, double& angle, bool jacstep);
 
     // supplementary
     inline void    setSol(KNVector& s)
