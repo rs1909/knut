@@ -73,7 +73,7 @@ class KNSystem
       if (v_mass != 0)(*v_mass)(out);
       else
       {
-      	for(int i=0; i<out.size(); ++i) out(i) = 1.0;
+        for(int i=0; i<out.size(); ++i) out(i) = 1.0;
       }
     }
     void   p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )

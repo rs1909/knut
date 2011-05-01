@@ -40,8 +40,8 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSyst
 
   construct();
   FillSol(sys_);
-  par(NPAR + ParAngle) = 0.0;
-  par(NPAR + ParRot) = 0.0;
+  par(VarToIndex(VarAngle,NPAR)) = 0.0;
+  par(VarToIndex(VarRot,NPAR)) = 0.0;
 }
 
 KNDdePeriodicSolution::~KNDdePeriodicSolution()
@@ -152,7 +152,7 @@ void KNDdePeriodicSolution::jacobian(
       {
         colloc->rightHandSide_p(AA.getA13(i - 1), par, sol, varMap(i));
       }
-      else if (varMap(i) - NPAR == ParAngle)
+      else if (IndexToVar(varMap(i),NPAR) == VarAngle)
       {
         AA.getA13(i - 1).clear();
       }
@@ -183,7 +183,7 @@ void KNDdePeriodicSolution::jacobian(
           {
             AA.getA33()(i - 1, j - 1) = 0.0;
           }
-          else if (varMap(j) - NPAR == ParAngle)
+          else if (IndexToVar(varMap(j),NPAR) == VarAngle)
           {
             AA.getA33(i - 1, j - 1) = 0.0;
           }
@@ -203,7 +203,7 @@ void KNDdePeriodicSolution::jacobian(
           {
             AA.getA33()(i - 1, j - 1) = 0.0;
           }
-          else if (varMap(j) - NPAR == ParAngle)
+          else if (IndexToVar(varMap(j),NPAR) == VarAngle)
           {
             AA.getA33(i - 1, j - 1) = 0.0;
           }
@@ -226,7 +226,7 @@ void KNDdePeriodicSolution::jacobian(
           {
             AA.getA33()(i - 1, j - 1) = testFunct(i)->funct_p(*colloc, par, sol, varMap(j));
           }
-          else if (varMap(j) - NPAR == ParAngle)
+          else if (IndexToVar(varMap(j),NPAR) == VarAngle)
           {
             AA.getA33(i - 1, j - 1) = 0.0;
           }
@@ -240,7 +240,7 @@ void KNDdePeriodicSolution::jacobian(
         P_ERROR_X3(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test functional are not paired at position ", varMap(i), ".");
         testFunct(i)->funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
-                         cos(par(NPAR + ParAngle)), sin(par(NPAR + ParAngle)));
+                         cos(par(VarToIndex(VarAngle,NPAR))), sin(par(VarToIndex(VarAngle,NPAR))));
         testFunct(i)->funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
         for (int j = 1; j < varMap.size(); j++)
         {
@@ -248,7 +248,7 @@ void KNDdePeriodicSolution::jacobian(
           {
             testFunct(i)->funct_p(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol, varMap(j));
           }
-          else if (varMap(j) - NPAR == ParAngle)
+          else if (IndexToVar(varMap(j),NPAR) == VarAngle)
           {
             testFunct(i)->funct_z(AA.getA33()(i - 1, j - 1), AA.getA33()(i, j - 1), *colloc, par, sol);
           }
@@ -290,6 +290,15 @@ void KNDdePeriodicSolution::jacobian(
 //
 // **************************************************************************************************************** //
 
+void KNDdePeriodicSolution::postProcess()
+{
+  // update test functional
+  for (int idx=0; idx < testFunct.size(); ++idx)
+  {
+    if (testFunct(idx)) testFunct(idx)->initStep();
+  }
+}
+
 /// --------------------------------------------------------------
 /// Starting bifurcation continuation using TEST FUNCTIONS
 /// --------------------------------------------------------------
@@ -317,7 +326,7 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds)
   } while (true);
   par(0) = newperiod;
   
-  out << "    T = " << par(0) << ", arg(Z) = " << par(NPAR + ParAngle) / (2*M_PI) << " * 2Pi\n";
+  out << "    T = " << par(0) << ", arg(Z) = " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * 2Pi\n";
 //   std::cerr << "Distance between the predicted and real critial eigenfunctions: " << dist << "\n";
   P_ERROR_X3(dist < 0.01, "Cannot switch branches."
     " The predicted and the computed eigenfunctions are not close enough."
@@ -406,7 +415,7 @@ void KNDdePeriodicSolution::SwitchTFPD(double ds)
 
   // setting the period two double
   par(0) *= 2.0;
-  par(NPAR+ParPeriod) *= 2.0;
+  par(VarToIndex(VarPeriod,NPAR)) *= 2.0;
 
   solNu = sol;
   colloc->pdMeshConvert(sol, xxDot->getV1(), solNu, tan);
@@ -478,8 +487,8 @@ void KNDdePeriodicSolution::Write(std::ofstream& file)
 {
   KNVector msh(colloc->getMesh());
 
-  file << NPAR + ParEnd << "\t";
-  for (int i = 0; i < NPAR + ParEnd; i++) file << par(i) << "\t";
+  file << VarToIndex(VarEnd,NPAR) << "\t";
+  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file << par(i) << "\t";
 
   file << mRe.size() << "\t";
   for (int i = 0; i < mRe.size(); i++) file << mRe(i) << "\t" << mIm(i) << "\t";
@@ -504,8 +513,8 @@ void KNDdePeriodicSolution::Read(std::ifstream& file)
 {
   int npar_, nmul_, ndim_, nint_, ndeg_;
   file >> npar_;
-  P_ERROR_X3(NPAR + ParEnd == npar_, "Not compatible input file (NPAR) ", npar_, ".");
-  for (int i = 0; i < NPAR + ParEnd; i++) file >> par(i);
+  P_ERROR_X3(VarToIndex(VarEnd,NPAR) == npar_, "Not compatible input file (NPAR) ", npar_, ".");
+  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> par(i);
 
   file >> nmul_;
   P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
@@ -548,8 +557,8 @@ void KNDdePeriodicSolution::ReadNull(std::ifstream& file)
   double tmp;
   int npar_, nmul_, ndim_, nint_, ndeg_;
   file >> npar_;
-  P_ERROR_X3(NPAR + ParEnd == npar_, "Not compatible input file (NPAR) ", npar_, ".");
-  for (int i = 0; i < NPAR + ParEnd; i++) file >> tmp;
+  P_ERROR_X3(VarToIndex(VarEnd,NPAR) == npar_, "Not compatible input file (NPAR) ", npar_, ".");
+  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> tmp;
 
   file >> nmul_;
   P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");

@@ -25,8 +25,8 @@ KNOdePeriodicSolution::KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSyst
   persolcolloc = colloc;
   construct();
   FillSol(sys_);
-  par(colloc->nPar() + ParAngle) = 0.0;
-  par(colloc->nPar() + ParRot) = 0.0;
+  par(VarToIndex(VarAngle,colloc->nPar())) = 0.0;
+  par(VarToIndex(VarRot,colloc->nPar())) = 0.0;
 }
 
 KNOdePeriodicSolution::~KNOdePeriodicSolution()
@@ -59,7 +59,7 @@ void KNOdePeriodicSolution::jacobian(
       {
         colloc->rightHandSide_p(AA.getA13(i - 1), par, sol, varMap(i));
       }
-      else if (varMap(i) - NPAR == ParAngle)
+      else if (IndexToVar(varMap(i),NPAR) == VarAngle)
       {
         AA.getA13(i - 1).clear();
       }
@@ -85,7 +85,7 @@ void KNOdePeriodicSolution::jacobian(
           {
             AA.getA33()(i - 1, j - 1) = 0.0;
           }
-          else if (varMap(j) - NPAR == ParAngle)
+          else if (IndexToVar(varMap(j),NPAR) == VarAngle)
           {
             AA.getA33(i - 1, j - 1) = 0.0;
           }

@@ -55,16 +55,19 @@ void KNDataFile::unlock() const
 void KNDataFile::lock() const
 {
   // it is opened synchronous, so LockFileEx will wait until the lock is acquired
-  fileOverlapped->hEvent = 0;
-  fileOverlapped->Offset = 0;
-  fileOverlapped->OffsetHigh = 0;  
-  if( LockFileEx(file, LOCKFILE_EXCLUSIVE_LOCK, 0, filesize & 0xffffffff, filesize >> 32, fileOverlapped) != TRUE ) 
+//   std::cout << "Trying to Lock " << matFileName <<"\n"; std::cout.flush();
+  const_cast<OVERLAPPED*>(&fileOverlapped)->Offset = 0;
+  const_cast<OVERLAPPED*>(&fileOverlapped)->OffsetHigh = 0;
+  const_cast<OVERLAPPED*>(&fileOverlapped)->hEvent = 0;
+  BOOL res = LockFileEx(file, LOCKFILE_EXCLUSIVE_LOCK, 0, filesize & 0xffffffff, filesize >> 32, const_cast<OVERLAPPED*>(&fileOverlapped));
+  if( res != TRUE ) 
     P_MESSAGE3("MAT file '", matFileName, "' cannot be locked.");
 }
 
 void KNDataFile::unlock() const
 {
-  if( UnlockFileEx(file, 0, filesize & 0xffffffff, filesize >> 32, fileOverlapped) != TRUE ) 
+//   std::cout << "UNLock " << matFileName <<"\n"; std::cout.flush();
+  if( UnlockFileEx(file, 0,  filesize & 0xffffffff, filesize >> 32, const_cast<OVERLAPPED*>(&fileOverlapped)) != TRUE ) 
     P_MESSAGE3("MAT file '", matFileName, "' cannot be unlocked.");
 }
 

@@ -7,12 +7,12 @@ if test -d ../.git ; then
 	fi
 popd  
 cmake -G "Unix Makefiles"\
-	-D CMAKE_CXX_COMPILER="g++-4.2"\
-	-D CMAKE_C_COMPILER="gcc-4.2"\
-	-D CMAKE_Fortran_COMPILER="/opt/local/bin/gfortran"\
-	-D CMAKE_C_FLAGS="-m64 -g -O0 -fno-inline -W -Wall -Wno-unused -Wno-unknown-pragmas"\
-	-D CMAKE_CXX_FLAGS="-m64 -g -O0 -fno-inline -W -Wall -Wno-unused"\
-	-D CMAKE_Fortran_FLAGS="-m64 -g -O0"\
+	-D CMAKE_CXX_COMPILER="g++"\
+	-D CMAKE_C_COMPILER="gcc"\
+	-D CMAKE_Fortran_COMPILER="gfortran"\
+	-D CMAKE_C_FLAGS_DEBUG="-m64 -g -O0 -W -Wall -Wno-unused -Wno-unknown-pragmas"\
+	-D CMAKE_CXX_FLAGS_DEBUG="-m64 -g -O0 -W -Wall -Wno-unused -Wconversion"\
+	-D CMAKE_Fortran_FLAGS_DEBUG="-m64 -g -O0"\
 	-D CMAKE_INSTALL_PREFIX=$HOME/Applications/Knut\
 	-D CMAKE_BUILD_TYPE=DEBUG $SCRIPTDIR
 make

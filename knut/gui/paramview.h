@@ -34,8 +34,8 @@ class ParamsModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &parent = QModelIndex()) const
     {
-      if (parameters->getPointType() == SolUser) return parameters->getEqnsNumSize();
-      else return parameters->getParxNumSize();
+      if (parameters->getPointType() == SolUser) return parameters->getEqnsSize();
+      else return parameters->getParxSize();
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -84,29 +84,32 @@ class EqnVarTableView : public QTableView
     EqnVarTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
     ~EqnVarTableView();
 
-  private slots:
-
-    void setConstant(const char* name)
+  public slots:
+    void dataUpdated(const std::vector<Var>& val)
     {
-      bool call = false;
-      if (!strcmp(name,"pointType")) call = true;
-      else if (!strcmp(name,"parxNum")) call = true;
-      else if (!strcmp(name,"eqnsNum")) call = true;
-      else if (!strcmp(name,"varsNum")) call = true;
-      else if (!strcmp(name,"translationMaps")) call = true;
-      if (call)
-      {
-        model->dataUpdated();
-        this->resetSize();
-      }
+      model->dataUpdated();
+      this->resetSize();
+      emit sizeChanged(val.size());
     }
-    
+    void dataUpdated(const std::vector<Eqn>& val)
+    {
+      model->dataUpdated();
+      this->resetSize();
+      emit sizeChanged(val.size());
+    }
+    void dataUpdated(int typeidx)
+    {
+      model->dataUpdated();
+      this->resetSize();
+    }
     // set size of the widget
     void resetSize();
     QSize minimumSizeHint() const;
-
+    
+  signals:
+    void sizeChanged(int);
+    
   private:
-
     NConstantsQtGui*  parameters;
     ParamsModel* model;
     BoxDelegate* delegate;
@@ -184,21 +187,17 @@ class SYMTableView : public QTableView
     SYMTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
     ~SYMTableView();
 
-  private slots:
+  public slots:
 
-    void setConstant(const char* name)
+    void dataUpdated(const std::vector<int>& val)
     {
-      bool call = false;
-      if (!strcmp(name,"symIm")) call = true;
-      if (call)
-      {
-        model->dataUpdated();
-        this->resetSize();
-      }
+      model->dataUpdated();
+      this->resetSize();
+      emit sizeChanged(val.size());
     }
-
     void resetSize();
-
+  signals:
+    void sizeChanged(int);
   private:
 
     SYMModel*    model;

@@ -80,7 +80,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
       KNArray1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
-
+    void postProcess();
 
     // multipliers
 //    KNVector       mRe;
@@ -117,10 +117,10 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Va
   out << std::left << std::setfill(' ') << std::setw(5) <<  "LABEL" << " "; // 2 at the end
   out << std::left << std::setfill(' ') << std::setw(2) <<  "TP" << ' '; // 3 at the end
   out << ' ' << std::left << std::setfill(' ') << std::setw(12) << "NORM" << "  "; // 2 at the end
-  out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(cp - VarPAR0) << "  "; // 2 at the end
+  out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(VarToIndex(cp,npar)) << "  "; // 2 at the end
   for (int j = 1; j < var.size(); j++)
   {
-    out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(var(j) - VarPAR0) << "  "; // 2 at the end
+    out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(VarToIndex(var(j),npar)) << "  "; // 2 at the end
   }
   out << std::left << std::setfill(' ') << std::setw(2) << "U" << " ";
   out << std::left << std::setfill(' ') << std::setw(2) << "IT";
@@ -128,6 +128,7 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Va
 
 inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const KNArray1D<Var>& var, int lb, BifType tp, double norm, int ustab, int it)
 {
+  const int npar = par.size() - (VarEnd - VarInternal);
   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
   out.precision(6);
@@ -142,10 +143,10 @@ inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const 
   else if (tp == BifNoConvergence) out << std::left << std::setfill(' ') << std::setw(2) << "MX" << ' '; // 2 at the end
   else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
-  out << std::right << std::setfill(' ') << std::setw(13) << par(cp - VarPAR0) << "  "; // 2 at the end
+  out << std::right << std::setfill(' ') << std::setw(13) << par(VarToIndex(cp,npar)) << "  "; // 2 at the end
   for (int j = 1; j < var.size(); j++)
   {
-    out << std::right << std::setfill(' ') << std::setw(13) << par(var(j) - VarPAR0) << "  "; // 2 at the end
+    out << std::right << std::setfill(' ') << std::setw(13) << par(VarToIndex(var(j),npar)) << "  "; // 2 at the end
   }
   out << std::left << std::setfill(' ') << std::setw(2) << ustab << " ";
   out << std::left << std::setfill(' ') << std::setw(2) << it;

@@ -26,7 +26,7 @@ PlotData::PlotData(QObject *parent) :
     xlog(false), ylog(false),
     AspectRatio(4.0 / 3.0),
     plotXSize(540), plotYSize(plotXSize / AspectRatio),
-    FontSize(12), Box(0), unitCircleCount(0), unitCircleItem(0)
+    FontSize(12), unitCircleItem(0), unitCircleCount(0), Box(0)
 {
   const ViewBox cvb =
     {
@@ -468,7 +468,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
             Graph.rbegin()->x(j) = data->getPar(i, x - XParameter0);
           else
             Graph.rbegin()->x(j) = 
-              data->getPar(i, x - XParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
+              data->getPar(i, x - XParameter0)/data->getPar(i, data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad X coord\n";
       ++xadded;
@@ -520,7 +520,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
             Graph.rbegin()->y(j) = data->getPar(i, y - YParameter0);
           else
             Graph.rbegin()->y(j) = 
-              data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()-ParEnd+ParPeriod);
+              data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad Y coord\n";
       ++yadded;
@@ -680,7 +680,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       else YCoordText.push_back(YCoordMap[y]);
       
       std::list<PlotItem>::const_iterator it = Graph.end();
-      for (int i = 0; i < xadded; ++i) --it;
+      for (int i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
       dataToGraphics(it, Graph.end());
       labelColor();
       return true;
@@ -885,6 +885,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
   std::list<PlotItem>::const_iterator i;
   for (i = begin; i != end; i++)
   {
+    if (i->x.size() == 0) continue;
     if ((*i).type == PlotLineType)
     {
       PlotLine& ppath = *(*i).data.line;

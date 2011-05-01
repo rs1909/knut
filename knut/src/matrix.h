@@ -48,6 +48,10 @@ extern "C"
 #  define P_ASSERT_X(cond,msg) do{ }while(0)
 #endif
 
+#ifndef P_ASSERT_X11
+#  define P_ASSERT_X11(cond, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) do{ }while(0)
+#endif
+
 #endif
 
 template<class T> class KNArray2D;
@@ -105,33 +109,33 @@ class KNArray1D
 
     inline void init(int i)
     {
-      if (destructable)
-      {
-        delete[] v;
-        n = i;
-        v = new T[i];
-        clear();
-      } else throw(-1);
+#ifdef DEBUG
+      P_ASSERT_X(destructable, "KNArray1D::init(int)");
+#endif
+      delete[] v;
+      n = i;
+      v = new T[i];
+      clear();
     }
 
     inline void init(const KNArray1D<T>& V_)
     {
-      if (destructable)
-      {
-        delete[] v;
-        n = V_.n;
-        v = new T[V_.n];
-        *this = V_;
-      } else throw(-1);
+#ifdef DEBUG
+      P_ASSERT_X(destructable, "KNArray1D::init(const KNArray1D<T>&)");
+#endif
+      delete[] v;
+      n = V_.n;
+      v = new T[V_.n];
+      *this = V_;
     }
 
     inline void init(T *data, int i)
     {
-      if (!destructable)
-      {
-        n = i;
-        v = data;
-      } else throw(-1);
+#ifdef DEBUG
+      P_ASSERT_X((!destructable), "KNArray1D::init(T *, int)");
+#endif
+      n = i;
+      v = data;
     }
 
     inline void clear()
@@ -411,7 +415,7 @@ class KNArray3D
     inline T operator()(const int i, const int j, const int k) const
     {
 #ifdef DEBUG
-      P_ASSERT_X((i < d1) && (j < d2) && (k < d3), "bound\n");
+      P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
       P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
 #endif
       return m[i + d1*(j + d2*k)];
@@ -422,7 +426,7 @@ class KNArray3D
 template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, int i) : destructable(false)
 {
 #ifdef DEBUG
-  P_ASSERT_X((i < vec.c), "bound\n");
+  P_ASSERT_X((i >= 0)&&(i < vec.c), "bound\n");
 #endif
   v = &vec.m[vec.r*i];
   n = vec.r;
@@ -431,7 +435,7 @@ template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, int i)
 template<class T> inline KNArray2D<T>::KNArray2D(const KNArray3D<T>& vec, int i) : destructable(false)
 {
 #ifdef DEBUG
-  P_ASSERT_X((i < vec.d3), "bound\n");
+  P_ASSERT_X((i >= 0)&&(i < vec.d3), "bound\n");
 #endif
   m = &vec.m[vec.d1*vec.d2*i];
   r = vec.d1;

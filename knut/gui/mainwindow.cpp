@@ -19,7 +19,7 @@
 
 #include <QtGui/QtGui>
 
-MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
+MainWindow::MainWindow(const QString& appDir) :
     executableDir(appDir), compThread(parameters),
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), compilerProcess(0),
@@ -75,7 +75,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   systemGrid->addLayout(getInputFileLayout, 0, 4);
   connect(inputFileAct, SIGNAL(triggered()), this, SLOT(setInputFile())); // opening an input file
   connect(inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot())); // plotting the input file
-  connect(inputFile, SIGNAL(textEdited(const QString &)), this, SLOT(setInputFileParameter(const QString &)));
+  parameters.registerCallback("std::string", "inputFile", inputFile, SIGNAL(textEdited(const QString &)), "setText");
 
   QHBoxLayout *getOutputFileLayout = new QHBoxLayout;
   QLabel* outputFileLabel = new QLabel("OUTPUT");
@@ -95,7 +95,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   systemGrid->addLayout(getOutputFileLayout, 1, 4);
   connect(outputFileAct, SIGNAL(triggered()), this, SLOT(setOutputFile()));
   connect(outputFilePlotAct, SIGNAL(triggered()), this, SLOT(outputPlot()));
-  connect(outputFile, SIGNAL(textEdited(const QString &)), this, SLOT(setOutputFileParameter(const QString &)));
+  parameters.registerCallback("std::string", "outputFile", outputFile, SIGNAL(textEdited(const QString &)), "setText");
 
   // this only for setting SYSNAME
   QHBoxLayout *sysnameLayout = new QHBoxLayout;
@@ -123,6 +123,8 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   connect(generateAct, SIGNAL(triggered()), this, SLOT(generateSystem()));
   // sets up a bidirectional connection
   connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
+  parameters.registerCallback("std::string", "sysname", sysname, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("int","nPar", this, 0, "nParChanged");
 
   // setting LABEL
   QLabel* labelLabel = new QLabel("LABEL");
@@ -131,33 +133,31 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   label->setRange(0, 0xffff);
   systemGrid->addWidget(labelLabel, 3, 0, Qt::AlignLeft | Qt::AlignBottom);
   systemGrid->addWidget(label, 4, 0);
-  connect(label, SIGNAL(valueChanged(int)), this, SLOT(setLabelParameter(int)));
+  parameters.registerCallback("int", "label", label, SIGNAL(valueChanged(int)), "setValue");
 
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
-  for (unsigned int i = 0; i < parameters.pointTypeSize(); ++i)
+  for (int i = 0; i < parameters.PtTypeTableSize(); ++i)
   {
-    pttype->addItem(parameters.pointTypeString(i).c_str());
+    pttype->insertItem(i, parameters.CIndexToPtTypeName(i));
   }
-  // thes set the values
-  connect(pttype, SIGNAL(currentIndexChanged(int)), this, SLOT(setPointTypeIdxParameter(int)));
+  parameters.registerCallback("PtType", "pointType", pttype, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
 
   QLabel* cpLabel = new QLabel("CP");
   cpLabel->setToolTip(QString("The continuation parameter."));
   cp = new QComboBox();
-  connect(cp, SIGNAL(currentIndexChanged(int)), this, SLOT(setCpIdxParameter(int)));
 
   QLabel* branchswLabel = new QLabel("SWITCH");
   branchswLabel->setToolTip("Switches to another branch at the bifurcation point.");
   branchsw = new QComboBox();
-  for (unsigned int i = 0; i < parameters.branchSWSize(); ++i)
+  for (int i = 0; i < parameters.BranchSWTableSize(); ++i)
   {
-    branchsw->addItem(parameters.branchSWString(i).c_str());
+    branchsw->insertItem(i, parameters.CIndexToBranchSWName(i));
   }
   systemGrid->addWidget(branchswLabel, 3, 4, Qt::AlignHCenter | Qt::AlignBottom);
   systemGrid->addWidget(branchsw, 4, 4);
-  connect(branchsw, SIGNAL(currentIndexChanged(int)), this, SLOT(setBranchSWIdxParameter(int)));
+  parameters.registerCallback("BranchSW", "branchSW", branchsw, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
 
   eqnsLabel = new QLabel("NEQNS");
   eqnsLabel->setToolTip(QString("NPARX: Number of additional parameters to be used in the continuation.\n"
@@ -175,12 +175,24 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   systemGrid->addWidget(table, 5, 1, 2, 4, Qt::AlignVCenter);
   // this has to reconfigure the table
   connect(eqns, SIGNAL(valueChanged(int)), this, SLOT(setNEqnsParameter(int)));
+  connect(table, SIGNAL(sizeChanged(int)), eqns, SLOT(setValue(int)));
+  parameters.registerCallback("Var", "cp", cp, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
+  parameters.registerCallback("vector<Var>", "parx", table, 0, "dataUpdated");
+  parameters.registerCallback("vector<Var>", "vars", table, 0, "dataUpdated");
+  parameters.registerCallback("vector<Eqn>", "eqns", table, 0, "dataUpdated");
+  parameters.registerCallback("vector<Var>", "parx", eqns, 0, "setValue");
+  parameters.registerCallback("vector<Var>", "vars", eqns, 0, "setValue");
+  parameters.registerCallback("vector<Eqn>", "eqns", eqns, 0, "setValue");
+  connect(pttype, SIGNAL(currentIndexChanged(int)), table, SLOT(dataUpdated(int)));
+  
+  QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
 
   // setting NINT, NDEG, NMUL, STAB
   QLabel* nintLabel = new QLabel("NINT");
   QLabel* ndegLabel = new QLabel("NDEG");
   QLabel* nmulLabel = new QLabel("NMUL");
   QLabel* stabLabel = new QLabel("STAB");
+  QLabel* curveAngleLabel = new QLabel("CURVATURE");
   nintLabel->setToolTip(QString("Number of collocation intervals."));
   ndegLabel->setToolTip(QString("The degree of the piecewise polynomial."));
   nmulLabel->setToolTip(QString("Number of Floquet multipliers to be computed."));
@@ -192,19 +204,25 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   nmul = new QSpinBox();
   nmul->setRange(0, 0xffff);
   stab = new QCheckBox();
+  curveAngle = new QLineEdit();
+  curveAngle->setValidator(dbValid);
 
   numericsGrid->addWidget(nintLabel, 0, 0, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(ndegLabel, 0, 1, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nmulLabel, 0, 2, Qt::AlignHCenter | Qt::AlignBottom);
-  numericsGrid->addWidget(stabLabel, 0, 4, Qt::AlignHCenter | Qt::AlignBottom);
+  numericsGrid->addWidget(stabLabel, 0, 3, Qt::AlignHCenter | Qt::AlignBottom);
+  numericsGrid->addWidget(curveAngleLabel, 0, 4, Qt::AlignHCenter | Qt::AlignBottom);
   numericsGrid->addWidget(nint, 1, 0);
   numericsGrid->addWidget(ndeg, 1, 1);
   numericsGrid->addWidget(nmul, 1, 2);
-  numericsGrid->addWidget(stab, 1, 4, Qt::AlignHCenter);
-  connect(nint, SIGNAL(valueChanged(int)), this, SLOT(setNIntParameter(int)));
-  connect(ndeg, SIGNAL(valueChanged(int)), this, SLOT(setNDegParameter(int)));
-  connect(nmul, SIGNAL(valueChanged(int)), this, SLOT(setNMulParameter(int)));
-  connect(stab, SIGNAL(stateChanged(int)), this, SLOT(setStabParameter(int)));
+  numericsGrid->addWidget(stab, 1, 3, Qt::AlignHCenter);
+  numericsGrid->addWidget(curveAngle, 1, 4);
+  
+  parameters.registerCallback("int",    "nInt",   nint,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("int",    "nDeg",   ndeg,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("int",    "nMul",   nmul,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("double", "cAngle", curveAngle, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("bool",   "stab",   stab,       SIGNAL(clicked(bool)),               "setChecked");
 
   QLabel* nint1Label = new QLabel("NINT1");
   QLabel* nint2Label = new QLabel("NINT2");
@@ -226,12 +244,10 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   torusGrid->addWidget(nint2, 1, 1);
   torusGrid->addWidget(ndeg1, 1, 2);
   torusGrid->addWidget(ndeg2, 1, 3);
-  connect(nint1, SIGNAL(valueChanged(int)), this, SLOT(setNInt1Parameter(int)));
-  connect(nint2, SIGNAL(valueChanged(int)), this, SLOT(setNInt2Parameter(int)));
-  connect(ndeg1, SIGNAL(valueChanged(int)), this, SLOT(setNDeg1Parameter(int)));
-  connect(ndeg2, SIGNAL(valueChanged(int)), this, SLOT(setNDeg2Parameter(int)));
-
-  QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
+  parameters.registerCallback("int", "nInt1", nint1, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nInt2", nint2, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nDeg1", ndeg1, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nDeg2", ndeg2, SIGNAL(valueChanged(int)), "setValue");
 
   QLabel* stepsLabel = new QLabel("STEPS");
   QLabel* dsLabel = new QLabel("DS");
@@ -263,11 +279,11 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   numericsGrid->addWidget(dsMin, 3, 2);
   numericsGrid->addWidget(dsMax, 3, 3);
   numericsGrid->addWidget(dsStart, 3, 4);
-  connect(steps, SIGNAL(valueChanged(int)), this, SLOT(setStepsParameter(int)));
-  connect(ds, SIGNAL(textEdited(const QString &)), this, SLOT(setDsParameter(const QString &)));
-  connect(dsMin, SIGNAL(textEdited(const QString &)), this, SLOT(setDsMinParameter(const QString &)));
-  connect(dsMax, SIGNAL(textEdited(const QString &)), this, SLOT(setDsMaxParameter(const QString &)));
-  connect(dsStart, SIGNAL(textEdited(const QString &)), this, SLOT(setDsStartParameter(const QString &)));
+  parameters.registerCallback("int", "steps", steps,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("double", "ds", ds,      SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "dsMin", dsMin,   SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "dsMax", dsMax,   SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "dsStart", dsStart, SIGNAL(textEdited(const QString &)), "setText");
 
   QLabel* epsCLabel = new QLabel("EPSC");
   QLabel* epsRLabel = new QLabel("EPSR");
@@ -299,11 +315,11 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   numericsGrid->addWidget(epsK, 5, 2);
   numericsGrid->addWidget(cpMin, 5, 3);
   numericsGrid->addWidget(cpMax, 5, 4);
-  connect(epsC, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsCParameter(const QString &)));
-  connect(epsR, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsRParameter(const QString &)));
-  connect(epsK, SIGNAL(textEdited(const QString &)), this, SLOT(setEpsKParameter(const QString &)));
-  connect(cpMin, SIGNAL(textEdited(const QString &)), this, SLOT(setCpMinParameter(const QString &)));
-  connect(cpMax, SIGNAL(textEdited(const QString &)), this, SLOT(setCpMaxParameter(const QString &)));
+  parameters.registerCallback("double", "epsC", epsC, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "epsR", epsR, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "epsK", epsK, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "cpMin", cpMin, SIGNAL(textEdited(const QString &)), "setText");
+  parameters.registerCallback("double", "cpMax", cpMax, SIGNAL(textEdited(const QString &)), "setText");
 
   QLabel* nitCLabel = new QLabel("NITC");
   QLabel* nitRLabel = new QLabel("NITR");
@@ -347,14 +363,16 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
 
   symmetryGrid->addWidget(sym, 3, 0, 2, 5);
   connect(nsym, SIGNAL(valueChanged(int)), this, SLOT(setNSymParameter(int)));
-  connect(nitC, SIGNAL(valueChanged(int)), this, SLOT(setNItCParameter(int)));
-  connect(nitR, SIGNAL(valueChanged(int)), this, SLOT(setNItRParameter(int)));
-  connect(nitK, SIGNAL(valueChanged(int)), this, SLOT(setNItKParameter(int)));
-  connect(iad, SIGNAL(valueChanged(int)), this, SLOT(setIadParameter(int)));
-  connect(nPr, SIGNAL(valueChanged(int)), this, SLOT(setNPrParameter(int)));
-
-  // update parameters in the GUI, when `parameters' have changed.
-  connect(&parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
+  connect(sym, SIGNAL(sizeChanged(int)), nsym, SLOT(setValue(int)));
+  parameters.registerCallback("int", "nItC", nitC,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nItR", nitR,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nItK", nitK,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "iad", iad,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("int", "nPr", nPr,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("vector<int>", "symRe", sym, 0, "dataUpdated");
+  parameters.registerCallback("vector<int>", "symIm", sym, 0, "dataUpdated");
+  parameters.registerCallback("vector<int>", "symRe", nsym, 0, "setValue");
+  parameters.registerCallback("vector<int>", "symIm", nsym, 0, "setValue");
 
   // connecting exceptions
   connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));
@@ -370,8 +388,7 @@ MainWindow::MainWindow(const QString& appDir, const QString& fileName) :
   createStatusBar();
 
   readSettings();
-  if (fileName.isEmpty()) setCurrentFile("");
-  else loadFile(fileName);
+  setCurrentFile("");
 
   // compThread is a permanent object
   // should it be dynamic?
@@ -494,7 +511,7 @@ void MainWindow::setInputFile()
   if (!fileName.isEmpty())
   {
     inputFile->setText(QDir::current().relativeFilePath(fileName));
-    setInputFileParameter(QDir::current().relativeFilePath(fileName));
+    parameters.setInputFile(QDir::current().relativeFilePath(fileName).toStdString());
   }
 }
 
@@ -504,7 +521,7 @@ void MainWindow::setOutputFile()
   if (!fileName.isEmpty())
   {
     outputFile->setText(QDir::current().relativeFilePath(fileName));
-    setOutputFileParameter(QDir::current().relativeFilePath(fileName));
+    parameters.setOutputFile(QDir::current().relativeFilePath(fileName).toStdString());
   }
 }
 
@@ -927,7 +944,6 @@ void MainWindow::createActions()
   aboutQtAct = new QAction(tr("About &Qt"), this);
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
   connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-
 }
 
 void MainWindow::createMenus()
@@ -978,7 +994,6 @@ void MainWindow::writeSettings()
   settings.setValue("size", size());
 }
 
-
 void MainWindow::loadFile(const QString &fileName)
 {
   bool success = true;
@@ -1004,7 +1019,6 @@ bool MainWindow::saveFile(const QString &fileName)
   return true;
 }
 
-
 void MainWindow::setCurrentFile(const QString &fileName)
 {
   curFile = fileName;
@@ -1024,262 +1038,14 @@ QString MainWindow::strippedName(const QString &fullFileName)
   return QFileInfo(fullFileName).fileName();
 }
 
-void MainWindow::setConstant(const char* name)
+void MainWindow::nParChanged(int n)
 {
-  if (!strcmp(name,"inputFile"))
+  cp->blockSignals(true);
+  cp->clear();
+  for (int i = 0; i < parameters.VarTableSize(); ++i)
   {
-    inputFile->blockSignals(true);
-    int cpos = inputFile->cursorPosition();
-    inputFile->setText(parameters.getInputFile().c_str());
-    inputFile->setCursorPosition(cpos);
-    inputFile->blockSignals(false);
+    cp->insertItem(i, parameters.CIndexToVarName(i));
   }
-  else if (!strcmp(name,"outputFile"))
-  {
-    outputFile->blockSignals(true);
-    int cpos = outputFile->cursorPosition();
-    outputFile->setText(parameters.getOutputFile().c_str());
-    outputFile->setCursorPosition(cpos);
-    outputFile->blockSignals(false);
-  }
-  else if (!strcmp(name,"sysname"))
-  {
-    sysname->blockSignals(true);
-    int cpos = sysname->cursorPosition();
-    sysname->setText(parameters.getSysName().c_str());
-    sysname->setCursorPosition(cpos);
-    sysname->blockSignals(false);
-  }
-  else if (!strcmp(name,"label"))
-  {
-    label->blockSignals(true);
-    label->setValue(parameters.getLabel());
-    label->blockSignals(false);
-  }
-  else if (!strcmp(name,"pointType"))
-  {
-    pttype->blockSignals(true);
-    pttype->setCurrentIndex(static_cast<int>(parameters.getPointTypeIdx()));
-    pttype->blockSignals(false);
-  }
-  else if (!strcmp(name,"cpType"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"cpNum"))
-  {
-    cp->blockSignals(true);
-    cp->setCurrentIndex(static_cast<int>(parameters.getCpIdx()));
-    cp->blockSignals(false);
-  }
-  else if (!strcmp(name,"branchSW"))
-  {
-    branchsw->blockSignals(true);
-    branchsw->setCurrentIndex(static_cast<int>(parameters.getBranchSWIdx()));
-    branchsw->blockSignals(false);
-  }
-  else if (!strcmp(name,"parxType"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"parxNum"))
-  {
-    eqns->blockSignals(true);
-    eqns->setValue(parameters.getParxNumSize());
-    eqns->blockSignals(false);
-  }
-  else if (!strcmp(name,"eqnsType"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"eqnsNum"))
-  {
-    eqns->blockSignals(true);
-    eqns->setValue(parameters.getEqnsNumSize());
-    eqns->blockSignals(false);
-  }
-  else if (!strcmp(name,"varsType"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"varsNum"))
-  {
-    eqns->blockSignals(true);
-    eqns->setValue(parameters.getVarsNumSize());
-    eqns->blockSignals(false);
-  }
-  else if (!strcmp(name,"nInt"))
-  {
-    nint->blockSignals(true);
-    nint->setValue(parameters.getNInt());
-    nint->blockSignals(false);
-  }
-  else if (!strcmp(name,"nDeg"))
-  {
-    ndeg->blockSignals(true);
-    ndeg->setValue(parameters.getNDeg());
-    ndeg->blockSignals(false);
-  }
-  else if (!strcmp(name,"nMul"))
-  {
-    nmul->blockSignals(true);
-    nmul->setValue(parameters.getNMul());
-    nmul->blockSignals(false);
-  }
-  else if (!strcmp(name,"stab"))
-  {
-    stab->blockSignals(true);
-    if (parameters.getStab()) stab->setCheckState(Qt::Checked);
-    else stab->setCheckState(Qt::Unchecked);
-    stab->blockSignals(false);
-  }
-  else if (!strcmp(name,"nInt1"))
-  {
-    nint1->blockSignals(true);
-    nint1->setValue(parameters.getNInt1());
-    nint1->blockSignals(false);
-  }
-  else if (!strcmp(name,"nInt2"))
-  {
-    nint2->blockSignals(true);
-    nint2->setValue(parameters.getNInt2());
-    nint2->blockSignals(false);
-  }
-  else if (!strcmp(name,"nDeg1"))
-  {
-    ndeg1->blockSignals(true);
-    ndeg1->setValue(parameters.getNDeg1());
-    ndeg1->blockSignals(false);
-  }
-  else if (!strcmp(name,"nDeg2"))
-  {
-    ndeg2->blockSignals(true);
-    ndeg2->setValue(parameters.getNDeg2());
-    ndeg2->blockSignals(false);
-  }
-  else if (!strcmp(name,"steps"))
-  {
-    steps->blockSignals(true);
-    steps->setValue(parameters.getSteps());
-    steps->blockSignals(false);
-  }
-  else if (!strcmp(name,"iad"))
-  {
-    iad->blockSignals(true);
-    iad->setValue(parameters.getIad());
-    iad->blockSignals(false);
-  }
-  else if (!strcmp(name,"nPr"))
-  {
-    nPr->blockSignals(true);
-    nPr->setValue(parameters.getNPr());
-    nPr->blockSignals(false);
-  }
-  else if (!strcmp(name,"cpMin"))
-  {
-    cpMin->blockSignals(true);
-    cpMin->setText(QString::number(parameters.getCpMin(), 'g', 12));
-    cpMin->blockSignals(false);
-  }
-  else if (!strcmp(name,"cpMax"))
-  {
-    cpMax->blockSignals(true);
-    cpMax->setText(QString::number(parameters.getCpMax(), 'g', 12));
-    cpMax->blockSignals(false);
-  }
-  else if (!strcmp(name,"ds"))
-  {
-    ds->blockSignals(true);
-    ds->setText(QString::number(parameters.getDs(), 'g', 12));
-    ds->blockSignals(false);
-  }
-  else if (!strcmp(name,"dsMin"))
-  {
-    dsMin->blockSignals(true);
-    dsMin->setText(QString::number(parameters.getDsMin(), 'g', 12));
-    dsMin->blockSignals(false);
-  }
-  else if (!strcmp(name,"dsMax"))
-  {
-    dsMax->blockSignals(true);
-    dsMax->setText(QString::number(parameters.getDsMax(), 'g', 12));
-    dsMax->blockSignals(false);
-  }
-  else if (!strcmp(name,"dsStart"))
-  {
-    dsStart->blockSignals(true);
-    dsStart->setText(QString::number(parameters.getDsStart(), 'g', 12));
-    dsStart->blockSignals(false);
-  }
-  else if (!strcmp(name,"epsC"))
-  {
-    epsC->blockSignals(true);
-    epsC->setText(QString::number(parameters.getEpsC(), 'g', 12));
-    epsC->blockSignals(false);
-  }
-  else if (!strcmp(name,"epsR"))
-  {
-    epsR->blockSignals(true);
-    epsR->setText(QString::number(parameters.getEpsR(), 'g', 12));
-    epsR->blockSignals(false);
-  }
-  else if (!strcmp(name,"epsK"))
-  {
-    epsK->blockSignals(true);
-    epsK->setText(QString::number(parameters.getEpsK(), 'g', 12));
-    epsK->blockSignals(false);
-  }
-  else if (!strcmp(name,"nItC"))
-  {
-    nitC->blockSignals(true);
-    nitC->setValue(parameters.getNItC());
-    nitC->blockSignals(false);
-  }
-  else if (!strcmp(name,"nItR"))
-  {
-    nitR->blockSignals(true);
-    nitR->setValue(parameters.getNItR());
-    nitR->blockSignals(false);
-  }
-  else if (!strcmp(name,"nItK"))
-  {
-    nitK->blockSignals(true);
-    nitK->setValue(parameters.getNItK());
-    nitK->blockSignals(false);
-  }
-  else if (!strcmp(name,"symRe"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"symIm"))
-  {
-    nsym->blockSignals(true);
-    nsym->setValue(parameters.getSymImSize());
-    nsym->blockSignals(false);
-  }
-  else if (!strcmp(name,"nPar"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"nDim"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"nDeri"))
-  {
-    // Don't react!
-  }
-  else if (!strcmp(name,"translationMaps"))
-  {
-    cp->blockSignals(true);
-    int idx = cp->currentIndex();
-    cp->clear();
-    for (unsigned int i = 0; i < parameters.cpSize(); ++i) cp->addItem(parameters.cpString(i).c_str());
-    if (idx < cp->count()) cp->setCurrentIndex(idx);
-    cp->blockSignals(false);
-  }
-  else
-  {
-    P_MESSAGE3("No constant `", name, "' is defined in mainwindow.h.");
-  }
+  cp->setCurrentIndex(parameters.VarToCIndex(parameters.getCp()));
+  cp->blockSignals(false);
 }

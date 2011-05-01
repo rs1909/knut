@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    MainWindow(const QString& appDir, const QString& fileName);
+    MainWindow(const QString& appDir);
         
     static void showException(QWidget* parent, const KNException& ex)
     {
@@ -57,56 +57,16 @@ class MainWindow : public QMainWindow
     // We need to be able to load a file from the outside
     // and also from an event on MacOS
     void loadFile(const QString& fileName);
-
-    // Notifies about the constant change
-    // and fetches the value from parameters
-    void setConstant(const char* name);
-    
     // this loads the file, not just sets the parameter
     // otherwise it would be `setSysName()'
     void setSysNameParameter();
-    void setInputFileParameter(const QString & text) { parameters.nsetInputFile(text.toStdString()); }
-    void setOutputFileParameter(const QString & text) { parameters.nsetOutputFile(text.toStdString()); }
-    void setLabelParameter(int d) { parameters.nsetLabel(d); }
-    void setPointTypeIdxParameter(int d)
-      { parameters.setPointTypeIdx(static_cast<unsigned int>(d)); }
-    void setCpIdxParameter(int d)
-      { parameters.setCpIdx(static_cast<unsigned int>(d)); }
-    void setBranchSWIdxParameter(int d)
-      { parameters.setBranchSWIdx(static_cast<unsigned int>(d)); }
     void setNEqnsParameter(int d)
     {
-      parameters.setParxTypeSize(d);
-      parameters.setParxNumSize(d);
-      parameters.setEqnsTypeSize(d);
-      parameters.setEqnsNumSize(d);
-      parameters.setVarsTypeSize(d);
-      parameters.setVarsNumSize(d);
+      parameters.setParxSize(d);
+      parameters.setEqnsSize(d);
+      parameters.setVarsSize(d);
     }
-    void setNIntParameter(int d) { parameters.nsetNInt(d); }
-    void setNDegParameter(int d) { parameters.nsetNDeg(d); }
-    void setNMulParameter(int d) { parameters.nsetNMul(d); }
-    void setStabParameter(int d) { parameters.nsetStab(d); }
-    void setNInt1Parameter(int d) { parameters.nsetNInt1(d); }
-    void setNInt2Parameter(int d) { parameters.nsetNInt2(d); }
-    void setNDeg1Parameter(int d) { parameters.nsetNDeg1(d); }
-    void setNDeg2Parameter(int d) { parameters.nsetNDeg2(d); }
-    void setStepsParameter(int d) { parameters.nsetSteps(d); }
-    void setDsParameter(const QString & text) { parameters.nsetDs(text.toDouble()); }
-    void setDsMinParameter(const QString & text) { parameters.nsetDsMin(text.toDouble()); }
-    void setDsMaxParameter(const QString & text) { parameters.nsetDsMax(text.toDouble()); }
-    void setDsStartParameter(const QString & text) { parameters.nsetDsStart(text.toDouble()); }
-    void setEpsCParameter(const QString & text) { parameters.nsetEpsC(text.toDouble()); }
-    void setEpsRParameter(const QString & text) { parameters.nsetEpsR(text.toDouble()); }
-    void setEpsKParameter(const QString & text) { parameters.nsetEpsK(text.toDouble()); }
-    void setCpMinParameter(const QString & text) { parameters.nsetCpMin(text.toDouble()); }
-    void setCpMaxParameter(const QString & text) { parameters.nsetCpMax(text.toDouble()); }
     void setNSymParameter(int d) { parameters.setSymReSize(d); parameters.setSymImSize(d); }
-    void setNItCParameter(int d) { parameters.nsetNItC(d); }
-    void setNItRParameter(int d) { parameters.nsetNItR(d); }
-    void setNItKParameter(int d) { parameters.nsetNItK(d); }
-    void setIadParameter(int d) { parameters.nsetIad(d); }
-    void setNPrParameter(int d) { parameters.nsetNPr(d); }    
     
     void externalException(const KNException& ex)
     {
@@ -158,6 +118,7 @@ class MainWindow : public QMainWindow
     void closeInputMatFile(const KNDataFile* dataFile);
     void openOutputMatFile(const QString& fileName);
     void closeOutputMatFile(const KNDataFile* dataFile);
+    void nParChanged(int n);
     
   private:
     inline bool inputAssert(std::istream& is);
@@ -203,6 +164,7 @@ class MainWindow : public QMainWindow
     QSpinBox  *ndeg;
     QSpinBox  *nmul;
     QCheckBox *stab;
+    QLineEdit *curveAngle;
     QSpinBox  *nint1;
     QSpinBox  *nint2;
     QSpinBox  *ndeg1;

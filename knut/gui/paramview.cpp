@@ -25,12 +25,12 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the equation NAME based on its index in the list
-        return QVariant(parameters->findEqnsString(parameters->getEqns(index.column())).c_str());
+        return QVariant(parameters->CIndexToEqnName(parameters->EqnToCIndex(parameters->getEqns(index.column()))));
       }
       else
       {
         // Find the parameter NAME based on its index in the list
-        return QVariant(parameters->findParxString(parameters->getParx(index.column())).c_str());
+        return QVariant(parameters->CIndexToVarName(parameters->VarToCIndex(parameters->getParx(index.column()))));
       }
     }
     if (index.row() == 1)
@@ -38,7 +38,7 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the variable NAME based on its index in the list
-        return QVariant(parameters->findVarsString(parameters->getVars(index.column())).c_str());
+        return QVariant(parameters->CIndexToVarName(parameters->VarToCIndex(parameters->getVars(index.column()))));
       }
     }
   }
@@ -54,17 +54,17 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
       if (parameters->getPointType() == SolUser)
       {
         // set the equation at position index.column() by its index
-        parameters->setEqnsIdx(index.column(), value.toUInt());
+        parameters->setEqns(index.column(), parameters->CIndexToEqn(value.toUInt()));
       } else
       {
         // set the extra parameter at position index.column() by its index
-        parameters->setParxIdx(index.column(), value.toUInt());
+        parameters->setParx(index.column(), parameters->CIndexToVar(value.toUInt()));
       }
     }
     if ((index.row() == 1) && (parameters->getPointType() == SolUser))
     {
       // set the variable at position index.column() by its index
-      parameters->setVarsIdx(index.column(), value.toUInt());
+      parameters->setVars(index.column(), parameters->CIndexToVar(value.toUInt()));
     }
     emit dataChanged(index, index);
     return true;
@@ -105,21 +105,21 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
   {
     if (index.row() == 0)
     {
-      for (unsigned int i = 0; i < parameters->eqnsSize(); ++i) editor->addItem(parameters->eqnsString(i).c_str());
-      editor->setCurrentIndex(parameters->getEqnsIdx(index.column()));
+      for (int i = 0; i < parameters->EqnTableSize(); ++i) editor->addItem(parameters->CIndexToEqnName(i));
+      editor->setCurrentIndex(parameters->EqnToCIndex(parameters->getEqns(index.column())));
     }
     if (index.row() == 1)
     {
-      for (unsigned int i = 0; i < parameters->varsSize(); ++i) editor->addItem(parameters->varsString(i).c_str());
-      editor->setCurrentIndex(parameters->getVarsIdx(index.column()));
+      for (int i = 0; i < parameters->VarTableSize(); ++i) editor->addItem(parameters->CIndexToVarName(i));
+      editor->setCurrentIndex(parameters->VarToCIndex(parameters->getVars(index.column())));
     }
   }
   else
   {
     if (index.row() == 0)
     {
-      for (unsigned int i = 0; i < parameters->parxSize(); ++i) editor->addItem(parameters->parxString(i).c_str());
-      editor->setCurrentIndex(parameters->getParxIdx(index.column()));
+      for (int i = 0; i < parameters->VarTableSize(); ++i) editor->addItem(parameters->CIndexToVarName(i));
+      editor->setCurrentIndex(parameters->VarToCIndex(parameters->getParx(index.column())));
     }
   }
 
@@ -243,7 +243,6 @@ EqnVarTableView::EqnVarTableView(NConstantsQtGui* params, QWidget* parent_) : QT
   setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
   setModel(model);
   resetSize();
-  connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
 }
 
 EqnVarTableView::~EqnVarTableView()
@@ -286,7 +285,6 @@ SYMTableView::SYMTableView(NConstantsQtGui* params, QWidget* parent_) : QTableVi
   setItemDelegate(static_cast<QAbstractItemDelegate*>(delegate));
   setModel(model);
   resetSize();
-  connect(parameters, SIGNAL(constantChangedSignal(const char*)), this, SLOT(setConstant(const char*)));
 }
 
 SYMTableView::~SYMTableView()

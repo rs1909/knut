@@ -43,7 +43,7 @@ struct comp : public std::binary_function<int, int, bool>
 #define NDIM ndim
 #define NPAR npar
 
-#define RHO (NPAR+ParRot)
+#define RHO VarToIndex(VarRot,NPAR)
 
 #include "torcolloc.h"
 #include "pointtype.h"

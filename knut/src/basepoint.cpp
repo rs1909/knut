@@ -21,6 +21,7 @@
 #define NCONTITER (20)
 #define KERNEPS   (1E-10)
 #define NKERNITER (20)
+#define NCONTCURVATURE (0.25*M_PI/2.0)
 
 struct PtTab
 {
@@ -36,7 +37,7 @@ struct PtTab
 BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_)
 {
   PtTab tab;
-  const Var PANGLE = (Var)(VarPAR0 + npar_ + ParAngle);
+  const Var PANGLE = VarAngle; // IndexToVar(VarAngle,npar_);
   switch (Pt)
   {
     case SolODE:
@@ -199,7 +200,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
       PtTab tmp = { SolUser, NOSwitch,  0, 0, { EqnNone }, { VarNone } };
       tab = tmp;
     }
-    P_MESSAGE3("Invalid point type ", Pt, ".");
+    P_MESSAGE3("Invalid point type ", (int)Pt, ".");
     break;
   }
   P_ERROR_X4(tab.nparx == parx.size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.size());
@@ -216,9 +217,9 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
 KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys_, 
  const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
  const int solsize, const int nz_jac_) :
-    var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1),
-    sol(solsize), par(sys_.npar() + ParEnd),
-    solNu(solsize), parNu(sys_.npar() + ParEnd),
+    var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1), npar(sys_.npar()),
+    sol(solsize), par(VarToIndex(VarEnd,sys_.npar())),
+    solNu(solsize), parNu(VarToIndex(VarEnd,sys_.npar())),
     notifyObject(cnt)
 {
   dim1   = solsize;
@@ -229,9 +230,10 @@ KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys_,
   ContIter = NCONTITER;
   KernEps  = KERNEPS;
   KernIter = NKERNITER;
+  ContCurvature = NCONTCURVATURE;
 
-  par(sys_.npar() + ParAngle) = 0.0;
-  par(sys_.npar() + ParRot) = 0.0;
+  par(VarToIndex(VarAngle,sys_.npar())) = 0.0;
+  par(VarToIndex(VarRot,sys_.npar())) = 0.0;
   // DO NOT CALL Construct! It will be called from its children!
 }
 
@@ -284,8 +286,10 @@ void KNAbstractPoint::construct()
 
   for (int i = 1; i < var.size(); i++)
   {
-    P_ERROR_X5((var(i) - VarPAR0 >= 0) && (var(i) - VarPAR0 < par.size()), "Non-existing parameter P", var(i) - VarPAR0, " at position ", i, ".");
-    varMap(i) = var(i) - VarPAR0;
+//    std::cout << "E " << eqn(i) << ", V " << var(i) << "\n";
+    varMap(i) = VarToIndex(var(i),npar);
+//    std::cout << varMap(i) << " " << par.size() <<"\n";
+    P_ERROR_X5((varMap(i) >= 0) && (varMap(i) < par.size()), "Non-existing parameter P", varMap(i), " at position ", i, ".");
   }
   for (int i = 0; i < var.size(); i++) varMapCont(i) = varMap(i);
 
@@ -443,7 +447,7 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     Rnorm = sqrt(basecolloc->integrate(rhs->getV1(), rhs->getV1()) + (rhs->getV3()) * (rhs->getV3()));
     Xnorm = sqrt(basecolloc->integrate(solNu, solNu));
     Dnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()) + (xx->getV3()) * (xx->getV3()));
-    conv = (Dnorm / (1.0 + Xnorm) >= ContEps) || (Rnorm / (1.0 + Xnorm) >= ContEps);
+    conv = (Dnorm / (1.0 + Xnorm) < ContEps) && (Rnorm / (1.0 + Xnorm) < ContEps);
 
 #ifdef DEBUG
     out << "Dnorm: " << Dnorm << " Rnorm: " << Rnorm << " Xnorm: " << Xnorm << "\n";
@@ -452,6 +456,7 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     // updating the tangent if converged or jacstep == false
     if (!jacstep || conv)
     {
+      // tangent
       jac->multiply<false>(*rhs, *xxDotNu, dim3 + 1);
       rhs->getV3()(dim3) -= 1.0;
       jac->solve(*xx, *rhs);
@@ -465,8 +470,8 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     out << '.';
     printStream();
   }
-  while (conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/ && (++it < ContIter));
-  if (!conv)
+  while (!conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/ && (++it < ContIter));
+  if (conv)
   {
 #ifdef DEBUG
     /// checking the tangent and the secant
@@ -494,18 +499,23 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
 #endif
     
     // find out how far was from the original solution
-    double tmax = 0.0;
-    sol += ds*xxDot->getV1();
-    sol -= solNu;
-    double XnormSQ = basecolloc->integrate(sol, sol);
+    xx->getV1() = solNu;
+    xx->getV1() -= sol;
+    xx->getV1() -= ds*xxDot->getV1();
+    double XnormSQ = basecolloc->integrate(xx->getV1(), xx->getV1());
     for (int i = 1; i < varMapCont.size(); i++)
       XnormSQ += pow(par(varMapCont(i)) + ds * xxDot->getV3()(i - 1) - parNu(varMapCont(i)),2);
-    angle = atan(sqrt(XnormSQ)/fabs(ds));
-    // copying back the solution
-    sol = solNu;
-    par = parNu;
-    xxDot->getV1() = xxDotNu->getV1();
-    xxDot->getV3() = xxDotNu->getV3();
+    angle = atan(sqrt(XnormSQ)/fabs(ds))/(M_PI/2.0);
+    if ((angle < ContCurvature) || jacstep) // dont check curvature at the begining
+    {
+      // copying back the solution
+      sol = solNu;
+      par = parNu;
+      xxDot->getV1() = xxDotNu->getV1();
+      xxDot->getV3() = xxDotNu->getV3();
+      // test functional
+      postProcess();
+    }
   }
 //  else
 //  {
@@ -530,7 +540,7 @@ void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
   KNVector fx(persolcolloc->nDim());
 
   sys_.stpar(par);
-  par(NPAR+ParPeriod) = 1.0;
+  par(VarToIndex(VarPeriod,NPAR)) = 1.0;
 
   for (int i = 0; i < persolcolloc->nInt(); i++)
   {
@@ -578,14 +588,14 @@ void KNAbstractPeriodicSolution::findAngle()
 
   if (zRe > 0)
   {
-    par(NPAR + ParAngle) = atan(zIm / zRe);
+    par(VarToIndex(VarAngle,NPAR)) = atan(zIm / zRe);
   }
   else
   {
-    par(NPAR + ParAngle) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
+    par(VarToIndex(VarAngle,NPAR)) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
   }
   out << "    Z = " << zRe << " + I*" << zIm << "\n" 
-         "    Z = " << nrm << " * " << "EXP( " << par(NPAR + ParAngle) / (2*M_PI) << " * I*2Pi )\n";
+         "    Z = " << nrm << " * " << "EXP( " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * I*2Pi )\n";
   printStream();
 }
 
@@ -610,7 +620,7 @@ void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, int n)
   std::ostream& out = outStream();
   data.lock();
   KNVector msh(data.getNInt() + 1);
-  P_ERROR_X1(data.getNPar() == (NPAR + ParEnd), "Wrong number of parameters in the input MAT file.");
+  P_ERROR_X1(data.getNPar() == VarToIndex(VarEnd,NPAR), "Wrong number of parameters in the input MAT file.");
   data.getPar(n, par);
   data.getMul(n, mRe, mIm);
   data.getMesh(n, msh);

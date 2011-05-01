@@ -73,6 +73,34 @@ KNTestFunctional::KNTestFunctional(KNDdeBvpCollocation& col, double Z) :
 KNTestFunctional::~KNTestFunctional()
 {}
 
+double KNTestFunctional::initStep()
+{
+  double one = 1.0;
+  double gg = 0.0;
+  double hh = 0.0;
+  double ggdiff, hhdiff;
+
+  AHAT.multiply<false>(rhs, one, vv, gg);
+  one -= 1.0;
+  AHAT.solve(vvdiff, ggdiff, rhs, one);
+  AHAT.multiply<true>(rhs, one, uu, hh);
+  one -= 1.0;
+  AHAT.solveTr(uudiff, hhdiff, rhs, one);
+  vv -= vvdiff;
+  gg -= ggdiff;
+  uu -= uudiff;
+  hh -= hhdiff;
+  vv /= sqrt(vv * vv);
+  uu /= sqrt(uu * uu);
+  AHAT.getA31(0) = vv;
+  AHAT.getA13(0) = uu;
+  const double diffnorm = std::max<double>(sqrt(vvdiff * vvdiff + ggdiff * ggdiff), sqrt(uudiff * uudiff + hhdiff * hhdiff));
+#ifdef DEBUG
+  std::cout << "dnor " << diffnorm << "\n";
+#endif
+  return diffnorm;
+}
+
 void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   // creating the matrix
@@ -85,69 +113,16 @@ void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const
   AHAT.getA13(0) /= sqrt(AHAT.getA13(0) * AHAT.getA13(0));
   vv = AHAT.getA31(0);
   uu = AHAT.getA13(0);
-  double one = 1.0;
-  double gg = 0.0;
-  double hh = 0.0;
 
-  rhs.clear();
-
-  double ggdiff, hhdiff;
   double diffnorm = 1.0;
   int it = 0;
   do
   {
-    AHAT.multiply<false>(rhs, one, vv, gg);
-    one -= 1.0;
-    AHAT.solve(vvdiff, ggdiff, rhs, one);
-    AHAT.multiply<true>(rhs, one, uu, hh);
-    one -= 1.0;
-    AHAT.solveTr(uudiff, hhdiff, rhs, one);
-    vv -= vvdiff;
-    gg -= ggdiff;
-    uu -= uudiff;
-    hh -= hhdiff;
-    vv /= sqrt(vv * vv);
-    uu /= sqrt(uu * uu);
-    AHAT.getA31(0) = vv;
-    AHAT.getA13(0) = uu;
-    diffnorm = std::max<double>(sqrt(vvdiff * vvdiff + ggdiff * ggdiff), sqrt(uudiff * uudiff + hhdiff * hhdiff));
-#ifdef DEBUG
-    std::cout << "dnor " << diffnorm << "\n";
-    std::cout << "vv " << sqrt(AHAT.getA31(0)*AHAT.getA31(0)) << ", uu " << sqrt(AHAT.getA13(0)*AHAT.getA13(0)) << "\n";
-#endif
+    diffnorm = initStep();
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
   if (diffnorm > kernEps) std::cout << "KNTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
 //  std::cout<<"TF: "<<gg<<", "<<hh<<"\n";
-}
-
-double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
-{
-  double one = 1.0;
-  double gg = 0.0;
-  double hh = 0.0;
-  double ggdiff, hhdiff;
-
-  if (first)
-  {
-    init(col, par, sol);
-    first = false;
-  }
-
-  col.jotf_x(AHAT.getA11(), par, ZZ);
-
-  AHAT.multiply<false>(rhs, one, vv, gg);
-  one -= 1.0;
-  AHAT.solve(vvdiff, ggdiff, rhs, one);
-  AHAT.multiply<true>(rhs, one, uu, hh);
-  one -= 1.0;
-  AHAT.solveTr(uudiff, hhdiff, rhs, one);
-  vv -= vvdiff;
-  gg -= ggdiff;
-  uu -= uudiff;
-  hh -= hhdiff;
-  AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
-  AHAT.getA31(0) = (1.0 / sqrt(vv * vv)) * vv;
 #ifdef DEBUG
   std::ofstream uufile("eigv");
   std::ofstream vvfile("eigvstar");
@@ -171,6 +146,26 @@ double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, co
     }
   }
 #endif
+}
+
+double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
+{
+  double one = 1.0;
+  double gg = 0.0;
+  double hh = 0.0;
+  double ggdiff, hhdiff;
+
+  if (first)
+  {
+    init(col, par, sol);
+    first = false;
+  }
+
+  rhs.clear();
+  col.jotf_x(AHAT.getA11(), par, ZZ);
+  AHAT.solve(vv, gg, rhs, one);
+  AHAT.solveTr(uu, hh, rhs, one);
+  // vvdiff is temporary ...
 //  std::cout<<"TF: "<<gg<<", "<<hh;
 //  if( gg > 0.0 ) std::cout<<"\t+++\n";
 //  else           std::cout<<"\t---\n";
@@ -191,7 +186,7 @@ void   KNTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, const
   col.interpolate(vvData, vv);
   col.jotf_x_x(A_x, par, vvData, ZZ);
   func = !A_x * uu; // positive, because the test function is not negated in the Jacobian
-//  func *= 100.0;
+//  func *= -1;
 }
 
 void   KNTestFunctional::kernel(KNVector& phi)
@@ -212,14 +207,43 @@ KNComplexTestFunctional::KNComplexTestFunctional(KNDdeBvpCollocation& col) :
     one(2),
     uu(2*NDIM*(NDEG*NINT + 1)),
     vv(2*NDIM*(NDEG*NINT + 1)),
+    uudiff(2*NDIM*(NDEG*NINT + 1)),
+    vvdiff(2*NDIM*(NDEG*NINT + 1)),
     gg(2),
     hh(2),
+    ggdiff(2),
+    hhdiff(2),
     vvDataRe(NDIM, NTAU + 1, NDEG*NINT),
     vvDataIm(NDIM, NTAU + 1, NDEG*NINT)
 {}
 
 KNComplexTestFunctional::~KNComplexTestFunctional()
 {}
+
+double KNComplexTestFunctional::initStep()
+{
+  AHAT.multiply<false>(2, rhs, one, vv, gg);
+  one(0) -= 1.0;
+  AHAT.solve(2, vvdiff, ggdiff, rhs, one);
+  AHAT.multiply<true>(2, rhs, one, uu, hh);
+  one(0) -= 1.0;
+  AHAT.solveTr(2, uudiff, hhdiff, rhs, one);
+  vv -= vvdiff;
+  gg -= ggdiff;
+  uu -= uudiff;
+  hh -= hhdiff;
+  vv /= sqrt(vv * vv);
+  uu /= sqrt(uu * uu);
+  AHAT.getA31(0) = vv;
+  AHAT.getA13(0) = uu;
+  conjugate(AHAT.getA13(1), AHAT.getA13(0));
+  conjugate(AHAT.getA31(1), AHAT.getA31(0));
+  const double diffnorm = std::max<double>(sqrt(uudiff * uudiff), sqrt(vvdiff * vvdiff));
+#ifdef DEBUG
+  std::cout << "dnorCX " << diffnorm << "\n";
+#endif
+  return diffnorm;
+}
 
 void KNComplexTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/,
                          double Re, double Im)
@@ -237,28 +261,11 @@ void KNComplexTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par
   conjugate(AHAT.getA31(1), AHAT.getA31(0));
   conjugate(AHAT.getA13(1), AHAT.getA13(0));
 
-  rhs.clear();
-  one(0) = 1.0;
-  one(1) = 0.0;
-
-  KNVector vdiff(vv), udiff(uu);
   double diffnorm = 1.0;
   int it = 0;
   do
   {
-    AHAT.solve(2, vv, gg, rhs, one);
-    AHAT.solveTr(2, uu, hh, rhs, one);
-    udiff = AHAT.getA13(0);
-    udiff -= uu;
-    vdiff = AHAT.getA31(0);
-    vdiff -= vv;
-    diffnorm = std::max<double>(sqrt(udiff * udiff), sqrt(vdiff * vdiff));
-//   std::cout<<"std::max<double>(udiff, vdiff) "<<diffnorm<<"\n";
-    AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
-    AHAT.getA31(0) = (1.0 / sqrt(vv * vv)) * vv;
-
-    conjugate(AHAT.getA13(1), AHAT.getA13(0));
-    conjugate(AHAT.getA31(1), AHAT.getA31(0));
+    diffnorm = initStep();
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
   if (diffnorm > kernEps) std::cout << "KNComplexTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
@@ -276,15 +283,13 @@ void KNComplexTestFunctional::funct(double& f1, double& f2,
 
   ZRe = Re;
   ZIm = Im;
+  one(0) = 1.0; one(1) = 0.0;
+  rhs.clear();
   col.jotf_x(AHAT.getA11(), par, Re, Im);
   AHAT.solve(2, vv, gg, rhs, one);
   AHAT.solveTr(2, uu, hh, rhs, one);
-  AHAT.getA13(0) = (1.0 / sqrt(uu * uu)) * uu;
-  AHAT.getA31(0) = (1.0 / sqrt(vv * vv)) * vv;
-  conjugate(AHAT.getA13(1), AHAT.getA13(0));
-  conjugate(AHAT.getA31(1), AHAT.getA31(0));
   // for later use
-  col.interpolateComplex(vvDataRe, vvDataIm, AHAT.getA31(0)/*vv*/);
+  col.interpolateComplex(vvDataRe, vvDataIm, vv);
 
   f1 = gg(0);
   f2 = gg(1);
@@ -300,16 +305,19 @@ void KNComplexTestFunctional::funct_p(double& f1, double& f2,
                             int alpha)
 {
   col.jotf_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
-  f1 = (AHAT.getA13(0)/*uu*/ * A_p);
-  f2 = (AHAT.getA13(1)/*uu^conj*/ * A_p);
+  conjugate(uudiff, uu);
+  f1 = (uu * A_p);
+  f2 = (uudiff/*uu^conj*/ * A_p);
 }
 
 void KNComplexTestFunctional::funct_z(double& f1, double& f2,
                             KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_z(A_p, par, AHAT.getA31(0), vvDataRe, vvDataIm, ZRe, ZIm);
-  const double dzre = (AHAT.getA13(0)/*uu*/ * A_p);
-  const double dzim = (AHAT.getA13(1)/*uu^conj*/ * A_p);
+  
+  conjugate(uudiff, uu);
+  const double dzre = (uu * A_p);
+  const double dzim = (uudiff/*uu^conj*/ * A_p);
   f1 = (-dzim * ZRe - dzre * ZIm);
   f2 = (dzre * ZRe - dzim * ZIm);
 }
@@ -318,8 +326,9 @@ void KNComplexTestFunctional::funct_x(KNVector& func1, KNVector& func2,
                             KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {
   col.jotf_x_x(A_x, par, vvDataRe, vvDataIm, ZRe, ZIm);
-  func1 = !A_x * AHAT.getA13(0); /*uu*/
-  func2 = !A_x * AHAT.getA13(1); /*uu^conj*/
+  conjugate(uudiff, uu);
+  func1 = !A_x * uu; /*uu*/
+  func2 = !A_x * uudiff; /*uu^conj*/
 }
 
 void KNComplexTestFunctional::kernel(KNVector& Re, KNVector& Im, double& alpha)
@@ -345,9 +354,9 @@ double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, K
 {
   // computing the period of the new branch
   double period = par(0);
-  double angle = par(NPAR + ParAngle);
-  if (par(NPAR + ParAngle) < 0) angle *= -1.0;
-  if (par(NPAR + ParAngle) < M_PI) period *= 2 * M_PI / angle;
+  double angle = par(VarToIndex(VarAngle,NPAR));
+  if (par(VarToIndex(VarAngle,NPAR)) < 0) angle *= -1.0;
+  if (par(VarToIndex(VarAngle,NPAR)) < M_PI) period *= 2 * M_PI / angle;
   else period *= 2 * M_PI / (angle - M_PI);
 
   double norm1 = 0.0;
@@ -421,6 +430,11 @@ KNLpAutTestFunctional::KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z)
 
 KNLpAutTestFunctional::~KNLpAutTestFunctional()
 {}
+
+double KNLpAutTestFunctional::initStep()
+{
+  return 0.0;
+}
 
 void KNLpAutTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
@@ -589,6 +603,11 @@ KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNA
 KNLpAutRotTestFunctional::~KNLpAutRotTestFunctional()
 {}
 
+double KNLpAutRotTestFunctional::initStep()
+{
+  return 0.0;
+}
+
 void KNLpAutRotTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol)
 {
   // creating the matrix
@@ -695,7 +714,7 @@ double KNLpAutRotTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector&
   col.interpolate(phiData, phi);
   col.interpolate(LAMData, LAM);
   col.interpolate(vv3Data, vv3);
-//  std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
+ std::cout<<" TF1: "<<gg3(0)<<", "<<hh3(0)<<" TF2: "<<gg3(1)<<", "<<hh3(1)<<" TF3: "<<gg3(2)<<", "<<hh3(2)<<"\n";
 
 //   if (gg3(2) > 0.0) std::cout << "\t+++\n";
 //   else               std::cout << "\t---\n";
@@ -723,7 +742,8 @@ double KNLpAutRotTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVecto
   col.jotf_mB_p(mB_p, par, LAMData, ZZ, alpha);
   gg_p += gg3(1) * (uu3 * mB_p);
 
-//  if( alpha==0 ) gg_p *= 22.0;
+//  if( alpha==0 ) 
+//   gg_p *= 22.0;
 //   std::cout << "\nGP " << alpha << ":" << gg_p;
   return gg_p;
 }
@@ -755,6 +775,7 @@ void   KNLpAutRotTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& co
   rotbord<true>(DxLAM, col, vv3, Re, Im);
   col.star(temp, DxLAM);
   func += hh3(1) * temp;
+//   func *= 2;
 }
 
 void   KNLpAutRotTestFunctional::kernel(KNVector& phi)

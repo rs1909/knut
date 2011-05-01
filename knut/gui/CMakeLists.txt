@@ -35,18 +35,20 @@ IF(APPLE)
     paramview.cpp paramview.h
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
-    constqtgui.h
+    constqtgui.cpp constqtgui.h
     compthread.h compthread.cpp
     screendialog.h
     macopenevent.h
     ${MOC_SRCS} ${ICONS} MacOS/knut.icns
-    ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h)
+    ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
+    ${KNUT_SOURCE_DIR}/src/knerror.h)
 
   SET_SOURCE_FILES_PROPERTIES(
     MacOS/knut.icns
     PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
   SET_SOURCE_FILES_PROPERTIES(
     ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
+    ${KNUT_SOURCE_DIR}/src/knerror.h
     PROPERTIES MACOSX_PACKAGE_LOCATION Headers)
 
   TARGET_LINK_LIBRARIES( Knut ${QT_LIBS} 
@@ -82,7 +84,7 @@ IF(NOT APPLE)
     paramview.cpp paramview.h
     plotdata.cpp plotdata.h 
     plotwindow.cpp plotwindow.h
-    constqtgui.h
+    constqtgui.cpp constqtgui.h
     compthread.h compthread.cpp
     screendialog.h
     ${MOC_SRCS} ${ICONS} )

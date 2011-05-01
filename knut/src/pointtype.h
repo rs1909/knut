@@ -10,37 +10,6 @@
 #ifndef POINTTYPE_H
 #define POINTTYPE_H
 
-// this applies to torpoint.h too...
-
-enum Eqn {
-  EqnNone           = 0,
-  EqnSol            = 1,
-  EqnODESol         = 2,
-  EqnPhase          = 24,
-  EqnPhaseRot       = 25,
-  EqnTORSol         = 32,
-  EqnTORPhase0      = 40,
-  EqnTORPhase1      = 41,
-  EqnTFLP           = 64,
-  EqnTFPD           = 65,
-  EqnTFLPAUT        = 66,
-  EqnTFLPAUTROT     = 67,
-  EqnTFCPLX_RE      = 68,
-  EqnTFCPLX_IM      = 69
-};
-
-// this applies to torpoint.h too...
-
-enum Var {
-  VarNone      = 0,
-  VarSol       = 1,
-  VarODESol    = 2,
-  VarTORSol    = 32,
-  VarPAR0      = 64
-};
-
-// this applies to torpoint.h too...
-
 enum PtType {
   SolUser      = -1,
   /// ODE
@@ -68,9 +37,35 @@ enum PtType {
   SolTFAUTHBSW = 56
 };
 
-// internal parameters, placed after the defined parameters
+enum Eqn {
+  EqnNone           = 0,
+  EqnSol            = 1,
+  EqnODESol         = 2,
+  EqnPhase          = 24,
+  EqnPhaseRot       = 25,
+  EqnTORSol         = 32,
+  EqnTORPhase0      = 40,
+  EqnTORPhase1      = 41,
+  EqnTFLP           = 64,
+  EqnTFPD           = 65,
+  EqnTFLPAUT        = 66,
+  EqnTFLPAUTROT     = 67,
+  EqnTFCPLX_RE      = 68,
+  EqnTFCPLX_IM      = 69
+};
 
-enum Par { ParAngle = 0, ParPeriod = 1, ParRot = 2, ParEnd };
+enum Var {
+  VarNone      = 0,
+  VarSol       = 1,
+  VarODESol    = 2,
+  VarTORSol    = 32,
+  VarPAR0      = 100,
+  VarInternal  = 4000,
+  VarAngle     = 4000,
+  VarPeriod    = 4001,
+  VarRot       = 4002,
+  VarEnd
+};
 
 enum BranchSW
 {
@@ -93,6 +88,25 @@ enum BifType
   BifEndPoint,
   BifNoConvergence
 };
+
+template<typename TP> struct TypeTuple
+{
+  int          index;
+  TP           type;
+  const char * name;
+};
+
+inline int VarToIndex(Var v, int npar)
+{
+  if (v < VarInternal) return v - VarPAR0;
+  else return npar + (v - VarInternal);
+}
+
+inline Var IndexToVar(int idx, int npar)
+{
+  if (idx < npar) return static_cast<Var>(VarPAR0 + idx);
+  else return static_cast<Var>(VarInternal + (idx - npar));
+}
 
 inline char parType(int npar, int p)
 {

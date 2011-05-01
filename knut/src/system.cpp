@@ -374,8 +374,8 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
     P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
   	if (!infin && (fds[0].revents != 0))
   	{
-      ssize_t obytes = write (input, cxxbuf, cxxlen-wbytes);
-//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
+      ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
+     std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
       if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
       else wbytes += obytes;
 	  if (wbytes == cxxlen) 
@@ -433,6 +433,8 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   {
     if (WEXITSTATUS(status) != 0) P_MESSAGE8("Error code is ", WEXITSTATUS(status), " and the error output of the compile command '",
       cmdline, "' is\n", err_str.c_str(), "\nand the standard output is\n", out_str.c_str());
+    std::ofstream cxxfile("error.cxx");
+    cxxfile << cxxbuf;
   } else
   {
     P_MESSAGE1("The compiler was unexpectedly terminated.");
@@ -565,7 +567,7 @@ KNSystem::KNSystem(const std::string& shobj, int usederi)
   f2.init(ndim()), f_eps2.init(ndim());
   xx_eps.init(ndim(), 2 * ntau() + 1);
   xx_eps2.init(ndim(), 2 * ntau() + 1);
-  par_eps.init(npar() + ParEnd);
+  par_eps.init(VarToIndex(VarEnd,npar()));
   dxx2.init(ndim(), ndim()), dxx_eps2.init(ndim(), ndim());
   vt.init(ndim());
 
@@ -698,8 +700,7 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
     for (int j = 0; j < n; j++)
     {
       for (int p = 0; p < n; p++) 
-        for (int q = 0; q < m; q++) 
-          for (int idx=0; idx < time.size(); ++idx) p_xx_eps(p,q,idx) = p_xx(p,q,idx);
+          for (int idx=0; idx < time.size(); ++idx) p_xx_eps(p,vx[0],idx) = p_xx(p,vx[0],idx);
       for (int idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x1 + rel_eps_x1 * fabs(p_xx(j, vx[0],idx));

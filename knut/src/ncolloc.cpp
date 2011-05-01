@@ -1705,7 +1705,7 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh(KNVector& V, const KNVector& 
 #ifdef DEBUG
   count_CharJac_MSHphi++;
 #endif
-  sys->p_rhs(p_fxMSH, timeMSH, solData, par, 0);
+  sys->p_rhs(p_fxMSH, timeMSH, solMSHData, par, 0);
 
   for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
   {
@@ -1730,7 +1730,7 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
       nx = 1;
       np = 0;
       vx = r;
-      sys->p_deri(p_dfxMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       for (int p = 0; p < NDIM; p++)
       {
@@ -1738,7 +1738,7 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
         {
           for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
           {
-            V(p + NDIM*idx) += ((p_dtauMSH(r,idx) - p_tauMSH(r,idx) / par(0)) / par(0)) * p_dfxMSH(p, q, idx) * solData(q, NTAU + r, idx);
+            V(p + NDIM*idx) += ((p_dtauMSH(r,idx) - p_tauMSH(r,idx) / par(0)) / par(0)) * p_dfxMSH(p, q, idx) * solMSHData(q, NTAU + r, idx);
           }
         }
       }
@@ -1753,11 +1753,11 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
       nx = 0, np = 1;
       vp = alpha;
 
-      sys->p_deri(p_dfpMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfpMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       nx = 1, np = 0;
       vx = r;
-      sys->p_deri(p_dfxMSH, timeMSH, solData, par, 0, nx, &vx, np, &vp, p_dummy);
+      sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       for (int k = 0; k < NDIM; k++)
       {
@@ -1772,7 +1772,7 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
         {
           for (int idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
           {
-            V(p + NDIM*idx) += (p_dtauMSH(r,idx) / par(0)) * p_dfxMSH(p, q, idx) * solData(q, NTAU + r, idx);
+            V(p + NDIM*idx) += (p_dtauMSH(r,idx) / par(0)) * p_dfxMSH(p, q, idx) * solMSHData(q, NTAU + r, idx);
           }
         }
       }

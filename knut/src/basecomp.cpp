@@ -34,7 +34,7 @@ void KNAbstractContinuation::run(const char* branchFile)
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
 
-  KNVector par(sys->npar() + ParEnd);
+  KNVector par(VarToIndex(VarEnd,sys->npar()));
   std::ofstream ff;
   if (branchFile)
   {
@@ -104,6 +104,7 @@ void KNAbstractContinuation::run(const char* branchFile)
       pt.setRefEps(params->getEpsR());
       pt.setContEps(params->getEpsC());
       pt.setKernEps(params->getEpsK());
+      pt.setContCurvature(params->getCAngle());
       pt.setCont(params->getCp() - VarPAR0);
   
       // setting the symmetric components
@@ -140,7 +141,7 @@ void KNAbstractContinuation::run(const char* branchFile)
     {
       KNAbstractPeriodicSolution& pt = *pt_ptr;
       setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
-                           params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
+                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
                            params->getNInt(), params->getNDeg(), params->getNMul()));
 
       screenout   << "\n---     Starting the continuation      ---\n";
@@ -197,6 +198,21 @@ void KNAbstractContinuation::run(const char* branchFile)
         //
         double angle;
         const int itc = pt.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
+        // step size adaptation
+        double dsmul1 = 1.0, dsmul2 = 1.0;
+        if      (itc < 2) dsmul1 = 2.0;         // 2
+        else if (itc < 3) dsmul1 = sqrt(2);     // 1
+        else if (itc < 4) dsmul1 = 1.0;         // 0
+        else if (itc < 5) dsmul1 = 1.0/sqrt(2); // -1
+        else              dsmul1 = 1.0/2.0;     // -2
+        const double ATOL = params->getCAngle();
+        if      (angle < ATOL/4) dsmul2 = 2.0;
+        else if (angle < ATOL/3) dsmul2 = sqrt(2);
+        else if (angle < ATOL/2) dsmul2 = 1.0;
+        else if (angle < ATOL)   dsmul2 = 1.0/sqrt(2);
+        else                     dsmul2 = 1.0/2.0;
+        const double dsmul = fmin(dsmul1,dsmul2);
+        // whether we need to stop
         if (stopFlag)
         {
           deleteData();
@@ -228,6 +244,16 @@ void KNAbstractContinuation::run(const char* branchFile)
             screenout << "\n";
           }
           parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, itc);
+          if ( (fabs(ds)*dsmul < params->getDsMin()) )
+          {
+            screenout << "--";
+          } else if ( (fabs(ds)*dsmul > params->getDsMax()) )
+          {
+            screenout << "++";
+          } else
+          {
+            screenout << " " << std::showpos << static_cast<int>(round(2*log(dsmul)/log(2))) << std::noshowpos;
+          }
           printStream();
           ++printedln;
         }
@@ -258,20 +284,6 @@ void KNAbstractContinuation::run(const char* branchFile)
           ff << "\t" << norm << "\t" << pt.NormMX() << "\t" << ustab << "\n";
           ff.flush();
         }
-        // step size adaptation
-        double dsmul1 = 1.0, dsmul2 = 1.0;
-        if      (itc < 2) dsmul1 = 2.0;
-        else if (itc < 3) dsmul1 = sqrt(2);
-        else if (itc < 4) dsmul1 = 1.0;
-        else if (itc < 5) dsmul1 = 1.0/sqrt(2);
-        else              dsmul1 = 1.0/2.0;
-        const double ATOL = 1.0/32;
-        if      (angle < M_PI/4*ATOL) dsmul2 = 2.0;
-        else if (angle < M_PI/3*ATOL) dsmul2 = sqrt(2);
-        else if (angle < M_PI/2*ATOL) dsmul2 = 1.0;
-        else if (angle < M_PI*ATOL) dsmul2 = 1.0/sqrt(2);
-        else                      dsmul2 = 1.0/2.0;
-        const double dsmul = fmin(dsmul1,dsmul2);
         if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
         else if ((itc >= params->getNItC()) && (fabs(ds)*dsmul < params->getDsMin()))
         {
@@ -295,7 +307,7 @@ void KNAbstractContinuation::run(const char* branchFile)
     else
     {
       setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
-                           params->getSteps(), sys->ndim(), sys->npar() + ParEnd,
+                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
                            params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
 
       screenout << "ENTERING THE TORUS CODE!\n";

@@ -135,10 +135,10 @@ class PlotItem
 {
   public:
     PlotItem(const KNDataFile* mat, PlotDataType type,
-             PlotXVariable x, PlotYVariable y, int pt, int dim)
+             PlotXVariable xv, PlotYVariable yv, int pt, int dim)
      : dataType(type),
      sourcePath(QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath()),
-     varX(x), varY(y), point(pt), dimension(dim) {}
+     varX(xv), varY(yv), point(pt), dimension(dim) {}
     bool isFrom(const KNDataFile* mat) { return sourcePath == QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath(); }
     bool isUnitCircle() { return (varX == XRealMultiplier) && (varY == YImagMultiplier); } 
     PlotItemUnion data;

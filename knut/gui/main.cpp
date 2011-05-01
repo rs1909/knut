@@ -110,14 +110,13 @@ int main(int argc, char *argv[])
 #ifdef Q_WS_WIN
     app.setFont(QFont("Helvetica", 9));
 #endif
-    MainWindow mainWin(app.applicationDirPath(), constFile);
-
+    MainWindow mainWin(app.applicationDirPath());
+    if (!constFile.isEmpty()) { mainWin.loadFile(constFile); /*mainWin.loadFile(constFile);*/ }
 #ifdef Q_WS_MAC
     FileOpenEvent* openEvent = new FileOpenEvent(&app);
     app.installEventFilter(openEvent);
     QObject::connect(openEvent, SIGNAL(open(const QString&)), &mainWin, SLOT(loadFile(const QString&)));
 #endif
-
     qRegisterMetaType<KNException>("KNException");
     qRegisterMetaType<std::string>("std::string");
     qRegisterMetaType<std::string>("std::auto_ptr<const KNDataFile>");

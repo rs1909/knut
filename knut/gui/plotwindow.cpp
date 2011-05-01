@@ -53,7 +53,7 @@ void plotWindow::init(Var cp)
 {
   emit openFile(dataFileInfo.absoluteFilePath());
   bool found = false;
-  for (int i=0; i < xvarMap.size(); ++i)
+  for (unsigned int i=0; i < xvarMap.size(); ++i)
   {
        if ((xvarMap[i].value-XParameter0) == (cp-VarPAR0))
        {

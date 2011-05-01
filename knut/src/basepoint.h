@@ -85,6 +85,10 @@ class KNAbstractPoint
     {
       KernEps = d;
     }
+    inline void    setContCurvature(double d)
+    {
+      ContCurvature = d;
+    }
 
     inline double  norm()
     {
@@ -103,6 +107,7 @@ class KNAbstractPoint
 
     // should be moved to KNAbstractCollocation? Does it use any internal data?
     // this is a wrapper to collocation routines, so it can be here...
+    // BEGIN --- TO REIMPLEMENT
     virtual void jacobian(
       KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
       KNVector& parPrev, KNVector& par,      // parameters
@@ -110,6 +115,8 @@ class KNAbstractPoint
       KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     ) = 0;
+    virtual void  postProcess() = 0;
+    // END --- TO REIMPLEMENT
     inline void   update(KNBlockVector& X);                            // sol,   par              += X
     inline void   updateWithCp(KNBlockVector& X);                        // solNu, parNu, parNu(cp) += X
     inline void   updateWithAdaptation(KNBlockVector& X);                        // sol,   par,   par(cp)   += X
@@ -121,6 +128,7 @@ class KNAbstractPoint
     int          RefIter;
     int          ContIter;
     int          KernIter;
+    double       ContCurvature;
 
     // variables and equations
     KNArray1D<Var> var;
@@ -131,6 +139,7 @@ class KNAbstractPoint
     int          dim1;
     int          dim3;
     int          nz_jac;
+    const int    npar;
 
     // solutions
     KNVector       sol;
