@@ -14,7 +14,9 @@
 
 class KNVector;
 
-int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns);
-BifType bifurcationType(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns);
+int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns, int pt);
+BifType bifurcationType(const KNVector& mulRe0, const KNVector& mulIm0, 
+                        const KNVector& mulRe1, const KNVector& mulIm1,
+                        const int lp, const int pd, const int ns, int pt0, int pt1);
 
 #endif

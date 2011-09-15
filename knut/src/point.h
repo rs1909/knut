@@ -138,6 +138,7 @@ inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const 
   if (tp == BifLP) out << std::left << std::setfill(' ') << std::setw(2) << "LP" << ' '; // 2 at the end
   else if (tp == BifPD) out << std::left << std::setfill(' ') << std::setw(2) << "PD" << ' '; // 2 at the end
   else if (tp == BifNS) out << std::left << std::setfill(' ') << std::setw(2) << "NS" << ' '; // 2 at the end
+  else if (tp == BifUN) out << std::left << std::setfill(' ') << std::setw(2) << "UN" << ' '; // 2 at the end
   else if (tp == BifMax) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
   else if (tp == BifEndPoint) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
   else if (tp == BifNoConvergence) out << std::left << std::setfill(' ') << std::setw(2) << "MX" << ' '; // 2 at the end

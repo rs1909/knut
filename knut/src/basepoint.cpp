@@ -253,11 +253,6 @@ void KNAbstractPoint::printStream()
   if (notifyObject) notifyObject->printStream();
 }
 
-void KNAbstractPoint::printClearLastLine()
-{
-  if (notifyObject) notifyObject->clearLastLine();
-}
-
 // public
 // remember that this ereases the state variables except sol, qq, par xxDot
 void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_)
@@ -599,7 +594,7 @@ void KNAbstractPeriodicSolution::findAngle()
   printStream();
 }
 
-void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
+void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, int n)
 {
 //  std::cout << "DAT " << &data << "\n";
   data.lock();
@@ -607,6 +602,7 @@ void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, int n)
   data.setNTrivMul(1, nTrivMulPD);
   data.setNTrivMul(2, nTrivMulNS);
   //
+  data.setMagic(n, bif);
   data.setPar(n, par);
   data.setMul(n, mRe, mIm);
   data.setElem(n, persolcolloc->getElem());

@@ -442,16 +442,14 @@ void KNDdePeriodicSolution::Stability(bool init)
   {
   	if (jacStab->nmat() != nmat)
   	{
-  	  printClearLastLine();
-      out << "NMAT has changed from " << jacStab->nmat() << " to " << nmat << ".\n";
+      out << "(NMAT:" << jacStab->nmat() << "->" << nmat << ")";
       printStream();
   	  delete jacStab;
   	  jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
   	}
   } else
   {
-  	printClearLastLine();
-  	out << "New stability matrix with " << nmat << " B matrices.\n";
+  	out << "(NMAT=" << nmat << ")";
   	printStream();
   	jacStab = new KNSparseMatrixPolynomial(nmat, NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1));
   }

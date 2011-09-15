@@ -42,7 +42,7 @@ class KNDataFile
     // Constructor for opening an existing file
     KNDataFile(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
-    ~KNDataFile();
+    virtual ~KNDataFile();
     
     virtual void lock() const;
     virtual void unlock() const;
@@ -67,7 +67,14 @@ class KNDataFile
     }
     void   getBlanket(int n, KNVector& blanket);
     void   setBlanket(int n, const KNVector& blanket);
-
+    void   setMagic(int n, int32_t magic)
+    {
+      elem(magic_offset, 0, n) = static_cast<double>(magic);
+    }
+    int32_t getMagic(int n) const
+    {
+      return static_cast<int32_t>(elem(magic_offset, 0, n));
+    }
     void   getPar(int n, KNVector& par) const;
     double getPar(int n, int j) const
     {
@@ -166,6 +173,7 @@ class KNDataFile
     int     getUnstableMultipliers(int n) const;
     int     getNextBifurcation(int n, bool* stab = 0) const;
     BifType getBifurcationType(int n) const;
+    int  findType(int32_t type, int n) const; // to find the n-th point of type; returns index
     bool isTorus() const
     {
       return torus;
@@ -210,14 +218,14 @@ class KNDataFile
         return (size_t)ncols;
       }
     };
-    static inline size_t createMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols);
-    static inline size_t createComplexMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols);
+    static inline size_t createMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols, int32_t type = 0);
+    static inline size_t createComplexMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols, int32_t type = 0);
     static inline void writeMatrixHeader(void* address, size_t offset, KNDataFile::header* hd, const char* name);
 
-    off_t findMatrix(const char* name, KNDataFile::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="");
+    off_t findMatrix(const char* name, KNDataFile::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="", int32_t type=0);
     void openReadOnly(const std::string& fileName);
 
-    void resizeMatrix(const char* name, int newcol);
+    void resizeMatrix(const char* name, int newcol, int32_t type=0);
     void condenseData();
 
     struct header *getHeader(size_t offset)
@@ -232,7 +240,7 @@ class KNDataFile
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    const double& elem(size_t offset, size_t row, size_t col) const
+    const double elem(size_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
@@ -293,6 +301,9 @@ class KNDataFile
 
     off_t  ntrivmul_offset;
     header ntrivmul_header;
+    
+    off_t  magic_offset;
+    header magic_header;
 
     off_t  ndim_offset;     //T
     header ndim_header;

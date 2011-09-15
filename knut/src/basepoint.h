@@ -53,9 +53,9 @@ class KNAbstractPoint
       return par;
     }
 
-    inline void    setCont(int p)
+    inline void    setCont(Var p)
     {
-      varMapCont(varMap.size()) = p;
+      varMapCont(varMap.size()) = VarToIndex(p, npar);
     }
     inline int     getCont()
     {
@@ -98,7 +98,6 @@ class KNAbstractPoint
     }
     std::ostream& outStream();
     void printStream();
-    void printClearLastLine();
     void setNotifyObject(KNAbstractContinuation* cnt);
 /// END BASE CLASS
   protected:
@@ -191,7 +190,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     KNAbstractPeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
       const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
       const int solsize, const int nz_jac_, const int nmul) 
-      : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), 
+      : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), mRePrev(nmul), mImPrev(nmul),
         nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
     virtual ~KNAbstractPeriodicSolution() {}
     
@@ -224,8 +223,12 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       }
     }
 
-    int     UStab() { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
-    BifType  testBif() { return bifurcationType(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS); }
+    int     UStab(int pt = 0) { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt); }
+    BifType testBif(int pt = 0)
+    {
+      return bifurcationType(mRePrev, mImPrev, mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt-1, pt);
+    }
+    void    storeMultiplier() { mRePrev = mRe; mImPrev = mIm; }
     void    clearStability() { mRe.clear(); mIm.clear(); }
     static inline double  Amplitude(const KNVector& sol, int ndim, int ndeg, int nint)
     {
@@ -255,7 +258,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     }
     
     void BinaryRead(KNDataFile& data, int n);
-    void BinaryWrite(KNDataFile& data, int n);
+    void BinaryWrite(KNDataFile& data, BifType bif, int n);
 
   protected:
 //    virtual void construct();
@@ -265,6 +268,9 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     // multipliers
     KNVector       mRe;
     KNVector       mIm;
+    // previous multipliers
+    KNVector       mRePrev;
+    KNVector       mImPrev;
     // number of trivial multipliers
     int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
 
