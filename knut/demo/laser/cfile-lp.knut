@@ -1,73 +1,51 @@
-<!DOCTYPE cfile>
+<?xml version="cfile 1.0" encoding="utf-8"?>
 <knut>
  <input>out-psol.mat</input>
  <output>out-lp.mat</output>
- <sysname>sys-laser.so</sysname>
+ <sysname>laser.vf.so</sysname>
+ <fromtype>NX</fromtype>
  <label>138</label>
- <pointtype>-1</pointtype>
- <cptype>P</cptype>
- <cpnum>0</cpnum>
- <switch>0</switch>
+ <pointtype>USER</pointtype>
+ <cp>T</cp>
+ <switch>NX</switch>
  <neqns>4</neqns>
  <eqns>
-  <eqn>
-   <type>E</type>
-   <num>1</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>24</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>25</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>67</num>
-  </eqn>
+  <eqn>DDE_LC</eqn>
+  <eqn>PHASE</eqn>
+  <eqn>PHASE_ROT</eqn>
+  <eqn>DDE_AUT_ROT_TF_LP</eqn>
  </eqns>
  <vars>
-  <var>
-   <type>S</type>
-   <num>1</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>6</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>11</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>2</num>
-  </var>
+  <var>DDE_LC</var>
+  <var>sigma</var>
+  <var>bb</var>
+  <var>eta</var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>
  <nmul>20</nmul>
  <stab>0</stab>
- <nmat>22</nmat>
+ <curvature>2.500000000000000E-01</curvature>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>500</steps>
  <iad>3</iad>
- <cpmin>-100</cpmin>
- <cpmax>100</cpmax>
- <ds>0.0001</ds>
- <dsmin>1e-06</dsmin>
- <dsmax>0.01</dsmax>
- <dsstart>0.0001</dsstart>
- <epsc>1e-05</epsc>
- <epsr>1e-05</epsr>
- <epsk>1e-07</epsk>
+ <npr>10</npr>
+ <cpmin>-1.000000000000000E+02</cpmin>
+ <cpmax>1.000000000000000E+02</cpmax>
+ <ds>1.000000000000000E-04</ds>
+ <dsmin>1.000000000000000E-06</dsmin>
+ <dsmax>1.000000000000000E-02</dsmax>
+ <dsstart>1.000000000000000E-04</dsstart>
+ <epsc>1.000000000000000E-05</epsc>
+ <epsr>1.000000000000000E-05</epsr>
+ <epsk>1.000000000000000E-07</epsk>
  <nitc>24</nitc>
  <nitr>24</nitr>
  <nitk>24</nitk>
+ <nderi>8</nderi>
  <nsym>2</nsym>
  <sym>
   <dim>

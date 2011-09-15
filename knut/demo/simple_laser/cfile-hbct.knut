@@ -1,73 +1,51 @@
-<!DOCTYPE cfile>
+<?xml version="cfile 1.0" encoding="utf-8"?>
 <knut>
  <input>out-start.mat</input>
  <output>out-hbct.mat</output>
  <sysname>sys-simple_laser.so</sysname>
- <label>9</label>
- <pointtype>-1</pointtype>
- <cptype>I</cptype>
- <cpnum>0</cpnum>
- <switch>0</switch>
+ <fromtype>NS</fromtype>
+ <label>1</label>
+ <pointtype>USER</pointtype>
+ <cp>PAR_ANGLE</cp>
+ <switch>NX</switch>
  <neqns>4</neqns>
  <eqns>
-  <eqn>
-   <type>E</type>
-   <num>1</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>25</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>68</num>
-  </eqn>
-  <eqn>
-   <type>E</type>
-   <num>69</num>
-  </eqn>
+  <eqn>DDE_LC</eqn>
+  <eqn>PHASE_ROT</eqn>
+  <eqn>DDE_TF_NS_RE</eqn>
+  <eqn>DDE_TF_NS_IM</eqn>
  </eqns>
  <vars>
-  <var>
-   <type>S</type>
-   <num>1</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>1</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>3</num>
-  </var>
-  <var>
-   <type>P</type>
-   <num>5</num>
-  </var>
+  <var>DDE_LC</var>
+  <var>PAR(1)</var>
+  <var>PAR(3)</var>
+  <var>PAR(5)</var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>
  <nmul>20</nmul>
  <stab>0</stab>
- <nmat>2</nmat>
+ <curvature>2.500000000000000E-01</curvature>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>1500</steps>
  <iad>0</iad>
- <cpmin>-100</cpmin>
- <cpmax>100</cpmax>
- <ds>-0.002</ds>
- <dsmin>0.002</dsmin>
- <dsmax>0.01</dsmax>
- <dsstart>0.003</dsstart>
- <epsc>1e-05</epsc>
- <epsr>1e-05</epsr>
- <epsk>1e-06</epsk>
+ <npr>10</npr>
+ <cpmin>-1.000000000000000E+02</cpmin>
+ <cpmax>1.000000000000000E+02</cpmax>
+ <ds>-2.000000000000000E-03</ds>
+ <dsmin>2.000000000000000E-03</dsmin>
+ <dsmax>1.000000000000000E-02</dsmax>
+ <dsstart>3.000000000000000E-03</dsstart>
+ <epsc>1.000000000000000E-05</epsc>
+ <epsr>1.000000000000000E-05</epsr>
+ <epsk>1.000000000000000E-06</epsk>
  <nitc>22</nitc>
  <nitr>22</nitr>
  <nitk>22</nitk>
+ <nderi>8</nderi>
  <nsym>1</nsym>
  <sym>
   <dim>

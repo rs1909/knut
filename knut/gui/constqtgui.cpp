@@ -39,17 +39,20 @@ void NConstantsQtGui::constantChanged(const char* name)
         QMetaObject::invokeMethod (object, slotName, Q_ARG(const QString&, QString(static_cast<const std::string *>(value)->c_str())));
       } else if (type == "PtType")
       {
-        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, PtTypeToCIndex(*static_cast<const PtType *>(value))));
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, PtTypeTable.TypeToCIndex(*static_cast<const PtType *>(value))));
       } else if (type == "Eqn")
       {
-        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, EqnToCIndex(*static_cast<const Eqn *>(value))));
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, EqnTable.TypeToCIndex(*static_cast<const Eqn *>(value))));
       } else if (type == "Var")
       {
-        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, VarToCIndex(*static_cast<const Var *>(value))));
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, VarTable.TypeToCIndex(*static_cast<const Var *>(value))));
       } else if (type == "BranchSW")
       {
-        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, BranchSWToCIndex(*static_cast<const BranchSW *>(value))));
-      } else if (type == "vector<Var>")
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, BranchSWTable.TypeToCIndex(*static_cast<const BranchSW *>(value))));
+      } else if (type == "BifType")
+      {
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, BifTypeTable.TypeToCIndex(*static_cast<const BifType *>(value))));
+      }else if (type == "vector<Var>")
       {
         if (!strcmp(QSpinBox::staticMetaObject.className(), object->metaObject()->className()))
         {
@@ -105,6 +108,9 @@ void NConstantsQtGui::registerCallback(const char * type, const char * name, QOb
   } else if (!strncmp(type,"BranchSW",12))
   {
     connect(object, signal, this, SLOT(slotToBranchSW(int)));
+  } else if (!strncmp(type,"BifType",12))
+  {
+    connect(object, signal, this, SLOT(slotToBifType(int)));
   } else if (!strncmp(type,"std::string",12))
   {
     connect(object, signal, this, SLOT(slotToString(const QString &)));
@@ -149,26 +155,32 @@ void NConstantsQtGui::slotToDouble(const QString& val)
 
 void NConstantsQtGui::slotToPtType(int val)
 {
-  callbackPtr<PtType> ptr = findConnection<PtType>(sender(), CIndexToPtType(val));
-  if (ptr.value) ptr.value(*this, CIndexToPtType(val));  
+  callbackPtr<PtType> ptr = findConnection<PtType>(sender(), PtTypeTable.CIndexToType(val));
+  if (ptr.value) ptr.value(*this, PtTypeTable.CIndexToType(val));  
 }
 
 void NConstantsQtGui::slotToEqn(int val)
 {
-  callbackPtr<Eqn> ptr = findConnection<Eqn>(sender(), CIndexToEqn(val));
-  if (ptr.value) ptr.value(*this, CIndexToEqn(val)); 
+  callbackPtr<Eqn> ptr = findConnection<Eqn>(sender(), EqnTable.CIndexToType(val));
+  if (ptr.value) ptr.value(*this, EqnTable.CIndexToType(val)); 
 }
 
 void NConstantsQtGui::slotToBranchSW(int val)
 {
-  callbackPtr<BranchSW> ptr = findConnection<BranchSW>(sender(), CIndexToBranchSW(val));
-  if (ptr.value) ptr.value(*this, CIndexToBranchSW(val)); 
+  callbackPtr<BranchSW> ptr = findConnection<BranchSW>(sender(), BranchSWTable.CIndexToType(val));
+  if (ptr.value) ptr.value(*this, BranchSWTable.CIndexToType(val)); 
+}
+
+void NConstantsQtGui::slotToBifType(int val)
+{
+  callbackPtr<BifType> ptr = findConnection<BifType>(sender(), BifTypeTable.CIndexToType(val));
+  if (ptr.value) ptr.value(*this, BifTypeTable.CIndexToType(val)); 
 }
 
 void NConstantsQtGui::slotToVar(int val)
 {
-  callbackPtr<Var> ptr = findConnection<Var>(sender(), CIndexToVar(val));
-  if (ptr.value) ptr.value(*this, CIndexToVar(val));
+  callbackPtr<Var> ptr = findConnection<Var>(sender(), VarTable.CIndexToType(val));
+  if (ptr.value) ptr.value(*this, VarTable.CIndexToType(val));
 //   if ( VarToCIndex(CIndexToVar(val)) != val ) std::cout << "wrong conversion\n";
 }
 

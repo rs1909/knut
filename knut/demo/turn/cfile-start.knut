@@ -1,37 +1,38 @@
-<!DOCTYPE cfile>
+<?xml version="cfile 1.0" encoding="utf-8"?>
 <knut>
  <input></input>
  <output>out-start.mat</output>
- <sysname>sys-turn.so</sysname>
+ <sysname>turn.vf.so</sysname>
+ <fromtype>NX</fromtype>
  <label>0</label>
- <pointtype>40</pointtype>
- <cptype>P</cptype>
- <cpnum>1</cpnum>
- <switch>0</switch>
+ <pointtype>DDE_LC</pointtype>
+ <cp>kk1</cp>
+ <switch>NX</switch>
  <nparx>0</nparx>
  <nint>40</nint>
  <ndeg>4</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
- <nmat>12</nmat>
+ <curvature>2.500000000000000E-01</curvature>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
  <steps>40</steps>
  <iad>3</iad>
- <cpmin>-100</cpmin>
- <cpmax>100</cpmax>
- <ds>0.002</ds>
- <dsmin>0.002</dsmin>
- <dsmax>0.002</dsmax>
- <dsstart>0.002</dsstart>
- <epsc>1e-05</epsc>
- <epsr>1e-05</epsr>
- <epsk>1e-06</epsk>
+ <npr>10</npr>
+ <cpmin>-1.000000000000000E+02</cpmin>
+ <cpmax>1.000000000000000E+02</cpmax>
+ <ds>2.000000000000000E-03</ds>
+ <dsmin>2.000000000000000E-03</dsmin>
+ <dsmax>4.000000000000000E-03</dsmax>
+ <dsstart>2.000000000000000E-03</dsstart>
+ <epsc>1.000000000000000E-05</epsc>
+ <epsr>1.000000000000000E-05</epsr>
+ <epsk>1.000000000000000E-06</epsk>
  <nitc>12</nitc>
  <nitr>12</nitr>
  <nitk>12</nitk>
+ <nderi>8</nderi>
  <nsym>0</nsym>
- <sym/>
 </knut>

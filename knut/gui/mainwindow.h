@@ -105,12 +105,13 @@ class MainWindow : public QMainWindow
     {
       terminalText.append(QString(str.c_str()));
     }
+    void terminalStoreCursor()
+    {
+      terminalTextSize = terminalText.size();
+    }
     void terminalClearLastLine()
     {
-      int sz = terminalText.size();
-      int i = 0;
-      do { --sz; ++i; } while(terminalText[sz] != QChar('\n'));
-      terminalText.truncate(sz+1);
+      terminalText.truncate(terminalTextSize);
     }
     void compileSystem();
     void generateSystem();
@@ -146,6 +147,7 @@ class MainWindow : public QMainWindow
 
     //the textual output
     QString      terminalText;
+    int          terminalTextSize;
 
     // these contain the constants
     QLineEdit *inputFile;

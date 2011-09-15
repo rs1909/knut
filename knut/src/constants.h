@@ -89,6 +89,22 @@ class KNConstantNames
     static FPTR findFun(const char * name);
 };
 
+template<typename TP> struct TypeTuple
+{
+  int          index;
+  TP           type;
+  const char * code;
+  const char * name;
+};
+
+template<typename TP> struct TypeTupleStr
+{
+  int          index;
+  TP           type;
+  std::string  code;
+  std::string  name;
+};
+
 class KNConstants
 {
   private:
@@ -96,6 +112,7 @@ class KNConstants
     KN_CONSTANT(       std::string, inputFile,  InputFile,  "") 
     KN_CONSTANT(       std::string, outputFile, OutputFile, "")
     KN_CONSTANT(       std::string, sysname,    SysName,    "")
+    KN_CONSTANT(       BifType,     fromType,   FromType,   BifNone)
     KN_CONSTANT(       int,         label,      Label,      0)
     KN_CONSTANT(       PtType,      pointType,  PointType,  SolUser)
     KN_CONSTANT(       Var,         cp,         Cp,         VarNone)
@@ -139,12 +156,15 @@ class KNConstants
     void addConstantName(const char* name) {}
  
   public:
+    KNConstants() : PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
+    virtual ~KNConstants() { }
     // for setting up the continuation
     bool toEqnVar(KNSystem& sys,
                   KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
                   KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                   KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle);
     void loadXmlFile(const std::string &fileName);
+    void loadXmlFileOLD(const std::string &fileName);
     void saveXmlFile(const std::string &fileName);
     void printXmlFile(std::ostream& file);
     
@@ -193,115 +213,122 @@ class KNConstants
       {
         char buf[16];
         snprintf(buf, 15, "%d", i);
-        parNames[i] = "Par. " + std::string(buf);
+        parNames[i] = "PAR(" + std::string(buf) + ")";
       }
       parNames[VarToIndex(VarPeriod,np)] = "Per. Mul.";
       parNames[VarToIndex(VarAngle,np)] = "Angle (NS)";
       parNames[VarToIndex(VarRot,np)] = "Rotation num.";      
     }
-    void initDimensions(const KNSystem* sys)
-    {
-      initParNames(sys->npar());
-      const char **names = new const char *[sys->npar()+1];
-      for (int i=0; i<sys->npar()+1; ++i) names[i] = 0;
-      sys->parnames(names);
-      for (int i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
-      delete[] names;
-      // this will send a signal so parNames must be ready
-      setNPar(sys->npar());
-      setNDim(sys->ndim());
-    }
+    void initDimensions(const KNSystem* sys);
     // This loads the shared object file
-    virtual void setSysNameText(const std::string& str, bool testing = false)
-    {
-      setSysName(str);
-      KNSystem* sys = 0;
-      try
-      {
-        sys = new KNSystem(getSysName(), getNDeri());
-        initDimensions(sys);
-        delete sys;
-      }
-      catch (KNException ex)
-      {
-        delete sys;
-        setNPar(0);
-        setNDim(0);
-        throw(ex);
-      }
-    }
+    virtual void setSysNameText(const std::string& str, bool testing = false);
     const std::vector<std::string>& getParNames() const { return parNames; }
     // this is to notify the system of changes
     virtual void constantChanged(const char* name) { }
     
-    template<typename TP> TP           CIndexToType(const TypeTuple<TP>* tab, int idx);
-    template<typename TP> int          TypeToCIndex(const TypeTuple<TP>* tab, TP tp);
-    template<typename TP> const char * CIndexToTypeName(const TypeTuple<TP>* tab, int idx);
-    template<typename TP> const char * TypeToName(const TypeTuple<TP>* tab, TP tp);
-    template<typename TP> int          TypeTableSize(const TypeTuple<TP>* tab);
-
-    static const TypeTuple<PtType> PtTypeTable[];
-    PtType       CIndexToPtType(int idx) { return CIndexToType<PtType>(PtTypeTable, idx); }
-    int          PtTypeToCIndex(PtType pt) { return TypeToCIndex<PtType>(PtTypeTable, pt); }
-    const char * CIndexToPtTypeName(int idx) { return CIndexToTypeName<PtType>(PtTypeTable, idx); }
-//    const char * PtTypeToName(PtType tp) { return TypeToName<PtType>(PtTypeTable, tp); }
-    int          PtTypeTableSize() { return TypeTableSize<PtType>(PtTypeTable); }
-  
-    static const TypeTuple<Eqn> EqnTable[];
-    Eqn          CIndexToEqn(int idx) { return CIndexToType<Eqn>(EqnTable, idx); }
-    int          EqnToCIndex(Eqn pt) { return TypeToCIndex<Eqn>(EqnTable, pt); }
-    const char * CIndexToEqnName(int idx) { return CIndexToTypeName<Eqn>(EqnTable, idx); }
-//    const char * EqnToName(Eqn tp) { return TypeToName<Eqn>(EqnTable, tp); }
-    int          EqnTableSize() { return TypeTableSize<Eqn>(EqnTable); }
+    // type declarations
+    template<typename TP> class TypeTupleTab
+    {
+    private:
+      static const TypeTuple<TP> tabStatic[];
+      std::vector<TypeTupleStr<TP> > tab;
+      int sz;
+      const KNConstants *parent;
+    public:
+      TypeTupleTab();
+      TypeTupleTab(KNConstants *p) : tab(0), parent(p) { update(); }
+      void         update(void); // needs to update 'tab'
+      TP           CIndexToType(int idx) const;
+      TP           NameToType(const char * name) const;
+      TP           CodeToType(const char * name) const;
+      int          TypeToCIndex(TP tp) const;
+      std::string  CIndexToTypeName(int idx) const;
+      std::string  TypeToName(TP tp) const;
+      std::string  TypeToCode(TP tp) const;
+      int          size() const;
+    };
     
-    static const TypeTuple<BranchSW> BranchSWTable[];
-    BranchSW     CIndexToBranchSW(int idx) { return CIndexToType<BranchSW>(BranchSWTable, idx); }
-    int          BranchSWToCIndex(BranchSW pt) { return TypeToCIndex<BranchSW>(BranchSWTable, pt); }
-    const char * CIndexToBranchSWName(int idx) { return CIndexToTypeName<BranchSW>(BranchSWTable, idx); }
-//    const char * BranchSWToName(BranchSW tp) { return TypeToName<BranchSW>(BranchSWTable, tp); }
-    int          BranchSWTableSize() { return TypeTableSize<BranchSW>(BranchSWTable); }
-
-    static const TypeTuple<Var> VarTableS[];
-    static const TypeTuple<Var> VarTableI[];
-    Var          CIndexToVar(int idx);
-    int          VarToCIndex(Var pt);
-    const char * CIndexToVarName(int idx);
-    int          VarTableSize();
+    const KNConstants::TypeTupleTab<PtType> PtTypeTable;
+    const KNConstants::TypeTupleTab<Eqn> EqnTable;
+    const KNConstants::TypeTupleTab<BranchSW> BranchSWTable;
+    const KNConstants::TypeTupleTab<BifType> BifTypeTable;
+    KNConstants::TypeTupleTab<Var> VarTable;
 };
 
-template<typename TP> TP           KNConstants::CIndexToType(const TypeTuple<TP>* tab, int idx)
+template<typename TP> void KNConstants::TypeTupleTab<TP>::update()
 {
-  for (int k=0; tab[k].index >= 0; ++k)
+  int k = 0;
+  while (tabStatic[k].index >= 0) ++k;
+  tab.resize(k);
+  for (size_t i=0; i<tab.size(); ++i)
+  {
+    tab[i].index = i; // tabStatic[i].index;
+    tab[i].type = tabStatic[i].type;
+    tab[i].name = tabStatic[i].name;
+    tab[i].code = tabStatic[i].code;
+  }
+}
+
+template<typename TP> TP KNConstants::TypeTupleTab<TP>::CIndexToType(int idx) const
+{
+  for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].index == idx) return tab[k].type;
   return tab[0].type;
 }
 
-template<typename TP> int          KNConstants::TypeToCIndex(const TypeTuple<TP>* tab, TP tp)
+template<typename TP> int KNConstants::TypeTupleTab<TP>::TypeToCIndex(TP tp) const
 {
-  for (int k=0; tab[k].index >= 0; ++k)
+  for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].index;
   return tab[0].index;
 }
 
-template<typename TP> const char * KNConstants::CIndexToTypeName(const TypeTuple<TP>* tab, int idx)
+template<typename TP> std::string KNConstants::TypeTupleTab<TP>::TypeToCode(TP tp) const
 {
-  for (int k=0; tab[k].index >= 0; ++k)
-    if (tab[k].index == idx) return tab[k].name;
-  return tab[0].name;
+  for (size_t k=0; k<tab.size(); ++k)
+    if (tab[k].type == tp) return tab[k].code;
+  return tab[0].code;
 }
 
-template<typename TP> const char * KNConstants::TypeToName(const TypeTuple<TP>* tab, TP tp)
+template<typename TP> std::string KNConstants::TypeTupleTab<TP>::TypeToName(TP tp) const
 {
-  for (int k=0; tab[k].index >= 0; ++k)
+  for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].name;
   return tab[0].name;
 }
 
-template<typename TP> int          KNConstants::TypeTableSize(const TypeTuple<TP>* tab)
+template<typename TP> std::string KNConstants::TypeTupleTab<TP>::CIndexToTypeName(int idx) const
 {
-  int k = 0;
-  while (tab[k].index >= 0) ++k;
-  return k;
+  for (size_t k=0; k<tab.size(); ++k)
+    if (tab[k].index == idx) return tab[k].name;
+  return tab[0].name;
 }
+
+template<typename TP> TP KNConstants::TypeTupleTab<TP>::CodeToType(const char * name) const
+{
+  if (name)
+  {
+    for (size_t k=0; k<tab.size(); ++k)
+      if (!tab[k].code.compare(name)) return tab[k].type;
+  }
+  return tab[0].type;
+}
+
+template<typename TP> TP KNConstants::TypeTupleTab<TP>::NameToType(const char * name) const
+{
+  if (name)
+  {
+    for (size_t k=0; k<tab.size(); ++k)
+      if (!tab[k].name.compare(name)) return tab[k].type;
+  }
+  return tab[0].type;
+}
+
+template<typename TP> int KNConstants::TypeTupleTab<TP>::size() const
+{
+  return tab.size();
+}
+
+template<> void KNConstants::TypeTupleTab<Var>::update();
 
 #endif

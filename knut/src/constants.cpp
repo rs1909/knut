@@ -15,133 +15,6 @@
 // For loading XML constant files
 #include "mxml.h"
 
-const TypeTuple<PtType> KNConstants::PtTypeTable[] = {
-  {0, SolUser, "User"},
-  {1, SolODE, "ODE limit cycle"},
-  {2, SolAUTODE, "ODE limit cycle (aut)"},
-  {3, SolTF,"Limit cycle"},
-  {4, BifTFLP, "Limit point"},
-  {5, BifTFPD, "Period doubling"},
-  {6, BifTFNS, "Neimark-Sacker"},
-  {7, SolTFBRSW, "Branch switch"},
-  {8, SolTFPDSW, "Period doubling switch"},
-  {9, SolTFAUT, "Limit cycle (aut)"},
-  {10, BifTFAUTLP, "Limit point (aut)"},
-  {11, BifTFAUTPD, "Period doubling (aut)"},
-  {12, BifTFAUTNS, "Neimark-Sacker (aut)"},
-  {13, SolTFAUTBRSW, "Branch switch (aut)"},
-  {14, SolTFAUTPDSW, "Period doubling switch (aut)"},
-  {15, SolTFAUTHBSW, "Hopf switch (aut)"},
-  {16, SolTor, "Torus"},
-  {17, SolTorNS, "Torus from NS"},
-  {18, SolAUTTor, "Torus (aut)"},
-  {19, SolAUTTorNS, "Torus from NS (aut)"},
-  {-1, SolUser, ""}};
-
-const TypeTuple<Eqn> KNConstants::EqnTable[] = {
-  {0, EqnNone, "None"},
-  {1, EqnSol, "Limit cycle"},
-  {2, EqnODESol, "ODE limit cycle"},
-  {3, EqnPhase, "PHCND (transl)"},
-  {4, EqnPhaseRot, "PHCND (rot)"},
-  {5, EqnTORSol, "Torus"},
-  {6, EqnTORPhase0, "PHCND 1 (torus)"},
-  {7, EqnTORPhase1, "PHCND 2 (torus)"},
-  {8, EqnTFLP, "LP TF"},
-  {9, EqnTFPD, "PD TF"},
-  {10, EqnTFLPAUT, "LP TF (aut)"},
-  {11, EqnTFLPAUTROT, "LP TF (sym)"},
-  {12, EqnTFCPLX_RE, "NS TF (real)"},
-  {13, EqnTFCPLX_IM, "NS TF (imag)"},
-  {-1, EqnNone, "None"}};
-  
-const TypeTuple<BranchSW> KNConstants::BranchSWTable[] = {
-  {0, NOSwitch, "No switch"},
-  {1, TFBRSwitch, "Branch"},
-  {2, TFPDSwitch, "Period doubling"},
-  {3, TFHBSwitch, "Hopf (aut)"},
-  {4, TFTRSwitch, "Torus"},
-  {5, TFBRAUTSwitch, "Branch (aut)"},
-  {6, TFBRAUTROTSwitch, "Branch (sym)"},
-  {-1, NOSwitch, "No switch"}};
-
-const TypeTuple<Var> KNConstants::VarTableS[] = {
-  {0, VarNone, "None"},
-  {1, VarSol, "Limit cycle"},
-  {2, VarODESol, "ODE limit cycle"},
-  {3, VarTORSol, "Torus"},
-  {4, VarPAR0, "Par 0"},
-  {5, VarAngle, "Angle"},
-  {6, VarPeriod, "Period"},
-  {7, VarRot, "rot. num."},
-  {-1, VarEnd, "END"}};
-
-Var KNConstants::CIndexToVar(int idx)
-{
-  int k = 0;
-  for ( ; VarTableS[k].type != VarPAR0 ; ++k)
-  {
-    if (VarTableS[k].index == idx) return VarTableS[k].type;
-  }
-  if ((idx - VarTableS[k].index) < getNPar()) return (Var)(VarPAR0 + (idx - VarTableS[k].index));
-  else
-  {
-    ++k; // move further than VarPAR0
-    for ( ; VarTableS[k].index >= 0 ; ++k)
-      if ((VarTableS[k].index + getNPar() - 1) == idx) return VarTableS[k].type;
-  }
-  return VarTableS[0].type;
-}
-
-int KNConstants::VarToCIndex(Var pt)
-{
-  int k = 0;
-  if (pt < VarPAR0)
-  {  
-    for ( ; VarTableS[k].type != VarPAR0 ; ++k)
-    {
-      if (VarTableS[k].type == pt) return VarTableS[k].index;
-    }
-  } else if (pt < VarInternal)
-  {
-    for ( ; VarTableS[k].type != VarPAR0 ; ++k) ;
-    return VarTableS[k].index + (pt - VarPAR0);
-  } else
-  {
-    for ( ; VarTableS[k].type != VarPAR0 ; ++k) ;
-    ++k;
-    for ( ; VarTableS[k].index >= 0 ; ++k)
-    {
-      if (VarTableS[k].type == pt) return VarTableS[k].index + getNPar() - 1;
-    }
-  }
-  return 0;
-}
-
-const char * KNConstants::CIndexToVarName(int idx)
-{
-  int k = 0;
-  for ( ; VarTableS[k].type != VarPAR0 ; ++k)
-  {
-    if (VarTableS[k].index == idx) return VarTableS[k].name;
-  }
-  if ((idx - VarTableS[k].index) < getNPar()) return parNames.at(idx - VarTableS[k].index).c_str();
-  else
-  {
-    ++k; // move further than VarPAR0
-    for ( ; VarTableS[k].index >= 0 ; ++k)
-      if ((VarTableS[k].index + getNPar() - 1) == idx) return VarTableS[k].name;
-  }
-  return VarTableS[0].name;
-}
-
-int KNConstants::VarTableSize()
-{
-  int k = 0;
-  for (; VarTableS[k].index >= 0 ; ++k) ;
-  return k + getNPar() - 1;
-}
-
 std::map<std::string, KNConstantNames::tuple_t> KNConstantNames::nlist;
 
 void KNConstantNames::addConstantName(const char * type, const char * name, void * var, void(*nsetFun)())
@@ -244,9 +117,9 @@ static inline const char *getNodeText(mxml_node_t* nd)
     {
       if (nd->child == nd->last_child)
       {
-        if (nd->child->type == MXML_TEXT)
+        if (nd->child->type == MXML_OPAQUE)
         {
-          return nd->child->value.text.string;
+          return nd->child->value.opaque; //text.string;
         } else P_MESSAGE1("MXML: wrong element type.");
       } else P_MESSAGE1("MXML: node has too many children.");
     } else return 0;
@@ -316,7 +189,7 @@ void KNConstants::loadXmlFile(const std::string &fileName)
 
   fp = fopen(fileName.c_str(), "r");
   P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_TEXT_CALLBACK);
+  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
   fclose(fp);
 
   mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
@@ -335,6 +208,190 @@ void KNConstants::loadXmlFile(const std::string &fileName)
   nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
   // This has to load the system definition
   setSysNameText(getNodeText(nd, ""));
+
+  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
+  setFromType(BifTypeTable.CodeToType(getNodeText(nd))); // -> default
+
+  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
+  setLabel(getNodeInteger(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
+  setPointType(PtTypeTable.CodeToType(getNodeText(nd)));
+    
+  nd = mxmlFindElement(root_nd, root_nd, "cp", 0, 0, MXML_DESCEND_FIRST);
+  setCp(VarTable.CodeToType(getNodeText(nd)));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
+  setBranchSW(BranchSWTable.CodeToType(getNodeText(nd))); // -> default
+
+  if (getPointType() != SolUser)
+  {
+    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
+    setParxSize(getNodeInteger(nd));
+    if (getParxSize() != 0)
+    {
+      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
+      
+      int it = 0;
+      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
+           nd != 0;
+           nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
+      {
+        setParx(it, VarTable.CodeToType(getNodeText(nd)));
+        ++it;
+      }
+    }
+  } else
+  {
+    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
+    setEqnsSize(getNodeInteger(nd));
+    setVarsSize(getNodeInteger(nd));
+    if (getEqnsSize() != 0)
+    {
+      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
+      int it = 0;
+      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
+           nd != 0;
+           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
+      {
+        setEqns(it, EqnTable.CodeToType(getNodeText(nd)));
+        ++it;
+      }
+      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
+      it = 0;
+      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
+           nd != 0;
+           nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
+      {
+        setVars(it, VarTable.CodeToType(getNodeText(nd)));
+        ++it;
+      }
+    }
+  }
+  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
+  setNInt(getNodeInteger(nd, 20));
+
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg(getNodeInteger(nd, 5));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
+  setNMul(getNodeInteger(nd, 5));
+
+  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
+  setStab(getNodeInteger(nd, 0) != 0);
+  
+  nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
+  setCAngle(getNodeReal(nd, getCAngle()));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
+  setNInt1(getNodeInteger(nd, 12));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
+  setNInt2(getNodeInteger(nd, 12));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg1(getNodeInteger(nd, 4));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
+  setNDeg2(getNodeInteger(nd, 4));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
+  setSteps(getNodeInteger(nd, 100));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
+  setIad(getNodeInteger(nd, 3));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
+  setNPr(getNodeInteger(nd, 10));
+  P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
+  
+  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
+  setCpMin(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
+  setCpMax(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
+  setDs(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
+  setDsMin(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
+  setDsMax(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
+  setDsStart(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
+  setEpsC(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
+  setEpsR(getNodeReal(nd));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
+  setEpsK(getNodeReal(nd));
+
+  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
+  setNItC(getNodeInteger(nd, 5));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
+  setNItR(getNodeInteger(nd, 12));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
+  setNItK(getNodeInteger(nd, 12));
+
+  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
+  setNDeri(getNodeInteger(nd, 8)); // this is just a number, higher then sys_nderi() provides
+
+  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
+  setSymReSize(getNodeInteger(nd, 0));
+  setSymImSize(getNodeInteger(nd, 0));
+
+  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
+  int it = 0;
+  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
+       nd != 0;
+       nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
+  {
+    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
+    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
+    setSymRe(it, getNodeInteger(nd_real));
+    setSymIm(it, getNodeInteger(nd_imag));
+    ++it; 
+  }
+  mxmlDelete(tree);
+}
+
+void KNConstants::loadXmlFileOLD(const std::string &fileName)
+{
+  FILE *fp;
+  mxml_node_t *tree;
+
+  fp = fopen(fileName.c_str(), "r");
+  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
+  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
+  fclose(fp);
+
+  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  if (!root_nd)
+  {
+    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+  }
+  
+  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
+  setInputFile(getNodeText(nd, ""));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
+  setOutputFile(getNodeText(nd, ""));
+  
+  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
+  // This has to load the system definition
+  setSysNameText(getNodeText(nd, ""));
+
+  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
+  setFromType(static_cast<BifType>(getNodeInteger(nd, BifNone)));
 
   nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
   setLabel(getNodeInteger(nd));
@@ -533,20 +590,20 @@ void KNConstants::printXmlFile(std::ostream& file)
   node = mxmlNewElement(data, "sysname");
   mxmlNewText(node, 0, getSysName().c_str());
   
+  node = mxmlNewElement(data, "fromtype");
+  mxmlNewText(node, 0, BifTypeTable.TypeToCode(getFromType()).c_str());
+  
   node = mxmlNewElement(data, "label");
   mxmlNewInteger(node, getLabel());
   
   node = mxmlNewElement(data, "pointtype");
-  mxmlNewInteger(node, getPointType());
+  mxmlNewText(node, 0, PtTypeTable.TypeToCode(getPointType()).c_str());
   
-  node = mxmlNewElement(data, "cptype");
-  mxmlNewText(node, 0, c2s(cbuf,varType(getCp())));
+  node = mxmlNewElement(data, "cp");
+  mxmlNewText(node, 0, VarTable.TypeToCode(getCp()).c_str());
 
-  node = mxmlNewElement(data, "cpnum");
-  mxmlNewInteger(node, varNum(getCp()));
-  
   node = mxmlNewElement(data, "switch");
-  mxmlNewInteger(node, getBranchSW());
+  mxmlNewText(node, 0, BranchSWTable.TypeToCode(getBranchSW()).c_str());
  
   if (getPointType() != SolUser)
   {
@@ -558,13 +615,8 @@ void KNConstants::printXmlFile(std::ostream& file)
       mxml_node_t *group_parx = mxmlNewElement(data, "parx");
       for (int i = 0; i < getParxSize(); ++i)
       {
-        mxml_node_t *group_par = mxmlNewElement(group_parx, "par");
-        
-        node = mxmlNewElement(group_par, "type");
-        mxmlNewText(node, 0, c2s(cbuf,varType(getParx(i))));
-        
-        node = mxmlNewElement(group_par, "num");
-        mxmlNewInteger(node, varNum(getParx(i)));
+        node = mxmlNewElement(group_parx, "par");
+        mxmlNewText(node, 0, VarTable.TypeToCode(getParx(i)).c_str());
       }
     }
   }
@@ -580,23 +632,13 @@ void KNConstants::printXmlFile(std::ostream& file)
 
       for (int i = 0; i < getEqnsSize(); ++i)
       {
-        mxml_node_t *group_eqn = mxmlNewElement(group_eqns, "eqn");
-        
-        node = mxmlNewElement(group_eqn, "type");
-        mxmlNewText(node, 0, c2s(cbuf,eqnType(getEqns(i))));
-        
-        node = mxmlNewElement(group_eqn, "num");
-        mxmlNewInteger(node, eqnNum(getEqns(i)));
+        node = mxmlNewElement(group_eqns, "eqn");
+        mxmlNewText(node, 0, EqnTable.TypeToCode(getEqns(i)).c_str());
       }
       for (int i = 0; i < getVarsSize(); ++i)
       {        
-        mxml_node_t *group_var = mxmlNewElement(group_vars, "var");
-
-        node = mxmlNewElement(group_var, "type");
-        mxmlNewText(node, 0, c2s(cbuf,varType(getVars(i))));
-
-        node = mxmlNewElement(group_var, "num");
-        mxmlNewInteger(node, varNum(getVars(i)));
+        node = mxmlNewElement(group_vars, "var");
+        mxmlNewText(node, 0, VarTable.TypeToCode(getVars(i)).c_str());
       }
     }
   }
@@ -870,4 +912,144 @@ tfskip:
       break;
   }
   return needTF;
+}
+
+void KNConstants::initDimensions(const KNSystem* sys)
+{
+  initParNames(sys->npar());
+  const char **names = new const char *[sys->npar()+1];
+  for (int i=0; i<sys->npar()+1; ++i) names[i] = 0;
+  sys->parnames(names);
+  for (int i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
+  delete[] names;
+  // this will send a signal so parNames must be ready
+  setNPar(sys->npar());
+  setNDim(sys->ndim());
+  VarTable.update();
+  // just to send signals about updated VarTable
+  setNPar(sys->npar());
+}
+
+void KNConstants::setSysNameText(const std::string& str, bool testing)
+{
+  setSysName(str);
+  KNSystem* sys = 0;
+  try
+  {
+    sys = new KNSystem(getSysName(), getNDeri());
+    initDimensions(sys);
+    delete sys;
+  }
+  catch (KNException ex)
+  {
+    delete sys;
+    setNPar(0);
+    setNDim(0);
+    throw(ex);
+  }
+}
+
+template<> const TypeTuple<PtType> KNConstants::TypeTupleTab<PtType>::tabStatic[] = {
+  {0,  SolUser,      "USER",             "User defined"}, // User
+  {1,  SolODE,       "ODE",              "ODE limit cycle"}, // ODE limit cycle
+  {2,  SolAUTODE,    "ODE_AUT",          "ODE limit cycle (aut)" }, // ODE limit cycle (aut)
+  {3,  SolTF,        "DDE_LC",           "Limit cycle"}, // "Limit cycle
+  {4,  BifTFLP,      "DDE_LP",           "Limit point"}, // Limit point
+  {5,  BifTFPD,      "DDE_PD",           "Period doubling"}, // Period doubling
+  {6,  BifTFNS,      "DDE_NS",           "Neimark-Sacker"}, // Neimark-Sacker
+  {7,  SolTFBRSW,    "DDE_BP_SW",        "Branch switch"}, // Branch switch
+  {8,  SolTFPDSW,    "DDE_PD_SW",        "Period doubling switch"}, // Period doubling switch
+  {9,  SolTFAUT,     "DDE_AUT",          "Limit cycle (aut)"}, // Limit cycle (aut)
+  {10, BifTFAUTLP,   "DDE_AUT_LP",       "Limit point (aut)"}, //
+  {11, BifTFAUTPD,   "DDE_AUT_PD",       "Period doubling (aut)"},
+  {12, BifTFAUTNS,   "DDE_AUT_NS",       "Neimark-Sacker (aut)"},
+  {13, SolTFAUTBRSW, "DDE_AUT_BP_SW",    "Branch switch (aut)"},
+  {14, SolTFAUTPDSW, "DDE_AUT_PD_SW",    "Period doubling switch (aut)"},
+  {15, SolTFAUTHBSW, "DDE_AUT_HOPF_SW",  "Hopf switch (aut)"},
+  {16, SolTor,       "DDE_TORUS",        "Torus"},
+  {17, SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
+  {18, SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
+  {19, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
+  {-1, SolUser, "", ""}};
+
+template<> const TypeTuple<Eqn> KNConstants::TypeTupleTab<Eqn>::tabStatic[] = {
+  {0,  EqnNone,       "NX",                "None" },
+  {1,  EqnSol,        "DDE_LC",            "Limit cycle"},
+  {2,  EqnODESol,     "ODE_LC",            "ODE Limit cycle"},
+  {3,  EqnPhase,      "PHASE",             "PHCND (transl)"},
+  {4,  EqnPhaseRot,   "PHASE_ROT",         "PHCND (rot)"},
+  {5,  EqnTORSol,     "DDE_TORUS",         "Torus"},
+  {6,  EqnTORPhase0,  "TORUS_PHS1",        "PHCND 1 (torus)"},
+  {7,  EqnTORPhase1,  "TORUS_PHS2",        "PHCND 2 (torus)"},
+  {8,  EqnTFLP,       "DDE_TF_LP",         "LP TF"},
+  {9,  EqnTFPD,       "DDE_TF_PD",         "PD TF"},
+  {10, EqnTFLPAUT,    "DDE_AUT_TF_LP",     "LP TF (aut)"},
+  {11, EqnTFLPAUTROT, "DDE_AUT_ROT_TF_LP", "LP TF (sym)"},
+  {12, EqnTFCPLX_RE,  "DDE_TF_NS_RE",      "NS TF (real)"},
+  {13, EqnTFCPLX_IM,  "DDE_TF_NS_IM",      "NS TF (imag)"},
+  {-1, EqnNone, "", ""}};
+  
+template<> const TypeTuple<BranchSW> KNConstants::TypeTupleTab<BranchSW>::tabStatic[] = {
+  {0, NOSwitch,         "NX",         "No switch"},
+  {1, TFBRSwitch,       "BP",         "Branch"},
+  {2, TFPDSwitch,       "PD",         "Period doubling"},
+  {3, TFHBSwitch,       "HOPF",       "Hopf (aut)"},
+  {4, TFTRSwitch,       "TORUS",      "Torus"},
+  {5, TFBRAUTSwitch,    "AUT_BP",     "Branch (aut)"},
+  {6, TFBRAUTROTSwitch, "AUT_ROT_BP", "Branch (sym)"},
+  {-1, NOSwitch, "", ""}};
+
+template<> const TypeTuple<Var> KNConstants::TypeTupleTab<Var>::tabStatic[] = {
+  {0, VarNone,   "NX",          "None"},
+  {1, VarSol,    "DDE_LC",      "Limit cycle"},
+  {2, VarODESol, "ODE_LC",      "ODE limit cycle"},
+  {3, VarTORSol, "DDE_TORUS",   "Torus"},
+  {4, VarPAR0,   "PAR0",        "Par 0"},
+  {5, VarAngle,  "PAR_ANGLE",   "Angle"},
+  {6, VarPeriod, "PAR_PERIOD",  "Period"},
+  {7, VarRot,    "PAR_ROT_NUM", "Rot. num."},
+  {-1, VarEnd, "", ""}};
+
+template<> const TypeTuple<BifType> KNConstants::TypeTupleTab<BifType>::tabStatic[] = {
+  {0, BifNone,          "NX", "None"},
+  {1, BifLP,            "LP", "LP"},
+  {2, BifPD,            "PD", "PD"},
+  {3, BifNS,            "NS", "NS"},
+  {4, BifNS,            "UN", "UN"},
+  {5, BifMax,           "MX", "MX"},
+  {6, BifEndPoint,      "EP", "EP"},
+  {7, BifNoConvergence, "NC", "NC"},
+  {-1, BifNone, "", ""}};
+  
+// specialization to Var
+
+template<> void KNConstants::TypeTupleTab<Var>::update()
+{
+  size_t sz = 0;
+  while (tabStatic[sz].index >= 0) ++sz;
+  tab.resize(sz + parent->getNPar());
+
+  size_t k = 0;
+  for (; tabStatic[k].type != VarPAR0; ++k)
+  {
+    tab[k].index = tabStatic[k].index;
+    tab[k].type = tabStatic[k].type;
+    tab[k].code = tabStatic[k].code;
+    tab[k].name = tabStatic[k].name;
+  }
+  for (int j = 0; j < parent->getNPar(); ++j)
+  {
+    tab[k+j].index = k+j;
+    tab[k+j].type = static_cast<Var>(VarPAR0 + j);
+    tab[k+j].code = parent->parNames.at(j);
+    tab[k+j].name = parent->parNames.at(j);
+  }
+  k++;
+  for (; k<sz; ++k)
+  {
+    tab[k + parent->getNPar() - 1].index = k + parent->getNPar() - 1;
+    tab[k + parent->getNPar() - 1].type = tabStatic[k].type;
+    tab[k + parent->getNPar() - 1].code = tabStatic[k].code;
+    tab[k + parent->getNPar() - 1].name = tabStatic[k].name;
+  }
 }

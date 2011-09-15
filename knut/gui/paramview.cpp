@@ -25,12 +25,12 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the equation NAME based on its index in the list
-        return QVariant(parameters->CIndexToEqnName(parameters->EqnToCIndex(parameters->getEqns(index.column()))));
+        return QVariant(parameters->EqnTable.CIndexToTypeName(parameters->EqnTable.TypeToCIndex(parameters->getEqns(index.column()))).c_str());
       }
       else
       {
         // Find the parameter NAME based on its index in the list
-        return QVariant(parameters->CIndexToVarName(parameters->VarToCIndex(parameters->getParx(index.column()))));
+        return QVariant(parameters->VarTable.CIndexToTypeName(parameters->VarTable.TypeToCIndex(parameters->getParx(index.column()))).c_str());
       }
     }
     if (index.row() == 1)
@@ -38,7 +38,7 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
       if (parameters->getPointType() == SolUser)
       {
         // Find the variable NAME based on its index in the list
-        return QVariant(parameters->CIndexToVarName(parameters->VarToCIndex(parameters->getVars(index.column()))));
+        return QVariant(parameters->VarTable.CIndexToTypeName(parameters->VarTable.TypeToCIndex(parameters->getVars(index.column()))).c_str());
       }
     }
   }
@@ -54,17 +54,17 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
       if (parameters->getPointType() == SolUser)
       {
         // set the equation at position index.column() by its index
-        parameters->setEqns(index.column(), parameters->CIndexToEqn(value.toUInt()));
+        parameters->setEqns(index.column(), parameters->EqnTable.CIndexToType(value.toUInt()));
       } else
       {
         // set the extra parameter at position index.column() by its index
-        parameters->setParx(index.column(), parameters->CIndexToVar(value.toUInt()));
+        parameters->setParx(index.column(), parameters->VarTable.CIndexToType(value.toUInt()));
       }
     }
     if ((index.row() == 1) && (parameters->getPointType() == SolUser))
     {
       // set the variable at position index.column() by its index
-      parameters->setVars(index.column(), parameters->CIndexToVar(value.toUInt()));
+      parameters->setVars(index.column(), parameters->VarTable.CIndexToType(value.toUInt()));
     }
     emit dataChanged(index, index);
     return true;
@@ -105,21 +105,21 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->EqnTableSize(); ++i) editor->addItem(parameters->CIndexToEqnName(i));
-      editor->setCurrentIndex(parameters->EqnToCIndex(parameters->getEqns(index.column())));
+      for (int i = 0; i < parameters->EqnTable.size(); ++i) editor->addItem(parameters->EqnTable.CIndexToTypeName(i).c_str());
+      editor->setCurrentIndex(parameters->EqnTable.TypeToCIndex(parameters->getEqns(index.column())));
     }
     if (index.row() == 1)
     {
-      for (int i = 0; i < parameters->VarTableSize(); ++i) editor->addItem(parameters->CIndexToVarName(i));
-      editor->setCurrentIndex(parameters->VarToCIndex(parameters->getVars(index.column())));
+      for (int i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
+      editor->setCurrentIndex(parameters->VarTable.TypeToCIndex(parameters->getVars(index.column())));
     }
   }
   else
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->VarTableSize(); ++i) editor->addItem(parameters->CIndexToVarName(i));
-      editor->setCurrentIndex(parameters->VarToCIndex(parameters->getParx(index.column())));
+      for (int i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
+      editor->setCurrentIndex(parameters->VarTable.TypeToCIndex(parameters->getParx(index.column())));
     }
   }
 

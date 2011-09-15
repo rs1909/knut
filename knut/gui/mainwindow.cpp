@@ -21,6 +21,7 @@
 
 MainWindow::MainWindow(const QString& appDir) :
     executableDir(appDir), compThread(parameters),
+    terminalTextSize(0),
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), compilerProcess(0),
     inputMatFile(0), outputMatFile(0), inThreadMatFile(0)
@@ -131,16 +132,22 @@ MainWindow::MainWindow(const QString& appDir) :
   labelLabel->setToolTip(QString("The label of the solution in the input file to be used as a starting point."));
   label = new QSpinBox();
   label->setRange(0, 0xffff);
-  systemGrid->addWidget(labelLabel, 3, 0, Qt::AlignLeft | Qt::AlignBottom);
-  systemGrid->addWidget(label, 4, 0);
   parameters.registerCallback("int", "label", label, SIGNAL(valueChanged(int)), "setValue");
 
+  QLabel* fromTypeLabel = new QLabel("FROM");
+  QComboBox* fromType = new QComboBox();
+  for (int i = 0; i < parameters.BifTypeTable.size(); ++i)
+  {
+    fromType->insertItem(i, parameters.BifTypeTable.CIndexToTypeName(i).c_str());
+  }
+  parameters.registerCallback("BifType", "fromType", fromType, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
+  
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
-  for (int i = 0; i < parameters.PtTypeTableSize(); ++i)
+  for (int i = 0; i < parameters.PtTypeTable.size(); ++i)
   {
-    pttype->insertItem(i, parameters.CIndexToPtTypeName(i));
+    pttype->insertItem(i, parameters.PtTypeTable.CIndexToTypeName(i).c_str());
   }
   parameters.registerCallback("PtType", "pointType", pttype, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
 
@@ -151,9 +158,9 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* branchswLabel = new QLabel("SWITCH");
   branchswLabel->setToolTip("Switches to another branch at the bifurcation point.");
   branchsw = new QComboBox();
-  for (int i = 0; i < parameters.BranchSWTableSize(); ++i)
+  for (int i = 0; i < parameters.BranchSWTable.size(); ++i)
   {
-    branchsw->insertItem(i, parameters.CIndexToBranchSWName(i));
+    branchsw->insertItem(i, parameters.BranchSWTable.CIndexToTypeName(i).c_str());
   }
   systemGrid->addWidget(branchswLabel, 3, 4, Qt::AlignHCenter | Qt::AlignBottom);
   systemGrid->addWidget(branchsw, 4, 4);
@@ -164,9 +171,13 @@ MainWindow::MainWindow(const QString& appDir) :
                                 "NEQNS: Number of equations and variables that define the system."));
   eqns = new QSpinBox();
   eqns->setRange(0, 0xffff);
-  systemGrid->addWidget(pttypeLabel, 3, 1, 1, 2, Qt::AlignHCenter | Qt::AlignBottom);
+  systemGrid->addWidget(fromTypeLabel, 3, 0, 1, 1, Qt::AlignLeft | Qt::AlignBottom);
+  systemGrid->addWidget(fromType, 4, 0);
+  systemGrid->addWidget(labelLabel, 3, 1, Qt::AlignHCenter | Qt::AlignBottom);
+  systemGrid->addWidget(label, 4, 1);
   systemGrid->addWidget(cpLabel, 3, 3, Qt::AlignHCenter | Qt::AlignBottom);
-  systemGrid->addWidget(pttype, 4, 1, 1, 2);
+  systemGrid->addWidget(pttypeLabel, 3, 2, 1, 1, Qt::AlignHCenter | Qt::AlignBottom);
+  systemGrid->addWidget(pttype, 4, 2);
   systemGrid->addWidget(cp, 4, 3);
   systemGrid->addWidget(eqnsLabel, 5, 0, Qt::AlignLeft | Qt::AlignBottom);
   systemGrid->addWidget(eqns, 6, 0, Qt::AlignTop);
@@ -380,6 +391,7 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)));
   // text output
   connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
+  connect(&compThread, SIGNAL(printStoreCursor()), this, SLOT(terminalStoreCursor()));
   connect(&compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()));
 
   createActions();
@@ -772,12 +784,14 @@ void MainWindow::terminalView()
   if (terminalDialog == 0)
   {
     terminalDialog = new screenDialog(0);
+    terminalDialog->setWindowTitle("terminal view");
     connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
     connect(&compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()));
+    connect(&compThread, SIGNAL(printStoreCursor()), terminalDialog, SLOT(storeCursor()));
     connect(terminalDialog, SIGNAL(windowClosed()), this, SLOT(terminalViewDestroyed()));
-    terminalDialog->setWindowTitle("terminal view");
-    terminalDialog->setText(terminalText);
     terminalDialog->show();
+    terminalDialog->setText(terminalText);
+    terminalDialog->storeCursor();
   } else
   {
     delete terminalDialog;
@@ -1042,10 +1056,10 @@ void MainWindow::nParChanged(int n)
 {
   cp->blockSignals(true);
   cp->clear();
-  for (int i = 0; i < parameters.VarTableSize(); ++i)
+  for (int i = 0; i < parameters.VarTable.size(); ++i)
   {
-    cp->insertItem(i, parameters.CIndexToVarName(i));
+    cp->insertItem(i, parameters.VarTable.CIndexToTypeName(i).c_str());
   }
-  cp->setCurrentIndex(parameters.VarToCIndex(parameters.getCp()));
+  cp->setCurrentIndex(parameters.VarTable.TypeToCIndex(parameters.getCp()));
   cp->blockSignals(false);
 }

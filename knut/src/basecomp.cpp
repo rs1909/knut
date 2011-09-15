@@ -105,7 +105,7 @@ void KNAbstractContinuation::run(const char* branchFile)
       pt.setContEps(params->getEpsC());
       pt.setKernEps(params->getEpsK());
       pt.setContCurvature(params->getCAngle());
-      pt.setCont(params->getCp() - VarPAR0);
+      pt.setCont(params->getCp());
   
       // setting the symmetric components
       KNArray1D<int> sre(params->getSymReSize());
@@ -121,7 +121,16 @@ void KNAbstractContinuation::run(const char* branchFile)
       if (params->getLabel() != 0)
       {
         KNDataFile istr(params->getInputFile());
-        pt.BinaryRead(istr, params->getLabel()-1);
+        if (params->getFromType() != BifNone)
+        {
+          int pos = istr.findType(params->getFromType(), params->getLabel() );
+          std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
+          if (pos > 0) pt.BinaryRead(istr, pos);
+          else P_MESSAGE1("No such point in the input");
+        } else
+        {
+          pt.BinaryRead(istr, params->getLabel()-1);
+        }
       }
 
       screenout   << "\n---      Refine supplied solution      ---\n";
@@ -131,7 +140,7 @@ void KNAbstractContinuation::run(const char* branchFile)
       {
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.reset(eqn_start, var_start);
-        pt.setCont(params->getCp() - VarPAR0);
+        pt.setCont(params->getCp());
         if (findangle) pt.findAngle();   // it only computes the angle from the test functional
         pt.refine();
       }
@@ -177,17 +186,19 @@ void KNAbstractContinuation::run(const char* branchFile)
         default:
           screenout << "\nFinding the tangent.\n";
           printStream();
-          pt.setCont(params->getCp() - VarPAR0);
+          pt.setCont(params->getCp());
           pt.tangent();
           break;
       }
       pt.reset(eqn, var);
-      pt.setCont(params->getCp() - VarPAR0);
+      pt.setCont(params->getCp());
 
       // if no stability computation then clear the previously computed multipliers
       if (!(params->getStab())) pt.clearStability();
 
       screenout << '\n';
+      printStream();
+      storeCursor();
       int ustab = 0, ustabprev = 0;
       double norm = 0.0;
       const int ithist = ITSTEPS;
@@ -221,6 +232,7 @@ void KNAbstractContinuation::run(const char* branchFile)
           return;
         }
         //
+        pt.storeMultiplier();
         if (params->getStab()) pt.Stability(false); // we just stepped: no init
         ustabprev = ustab;
         ustab = pt.UStab();
@@ -236,7 +248,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (stabchange) bif = pt.testBif();
         if (toprint || stabchange || endpoint)
         {
-          // moves back the cursor to the beginning of the line
+          // ereases everyting from the last saved cursor
           clearLastLine();
           if (printedln % 24 == 0)
           {
@@ -272,9 +284,10 @@ void KNAbstractContinuation::run(const char* branchFile)
         {
           screenout << "\n";
           printStream();
+          storeCursor();
         }
         // file output
-        pt.BinaryWrite(data(), i);
+        pt.BinaryWrite(data(), bif, i);
         dataUpdated();
 
         // branch output
@@ -353,7 +366,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         pttr.startingPoint(params->getDsStart());
         pttr.setPar(par);
         pttr.setRho(alpha / (2.0*M_PI));
-        pttr.setCont(params->getCp() - VarPAR0);
+        pttr.setCont(params->getCp());
       }
       else if (params->getBranchSW() == NOSwitch)
       {
@@ -363,7 +376,7 @@ void KNAbstractContinuation::run(const char* branchFile)
           pttr.loadPoint(istr, params->getLabel()-1);
           screenout << "\nFinding the tangent.\n";
           printStream();
-          pttr.setCont(params->getCp() - VarPAR0);
+          pttr.setCont(params->getCp());
           pttr.tangent();
         } else
         {

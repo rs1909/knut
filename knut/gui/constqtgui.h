@@ -62,6 +62,7 @@ class NConstantsQtGui : public QObject, public KNConstants
     void slotToPtType(int val);
     void slotToEqn(int val);
     void slotToBranchSW(int val);
+    void slotToBifType(int val);
     void slotToVar(int val);
     void slotToString(const QString& val);
     

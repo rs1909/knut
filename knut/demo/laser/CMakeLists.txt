@@ -1,10 +1,7 @@
 SET( NAME laser )
 
-INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
-ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET( CFILEDIR ${CMAKE_INSTALL_PREFIX}/${KNUT_DEMO_DIR}/${NAME} )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL( FILES sys-${NAME}.cpp
+INSTALL( FILES ${NAME}.vf
     cfile-start.knut cfile-hopfsw.knut cfile-psol.knut cfile-ns.knut cfile-pd.knut cfile-lp.knut
     DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 

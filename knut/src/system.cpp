@@ -375,14 +375,14 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   	if (!infin && (fds[0].revents != 0))
   	{
       ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
-     std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
+//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
       if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
       else wbytes += obytes;
 	  if (wbytes == cxxlen) 
 	  { 
-	  	infin = true;
-	  	fds[0].events = 0;
-	    if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
+      infin = true;
+      fds[0].events = 0;
+      if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
 	  }
   	}
   	if (!outfin && (fds[1].revents != 0))
@@ -398,7 +398,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
       else if (bytes == 0)
       {
         outfin = true; // finished
-	  	fds[1].events = 0;
+        fds[1].events = 0;
       	if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
       }
       else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
@@ -433,8 +433,8 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   {
     if (WEXITSTATUS(status) != 0) P_MESSAGE8("Error code is ", WEXITSTATUS(status), " and the error output of the compile command '",
       cmdline, "' is\n", err_str.c_str(), "\nand the standard output is\n", out_str.c_str());
-    std::ofstream cxxfile("error.cxx");
-    cxxfile << cxxbuf;
+//    std::ofstream cxxfile("error.cxx");
+//    cxxfile << cxxbuf;
   } else
   {
     P_MESSAGE1("The compiler was unexpectedly terminated.");

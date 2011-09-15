@@ -29,6 +29,7 @@ class KNAbstractContinuation
     virtual std::ostream& outStream() { return screenout; };
     virtual void printStream() = 0;
     virtual void clearLastLine() = 0;
+    virtual void storeCursor() = 0;
     virtual void raiseException(const KNException& ex) = 0;
     virtual void setData(KNDataFile* data) = 0;
     virtual KNDataFile& data() = 0;
@@ -44,10 +45,14 @@ class KNAbstractContinuation
 class KNCliContinuation : public KNAbstractContinuation
 {
   public:
-    KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0) { }
+    KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0), charsPrinted(0) { }
     ~KNCliContinuation() { }
-    void printStream() { std::cout << screenout.str(); screenout.str(""); std::cout.flush(); }
-    virtual void clearLastLine() { };
+    void printStream() { std::cout << screenout.str(); charsPrinted += screenout.str().size(); screenout.str(""); std::cout.flush();  }
+    virtual void storeCursor() { charsPrinted = 0; }
+    virtual void clearLastLine()
+    {
+      for (int k=0; k<charsPrinted; ++k) std::cout << "\b";
+    }
     static void printException(const KNException& ex)
     {
       std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
@@ -63,6 +68,7 @@ class KNCliContinuation : public KNAbstractContinuation
     void dataUpdated() { }
   private:
     KNDataFile* output;
+    int         charsPrinted;
 };
 
 #endif

@@ -3,32 +3,26 @@
  <input>out-nssw.mat</input>
  <output>out-pd.mat</output>
  <sysname>mackey-glass.vf.so</sysname>
- <label>66</label>
- <pointtype>52</pointtype>
- <cptype>P</cptype>
- <cpnum>2</cpnum>
- <switch>0</switch>
+ <fromtype>PD</fromtype>
+ <label>1</label>
+ <pointtype>DDE_AUT_PD</pointtype>
+ <cp>b</cp>
+ <switch>NX</switch>
  <nparx>2</nparx>
  <parx>
-  <par>
-   <type>P</type>
-   <num>0</num>
-  </par>
-  <par>
-   <type>P</type>
-   <num>1</num>
-  </par>
+  <par>T</par>
+  <par>a</par>
  </parx>
  <nint>200</nint>
  <ndeg>5</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
- <nmat>1</nmat>
+ <curvature>2.500000000000000E-01</curvature>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>1000</steps>
+ <steps>200</steps>
  <iad>0</iad>
  <npr>10</npr>
  <cpmin>-1.000000000000000E+02</cpmin>
@@ -43,5 +37,6 @@
  <nitc>12</nitc>
  <nitr>12</nitr>
  <nitk>12</nitk>
+ <nderi>8</nderi>
  <nsym>0</nsym>
 </knut>

@@ -1,43 +1,41 @@
-<!DOCTYPE cfile>
+<?xml version="cfile 1.0" encoding="utf-8"?>
 <knut>
  <input>out-start-b.mat</input>
  <output>out-ns-b.mat</output>
- <sysname>sys-traffic3cars.so</sysname>
- <label>69</label>
- <pointtype>43</pointtype>
- <cptype>P</cptype>
- <cpnum>1</cpnum>
- <switch>0</switch>
+ <sysname>traffic3cars.vf.so</sysname>
+ <fromtype>NS</fromtype>
+ <label>1</label>
+ <pointtype>DDE_NS</pointtype>
+ <cp>alpha</cp>
+ <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>
-   <type>P</type>
-   <num>3</num>
-  </par>
+  <par>LpN</par>
  </parx>
  <nint>40</nint>
  <ndeg>5</ndeg>
  <nmul>5</nmul>
  <stab>1</stab>
- <nmat>1</nmat>
+ <curvature>2.500000000000000E-01</curvature>
  <nint1>12</nint1>
  <nint2>12</nint2>
  <ndeg1>4</ndeg1>
  <ndeg2>4</ndeg2>
- <steps>300</steps>
+ <steps>100</steps>
  <iad>3</iad>
- <cpmin>-100.000000</cpmin>
- <cpmax>100.000000</cpmax>
- <ds>-0.020000</ds>
- <dsmin>0.020000</dsmin>
- <dsmax>0.5</dsmax>
- <dsstart>-0.020000</dsstart>
- <epsc>0.000100</epsc>
- <epsr>0.000010</epsr>
- <epsk>0.000001</epsk>
+ <npr>10</npr>
+ <cpmin>-1.000000000000000E+02</cpmin>
+ <cpmax>1.000000000000000E+02</cpmax>
+ <ds>2.000000000000000E-02</ds>
+ <dsmin>2.000000000000000E-02</dsmin>
+ <dsmax>5.000000000000000E-01</dsmax>
+ <dsstart>2.000000000000000E-02</dsstart>
+ <epsc>1.000000000000000E-04</epsc>
+ <epsr>1.000000000000000E-05</epsr>
+ <epsk>1.000000000000000E-05</epsk>
  <nitc>22</nitc>
  <nitr>22</nitr>
  <nitk>22</nitk>
+ <nderi>8</nderi>
  <nsym>0</nsym>
- <sym/>
 </knut>

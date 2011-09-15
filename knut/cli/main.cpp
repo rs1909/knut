@@ -16,23 +16,13 @@
 // #include "constants.h" included in basecomp
 // #include <iostream> included in basecomp
 
-inline void parNamePrint(KNVector& /*par*/, int npar, KNArray1D<Var>& var)
-{
-  for (int j = 1; j < var.size(); j++) std::cout << "\t" << parType(npar, var(j) - VarPAR0) << parNum(npar, var(j) - VarPAR0) << "\t";
-}
-
-inline void parValuePrint(KNVector& par, int /*npar*/, KNArray1D<Var>& var)
-{
-  for (int j = 1; j < var.size(); j++) std::cout << "\t" << par(var(j) - VarPAR0);
-}
-
-
 int main(int argc, const char** argv)
 {
   // parameters
   KNConstants*  params = 0;
   const char*  branchFile = 0;
 
+  bool save = false;
   try
   {
     // argument parsing
@@ -42,6 +32,8 @@ int main(int argc, const char** argv)
       {
         switch (argv[acnt][1])
         {
+          case 's':
+            save = true;
           case 'c':
             params = new KNConstants;
             {
@@ -63,7 +55,7 @@ int main(int argc, const char** argv)
               if (constFile[0] != '/') constFile.insert(0, cwd);
               params->loadXmlFile(constFile);
             }
-//            params->printXmlFile(std::cout);
+            if (save) { params->printXmlFile(std::cout); exit(0); }
             break;
           case 'b':
             branchFile = argv[++acnt];

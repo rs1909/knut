@@ -17,6 +17,7 @@ class KNSystem;
 class KNAbstractCollocation
 {
   public:
+    virtual ~KNAbstractCollocation() {}
     virtual void   init(const KNVector& sol, const KNVector& par) = 0;
     virtual void   star(KNVector& out, const KNVector& sol) = 0;
     virtual double integrate(const KNVector& v1, const KNVector& v2) = 0;

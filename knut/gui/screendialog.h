@@ -23,6 +23,7 @@ class screenDialog : public QTextEdit
       QSize size = settings.value("size", QSize(400, 400)).toSize();
       resize(size);
       move(pos);
+      savedPosition = textCursor().position();
     }
     ~screenDialog()
     {
@@ -45,23 +46,36 @@ class screenDialog : public QTextEdit
     }
     void append(const std::string& str)
     {
-      QTextCursor cur = textCursor ();
+      QTextCursor cur = textCursor();
       cur.movePosition(QTextCursor::End);
+      setTextCursor(cur);
       QScrollBar* bar = verticalScrollBar();
       const bool atEnd = (bar->maximum() == bar->value());
       cur.insertText(QString(str.c_str()));
       if (atEnd) bar->setValue(bar->maximum());
     }
+    void storeCursor()
+    {
+      savedPosition = textCursor().position();
+    }
     void clearLastLine()
     {
       QTextCursor cur = textCursor ();
-      cur.movePosition(QTextCursor::End);
-      cur.select(QTextCursor::LineUnderCursor);
+      cur.setPosition(savedPosition);
+      cur.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
       cur.removeSelectedText();
     }
     void setText(const QString& str)
     {
       setPlainText(str);
       setFontFamily("Courier");
+      QScrollBar* bar = verticalScrollBar();
+      bar->setValue(bar->maximum());
+      QTextCursor cur = textCursor();
+      cur.movePosition(QTextCursor::End);
+      setTextCursor(cur);
+      savedPosition = textCursor().position();
     }
+  private:
+    int savedPosition;
 };

@@ -132,7 +132,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   {
   	for (int k = 0; k < NTAU; k++)
       {
-  	    if (fabs(p_tau(k,idx)) > NMAT*par(0)) nmat_new = (int)ceil(fabs(p_tau(k,idx)/par(0)));
+  	    if (fabs(p_tau(k,idx)) > nmat_new*par(0)) nmat_new = (int)ceil(fabs(p_tau(k,idx)/par(0)));
       }
   }
   if (nmat_new != NMAT)
@@ -140,6 +140,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   	NMAT = nmat_new;
   	szI.init(NMAT + 1, NINT*NDEG);
   }
+//  std::cout << "NMAT_new " << nmat_new << "p_tau(1,0)/par(0)" << p_tau(1,0)/par(0) << "\n";
 
   for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
@@ -166,7 +167,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
         p_tau(k,idx) /= par(0);
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
 
-        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // nem szetvalasztott
+        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // not separated
 
         // binary search for in which interval is t-p_tau(k,idx)
         const int low = meshlookup(mesh, t(1+k));
@@ -266,7 +267,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
       int idpI = 0, delI = 0;
       rrI(eeI(0, idx), idx) = 0;
       ddI(eeI(0, idx), idx) = 0;
-//      std::cout << " mmI " << mmI(eeI(0, idx),idx) << " eeI " << eeI(0, idx) << " kkI " << kkI(eeI(0, idx),idx) << "\n";
+//      std::cout << " mmI " << mmI(eeI(0, idx),idx) << " eeI " << eeI(0, idx) << " kkI " << kkI(eeI(0, idx),idx) << " NMAT " << nmat << " del " << p_tau(eeI(0, idx)-1,idx) << " idx " << idx << "\n";
       szI(mmI(eeI(0, idx), idx), idx) = NDEG + 1;
 
       for (int r = 1; r < NTAU + 1; r++)

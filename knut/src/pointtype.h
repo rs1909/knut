@@ -84,16 +84,10 @@ enum BifType
   BifLP,
   BifPD,
   BifNS,
+  BifUN,
   BifMax,
   BifEndPoint,
   BifNoConvergence
-};
-
-template<typename TP> struct TypeTuple
-{
-  int          index;
-  TP           type;
-  const char * name;
 };
 
 inline int VarToIndex(Var v, int npar)
@@ -106,94 +100,6 @@ inline Var IndexToVar(int idx, int npar)
 {
   if (idx < npar) return static_cast<Var>(VarPAR0 + idx);
   else return static_cast<Var>(VarInternal + (idx - npar));
-}
-
-inline char parType(int npar, int p)
-{
-  if (p < npar) return 'P';
-  else return 'I';
-}
-
-inline int parNum(int npar, int p)
-{
-  if (p < npar) return p;
-  else return p - npar;
-}
-
-inline const char* EqnToStr(Eqn eqn)
-{
-  switch (eqn)
-  {
-    case EqnNone:
-      return "EqnNone";
-      break;
-    case EqnSol:
-      return "EqnSol";
-      break;
-    case EqnODESol:
-      return "EqnODESol";
-      break;
-    case EqnPhase:
-      return "EqnPhase";
-      break;
-    case EqnPhaseRot:
-      return "EqnPhaseRot";
-      break;
-    case EqnTORSol:
-      return "EqnTORSol";
-      break;
-    case EqnTORPhase0:
-      return "EqnTORPhase0";
-      break;
-    case EqnTORPhase1:
-      return "EqnTORPhase1";
-      break;
-    case EqnTFLP:
-      return "EqnTFLP";
-      break;
-    case EqnTFPD:
-      return "EqnTFPD";
-      break;
-    case EqnTFLPAUT:
-      return "EqnTFLPAUT";
-      break;
-    case EqnTFLPAUTROT:
-      return "EqnTFLPAUTROT";
-      break;
-    case EqnTFCPLX_RE:
-      return "EqnTFCPLX_RE";
-      break;
-    case EqnTFCPLX_IM:
-      return "EqnTFCPLX_IM";
-      break;
-    default:
-      return "Eqn ?";
-      break;
-  }
-  return "EqnInvalid";
-}
-
-inline const char* VarToStr(Var var)
-{
-  if (var >= VarPAR0) return "VarPAR>0";
-  switch (var)
-  {
-    case VarNone:
-      return "VarNone";
-      break;
-    case VarSol:
-      return "VarSol";
-      break;
-    case VarODESol:
-      return "VarODESol";
-      break;
-    case VarTORSol:
-      return "VarTORSol";
-      break;
-    default:
-      return "Var ?";
-      break;
-  }
 }
 
 template< class T > class KNArray1D;
