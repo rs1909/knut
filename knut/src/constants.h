@@ -164,7 +164,7 @@ class KNConstants
                   KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                   KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle);
     void loadXmlFile(const std::string &fileName);
-    void loadXmlFileOLD(const std::string &fileName);
+    void loadXmlFileOld(const std::string &fileName);
     void saveXmlFile(const std::string &fileName);
     void printXmlFile(std::ostream& file);
     
