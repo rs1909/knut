@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-start.mat</input>
  <output>out-ns-1.mat</output>
- <sysname>turntwo.vf.so</sysname>
+ <sysname>turntwo.vf</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>DDE_NS</pointtype>

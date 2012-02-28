@@ -1,9 +1,9 @@
 #include "basecomp.h"
 #include "knerror.h"
-#include "system.h"
 #include "point.h"
 #include "odepoint.h"
 #include "torpoint.h"
+#include "system.h"
 
 #include <iostream>
 #include <iomanip>
@@ -21,16 +21,14 @@ void KNAbstractContinuation::run(const char* branchFile)
   KNSystem *sys = 0;
   try
   {
-    sys = new KNSystem(params->getSysName(), params->getNDeri());
+    sys = new KNSystem(params->getSysName(), params->getSysType(), params->getNDeri());
   }
   catch (KNException ex)
   {
+    delete sys; sys = 0;
     raiseException(ex);
-    delete sys;
     return;
   }
-
-  
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
 
@@ -227,8 +225,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (stopFlag)
         {
           deleteData();
-          delete pt_ptr;
-          delete sys;
+          delete pt_ptr; pt_ptr = 0;
+          delete sys; sys = 0;
           return;
         }
         //
@@ -393,7 +391,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (stopFlag)
         {
           deleteData();
-          delete sys;
+          delete sys; sys = 0;
           return;
         }
         // same as for periodic orbits
@@ -423,13 +421,13 @@ void KNAbstractContinuation::run(const char* branchFile)
       deleteData();
     }
     // **********************************************************************************************************
-    delete pt_ptr;
-    delete sys;
+    delete pt_ptr; pt_ptr = 0;
+    delete sys; sys = 0;
   }
   catch (KNException ex)
   {
-    delete pt_ptr;
-    delete sys;
+    delete pt_ptr; pt_ptr = 0;
+    delete sys; sys = 0;
     deleteData();
     raiseException(ex);
   }

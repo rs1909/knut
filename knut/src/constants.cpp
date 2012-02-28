@@ -16,15 +16,12 @@
 // For loading XML constant files
 #include "mxml.h"
 
-std::map<std::string, KNConstantNames::tuple_t> KNConstantNames::nlist;
-
 void KNConstantNames::addConstantName(const char * type, const char * name, void * var, void(*nsetFun)())
 { 
   if (nlist.find (name) == nlist.end())
   {
     tuple_t t = { type, var, nsetFun };
     nlist[name] = t;
-//     std::cout << "CNAME " << nlist[name].type << " " << name << "\n";
   }
 }
 
@@ -130,6 +127,9 @@ static inline const char *getNodeText(mxml_node_t* nd)
 static inline const char *getNodeText(mxml_node_t* nd, const char* def_value)
 {
   const char* str = getNodeText(nd);
+//#ifdef DEBUG
+//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
+//#endif
   if (str) return str;
   else return def_value;
 }
@@ -151,6 +151,9 @@ static inline int getNodeInteger(mxml_node_t* nd, const char *line = "")
 static inline int getNodeInteger(mxml_node_t* nd, int def_value)
 {
   const char* str = getNodeText(nd);
+//#ifdef DEBUG
+//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
+//#endif
   if (str != 0) return toInt(strtol(str, 0, 10));
   else return def_value;
 }
@@ -168,6 +171,9 @@ static inline double getNodeReal(mxml_node_t* nd, const char *line = "")
 static inline double getNodeReal(mxml_node_t* nd, double def_value)
 {
   const char* str = getNodeText(nd);
+//#ifdef DEBUG
+//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
+//#endif
   if (str != 0)
   {
     std::istringstream strstr(str);
@@ -190,7 +196,7 @@ static inline const char* c2s(char *buf, char c)
   return buf;
 }
 
-void KNConstants::loadXmlFile(const std::string &fileName)
+void KNConstantsBase::loadXmlFile(const std::string &fileName)
 {
   FILE *fp;
   mxml_node_t *tree;
@@ -223,6 +229,8 @@ void KNConstants::loadXmlFile(const std::string &fileName)
   
   nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
   // This has to load the system definition
+  const char *s_type = mxmlElementGetAttr(nd, "type");
+  if (s_type) setSysType(s_type);
   setSysNameText(getNodeText(nd, ""));
 
   nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
@@ -379,7 +387,7 @@ void KNConstants::loadXmlFile(const std::string &fileName)
   mxmlDelete(tree);
 }
 
-void KNConstants::loadXmlFileOld(const std::string &fileName)
+void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
 {
   FILE *fp;
   mxml_node_t *tree;
@@ -419,7 +427,7 @@ void KNConstants::loadXmlFileOld(const std::string &fileName)
   const char cp_type = getNodeCharM(nd_a); 
   
   nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", 0, 0, MXML_DESCEND_FIRST);
-  const char cp_num = getNodeIntegerM(nd_b);
+  const int cp_num = getNodeIntegerM(nd_b);
   
   setCp(varFromTypeNum(cp_type,cp_num));
   
@@ -442,7 +450,7 @@ void KNConstants::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const char num = getNodeIntegerM(nd_num);
+        const int num = getNodeIntegerM(nd_num);
         setParx(it, varFromTypeNum(type,num));
         ++it;
       }
@@ -463,7 +471,7 @@ void KNConstants::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const char num = getNodeIntegerM(nd_num);
+        const int num = getNodeIntegerM(nd_num);
         setEqns(it, eqnFromTypeNum(type,num));
         ++it;
       }
@@ -476,7 +484,7 @@ void KNConstants::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const char num = getNodeIntegerM(nd_num);
+        const int num = getNodeIntegerM(nd_num);
         setVars(it, varFromTypeNum(type,num));
         ++it;
       }
@@ -578,7 +586,7 @@ void KNConstants::loadXmlFileOld(const std::string &fileName)
   mxmlDelete(tree);
 }
 
-void KNConstants::saveXmlFile(const std::string &fileName)
+void KNConstantsBase::saveXmlFile(const std::string &fileName)
 {
   std::ofstream file(fileName.c_str());
   printXmlFile(file);
@@ -589,7 +597,7 @@ static inline void mxmlNewDouble(mxml_node_t *node, double dbl)
   mxmlNewTextf(node, 0, "%.15E", dbl);
 }
 
-void KNConstants::printXmlFile(std::ostream& file)
+void KNConstantsBase::printXmlFile(std::ostream& file)
 {
   char cbuf[2];
   mxml_node_t *node = 0;
@@ -606,6 +614,7 @@ void KNConstants::printXmlFile(std::ostream& file)
   
   node = mxmlNewElement(data, "sysname");
   mxmlNewText(node, 0, getSysName().c_str());
+  mxmlElementSetAttr(node, "type", getSysType().c_str());
   
   node = mxmlNewElement(data, "fromtype");
   mxmlNewText(node, 0, BifTypeTable.TypeToCode(getFromType()).c_str());
@@ -761,7 +770,7 @@ void KNConstants::printXmlFile(std::ostream& file)
   mxmlDelete(xml);
 }
 
-bool KNConstants::toEqnVar(KNSystem& sys,
+bool KNConstantsBase::toEqnVar(KNSystem& sys,
                           KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
                           KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                           KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle)
@@ -931,7 +940,7 @@ tfskip:
   return needTF;
 }
 
-void KNConstants::initDimensions(const KNSystem* sys)
+void KNConstantsBase::initDimensions(const KNSystem* sys)
 {
   initParNames(sys->npar());
   const char **names = new const char *[sys->npar()+1];
@@ -939,6 +948,7 @@ void KNConstants::initDimensions(const KNSystem* sys)
   sys->parnames(names);
   for (int i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
   delete[] names;
+  names = 0;
   // this will send a signal so parNames must be ready
   setNPar(sys->npar());
   setNDim(sys->ndim());
@@ -947,26 +957,28 @@ void KNConstants::initDimensions(const KNSystem* sys)
   setNPar(sys->npar());
 }
 
-void KNConstants::setSysNameText(const std::string& str, bool testing)
+void KNConstantsBase::setSysNameText(const std::string& str, bool testing)
 {
   setSysName(str);
   KNSystem* sys = 0;
   try
   {
-    sys = new KNSystem(getSysName(), getNDeri());
+    sys = new KNSystem(getSysName(), getSysType(), getNDeri());
     initDimensions(sys);
     delete sys;
+    sys = 0;
   }
-  catch (KNException ex)
+  catch (KNException& ex)
   {
     delete sys;
+    sys = 0;
     setNPar(0);
     setNDim(0);
     throw(ex);
   }
 }
 
-template<> const TypeTuple<PtType> KNConstants::TypeTupleTab<PtType>::tabStatic[] = {
+template<> const TypeTuple<PtType> KNConstantsBase::TypeTupleTab<PtType>::tabStatic[] = {
   {0,  SolUser,      "USER",             "User defined"}, // User
   {1,  SolODE,       "ODE",              "ODE limit cycle"}, // ODE limit cycle
   {2,  SolAUTODE,    "ODE_AUT",          "ODE limit cycle (aut)" }, // ODE limit cycle (aut)
@@ -989,7 +1001,7 @@ template<> const TypeTuple<PtType> KNConstants::TypeTupleTab<PtType>::tabStatic[
   {19, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
   {-1, SolUser, "", ""}};
 
-template<> const TypeTuple<Eqn> KNConstants::TypeTupleTab<Eqn>::tabStatic[] = {
+template<> const TypeTuple<Eqn> KNConstantsBase::TypeTupleTab<Eqn>::tabStatic[] = {
   {0,  EqnNone,       "NX",                "None" },
   {1,  EqnSol,        "DDE_LC",            "Limit cycle"},
   {2,  EqnODESol,     "ODE_LC",            "ODE Limit cycle"},
@@ -1006,7 +1018,7 @@ template<> const TypeTuple<Eqn> KNConstants::TypeTupleTab<Eqn>::tabStatic[] = {
   {13, EqnTFCPLX_IM,  "DDE_TF_NS_IM",      "NS TF (imag)"},
   {-1, EqnNone, "", ""}};
   
-template<> const TypeTuple<BranchSW> KNConstants::TypeTupleTab<BranchSW>::tabStatic[] = {
+template<> const TypeTuple<BranchSW> KNConstantsBase::TypeTupleTab<BranchSW>::tabStatic[] = {
   {0, NOSwitch,         "NX",         "No switch"},
   {1, TFBRSwitch,       "BP",         "Branch"},
   {2, TFPDSwitch,       "PD",         "Period doubling"},
@@ -1016,7 +1028,7 @@ template<> const TypeTuple<BranchSW> KNConstants::TypeTupleTab<BranchSW>::tabSta
   {6, TFBRAUTROTSwitch, "AUT_ROT_BP", "Branch (sym)"},
   {-1, NOSwitch, "", ""}};
 
-template<> const TypeTuple<Var> KNConstants::TypeTupleTab<Var>::tabStatic[] = {
+template<> const TypeTuple<Var> KNConstantsBase::TypeTupleTab<Var>::tabStatic[] = {
   {0, VarNone,   "NX",          "None"},
   {1, VarSol,    "DDE_LC",      "Limit cycle"},
   {2, VarODESol, "ODE_LC",      "ODE limit cycle"},
@@ -1027,7 +1039,7 @@ template<> const TypeTuple<Var> KNConstants::TypeTupleTab<Var>::tabStatic[] = {
   {7, VarRot,    "PAR_ROT_NUM", "Rot. num."},
   {-1, VarEnd, "", ""}};
 
-template<> const TypeTuple<BifType> KNConstants::TypeTupleTab<BifType>::tabStatic[] = {
+template<> const TypeTuple<BifType> KNConstantsBase::TypeTupleTab<BifType>::tabStatic[] = {
   {0, BifNone,          "NX", "None"},
   {1, BifLP,            "LP", "LP"},
   {2, BifPD,            "PD", "PD"},
@@ -1040,7 +1052,7 @@ template<> const TypeTuple<BifType> KNConstants::TypeTupleTab<BifType>::tabStati
   
 // specialization to Var
 
-template<> void KNConstants::TypeTupleTab<Var>::update()
+template<> void KNConstantsBase::TypeTupleTab<Var>::update()
 {
   size_t sz = 0;
   while (tabStatic[sz].index >= 0) ++sz;

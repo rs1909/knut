@@ -30,8 +30,12 @@
 #include <map>
 #include <ginac/ginac.h>
 
+#include <matrix.h>
+
 DECLARE_FUNCTION_2P(delay)
 DECLARE_FUNCTION_2P(Zlags_)
+DECLARE_FUNCTION_2P(VZlags_)
+DECLARE_FUNCTION_1P(par_)
 
 DECLARE_FUNCTION_1P(heaviside)
 DECLARE_FUNCTION_1P(ramp)
@@ -194,42 +198,41 @@ class VectorField : public Symbol
 
 //  protected:
 
-    GiNaC::lst conname_list;
-    GiNaC::lst convalue_list;
-    GiNaC::lst parname_list;
-    GiNaC::lst pardefval_list;
-    GiNaC::lst exprname_list;
-    GiNaC::lst exprformula_list;
-    GiNaC::lst expreqn_list;
-    GiNaC::lst varname_list;
-    GiNaC::lst varvecfield_list;
-    GiNaC::lst vardefic_list;
-    GiNaC::lst vardefhist_list;
-    GiNaC::lst funcname_list;
-    GiNaC::lst funcformula_list;
+    GiNaC::lst conname_list;     // P
+    GiNaC::lst convalue_list;    // P
+    GiNaC::lst parname_list;     // P
+    GiNaC::lst pardefval_list;   // P
+    GiNaC::lst exprname_list;    // P
+    GiNaC::lst exprformula_list; // P
+    GiNaC::lst expreqn_list;     // P
+    GiNaC::lst varname_list;     // P
+    GiNaC::lst varvecfield_list; // P
+    GiNaC::lst vardefic_list;    // P
+    GiNaC::lst vardefhist_list;  // P
+    GiNaC::lst funcname_list;    // P
+    GiNaC::lst funcformula_list; // P
 
-    GiNaC::lst allsymbols;
-    GiNaC::symbol IndVar;
+    GiNaC::lst allsymbols;       // P
+    GiNaC::symbol IndVar;        // P
     
     std::vector<std::vector<double> > mass_matrix;
 
     // Everything is public, for now.
 //  public:
-
-    std::string IndependentVariable;
-    std::vector<Constant *>      Constants;
-    std::vector<Parameter *>     Parameters;
-    std::vector<Expression *>    Expressions;
-    std::vector<StateVariable *> StateVariables;
-    std::vector<Function *>      Functions;
-    bool IsDelay;
-    bool TimeDependentDelay;
-    bool StateDependentDelay;
-    bool HasPi;
-    bool IsAutonomous;
-    bool HasPeriod;
-
-    std::vector<GiNaC::ex> Delays;
+	// These are added by the ReadXML
+    std::string IndependentVariable;             // X
+    std::vector<Constant *>      Constants;      // X
+    std::vector<Parameter *>     Parameters;     // X
+    std::vector<Expression *>    Expressions;    // X
+    std::vector<StateVariable *> StateVariables; // X
+    std::vector<Function *>      Functions;      // X
+    bool IsDelay;                                // P
+    bool TimeDependentDelay;                     // P
+    bool StateDependentDelay;                    // P
+    bool HasPi;                                  // P
+    bool IsAutonomous;                           // P
+    bool HasPeriod;                              // P
+    std::vector<GiNaC::ex> Delays;               // P
 
   public:
     // Constructors
@@ -240,7 +243,42 @@ class VectorField : public Symbol
     // Destructor
     ~VectorField();
 
+    void PrintXML(const std::string& cmdstr);
+    int  ReadXML(const std::string& xmlfilename);
+    int  ProcessSymbols(void);
+    void PrintKnut(std::ostream& sys_out, std::map<std::string, std::string> options);
+    bool isTimeDependentDelay() { return TimeDependentDelay; }
+    bool isStateDependentDelay() { return StateDependentDelay; }
+    
+    size_t Knut_ndim() { return varvecfield_list.nops(); }
+    size_t Knut_npar() { if (HasPeriod) return parname_list.nops(); else return parname_list.nops()+1; }
+    size_t Knut_ntau() { return Delays.size()+1; }
+    size_t Knut_nevent() { return funcname_list.nops(); }
+    void Knut_tau(std::vector<GiNaC::ex>& exls);
+    void Knut_tau_p(std::vector<GiNaC::ex>& exls);
+    // returns a vector of expressions for the right-hand-side
+    // each expression is dependent on Zlags_(i,j) and par_(k) only
+    // the expressions, constants and parameters are subsituted
+    // This is used to evaluate the right-hand-side
+    void Knut_RHS(std::vector<GiNaC::ex>&);
+    void Knut_RHS_p(std::vector<GiNaC::ex>&);
+    void Knut_RHS_x(std::vector<GiNaC::ex>&);
+    void Knut_RHS_xp(std::vector<GiNaC::ex>&);
+    void Knut_RHS_xx(std::vector<GiNaC::ex>&);
+    void Knut_stpar(std::vector<double>&);
+    void Knut_stsol(std::vector<GiNaC::ex>&);
+    void Knut_parnames(std::vector<std::string>&);
+    
+    static void Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, const size_t nv, const size_t nps, const size_t nd );
+    static void Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp, const size_t nv, const size_t nps, const size_t nd );
+    static void Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
+    static void Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int alpha, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, int alpha, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, int sel, int del1, int del2, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_stsol_eval( const std::vector<GiNaC::ex>& exls, KNArray2D<double>& out_p, const KNArray1D<double>& time );
 
+  private:
     void AddConstant(Constant *c);
     void AddParameter(Parameter *p);
     void AddExpression(Expression *e);
@@ -254,22 +292,16 @@ class VectorField : public Symbol
     int FindDelay(GiNaC::ex&);
     int AddDelay(GiNaC::ex&);
 
-    void PrintXML(const std::string& cmdstr);
-    int  ReadXML(const std::string& xmlfilename);
-
     void CheckForDelay(const GiNaC::ex& f);
-    int  ProcessSymbols(void);
-    bool isTimeDependentDelay() { return TimeDependentDelay; }
-    bool isStateDependentDelay() { return StateDependentDelay; }
     
     void print(void);
     void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
     void Knut_ConvertStateToZlags(GiNaC::ex& f);
+    void Knut_ConvertConstsPars(GiNaC::ex& f);
     void Knut_PrintParDerivs(std::ostream &dout, const std::vector<GiNaC::ex> &e);
     void Knut_PrintJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
     void Knut_PrintXandParJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
     void Knut_PrintHessiansTimesV(std::ostream &dout, const std::vector<GiNaC::ex> &e);
-    void PrintKnut(std::ostream& sys_out, std::map<std::string, std::string> options);
 };
 
 #endif

@@ -58,7 +58,7 @@ SET( MXML_INCLUDE_DIRS ${KNUT_SOURCE_DIR}/mxml )
 #------------------------------------------------------------------------------
 
 SET( QT_MIN_VERSION "4.4.0" )
-FIND_PACKAGE( Qt4 )
+FIND_PACKAGE( Qt4 REQUIRED)
 
 IF(WIN32)
   FIND_LIBRARY( KNUT_QTMAIN qtmain ${QT_LIBRARY_DIR} )
@@ -97,13 +97,17 @@ SET( KNUT_NO_EXCEPTIONS "-fno-rtti -fno-exceptions" CACHE INTERNAL "No exception
 IF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
   EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.a
     OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgcc.a
+    OUTPUT_VARIABLE RESGCC OUTPUT_STRIP_TRAILING_WHITESPACE )
 ELSE(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
-  EXECUTE_PROCESS( COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libgfortran.a
+  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.a
     OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgcc.a
+    OUTPUT_VARIABLE RESGCC OUTPUT_STRIP_TRAILING_WHITESPACE )
 ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
 
 MESSAGE( STATUS "The FORTRAN runtime library is ${RES}" )
-SET( KNUT_FORTRAN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
+SET( KNUT_FORTRAN_RUNTIME ${RES} ${RESGCC} CACHE INTERNAL "The fortran runtime library" )
 
 #------------------------------------------------------------------------------
 # Writing the generated files

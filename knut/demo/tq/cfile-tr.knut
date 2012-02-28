@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-start.mat</input>
  <output>out-tr.mat</output>
- <sysname>sys-tq.so</sysname>
+ <sysname>sys-tq.cpp</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>DDE_TORUS_SW</pointtype>

@@ -39,10 +39,11 @@ int main(int argc, const char** argv)
             {
               std::string constFile(argv[++acnt]);
               std::string cfdir(constFile);
-              char*  cwd_ptr = getcwd(0, 0);
+              char* cwd_ptr = new char[512];
+              getcwd(cwd_ptr, 511);
               P_ERROR_X1(cwd_ptr != 0, "Cannot obtain CWD.");
               std::string  cwd(cwd_ptr);
-              free(cwd_ptr);
+              delete[] cwd_ptr;
               cwd += '/';
               
               size_t found = cfdir.rfind('/');
@@ -80,7 +81,7 @@ int main(int argc, const char** argv)
     if (params == 0)
     {
       P_MESSAGE1("Missing constants file.");
-      exit(1);
+      exit(-1);
     }
   
     KNCliContinuation comp(*params);

@@ -29,6 +29,7 @@
 
 #include "vf.h"
 #include "codegen_utils.h"
+#include "knerror.h"
 
 using namespace std;
 using namespace GiNaC;
@@ -197,58 +198,45 @@ int VectorField::ReadXML(const std::string& xmlfilename)
   bool bad_attr;
 
   xmlfile = fopen(xmlfilename.c_str(), "r");
-  if (xmlfile == NULL)
-  {
-    // Failed to open the file.
-    cerr << "Error: Unable to open " << xmlfilename << "\n";
-    exit(-1);
-  }
+  P_ERROR_X3(xmlfile != NULL, "Error: Unable to open ", xmlfilename, "\n");
   tree = mxmlLoadFile(NULL, xmlfile, MXML_NO_CALLBACK);
   fclose(xmlfile);
   if (tree == NULL)
   {
-    cerr << "Error: Unable to load the vector field from the file " << xmlfilename << ".\n";
-    cerr << "There may be an error in the XML definition of the vector field.\n";
     mxmlDelete(tree);
-    exit(-1);
+    P_MESSAGE3("Error: Unable to load the vector field from the file ", xmlfilename, 
+               ". There may be an error in the XML definition of the vector field.");
   }
 
   node = mxmlFindElement(tree, tree, "VectorField", NULL, NULL, MXML_DESCEND);
   if (node == NULL)
   {
-    cerr << "Error: No VectorField element found in XML defintion.\n";
     mxmlDelete(tree);
-    exit(-1);
+    P_MESSAGE1("Error: No VectorField element found in XML defintion.\n");
   }
   else
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "IndependentVariable" && attr != "Description")
       {
-        cerr << "Error: The VectorField element has an unknown attribute: " << attr << endl;
-        bad_attr = true;
+        mxmlDelete(tree);
+        P_MESSAGE2("Error: The VectorField element has an unknown attribute: ", attr);
       }
     }
-    if (bad_attr)
-      exit(-1);
-    const char *attr;
-    attr = mxmlElementGetAttr(node, "Name");
+    const char *attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: The VectorField element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: The VectorField element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The VectorField Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The VectorField Name \"", attr, "\" is not valid.");
       }
       string s(attr);
       Name(s);
@@ -266,9 +254,8 @@ int VectorField::ReadXML(const std::string& xmlfilename)
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The VectorField IndependentVariable \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The VectorField IndependentVariable \"", attr, "\" is not valid.");
       }
       string s(attr);
       IndependentVariable = s;
@@ -282,36 +269,28 @@ int VectorField::ReadXML(const std::string& xmlfilename)
        node != NULL;
        node = mxmlFindElement(node, tree, "Constant", NULL, NULL, MXML_DESCEND))
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Value" && attr != "Description" && attr != "Latex")
       {
-        cerr << "Error: A Constant element has an unknown attribute: " << attr << endl;
-        bad_attr = true;
+      	mxmlDelete(tree);
+        P_MESSAGE3("Error: A Constant element has an unknown attribute: ", attr, "Valid Constant attributes are: Name, Value, Description, Latex.");
       }
-    }
-    if (bad_attr)
-    {
-      cerr << "Valid Constant attributes are: Name, Value, Description, Latex.\n";
-      exit(-1);
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: A Constant element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: A Constant element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The Constant Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Constant Name \"", attr, "\" is not valid.");
       }
       string name(attr);
       Constant *c = new Constant(name);
@@ -325,9 +304,8 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       attr = mxmlElementGetAttr(node, "Value");
       if (attr == NULL)
       {
-        cerr << "Error: The Constant element with Name=\"" << c->Name() << "\" has no Value attribute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Constant element with Name=\"", c->Name(), "\" has no Value attribute.");
       }
       else
       {
@@ -350,36 +328,29 @@ int VectorField::ReadXML(const std::string& xmlfilename)
        node != NULL;
        node = mxmlFindElement(node, tree, "Parameter", NULL, NULL, MXML_DESCEND))
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "DefaultValue" && attr != "Description" && attr != "Latex")
       {
-        cerr << "Error: A Parameter element has an unknown attribute: " << attr << endl;
+        mxmlDelete(tree);
+        P_MESSAGE3("Error: A Parameter element has an unknown attribute: ", attr, "Valid Parameter attributes are: Name, DefaultValue, Description, Latex.");
         bad_attr = true;
       }
-    }
-    if (bad_attr)
-    {
-      cerr << "Valid Parameter attributes are: Name, DefaultValue, Description, Latex.\n";
-      exit(-1);
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: A Parameter element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: A Parameter element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The Parameter Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Parameter Name \"", attr, "\" is not valid.\n");
       }
       string name(attr);
       Parameter *p = new Parameter(name);
@@ -418,30 +389,23 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Formula" && attr != "Description" && attr != "Latex")
       {
-        cerr << "Error: An Expression element has an unknown attribute: " << attr << endl;
-        bad_attr = true;
+      	mxmlDelete(tree);
+        P_MESSAGE3("Error: An Expression element has an unknown attribute: ", attr, "Valid Expression attributes are: Name, Formula, Description, Latex");
       }
-    }
-    if (bad_attr)
-    {
-      cerr << "Valid Expression attributes are: Name, Formula, Description, Latex.\n";
-      exit(-1);
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: An Expression element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: An Expression element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The Expression Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Expression Name \"", attr, "\" is not valid.");
       }
       string name(attr);
       Expression *e = new Expression(name);
@@ -455,9 +419,8 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       attr = mxmlElementGetAttr(node, "Formula");
       if (attr == NULL)
       {
-        cerr << "Error: The Expression with Name=\"" << e->Name() << "\" has no Formula attribute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Expression with Name=\"", e->Name(), "\" has no Formula attribute.");
       }
       else
       {
@@ -480,7 +443,6 @@ int VectorField::ReadXML(const std::string& xmlfilename)
        node != NULL;
        node = mxmlFindElement(node, tree, "StateVariable", NULL, NULL, MXML_DESCEND))
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;
@@ -488,30 +450,23 @@ int VectorField::ReadXML(const std::string& xmlfilename)
           && attr != "Formula" && attr != "PeriodFrom" && attr != "PeriodTo"
           && attr != "DefaultHistory" && attr != "Mass" && attr != "Latex")
       {
-        cerr << "Error: A StateVariable element has an unknown attribute: " << attr << endl;
-        bad_attr = true;
+      	mxmlDelete(tree);
+        P_MESSAGE3("Error: A StateVariable element has an unknown attribute: ", attr, "Valid StateVariable attributes are: Name, Formula, Description, DefaultInitialCondition, DefaultHistory, PeriodFrom, PeriodTo, Latex.");
       }
-    }
-    if (bad_attr)
-    {
-      cerr << "Valid StateVariable attributes are: Name, Formula, Description, DefaultInitialCondition, DefaultHistory, PeriodFrom, PeriodTo, Latex.\n";
-      exit(-1);
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: A StateVariable element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: A StateVariable element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The StateVariable Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The StateVariable Name \"", attr, "\" is not valid.");
       }
       string name(attr);
       StateVariable *sv = new StateVariable(name);
@@ -525,9 +480,8 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       attr = mxmlElementGetAttr(node, "Formula");
       if (attr == NULL)
       {
-        cerr << "Error: The StateVariable with Name=\"" << sv->Name() << "\" has no Formula attribute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The StateVariable with Name=\"", sv->Name(), "\" has no Formula attribute.");
       }
       else
       {
@@ -548,15 +502,13 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       }
       if (sv->PeriodicFrom() != "" && sv->PeriodicTo() == "")
       {
-        cerr << "Error: The StateVariable with Name=\"" << sv->Name() << "\" has a PeriodicFrom attribute but no PeriodicTo attribute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The StateVariable with Name=\"", sv->Name(), "\" has a PeriodicFrom attribute but no PeriodicTo attribute.");
       }
       if (sv->PeriodicFrom() == "" && sv->PeriodicTo() != "")
       {
-        cerr << "Error: The StateVariable with Name=\"" << sv->Name() << "\" has a PeriodTo attribute but no PeriodicFrom attribute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The StateVariable with Name=\"", sv->Name(), "\" has a PeriodTo attribute but no PeriodicFrom attribute.");
       }
       attr = mxmlElementGetAttr(node, "DefaultInitialCondition");
       if (attr != NULL)
@@ -592,36 +544,28 @@ int VectorField::ReadXML(const std::string& xmlfilename)
        node != NULL;
        node = mxmlFindElement(node, tree, "Function", NULL, NULL, MXML_DESCEND))
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Formula" && attr != "Description")
       {
-        cerr << "Error: A Function element has an unknown attribute: " << attr << endl;
-        bad_attr = true;
+      	mxmlDelete(tree);
+        P_MESSAGE3("Error: A Function element has an unknown attribute: ", attr, "Valid Function attributes are: Name, Formula, Description.");
       }
-    }
-    if (bad_attr)
-    {
-      cerr << "Valid Function attributes are: Name, Formula, Description.\n";
-      exit(-1);
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      cerr << "Error: A Function element has no Name attribute.\n";
       mxmlDelete(tree);
-      exit(-1);
+      P_MESSAGE1("Error: A Function element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        cerr << "Error: The Function Name \"" << attr << "\" is not valid.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Function Name \"", attr, "\" is not valid.");
       }
       string name(attr);
       Function *func = new Function(name);
@@ -635,9 +579,8 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       attr = mxmlElementGetAttr(node, "Formula");
       if (attr == NULL)
       {
-        cerr << "Error: The Function element with Name=\"" << func->Name() << "\" has no Formula attibute.\n";
         mxmlDelete(tree);
-        exit(-1);
+        P_MESSAGE3("Error: The Function element with Name=\"", func->Name(), "\" has no Formula attibute.\n");
       }
       else
       {

@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-nssw.mat</input>
  <output>out-lp-2.mat</output>
- <sysname>turntwo.vf.so</sysname>
+ <sysname>turntwo.vf</sysname>
  <fromtype>LP</fromtype>
  <label>1</label>
  <pointtype>DDE_AUT_LP</pointtype>

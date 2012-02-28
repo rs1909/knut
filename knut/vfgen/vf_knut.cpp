@@ -26,6 +26,7 @@
 #include <sstream>
 #include <string>
 #include <cassert>
+#include <cmath>
 #include <ginac/ginac.h>
 
 #include "vf.h"
@@ -92,6 +93,18 @@ void VectorField::Knut_ConvertStateToZlags(ex& f)
   for (size_t i = 0; i < nv; ++i)
   {
     f = f.subs(varname_list[i] == Zlags_(i, 0));
+  }
+}
+
+void VectorField::Knut_ConvertConstsPars(ex& f)
+{
+  for (size_t i = 0; i < conname_list.nops(); ++i)
+  {
+    f = f.subs(conname_list[i] == convalue_list[i]);
+  }
+  for (size_t i = 0; i < parname_list.nops(); ++i)
+  {
+    f = f.subs(parname_list[i] == par_(i));
   }
 }
 
@@ -458,6 +471,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   {
     ex f = varvecfield_list[i];
     Knut_ConvertStateToZlags(f);
+//    Knut_ConvertConstsPars(f);
     sys_out << "        out(" << i << ",idx)" << " = " << f << ";" << endl;
   }
   sys_out << "    }\n";
@@ -899,4 +913,476 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "}  // extern \"C\"\n";
 
   return;
+}
+
+// These routines for use without a compiler
+void VectorField::Knut_tau(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nd = Delays.size()+1;
+  exls.resize(nd);
+  exls[0] = 0;
+  for (size_t i = 1; i < nd; ++i)
+  {
+    ex f = Delays[i-1];
+    Knut_ConvertConstsPars(f);
+    exls[i] = f;
+  }
+}
+
+void VectorField::Knut_tau_p(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nd = Delays.size()+1;
+  const size_t np = parname_list.nops();
+  int par_shift = 1;
+  if (HasPeriod) par_shift = 0;
+  exls.resize(nd*(np+par_shift));
+  for (size_t i = 1; i < nd; ++i) 
+  {
+    ex f = Delays[i-1];
+    for (size_t j = 0; j < np; ++j)
+    {
+      symbol ps = ex_to<symbol>(parname_list[j]);
+      ex df = f.diff(ps); 
+      Knut_ConvertConstsPars(df);
+      exls[i + (j+par_shift)*nd] = df;
+    }
+  }
+}
+
+void VectorField::Knut_RHS(std::vector<GiNaC::ex>& exls)
+{
+  exls.resize(varvecfield_list.nops());
+  for (size_t i = 0; i < varvecfield_list.nops(); ++i)
+  {
+    ex f = varvecfield_list[i];
+    Knut_ConvertStateToZlags(f);
+    Knut_ConvertConstsPars(f);
+    exls[i] = f;
+  }
+}
+
+void VectorField::Knut_RHS_p(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nv = varvecfield_list.nops();
+  const size_t np = parname_list.nops();
+  int par_shift = 1;
+  if (HasPeriod) par_shift = 0;
+  exls.resize(nv*(np+par_shift));
+  for (size_t i = 0; i < nv; ++i)
+  {
+    ex f = varvecfield_list[i];
+    Knut_ConvertStateToZlags(f);
+    for (size_t j = 0; j < np; ++j)
+    {
+      symbol ps = ex_to<symbol>(parname_list[j]);
+      ex df = f.diff(ps);
+      Knut_ConvertConstsPars(df);
+      exls[i + (j+par_shift)*nv] = df;
+//      std::cout << "PD: " << i << "," << j << " -> " << df << "\n"; 
+    }
+  }
+}
+
+void VectorField::Knut_RHS_x(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nv = varname_list.nops();
+  const size_t nd = Delays.size()+1;
+  exls.resize(nd*nv*nv);
+  for (size_t i = 0; i < nv; ++i)
+  {
+    ex f = varvecfield_list[i];
+    Knut_ConvertStateToZlags(f);
+    Knut_ConvertConstsPars(f);
+    for (size_t j = 0; j < nv; ++j)
+    {
+      for (size_t k = 0; k < nd; ++k)
+      {
+        symbol vtmp_("vtmp_");
+        ex fj = f.subs(Zlags_(j, k) == vtmp_);
+        ex df = fj.diff(vtmp_);
+        df = df.subs(vtmp_ == Zlags_(j, k));
+        exls[i + (k + j*nd)*nv] = df;
+//        std::cout << "PX: " << i << "," << j << "," << k << " -> " << df << "\n";
+      }
+    }
+  }
+}
+
+void VectorField::Knut_RHS_xp(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nv = varname_list.nops();
+  const size_t nd = Delays.size()+1;
+  const size_t np = parname_list.nops();
+  size_t par_shift = 1;
+  if (HasPeriod) par_shift = 0;
+  const size_t nps = np + par_shift;
+  exls.resize(nd*nv*nv*nps);
+  for (size_t i = 0; i < nv; ++i)
+  {
+    ex f = varvecfield_list[i];
+    for (size_t q = 0; q < np; ++q)
+    {
+      symbol ps = ex_to<symbol>(parname_list[q]);
+      ex dfp = f.diff(ps);
+      Knut_ConvertStateToZlags(dfp);
+      Knut_ConvertConstsPars(dfp);
+      for (size_t j = 0; j < nv; ++j)
+      {
+        for (size_t k = 0; k < nd; ++k)
+        {
+          symbol vtmp_("vtmp_");
+          ex fj = dfp.subs(Zlags_(j, k) == vtmp_);
+          ex df = fj.diff(vtmp_);
+          df = df.subs(vtmp_ == Zlags_(j, k));
+          exls[i + (k + (q + par_shift + j*nps)*nd)*nv] = df;
+//          std::cout << "PXp: " << nd << "|" << i << "," << j << "," << k << " -> " << df << "\n";
+        }
+      }
+    }
+  }
+}
+
+void VectorField::Knut_RHS_xx(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nv = varname_list.nops();
+  const size_t nd = Delays.size()+1;
+  exls.resize(nd*nd*nv*nv);
+  for (size_t i = 0; i < nv; ++i)
+  {
+    ex f = varvecfield_list[i];
+    Knut_ConvertStateToZlags(f);
+    Knut_ConvertConstsPars(f);
+    for (size_t k1 = 0; k1 < nd; ++k1)
+    {
+      ex pdf1;
+      for (size_t j = 0; j < nv; ++j)
+      {
+        symbol vtmp_("vtmp_");
+        ex fj = f.subs(Zlags_(j, k1) == vtmp_);
+        ex df = fj.diff(vtmp_);
+        df = df.subs(vtmp_ == Zlags_(j, k1));
+        pdf1 += df*VZlags_(j,k1); 
+      }
+      for (size_t j = 0; j < nv; ++j)
+      {
+        for (size_t k2 = 0; k2 < nd; ++k2)
+        {
+          symbol vtmp_("vtmp_");
+          ex fj = pdf1.subs(Zlags_(j, k2) == vtmp_);
+          ex df = fj.diff(vtmp_);
+          df = df.subs(vtmp_ == Zlags_(j, k2));
+          exls[i + nv*(j + nv*(k1 + nd*k2))] = df;
+//          std::cout << "PXX: " << i << "," << j << ", (" << k1 << "," << k2 << ") -> " << df << "\n";
+        }
+      }
+    }
+  }
+}
+
+void VectorField::Knut_stpar(std::vector<double>& par)
+{  
+  const size_t nc = conname_list.nops();
+  const size_t np = parname_list.nops();
+  int par_shift = 1;
+  if (HasPeriod) par_shift = 0;
+  else par[0] = 1.0;
+  par.resize(np+par_shift);
+  for (size_t j = 0; j < np; ++j)
+  {
+    // First make a replacement list with all the other parameters
+    GiNaC::lst parsubs;
+    // add other parameters
+    for (size_t k = 0; k < np; ++k)
+    {
+      if (k != j)
+      {
+        parsubs.append(parname_list[k] == pardefval_list[k]);
+      }
+    }
+    // add constants
+    for (size_t k = 0; k < nc; ++k)
+    {
+      parsubs.append(conname_list[k] == convalue_list[k]);
+    }
+    ex defval = pardefval_list[j];
+    defval = iterated_subs(defval, parsubs);
+    if (is_exactly_a<numeric>(defval)) par[j + par_shift] = ex_to<numeric>(defval).to_double();
+    else P_MESSAGE1("Starting parameter is not a number.");
+  }
+}
+
+void VectorField::Knut_stsol(std::vector<GiNaC::ex>& exls)
+{
+  const size_t nv = varname_list.nops();
+  const size_t nc = conname_list.nops();
+  const size_t np = parname_list.nops();
+  exls.resize(nv);
+  // parameter substitution
+  GiNaC::lst parsubs;
+  // add other parameters
+  for (size_t k = 0; k < np; ++k)
+  {
+    parsubs.append(parname_list[k] == pardefval_list[k]);
+  }
+  // add constants
+  for (size_t k = 0; k < nc; ++k)
+  {
+    parsubs.append(conname_list[k] == convalue_list[k]);
+  }
+  for (size_t j = 0; j < nv; ++j)
+  {
+    ex defsol = vardefic_list[j];
+    defsol = iterated_subs(defsol, parsubs);
+    exls[j] = defsol;
+  }
+}
+
+void VectorField::Knut_parnames(std::vector<std::string>& pnames)
+{
+  const size_t np = parname_list.nops();  
+  int par_shift = 1;
+  if (HasPeriod) par_shift = 0;
+  pnames.resize(np+par_shift);
+  for (size_t k = 0; k < np; ++k)
+  {
+    if (is_exactly_a<symbol>(parname_list[k])) pnames[k+par_shift] = ex_to<symbol>(parname_list[k]).get_name();
+    else P_MESSAGE1("Parameter is not a symbol.");
+  }
+}
+
+static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& v, const KNVector& par)
+{
+  const size_t vsize = time.size();
+  if (is_exactly_a<add>(expr))
+  {
+    double *res_loc = new double[vsize];
+    for (size_t k = 0; k < vsize; ++k) res[k*skip] = 0; 
+//    std::cout << " add -> (";
+    for (const_iterator i = expr.begin(); i != expr.end(); ++i)
+    {
+      expeval(*i, res_loc, 1, time, x, v, par);
+      for (size_t k = 0; k < vsize; ++k)
+      {
+        res[k*skip] += res_loc[k];
+      }
+    }
+//    std::cout << ")";
+    delete[] res_loc;
+    return;
+  } else if (is_exactly_a<mul>(expr))
+  {
+    double *res_loc = new double[vsize];
+    for (size_t k = 0; k < vsize; ++k) res[k*skip] = 1.0; 
+//    std::cout << " mul -> (";
+    for (const_iterator i = expr.begin(); i != expr.end(); ++i)
+    {
+      expeval(*i, res_loc, 1, time, x, v, par);
+      for (size_t k = 0; k < vsize; ++k)
+      {
+        res[k*skip] *= res_loc[k];
+      }
+    }
+//    std::cout << ")";
+    delete[] res_loc;
+    return;
+  } else if (is_exactly_a<power>(expr))
+  {
+    double *res_loc = new double[vsize];
+    double *res_loc_p = new double[vsize];
+//    std::cout << " power -> " << expr.nops() << "(" ;
+    expeval(expr.op(0), res_loc, 1, time, x, v, par);
+    expeval(expr.op(1), res_loc_p, 1, time, x, v, par);
+    for (size_t k = 0; k < vsize; ++k)
+    {
+      res[k*skip] = std::pow(res_loc[k], res_loc_p[k]);
+    }
+//    std::cout << ")";
+    delete[] res_loc_p;
+    delete[] res_loc;
+    return;
+  } 
+  else if (is_exactly_a<function>(expr))
+  {
+//    std::cout << " function -> " << ex_to<function>(expr).get_name() << "(" << expr.op(0) << ")";
+    std::string name(ex_to<function>(expr).get_name());
+    if (name == "par_")
+    {
+      int pid = ex_to<numeric>(expr.op(0)).to_int();
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = par(pid);
+      return;
+    }
+    if (name == "Zlags_")
+    {
+      int d1 = ex_to<numeric>(expr.op(0)).to_int();
+      int d2 = ex_to<numeric>(expr.op(1)).to_int();
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = x(d1,d2,k);
+      return;
+    }
+    if (name == "VZlags_")
+    {
+      int d1 = ex_to<numeric>(expr.op(0)).to_int();
+      int d2 = ex_to<numeric>(expr.op(1)).to_int();
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = v(d1,d2,k);
+      return;
+    }
+    double (*fun_ptr)(double) = 0;
+    if (name == "abs") fun_ptr = &fabs;
+    if (name == "step") return;
+    if (name == "csgn") return;
+    if (name == "eta") return;
+    if (name == "Li2") return;
+    if (name == "Li3") return;
+    if (name == "zetaderiv") return;
+    if (name == "factorial") return;
+    if (name == "binomial") return;
+    if (name == "Order") return;
+    if (name == "exp") fun_ptr = &exp;
+    if (name == "log") fun_ptr = &log;
+    if (name == "sin") fun_ptr = &sin;
+    if (name == "cos") fun_ptr = &cos;
+    if (name == "tan") fun_ptr = &tan;
+    if (name == "asin") fun_ptr = &asin;
+    if (name == "acos") fun_ptr = &acos;
+    if (name == "atan") fun_ptr = &atan;
+    if (name == "atan2") return;
+    if (name == "sinh") fun_ptr = &sinh;
+    if (name == "cosh") fun_ptr = &cosh;
+    if (name == "tanh") fun_ptr = &tanh;
+    if (name == "asinh") fun_ptr = &asinh;
+    if (name == "acosh") fun_ptr = &acosh;
+    if (name == "atanh") fun_ptr = &atanh;
+    if (name == "lgamma") fun_ptr = &lgamma;
+    if (name == "tgamma") fun_ptr = &tgamma;
+    if (name == "beta") return;
+    if (name == "psi") return;
+    if (name == "G") return;
+    if (name == "Li") return;
+    if (name == "S") return;
+    if (name == "H") return;
+    if (name == "zeta") return;
+    if (fun_ptr)
+    {
+      double *res_loc = new double[vsize]; 
+      expeval(expr.op(0), res_loc, 1, time, x, v, par); 
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = (*fun_ptr)(res_loc[k]); 
+      delete[] res_loc; 
+      return;
+    } else
+    {
+      P_MESSAGE2("Not implemented function ", name);
+    }
+  }
+  else if (is_exactly_a<numeric>(expr))
+  {
+//    std::cout << " numeric -> " << ex_to<numeric>(expr).to_double();
+    for (size_t k = 0; k < vsize; ++k) res[k*skip] = ex_to<numeric>(expr).to_double();
+    return;
+  }
+  else if (is_exactly_a<symbol>(expr))
+  {
+    std::string name = ex_to<symbol>(expr).get_name();
+    if (name == "t")
+    {
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = time(k);
+      return;
+    } else P_MESSAGE3("Unknown symbol ", name, ".");
+  } else
+  {
+    P_MESSAGE1("Unknown formula component.");
+  }
+}
+
+void VectorField::Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, const size_t nv, const size_t nps, const size_t nd )
+{
+  KNArray3D<double> dummy_x, dummy_v;
+  const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+  for (size_t i = 0; i < nd; ++i)
+  {
+    expeval(exls[i], out.pointer(i,0), skip, time, dummy_x, dummy_v, par);
+  }
+}
+
+void VectorField::Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp, const size_t nv, const size_t nps, const size_t nd )
+{
+  KNArray3D<double> dummy_x, dummy_v;
+  const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+  for (size_t i = 0; i < nd; ++i)
+  {
+    expeval(exls[i + vp*nd], out.pointer(i,0), skip, time, dummy_x, dummy_v, par);
+  }
+}
+
+
+void VectorField::Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+{
+  KNArray3D<double> dummy_v;
+  const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+//  std::cout << "Knut_RHS_eval " << exls[0] << " " << skip << " \n";
+  for (size_t n = 0; n < exls.size(); ++n)
+  {
+    expeval(exls[n], out.pointer(n,0), skip, time, x, dummy_v, par);
+  }
+}
+
+void VectorField::Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int alpha, const size_t nv, const size_t nps, const size_t nd)
+{
+  KNArray3D<double> dummy_v;
+  const size_t skip = (((size_t)out.pointer(0,0,1)) - ((size_t)out.pointer(0,0,0)))/sizeof(double);
+  for (size_t i = 0; i < nv; ++i)
+  {
+    expeval(exls[i + alpha*nv], out.pointer(i,0,0), skip, time, x, dummy_v, par);
+  }	
+}
+
+void VectorField::Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, const size_t nv, const size_t nps, const size_t nd)
+{
+  KNArray3D<double> dummy_v;
+  for (size_t i = 0; i < nv; ++i)
+  {
+  	for (size_t j = 0; j < nv; ++j)
+    {
+      const size_t skip = (((size_t)out.pointer(i,j,1)) - ((size_t)out.pointer(i,j,0)))/sizeof(double);
+//      std::cout << "PiX: " << nd << "|" << i << "," << j << "," << del << " -> " << exls[i + (del + j*nd)*nv] << "\n";
+      expeval(exls[i + (del + j*nd)*nv], out.pointer(i,j,0), skip, time, x, dummy_v, par);
+    }
+  }	
+}
+
+void VectorField::Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, int alpha, const size_t nv, const size_t nps, const size_t nd)
+{
+  KNArray3D<double> dummy_v;
+  for (size_t i = 0; i < nv; ++i)
+  {
+  	for (size_t j = 0; j < nv; ++j)
+    {
+      const size_t skip = (((size_t)out.pointer(i,j,1)) - ((size_t)out.pointer(i,j,0)))/sizeof(double);
+//      std::cout << "PiXp: " << i << "," << j << "," << del << " -> " << exls[i + (del + (alpha + j*nps)*nd)*nv] << "\n";
+      expeval(exls[i + (del + (alpha + j*nps)*nd)*nv], out.pointer(i,j,0), skip, time, x, dummy_v, par);
+    }
+  }	
+}
+
+void VectorField::Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, int sel, int del1, int del2, const size_t nv, const size_t nps, const size_t nd)
+{
+  KNArray3D<double> dummy_v;
+  for (size_t i = 0; i < nv; ++i)
+  {
+    for (size_t j = 0; j < nv; ++j)
+    {
+      const size_t skip = (((size_t)out.pointer(i,j,1)) - ((size_t)out.pointer(i,j,0)))/sizeof(double);
+//      std::cout << "PiXX: " << nd << "|" << i << "," << j << "," << del << " -> " << exls[i + (del + j*nd)*nv] << "\n";
+      expeval(exls[i + nv*(j + nv*(del1 + nd*del2))], out.pointer(i,j,0), skip, time, x, vv, par);
+    }
+  }	
+}
+
+void VectorField::Knut_RHS_stsol_eval( const std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time )
+{
+  KNArray3D<double> dummy_x, dummy_v;
+  KNVector par;
+  const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+  for (size_t i = 0; i < exls.size(); ++i)
+  {
+    expeval(exls[i], out.pointer(i,0), skip, time, dummy_x, dummy_v, par);
+  }
 }

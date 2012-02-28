@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-pdsw-1.mat</input>
  <output>out-lp-1-a.mat</output>
- <sysname>sys-tq.so</sysname>
+ <sysname>sys-tq.cpp</sysname>
  <fromtype>LP</fromtype>
  <label>1</label>
  <pointtype>DDE_LP</pointtype>

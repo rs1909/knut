@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-nssw.mat</input>
  <output>out-pd.mat</output>
- <sysname>mackey-glass.vf.so</sysname>
+ <sysname>mackey-glass.vf</sysname>
  <fromtype>PD</fromtype>
  <label>1</label>
  <pointtype>DDE_AUT_PD</pointtype>

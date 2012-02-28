@@ -287,6 +287,16 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const int _ni
   repr_mesh(meshINT);
   col_mesh(col);
   
+  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  {
+    for (int j = 0; j < NDEG; j++)
+    {
+      const int idx = j + i * NDEG;
+      const double h0 = mesh(i + 1) - mesh(i);
+      time(idx) = mesh(i) + h0 * col(j);
+      timeMSH(idx) = mesh(i) + h0 * meshINT(j);
+    }
+  }
   poly_int_trap(metric, meshINT);
   poly_diff_int_trap(metricPhase, meshINT);
 //  meshINT.print();
@@ -796,4 +806,17 @@ void KNAbstractBvpCollocation::exportProfile(KNVector& outs, const KNVector& msh
       }
     }
   }
+}
+
+void KNAbstractBvpCollocation::resetProfile(KNSystem& sys, KNVector& profile)
+{
+   KNArray2D<double> tmp(NDIM, time.size());
+   sys.stsol (tmp, time);
+   for (int p = 0; p < NDIM; p++)
+   {
+     for (int r = 0; r < time.size(); r++)
+     {
+       profile (p + NDIM*r) = tmp (p,r);
+     }
+   }
 }

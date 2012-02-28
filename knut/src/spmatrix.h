@@ -310,9 +310,9 @@ inline void KNSparseMatrix::init(const KNSparseMatrix& M)
 
 inline KNSparseMatrix::~KNSparseMatrix()
 {
-  delete []Ap;
-  delete []Ai;
   delete []Ax;
+  delete []Ai;
+  delete []Ap;
 }
 
 inline void KNSparseMatrix::clear()
@@ -350,6 +350,9 @@ inline int KNSparseMatrix::newLine(int size_)
 {
   n++;
   Ap[n] = Ap[n-1] + size_;
+#ifdef DEBUG
+  P_ASSERT_X5(Ap[n] < size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
+#endif
   return n -1;
 }
 

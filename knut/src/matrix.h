@@ -72,7 +72,7 @@ class KNArray1D
     inline KNArray1D() : n(0), v(0), destructable(true)
     { }
 
-    inline KNArray1D(bool b) : n(0), v(0), destructable(false)
+    inline KNArray1D(bool /*b*/) : n(0), v(0), destructable(false)
     { }
 
     inline KNArray1D(int i) : n(i), v(new T[i]), destructable(true)
@@ -114,7 +114,7 @@ class KNArray1D
 #endif
       delete[] v;
       n = i;
-      v = new T[i];
+      v = new T[n];
       clear();
     }
 
@@ -125,7 +125,7 @@ class KNArray1D
 #endif
       delete[] v;
       n = V_.n;
-      v = new T[V_.n];
+      v = new T[n];
       *this = V_;
     }
 
@@ -392,6 +392,14 @@ class KNArray3D
     inline void clear()
     {
       for (int i = 0; i < d1*d2*d3; i++) m[i] = 0;
+    }
+    inline T *pointer(const int i, const int j, const int k)
+    {
+#ifdef DEBUG
+      P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
+      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
+#endif
+      return &m[i + d1*(j + d2*k)];
     }
 
     inline KNArray3D<T>& operator= (const KNArray3D<T>& M)

@@ -17,8 +17,8 @@ void NConstantsQtGui::constantChanged(const char* name)
   {
     if (!strcmp(connectionList [k].name, name))
     {
-      std::string type = KNConstantNames::findType(name);
-      const void * value = KNConstantNames::findValue(name);
+      std::string type = cnames.findType(name);
+      const void * value = cnames.findValue(name);
       QObject* object = connectionList [k].object;
       const char * slotName = connectionList [k].slotName;
       object->blockSignals(true);
@@ -131,7 +131,7 @@ template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConn
       found++;
     } 
   }
-  if (found == 1) return callbackPtr<TP>(KNConstantNames::findFun(name));
+  if (found == 1) return callbackPtr<TP>(cnames.findFun(name));
   return 0;
 }
 

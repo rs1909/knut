@@ -813,7 +813,7 @@ void MainWindow::compileSystem()
     newfile.replace(QString(".cpp"), QString(".so"));
     try {
       KNSystem::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
-      sysname->setText(QDir::current().relativeFilePath(newfile));
+      sysname->setText(QDir::current().relativeFilePath(fileName));
       setSysNameParameter();
     }
     catch (KNException ex)
@@ -829,8 +829,8 @@ void MainWindow::generateSystem()
   if (!fileName.isEmpty() && compilerProcess == 0)
   {
     try {
-      KNSystem::generateSystem(fileName.toStdString(), executableDir.toStdString());
-      sysname->setText(QDir::current().relativeFilePath(fileName +".so"));
+      KNSystem::generateSystem(fileName.toStdString(), SYS_TYPE_VFC, executableDir.toStdString());
+      sysname->setText(QDir::current().relativeFilePath(fileName));
       setSysNameParameter();
     }
     catch (KNException ex)

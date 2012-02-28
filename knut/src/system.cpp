@@ -28,19 +28,21 @@ extern "C"{
 #endif 
 }
 
-#include "config.h"
-#ifdef GINAC_FOUND
-#include "vf.h"
-#endif
 #include "system.h"
 #include "matrix.h"
 #include "pointtype.h"
+// #include "config.h" // already included from system.h
+#ifdef GINAC_FOUND
+#include "vf.h"
+#endif
 
 #ifdef __APPLE__
 #include <CoreFoundation/CFBase.h>
 #include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CFBundle.h>
 #endif
+
+bool KNSystem::workingCompiler = true;
 
 // Separates the string into arguments and add to the list of arguments.
 // It does not work if the argument has a space inside.
@@ -53,7 +55,7 @@ static inline void addArgList(std::list<std::string>& argv, const std::string& s
     while (((str[i] == ' ')||(str[i] == '\t'))&&(i < str.size())) ++i;
     start = i;
     while (((str[i] != ' ')&&(str[i] != '\t'))&&(i < str.size())) ++i;
-    argv.push_back(str.substr(start, i-start));
+    argv.push_back(str.substr(start, i-start)); 
   }
 }
 
@@ -252,8 +254,9 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   if (exitStatus != 0) P_MESSAGE6("The error output of the compile command '",
       cmdline, "' is ", errstr.c_str(), " and the standard output is ", outstr.c_str());
   
-  delete[] out_buf;
-  delete[] err_buf;
+  delete[] out_buf; out_buf = 0;
+  delete[] err_buf; err_buf = 0;
+  delete[] szCmdline; szCmdline = 0;
 }
 
 #else
@@ -314,15 +317,15 @@ int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* erro
     if (error)  
     if (input)
     {
-   	  if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
-   	  int iflags = fcntl(fdc_input[1], F_GETFL, 0);
+      if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
+      int iflags = fcntl(fdc_input[1], F_GETFL, 0);
       iflags |= O_NONBLOCK;
       fcntl(fdc_input[1], F_SETFL, iflags);
-   	  *input = fdc_input[1];
-    }   	  
+      *input = fdc_input[1];
+    }       
     if (output)
     {
-   	  if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
+      if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
       int oflags = fcntl(fdc_output[0], F_GETFL, 0);
       oflags |= O_NONBLOCK;
       fcntl(fdc_output[0], F_SETFL, oflags);
@@ -337,7 +340,7 @@ int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* erro
       *error = fdc_error[0];
     }
   }
-  for (size_t k=0; k<arglist.size(); ++k) delete[] argv[k];
+  for (size_t k=0; k<arglist.size(); ++k) { delete[] argv[k]; argv[k] = 0; }
   return pid;
 }
 
@@ -368,60 +371,61 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   do {
     int pact = poll(fds, 3, 1000);
 //    std::cerr << "Pipes ready: " << pact 
-//    	<< " EV0 " <<  fds[0].revents 
-//    	<< " EV1 " <<  fds[1].revents
-//    	<< " EV2 " <<  fds[2].revents << " " << POLLOUT << " " << POLLIN <<"\n";
+//      << " EV0 " <<  fds[0].revents 
+//      << " EV1 " <<  fds[1].revents
+//      << " EV2 " <<  fds[2].revents << " " << POLLOUT << " " << POLLIN <<"\n";
     P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
-  	if (!infin && (fds[0].revents != 0))
-  	{
+    if (!infin && (fds[0].revents != 0))
+    {
       ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
 //      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
       if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
       else wbytes += obytes;
-	  if (wbytes == cxxlen) 
-	  { 
+    if (wbytes == cxxlen) 
+    { 
       infin = true;
       fds[0].events = 0;
       if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
-	  }
-  	}
-  	if (!outfin && (fds[1].revents != 0))
-  	{
+    }
+    }
+    if (!outfin && (fds[1].revents != 0))
+    {
       ssize_t bytes = read(output, out_buf, bufsize-1);
       ++rct;
       if (bytes > 0)
       {
 //        std::cerr << "runCompiler: stdout bytes " << bytes << "\n";
-      	out_buf[bytes] = '\0'; 
-      	out_str.append(out_buf);
+        out_buf[bytes] = '\0'; 
+        out_str.append(out_buf);
       } 
       else if (bytes == 0)
       {
         outfin = true; // finished
         fds[1].events = 0;
-      	if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
+        if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
       }
       else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
     }
-  	if (!errfin && (fds[2].revents != 0))
-  	{
+    if (!errfin && (fds[2].revents != 0))
+    {
       ssize_t bytes = read(error, out_buf, bufsize-1);
       ++ect;
       if (bytes > 0)
       {
 //        std::cerr << "runCompiler: stderr bytes " << bytes << "\n";
-      	out_buf[bytes] = '\0'; 
-      	err_str.append(out_buf);
+        out_buf[bytes] = '\0'; 
+        err_str.append(out_buf);
       } 
       else if (bytes == 0) 
       {
-      	errfin = true; // finished
-	  	fds[2].events = 0;
-      	if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
+        errfin = true; // finished
+        fds[2].events = 0;
+        if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
       }
       else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard error: ", strerror(errno));
-  	}
+    }
   } while (!outfin || !infin || !errfin);
+  delete[] out_buf; out_buf = 0;
 //  std::cerr << "Waited for read " << rct << " and error " << ect << " cycles."; 
   // checking status of compiler
   int status = 0;
@@ -443,13 +447,38 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 
 #endif
 
-KNSystem::KNSystem(const std::string& shobj, int usederi)
+KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int usederi)
+#ifdef GINAC_FOUND
+ : useVectorField(false)
+#endif
 {
-  std::string objname(shobj);
-  if (shobj.find('/') == std::string::npos) objname = "./" + shobj;
+// These will be assigned later
+//  handle = 0;
+//  v_ndim = 0;
+//  v_npar = 0;
+//  v_ntau = 0;
+//  v_nderi = 0;
+//  v_nevent = 0;
+//  v_tau = 0; 
+//  v_dtau = 0; 
+//  v_mass = 0; 
+//  v_rhs = 0;
+//  v_deri = 0;
+//  v_p_tau = 0; 
+//  v_p_dtau = 0; 
+//  v_p_rhs = 0; 
+//  v_p_deri = 0; 
+//  v_p_event = 0;
+//  v_stpar = 0; 
+//  v_stsol = 0; 
+//  v_parnames = 0;
+
+  std::string sname(sysName);
+  if (sysName.find('/') == std::string::npos) sname = "./" + sysName;
 #ifdef WIN32
+  // replace the unix '/' with windows '\'
   std::string::size_type index = 0;
-  while ((index = objname.find('/', index)) != std::string::npos) objname.at(index) = '\\';
+  while ((index = sname.find('/', index)) != std::string::npos) sname.at(index) = '\\';
 #endif
 
   // Finding the executable directory
@@ -459,11 +488,16 @@ KNSystem::KNSystem(const std::string& shobj, int usederi)
   if(bundleURL)
   {
     CFStringRef cfPath = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
-    size_t ssize = static_cast<size_t>(CFStringGetLength(cfPath)+1);
-    char *buf = new char[ssize];
-    if(cfPath) CFStringGetCString(cfPath, buf, 512, kCFStringEncodingASCII);
-    executableFile = buf;
-    delete[] buf;
+    if(cfPath) 
+    {
+      size_t ssize = static_cast<size_t>(CFStringGetLength(cfPath)+1);
+      char *buf = new char[ssize];
+      CFStringGetCString(cfPath, buf, ssize, kCFStringEncodingMacRoman);
+      executableFile = buf;
+      delete[] buf; buf = 0;
+      CFRelease(cfPath);
+    }
+    CFRelease(bundleURL);
   }
 #elif __linux__
   std::string workingDir;
@@ -472,98 +506,148 @@ KNSystem::KNSystem(const std::string& shobj, int usederi)
   char *buf = new char[512];
   const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
   if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
-  delete[] buf;
+  delete[] buf; buf = 0;
 #elif WIN32
   char *buf = new char[MAX_PATH]; //always use MAX_PATH for filepaths
   GetModuleFileName(NULL, buf, MAX_PATH*sizeof(char));
   executableFile = buf;
-  delete[] buf;
+  delete[] buf; buf = 0;
 #endif
-
   std::string executableDir(executableFile);
   std::string::size_type sidx = executableDir.find_last_of(DIRSEP);
   if (sidx != std::string::npos) executableDir.erase(sidx,std::string::npos);
-
-  makeSystem(shobj, executableDir);
-  handle = tdlopen(objname.c_str());
-  P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
-
-  tdlerror();    /* Clear any existing error */
-  v_ndim = (tp_sys_ndim) fptr(tdlsym(handle, "sys_ndim"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_npar = (tp_sys_npar) fptr(tdlsym(handle, "sys_npar"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_ntau = (tp_sys_ntau) fptr(tdlsym(handle, "sys_ntau"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_nderi = (tp_sys_nderi) fptr(tdlsym(handle, "sys_nderi"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_nevent = (tp_sys_nevent) fptr(tdlsym(handle, "sys_nevent"));
-  if ((error = tdlerror()) != 0) v_nevent = 0;
-
-  tdlerror();    /* Clear any existing error */
-  v_tau = (tp_sys_tau) fptr(tdlsym(handle, "sys_tau"));
-  if ((error = tdlerror()) != 0) v_tau = 0;
-
-  tdlerror();    /* Clear any existing error */
-  v_dtau = (tp_sys_dtau) fptr(tdlsym(handle, "sys_dtau"));
-  if ((error = tdlerror()) != 0) v_dtau = 0;
   
-  tdlerror();    /* Clear any existing error */
-  v_mass = (tp_sys_mass) fptr(tdlsym(handle, "sys_mass"));
-  if ((error = tdlerror()) != 0) v_mass = 0;
-  
-  tdlerror();    /* Clear any existing error */
-  v_rhs = (tp_sys_rhs) fptr(tdlsym(handle, "sys_rhs"));
-  if ((error = tdlerror()) != 0) v_rhs = 0;
+  // making the shared object or loading the vector field file
+  std::string objname;
+#ifdef GINAC_FOUND
+  useVectorField = makeSystem(objname, sname, sysType, executableDir);
+  if (useVectorField)
+  {
+    try {
+      makeSymbolic(sname);
+    }
+    catch (KNException& ex)
+    {
+      useVectorField = false;
+      throw (ex);
+    }
+  }
+#else
+  makeSystem(objname, sname, sysType, executableDir);
+#endif
+  // filling up the function pointers
+  if (!useVectorField)
+  {
+    char * c_objname = new char[objname.size()+1];
+    strncpy (c_objname, objname.c_str(), objname.size()+1);
+    handle = tdlopen(c_objname);
+    delete[] c_objname; c_objname = 0;
+    P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
+    
+    tdlerror();    /* Clear any existing error */
+    void* nd_res = tdlsym(handle, "sys_ndim");
+    v_ndim = reinterpret_cast<tp_sys_ndim>( nd_res );
+    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_npar = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_npar"));
+    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_ntau = reinterpret_cast<tp_sys_ntau>(tdlsym(handle, "sys_ntau"));
+    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_nderi = reinterpret_cast<tp_sys_nderi>(tdlsym(handle, "sys_nderi"));
+    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_nevent = reinterpret_cast<tp_sys_nevent>(tdlsym(handle, "sys_nevent"));
+    if ((error = tdlerror()) != 0) v_nevent = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_tau = reinterpret_cast<tp_sys_tau>(tdlsym(handle, "sys_tau"));
+    if ((error = tdlerror()) != 0) v_tau = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_dtau = reinterpret_cast<tp_sys_dtau>(tdlsym(handle, "sys_dtau"));
+    if ((error = tdlerror()) != 0) v_dtau = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_mass = reinterpret_cast<tp_sys_mass>(tdlsym(handle, "sys_mass"));
+    if ((error = tdlerror()) != 0) v_mass = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_rhs = reinterpret_cast<tp_sys_rhs>(tdlsym(handle, "sys_rhs"));
+    if ((error = tdlerror()) != 0) v_rhs = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_deri = reinterpret_cast<tp_sys_deri>(tdlsym(handle, "sys_deri"));
+    if ((error = tdlerror()) != 0) v_deri = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_stpar = reinterpret_cast<tp_sys_stpar>(tdlsym(handle, "sys_stpar"));
+    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_stsol = reinterpret_cast<tp_sys_stsol>(tdlsym(handle, "sys_stsol"));
+    if ((error = tdlerror()) != 0) v_stsol = 0;
+    
+    tdlerror();    /* Clear any existing error */
+    v_parnames = reinterpret_cast<tp_sys_parnames>(tdlsym(handle, "sys_parnames"));
+    if ((error = tdlerror()) != 0) v_parnames = 0;
+    
+    /* Vectorized versions */
+    tdlerror();    /* Clear any existing error */
+    v_p_tau = reinterpret_cast<tp_sys_p_tau>(tdlsym(handle, "sys_p_tau"));
+    if ((error = tdlerror()) != 0) v_p_tau = 0;
+    if ((v_tau == 0) && (v_p_tau == 0)) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_p_dtau = reinterpret_cast<tp_sys_p_dtau>(tdlsym(handle, "sys_p_dtau"));
+    if ((error = tdlerror()) != 0) v_p_dtau = 0;
+    if ((v_dtau == 0) && (v_p_dtau == 0)) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_p_rhs = reinterpret_cast<tp_sys_p_rhs>(tdlsym(handle, "sys_p_rhs"));
+    if ((error = tdlerror()) != 0) v_p_rhs = 0;
+    if ((v_rhs == 0) && (v_p_rhs == 0)) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_p_deri = reinterpret_cast<tp_sys_p_deri>(tdlsym(handle, "sys_p_deri"));
+    if ((error = tdlerror()) != 0) v_p_deri = 0;
+    if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
+    
+    tdlerror();    /* Clear any existing error */
+    v_p_stsol = reinterpret_cast<tp_sys_p_stsol>(tdlsym(handle, "sys_p_stsol"));
+    if ((error = tdlerror()) == 0) v_p_stsol = 0;
+    if ((v_stsol == 0) && (v_p_stsol == 0)) P_MESSAGE3("Cannot find either sys_stsol() or sys_p_stsol(): ", error, ".");
+    nderi = std::min ( (*v_nderi)(), usederi );  
+  } else
+  {
+    handle = 0;
+    v_ndim = 0;
+    v_npar = 0;
+    v_ntau = 0;
+    v_nderi = 0;
+    v_nevent = 0;
+    v_tau = 0; 
+    v_dtau = 0; 
+    v_mass = 0; 
+    v_rhs = 0;
+    v_deri = 0;
+    v_p_tau = 0; 
+    v_p_dtau = 0; 
+    v_p_rhs = 0; 
+    v_p_deri = 0; 
+    v_p_event = 0;
+    v_stpar = 0; 
+    v_stsol = 0; 
+    v_parnames = 0;
+    nderi = 2;
+  }
 
-  tdlerror();    /* Clear any existing error */
-  v_deri = (tp_sys_deri) fptr(tdlsym(handle, "sys_deri"));
-  if ((error = tdlerror()) != 0) v_deri = 0;
-
-  tdlerror();    /* Clear any existing error */
-  v_stpar = (tp_sys_stpar) fptr(tdlsym(handle, "sys_stpar"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_stsol = (tp_sys_stsol) fptr(tdlsym(handle, "sys_stsol"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stsol(): ", error, ".");
-  
-  tdlerror();    /* Clear any existing error */
-  v_parnames = (tp_sys_parnames) fptr(tdlsym(handle, "sys_parnames"));
-  if ((error = tdlerror()) != 0) v_parnames = 0;
-
-  /* Vectorized versions */
-  tdlerror();    /* Clear any existing error */
-  v_p_tau = (tp_sys_p_tau) fptr(tdlsym(handle, "sys_p_tau"));
-  if ((error = tdlerror()) != 0) v_p_tau = 0;
-  if ((v_tau == 0) && (v_p_tau == 0)) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_p_dtau = (tp_sys_p_dtau) fptr(tdlsym(handle, "sys_p_dtau"));
-  if ((error = tdlerror()) != 0) v_p_dtau = 0;
-  if ((v_dtau == 0) && (v_p_dtau == 0)) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_p_rhs = (tp_sys_p_rhs) fptr(tdlsym(handle, "sys_p_rhs"));
-  if ((error = tdlerror()) != 0) v_p_rhs = 0;
-  if ((v_rhs == 0) && (v_p_rhs == 0)) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
-
-  tdlerror();    /* Clear any existing error */
-  v_p_deri = (tp_sys_p_deri) fptr(tdlsym(handle, "sys_p_deri"));
-  if ((error = tdlerror()) != 0) v_p_deri = 0;
-  if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
-
-  nderi = std::min ( (*v_nderi)(), usederi );
-  
-  f.init(ndim()), f_eps.init(ndim());
+  f.init(this->ndim()), f_eps.init(this->ndim());
   f2.init(ndim()), f_eps2.init(ndim());
   xx_eps.init(ndim(), 2 * ntau() + 1);
   xx_eps2.init(ndim(), 2 * ntau() + 1);
@@ -600,10 +684,17 @@ void KNSystem::compileSystem(const std::string& cxxfile, const std::string& shob
   {
     cxxcode += buf + '\n';
   }
-  runCompiler(cxxcode, shobj, executableDir);
+  try {
+    runCompiler(cxxcode, shobj, executableDir);
+  }
+  catch (KNException& ex)
+  {
+    workingCompiler = false;
+    throw (ex);
+  }
 }
 
-void KNSystem::generateSystem(const std::string& vffile, const std::string& executableDir)
+void KNSystem::generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir)
 {
 #ifdef GINAC_FOUND
   // parsing the vector field file
@@ -612,70 +703,103 @@ void KNSystem::generateSystem(const std::string& vffile, const std::string& exec
   VectorField vf;
   vf.ReadXML(vffile);
   int pserr = vf.ProcessSymbols();
-  if (pserr == -1) P_MESSAGE1("Could not parse the vector filed definition.");
+  if (pserr == -1) P_MESSAGE1("Could not parse the vector field definition.");
   if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
   vf.PrintKnut(cxxcode, options);
-  runCompiler(cxxcode.str(), vffile + ".so", executableDir);
+  try {
+    runCompiler(cxxcode.str(), shobj, executableDir);
+  }
+  catch (KNException& ex)
+  {
+    workingCompiler = false;
+    throw (ex);
+  }
+#endif
+}
+
+static inline bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src)
+{
+#ifdef __APPLE__
+  return (sbuf_so->st_mtimespec.tv_sec <= sbuf_src->st_mtimespec.tv_sec)&&
+    (sbuf_so->st_mtimespec.tv_nsec <= sbuf_src->st_mtimespec.tv_nsec);
+#else
+  return (sbuf_so->st_mtime <= sbuf_src->st_mtime);
 #endif
 }
 
 // Static member. Compile if necessary
-void KNSystem::makeSystem(const std::string& shobj, const std::string& executableDir)
+// input : sysName : system definition file
+//         sysType : type of system definition, .vf, .cpp, .so
+//         executableDir : the directory of the software
+// output : soname : the object file to be loaded
+// return value : true if vector field file is to be used directly
+//                false if object file is to be loaded
+bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const std::string& sysType, const std::string& executableDir)
 {
-  // convert the name first from .so to .cpp
-  std::string cxxfile(shobj);
+  std::string type(sysType);
+  std::string cxxcode;
+  std::string cxxfile;
+  std::string sofile;
   std::string vffile;
-  if (cxxfile.substr(std::max((int)cxxfile.size()-3,0),cxxfile.size()) == ".so")
+  struct stat sbuf_so;
+  struct stat sbuf_cxx;
+  struct stat sbuf_vf;
+  bool use_vf = false;
+  bool compile_vf = false, compile_cxx = false;
+
+  std::transform(type.begin(), type.end(), type.begin(), ::tolower);
+  if (type == "")
   {
-    cxxfile.erase(cxxfile.size()-3);
-    vffile = cxxfile;
-    cxxfile.append(".cpp");
-  } else {
-    P_MESSAGE3("The file name '", shobj, "' does not have the '.so' extension.");
+    std::string ext = sysName.substr(sysName.find_last_of('.')+1,std::string::npos);
+    if (ext == "so") type = SYS_TYPE_SO;
+    if (ext == "cpp") type = SYS_TYPE_CXX;
+    if (ext == "cc") type = SYS_TYPE_CXX;
+    if (ext == "C") type = SYS_TYPE_CXX;
+    if (ext == "vf") type = SYS_TYPE_VFC;
   }
-  // It is not portable to Windows!!!
-  struct stat *sbuf_so  = new struct stat;
-  struct stat *sbuf_cxx = new struct stat;
-  struct stat *sbuf_vf = new struct stat;
-  int res_so = stat(shobj.c_str(), sbuf_so);
-  int res_cxx = stat(cxxfile.c_str(), sbuf_cxx);
-  int res_vf = stat(vffile.c_str(), sbuf_vf);
-  // if there's no .so, but there's a .cpp
-  bool compile = (res_so != 0)&&(res_cxx == 0);
-  bool generate = (res_so != 0)&&(res_vf == 0);
-  // if both .so and .cpp exist, the date decides
-#ifdef __APPLE__
-  if (res_cxx == 0)
-    compile |= (sbuf_so->st_mtimespec.tv_sec <= sbuf_cxx->st_mtimespec.tv_sec)&&
-            (sbuf_so->st_mtimespec.tv_nsec <= sbuf_cxx->st_mtimespec.tv_nsec);
-  if ((res_vf == 0) && (vffile.substr(vffile.size()-3,vffile.size()) == ".vf"))
-    generate |= (sbuf_so->st_mtimespec.tv_sec <= sbuf_vf->st_mtimespec.tv_sec)&&
-            (sbuf_so->st_mtimespec.tv_nsec <= sbuf_vf->st_mtimespec.tv_nsec);
-#else
-  // for Linux and possibly for windows
-  if (res_cxx == 0)
-    compile |= (sbuf_so->st_mtime <= sbuf_cxx->st_mtime);
-  if ((res_vf == 0) && (vffile.substr(vffile.size()-3,vffile.size()) == ".vf"))
-    generate |= (sbuf_so->st_mtime <= sbuf_cxx->st_mtime);
-#endif
-  delete sbuf_so;
-  delete sbuf_cxx;
-  
-  if (generate)
+  if (type == SYS_TYPE_SO)
   {
-    generateSystem(vffile, executableDir);
+    int res_so = stat(sysName.c_str(), &sbuf_so);
+    if (res_so != 0)
+    P_ERROR_X3 (res_so == 0, "Shared Object system definition '", sysName, "' is missing.");
+    soname = sysName;
+  } else if (type == SYS_TYPE_CXX)
+  {
+    cxxfile = sysName;
+    sofile = sysName + ".so";
+    int res_so = stat(sofile.c_str(), &sbuf_so);
+    int res_cxx = stat(cxxfile.c_str(), &sbuf_cxx);
+    P_ERROR_X3 (res_cxx == 0, "C++ system definition '", sysName, "' is missing.");
+    if (res_so != 0) compile_cxx = true;
+    else compile_cxx = to_compile(&sbuf_so, &sbuf_cxx);
+    if (compile_cxx && workingCompiler) compileSystem(cxxfile, sofile, executableDir);
+    soname = sofile;
+  } else if (type == SYS_TYPE_VFC)
+  {
+    vffile = sysName;
+    sofile = sysName + ".so";
+    int res_so = stat(sofile.c_str(), &sbuf_so);
+    int res_vf = stat(vffile.c_str(), &sbuf_cxx);
+    P_ERROR_X3 (res_vf == 0, "Vector field system definition '", sysName, "' is missing.");
+    if (res_so != 0) compile_vf = true;
+    else compile_vf = to_compile(&sbuf_so, &sbuf_vf);
+    if (compile_vf && workingCompiler) generateSystem(vffile, sofile, executableDir);
+    soname = sofile;
+  } else if (type == SYS_TYPE_VF0)
+  {
+    vffile = sysName;
+    int res_vf = stat(vffile.c_str(), &sbuf_cxx);
+    P_ERROR_X3 (res_vf == 0, "Vector field definition '", sysName, "' is missing.");
+    soname = "";
+    use_vf = true;
   } else
   {
-    if (compile)
-    {
-      compileSystem(cxxfile, shobj, executableDir);
-    }
-    else if (res_so != 0)
-    {
-      P_MESSAGE5("The file '", shobj ,
-        "' doesn't exist and it cannot be compiled from '", cxxfile, "'.");
-    }
+   P_MESSAGE3("Invalid system definition type '", type, "'.");
   }
+//   delete sbuf_vf; sbuf_vf = 0;
+//   delete sbuf_cxx; sbuf_cxx = 0; 
+//   delete sbuf_so; sbuf_so = 0;
+  return use_vf;
 }
 
 void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, int sel, 
@@ -773,5 +897,288 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
       }
     }
 //     std::cout<<">";
+  }
+}
+
+#ifdef GINAC_FOUND
+void KNSystem::makeSymbolic(const std::string& vffile)
+{
+  // load the vector field file and generate expressions
+//   std::cout << "This is from a vector field file.\n";
+  VectorField vf;
+  vf.ReadXML(vffile.c_str());
+  int pserr = vf.ProcessSymbols();
+  if (pserr == -1) P_MESSAGE1("Could not parse the vector field definition.");
+  if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
+  ex_ndim = vf.Knut_ndim();
+  ex_npar = vf.Knut_npar();
+  ex_ntau = vf.Knut_ntau();
+  ex_nevent = vf.Knut_nevent();
+  vf.Knut_tau(ex_tau);
+  vf.Knut_tau_p(ex_tau_p);
+  vf.Knut_RHS(ex_rhs);
+  vf.Knut_RHS_p(ex_rhs_p);
+  vf.Knut_RHS_x(ex_rhs_x);
+  vf.Knut_RHS_xp(ex_rhs_xp);
+  vf.Knut_RHS_xx(ex_rhs_xx);
+  vf.Knut_stpar(ex_stpar);
+  vf.Knut_stsol(ex_stsol);
+  vf.Knut_parnames(ex_parnames);
+}
+#endif
+
+//******** INTERFACE WITH THE SYSTEM DEFINITION ********//
+
+int    KNSystem::ndim() const 
+{
+  if (useVectorField) return ex_ndim;
+  else return (*v_ndim)();
+}
+
+int    KNSystem::npar() const 
+{
+  if (useVectorField) return ex_npar;
+  else return (*v_npar)();
+}
+
+int    KNSystem::ntau() const
+{
+  if (useVectorField) return ex_ntau;
+  else return (*v_ntau)();
+}
+
+// Vectorized versions
+void   KNSystem::p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
+{
+  if (useVectorField) sym_tau(out, time, par);
+  else
+  {
+    if (v_p_tau != 0) (*v_p_tau)(out, time, par);
+    else
+    {
+      for (int i=0; i<time.size(); ++i)
+      {
+        KNVector tout(out, i);
+        (*v_tau)(tout, time(i), par);
+      }
+    }
+//     KNArray2D<double> out_p(out);
+//     sym_tau(out_p, time, par);
+//     double max = 0;
+//     for (int i=0; i < out.dim1(); ++i)
+//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
+//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << "\n";
+  } 
+}
+
+void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp )
+{
+  if (useVectorField) sym_dtau(out, time, par, vp);
+  else
+  {
+    if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
+    else
+    {
+      for (int i=0; i<time.size(); ++i)
+      {
+        KNVector tout(out, i);
+        (*v_dtau)(tout, time(i), par, vp);
+      }
+    }
+//     KNArray2D<double> out_p(out);
+//     sym_dtau(out_p, time, par, vp);
+//     double max = 0;
+//     for (int i=0; i < out.dim1(); ++i)
+//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
+//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
+  }
+}
+
+void   KNSystem::mass(KNArray1D<double>& out)
+{
+  if (v_mass != 0)(*v_mass)(out);
+  else
+  {
+    for(int i=0; i<out.size(); ++i) out(i) = 1.0;
+  }
+}
+
+void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+{
+  if (useVectorField) sym_rhs(out, time, x, par, sel);
+  else
+  {
+    if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
+    else
+    {
+      for (int i=0; i<time.size(); ++i)
+      {
+        KNVector vout(out, i);
+        KNMatrix xxin(x, i);
+        (*v_rhs)(vout, time(i), xxin, par);
+      }
+    }
+//     KNArray2D<double> out_p(out);
+//     sym_rhs(out_p, time, x, par, sel);
+//     double max = 0;
+//     for (int i=0; i < out.dim1(); ++i)
+//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
+//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+  }
+}
+
+void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
+                int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
+{
+  if (useVectorField) sym_deri(out, time, x, par, sel, nx, vx, np, vp, vv);
+  else
+  {
+    if ((nderi == 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
+    {
+      if (v_p_deri != 0)
+      {
+        (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
+      } else
+      {
+        for (int i=0; i<time.size(); ++i)
+        {
+          KNMatrix mout(out, i);
+          KNMatrix xxin(x, i);
+          KNMatrix vvin(vv, i);
+          (*v_deri)(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
+        }
+      }
+    } else
+    {
+      p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
+    }
+//     KNArray3D<double> out_p(out);
+//     sym_deri(out_p, time, x, par, sel, nx, vx, np, vp, vv);
+//     double max = 0;
+//     for (int i=0; i < out.dim1(); ++i)
+//     for (int j=0; j < out.dim2(); ++j) 
+//     for (int k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) max = fabs(fabs(out_p(i,j,k)-out(i,j,k)));
+//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX_p: " << max << "\n";
+  }
+}
+
+// Setting the starting point
+void   KNSystem::stpar(KNVector& par) const
+{
+  if (useVectorField) sym_stpar(par);
+  else
+  {
+    (*v_stpar)(par);
+  }
+}
+
+void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const
+{
+  if (useVectorField) sym_stsol(out, time);
+  else
+  {
+    if (v_p_stsol != 0) (*v_p_stsol)(out, time);
+    else if (v_stsol != 0)
+    {
+      for (int i=0; i<time.size(); ++i)
+      {
+        KNVector vf(out, i);
+        (*v_stsol)(vf, time(i));
+      }
+    }
+//     KNArray2D<double>& out_p(out);
+//     sym_stsol(out_p, time);
+//     double max = 0;
+//     for (int i=0; i < out.dim1(); ++i)
+//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
+//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+  }
+}
+
+void   KNSystem::parnames(const char *names[]) const
+{
+  if (useVectorField) sym_parnames(names);
+  else
+  {
+    if (v_parnames != 0)
+    {
+      (*v_parnames)(names);
+    }
+  }
+}
+
+int KNSystem::sym_ndim() 
+{
+  return ex_ndim;
+}
+
+int KNSystem::sym_npar() 
+{
+  return ex_npar;
+}
+
+int KNSystem::sym_ntau() 
+{
+  return ex_ntau;
+}
+
+int KNSystem::sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par ) 
+{
+  VectorField::Knut_tau_eval( ex_tau, out, time, par, ex_ndim, ex_npar, ex_ntau );
+}
+
+void KNSystem::sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp )
+{
+  VectorField::Knut_tau_p_eval( ex_tau_p, out, time, par, vp, ex_ndim, ex_npar, ex_ntau );
+}
+
+void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+{
+#ifdef GINAC_FOUND
+  VectorField::Knut_RHS_eval(ex_rhs, out_p, time, x, par, sel );
+#endif
+}
+
+void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
+                int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
+{
+#ifdef GINAC_FOUND
+  if ((np == 1)&&(nx == 0))
+  {
+    VectorField::Knut_RHS_p_eval( ex_rhs_p, out_p, time, x, par, sel, vp[0], ex_ndim, ex_npar, ex_ntau );
+  }
+  if ((np == 0)&&(nx == 1))
+  {
+    VectorField::Knut_RHS_x_eval( ex_rhs_x, out_p, time, x, par, sel, vx[0], ex_ndim, ex_npar, ex_ntau );
+}
+  if ((np == 1)&&(nx == 1))
+  {
+    VectorField::Knut_RHS_xp_eval( ex_rhs_xp, out_p, time, x, par, sel, vx[0], vp[0], ex_ndim, ex_npar, ex_ntau );
+  }
+  if ((np == 0)&&(nx == 2))
+  {
+    VectorField::Knut_RHS_xx_eval( ex_rhs_xx, out_p, time, x, vv, par, sel, vx[0], vx[1], ex_ndim, ex_npar, ex_ntau );
+  }
+#endif                
+}
+
+void KNSystem::sym_stpar(KNVector& par) const
+{
+  for (size_t i = 0; i < ex_npar; ++i)
+  {
+    par(i) = ex_stpar[i];
+  }
+}
+
+void KNSystem::sym_stsol(KNArray2D<double>& out_p, const KNArray1D<double>& time) const
+{
+  VectorField::Knut_RHS_stsol_eval( ex_stsol, out_p, time );
+}
+
+void KNSystem::sym_parnames(const char *names[]) const
+{
+  for (size_t i = 0; i < ex_npar; ++i)
+  {
+    names[i] = ex_parnames[i].c_str();
   }
 }

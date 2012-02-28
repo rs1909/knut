@@ -165,11 +165,11 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     } else closest[i] = -1;
   }
   // find the duplicate in closest
-  std::vector<std::list<int> > duplicate(mulRe0->size());
+  std::vector<std::list<size_t> > duplicate(mulRe0->size());
   std::vector<bool> valid(mulRe0->size(), true);
   for (size_t i=0; i<closest.size(); ++i)
   {
-    duplicate[i] = std::list<int>(0);
+    duplicate[i] = std::list<size_t>(0);
     for (size_t j=i+1; j<closest.size(); ++j)
     {  
       if (valid[i]&&(closest[i] >= 0)&&(closest[i] == closest[j]))
@@ -190,7 +190,7 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
       const double mre0 = (*mulRe1)(closest[i]);
       const double mim0 = (*mulIm1)(closest[i]);
 //      std :: cerr << "DNUM " << dnum << " (" << mre0 << "," << mim0 << ") ==>> ";
-      for (std::list<int>::iterator it = duplicate[i].begin(); it != duplicate[i].end(); it++)
+      for (std::list<size_t>::iterator it = duplicate[i].begin(); it != duplicate[i].end(); it++)
       {
         const double mre1 = (*mulRe0)(*it);
         const double mim1 = (*mulIm0)(*it);

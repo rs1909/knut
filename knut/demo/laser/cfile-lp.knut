@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-psol.mat</input>
  <output>out-lp.mat</output>
- <sysname>laser.vf.so</sysname>
+ <sysname>laser.vf</sysname>
  <fromtype>NX</fromtype>
  <label>138</label>
  <pointtype>USER</pointtype>

@@ -58,6 +58,8 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     void   importProfile(KNVector& out, const KNVector& in, const KNVector& mesh, int deg_, bool adapt);
     void   exportProfile(KNVector& out, const KNVector& mshint, const KNVector& mshdeg, const KNVector& in);
     void   pdMeshConvert(KNVector& newprofile, KNVector& newtangent, const KNVector& oldprofile, const KNVector& oldtangent);
+    
+    void   resetProfile(KNSystem& sys, KNVector& profile);
 
     // computing the Jacobians, right-hand sides, characteristic matrices
 

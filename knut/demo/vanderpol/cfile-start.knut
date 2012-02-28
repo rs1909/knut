@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input></input>
  <output>out-start.mat</output>
- <sysname>sys-vanderpol.so</sysname>
+ <sysname>sys-vanderpol.cpp</sysname>
  <fromtype>NX</fromtype>
  <label>0</label>
  <pointtype>DDE_AUT</pointtype>

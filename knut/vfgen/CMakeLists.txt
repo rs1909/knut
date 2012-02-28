@@ -7,7 +7,11 @@ ADD_DEFINITIONS(-DVERSION="\\\"${VFGEN_VERSION}\\\"")
 
 SET(VFGEN_CPP_SRC_FILES	codegen_utils.cpp vf.h vf.cpp vfgen.cpp vf_xml.cpp vf_knut.cpp) 
 
-INCLUDE_DIRECTORIES(${GINAC_INCLUDE_DIRS} ${MXML_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${GINAC_INCLUDE_DIRS} 
+	${MXML_INCLUDE_DIRS}
+        ${KNUT_SOURCE_DIR}/laarpack
+	${KNUT_SOURCE_DIR}/src
+        ${KNUT_BINARY_DIR}/src)
 
 ADD_LIBRARY(vfgenlib ${VFGEN_CPP_SRC_FILES})
 SET(VFGEN_LIBS vfgenlib CACHE INTERNAL "vfgen lib")

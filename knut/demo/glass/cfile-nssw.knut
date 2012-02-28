@@ -1,8 +1,8 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut>
+<knut version="3">
  <input>out-start.mat</input>
  <output>out-nssw.mat</output>
- <sysname>mackey-glass.vf.so</sysname>
+ <sysname>mackey-glass.vf</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>DDE_AUT_HOPF_SW</pointtype>

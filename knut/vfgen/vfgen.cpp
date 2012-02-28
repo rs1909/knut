@@ -28,6 +28,7 @@
 #include <ginac/ginac.h>
 
 #include "vf.h"
+#include "knerror.h"
 
 using namespace std;
 using namespace GiNaC;
@@ -47,19 +48,21 @@ int main(int argc, char **argv)
   }
 
   map<string, string> options;
-
-  //
-  //  Read the vector field file.  This just puts the strings into the
-  //  appropriate fields.  It doesn't do any symbolic processing.
-  //
-  vf.ReadXML(argv[1]);
-
-  //
-  //  Process the strings to create the GiNaC symbolic expressions in the object.
-  //
-  int pserr = vf.ProcessSymbols();
-  if (pserr == -1)
+  try {
+    //
+    //  Read the vector field file.  This just puts the strings into the
+    //  appropriate fields.  It doesn't do any symbolic processing.
+    //
+    vf.ReadXML(argv[1]);
+    
+    //
+    //  Process the strings to create the GiNaC symbolic expressions in the object.
+    //
+    int pserr = vf.ProcessSymbols();
+  }
+  catch (KNException& ex)
   {
+    std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
     exit(-1);
   }
 

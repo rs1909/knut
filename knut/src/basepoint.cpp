@@ -532,26 +532,9 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
 // private
 void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
 {
-  KNVector fx(persolcolloc->nDim());
-
+  persolcolloc->resetProfile(sys_, sol);
   sys_.stpar(par);
   par(VarToIndex(VarPeriod,NPAR)) = 1.0;
-
-  for (int i = 0; i < persolcolloc->nInt(); i++)
-  {
-    for (int d = 0; d <  persolcolloc->nDeg(); d++)
-    {
-      sys_.stsol(fx, persolcolloc->Profile(i, d));
-      for (int j = 0; j < persolcolloc->nDim(); j++)
-      {
-        sol(NDIM*(i*NDEG + d) + j) = fx(j);
-      }
-    }
-  }
-  for (int j = 0; j < persolcolloc->nDim(); j++)
-  {
-    sol(NDIM*NDEG*NINT + j) = sol(j);
-  }
 }
 
 // __not__ specified in the constants file

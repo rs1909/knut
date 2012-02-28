@@ -11,6 +11,10 @@
 #define SYSTEM_H
 
 #include "matrix.h"
+#include "config.h"
+#ifdef GINAC_FOUND
+#include "vf.h"
+#endif
 
 #ifndef _WIN32
 extern "C"
@@ -21,110 +25,52 @@ extern "C"
 #include <windows.h>
 #endif
 
+extern "C" {
+  typedef int(*tp_sys_ndim)();
+  typedef int(*tp_sys_npar)();
+  typedef int(*tp_sys_ntau)();
+  typedef int(*tp_sys_nderi)();
+  typedef int(*tp_sys_nevent)();
+  typedef void(*tp_sys_tau)(KNVector& out, double t, const KNVector& par);
+  typedef void(*tp_sys_dtau)(KNVector& out, double t, const KNVector& par, int vp);
+  typedef void(*tp_sys_mass)(KNArray1D<double>& out);
+  typedef void(*tp_sys_rhs)(KNVector& out, double t, const KNMatrix& x, const KNVector& par);
+  typedef void(*tp_sys_deri)(KNMatrix& out, double t, const KNMatrix& x, const KNVector& par, int nx, const int* vx, int np, const int* vp, const KNMatrix& v);
+  typedef void(*tp_sys_p_tau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
+  typedef void(*tp_sys_p_dtau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp );
+  typedef void(*tp_sys_p_rhs)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
+  typedef void(*tp_sys_p_deri)( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv );
+  typedef void(*tp_sys_p_event)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par );
+  typedef void(*tp_sys_stpar)(KNVector& par);
+  typedef void(*tp_sys_stsol)(KNVector& out, double t);
+  typedef void(*tp_sys_p_stsol)(KNArray2D<double>& out, const KNArray1D<double>& time);
+  typedef void(*tp_sys_parnames)(const char *names[]);
+}
+
 class KNSystem
 {
   public:
 
-    KNSystem(const std::string& shobj, int usederi);
+    KNSystem(const std::string& sysName, const std::string& sysType, int usederi);
     ~KNSystem();
     static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
-    static void generateSystem(const std::string& vffile, const std::string& executableDir);
-    static void makeSystem(const std::string& shobj, const std::string& executableDir);
+    static void generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir);
+    static bool makeSystem(std::string& soname, const std::string& sysName, const std::string& sysType, const std::string& executableDir);
 
-    int    ndim() const 
-    {
-      return (*v_ndim)();
-    }
-    int    npar() const 
-    {
-      return (*v_npar)();
-    }
-    int    ntau() const
-    {
-      return (*v_ntau)();
-    }
+    int    ndim() const ;
+    int    npar() const ;
+    int    ntau() const ;
     // Vectorized versions
-    void   p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
-    {
-      if (v_p_tau != 0) (*v_p_tau)(out, time, par);
-      else
-      {
-        for (int i=0; i<time.size(); ++i)
-        {
-          KNVector tout(out, i);
-          (*v_tau)(tout, time(i), par);
-        }
-      }
-    }
-    void   p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp )
-    {
-      if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
-      else
-      {
-        for (int i=0; i<time.size(); ++i)
-        {
-          KNVector tout(out, i);
-          (*v_dtau)(tout, time(i), par, vp);
-        }
-      }
-    }
-    void   mass(KNArray1D<double>& out)
-    {
-      if (v_mass != 0)(*v_mass)(out);
-      else
-      {
-        for(int i=0; i<out.size(); ++i) out(i) = 1.0;
-      }
-    }
-    void   p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
-    {
-      if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
-      else
-      {
-        for (int i=0; i<time.size(); ++i)
-        {
-          KNVector vout(out, i);
-          KNMatrix xxin(x, i);
-          (*v_rhs)(vout, time(i), xxin, par);
-        }
-      }
-    }
+    void   p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
+    void   p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp );
+    void   mass(KNArray1D<double>& out);
+    void   p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
     void   p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
-                   int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
-    {
-      if ((nderi == 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
-      {
-        if (v_p_deri != 0)
-        {
-          (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
-        } else
-        {
-          for (int i=0; i<time.size(); ++i)
-          {
-            KNMatrix mout(out, i);
-            KNMatrix xxin(x, i);
-            KNMatrix vvin(vv, i);
-            (*v_deri)(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
-          }
-        }
-      } else
-      {
-        p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
-      }
-    }
+                   int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv );
     // Setting the starting point
-    void   stpar(KNVector& par) const
-    {
-      (*v_stpar)(par);
-    }
-    void   stsol(KNVector& out, double t) const
-    {
-      (*v_stsol)(out, t);
-    }
-    void   parnames(const char *names[]) const
-    {
-      if (v_parnames != 0) (*v_parnames)(names);
-    }
+    void   stpar(KNVector& par) const;
+    void   stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const;
+    void   parnames(const char *names[]) const;
 
   private:
     void   p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, int sel,
@@ -144,33 +90,6 @@ class KNSystem
         p2_xx_eps.init(ndim(), 2*ntau()+1, p_size);
       }
     }
-
-    typedef int(*tp_sys_ndim)();
-    typedef int(*tp_sys_npar)();
-    typedef int(*tp_sys_ntau)();
-    typedef int(*tp_sys_nderi)();
-    typedef int(*tp_sys_nevent)();
-    typedef void(*tp_sys_tau)(KNVector& out, double t, const KNVector& par);
-    typedef void(*tp_sys_dtau)(KNVector& out, double t, const KNVector& par, int vp);
-    typedef void(*tp_sys_mass)(KNArray1D<double>& out);
-    typedef void(*tp_sys_rhs)(KNVector& out, double t, const KNMatrix& x, const KNVector& par);
-    typedef void(*tp_sys_deri)(KNMatrix& out, double t, const KNMatrix& x, const KNVector& par, int nx, const int* vx, int np, const int* vp, const KNMatrix& v);
-    typedef void(*tp_sys_p_tau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
-    typedef void(*tp_sys_p_dtau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp );
-    typedef void(*tp_sys_p_rhs)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
-    typedef void(*tp_sys_p_deri)( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv );
-    typedef void(*tp_sys_p_event)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par );
-    typedef void(*tp_sys_stpar)(KNVector& par);
-    typedef void(*tp_sys_stsol)(KNVector& out, double t);
-    typedef void(*tp_sys_parnames)(const char *names[]);
-
-    typedef void(*FPTR)();
-    union punned
-    {
-      void *obj;
-      FPTR fun;
-    };
-    FPTR fptr(void * ptr);
 
 #ifndef _WIN32
     typedef void*   tdlhand;
@@ -196,14 +115,13 @@ class KNSystem
     KNMatrix  dxx2, dxx_eps2;
     KNVector  vt;
 
-    int             p_size;
+    int               p_size;
     KNArray2D<double> p_fx,  p_fx_eps;
     KNArray3D<double> p_dfx, p_dfx_eps;
     KNArray3D<double> p_xx_eps;
     KNArray3D<double> p2_dfx, p2_dfx_eps;
     KNArray3D<double> p2_xx_eps;
-
-
+    
     tp_sys_ndim     v_ndim;
     tp_sys_npar     v_npar;
     tp_sys_ntau     v_ntau;
@@ -221,21 +139,46 @@ class KNSystem
     tp_sys_p_event  v_p_event;
     tp_sys_stpar    v_stpar;
     tp_sys_stsol    v_stsol;
+    tp_sys_p_stsol  v_p_stsol;
     tp_sys_parnames v_parnames;
 
+#ifdef GINAC_FOUND
+    void makeSymbolic(const std::string& vffile);
+    bool useVectorField;  // use the vector field file directly, no compilation
+    size_t ex_ndim;
+    size_t ex_npar;
+    size_t ex_ntau;
+    size_t ex_nevent;
+    std::vector<GiNaC::ex> ex_tau;
+    std::vector<GiNaC::ex> ex_tau_p;
+    std::vector<GiNaC::ex> ex_rhs;
+    std::vector<GiNaC::ex> ex_rhs_p;
+    std::vector<GiNaC::ex> ex_rhs_x;
+    std::vector<GiNaC::ex> ex_rhs_xp;
+    std::vector<GiNaC::ex> ex_rhs_xx;
+    std::vector<double> ex_stpar;
+    std::vector<GiNaC::ex> ex_stsol;
+    std::vector<std::string> ex_parnames;
+    
+    int sym_ndim();
+    int sym_npar();
+    int sym_ntau();
+    int sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
+    void sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp );
+    void sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
+    void sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
+                int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv );
+    void sym_stpar(KNVector& par) const;
+    void sym_stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const;
+    void sym_parnames(const char *names[]) const;
+#endif
+    static bool workingCompiler;
 };
-
-inline KNSystem::FPTR KNSystem::fptr(void * ptr)
-{
-  punned tmp;
-  tmp.obj = ptr;
-  return tmp.fun;
-}
 
 inline KNSystem::tdlhand KNSystem::tdlopen(const char* fname)
 {
 #ifndef _WIN32
-  return dlopen(fname, RTLD_LAZY);
+  return dlopen(fname, RTLD_NOW);
 #else
   return LoadLibrary(fname);
 #endif
@@ -244,7 +187,8 @@ inline KNSystem::tdlhand KNSystem::tdlopen(const char* fname)
 inline void* KNSystem::tdlsym(tdlhand h, const char* sname)
 {
 #ifndef _WIN32
-  return dlsym(h, sname);
+  void * res = dlsym(h, sname);
+  return res;
 #else
   return (void*) GetProcAddress(h, sname);
 #endif

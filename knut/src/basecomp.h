@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "mat4data.h"
+#include <iostream>
 
 class KNAbstractContinuation
 {
@@ -51,7 +52,7 @@ class KNCliContinuation : public KNAbstractContinuation
     virtual void storeCursor() { charsPrinted = 0; }
     virtual void clearLastLine()
     {
-      for (int k=0; k<charsPrinted; ++k) std::cout << "\b";
+      for (size_t k=0; k<charsPrinted; ++k) std::cout << "\b";
     }
     static void printException(const KNException& ex)
     {
@@ -68,7 +69,7 @@ class KNCliContinuation : public KNAbstractContinuation
     void dataUpdated() { }
   private:
     KNDataFile* output;
-    int         charsPrinted;
+    size_t charsPrinted;
 };
 
 #endif

@@ -107,4 +107,9 @@ template< class T > class KNArray1D;
 // helper function, implemented in basepoint.cpp
 BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_);
 
+#define SYS_TYPE_SO "so"
+#define SYS_TYPE_CXX "cpp"
+#define SYS_TYPE_VFC "vf"
+#define SYS_TYPE_VF0 "vf0"
+
 #endif

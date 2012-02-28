@@ -27,6 +27,7 @@
 
 #include "vf.h"
 #include "codegen_utils.h"
+#include "knerror.h"
 
 using namespace std;
 using namespace GiNaC;
@@ -54,6 +55,31 @@ static void Zlags_print(const ex& arg1, const ex& arg2, const print_context& c)
   c.s << ",idx)";
 }
 
+static void VZlags_print(const ex& arg1, const ex& arg2, const print_context& c)
+{
+  c.s << "VZlags_(";
+  if (is_a<numeric>(arg1))
+    c.s << ex_to<numeric>(arg1).to_int();
+  else
+    arg1.print(c);
+  c.s << ",";
+  if (is_a<numeric>(arg2))
+    c.s << ex_to<numeric>(arg2).to_int();
+  else
+    arg2.print(c);
+  c.s << ",idx)";
+}
+
+static void par_print(const ex& arg1, const print_context& c)
+{
+  c.s << "par_(";
+  if (is_a<numeric>(arg1))
+    c.s << ex_to<numeric>(arg1).to_int();
+  else
+    arg1.print(c);
+  c.s << ")";
+}
+
 //
 // Add a function called "delay" to the functions known by ginac.
 // (The corresponding macro DECLARE_FUNCTION_2P(delay) is in vf.h.)
@@ -63,6 +89,12 @@ REGISTER_FUNCTION(delay, dummy())
 REGISTER_FUNCTION(Zlags_, print_func<print_csrc_float>(Zlags_print).
                   print_func<print_csrc_double>(Zlags_print).
                   print_func<print_python>(Zlags_print))
+REGISTER_FUNCTION(VZlags_, print_func<print_csrc_float>(VZlags_print).
+                  print_func<print_csrc_double>(VZlags_print).
+                  print_func<print_python>(VZlags_print))
+REGISTER_FUNCTION(par_, print_func<print_csrc_float>(par_print).
+                  print_func<print_csrc_double>(par_print).
+                  print_func<print_python>(par_print))                  
 
 ex delay_reader(const exvector& ev)
 {
@@ -72,6 +104,16 @@ ex delay_reader(const exvector& ev)
 ex Zlags__reader(const exvector& ev)
 {
      return Zlags_(ev[0],ev[1]);
+}
+
+ex VZlags__reader(const exvector& ev)
+{
+     return VZlags_(ev[0],ev[1]);
+}
+
+ex par__reader(const exvector& ev)
+{
+     return par_(ev[0]);
 }
 
 static ex heaviside_evalf(const ex& x)
@@ -90,7 +132,7 @@ static ex heaviside_eval(const ex& x)
   return heaviside(x).hold();
 }
 
-static ex heaviside_deriv(const ex& x, unsigned deriv_param)
+static ex heaviside_deriv(const ex& /*x*/, unsigned /*deriv_param*/)
 {
   return 0;
 }
@@ -120,7 +162,7 @@ static ex ramp_eval(const ex& x)
   return ramp(x).hold();
 }
 
-static ex ramp_deriv(const ex& x, unsigned deriv_param)
+static ex ramp_deriv(const ex& x, unsigned /*deriv_param*/)
 {
   return heaviside(x);
 }
@@ -217,7 +259,7 @@ Function::Function(const std::string& name, const std::string& descr) : FormulaS
 
 VectorField::VectorField(void) : IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
 VectorField::VectorField(const std::string& name, const std::string& descr) : Symbol(name, descr), IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
-VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& indvar) : Symbol(name, descr), IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
+VectorField::VectorField(const std::string& name, const std::string& descr, const std::string& /*indvar*/) : Symbol(name, descr), IndependentVariable("t"), TimeDependentDelay(false), StateDependentDelay(false), IsAutonomous(true) { }
 
 VectorField::~VectorField()
 {
@@ -415,7 +457,7 @@ int VectorField::ProcessSymbols(void)
       catch (exception &p)
       {
         // cerr << "VectorField:ProcessSymbols: exception while processing constants\n";
-        cerr << "The Value \"" << (*c)->Value() << "\" for the Constant " << (*c)->Name() << " has an error: " << p.what() << endl;
+        P_MESSAGE6("The Value \"", (*c)->Value(), "\" for the Constant ", (*c)->Name(), " has an error: ", p.what());
         rval = -1;
       }
     }
@@ -446,7 +488,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &ep)
     {
-      cerr << "The DefaultValue \"" << (*p)->DefaultValue() << "\" for the Parameter " << (*p)->Name() << " has an error: " << ep.what() << endl;
+      P_MESSAGE6("The DefaultValue \"", (*p)->DefaultValue(), "\" for the Parameter ", (*p)->Name(), " has an error: ", ep.what());
       rval = -1;
     }
   }
@@ -481,7 +523,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &p)
     {
-      cerr << "The DefaultInitialCondition \"" << (*sv)->DefaultInitialCondition() << "\" for the StateVariable " << (*sv)->Name() << " has an error: " << p.what() << endl;
+      P_MESSAGE6("The DefaultInitialCondition \"", (*sv)->DefaultInitialCondition(), "\" for the StateVariable ", (*sv)->Name(), " has an error: ", p.what());
       rval = -1;
     }
   }
@@ -501,7 +543,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &p)
     {
-      cerr << "The DefaultHistory \"" << (*sv)->DefaultHistory() << "\" for the StateVariable " << (*sv)->Name() << " has an error: " << p.what() << endl;
+      P_MESSAGE6("The DefaultHistory \"", (*sv)->DefaultHistory(), "\" for the StateVariable ", (*sv)->Name(), " has an error: ", p.what());
       rval = -1;
     }
   }
@@ -538,7 +580,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &p)
     {
-      cerr << "The Formula \"" << (*e)->Formula() << "\" for the Expression " << (*e)->Name() << " has an error: " << p.what() << endl;
+      P_MESSAGE6("The Formula \"", (*e)->Formula(), "\" for the Expression ", (*e)->Name(), " has an error: ", p.what());
       rval = -1;
     }
   }
@@ -562,7 +604,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &p)
     {
-      cerr << "The Formula \"" << (*sv)->Formula() << "\" for the StateVariable " << (*sv)->Name() << " has an error: " << p.what() << endl;
+      P_MESSAGE6("The Formula \"", (*sv)->Formula(), "\" for the StateVariable ", (*sv)->Name(), " has an error: ", p.what());
       rval = -1;
     }
   }
@@ -588,7 +630,7 @@ int VectorField::ProcessSymbols(void)
     }
     catch (exception &p)
     {
-      cerr << "The Formula \"" << (*f)->Formula() << "\" for the  Function " << (*f)->Name() << " has an error: " << p.what() << endl;
+      P_MESSAGE6("The Formula \"", (*f)->Formula(), "\" for the  Function ", (*f)->Name(), " has an error: ", p.what());
       rval = -1;
     }
   }

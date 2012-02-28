@@ -14,6 +14,7 @@
 #include "pointtype.h"
 #include <string>
 #include <vector>
+#include <cstddef>
 // HANDLE is defined here
 #ifdef WIN32
 #  include <windows.h>
@@ -183,10 +184,10 @@ class KNDataFile
     struct header
     {
       int32_t type;
-      int32_t mrows;
-      int32_t ncols;
-      int32_t imagf;
-      int32_t namelen;
+      uint32_t mrows;
+      uint32_t ncols;
+      uint32_t imagf;
+      uint32_t namelen;
 
       const char* name(const void* offset) const
       {
@@ -228,35 +229,35 @@ class KNDataFile
     void resizeMatrix(const char* name, int newcol, int32_t type=0);
     void condenseData();
 
-    struct header *getHeader(size_t offset)
+    struct header *getHeader(ptrdiff_t offset)
     {
       return (struct header*)((char*)address + offset);
     }
-    const struct header *getHeader(size_t offset) const
+    const struct header *getHeader(ptrdiff_t offset) const
       {
         return (struct header*)((char*)address + offset);
       }
-    double& elem(size_t offset, size_t row, size_t col)
+    double& elem(ptrdiff_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    const double elem(size_t offset, size_t row, size_t col) const
+    double elem(ptrdiff_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    double& elem_im(size_t offset, size_t row, size_t col)
+    double& elem_im(ptrdiff_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    const double& elem_im(size_t offset, size_t row, size_t col) const
+    const double& elem_im(ptrdiff_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    int32_t getRows(size_t offset) const
+    uint32_t getRows(ptrdiff_t offset) const
     {
       return getHeader(offset)->mrows;
     }
-    int32_t getCols(size_t offset) const
+    uint32_t getCols(ptrdiff_t offset) const
     {
       return getHeader(offset)->ncols;
     }
@@ -287,56 +288,56 @@ class KNDataFile
 
     bool   torus;
 
-    off_t  npoints_offset;  //T
+    ptrdiff_t  npoints_offset;  //T
     header npoints_header;
 
-    off_t  par_offset;      //T
+    ptrdiff_t  par_offset;      //T
     header par_header;
     
-    off_t  parnames_offset;
+    ptrdiff_t  parnames_offset;
     header parnames_header;
 
-    off_t  mul_offset;
+    ptrdiff_t  mul_offset;
     header mul_header;
 
-    off_t  ntrivmul_offset;
+    ptrdiff_t  ntrivmul_offset;
     header ntrivmul_header;
     
-    off_t  magic_offset;
+    ptrdiff_t  magic_offset;
     header magic_header;
 
-    off_t  ndim_offset;     //T
+    ptrdiff_t  ndim_offset;     //T
     header ndim_header;
 
-    off_t  elem_offset;
+    ptrdiff_t  elem_offset;
     header elem_header;
 
-    off_t  mesh_offset;
+    ptrdiff_t  mesh_offset;
     header mesh_header;
 
-    off_t  prof_offset;
+    ptrdiff_t  prof_offset;
     header prof_header;
 
     // for the torus
-    off_t  nint1_offset;     //T
+    ptrdiff_t  nint1_offset;     //T
     header nint1_header;
 
-    off_t  nint2_offset;     //T
+    ptrdiff_t  nint2_offset;     //T
     header nint2_header;
 
-    off_t  ndeg1_offset;     //T
+    ptrdiff_t  ndeg1_offset;     //T
     header ndeg1_header;
 
-    off_t  ndeg2_offset;     //T
+    ptrdiff_t  ndeg2_offset;     //T
     header ndeg2_header;
 
-    off_t  mesh1_offset;     //T
+    ptrdiff_t  mesh1_offset;     //T
     header mesh1_header;
 
-    off_t  mesh2_offset;     //T
+    ptrdiff_t  mesh2_offset;     //T
     header mesh2_header;
 
-    off_t  blanket_offset;   //T
+    ptrdiff_t  blanket_offset;   //T
     header blanket_header;
 };
 
