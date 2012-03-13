@@ -23,31 +23,53 @@ double dasum_(int * N, double * X, int * incX);
 void dger_(int * M, int * N, double * alpha, double * X, int * incX, double * Y, int * incY, double * A, int * lda);
 
 // These used in matrix.h
-inline void   BLAS_daxpy(int N, double alpha, double * X, int incX, double * Y, int incY)
+inline void   BLAS_daxpy(size_t N, double alpha, double * X, size_t incX, double * Y, size_t incY)
 {
-  daxpy_(&N, &alpha, X, &incX, Y, &incY);
+  int N_ = (int)N;
+  int incX_ = (int)incX;
+  int incY_ = (int)incY;
+  daxpy_(&N_, &alpha, X, &incX_, Y, &incY_);
 }
-inline void   BLAS_dcopy(int N, double * X, int incX, double * Y, int incY)
+inline void   BLAS_dcopy(size_t N, double * X, size_t incX, double * Y, size_t incY)
 {
-  dcopy_(&N, X, &incX, Y, &incY);
+  int N_ = (int)N;
+  int incX_ = (int)incX;
+  int incY_ = (int)incY;
+  dcopy_(&N_, X, &incX_, Y, &incY_);
 }
-inline double BLAS_ddot(int N, double * X, int incX, double * Y, int incY)
+inline double BLAS_ddot(size_t N, double * X, size_t incX, double * Y, size_t incY)
 {
-  return ddot_(&N, X, &incX, Y, &incY);
+  int N_ = (int)N;
+  int incX_ = (int)incX;
+  int incY_ = (int)incY;
+  return ddot_(&N_, X, &incX_, Y, &incY_);
 }
-inline void   BLAS_dgemm(char TRANSA, char TRANSB, int M, int N, int K, double alpha, double * A, int lda, double * B, int ldb,
-       double beta, double * C, int ldc)
+inline void   BLAS_dgemm(char TRANSA, char TRANSB, size_t M, size_t N, size_t K, double alpha, double * A, size_t lda, double * B, size_t ldb,
+       double beta, double * C, size_t ldc)
 {
-  dgemm_(&TRANSA, &TRANSB, &M, &N, &K, &alpha, A, &lda, B, &ldb, &beta, C, &ldc, 1, 1);
+  int M_ = (int)M;
+  int N_ = (int)N;
+  int K_ = (int)K;
+  int lda_ = (int)lda;
+  int ldb_ = (int)ldb;
+  int ldc_ = (int)ldc;
+  dgemm_(&TRANSA, &TRANSB, &M_, &N_, &K_, &alpha, A, &lda_, B, &ldb_, &beta, C, &ldc_, 1, 1);
 }
-inline void   BLAS_dgemv(char TRANSA, int M, int N, double alpha, double * A, int lda, double * X, int incX, double beta,
-       double * Y, int incY)
+inline void   BLAS_dgemv(char TRANSA, size_t M, size_t N, double alpha, double * A, size_t lda, double * X, size_t incX, double beta,
+       double * Y, size_t incY)
 {
-  dgemv_(&TRANSA, &M, &N, &alpha, A, &lda, X, &incX, &beta, Y, &incY, 1);
+  int M_ = (int)M;
+  int N_ = (int)N;
+  int lda_ = (int)lda;
+  int incX_ = (int)incX;
+  int incY_ = (int)incY;
+  dgemv_(&TRANSA, &M_, &N_, &alpha, A, &lda_, X, &incX_, &beta, Y, &incY_, 1);
 }
-inline void   BLAS_dscal(int N, double alpha, double * X, int incX)
+inline void   BLAS_dscal(size_t N, double alpha, double * X, size_t incX)
 {
-  dscal_(&N, &alpha, X, &incX);
+  int N_ = (int)N;
+  int incX_ = (int)incX;
+  dscal_(&N_, &alpha, X, &incX_);
 }
 
 #endif

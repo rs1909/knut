@@ -13,7 +13,7 @@
 #include "hypermatrix.h"
 
 KNOdePeriodicSolution::KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
-  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg)
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg)
   : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
    jacStab('R', sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1)),
    matrixInitialCondition(sys_.ndim()*(ndeg*nint+1), sys_.ndim()),
@@ -45,7 +45,7 @@ void KNOdePeriodicSolution::jacobian(
   KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
   KNVector& parPrev, KNVector& par,      // parameters
   KNVector& solPrev, KNVector& sol,      // solution
-  KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+  KNArray1D<size_t>& varMap,           // contains the variables. If cont => contains the P0 too.
   double ds, bool cont               // ds stepsize, cont: true if continuation
 )
 {
@@ -53,7 +53,7 @@ void KNOdePeriodicSolution::jacobian(
   {
     colloc->rightHandSide_x(AA.getA11(), par, sol);
     colloc->rightHandSide(RHS.getV1(), par, sol);
-    for (int i = 1; i < varMap.size(); i++)
+    for (size_t i = 1; i < varMap.size(); i++)
     {
       if (varMap(i) < NPAR)
       {
@@ -71,7 +71,7 @@ void KNOdePeriodicSolution::jacobian(
   } else P_MESSAGE3("Invalid first equation, that is not EqnODESol: ", eqn(0), ".");
   // ADDITIONAL EQUATIONS
   // ONLY THE PHASE CONDITION AT THE MOMENT
-  for (int i = 1; i < eqn.size(); i++)
+  for (size_t i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -79,7 +79,7 @@ void KNOdePeriodicSolution::jacobian(
       case EqnPhase:
         colloc->phaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.size(); j++)
+        for (size_t j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -105,11 +105,11 @@ void KNOdePeriodicSolution::jacobian(
   {
     // copying the tangent
     if (dim1 != 0) colloc->star(AA.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (size_t i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       RHS.getV3()(dim3) = ds - colloc->integrateWithCp(xxDot->getV1(), sol, solPrev);
-      for (int j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (size_t j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {
@@ -118,17 +118,17 @@ void KNOdePeriodicSolution::jacobian(
   }
 }
 
-void KNOdePeriodicSolution::Stability(bool init)
+void KNOdePeriodicSolution::Stability(bool /*init*/)
 {
-  for (int i = 0; i < NDIM; ++i)
+  for (size_t i = 0; i < NDIM; ++i)
   {
     matrixInitialCondition(i,i) = 1.0;
   }
   colloc->jacobianOfStability(jacStab, par);
   jacStab.solve(matrixSolution, matrixInitialCondition);
-  for (int i = 0; i < NDIM; ++i)
+  for (size_t i = 0; i < NDIM; ++i)
   {
-    for (int j = 0; j< NDIM; ++j)
+    for (size_t j = 0; j< NDIM; ++j)
     {  
       monodromyMatrix(i,j) = matrixSolution(NDIM*NDEG*NINT+i,j);
     }

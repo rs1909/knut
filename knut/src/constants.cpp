@@ -107,6 +107,13 @@ static inline bool inputAssert(std::istream& is)
   return false;
 }
 
+static inline mxml_node_t *setNodeIndex(mxml_node_t *parent, size_t idx)
+{
+  std::ostringstream strstr;
+  strstr << idx;
+  return mxmlNewOpaque (parent, strstr.str().c_str());
+}
+
 static inline const char *getNodeText(mxml_node_t* nd)
 {
   if (nd != 0)
@@ -158,6 +165,23 @@ static inline int getNodeInteger(mxml_node_t* nd, int def_value)
   else return def_value;
 }
 
+static inline size_t getNodeIndex(mxml_node_t* nd, const char *line = "")
+{
+  const char* str = getNodeText(nd);
+  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
+  return toSizeT(strtol(str, 0, 10));
+}
+
+static inline size_t getNodeIndex(mxml_node_t* nd, size_t def_value)
+{
+  const char* str = getNodeText(nd);
+//#ifdef DEBUG
+//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
+//#endif
+  if (str != 0) return toSizeT(strtol(str, 0, 10));
+  else return def_value;
+}
+
 static inline double getNodeReal(mxml_node_t* nd, const char *line = "")
 {
   const char* str = getNodeText(nd);
@@ -187,6 +211,7 @@ static inline double getNodeReal(mxml_node_t* nd, double def_value)
 #define STR(x) STRX(x)
 #define getNodeCharM(nd) getNodeChar(nd,STR(__LINE__))
 #define getNodeIntegerM(nd) getNodeInteger(nd,STR(__LINE__))
+#define getNodeIndexM(nd) getNodeIndex(nd,STR(__LINE__))
 #define getNodeRealM(nd) getNodeReal(nd,STR(__LINE__))
 
 static inline const char* c2s(char *buf, char c)
@@ -212,9 +237,9 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
   {
     root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
   }
-  int ver = 0;
+  size_t ver = 0;
   const char *attr = mxmlElementGetAttr(root_nd, "version");
-  if (attr) ver = toInt(strtol(attr, 0, 10));
+  if (attr) ver = toSizeT(strtol(attr, 0, 10));
   if (ver < 3)
   { 
   	loadXmlFileOld(fileName);
@@ -237,7 +262,7 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
   setFromType(BifTypeTable.CodeToType(getNodeText(nd))); // -> default
 
   nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
-  setLabel(getNodeIntegerM(nd));
+  setLabel(getNodeIndexM(nd));
   
   nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
   setPointType(PtTypeTable.CodeToType(getNodeText(nd)));
@@ -251,12 +276,12 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
   if (getPointType() != SolUser)
   {
     nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
-    setParxSize(getNodeIntegerM(nd));
+    setParxSize(getNodeIndexM(nd));
     if (getParxSize() != 0)
     {
       mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
       
-      int it = 0;
+      size_t it = 0;
       for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
            nd != 0;
            nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
@@ -268,12 +293,12 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
   } else
   {
     nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
-    setEqnsSize(getNodeIntegerM(nd));
-    setVarsSize(getNodeIntegerM(nd));
+    setEqnsSize(getNodeIndexM(nd));
+    setVarsSize(getNodeIndexM(nd));
     if (getEqnsSize() != 0)
     {
       mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
-      int it = 0;
+      size_t it = 0;
       for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
            nd != 0;
            nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
@@ -293,40 +318,40 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
     }
   }
   nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
-  setNInt(getNodeInteger(nd, 20));
+  setNInt(getNodeIndex(nd, 20));
 
   nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg(getNodeInteger(nd, 5));
+  setNDeg(getNodeIndex(nd, 5));
   
   nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
-  setNMul(getNodeInteger(nd, 5));
+  setNMul(getNodeIndex(nd, 5));
 
   nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
-  setStab(getNodeInteger(nd, 0) != 0);
+  setStab(getNodeIndex(nd, (size_t)0) != 0);
   
   nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
   setCAngle(getNodeReal(nd, getCAngle()));
   
   nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
-  setNInt1(getNodeInteger(nd, 12));
+  setNInt1(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
-  setNInt2(getNodeInteger(nd, 12));
+  setNInt2(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg1(getNodeInteger(nd, 4));
+  setNDeg1(getNodeIndex(nd, 4));
   
   nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg2(getNodeInteger(nd, 4));
+  setNDeg2(getNodeIndex(nd, 4));
   
   nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
-  setSteps(getNodeInteger(nd, 100));
+  setSteps(getNodeIndex(nd, 100));
   
   nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
-  setIad(getNodeInteger(nd, 3));
+  setIad(getNodeIndex(nd, 3));
   
   nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
-  setNPr(getNodeInteger(nd, 10));
+  setNPr(getNodeIndex(nd, 10));
   P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
   
   nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
@@ -357,31 +382,31 @@ void KNConstantsBase::loadXmlFile(const std::string &fileName)
   setEpsK(getNodeRealM(nd));
 
   nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
-  setNItC(getNodeInteger(nd, 5));
+  setNItC(getNodeIndex(nd, 5));
   
   nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
-  setNItR(getNodeInteger(nd, 12));
+  setNItR(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
-  setNItK(getNodeInteger(nd, 12));
+  setNItK(getNodeIndex(nd, 12));
 
   nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
-  setNDeri(getNodeInteger(nd, 8)); // this is just a number, higher then sys_nderi() provides
+  setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
 
   nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
-  setSymReSize(getNodeInteger(nd, 0));
-  setSymImSize(getNodeInteger(nd, 0));
+  setSymReSize(getNodeIndex(nd, (size_t)0));
+  setSymImSize(getNodeIndex(nd, (size_t)0));
 
   mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
-  int it = 0;
+  size_t it = 0;
   for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
        nd != 0;
        nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
   {
     mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
     mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
-    setSymRe(it, getNodeIntegerM(nd_real));
-    setSymIm(it, getNodeIntegerM(nd_imag));
+    setSymRe(it, getNodeIndexM(nd_real));
+    setSymIm(it, getNodeIndexM(nd_imag));
     ++it; 
   }
   mxmlDelete(tree);
@@ -415,34 +440,34 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
   setSysNameText(getNodeText(nd, ""));
 
   nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
-  setFromType(static_cast<BifType>(getNodeInteger(nd, BifNone)));
+  setFromType(static_cast<BifType>(getNodeIndex(nd, BifNone)));
 
   nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
-  setLabel(getNodeIntegerM(nd));
+  setLabel(getNodeIndexM(nd));
   
   nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
-  setPointType(static_cast<PtType>(getNodeIntegerM(nd)));
+  setPointType(static_cast<PtType>(getNodeIndexM(nd)));
     
   nd_a = mxmlFindElement(root_nd, root_nd, "cptype", 0, 0, MXML_DESCEND_FIRST);
   const char cp_type = getNodeCharM(nd_a); 
   
   nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", 0, 0, MXML_DESCEND_FIRST);
-  const int cp_num = getNodeIntegerM(nd_b);
+  const size_t cp_num = getNodeIndexM(nd_b);
   
   setCp(varFromTypeNum(cp_type,cp_num));
   
   nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
-  setBranchSW(static_cast<BranchSW>(getNodeInteger(nd, NOSwitch)));
+  setBranchSW(static_cast<BranchSW>(getNodeIndex(nd, NOSwitch)));
 
   if (getPointType() != SolUser)
   {
     nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
-    setParxSize(getNodeIntegerM(nd));
+    setParxSize(getNodeIndexM(nd));
     if (getParxSize() != 0)
     {
       mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
       
-      int it = 0;
+      size_t it = 0;
       for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
            nd != 0;
            nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
@@ -450,7 +475,7 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const int num = getNodeIntegerM(nd_num);
+        const size_t num = getNodeIndexM(nd_num);
         setParx(it, varFromTypeNum(type,num));
         ++it;
       }
@@ -458,12 +483,12 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
   } else
   {
     nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
-    setEqnsSize(getNodeIntegerM(nd));
-    setVarsSize(getNodeIntegerM(nd));
+    setEqnsSize(getNodeIndexM(nd));
+    setVarsSize(getNodeIndexM(nd));
     if (getEqnsSize() != 0)
     {
       mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
-      int it = 0;
+      size_t it = 0;
       for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
            nd != 0;
            nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
@@ -471,7 +496,7 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const int num = getNodeIntegerM(nd_num);
+        const size_t num = getNodeIndexM(nd_num);
         setEqns(it, eqnFromTypeNum(type,num));
         ++it;
       }
@@ -484,7 +509,7 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
         mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
         mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const int num = getNodeIntegerM(nd_num);
+        const size_t num = getNodeIndexM(nd_num);
         setVars(it, varFromTypeNum(type,num));
         ++it;
       }
@@ -492,40 +517,40 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
   }
   
   nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
-  setNInt(getNodeInteger(nd, 20));
+  setNInt(getNodeIndex(nd, 20));
 
   nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg(getNodeInteger(nd, 5));
+  setNDeg(getNodeIndex(nd, 5));
   
   nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
-  setNMul(getNodeInteger(nd, 5));
+  setNMul(getNodeIndex(nd, 5));
 
   nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
-  setStab(getNodeInteger(nd, 0) != 0);
+  setStab(getNodeIndex(nd, (size_t)0) != 0);
   
   nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
   setCAngle(getNodeReal(nd, getCAngle()));
   
   nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
-  setNInt1(getNodeInteger(nd, 12));
+  setNInt1(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
-  setNInt2(getNodeInteger(nd, 12));
+  setNInt2(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg1(getNodeInteger(nd, 4));
+  setNDeg1(getNodeIndex(nd, 4));
   
   nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg2(getNodeInteger(nd, 4));
+  setNDeg2(getNodeIndex(nd, 4));
   
   nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
-  setSteps(getNodeInteger(nd, 100));
+  setSteps(getNodeIndex(nd, 100));
   
   nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
-  setIad(getNodeInteger(nd, 3));
+  setIad(getNodeIndex(nd, 3));
   
   nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
-  setNPr(getNodeInteger(nd, 10));
+  setNPr(getNodeIndex(nd, 10));
   P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
   
   nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
@@ -556,31 +581,31 @@ void KNConstantsBase::loadXmlFileOld(const std::string &fileName)
   setEpsK(getNodeRealM(nd));
 
   nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
-  setNItC(getNodeInteger(nd, 5));
+  setNItC(getNodeIndex(nd, 5));
   
   nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
-  setNItR(getNodeInteger(nd, 12));
+  setNItR(getNodeIndex(nd, 12));
   
   nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
-  setNItK(getNodeInteger(nd, 12));
+  setNItK(getNodeIndex(nd, 12));
 
   nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
-  setNDeri(getNodeInteger(nd, 8)); // this is just a number, higher then sys_nderi() provides
+  setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
 
   nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
-  setSymReSize(getNodeInteger(nd, 0));
-  setSymImSize(getNodeInteger(nd, 0));
+  setSymReSize(getNodeIndex(nd, (size_t)0));
+  setSymImSize(getNodeIndex(nd, (size_t)0));
 
   mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
-  int it = 0;
+  size_t it = 0;
   for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
        nd != 0;
        nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
   {
     mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
     mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
-    setSymRe(it, getNodeIntegerM(nd_real));
-    setSymIm(it, getNodeIntegerM(nd_imag));
+    setSymRe(it, getNodeIndexM(nd_real));
+    setSymIm(it, getNodeIndexM(nd_imag));
     ++it; 
   }
   mxmlDelete(tree);
@@ -620,7 +645,7 @@ void KNConstantsBase::printXmlFile(std::ostream& file)
   mxmlNewText(node, 0, BifTypeTable.TypeToCode(getFromType()).c_str());
   
   node = mxmlNewElement(data, "label");
-  mxmlNewInteger(node, getLabel());
+  setNodeIndex(node, getLabel());
   
   node = mxmlNewElement(data, "pointtype");
   mxmlNewText(node, 0, PtTypeTable.TypeToCode(getPointType()).c_str());
@@ -634,12 +659,12 @@ void KNConstantsBase::printXmlFile(std::ostream& file)
   if (getPointType() != SolUser)
   {
     node = mxmlNewElement(data, "nparx");
-    mxmlNewInteger(node, getParxSize());
+    setNodeIndex(node, getParxSize());
 
     if (getParxSize() != 0)
     {
       mxml_node_t *group_parx = mxmlNewElement(data, "parx");
-      for (int i = 0; i < getParxSize(); ++i)
+      for (size_t i = 0; i < getParxSize(); ++i)
       {
         node = mxmlNewElement(group_parx, "par");
         mxmlNewText(node, 0, VarTable.TypeToCode(getParx(i)).c_str());
@@ -649,19 +674,19 @@ void KNConstantsBase::printXmlFile(std::ostream& file)
   else
   {
     node = mxmlNewElement(data, "neqns");
-    mxmlNewInteger(node, getEqnsSize());
+    setNodeIndex(node, getEqnsSize());
 
     if (getEqnsSize() != 0)
     {
       mxml_node_t *group_eqns = mxmlNewElement(data, "eqns");
       mxml_node_t *group_vars = mxmlNewElement(data, "vars");
 
-      for (int i = 0; i < getEqnsSize(); ++i)
+      for (size_t i = 0; i < getEqnsSize(); ++i)
       {
         node = mxmlNewElement(group_eqns, "eqn");
         mxmlNewText(node, 0, EqnTable.TypeToCode(getEqns(i)).c_str());
       }
-      for (int i = 0; i < getVarsSize(); ++i)
+      for (size_t i = 0; i < getVarsSize(); ++i)
       {        
         node = mxmlNewElement(group_vars, "var");
         mxmlNewText(node, 0, VarTable.TypeToCode(getVars(i)).c_str());
@@ -669,40 +694,40 @@ void KNConstantsBase::printXmlFile(std::ostream& file)
     }
   }
   node = mxmlNewElement(data, "nint");
-  mxmlNewInteger(node, getNInt());
+  setNodeIndex(node, getNInt());
 
   node = mxmlNewElement(data, "ndeg");
-  mxmlNewInteger(node, getNDeg());
+  setNodeIndex(node, getNDeg());
   
   node = mxmlNewElement(data, "nmul");
-  mxmlNewInteger(node, getNMul());
+  setNodeIndex(node, getNMul());
   
   node = mxmlNewElement(data, "stab");
-  mxmlNewInteger(node, getStab());
+  setNodeIndex(node, getStab());
   
   node = mxmlNewElement(data, "curvature");
   mxmlNewDouble(node, getCAngle());
   
   node = mxmlNewElement(data, "nint1");
-  mxmlNewInteger(node, getNInt1());
+  setNodeIndex(node, getNInt1());
 
   node = mxmlNewElement(data, "nint2");
-  mxmlNewInteger(node, getNInt2());
+  setNodeIndex(node, getNInt2());
   
   node = mxmlNewElement(data, "ndeg1");
-  mxmlNewInteger(node, getNDeg1());
+  setNodeIndex(node, getNDeg1());
   
   node = mxmlNewElement(data, "ndeg2");
-  mxmlNewInteger(node, getNDeg2());
+  setNodeIndex(node, getNDeg2());
   
   node = mxmlNewElement(data, "steps");
-  mxmlNewInteger(node, getSteps());
+  setNodeIndex(node, getSteps());
 
   node = mxmlNewElement(data, "iad");
-  mxmlNewInteger(node, getIad());
+  setNodeIndex(node, getIad());
   
   node = mxmlNewElement(data, "npr");
-  mxmlNewInteger(node, getNPr());
+  setNodeIndex(node, getNPr());
   
   node = mxmlNewElement(data, "cpmin");
   mxmlNewDouble(node, getCpMin());
@@ -732,32 +757,32 @@ void KNConstantsBase::printXmlFile(std::ostream& file)
   mxmlNewDouble(node, getEpsK());
 
   node = mxmlNewElement(data, "nitc");
-  mxmlNewInteger(node, getNItC());
+  setNodeIndex(node, getNItC());
   
   node = mxmlNewElement(data, "nitr");
-  mxmlNewInteger(node, getNItR());
+  setNodeIndex(node, getNItR());
   
   node = mxmlNewElement(data, "nitk");
-  mxmlNewInteger(node, getNItK());
+  setNodeIndex(node, getNItK());
   
   node = mxmlNewElement(data, "nderi");
-  mxmlNewInteger(node, getNDeri());
+  setNodeIndex(node, getNDeri());
 
   node = mxmlNewElement(data, "nsym");
-  mxmlNewInteger(node, getSymReSize());
+  setNodeIndex(node, getSymReSize());
 
   if (getSymReSize() != 0)
   {
     mxml_node_t *group_sym = mxmlNewElement(data, "sym");
-    for (int i = 0; i < getSymReSize(); ++i)
+    for (size_t i = 0; i < getSymReSize(); ++i)
     {
       mxml_node_t *group_dim = mxmlNewElement(group_sym, "dim");
       
       node = mxmlNewElement(group_dim, "real");
-      mxmlNewInteger(node, getSymRe(i));
+      setNodeIndex(node, getSymRe(i));
       
       node = mxmlNewElement(group_dim, "imag");
-      mxmlNewInteger(node, getSymIm(i));
+      setNodeIndex(node, getSymIm(i));
     }
   }
   
@@ -780,7 +805,7 @@ bool KNConstantsBase::toEqnVar(KNSystem& sys,
   {
     eqn.init(getEqnsSize());
     var.init(getVarsSize());
-    for (int i = 0; i < getEqnsSize(); i++)
+    for (size_t i = 0; i < getEqnsSize(); i++)
     {
       eqn(i) = getEqns(i);
       var(i) = getVars(i);
@@ -789,7 +814,7 @@ bool KNConstantsBase::toEqnVar(KNSystem& sys,
   else
   {
     KNArray1D<Var> L_PARX(getParxSize());
-    for (int i = 0; i < getParxSize(); i++)
+    for (size_t i = 0; i < getParxSize(); i++)
     {
       L_PARX(i) = getParx(i);
     }
@@ -801,7 +826,7 @@ bool KNConstantsBase::toEqnVar(KNSystem& sys,
   bool phaseRot = false;
   bool needTF = false;
   findangle = false;
-  for (int i = 0; i < eqn.size(); i++)
+  for (size_t i = 0; i < eqn.size(); i++)
   {
     if ((eqn(i) == EqnPhase) || (eqn(i) == EqnTORPhase0)) aut = true;
     if (eqn(i) == EqnPhaseRot) phaseRot = true;
@@ -869,7 +894,7 @@ bool KNConstantsBase::toEqnVar(KNSystem& sys,
       KNArray1D<Var> vv(var_refine);
       eqn_refine.init(ee.size()-1);
       var_refine.init(ee.size()-1);
-      for (int i = 0, j = 0; i < ee.size(); ++i)
+      for (size_t i = 0, j = 0; i < ee.size(); ++i)
       {
         if (ee(i) != EqnPhase) { eqn_refine(j) = ee(i); var_refine(j) = vv(j); ++j; }
       }
@@ -905,7 +930,7 @@ tfskip:
       var_start(0) = var_refine(0);
       eqn_start(1) = eqn_temp;
       var_start(var_refine.size()) = getCp();
-      for (int i = 1; i < eqn_refine.size(); i++)
+      for (size_t i = 1; i < eqn_refine.size(); i++)
       {
         eqn_start(i + 1) = eqn_refine(i);
         var_start(i) = var_refine(i);
@@ -922,7 +947,7 @@ tfskip:
       eqn_start(2) = EqnTFCPLX_IM;
       var_start(1) = VarAngle; // VarToIndex(VarAngle,sys.npar()); // CH
       var_start(var_refine.size() + 1) = getCp();
-      for (int i = 1; i < eqn_refine.size(); i++)
+      for (size_t i = 1; i < eqn_refine.size(); i++)
       {
         eqn_start(i + 2) = eqn_refine(i);
         var_start(i + 1) = var_refine(i);
@@ -944,9 +969,9 @@ void KNConstantsBase::initDimensions(const KNSystem* sys)
 {
   initParNames(sys->npar());
   const char **names = new const char *[sys->npar()+1];
-  for (int i=0; i<sys->npar()+1; ++i) names[i] = 0;
+  for (size_t i=0; i<sys->npar()+1; ++i) names[i] = 0;
   sys->parnames(names);
-  for (int i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
+  for (size_t i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
   delete[] names;
   names = 0;
   // this will send a signal so parNames must be ready
@@ -957,7 +982,7 @@ void KNConstantsBase::initDimensions(const KNSystem* sys)
   setNPar(sys->npar());
 }
 
-void KNConstantsBase::setSysNameText(const std::string& str, bool testing)
+void KNConstantsBase::setSysNameText(const std::string& str, bool /*testing*/)
 {
   setSysName(str);
   KNSystem* sys = 0;
@@ -999,7 +1024,7 @@ template<> const TypeTuple<PtType> KNConstantsBase::TypeTupleTab<PtType>::tabSta
   {17, SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
   {18, SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
   {19, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
-  {-1, SolUser, "", ""}};
+  {~(size_t)0, SolUser, "", ""}};
 
 template<> const TypeTuple<Eqn> KNConstantsBase::TypeTupleTab<Eqn>::tabStatic[] = {
   {0,  EqnNone,       "NX",                "None" },
@@ -1016,7 +1041,7 @@ template<> const TypeTuple<Eqn> KNConstantsBase::TypeTupleTab<Eqn>::tabStatic[] 
   {11, EqnTFLPAUTROT, "DDE_AUT_ROT_TF_LP", "LP TF (sym)"},
   {12, EqnTFCPLX_RE,  "DDE_TF_NS_RE",      "NS TF (real)"},
   {13, EqnTFCPLX_IM,  "DDE_TF_NS_IM",      "NS TF (imag)"},
-  {-1, EqnNone, "", ""}};
+  {~(size_t)0, EqnNone, "", ""}};
   
 template<> const TypeTuple<BranchSW> KNConstantsBase::TypeTupleTab<BranchSW>::tabStatic[] = {
   {0, NOSwitch,         "NX",         "No switch"},
@@ -1026,7 +1051,7 @@ template<> const TypeTuple<BranchSW> KNConstantsBase::TypeTupleTab<BranchSW>::ta
   {4, TFTRSwitch,       "TORUS",      "Torus"},
   {5, TFBRAUTSwitch,    "AUT_BP",     "Branch (aut)"},
   {6, TFBRAUTROTSwitch, "AUT_ROT_BP", "Branch (sym)"},
-  {-1, NOSwitch, "", ""}};
+  {~(size_t)0, NOSwitch, "", ""}};
 
 template<> const TypeTuple<Var> KNConstantsBase::TypeTupleTab<Var>::tabStatic[] = {
   {0, VarNone,   "NX",          "None"},
@@ -1037,7 +1062,7 @@ template<> const TypeTuple<Var> KNConstantsBase::TypeTupleTab<Var>::tabStatic[] 
   {5, VarAngle,  "PAR_ANGLE",   "Angle"},
   {6, VarPeriod, "PAR_PERIOD",  "Period"},
   {7, VarRot,    "PAR_ROT_NUM", "Rot. num."},
-  {-1, VarEnd, "", ""}};
+  {~(size_t)0, VarEnd, "", ""}};
 
 template<> const TypeTuple<BifType> KNConstantsBase::TypeTupleTab<BifType>::tabStatic[] = {
   {0, BifNone,          "NX", "None"},
@@ -1048,14 +1073,14 @@ template<> const TypeTuple<BifType> KNConstantsBase::TypeTupleTab<BifType>::tabS
   {5, BifMax,           "MX", "MX"},
   {6, BifEndPoint,      "EP", "EP"},
   {7, BifNoConvergence, "NC", "NC"},
-  {-1, BifNone, "", ""}};
+  {~(size_t)0, BifNone, "", ""}};
   
 // specialization to Var
 
 template<> void KNConstantsBase::TypeTupleTab<Var>::update()
 {
   size_t sz = 0;
-  while (tabStatic[sz].index >= 0) ++sz;
+  while (tabStatic[sz].index < ~(size_t)0) ++sz;
   tab.resize(sz + parent->getNPar());
 
   size_t k = 0;
@@ -1066,7 +1091,7 @@ template<> void KNConstantsBase::TypeTupleTab<Var>::update()
     tab[k].code = tabStatic[k].code;
     tab[k].name = tabStatic[k].name;
   }
-  for (int j = 0; j < parent->getNPar(); ++j)
+  for (size_t j = 0; j < parent->getNPar(); ++j)
   {
     tab[k+j].index = k+j;
     tab[k+j].type = static_cast<Var>(VarPAR0 + j);

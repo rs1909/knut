@@ -14,10 +14,10 @@ void poly_lgr(const KNVector& t, KNVector &out, double c)
 {
 
   P_ASSERT_X1(t.size() == out.size(), "poly_lgr: wrong dimensions");
-  for (int i = 0; i < t.size(); i++)
+  for (size_t i = 0; i < t.size(); i++)
   {
     out(i) = 1.0;
-    for (int j = 0; j < t.size(); j++)
+    for (size_t j = 0; j < t.size(); j++)
     {
       if (i != j)
       {
@@ -29,7 +29,7 @@ void poly_lgr(const KNVector& t, KNVector &out, double c)
 
 void poly_dlg(const KNVector& t, KNVector& out, double c)
 {
-  int j, k, l;
+  size_t j, k, l;
   double f;
 
   P_ASSERT_X1(t.size() == out.size(), "poly_dlg: wrong dimensions");
@@ -54,7 +54,7 @@ void poly_dlg(const KNVector& t, KNVector& out, double c)
 
 void poly_d2lg(const KNVector& t, KNVector& out, double c)
 {
-  int i, j, k, l;
+  size_t i, j, k, l;
   double f;
 
   P_ASSERT_X1(t.size() == out.size(), "poly_d2lg: wrong dimensions.");
@@ -86,11 +86,11 @@ void poly_d2lg(const KNVector& t, KNVector& out, double c)
 /// returns the coefficient of the lagrangian interpolation of a
 /// function at the i-th point on the mesh t
 ///
-void poly_coeff_lgr(KNArray1D<double>& out, const KNArray1D<double>& t, int i)
+void poly_coeff_lgr(KNArray1D<double>& out, const KNArray1D<double>& t, size_t i)
 {
   out.clear();
   out(0) = 1.0;
-  for (int j = 0; j < t.size(); j++)
+  for (size_t j = 0; j < t.size(); j++)
   {
     if (j != i)
     {
@@ -106,9 +106,9 @@ void poly_coeff_mul(KNArray1D<double>& out, KNArray1D<double>& in1, KNArray1D<do
 {
   P_ASSERT_X1(out.size() > (in1.size() - 1) + (in2.size() - 1), "poly_coeff_mul: wrong dimensions.");
   out.clear();
-  for (int i = 0; i < in1.size(); i++)
+  for (size_t i = 0; i < in1.size(); i++)
   {
-    for (int j = 0; j < in2.size(); j++)
+    for (size_t j = 0; j < in2.size(); j++)
     {
       out(i + j) += in1(i) * in2(j);
     }
@@ -120,7 +120,7 @@ void poly_coeff_mul(KNArray1D<double>& out, KNArray1D<double>& in1, KNArray1D<do
 void poly_coeff_int(KNArray1D<double>& out, KNArray1D<double>& in)
 {
   out.clear();
-  for (int i = 0; i < in.size() - 1; i++)
+  for (size_t i = 0; i < in.size() - 1; i++)
   {
     out(i + 1) = in(i) / (i + 1);
   }
@@ -132,7 +132,7 @@ void poly_coeff_int(KNArray1D<double>& out, KNArray1D<double>& in)
 void poly_coeff_diff(KNArray1D<double>& out, KNArray1D<double>& in)
 {
   out.clear();
-  for (int i = 1; i < in.size(); i++)
+  for (size_t i = 1; i < in.size(); i++)
   {
     out(i - 1) = in(i) * i;
   }
@@ -143,7 +143,7 @@ void poly_coeff_diff(KNArray1D<double>& out, KNArray1D<double>& in)
 double poly_eval(const KNArray1D<double>& in, double c)
 {
   double tmp = in(in.size() - 1);
-  for (int i = in.size() - 1; i > 0; --i)
+  for (size_t i = in.size() - 1; i > 0; --i)
   {
     tmp = in(i - 1) + c * tmp;
   }
@@ -155,8 +155,8 @@ double poly_eval(const KNArray1D<double>& in, double c)
 ///
 void lobatto(KNArray1D<double>& mesh)
 {
-  const int N = mesh.size() - 1;
-  if (mesh.size() > 1) for (int i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((i * M_PI) / N));
+  const size_t N = mesh.size() - 1;
+  if (mesh.size() > 1) for (size_t i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((i * M_PI) / N));
 }
 
 /// computes the gauss mesh on [0,1] 
@@ -164,14 +164,14 @@ void lobatto(KNArray1D<double>& mesh)
 ///
 void gauss(KNArray1D<double>& mesh)
 {
-  const int N = mesh.size();
-  if (mesh.size() > 1) for (int i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((2.0 * i + 1.0) / (2.0 * N + 2) * M_PI));
+  const size_t N = mesh.size();
+  if (mesh.size() > 1) for (size_t i = 0; i < mesh.size(); i++) mesh(i) = 1.0 / 2.0 * (1 - cos((2.0 * i + 1.0) / (2.0 * N + 2) * M_PI));
 }
 
-double poly_lgr_eval( const KNArray1D<double>& t, int i, double c)
+double poly_lgr_eval( const KNArray1D<double>& t, size_t i, double c)
 {
   double res = 1.0;
-  for (int j = 0; j < t.size(); j++)
+  for (size_t j = 0; j < t.size(); j++)
   {
     if (j != i)
     {
@@ -181,15 +181,15 @@ double poly_lgr_eval( const KNArray1D<double>& t, int i, double c)
   return res;
 }
 
-double poly_dlg_eval( const KNArray1D<double>& t, int i, double c)
+double poly_dlg_eval( const KNArray1D<double>& t, size_t i, double c)
 {
   double res = 0.0;
-  for (int k = 0; k < t.size(); ++k)
+  for (size_t k = 0; k < t.size(); ++k)
   {
     if (k != i)
     {
       double prod = 1.0/(t(i)-t(k));
-      for (int j = 0; j < t.size(); ++j)
+      for (size_t j = 0; j < t.size(); ++j)
       {
         if ((j != i)&&(j != k))
         {

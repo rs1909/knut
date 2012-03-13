@@ -19,8 +19,8 @@
 
 static void equidist(KNVector& mesh)
 {
-  const int m = mesh.size();
-  for (int i = 0; i < m; i++) mesh(i) = (double)i / ((double)m - 1);
+  const size_t m = mesh.size();
+  for (size_t i = 0; i < m; i++) mesh(i) = (double)i / ((double)m - 1);
 }
 
 static const double legendre_roots[25][25] = 
@@ -108,10 +108,10 @@ static const double legendre_roots[25][25] =
 
 static void poly_gau(KNVector& roots)
 {
-  const int m = roots.size();
+  const size_t m = roots.size();
   /* construct the matrix */
-  P_ERROR_X3(m < static_cast<int>(sizeof(legendre_roots[0])/sizeof(double)), "Unavailable polynomial order ", m, ".");
-  for (int i = 0; i < m; ++i)
+  P_ERROR_X3(m < sizeof(legendre_roots[0])/sizeof(double), "Unavailable polynomial order ", m, ".");
+  for (size_t i = 0; i < m; ++i)
   {
     roots(i) = legendre_roots[m][i];
   }
@@ -130,7 +130,7 @@ inline static void col_mesh(KNVector& V)
 static inline void poly_mul(KNVector& pp, double bb, double aa)
 {
   P_ASSERT_X1(pp(pp.size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
-  for (int i = pp.size() - 1; i > 0; --i)
+  for (size_t i = pp.size() - 1; i > 0; --i)
   {
     pp(i) = aa * pp(i) + bb * pp(i - 1);
   }
@@ -139,21 +139,21 @@ static inline void poly_mul(KNVector& pp, double bb, double aa)
 
 static void poly_diff_int_trap(KNMatrix& sum, const KNVector& t)
 {
-  const int dim = t.size();
-  const int DIVS = 8*dim;
+  const size_t dim = t.size();
+  const size_t DIVS = 8*dim;
   sum.clear();
   KNVector lout(dim);
   KNVector dout(dim);
   double d;
-  for (int k = 0; k < DIVS; ++k)
+  for (size_t k = 0; k < DIVS; ++k)
   {
     poly_lgr(t, lout, k*1.0/((double)DIVS-1.0));
     poly_dlg(t, dout, k*1.0/((double)DIVS-1.0));
     if ((k==0)||(k==DIVS-1)) d = 0.5/(DIVS-1);
     else d = 1.0/(DIVS-1);
-    for (int i = 0; i < dim; i++)
+    for (size_t i = 0; i < dim; i++)
 	{
-	  for (int j = 0; j < dim; j++)
+	  for (size_t j = 0; j < dim; j++)
 	  {
 	    sum(i,j) += d*dout(i)*lout(j);
 	  }
@@ -163,19 +163,19 @@ static void poly_diff_int_trap(KNMatrix& sum, const KNVector& t)
 
 static void poly_int_trap(KNMatrix& sum, const KNVector& t)
 {
-  const int dim = t.size();
-  const int DIVS = 8*dim;
+  const size_t dim = t.size();
+  const size_t DIVS = 8*dim;
   sum.clear();
   KNVector lout(dim);
   double d;
-  for (int k = 0; k < DIVS; ++k)
+  for (size_t k = 0; k < DIVS; ++k)
   {
     poly_lgr(t, lout, k*1.0/((double)DIVS-1.0));
     if ((k==0)||(k==DIVS-1)) d = 0.5/(DIVS-1);
     else d = 1.0/(DIVS-1);
-    for (int i = 0; i < dim; i++)
+    for (size_t i = 0; i < dim; i++)
 	{
-	  for (int j = 0; j < dim; j++)
+	  for (size_t j = 0; j < dim; j++)
 	  {
 	    sum(i,j) += d*lout(i)*lout(j);
 	  }
@@ -185,7 +185,7 @@ static void poly_int_trap(KNMatrix& sum, const KNVector& t)
 
 static void poly_int(KNMatrix& out, const KNVector& t)
 {
-  int i, j, k;
+  size_t i, j, k;
   KNVector poly(2*t.size());
   KNVector poly1(t.size());
   KNVector poly2(t.size());
@@ -225,7 +225,7 @@ static void poly_int(KNMatrix& out, const KNVector& t)
 
 static void poly_diff_int(KNMatrix& out, const KNVector& t)
 {
-  int i, j, k;
+  size_t i, j, k;
   KNVector poly(2*t.size());
   KNVector poly1(t.size());
   KNVector poly1_d(t.size());
@@ -269,7 +269,7 @@ static void poly_diff_int(KNMatrix& out, const KNVector& t)
 #define NINT nint
 #define NDEG ndeg
 
-KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const int _nint, const int _ndeg) :
+KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const size_t _nint, const size_t _ndeg) :
     ndim(_sys.ndim()), npar(_sys.npar()),
     nint(_nint), ndeg(_ndeg),
     time(nint*ndeg),
@@ -283,15 +283,15 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const int _ni
     out(ndeg + 1)
 {
   sys = &_sys;
-  for (int i = 0; i < nint + 1; i++) mesh(i) = i * 1.0 / nint;
+  for (size_t i = 0; i < nint + 1; i++) mesh(i) = i * 1.0 / nint;
   repr_mesh(meshINT);
   col_mesh(col);
   
-  for (int i = 0; i < NINT; i++)   // i: interval; j: which collocation point
+  for (size_t i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
-    for (int j = 0; j < NDEG; j++)
+    for (size_t j = 0; j < NDEG; j++)
     {
-      const int idx = j + i * NDEG;
+      const size_t idx = j + i * NDEG;
       const double h0 = mesh(i + 1) - mesh(i);
       time(idx) = mesh(i) + h0 * col(j);
       timeMSH(idx) = mesh(i) + h0 * meshINT(j);
@@ -305,16 +305,16 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const int _ni
 //  metricPhase.print();
 
   // computes the largrange coefficients
-  for (int i = 0; i < ndeg+1; i++)
+  for (size_t i = 0; i < ndeg+1; i++)
   {
     poly_coeff_lgr(lgr(i), meshINT, i);
   }
 }
 
-int KNAbstractBvpCollocation::meshlookup(const KNVector& mesh, double t)
+size_t KNAbstractBvpCollocation::meshlookup(const KNVector& mesh, double t)
 {
   // binary search for in which interval is t-tau(k)
-  int mid, low = 0, up = mesh.size() - 1;
+  size_t mid, low = 0, up = mesh.size() - 1;
   while (up - low > 1)
   {
     mid = low + (up - low) / 2;
@@ -335,12 +335,12 @@ static void meshConstruct(KNVector& newmesh, const KNVector& oldmesh, const KNVe
 //   for (int i = 1; i < eqf.size()-1; i++) if (isnan(eqf(i))) std::cout<<i<<": nan ";
 //   std::cout<<"first "<<eqf(1)<<" end "<<eqf(NINT)<<" ratio "<< eqf(1)/eqf(NINT)<<"\n";
   // now computing the new mesh
-  const int nint = oldmesh.size()-1;
+  const size_t nint = oldmesh.size()-1;
   newmesh(0) = 0.0;
-  for (int i = 1; i < newmesh.size()-1; i++)
+  for (size_t i = 1; i < newmesh.size()-1; i++)
   {
     const double t = eqf(nint)*i/(newmesh.size()-1);
-    const int idx = KNAbstractBvpCollocation::meshlookup( eqf, t );
+    const size_t idx = KNAbstractBvpCollocation::meshlookup( eqf, t );
     const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
 //     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
     newmesh(i) = oldmesh(idx) + d*(oldmesh(idx+1)-oldmesh(idx));
@@ -352,21 +352,21 @@ static void meshConstruct(KNVector& newmesh, const KNVector& oldmesh, const KNVe
 
 static void meshAssess(KNVector& eqf, const KNVector& mesh, const KNVector& profile, const KNArray1D< KNArray1D<double> >& lgr)
 {
-  int ndeg_ = lgr.size() - 1;
-  int nint_ = mesh.size() - 1;
+  size_t ndeg_ = lgr.size() - 1;
+  size_t nint_ = mesh.size() - 1;
   P_ERROR_X1( profile.size() % (ndeg_*nint_ + 1) == 0, "Wrong profile size.");
-  int ndim_ = profile.size() / (ndeg_*nint_ + 1);
+  size_t ndim_ = profile.size() / (ndeg_*nint_ + 1);
   
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
   const double hmach = 1e-6;
   KNMatrix hd(nint_+1, ndim_);
-  for (int i = 0; i < nint_; i++)
+  for (size_t i = 0; i < nint_; i++)
   {
-    for (int p = 0; p < ndim_; p++)
+    for (size_t p = 0; p < ndim_; p++)
     {
       hd(i, p) = 0.0;
-      for (int j = 0; j < ndeg_+1; j++)
+      for (size_t j = 0; j < ndeg_+1; j++)
       {
         hd(i,p) += lgr(j)(ndeg_)*profile( p + ndim_*( j + ndeg_*i ) );
       }
@@ -378,26 +378,26 @@ static void meshAssess(KNVector& eqf, const KNVector& mesh, const KNVector& prof
 //   if (small_deri) std::cout<<"small derivatives\n";
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
-  for (int p = 0; p < ndim_; p++)
+  for (size_t p = 0; p < ndim_; p++)
   {
     hd(nint_,p) = hd(0,p);
   }
   // computes the (m+1)-th derivative.
   // The mesh modulo need not to be changed, when not periodic BC is used.
-  for (int i = 0; i < nint_; i++)
+  for (size_t i = 0; i < nint_; i++)
   {
     double dtav;
     if ( i+2 < nint_ ) dtav = 0.5*(mesh(i+2)-mesh(i));
     else dtav = 0.5*(1.0+mesh((i+2)-nint_)-mesh(i));
     if( dtav < 0.0 ) std::cout<<"dtav<0\n";
-    for (int p = 0; p < ndim_; p++)
+    for (size_t p = 0; p < ndim_; p++)
     {
       hd(i,p) = (hd(i+1,p) - hd(i,p))/dtav;
     }
   }
   // takes care of periodicity
   // this has to be changed when other boundary condition is used
-  for (int p = 0; p < ndim_; p++)
+  for (size_t p = 0; p < ndim_; p++)
   {
     hd(nint_,p) = hd(0,p);
   }
@@ -407,31 +407,31 @@ static void meshAssess(KNVector& eqf, const KNVector& mesh, const KNVector& prof
   eqf(0) = 0.0;
   // computing eqf
   const double pwr=1.0/(ndeg_+1.0);
-  for (int j=0; j < nint_; ++j)
+  for (size_t j=0; j < nint_; ++j)
   {
     double EP=0;
     if (j == 0)
     {
-      for (int i = 0; i < ndim_; ++i)
+      for (size_t i = 0; i < ndim_; ++i)
       {
         EP+=pow(fabs(hd(nint_,i)),pwr);
       }
     } else
     {
-      for (int i = 0; i < ndim_; ++i)
+      for (size_t i = 0; i < ndim_; ++i)
       {
         EP+=pow(fabs(hd(j-1,i)),pwr);
       }
     }
     double E=0;
-    for (int i = 0; i < ndim_; ++i)
+    for (size_t i = 0; i < ndim_; ++i)
     {
       E+=pow(fabs(hd(j,i)),pwr);
     }
     eqf(j+1)=eqf(j)+0.5*(mesh(j+1)-mesh(j))*(E+EP);
     if (E+EP==0) small_deri = true;
   }
-  if (small_deri) for (int i = 0; i < nint_+1; ++i) eqf(i) = i;
+  if (small_deri) for (size_t i = 0; i < nint_+1; ++i) eqf(i) = i;
 }
 
 void KNAbstractBvpCollocation::meshAdapt_internal( KNVector& newmesh, const KNVector& profile )
@@ -442,33 +442,33 @@ void KNAbstractBvpCollocation::meshAdapt_internal( KNVector& newmesh, const KNVe
 }
 
 static void profileConvert(KNVector& newprofile, const KNVector& newmesh, const KNVector& profile, const KNVector& mesh,
-                           const KNArray1D< KNArray1D<double> >& old_lgr, const int ndim)
+                           const KNArray1D< KNArray1D<double> >& old_lgr, const size_t ndim)
 {
-  const int old_nint = mesh.size()-1;
-  const int old_ndeg = (profile.size()/ndim - 1)/old_nint;
-  const int new_nint = newmesh.size()-1;
-  const int new_ndeg = (newprofile.size()/ndim - 1)/new_nint;
+  const size_t old_nint = mesh.size()-1;
+  const size_t old_ndeg = (profile.size()/ndim - 1)/old_nint;
+  const size_t new_nint = newmesh.size()-1;
+  const size_t new_ndeg = (newprofile.size()/ndim - 1)/new_nint;
   // creating the new profile with the same old meshINT
-  for (int i = 0; i < new_nint; i++)
+  for (size_t i = 0; i < new_nint; i++)
   {
-    for (int j = 0; j < new_ndeg; j++)
+    for (size_t j = 0; j < new_ndeg; j++)
     {
       const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/new_ndeg;
-      int idx = KNAbstractBvpCollocation::meshlookup( mesh, t );
+      size_t idx = KNAbstractBvpCollocation::meshlookup( mesh, t );
       const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
-      for (int p = 0; p < ndim; p++)
+      for (size_t p = 0; p < ndim; p++)
         newprofile(p+ndim*(j+i*new_ndeg)) = 0.0;
-      for ( int k = 0; k < old_ndeg+1; k++)
+      for (size_t k = 0; k < old_ndeg+1; k++)
       {
         double c = poly_eval(old_lgr(k), d);
-        for (int p = 0; p < ndim; p++)
+        for (size_t p = 0; p < ndim; p++)
         {
           newprofile(p+ndim*(j+i*new_ndeg)) += c*profile(p+ndim*(k+idx*old_ndeg));
         }
       }
     }
   }
-  for (int p = 0; p < ndim; p++)
+  for (size_t p = 0; p < ndim; p++)
     newprofile(p+ndim*(new_ndeg*(newmesh.size()-1))) = profile(p+ndim*(old_ndeg*(mesh.size()-1)));
 }
 
@@ -495,16 +495,16 @@ void KNAbstractBvpCollocation::meshAdapt(KNVector& newprofile, const KNVector& p
   std::ofstream file3("gradient");
   file3 << std::scientific;
   file3.precision(12);
-  for (int i=0; i<NINT; ++i)
+  for (size_t i=0; i<NINT; ++i)
   {
-    for (int j=0; j<NDEG+1; ++j)
+    for (size_t j=0; j<NDEG+1; ++j)
     {
       const double t1 = mesh(i) + j*(mesh(i+1)-mesh(i))/NDEG;
       const double t2 = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/NDEG;
       file1<<t1<<"\t";
       file2<<t2<<"\t";
       file3<<t1<<"\t"<<t2<<"\t";
-      for (int p=0; p<NDIM; ++p)
+      for (size_t p=0; p<NDIM; ++p)
       {
 	file1<<profile_tmp(p+NDIM*(j+NDEG*i))<<"\t";
 	file2<<profile(p+NDIM*(j+NDEG*i))<<"\t";
@@ -534,23 +534,23 @@ void KNAbstractBvpCollocation::getDiffMetric(KNMatrix& mt, const KNVector& t)
   poly_int(mt, t);
 }
 
-void KNAbstractBvpCollocation::star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, int dim)
+void KNAbstractBvpCollocation::star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, size_t dim)
 {
-  const int t_deg = mt.col() - 1;
-  const int t_int = (out.size() / dim - 1) / t_deg;
+  const size_t t_deg = mt.col() - 1;
+  const size_t t_int = (out.size() / dim - 1) / t_deg;
   P_ERROR(in.size() == out.size());
   P_ERROR(out.size() == dim*(t_deg*t_int + 1));
   P_ERROR(msh.size() == t_int + 1);
   out.clear();
-  for (int i = 0; i < t_int; ++i)
+  for (size_t i = 0; i < t_int; ++i)
   {
     const double dx = msh(i + 1) - msh(i);
     // ez itt a matrixszorzas
-    for (int k = 0; k < t_deg + 1; ++k)
+    for (size_t k = 0; k < t_deg + 1; ++k)
     {
-      for (int l = 0; l < t_deg + 1; ++l)
+      for (size_t l = 0; l < t_deg + 1; ++l)
       {
-        for (int j = 0; j < dim; ++j)
+        for (size_t j = 0; j < dim; ++j)
         {
           out(j + dim*(k + i*t_deg)) += dx * mt(k, l) * in(j + dim * (l + i * t_deg));
         }
@@ -558,30 +558,30 @@ void KNAbstractBvpCollocation::star(KNVector& out, const KNVector& in, const KNM
     }
   }
 #ifdef MADD // whether we need to add the headpoint ?
-  for (int j = 0; j < dim; j++)
+  for (size_t j = 0; j < dim; j++)
   {
     out(t_int*t_deg*dim + j) += in(t_int * t_deg * dim + j);
   }
 #endif
 }
 
-double KNAbstractBvpCollocation::integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, int dim)
+double KNAbstractBvpCollocation::integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, size_t dim)
 {
   double res = 0.0;
-  const int t_deg = mt.col() - 1;
-  const int t_int = (v1.size() / dim - 1) / t_deg;
+  const size_t t_deg = mt.col() - 1;
+  const size_t t_int = (v1.size() / dim - 1) / t_deg;
   P_ERROR(v1.size() == v2.size());
   P_ERROR(v1.size() == dim*(t_deg*t_int + 1));
   P_ERROR(msh.size() == t_int + 1);
-  for (int i = 0; i < t_int; ++i)
+  for (size_t i = 0; i < t_int; ++i)
   {
     const double dx = msh(i + 1) - msh(i);
     // ez itt a matrixszorzas
-    for (int k = 0; k < t_deg; ++k)
+    for (size_t k = 0; k < t_deg; ++k)
     {
-      for (int l = 0; l < t_deg; ++l)
+      for (size_t l = 0; l < t_deg; ++l)
       {
-        for (int j = 0; j < dim; ++j)
+        for (size_t j = 0; j < dim; ++j)
         {
           res += v1(j + dim * (k + i * t_deg)) * dx * mt(k, l) * v2(j + dim * (l + i * t_deg));
         }
@@ -589,7 +589,7 @@ double KNAbstractBvpCollocation::integrate(const KNVector& v1, const KNVector& v
     }
   }
 #ifdef MADD // whether we need to add the headpoint ?
-  for (int j = 0; j < dim; j++)
+  for (size_t j = 0; j < dim; j++)
   {
     res += v1(t_int * t_deg * dim + j) * v2(t_int * t_deg * dim + j);
   }
@@ -600,15 +600,15 @@ double KNAbstractBvpCollocation::integrate(const KNVector& v1, const KNVector& v
 void KNAbstractBvpCollocation::star(KNVector& V1, const KNVector& V2)
 {
   V1.clear();
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < NDIM; j++)
+    for (size_t j = 0; j < NDIM; j++)
     {
       // ez itt a matrixszorzas
-      for (int k = 0; k < NDEG + 1; k++)
+      for (size_t k = 0; k < NDEG + 1; k++)
       {
-        for (int l = 0; l < NDEG + 1; l++)
+        for (size_t l = 0; l < NDEG + 1; l++)
         {
           V1(j + NDIM*(k + i*NDEG)) += dx * metric(k, l) * V2(j + NDIM * (l + i * NDEG));
         }
@@ -630,15 +630,15 @@ void KNAbstractBvpCollocation::star(KNVector& V1, const KNVector& V2)
 double KNAbstractBvpCollocation::integrate(const KNVector& V1, const KNVector& V2)
 {
   double res = 0.0, head = 0.0;
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < NDIM; j++)
+    for (size_t j = 0; j < NDIM; j++)
     {
       // ez itt a matrixszorzas
-      for (int k = 0; k < NDEG + 1; k++)
+      for (size_t k = 0; k < NDEG + 1; k++)
       {
-        for (int l = 0; l < NDEG + 1; l++)
+        for (size_t l = 0; l < NDEG + 1; l++)
         {
           res += dx * V1(j + NDIM * (k + i * NDEG)) * metric(k, l) * V2(j + NDIM * (l + i * NDEG));
         }
@@ -647,7 +647,7 @@ double KNAbstractBvpCollocation::integrate(const KNVector& V1, const KNVector& V
   }
 
 #ifdef MADD
-  for (int j = 0; j < NDIM; j++)
+  for (size_t j = 0; j < NDIM; j++)
   {
     head += V1(NINT * NDEG * NDIM + j) * V2(NINT * NDEG * NDIM + j);
   }
@@ -659,15 +659,15 @@ double KNAbstractBvpCollocation::integrate(const KNVector& V1, const KNVector& V
 double KNAbstractBvpCollocation::integrateWithCp(const KNVector& V1, const KNVector& V2, const KNVector& V3)
 {
   double res = 0.0, head = 0.0;
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < NDIM; j++)
+    for (size_t j = 0; j < NDIM; j++)
     {
       // ez itt a matrixszorzas
-      for (int k = 0; k < NDEG + 1; k++)
+      for (size_t k = 0; k < NDEG + 1; k++)
       {
-        for (int l = 0; l < NDEG + 1; l++)
+        for (size_t l = 0; l < NDEG + 1; l++)
         {
           res += dx * V1(j + NDIM * (k + i * NDEG)) * metric(k, l) * (V2(j + NDIM * (l + i * NDEG)) - V3(j + NDIM * (l + i * NDEG)));
         }
@@ -675,7 +675,7 @@ double KNAbstractBvpCollocation::integrateWithCp(const KNVector& V1, const KNVec
     }
   }
 #ifdef MADD
-  for (int j = 0; j < NDIM; j++)
+  for (size_t j = 0; j < NDIM; j++)
   {
     head += V1(NINT * NDEG * NDIM + j) * (V2(NINT * NDEG * NDIM + j) - V3(NINT * NDEG * NDIM + j));
   }
@@ -686,14 +686,14 @@ double KNAbstractBvpCollocation::integrateWithCp(const KNVector& V1, const KNVec
 void KNAbstractBvpCollocation::phaseStar(KNVector& V1, const KNVector& V2)
 {
   V1.clear();
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
-    for (int j = 0; j < NDIM; j++)
+    for (size_t j = 0; j < NDIM; j++)
     {
       // ez itt a matrixszorzas
-      for (int k = 0; k < NDEG + 1; k++)
+      for (size_t k = 0; k < NDEG + 1; k++)
       {
-        for (int l = 0; l < NDEG + 1; l++)
+        for (size_t l = 0; l < NDEG + 1; l++)
         {
           V1(j + NDIM*(k + i*NDEG)) += metricPhase(k, l) * V2(j + NDIM * (l + i * NDEG));
         }
@@ -702,18 +702,18 @@ void KNAbstractBvpCollocation::phaseStar(KNVector& V1, const KNVector& V2)
   }
 }
 
-void KNAbstractBvpCollocation::phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<int>& Re, const KNArray1D<int>& Im)
+void KNAbstractBvpCollocation::phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<size_t>& Re, const KNArray1D<size_t>& Im)
 {
   V1.clear();
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
     const double dx = mesh(i + 1) - mesh(i);
-    for (int j = 0; j < Re.size(); j++)
+    for (size_t j = 0; j < Re.size(); j++)
     {
       // ez itt a matrixszorzas
-      for (int k = 0; k < NDEG + 1; k++)
+      for (size_t k = 0; k < NDEG + 1; k++)
       {
-        for (int l = 0; l < NDEG + 1; l++)
+        for (size_t l = 0; l < NDEG + 1; l++)
         {
           V1(Re(j) + NDIM*(k + i*NDEG)) -= dx * metric(k, l) * V2(Im(j) + NDIM * (l + i * NDEG));
           V1(Im(j) + NDIM*(k + i*NDEG)) += dx * metric(k, l) * V2(Re(j) + NDIM * (l + i * NDEG));
@@ -728,13 +728,13 @@ void KNAbstractBvpCollocation::pdMeshConvert(KNVector& newprofile, KNVector& new
   KNVector tmp_mesh(2*NINT+1);
   KNVector tmp_profile(NDIM*(2*NINT*NDEG+1));
   KNVector tmp_tangent(NDIM*(2*NINT*NDEG+1));
-  for (int i = 0; i < NINT; ++i)
+  for (size_t i = 0; i < NINT; ++i)
   {
     tmp_mesh(i) = 0.0 + 0.5*mesh(i);
     tmp_mesh(NINT+i) = 0.5 + 0.5*mesh(i);
-    for (int j = 0; j < NDEG; ++j)
+    for (size_t j = 0; j < NDEG; ++j)
     {
-      for (int p = 0; p < NDIM; ++p)
+      for (size_t p = 0; p < NDIM; ++p)
       {
         tmp_profile(p+NDIM*(j+i*NDEG))        = oldprofile(p+NDIM*(j+i*NDEG));
         tmp_profile(p+NDIM*(j+(i+NINT)*NDEG)) = oldprofile(p+NDIM*(j+i*NDEG));
@@ -744,33 +744,33 @@ void KNAbstractBvpCollocation::pdMeshConvert(KNVector& newprofile, KNVector& new
     }
   }
   tmp_mesh(2*NINT) = 1.0;
-  for (int p = 0; p < NDIM; ++p)
+  for (size_t p = 0; p < NDIM; ++p)
   {
     tmp_profile(p+NDIM*(2*NINT*NDEG)) = tmp_profile(p);
     tmp_tangent(p+NDIM*(2*NINT*NDEG)) = tmp_tangent(p);
   }
   // constructing the new mesh
   KNVector eqf(tmp_mesh.size());
-  for (int i = 0; i < eqf.size(); ++i) eqf(i) = i;
+  for (size_t i = 0; i < eqf.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, tmp_mesh, eqf);
   profileConvert(newprofile, mesh, tmp_profile, tmp_mesh, lgr, NDIM);
   profileConvert(newtangent, mesh, tmp_tangent, tmp_mesh, lgr, NDIM);
 }
 
-void KNAbstractBvpCollocation::importProfile(KNVector& newprofile, const KNVector& oldprofile, const KNVector& oldmesh, int old_ndeg, bool adapt)
+void KNAbstractBvpCollocation::importProfile(KNVector& newprofile, const KNVector& oldprofile, const KNVector& oldmesh, size_t old_ndeg, bool adapt)
 {
   KNVector old_meshINT(old_ndeg+1);
   repr_mesh(old_meshINT);
 
   KNArray1D< KNArray1D<double> > old_lgr(old_ndeg+1, old_ndeg+1);
-  for (int i = 0; i < old_ndeg+1; i++)
+  for (size_t i = 0; i < old_ndeg+1; i++)
   {
     poly_coeff_lgr(old_lgr(i), old_meshINT, i);
   }
 
   KNVector eqf(oldmesh.size());
   if (adapt) meshAssess(eqf, oldmesh, oldprofile, old_lgr);
-  else for (int i = 0; i < oldmesh.size(); ++i) eqf(i) = i;
+  else for (size_t i = 0; i < oldmesh.size(); ++i) eqf(i) = i;
   meshConstruct(mesh, oldmesh, eqf);
   profileConvert(newprofile, mesh, oldprofile, oldmesh, old_lgr, NDIM);
 }
@@ -778,28 +778,28 @@ void KNAbstractBvpCollocation::importProfile(KNVector& newprofile, const KNVecto
 // it exports for KNDdeTorusCollocation and KNDdeTorusSolution, so no last value is necessary
 void KNAbstractBvpCollocation::exportProfile(KNVector& outs, const KNVector& mshint, const KNVector& mshdeg, const KNVector& in)
 {
-  int nint_ = mshint.size() - 1;
-  int ndeg_ = mshdeg.size() - 1;
+  size_t nint_ = mshint.size() - 1;
+  size_t ndeg_ = mshdeg.size() - 1;
   KNVector in_mesh(NDEG + 1);
   KNVector in_lgr(NDEG + 1);
 
-  for (int i = 0; i < NDEG + 1; i++) in_mesh(i) = i * 1.0 / NDEG;
+  for (size_t i = 0; i < NDEG + 1; i++) in_mesh(i) = i * 1.0 / NDEG;
 
-  for (int i = 0; i < nint_; i++)
+  for (size_t i = 0; i < nint_; i++)
   {
-    for (int j = 0; j < ndeg_; j++)
+    for (size_t j = 0; j < ndeg_; j++)
     {
       double t = mshint(i) + mshdeg(j) / nint_;
-      int k = meshlookup(mesh, t);
+      size_t k = meshlookup(mesh, t);
       // std::cout<<"int "<<i<<" "<<k<<"\n";
       double c = (t - mesh(k)) / (mesh(k + 1) - mesh(k));  // mesh is the interval mesh in the class
 
       poly_lgr(in_mesh, in_lgr, c);
       // in_lgr.print();
-      for (int p = 0; p < NDIM; p++)
+      for (size_t p = 0; p < NDIM; p++)
       {
         outs(p + NDIM*(j + i*ndeg_)) = 0.0;
-        for (int r = 0; r < NDEG + 1; r++)
+        for (size_t r = 0; r < NDEG + 1; r++)
         {
           outs(p + NDIM*(j + i*ndeg_)) += in(p + NDIM * (r + k * NDEG)) * in_lgr(r);
         }
@@ -812,9 +812,9 @@ void KNAbstractBvpCollocation::resetProfile(KNSystem& sys, KNVector& profile)
 {
    KNArray2D<double> tmp(NDIM, time.size());
    sys.stsol (tmp, time);
-   for (int p = 0; p < NDIM; p++)
+   for (size_t p = 0; p < NDIM; p++)
    {
-     for (int r = 0; r < time.size(); r++)
+     for (size_t r = 0; r < time.size(); r++)
      {
        profile (p + NDIM*r) = tmp (p,r);
      }

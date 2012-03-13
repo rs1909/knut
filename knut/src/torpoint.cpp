@@ -15,7 +15,7 @@
 #include "mat4data.h"
 
 KNDdeTorusSolution::KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
-  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_)
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_)
   : KNAbstractPoint(cnt, sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
     sys_.ndim()*(ndeg1_*nint1_)*(ndeg2_*nint2_)*sys_.ndim()*(sys_.ntau()+1)*(ndeg1_+1)*(ndeg2_+1))
 {
@@ -37,44 +37,44 @@ void KNDdeTorusSolution::jacobian(
   KNSparseBlockMatrix& jac, KNBlockVector& rhs, // output
   KNVector& parPrev,  KNVector& par,      // parameters
   KNVector& solPrev,  KNVector& sol,      // solution
-  KNArray1D<int>&     varMap,           // contains the variables. If cont => contains the P0 too.
+  KNArray1D<size_t>&  varMap,           // contains the variables. If cont => contains the P0 too.
   double ds, bool cont                // ds stepsize, cont: true if continuation
 )
 {
   // uses also: eqn, var
-  const int        nvar = dim3;
+  const size_t         nvar = dim3;
   KNArray1D<KNVector*> A13(nvar + 1);
-  KNArray1D<int>     JacVar(nvar + 1);
+  KNArray1D<size_t>    JacVar(nvar + 1);
 
   // it is just for the first equation i.e. EqnTORSol
-  for (int i = 1; i < varMap.size(); i++)
+  for (size_t i = 1; i < varMap.size(); i++)
   {
     JacVar(i-1) = varMap(i);
     A13(i-1) = & jac.getA13(i-1);
   }
 
   // first the phase conditions
-  int ph0 = -1, ph1 = -1;
-  for (int i = 1; i < eqn.size(); i++)
+  size_t ph0 = eqn.size(), ph1 = eqn.size();
+  for (size_t i = 1; i < eqn.size(); i++)
   {
     if (eqn(i) == EqnTORPhase0)
     {
-      if (ph0 != -1) P_MESSAGE1("Too many phase conditions.");
+      if (ph0 != eqn.size()) P_MESSAGE1("Too many phase conditions.");
       ph0 = i - 1;
     }
     if (eqn(i) == EqnTORPhase1)
     {
-      if (ph1 != -1) P_MESSAGE1("Too many phase conditions.");
+      if (ph1 != eqn.size()) P_MESSAGE1("Too many phase conditions.");
       ph1 = i - 1;
     }
   }
-  if (ph0 != (-1) && ph1 != (-1))
+  if (ph0 != eqn.size() && ph1 != eqn.size())
   {
     colloc->PhaseBOTH(jac.getA31(ph0), jac.getA31(ph1), solPrev);
     rhs.getV3()(ph0) = 0.0;
     rhs.getV3()(ph1) = 0.0;
   }
-  else if (ph0 == (-1) && ph1 != (-1))
+  else if (ph0 == eqn.size() && ph1 != eqn.size())
   {
     colloc->PhaseONE(jac.getA31(ph1), sol/*Prev*/);
     rhs.getV3()(ph1) = 0.0;
@@ -88,7 +88,7 @@ void KNDdeTorusSolution::jacobian(
   jac.getA11().check();
   // the other equations
   // Currently: none
-  for (int i = 1; i < eqn.size(); i++)
+  for (size_t i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -107,11 +107,11 @@ void KNDdeTorusSolution::jacobian(
   {
     // copying the tangent
     if (dim1 != 0) colloc->star(jac.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().size(); i++) jac.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (size_t i = 0; i < xxDot->getV3().size(); i++) jac.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       rhs.getV3()(dim3) = ds - (jac.getA31(dim3) * sol - jac.getA31(dim3) * solPrev);
-      for (int j = 1; j < varMap.size(); ++j) rhs.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (size_t j = 1; j < varMap.size(); ++j) rhs.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {
@@ -126,25 +126,25 @@ void KNDdeTorusSolution::jacobian(
 #define NINT1 colloc->Nint1()
 #define NINT2 colloc->Nint2()
 
-void KNDdeTorusSolution::loadPoint(KNDataFile& data, int n)
+void KNDdeTorusSolution::loadPoint(KNDataFile& data, size_t n)
 {
   data.getBlanket(n, sol);
   data.getPar(n, par);
 }
 
-void KNDdeTorusSolution::savePoint(KNDataFile& data, int n)
+void KNDdeTorusSolution::savePoint(KNDataFile& data, size_t n)
 {
   data.setPar(n, par);
-  for (int i = 0; i < NINT1; ++i)
+  for (size_t i = 0; i < NINT1; ++i)
   {
-    for (int j = 0; j < NDEG1; ++j)
+    for (size_t j = 0; j < NDEG1; ++j)
     {
       data.setMesh1(n, i*NDEG1 + j, (getMesh1()(j) + i) / ((double)NINT1));
     }
   }
-  for (int i = 0; i < NINT2; ++i)
+  for (size_t i = 0; i < NINT2; ++i)
   {
-    for (int j = 0; j < NDEG2; ++j)
+    for (size_t j = 0; j < NDEG2; ++j)
     {
       data.setMesh2(n, i*NDEG2 + j, (getMesh2()(j) + i) / ((double)NINT2));
     }

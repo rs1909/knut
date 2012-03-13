@@ -30,6 +30,12 @@ static inline int toInt(long int x)
   else { P_MESSAGE1("Integer is out of range."); return 0; }
 }
 
+static inline size_t toSizeT(long int x)
+{
+  if ((x <= INT_MAX)&&(x >= 0)) return static_cast<size_t>(x);
+  else { P_MESSAGE1("Unsigned integer is out of range."); return 0; }
+}
+
 static inline int toInt(size_t x)
 {
   if (x < INT_MAX) return (int)x;
@@ -66,16 +72,16 @@ static inline int toInt(size_t x)
     } name; \
   public: \
     const std::vector<type> & get##capsName##Vector() const { return name.value; } \
-    type get##capsName(int i) const \
-      { if (i<get##capsName##Size() && i>=0) return name.value[static_cast<unsigned int>(i)]; else return zero; } \
-    void set##capsName(int i, type d) { name.value[static_cast<unsigned int>(i)] = d; constantChanged(#name); } \
-    void nset##capsName(int i, type d) { name.value[static_cast<unsigned int>(i)] = d; } \
-    void static snset##capsName(KNConstantsBase& obj, int i, type d) { obj.name.value[static_cast<unsigned int>(i)] = d; } \
-    int get##capsName##Size() const { /*std::cout << name.value.size() << " " #name "MM\n";*/  return static_cast<int>(name.value.size()); } \
-    void set##capsName##Size(int ns) \
+    type get##capsName(size_t i) const \
+      { if (i<get##capsName##Size()) return name.value[i]; else return zero; } \
+    void set##capsName(size_t i, type d) { name.value[i] = d; constantChanged(#name); } \
+    void nset##capsName(size_t i, type d) { name.value[i] = d; } \
+    void static snset##capsName(KNConstantsBase& obj, size_t i, type d) { obj.name.value[i] = d; } \
+    size_t get##capsName##Size() const { /*std::cout << name.value.size() << " " #name "MM\n";*/  return name.value.size(); } \
+    void set##capsName##Size(size_t ns) \
     { \
-      int ps = get##capsName##Size(); name.value.resize(static_cast<unsigned int>(ns)); \
-      for (int i=ps; i<ns; ++i) name.value[static_cast<unsigned int>(i)] = zero; \
+      size_t ps = get##capsName##Size(); name.value.resize(ns); \
+      for (size_t i=ps; i<ns; ++i) name.value[i] = zero; \
       constantChanged(#name); \
     }
 
@@ -100,7 +106,7 @@ class KNConstantNames
 
 template<typename TP> struct TypeTuple
 {
-  int          index;
+  size_t       index;
   TP           type;
   const char * code;
   const char * name;
@@ -108,7 +114,7 @@ template<typename TP> struct TypeTuple
 
 template<typename TP> struct TypeTupleStr
 {
-  int          index;
+  size_t       index;
   TP           type;
   std::string  code;
   std::string  name;
@@ -124,24 +130,24 @@ class KNConstantsBase
     KN_CONSTANT(       std::string, sysname,    SysName,    "")
     KN_CONSTANT(       std::string, sysType,    SysType,    "")
     KN_CONSTANT(       BifType,     fromType,   FromType,   BifNone)
-    KN_CONSTANT(       int,         label,      Label,      0)
+    KN_CONSTANT(       size_t,      label,      Label,      0)
     KN_CONSTANT(       PtType,      pointType,  PointType,  SolUser)
     KN_CONSTANT(       Var,         cp,         Cp,         VarNone)
     KN_CONSTANT(       BranchSW,    branchSW,   BranchSW,   NOSwitch)
     KN_ARRAY_CONSTANT( Var,         parx,       Parx,       VarNone)
     KN_ARRAY_CONSTANT( Eqn,         eqns,       Eqns,       EqnNone)
     KN_ARRAY_CONSTANT( Var,         vars,       Vars,       VarNone)
-    KN_CONSTANT(       int,         nInt,       NInt,       10)
-    KN_CONSTANT(       int,         nDeg,       NDeg,       4)
-    KN_CONSTANT(       int,         nMul,       NMul,       0)
+    KN_CONSTANT(       size_t,      nInt,       NInt,       10)
+    KN_CONSTANT(       size_t,      nDeg,       NDeg,       4)
+    KN_CONSTANT(       size_t,      nMul,       NMul,       0)
     KN_CONSTANT(       bool,        stab,       Stab,       false)
-    KN_CONSTANT(       int,         nInt1,      NInt1,      12)
-    KN_CONSTANT(       int,         nInt2,      NInt2,      12)
-    KN_CONSTANT(       int,         nDeg1,      NDeg1,      4)
-    KN_CONSTANT(       int,         nDeg2,      NDeg2,      4)
-    KN_CONSTANT(       int,         steps,      Steps,      10)
-    KN_CONSTANT(       int,         iad,        Iad,        3)
-    KN_CONSTANT(       int,         nPr,        NPr,        1)
+    KN_CONSTANT(       size_t,      nInt1,      NInt1,      12)
+    KN_CONSTANT(       size_t,      nInt2,      NInt2,      12)
+    KN_CONSTANT(       size_t,      nDeg1,      NDeg1,      4)
+    KN_CONSTANT(       size_t,      nDeg2,      NDeg2,      4)
+    KN_CONSTANT(       size_t,      steps,      Steps,      10)
+    KN_CONSTANT(       size_t,      iad,        Iad,        3)
+    KN_CONSTANT(       size_t,      nPr,        NPr,        1)
     KN_CONSTANT(       double,      cpMin,      CpMin,      -DBL_MAX)
     KN_CONSTANT(       double,      cpMax,      CpMax,      DBL_MAX)
     KN_CONSTANT(       double,      ds,         Ds,         1e-3)
@@ -151,20 +157,20 @@ class KNConstantsBase
     KN_CONSTANT(       double,      epsC,       EpsC,       1e-5)
     KN_CONSTANT(       double,      epsR,       EpsR,       1e-5)
     KN_CONSTANT(       double,      epsK,       EpsK,       1e-5)
-    KN_CONSTANT(       int,         nItC,       NItC,       5)
-    KN_CONSTANT(       int,         nItR,       NItR,       12)
-    KN_CONSTANT(       int,         nItK,       NItK,       12)
-    KN_ARRAY_CONSTANT( int,         symRe,      SymRe,      0)
-    KN_ARRAY_CONSTANT( int,         symIm,      SymIm,      0)
-    KN_CONSTANT(       int,         nDeri,      NDeri,      0)
+    KN_CONSTANT(       size_t,      nItC,       NItC,       5)
+    KN_CONSTANT(       size_t,      nItR,       NItR,       12)
+    KN_CONSTANT(       size_t,      nItK,       NItK,       12)
+    KN_ARRAY_CONSTANT( size_t,      symRe,      SymRe,      0)
+    KN_ARRAY_CONSTANT( size_t,      symIm,      SymIm,      0)
+    KN_CONSTANT(       size_t,      nDeri,      NDeri,      0)
     KN_CONSTANT(       double,      cAngle,     CAngle,     1.0/4) // Angle of the curvature
     // from sysname
-    KN_CONSTANT(       int,         nPar,       NPar,       0)
-    KN_CONSTANT(       int,         nDim,       NDim,       0)
+    KN_CONSTANT(       size_t,      nPar,       NPar,       0)
+    KN_CONSTANT(       size_t,      nDim,       NDim,       0)
     
   protected:
     std::vector<std::string> parNames;
-    void addConstantName(const char* name) {}
+    void addConstantName(const char* /*name*/) {}
  
   public:
     KNConstantsBase() : 
@@ -197,13 +203,13 @@ class KNConstantsBase
     void printXmlFile(std::ostream& file);
     
     // converting equation numbers to what can be used in continuation
-    Eqn eqnFromTypeNum(char type, int num) const
+    Eqn eqnFromTypeNum(char type, size_t num) const
     {
       if (type == 'E') return (Eqn)num;
       else return EqnNone;	
     }
     // converting variable numbers to what can be used in continuation
-    Var varFromTypeNum(char type, int num) const
+    Var varFromTypeNum(char type, size_t num) const
     {
       Var tmp;
       if (type == 'S') tmp = (Var)num;
@@ -213,11 +219,11 @@ class KNConstantsBase
 //      std :: cout << type << num << (char)num << " -> " << tmp << " ";
       return tmp;
     }
-    char eqnType(Eqn e)
+    char eqnType(Eqn )
     {
       return 'E';
     }
-    int eqnNum(Eqn e)
+    size_t eqnNum(Eqn e)
     {
       return e;
     }
@@ -227,20 +233,20 @@ class KNConstantsBase
       else if (v < VarInternal) return 'P';
       else return 'I';
     }
-    int varNum(Var v)
+    size_t varNum(Var v)
     {
       if (v < VarPAR0) return v;
       else if (v < VarInternal) return v - VarPAR0;
       else return v - VarInternal;
     }
     
-    void initParNames(int np)
+    void initParNames(size_t np)
     {
       parNames.resize(VarToIndex(VarEnd,np));
-      for (int i=0; i<np; ++i)
+      for (size_t i=0; i<np; ++i)
       {
         char buf[16];
-        snprintf(buf, 15, "%d", i);
+        snprintf(buf, 15, "%zd", i);
         parNames[i] = "PAR(" + std::string(buf) + ")";
       }
       parNames[VarToIndex(VarPeriod,np)] = "Per. Mul.";
@@ -252,7 +258,7 @@ class KNConstantsBase
     virtual void setSysNameText(const std::string& str, bool testing = false);
     const std::vector<std::string>& getParNames() const { return parNames; }
     // this is to notify the system of changes
-    virtual void constantChanged(const char* name) { }
+    virtual void constantChanged(const char* /*name*/) { }
     
     // type declarations
     template<typename TP> class TypeTupleTab
@@ -260,21 +266,21 @@ class KNConstantsBase
     private:
       static const TypeTuple<TP> tabStatic[];
       std::vector<TypeTupleStr<TP> > tab;
-      int sz;
+      size_t sz;
       const KNConstantsBase *parent;
     public:
       TypeTupleTab();
       TypeTupleTab(const KNConstantsBase *p) : tab(0), parent(p) { update(); }
       void         update(void); // needs to update 'tab'
       void         update(const KNConstantsBase *p) { parent = p; update(); }
-      TP           CIndexToType(int idx) const;
+      TP           CIndexToType(size_t idx) const;
       TP           NameToType(const char * name) const;
       TP           CodeToType(const char * name) const;
-      int          TypeToCIndex(TP tp) const;
-      std::string  CIndexToTypeName(int idx) const;
+      size_t       TypeToCIndex(TP tp) const;
+      std::string  CIndexToTypeName(size_t idx) const;
       std::string  TypeToName(TP tp) const;
       std::string  TypeToCode(TP tp) const;
-      int          size() const;
+      size_t       size() const;
     };  
     KNConstantsBase::TypeTupleTab<PtType> PtTypeTable;
     KNConstantsBase::TypeTupleTab<Eqn> EqnTable;
@@ -301,25 +307,25 @@ class KNConstants : public KNConstantsBase
 template<typename TP> void KNConstantsBase::TypeTupleTab<TP>::update()
 {
   size_t k = 0;
-  while (tabStatic[k].index >= 0) ++k;
+  while (tabStatic[k].index < ~(size_t)0) ++k;
   tab.resize(k);
   for (size_t i=0; i<tab.size(); ++i)
   {
-    tab[i].index = static_cast<int>(i); // tabStatic[i].index;
+    tab[i].index = i; // tabStatic[i].index;
     tab[i].type = tabStatic[i].type;
     tab[i].name = tabStatic[i].name;
     tab[i].code = tabStatic[i].code;
   }
 }
 
-template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::CIndexToType(int idx) const
+template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::CIndexToType(size_t idx) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].index == idx) return tab[k].type;
   return tab[0].type;
 }
 
-template<typename TP> int KNConstantsBase::TypeTupleTab<TP>::TypeToCIndex(TP tp) const
+template<typename TP> size_t KNConstantsBase::TypeTupleTab<TP>::TypeToCIndex(TP tp) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].index;
@@ -340,7 +346,7 @@ template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::TypeToName(
   return tab[0].name;
 }
 
-template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::CIndexToTypeName(int idx) const
+template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::CIndexToTypeName(size_t idx) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].index == idx) return tab[k].name;
@@ -367,7 +373,7 @@ template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::NameToType(const cha
   return tab[0].type;
 }
 
-template<typename TP> int KNConstantsBase::TypeTupleTab<TP>::size() const
+template<typename TP> size_t KNConstantsBase::TypeTupleTab<TP>::size() const
 {
   return tab.size();
 }

@@ -162,15 +162,15 @@ static inline double d_scf_x1x2( double x0, double x1, double x2 )
 extern "C"
 {
 
-int sys_ndim(){ return 2; }
-int sys_npar(){ return 2; }
-int sys_ntau(){ return 3; }
-int sys_nderi() { return 2; }
+size_t sys_ndim(){ return 2; }
+size_t sys_npar(){ return 2; }
+size_t sys_ntau(){ return 3; }
+size_t sys_nderi() { return 2; }
 
 void sys_p_tau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
 #define out(i) vout(i,idx)
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     out(0) = 0.0;
     out(1) = 1.0*par(0)/par(3);
@@ -179,10 +179,10 @@ void sys_p_tau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KN
 #undef out
 }
 
-void sys_p_dtau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray1D<double>& par, int vp )
+void sys_p_dtau( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray1D<double>& par, size_t vp )
 {
 #define out(i) vout(i,idx)
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     switch( vp )
     {
@@ -204,11 +204,11 @@ void sys_p_dtau( KNArray2D<double>& vout, const KNArray1D<double>& time, const K
 #undef out
 }
 
-void sys_p_rhs( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel )
+void sys_p_rhs( KNArray2D<double>& vout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, size_t sel )
 {
 #define out(i) vout(i,idx)
 #define xx(i,j) yy(i,j,idx)
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     const double t = time(idx);
     double g;
@@ -229,12 +229,12 @@ void sys_p_rhs( KNArray2D<double>& vout, const KNArray1D<double>& time, const KN
 #undef xx
 }
 
-void sys_p_deri( KNArray3D<double>& mout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& ww )
+void sys_p_deri( KNArray3D<double>& mout, const KNArray1D<double>& time, const KNArray3D<double>& yy, const KNArray1D<double>& par, size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& ww )
 {
 #define out(i,j) mout(i,j,idx)
 #define xx(i,j) yy(i,j,idx)
 #define vv(i,j) ww(i,j,idx)
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     const double t = time(idx);
     double g;

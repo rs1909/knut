@@ -19,7 +19,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    KNDdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg);        // computes mesh, metric, metricD
+    KNDdeBvpCollocation(KNSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
 
     ~KNDdeBvpCollocation() {}
 
@@ -34,7 +34,7 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
     // continuation of solution
 
     void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
-    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p);   // sol is currently not needed
+    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p);   // sol is currently not needed
     void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol);          // sol is currently not needed
 
     // for stability computation
@@ -44,16 +44,16 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 
     // continuation of bifurcations -> characteristic matrices
 
-    inline int nTau() const { return ntau; }
-    inline int nMat() const { return nmat; }
+    inline size_t nTau() const { return ntau; }
+    inline size_t nMat() const { return nmat; }
 
     // Jacobian of the test funtional: jotf
     void jotf_x(KNSparseMatrix& A, const KNVector& par, double Z);
     void jotf_x(KNSparseMatrix& A, const KNVector& par, double ZRe, double ZIm);
 
-    void jotf_x_p(KNVector& V, const KNVector& par, const KNArray3D<double>& phiData, double Z, int p);
+    void jotf_x_p(KNVector& V, const KNVector& par, const KNArray3D<double>& phiData, double Z, size_t p);
     void jotf_x_p(KNVector& V, const KNVector& par,
-      const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double ZRe, double ZIm, int p);
+      const KNArray3D<double>& phiDataRe, const KNArray3D<double>& phiDataIm, double ZRe, double ZIm, size_t p);
 
     void jotf_x_x(KNSparseMatrix& A, const KNVector& par, const KNArray3D<double>& phiData, double Z);
     void jotf_x_x(KNSparseMatrix& A, const KNVector& par,
@@ -65,95 +65,95 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 
     // for the autonomous FOLD bifurcation
     void jotf_mB(KNSparseMatrix& A, const KNVector& par, double Z);
-    void jotf_mB_p(KNVector& V,   const KNVector& par, const KNArray3D<double>& phiData, double Z, int alpha);
+    void jotf_mB_p(KNVector& V,   const KNVector& par, const KNArray3D<double>& phiData, double Z, size_t alpha);
     void jotf_mB_x(KNSparseMatrix& A, const KNVector& par, const KNArray3D<double>& phiData, double Z);
 
     // autonomous trivial eigenvector
     void jotf_trivialKernelOnMesh(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData);
     template<bool trans> void jotf_trivialKernelOnMesh_x(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, const KNVector& phi);
-    void jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, int alpha);
+    void jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector& par, const KNArray3D<double>& solMSHData, size_t alpha);
 
   private:
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
-    inline int& WRIDX(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDAT(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDAT(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
     // for CharJac_x
-    inline int& WRIDXCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline int& WRIDXCPLX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cTAU, size_t cDEG, size_t cDIM, size_t cIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
-    inline double& WRDATCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM, int cIM)
+    inline double& WRDATCPLX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cTAU, size_t cDEG, size_t cDIM, size_t cIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cIM + 2*(cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1))));
     }
 
     // for CharJac_x_x
-    inline int& WRIDXCPLXM(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXCPLXM(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATCPLXM(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATCPLXM(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*(idx) + rDIM), cDIM + ndim*(cDEG - dd(cTAU, idx) + rr(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXS(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXS(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    double& WRDATS(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    double& WRDATS(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddS(cTAU, idx) + rrS(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline int& WRIDXI(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline int& WRIDXI(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeIndex(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
-    inline double& WRDATI(KNSparseMatrix& A, int idx, int rDIM, int cTAU, int cDEG, int cDIM)
+    inline double& WRDATI(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cTAU, size_t cDEG, size_t cDIM)
     {
       return A.writeData(ndim + ndim*(idx) + rDIM, cDIM + ndim*(cDEG - ddI(cTAU, idx) + rrI(cTAU, idx)*(ndeg + 1)));
     }
 
-    const int ntau;
-    int nmat; // is the ceil( max(delays)/period )
+    const size_t ntau;
+    size_t nmat; // is the ceil( max(delays)/period )
 
     // these store the structure of the sparse matrix NO SEPARATION
-    KNArray2D<int> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
-    KNArray2D<int> ee;   // dim(NTAU+1,NDEG*NINT) : the ordering of kk
-    KNArray2D<int> dd;   // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
-    KNArray2D<int> rr;   // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
+    KNArray2D<size_t> kk;   // dim(NTAU+1,NDEG*NINT) : which delay to which interval
+    KNArray2D<size_t> ee;   // dim(NTAU+1,NDEG*NINT) : the ordering of kk
+    KNArray2D<size_t> dd;   // dim(NTAU+1,NDEG*NINT) : how many neighbouring intervals up to its index
+    KNArray2D<size_t> rr;   // dim(NTAU+1,NDEG*NINT) : how many non overlapping intervals up to its index
 
     // these store the structure of the sparse matrix WITH SEPARATION
-    KNArray2D<int> kkS;  // same as kk, but not folded back
-    KNArray2D<int> eeS;  //  ...
-    KNArray2D<int> rrS;  //  ...
-    KNArray2D<int> ddS;  //  ...
-    KNArray2D<int> mmS;  // which matrix are we in
-    KNArray2D<int> szS;  // szI(mmI( . ,idx),idx) size of the line within the matrix mmS
+    KNArray2D<size_t> kkS;  // same as kk, but not folded back
+    KNArray2D<size_t> eeS;  //  ...
+    KNArray2D<size_t> rrS;  //  ...
+    KNArray2D<size_t> ddS;  //  ...
+    KNArray2D<size_t> mmS;  // which matrix are we in
+    KNArray2D<size_t> szS;  // szI(mmI( . ,idx),idx) size of the line within the matrix mmS
 
     // For the stability matrices
-    KNArray2D<int> kkI;
-    KNArray2D<int> eeI;
-    KNArray2D<int> rrI;
-    KNArray2D<int> ddI;
-    KNArray2D<int> mmI;
-    KNArray2D<int> szI;
+    KNArray2D<size_t> kkI;
+    KNArray2D<size_t> eeI;
+    KNArray2D<size_t> rrI;
+    KNArray2D<size_t> ddI;
+    KNArray2D<size_t> mmI;
+    KNArray2D<size_t> szI;
 
-    KNArray2D<int> kkMSH; // dim(NTAU+1,NDEG*NINT+1) : which delay to which interval
+    KNArray2D<size_t> kkMSH; // dim(NTAU+1,NDEG*NINT+1) : which delay to which interval
 
     KNArray3D<double> tt;       // interpolation at the collocation points
     KNArray3D<double> ttMSH;    // interpolation at the representation points. I guess its the identity
@@ -180,20 +180,20 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 
 #ifdef DEBUG
     // DIAGNOSTICS
-    int count_RHS;
-    int count_RHS_p;
-    int count_RHS_x;
-    int count_StabJac;
-    int count_CharJac_x;
-    int count_CharJac_x_p;
-    int count_CharJac_x_x;
-    int count_CharJac_x_z;
-    int count_CharJac_mB;
-    int count_CharJac_mB_p;
-    int count_CharJac_mB_x;
-    int count_CharJac_MSHphi;
-    int count_CharJac_MSHphi_p;
-    int count_CharJac_MSHphi_x;
+    size_t count_RHS;
+    size_t count_RHS_p;
+    size_t count_RHS_x;
+    size_t count_StabJac;
+    size_t count_CharJac_x;
+    size_t count_CharJac_x_p;
+    size_t count_CharJac_x_x;
+    size_t count_CharJac_x_z;
+    size_t count_CharJac_mB;
+    size_t count_CharJac_mB_p;
+    size_t count_CharJac_mB_x;
+    size_t count_CharJac_MSHphi;
+    size_t count_CharJac_MSHphi_p;
+    size_t count_CharJac_MSHphi_x;
     // DIAG FUNCTIONS
     void count_reset()
     {
@@ -246,17 +246,17 @@ template<bool trans> void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_x(KNVect
 #endif
   V.clear(); // it is not cleared otherwise!!!!
 
-  for (int k = 0; k < NTAU; k++)
+  for (size_t k = 0; k < NTAU; k++)
   {
-    int nx = 1, vx = k, np = 0, vp;
+    size_t nx = 1, vx = k, np = 0, vp;
     sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
-    for (int idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
+    for (size_t idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
     {
-      for (int l = 0; l < NDEG + 1; l++) // degree
+      for (size_t l = 0; l < NDEG + 1; l++) // degree
       {
-        for (int p = 0; p < NDIM; p++)   // row
+        for (size_t p = 0; p < NDIM; p++)   // row
         {
-          for (int q = 0; q < NDIM; q++)   //column
+          for (size_t q = 0; q < NDIM; q++)   //column
           {
             if (trans) V(q + NDIM*(l + NDEG*kkMSH(k, idx))) -=
                 p_dfxMSH(p, q, idx) * ttMSH(k, l, idx) * phi(p + NDIM * idx);

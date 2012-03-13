@@ -29,9 +29,9 @@ void KNMatrix::sparsityPlot(GnuPlot& pl)
 {
   pl.Plot(0, "with points ps 0.1");
 
-  for (int i = 0; i < this->r; i++)
+  for (size_t i = 0; i < this->r; i++)
   {
-    for (int j = 0; j < this->c; j++)
+    for (size_t j = 0; j < this->c; j++)
     {
       if ((*this)(i, j) != 0.0)
       {
@@ -79,15 +79,15 @@ void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi)
 
   char    jobvl = 'N', jobvr = 'N';
   KNMatrix  vl(this->r, 1), vr(this->r, 1);
-  int n = this->r, lda = this->r;
-  int ldvl = 1, ldvr = 1;
+  size_t n = this->r, lda = this->r;
+  size_t ldvl = 1, ldvr = 1;
   KNMatrix  work(this->r, 4);
-  int lwork = 4 * (this->r);
+  size_t lwork = 4 * (this->r);
   int info;
 
-  knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
-             wr.pointer(), wi.pointer(), vl.m, &ldvl, vr.m, &ldvr,
-             work.m, &lwork, &info, 1, 1);
+  knut_dgeev(jobvl, jobvr, n, this->m, lda,
+             wr.pointer(), wi.pointer(), vl.m, ldvl, vr.m, ldvr,
+             work.m, lwork, &info);
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
@@ -109,15 +109,15 @@ void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi, KNMatrix& vl, KNMatrix& v
   }
 
   char jobvl = 'V', jobvr = 'V';
-  int  n = this->r, lda = this->r;
-  int  ldvl = vl.row(), ldvr = vr.row();
+  size_t  n = this->r, lda = this->r;
+  size_t  ldvl = vl.row(), ldvr = vr.row();
   KNMatrix work(this->r, 10);
-  int  lwork = 10 * (this->r);
+  size_t  lwork = 10 * (this->r);
   int  info;
 
-  knut_dgeev(&jobvl, &jobvr, &n, this->m, &lda,
-             wr.pointer(), wi.pointer(), vl.m, &ldvl, vr.m, &ldvr,
-             work.m, &lwork, &info, 1, 1);
+  knut_dgeev(jobvl, jobvr, n, this->m, lda,
+             wr.pointer(), wi.pointer(), vl.m, ldvl, vr.m, ldvr,
+             work.m, lwork, &info);
   if (info != 0) cout << "Error code" << info << '\n';
 }
 
@@ -128,12 +128,12 @@ void KNLuMatrix::luFactorize()
   P_ASSERT_X(this->r == this->c, "KNLuMatrix::Fact wrong dimensions");
 
   char FACT = 'N', trans = 'N', equed = 'N';
-  int n = this->r;
-  int nrhs = 0;
+  size_t n = this->r;
+  size_t nrhs = 0;
 
-  knut_dgesvx(&FACT, &trans, &n, &nrhs, this->m, &n, this->mf, &n,
-              ipiv, &equed, NULL, NULL, NULL, &n, NULL, &n,
-              &rcond, NULL, NULL, work, iwork, &info, 1, 1, 1);
+  knut_dgesvx(FACT, trans, n, nrhs, this->m, n, this->mf, n,
+              ipiv, equed, NULL, NULL, NULL, n, NULL, n,
+              &rcond, NULL, NULL, work, iwork, &info);
 
   // cout<<"work(1): "<<work[0]<<" rcond< "<<rcond<<"\n";
   if (info != 0) cout << "KNLuMatrix::Fact: Error code" << info << '\n';
@@ -172,12 +172,12 @@ void KNLuMatrix::solve(KNVector& x, const KNVector& b, bool trans)
       char FACT = 'F', equed = 'N', TRANS;
       if (trans) TRANS = 'T';
       else TRANS = 'N';
-      int n = this->r;
-      int nrhs = 1;
+      size_t n = this->r;
+      size_t nrhs = 1;
 
-      knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
-                  ipiv, &equed, NULL, NULL, b.v, &n, x.pointer(), &n,
-                  &rcond, &ferr, &berr, work, iwork, &info, 1, 1, 1);
+      knut_dgesvx(FACT, TRANS, n, nrhs, this->m, n, this->mf, n,
+                  ipiv, equed, NULL, NULL, b.v, n, x.pointer(), n,
+                  &rcond, &ferr, &berr, work, iwork, &info);
       if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';
       break;
   }
@@ -197,7 +197,7 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
   switch (this->r)
   {
     case 1:
-      for (int i = 0; i < b.col(); i++)
+      for (size_t i = 0; i < b.col(); i++)
       {
         x(0, i) = b(0, i) / AA(0, 0);
       }
@@ -206,7 +206,7 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
       det = 1.0 / (AA(0, 0) * AA(1, 1) - AA(0, 1) * AA(1, 0));
       if (!trans)
       {
-        for (int i = 0; i < b.col(); i++)
+        for (size_t i = 0; i < b.col(); i++)
         {
           x(0, i) = det * (AA(1, 1) * b(0, i) - AA(0, 1) * b(1, i));
           x(1, i) = det * (-AA(1, 0) * b(0, i) + AA(0, 0) * b(1, i));
@@ -214,7 +214,7 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
       }
       else
       {
-        for (int i = 0; i < b.col(); i++)
+        for (size_t i = 0; i < b.col(); i++)
         {
           x(0, i) = det * (AA(1, 1) * b(0, i) - AA(1, 0) * b(1, i));
           x(1, i) = det * (-AA(0, 1) * b(0, i) + AA(0, 0) * b(1, i));
@@ -228,12 +228,12 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
       if (trans) TRANS = 'T';
       else TRANS = 'N';
       double *fberr = new double[2*b.col()+1];
-      int n = this->r;
-      int nrhs = b.col();
+      size_t n = this->r;
+      size_t nrhs = b.col();
 
-      knut_dgesvx(&FACT, &TRANS, &n, &nrhs, this->m, &n, this->mf, &n,
-                  ipiv, &equed, NULL, NULL, b.m, &n, x.m, &n,
-                  &rcond, fberr, fberr + b.col(), work, iwork, &info, 1, 1, 1);
+      knut_dgesvx(FACT, TRANS, n, nrhs, this->m, n, this->mf, n,
+                  ipiv, equed, NULL, NULL, b.m, n, x.m, n,
+                  &rcond, fberr, fberr + b.col(), work, iwork, &info);
 
       if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';
       delete[] fberr;

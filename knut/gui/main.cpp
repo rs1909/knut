@@ -10,6 +10,8 @@
 #include "config.h"
 #include "mainwindow.h"
 #include <string>
+#include <vector>
+#include <cstdlib>
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -119,7 +121,6 @@ int main(int argc, char *argv[])
 #endif
     qRegisterMetaType<KNException>("KNException");
     qRegisterMetaType<std::string>("std::string");
-    qRegisterMetaType<std::string>("std::auto_ptr<const KNDataFile>");
     mainWin.show();
     return app.exec();
   }

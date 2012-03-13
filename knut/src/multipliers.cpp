@@ -27,21 +27,21 @@
 //	Output :
 //		imin : array of indices of the found multipliers
 //		dmin : the distance from the target (should be small, but not checked)
-static inline int findTrivialIndices(const KNVector& mulRe, const KNVector& mulIm,
-                                     const int lp, const int pd, const int ns,
-                                     int *imin, double* dmin, int pt)
+static inline size_t findTrivialIndices(const KNVector& mulRe, const KNVector& mulIm,
+                                     const size_t lp, const size_t pd, const size_t ns,
+                                     size_t *imin, double* dmin, size_t )
 {
-  for (int i = 0; i < lp+pd+ns; ++i)
+  for (size_t i = 0; i < lp+pd+ns; ++i)
   {
-    imin[i] = -1;
+    imin[i] = mulRe.size();
     dmin[i] = DBL_MAX;
   }
-  for (int j = 0; j < lp+pd+ns; ++j)
+  for (size_t j = 0; j < lp+pd+ns; ++j)
   {
-    for (int i = 0; i < mulRe.size(); ++i)
+    for (size_t i = 0; i < mulRe.size(); ++i)
     {
       bool skip = false;
-      for (int k = 0; k < j; ++k)
+      for (size_t k = 0; k < j; ++k)
       {
         if (imin[k] == i) skip = true;
       }
@@ -60,12 +60,12 @@ static inline int findTrivialIndices(const KNVector& mulRe, const KNVector& mulI
       }
     }
   }
-  int ustab = 0;
-  for (int i = 0; i < mulRe.size(); ++i)
+  size_t ustab = 0;
+  for (size_t i = 0; i < mulRe.size(); ++i)
   {
     const double mabs = (mulRe(i) * mulRe(i) + mulIm(i) * mulIm(i));
     bool ok = true;
-    for (int j = 0; j < lp+pd+ns; ++j) if (i == imin[j]) ok = false;
+    for (size_t j = 0; j < lp+pd+ns; ++j) if (i == imin[j]) ok = false;
     if (ok && (mabs > 1.0))  ++ustab;
   }
 //  std::cerr << pt << ". ";
@@ -90,11 +90,11 @@ static inline int findTrivialIndices(const KNVector& mulRe, const KNVector& mulI
   return ustab;
 }
 
-int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int lp, const int pd, const int ns, int pt)
+size_t unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const size_t lp, const size_t pd, const size_t ns, size_t pt)
 {
 #define NCRIT 6
   P_ERROR_X1(lp + pd + ns < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
-  int imin[NCRIT];
+  size_t imin[NCRIT];
   double dmin[NCRIT];
   return findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin, pt);
 #undef NCRIT
@@ -103,19 +103,19 @@ int unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const int 
 // Re0,Im0 must have more unstable eigenvalues!
 BifType bifurcationType(const KNVector& mr0, const KNVector& mi0, 
                         const KNVector& mr1, const KNVector& mi1,
-                        const int lp, const int pd, const int ns, int pt0, int pt1)
+                        const size_t lp, const size_t pd, const size_t ns, size_t pt0, size_t pt1)
 {
 #define NCRIT 6
-  const int aut = lp+pd+ns;
+  const size_t aut = lp+pd+ns;
   P_ERROR_X1(aut < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
-  int imin0[NCRIT];
-  int imin1[NCRIT];
-  int itmp[NCRIT];
+  size_t imin0[NCRIT];
+  size_t imin1[NCRIT];
+  size_t itmp[NCRIT];
   double dmin0[NCRIT];
   double dmin1[NCRIT];
   double dtmp[NCRIT];
-  const int us0 = findTrivialIndices(mr0, mi0, lp, pd, ns, imin0, dmin0, pt0);
-  const int us1 = findTrivialIndices(mr1, mi1, lp, pd, ns, imin1, dmin1, pt1);
+  const size_t us0 = findTrivialIndices(mr0, mi0, lp, pd, ns, imin0, dmin0, pt0);
+  const size_t us1 = findTrivialIndices(mr1, mi1, lp, pd, ns, imin1, dmin1, pt1);
   P_ERROR_X1(us0 != us1, "No bifurcation!");
   const KNVector* mulRe0;
   const KNVector* mulRe1;
@@ -133,28 +133,28 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     memcpy(dtmp, dmin0, sizeof(dtmp)); memcpy(dmin0, dmin1, sizeof(dtmp)); memcpy(dmin1, dtmp, sizeof(dtmp));
   }
   // the maximum eigenvalue
-  int imaxa = -1;
+  size_t imaxa = mulRe0->size();
   double dmaxa = 0;
   // the closest eigenvalue to "0" in "1"
-  std::vector<int> closest(mulRe0->size());
-  for (int i = 0; i < mulRe0->size(); ++i)
+  std::vector<size_t> closest(mulRe0->size());
+  for (size_t i = 0; i < mulRe0->size(); ++i)
   {
     const double mre0 = (*mulRe0)(i);
     const double mim0 = (*mulIm0)(i);
     bool ok0 = true;
-    for (int j = 0; j < aut; ++j) if (i == imin0[j]) ok0 = false;
+    for (size_t j = 0; j < aut; ++j) if (i == imin0[j]) ok0 = false;
     if (ok0 && mre0*mre0+mim0*mim0 > 1.0)
     {
       if ( dmaxa < mre0*mre0+mim0*mim0) { dmaxa = mre0*mre0+mim0*mim0; imaxa = i; }
       // second loop : find the closest multiplier to mulRe0(i), mulIm0(i)
-      int imina = -1;
+      size_t imina = mulRe1->size();
       double dmina = DBL_MAX;
-      for (int k = 0; k < mulRe1->size(); ++k)
+      for (size_t k = 0; k < mulRe1->size(); ++k)
       {
         const double mre1 = (*mulRe1)(k);
         const double mim1 = (*mulIm1)(k);
         bool ok1 = true;
-        for (int j = 0; j < aut; ++j) if (k == imin1[j]) ok1 = false;
+        for (size_t j = 0; j < aut; ++j) if (k == imin1[j]) ok1 = false;
         if (ok1 && mre1*mre1+mim1*mim1 > 1.0)
         {
           double mabsa = (mre0-mre1)*(mre0-mre1)+(mim0-mim1)*(mim0-mim1);
@@ -162,7 +162,7 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
         }
       }
       closest[i] = imina;
-    } else closest[i] = -1;
+    } else closest[i] = mulRe1->size();
   }
   // find the duplicate in closest
   std::vector<std::list<size_t> > duplicate(mulRe0->size());
@@ -172,7 +172,7 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     duplicate[i] = std::list<size_t>(0);
     for (size_t j=i+1; j<closest.size(); ++j)
     {  
-      if (valid[i]&&(closest[i] >= 0)&&(closest[i] == closest[j]))
+      if (valid[i]&&(closest[i] < mulRe1->size())&&(closest[i] == closest[j]))
       {
         duplicate[i].push_back(j);
         valid[j] = false;
@@ -180,8 +180,8 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     }
     if (!duplicate[i].empty()) duplicate[i].push_back(i);
   }
-  int dnum = 0;
-  int imax[3] = {-1, -1, -1};
+  size_t dnum = 0;
+  size_t imax[3] = {mulRe0->size(), mulRe0->size(), mulRe0->size()};
   double dmax[3] = {0, 0, 0};
   for (size_t i=0; i<duplicate.size(); ++i)
   {
@@ -226,14 +226,14 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
   const double mrea = (*mulRe0)(imaxa);
   const double mima = (*mulIm0)(imaxa);
   // find out where did the eigenvalue come from ?
-  int iminb = -1;
+  size_t iminb = mulRe1->size();
   double dminb = DBL_MAX;
-  for (int k = 0; k < mulRe1->size(); ++k)
+  for (size_t k = 0; k < mulRe1->size(); ++k)
   {
     const double mre1 = (*mulRe1)(k);
     const double mim1 = (*mulIm1)(k);
     bool ok1 = true;
-    for (int j = 0; j < aut; ++j) if (k == imin1[j]) ok1 = false;
+    for (size_t j = 0; j < aut; ++j) if (k == imin1[j]) ok1 = false;
     if (ok1 && mre1*mre1+mim1*mim1 <= 1.0)
     {
       double mabsb = (mrea-mre1)*(mrea-mre1)+(mima-mim1)*(mima-mim1);

@@ -24,7 +24,7 @@ using namespace std;
 void KNSparseMatrix::check()
 {
   bool ok = true;
-  for (int j = 0; j < n && ok; j++)
+  for (size_t j = 0; j < n && ok; j++)
   {
     for (int k = Ap[j] + 1; k < Ap[j+1] && ok; k++)
     {
@@ -35,7 +35,7 @@ void KNSparseMatrix::check()
       }
     }
   }
-  for (int j = 0; j < n && ok; j++)
+  for (size_t j = 0; j < n && ok; j++)
   {
     for (int k = Ap[j]; k < Ap[j+1] && ok; k++)
     {
@@ -57,7 +57,7 @@ void KNSparseMatrix::swap()
   int *Ri = new int[size];
   double *Rx = new double[size];
 
-  umfpack_di_transpose(n, m, Ap, Ai, Ax, 0, 0, Rp, Ri, Rx);
+  umfpack_di_transpose((int)n, (int)m, Ap, Ai, Ax, 0, 0, Rp, Ri, Rx);
 
   delete []Ap;
   delete []Ai;
@@ -69,7 +69,7 @@ void KNSparseMatrix::swap()
 
   if (format == 'C') format = 'R';
   else format = 'C';
-  int nt = n;
+  size_t nt = n;
   n = m;
   m = nt;
 }
@@ -79,7 +79,7 @@ void KNSparseMatrix::sparsityPlot(GnuPlot& pl)
   pl.SetPointSize(0.8);
   pl.Plot(0, "with points");
 
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
     for (int j = Ap[i]; j < Ap[i+1]; j++)
     {
@@ -91,7 +91,7 @@ void KNSparseMatrix::sparsityPlot(GnuPlot& pl)
 
 void KNSparseMatrix::print()
 {
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
     for (int j = Ap[i]; j < Ap[i+1]; j++)
     {
@@ -108,7 +108,7 @@ void KNSparseMatrix::print()
 //                                                                           //
 // **************************************************************************//
 
-void KNLuSparseMatrix::init(int nn_)
+void KNLuSparseMatrix::init(size_t nn_)
 {
   fact = false;
   Numeric = 0;
@@ -121,12 +121,12 @@ void KNLuSparseMatrix::init(int nn_)
 //  Control[UMFPACK_SCALE] = UMFPACK_SCALE_NONE;
 }
 
-KNLuSparseMatrix::KNLuSparseMatrix(char F, int nn_, int mm_, int nz) : KNSparseMatrix(F, nn_, mm_, nz)
+KNLuSparseMatrix::KNLuSparseMatrix(char F, size_t nn_, size_t mm_, size_t nz) : KNSparseMatrix(F, nn_, mm_, nz)
 {
   init(nn_);
 }
 
-KNLuSparseMatrix::KNLuSparseMatrix(char F, int nn_, int nz) : KNSparseMatrix(F, nn_, nn_, nz)
+KNLuSparseMatrix::KNLuSparseMatrix(char F, size_t nn_, size_t nz) : KNSparseMatrix(F, nn_, nn_, nz)
 {
   init(nn_);
 }
@@ -224,7 +224,7 @@ void KNLuSparseMatrix::luFactorize()
     void  *Symbolic = 0;
     P_ASSERT_X(Numeric == 0, "This is a bug. The sparse matrix was already factorized.");
 
-    int   status = umfpack_di_symbolic(n, n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
+    int   status = umfpack_di_symbolic((int)n, (int)n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
     P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_symbolic()': (", status, ") ", sp_umf_error(status));
     status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
     fact = true;
@@ -300,7 +300,7 @@ void KNLuSparseMatrix::solve(KNMatrix& x, const KNMatrix &b, bool trans)
     P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
   }
 
-  for (int i = 0; i < b.c; i++)
+  for (size_t i = 0; i < b.c; i++)
   {
     status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(0, i), b.pointer(0, i), Numeric, Control, 0, Wi, W);
     P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
@@ -308,12 +308,12 @@ void KNLuSparseMatrix::solve(KNMatrix& x, const KNMatrix &b, bool trans)
 }
 
 // for sorting the eigenvalues
-struct eigvalcomp : public std::binary_function<int, int, bool>
+struct eigvalcomp : public std::binary_function<size_t, size_t, bool>
 {
   const double* re;
   const double* im;
   eigvalcomp(double *re_, double *im_) : re(re_), im(im_) {}
-  bool operator()(int i, int j)
+  bool operator()(size_t i, size_t j)
   {
     return re[i]*re[i] + im[i]*im[i] < re[j]*re[j] + im[j]*im[j];
   }
@@ -325,14 +325,14 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
 
   int     IDO      = 0;
   char    BMAT     = 'I';
-  int     N        = AI.size() * A0.col();
+  size_t  N        = AI.size() * A0.col();
   char    WHICH[]  = {'L', 'M'};
-  int     NEV      = wr.size() - 1;
+  size_t  NEV      = wr.size() - 1;
   double  TOL      = knut_dlamch("EPS", 3);
 //  RESID is defined in the class
-  int     NCV      = 2 * NEV + 1;
+  size_t  NCV      = 2 * NEV + 1;
   double* V        = new double[(N+1)*(NCV+1)];
-  int     LDV      = N;
+  size_t  LDV      = N;
   int IPARAM[] = {1,     // ISHIFT
                   0,     // n.a.ff
                   300,   // MXITER
@@ -347,7 +347,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
                   0 };   // padding
   int IPNTR[14];
   double* WORKD     = new double[4*N+1]; //3*N
-  int     LWORKL    = 3 * NCV * NCV + 6 * NCV;
+  size_t  LWORKL    = 3 * NCV * NCV + 6 * NCV;
   double* WORKL     = new double[LWORKL+1];
   int INFO;
   // whether we need to create a new RESID or we can use it from a previous run
@@ -360,19 +360,19 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   // int it=0;
   do
   {
-    knut_dnaupd(&IDO, &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
-                IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 2);
+    knut_dnaupd(&IDO, BMAT, N, WHICH[0], WHICH[1], NEV, &TOL, RESID, NCV, V, LDV,
+                IPARAM, IPNTR, WORKD, WORKL, LWORKL, &INFO);
     if ((IDO == 1) || (IDO == -1))
     {
       double* in = &(WORKD[IPNTR[0] - 1]);
       double* out = &(WORKD[IPNTR[1] - 1]);
       // these are the unit operators above the diagonal
-      for (int i = 0; i < AI.size() - 1; i++)
+      for (size_t i = 0; i < AI.size() - 1; i++)
       {
-        for (int j = 0; j < A0.col(); j++) out[j + i*A0.col()] = in[j + (i+1)*A0.col()];
+        for (size_t j = 0; j < A0.col(); j++) out[j + i*A0.col()] = in[j + (i+1)*A0.col()];
       }
       // the last row: multiplication and solution
-      for (int i = 0; i < AI.size(); i++)
+      for (size_t i = 0; i < AI.size(); i++)
       {
         if (i == 0)
         {
@@ -383,7 +383,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
           if (AI(AI.size() - 1 - i).nonzeros() != 0)
           {
             AI(AI.size() - 1 - i).timesX(tvec2, in + i*A0.col(), 1.0, false);
-            for (int j = 0; j < A0.col(); j++) tvec[j] += tvec2[j];
+            for (size_t j = 0; j < A0.col(); j++) tvec[j] += tvec2[j];
           }
         }
       }
@@ -395,14 +395,14 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   delete[] tvec2;
   delete[] tvec;
 
-  const int NCONV = NEV; // IPARAM[4];
+  const size_t NCONV = NEV; // IPARAM[4];
   int      RVEC     = 0;
   char     HOWMNY   = 'A';
   bool*    SELECT   = new bool[NCV+1];
   double*  DR       = new double[NCONV+2];
   double*  DI       = new double[NCONV+2];
   double*  Z        = new double[N*(NCONV+2)];
-  int      LDZ      = N;
+  size_t   LDZ      = N;
   double   SIGMAR   = 0.0;
   double   SIGMAI   = 0.0;
   double*  WORKEV   = new double[4*NCV]; // 3*NCV
@@ -410,10 +410,10 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
 //   std::cout<<"INFO1:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
 
-  knut_dneupd(&RVEC, &HOWMNY, SELECT, DR, DI, Z, &LDZ,
+  knut_dneupd(false, HOWMNY, SELECT, DR, DI, Z, LDZ,
     &SIGMAR, &SIGMAI, WORKEV,
-    &BMAT, &N, WHICH, &NEV, &TOL, RESID, &NCV, V, &LDV,
-    IPARAM, IPNTR, WORKD, WORKL, &LWORKL, &INFO, 1, 1, 1);
+    BMAT, N, WHICH[0], WHICH[1], NEV, &TOL, RESID, NCV, V, LDV,
+    IPARAM, IPNTR, WORKD, WORKL, LWORKL, &INFO);
 
 //   std::cout<<"INFO2:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
@@ -421,12 +421,13 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   wr.clear();
   wi.clear();
   // sorting eigenvalues;
-  int* sortindex = new int[IPARAM[4]+1];
-  for (int i = 0; i < IPARAM[4]; i++) sortindex[i] = i;
+  const size_t evals = static_cast<size_t>(IPARAM[4]);
+  size_t* sortindex = new size_t[evals];
+  for (size_t i = 0; i < evals; i++) sortindex[i] = i;
   eigvalcomp aa(DR, DI);
-  std::sort(sortindex, sortindex + IPARAM[4], aa);
-  const int eigstart = wr.size() - IPARAM[4];
-  for (int i = 0; i < IPARAM[4]; i++)
+  std::sort(sortindex, sortindex + evals, aa);
+  const size_t eigstart = wr.size() - evals;
+  for (size_t i = 0; i < evals; i++)
   {
     wr(eigstart+i) = DR[sortindex[i]];
     wi(eigstart+i) = DI[sortindex[i]];

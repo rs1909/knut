@@ -37,9 +37,9 @@ class KNDataFile
 
     // opens the file, determines its size, maps the memory from file, sets up variables
     // Constructor for periodic orbits
-    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint_, int ndeg_, int nmul_);
+    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, size_t steps_, size_t ndim_, size_t npar_, size_t nint_, size_t ndeg_, size_t nmul_);
     // Constructor for quasi-periodic orbits
-    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, int steps_, int ndim_, int npar_, int nint1_, int nint2_, int ndeg1_, int ndeg2_);
+    KNDataFile(const std::string& fileName, const std::vector<std::string>& parNames, size_t steps_, size_t ndim_, size_t npar_, size_t nint1_, size_t nint2_, size_t ndeg1_, size_t ndeg2_);
     // Constructor for opening an existing file
     KNDataFile(const std::string& fileName);
     // unmaps the memory, truncates the file if necessary, closes the file
@@ -51,130 +51,130 @@ class KNDataFile
     const std::string& getFileName() const { return matFileName; }
     // resets the tables (no locking)
     void   initHeaders();
-    void   setPar(int n, const KNVector& par);
+    void   setPar(size_t n, const KNVector& par);
     void   setParNames(const std::vector<std::string>& parNames);
     void   getParNames(std::vector<std::string>& parNames) const;
-    void   setMul(int n, const KNVector& real, const KNVector& imag);
-    void   setElem(int n, const KNVector& el);
-    void   setMesh(int n, const KNVector& mesh);
-    void   setProfile(int n, const KNVector& profile);
-    void   setMesh1(int n, int j, double d)
+    void   setMul(size_t n, const KNVector& real, const KNVector& imag);
+    void   setElem(size_t n, const KNVector& el);
+    void   setMesh(size_t n, const KNVector& mesh);
+    void   setProfile(size_t n, const KNVector& profile);
+    void   setMesh1(size_t n, size_t j, double d)
     {
       elem(mesh1_offset, j, n) = d;
     }
-    void   setMesh2(int n, int j, double d)
+    void   setMesh2(size_t n, size_t j, double d)
     {
       elem(mesh2_offset, j, n) = d;
     }
-    void   getBlanket(int n, KNVector& blanket);
-    void   setBlanket(int n, const KNVector& blanket);
-    void   setMagic(int n, int32_t magic)
+    void   getBlanket(size_t n, KNVector& blanket);
+    void   setBlanket(size_t n, const KNVector& blanket);
+    void   setMagic(size_t n, int32_t magic)
     {
       elem(magic_offset, 0, n) = static_cast<double>(magic);
     }
-    int32_t getMagic(int n) const
+    int32_t getMagic(size_t n) const
     {
       return static_cast<int32_t>(elem(magic_offset, 0, n));
     }
-    void   getPar(int n, KNVector& par) const;
-    double getPar(int n, int j) const
+    void   getPar(size_t n, KNVector& par) const;
+    double getPar(size_t n, size_t j) const
     {
       return elem(par_offset, j, n);
     }
-    void   getMul(int n, KNVector& real, KNVector& imag) const;
-    double getMulRe(int n, int j) const
+    void   getMul(size_t n, KNVector& real, KNVector& imag) const;
+    double getMulRe(size_t n, size_t j) const
     {
       return elem(mul_offset, j, n);
     }
-    double getMulIm(int n, int j) const
+    double getMulIm(size_t n, size_t j) const
     {
       return elem_im(mul_offset, j, n);
     }
-    void getMulReRef(int n, KNVector& el)
+    void getMulReRef(size_t n, KNVector& el)
     {
       el.init(&elem(mul_offset, 0, n), nmul);
     }
-    void getMulImRef(int n, KNVector& el)
+    void getMulImRef(size_t n, KNVector& el)
     {
       el.init(&elem_im(mul_offset, 0, n), nmul);
     }
     // j == 0 : LP, j == 1 : PD, j == 2, NS
-    int    getNTrivMul(const int j) const
+    size_t getNTrivMul(const size_t j) const
     {
-      return static_cast<int>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j]);
+      return static_cast<size_t>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j]);
     }
-    void   setNTrivMul(const int j, int i)
+    void   setNTrivMul(const size_t j, size_t i)
     {
       ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j] = i;
     }
-    void   getElem(int n, KNVector& el) const;
-    double getElem(int n, int j) const
+    void   getElem(size_t n, KNVector& el) const;
+    double getElem(size_t n, size_t j) const
     {
       return elem(elem_offset, j, n);
     }
-    void   getElemRef(int n, KNVector& el)
+    void   getElemRef(size_t n, KNVector& el)
     {
       el.init(&elem(elem_offset, 0, n), ndeg + 1);
     }
-    void   getMesh(int n, KNVector& mesh) const;
-    double getMesh(int n, int j) const
+    void   getMesh(size_t n, KNVector& mesh) const;
+    double getMesh(size_t n, size_t j) const
     {
       return elem(mesh_offset, j, n);
     }
-    void   getMeshRef(int n, KNVector& mesh)
+    void   getMeshRef(size_t n, KNVector& mesh)
     {
       mesh.init(&elem(mesh_offset, 0, n), nint + 1);
     }
-    void   getProfile(int n, KNVector& profile) const;
-    double getProfile(int n, int d, int j) const
+    void   getProfile(size_t n, KNVector& profile) const;
+    double getProfile(size_t n, size_t d, size_t j) const
     {
       return elem(prof_offset, d + ndim*j, n);
     }
-    void   getProfileRef(int n, KNVector& profile)
+    void   getProfileRef(size_t n, KNVector& profile)
     {
       profile.init(&elem(prof_offset, 0, n), ndim*(ndeg*nint + 1));
     }
 
-    int  getNDim() const
+    size_t  getNDim() const
     {
       return ndim;
     }
-    int  getNInt() const
+    size_t  getNInt() const
     {
       return nint;
     }
-    int  getNDeg() const
+    size_t  getNDeg() const
     {
       return ndeg;
     }
-    int  getNPar() const
+    size_t  getNPar() const
     {
       return npar;
     }
-    int  getNMul() const
+    size_t  getNMul() const
     {
       return nmul;
     }
-    int  getMeshLength() const
+    size_t  getMeshLength() const
     {
       return nint + 1;
     }
-    int  getElemLength() const
+    size_t  getElemLength() const
     {
       return ndeg + 1;
     }
-    int  getNCols() const
+    size_t  getNCols() const
     {
       return ncols;
     }
-    int  getNPoints() const
+    size_t  getNPoints() const
     {
-      return static_cast<int>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
+      return static_cast<size_t>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
     }
-    int     getUnstableMultipliers(int n) const;
-    int     getNextBifurcation(int n, bool* stab = 0) const;
-    BifType getBifurcationType(int n) const;
-    int  findType(int32_t type, int n) const; // to find the n-th point of type; returns index
+    size_t  getUnstableMultipliers(size_t n) const;
+    size_t  getNextBifurcation(size_t n, bool* stab = 0) const;
+    BifType getBifurcationType(size_t n) const;
+    size_t  findType(int32_t type, size_t n) const; // to find the n-th point of type; returns index
     bool isTorus() const
     {
       return torus;
@@ -219,45 +219,45 @@ class KNDataFile
         return (size_t)ncols;
       }
     };
-    static inline size_t createMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols, int32_t type = 0);
-    static inline size_t createComplexMatrixHeader(KNDataFile::header* hd, const char* name, int32_t rows, int32_t cols, int32_t type = 0);
+    static inline size_t createMatrixHeader(KNDataFile::header* hd, const char* name, size_t rows, size_t cols, int32_t type = 0);
+    static inline size_t createComplexMatrixHeader(KNDataFile::header* hd, const char* name, size_t rows, size_t cols, int32_t type = 0);
     static inline void writeMatrixHeader(void* address, size_t offset, KNDataFile::header* hd, const char* name);
 
-    off_t findMatrix(const char* name, KNDataFile::header* found, bool test=false, int32_t r=-1, int32_t c=-1, int32_t imag=-1, const char* fileName="", int32_t type=0);
+    size_t findMatrix(const char* name, KNDataFile::header* found, bool test=false, size_t r=0, size_t c=0, uint32_t imag=0, const char* fileName="", int32_t type=0);
     void openReadOnly(const std::string& fileName);
 
-    void resizeMatrix(const char* name, int newcol, int32_t type=0);
+    void resizeMatrix(const char* name, size_t newcol, uint32_t imag, int32_t type=0);
     void condenseData();
 
-    struct header *getHeader(ptrdiff_t offset)
+    struct header *getHeader(size_t offset)
     {
       return (struct header*)((char*)address + offset);
     }
-    const struct header *getHeader(ptrdiff_t offset) const
+    const struct header *getHeader(size_t offset) const
       {
         return (struct header*)((char*)address + offset);
       }
-    double& elem(ptrdiff_t offset, size_t row, size_t col)
+    double& elem(size_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    double elem(ptrdiff_t offset, size_t row, size_t col) const
+    double elem(size_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
-    double& elem_im(ptrdiff_t offset, size_t row, size_t col)
+    double& elem_im(size_t offset, size_t row, size_t col)
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    const double& elem_im(ptrdiff_t offset, size_t row, size_t col) const
+    const double& elem_im(size_t offset, size_t row, size_t col) const
     {
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
-    uint32_t getRows(ptrdiff_t offset) const
+    uint32_t getRows(size_t offset) const
     {
       return getHeader(offset)->mrows;
     }
-    uint32_t getCols(ptrdiff_t offset) const
+    uint32_t getCols(size_t offset) const
     {
       return getHeader(offset)->ncols;
     }
@@ -273,71 +273,71 @@ class KNDataFile
     size_t filesize;
     void  *address;
     size_t size;
-    int    ncols;
+    size_t ncols;
     const bool wperm;
-    int    ndim;
-    int    npar;
-    int    nint;
-    int    ndeg;
-    int    nmul;
+    size_t ndim;
+    size_t npar;
+    size_t nint;
+    size_t ndeg;
+    size_t nmul;
 
-    int    nint1;
-    int    nint2;
-    int    ndeg1;
-    int    ndeg2;
+    size_t nint1;
+    size_t nint2;
+    size_t ndeg1;
+    size_t ndeg2;
 
     bool   torus;
 
-    ptrdiff_t  npoints_offset;  //T
+    size_t npoints_offset;  //T
     header npoints_header;
 
-    ptrdiff_t  par_offset;      //T
+    size_t par_offset;      //T
     header par_header;
     
-    ptrdiff_t  parnames_offset;
+    size_t parnames_offset;
     header parnames_header;
 
-    ptrdiff_t  mul_offset;
+    size_t mul_offset;
     header mul_header;
 
-    ptrdiff_t  ntrivmul_offset;
+    size_t ntrivmul_offset;
     header ntrivmul_header;
     
-    ptrdiff_t  magic_offset;
+    size_t magic_offset;
     header magic_header;
 
-    ptrdiff_t  ndim_offset;     //T
+    size_t ndim_offset;     //T
     header ndim_header;
 
-    ptrdiff_t  elem_offset;
+    size_t elem_offset;
     header elem_header;
 
-    ptrdiff_t  mesh_offset;
+    size_t mesh_offset;
     header mesh_header;
 
-    ptrdiff_t  prof_offset;
+    size_t prof_offset;
     header prof_header;
 
     // for the torus
-    ptrdiff_t  nint1_offset;     //T
+    size_t nint1_offset;     //T
     header nint1_header;
 
-    ptrdiff_t  nint2_offset;     //T
+    size_t nint2_offset;     //T
     header nint2_header;
 
-    ptrdiff_t  ndeg1_offset;     //T
+    size_t ndeg1_offset;     //T
     header ndeg1_header;
 
-    ptrdiff_t  ndeg2_offset;     //T
+    size_t ndeg2_offset;     //T
     header ndeg2_header;
 
-    ptrdiff_t  mesh1_offset;     //T
+    size_t mesh1_offset;     //T
     header mesh1_header;
 
-    ptrdiff_t  mesh2_offset;     //T
+    size_t mesh2_offset;     //T
     header mesh2_header;
 
-    ptrdiff_t  blanket_offset;   //T
+    size_t blanket_offset;   //T
     header blanket_header;
 };
 

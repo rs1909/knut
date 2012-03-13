@@ -264,7 +264,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 // Opens the three pipes for interacting with a program.
 // arglist is the argument list starting with the program name.
 // the int* - s are the file numbers for the three pipes.
-int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
+pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
 {
   if ( (input==0)&&(output==0)&&(error==0) ) return -1;
   char *argv[arglist.size()+1];
@@ -295,26 +295,29 @@ int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* erro
   pid_t pid = fork ();
   if (pid == (pid_t) 0)
   {
+//    std::cout << "Closing ends\n";
     /* This is the child process.  Close our copy of the read (write) end of
        the file descriptor.  */
     if (input)  if (close (fds_input[1]) == -1) P_MESSAGE2("close: ", strerror(errno));
     if (output) if (close (fds_output[0]) == -1) P_MESSAGE2("close: ", strerror(errno));
     if (error)  if (close (fds_error[0]) == -1) P_MESSAGE2("close ", strerror(errno));
+//    std::cout << "Closed ends\n";
     /* Connect the read(write) end of the pipe to standard input.  */
     if (input)  if (dup2 (fds_input[0], STDIN_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
+//    std::cout << "Dup input\n";
     if (output) if (dup2 (fds_output[1], STDOUT_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
+//    std::cout << "Dup output\n";
     if (error)  if (dup2 (fds_error[1], STDERR_FILENO) == -1) P_MESSAGE2("dup2: ", strerror(errno));
     /* Replace the child process with the "cat" program.  */
+//    std::cout << "Starting process\n"; std::cout.flush();
     int st = execvp (argv[0], argv);
     // This wouldn't return unless there's a problem
     if (st == -1) P_MESSAGE4("Error executing command ", argv[0], ": ", strerror(errno));
+//    std::cout << "Somehow returned\n"; std::cout.flush();
   }
   else
   {
     /* Close our copy of the write (read) end of the file descriptor.  */
-    if (input)  
-    if (output) 
-    if (error)  
     if (input)
     {
       if (close (fdc_input[0]) == -1) P_MESSAGE2("close ", strerror(errno));
@@ -339,6 +342,7 @@ int pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* erro
       fcntl(fdc_error[0], F_SETFL, eflags);
       *error = fdc_error[0];
     }
+//    std::cout << "Somehow returned - other!!\n"; std::cout.flush();
   }
   for (size_t k=0; k<arglist.size(); ++k) { delete[] argv[k]; argv[k] = 0; }
   return pid;
@@ -356,12 +360,12 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   //   std::cout << cmdline << std::endl;
   // running the command
   int input, output, error;
-  int pid = pipeOpen(arglist, &input, &output, &error);
+  pid_t pid = pipeOpen(arglist, &input, &output, &error);
   // we need to write and read until all of them are finished
   bool outfin = false, infin = false, errfin = false;
   // input
   const char* cxxbuf = cxxstring.c_str();
-  ssize_t cxxlen = cxxstring.size(), wbytes = 0;
+  size_t cxxlen = cxxstring.size(), wbytes = 0;
   // output and err
   pollfd fds[3] = {{input, POLLOUT, 0},{output, POLLIN, 0},{error, POLLIN, 0}};
   const size_t bufsize = 2048;
@@ -373,22 +377,47 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 //    std::cerr << "Pipes ready: " << pact 
 //      << " EV0 " <<  fds[0].revents 
 //      << " EV1 " <<  fds[1].revents
-//      << " EV2 " <<  fds[2].revents << " " << POLLOUT << " " << POLLIN <<"\n";
+//      << " EV2 " <<  fds[2].revents 
+//      << " POLLOUT=" << POLLOUT << " POLLIN=" << POLLIN << " POLLPRI=" << POLLPRI 
+//      << " POLLHUP=" << POLLHUP << " POLLERR=" << POLLERR 
+//      << " POLLWRNORM=" << POLLWRNORM << " POLLWRBAND=" << POLLWRBAND 
+//      << " POLLRDNORM=" << POLLRDNORM << " POLLRDBAND=" << POLLRDBAND << " POLLNVAL=" << POLLNVAL << "\n";
     P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
-    if (!infin && (fds[0].revents != 0))
+    P_ERROR_X2((fds[0].revents & (POLLNVAL|POLLERR)) == 0, "Input pipe error -> ", err_str);
+    P_ERROR_X2((fds[1].revents & (POLLNVAL|POLLERR)) == 0, "Output pipe error -> ", err_str);
+    P_ERROR_X2((fds[2].revents & (POLLNVAL|POLLERR)) == 0, "Error pipe error -> ", err_str);
+    if ((fds[0].revents & POLLHUP) != 0)
     {
-      ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
-//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
-      if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
-      else wbytes += obytes;
-    if (wbytes == cxxlen) 
-    { 
       infin = true;
       fds[0].events = 0;
       if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
     }
+    if ((fds[1].revents & POLLHUP) != 0)
+    {
+      outfin = true;
+      fds[1].events = 0;
+      if (close (output) == -1) P_MESSAGE2("Error closing compiler output pipe: ", strerror(errno));
     }
-    if (!outfin && (fds[1].revents != 0))
+    if ((fds[2].revents & POLLHUP) != 0)
+    {
+      errfin = true;
+      fds[2].events = 0;
+      if (close (error) == -1) P_MESSAGE2("Error closing compiler error pipe: ", strerror(errno));
+    }
+    if (!infin && ((fds[0].revents & POLLOUT) != 0))
+    {
+      ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
+//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
+      if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
+      else wbytes += static_cast<size_t>(obytes);
+      if (wbytes == cxxlen) 
+      { 
+        infin = true;
+        fds[0].events = 0;
+        if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
+      }
+    }
+    if (!outfin && ((fds[1].revents & POLLIN) != 0))
     {
       ssize_t bytes = read(output, out_buf, bufsize-1);
       ++rct;
@@ -406,7 +435,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
       }
       else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
     }
-    if (!errfin && (fds[2].revents != 0))
+    if (!errfin && ((fds[2].revents & POLLIN) != 0))
     {
       ssize_t bytes = read(error, out_buf, bufsize-1);
       ++ect;
@@ -447,32 +476,11 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 
 #endif
 
-KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int usederi)
+KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, size_t usederi)
 #ifdef GINAC_FOUND
  : useVectorField(false)
 #endif
 {
-// These will be assigned later
-//  handle = 0;
-//  v_ndim = 0;
-//  v_npar = 0;
-//  v_ntau = 0;
-//  v_nderi = 0;
-//  v_nevent = 0;
-//  v_tau = 0; 
-//  v_dtau = 0; 
-//  v_mass = 0; 
-//  v_rhs = 0;
-//  v_deri = 0;
-//  v_p_tau = 0; 
-//  v_p_dtau = 0; 
-//  v_p_rhs = 0; 
-//  v_p_deri = 0; 
-//  v_p_event = 0;
-//  v_stpar = 0; 
-//  v_stsol = 0; 
-//  v_parnames = 0;
-
   std::string sname(sysName);
   if (sysName.find('/') == std::string::npos) sname = "./" + sysName;
 #ifdef WIN32
@@ -490,7 +498,7 @@ KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int u
     CFStringRef cfPath = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
     if(cfPath) 
     {
-      size_t ssize = static_cast<size_t>(CFStringGetLength(cfPath)+1);
+      CFIndex ssize = CFStringGetLength(cfPath)+1;
       char *buf = new char[ssize];
       CFStringGetCString(cfPath, buf, ssize, kCFStringEncodingMacRoman);
       executableFile = buf;
@@ -536,8 +544,10 @@ KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int u
   makeSystem(objname, sname, sysType, executableDir);
 #endif
   // filling up the function pointers
+#ifdef GINAC_FOUND
   if (!useVectorField)
   {
+#endif
     char * c_objname = new char[objname.size()+1];
     strncpy (c_objname, objname.c_str(), objname.size()+1);
     handle = tdlopen(c_objname);
@@ -623,6 +633,7 @@ KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int u
     if ((error = tdlerror()) == 0) v_p_stsol = 0;
     if ((v_stsol == 0) && (v_p_stsol == 0)) P_MESSAGE3("Cannot find either sys_stsol() or sys_p_stsol(): ", error, ".");
     nderi = std::min ( (*v_nderi)(), usederi );  
+#ifdef GINAC_FOUND
   } else
   {
     handle = 0;
@@ -646,7 +657,7 @@ KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, int u
     v_parnames = 0;
     nderi = 2;
   }
-
+#endif
   f.init(this->ndim()), f_eps.init(this->ndim());
   f2.init(ndim()), f_eps2.init(ndim());
   xx_eps.init(ndim(), 2 * ntau() + 1);
@@ -666,9 +677,9 @@ KNSystem::~KNSystem()
 
 static inline void timesX(KNVector & res, const KNMatrix& M, const KNVector& v)
 {
-  for (int i = 0; i < M.row(); i++)
+  for (size_t i = 0; i < M.row(); i++)
   {
-    for (int j = 0; j < M.col(); j++)
+    for (size_t j = 0; j < M.col(); j++)
     {
       res(i) = 0.0;
       res(i) += M(i, j) * v(j);
@@ -707,12 +718,14 @@ void KNSystem::generateSystem(const std::string& vffile, const std::string& shob
   if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
   vf.PrintKnut(cxxcode, options);
   try {
+  	std::cout << "Trying compiler ?? is ?? working??\n";
     runCompiler(cxxcode.str(), shobj, executableDir);
   }
   catch (KNException& ex)
   {
+  	std::cout << "Compiler is not working! " << ex.str() << "\n";
+  	std::cout.flush();
     workingCompiler = false;
-    throw (ex);
   }
 #endif
 }
@@ -757,12 +770,14 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     if (ext == "C") type = SYS_TYPE_CXX;
     if (ext == "vf") type = SYS_TYPE_VFC;
   }
+  if ((type == SYS_TYPE_VFC)&&(!workingCompiler)) type = SYS_TYPE_VF0;
   if (type == SYS_TYPE_SO)
   {
     int res_so = stat(sysName.c_str(), &sbuf_so);
     if (res_so != 0)
     P_ERROR_X3 (res_so == 0, "Shared Object system definition '", sysName, "' is missing.");
     soname = sysName;
+    return use_vf;
   } else if (type == SYS_TYPE_CXX)
   {
     cxxfile = sysName;
@@ -774,6 +789,7 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     else compile_cxx = to_compile(&sbuf_so, &sbuf_cxx);
     if (compile_cxx && workingCompiler) compileSystem(cxxfile, sofile, executableDir);
     soname = sofile;
+    return use_vf;
   } else if (type == SYS_TYPE_VFC)
   {
     vffile = sysName;
@@ -783,27 +799,32 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     P_ERROR_X3 (res_vf == 0, "Vector field system definition '", sysName, "' is missing.");
     if (res_so != 0) compile_vf = true;
     else compile_vf = to_compile(&sbuf_so, &sbuf_vf);
-    if (compile_vf && workingCompiler) generateSystem(vffile, sofile, executableDir);
-    soname = sofile;
-  } else if (type == SYS_TYPE_VF0)
+    if (compile_vf)
+    {
+      generateSystem(vffile, sofile, executableDir);
+      soname = sofile;
+      if (workingCompiler) return use_vf;
+      type = SYS_TYPE_VF0;
+    }
+  } 
+  if (type == SYS_TYPE_VF0)
   {
     vffile = sysName;
     int res_vf = stat(vffile.c_str(), &sbuf_cxx);
     P_ERROR_X3 (res_vf == 0, "Vector field definition '", sysName, "' is missing.");
     soname = "";
     use_vf = true;
-  } else
-  {
-   P_MESSAGE3("Invalid system definition type '", type, "'.");
+    return use_vf;
   }
+  P_MESSAGE3("Invalid system definition type '", type, "'.");
 //   delete sbuf_vf; sbuf_vf = 0;
 //   delete sbuf_cxx; sbuf_cxx = 0; 
 //   delete sbuf_so; sbuf_so = 0;
   return use_vf;
 }
 
-void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, int sel, 
-                          int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& p_vv )
+void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, size_t sel, 
+                          size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& p_vv )
 {
   const double abs_eps_x1 = 1e-6;
   const double rel_eps_x1 = 1e-6;
@@ -812,8 +833,8 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
   const double abs_eps_x2 = 1e-6;
   const double rel_eps_x2 = 1e-6;
 
-  const int n = ndim();
-  const int m = 2 * ntau() + 1;
+  const size_t n = ndim();
+  const size_t m = 2 * ntau() + 1;
 
   p_resize(time.size());
   // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
@@ -821,19 +842,19 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
   {
 //     std::cout<<"@";
     p_rhs(p_fx, time, p_xx, par, sel);
-    for (int j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
     {
-      for (int p = 0; p < n; p++) 
-          for (int idx=0; idx < time.size(); ++idx) p_xx_eps(p,vx[0],idx) = p_xx(p,vx[0],idx);
-      for (int idx=0; idx < time.size(); ++idx)
+      for (size_t p = 0; p < n; p++) 
+          for (size_t idx=0; idx < time.size(); ++idx) p_xx_eps(p,vx[0],idx) = p_xx(p,vx[0],idx);
+      for (size_t idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x1 + rel_eps_x1 * fabs(p_xx(j, vx[0],idx));
         p_xx_eps(j, vx[0],idx) = p_xx(j, vx[0],idx) + eps;
       }
       p_rhs(p_fx_eps, time, p_xx_eps, par, sel);
-      for (int p = 0; p < n; p++)
+      for (size_t p = 0; p < n; p++)
       {
-        for (int idx=0; idx < time.size(); ++idx)
+        for (size_t idx=0; idx < time.size(); ++idx)
           out(p, j, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / (p_xx_eps(j, vx[0],idx) - p_xx(j, vx[0],idx));
       }
     }
@@ -847,35 +868,35 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
     const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
     par_eps(vp[0]) = par(vp[0]) + eps;
     p_rhs(p_fx_eps, time, p_xx, par_eps, sel);
-    for (int p = 0; p < n; p++)
+    for (size_t p = 0; p < n; p++)
     {
-      for (int idx=0; idx < time.size(); ++idx) out(p, 0, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / eps;
+      for (size_t idx=0; idx < time.size(); ++idx) out(p, 0, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / eps;
     }
   }
   // second derivatives w.r.t. x
   if ((nx == 2) && (np == 0))
   {
 //     std::cout<<"<?";
-    for (int j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
     {
       p_deri(p2_dfx, time, p_xx, par, sel, 1, &vx[0], 0, vp, p_vv);
-      for (int p = 0; p < n; p++) 
-        for (int q = 0; q < m; q++) 
-          for (int idx=0; idx < time.size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
-      for (int idx=0; idx < time.size(); ++idx)
+      for (size_t p = 0; p < n; p++) 
+        for (size_t q = 0; q < m; q++) 
+          for (size_t idx=0; idx < time.size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
+      for (size_t idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x2 + rel_eps_x2 * fabs(p_xx(j, vx[1], idx));
         p2_xx_eps(j, vx[1], idx) += eps;
       }
       p_deri(p2_dfx_eps, time, p2_xx_eps, par, sel, 1, &vx[0], 0, vp, p_vv);
-      for (int p = 0; p < n; p++)
+      for (size_t p = 0; p < n; p++)
       {
-        for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) = 0.0;
-        for (int q = 0; q < n; q++)
+        for (size_t idx=0; idx < time.size(); ++idx) out(p, j, idx) = 0.0;
+        for (size_t q = 0; q < n; q++)
         {
-          for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) += (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) * p_vv(q, vx[0], idx);
+          for (size_t idx=0; idx < time.size(); ++idx) out(p, j, idx) += (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) * p_vv(q, vx[0], idx);
         }
-        for (int idx=0; idx < time.size(); ++idx) out(p, j, idx) /= (p2_xx_eps(j, vx[1], idx) - p_xx(j, vx[1], idx));
+        for (size_t idx=0; idx < time.size(); ++idx) out(p, j, idx) /= (p2_xx_eps(j, vx[1], idx) - p_xx(j, vx[1], idx));
       }
     }
 //     std::cout<<">";
@@ -889,11 +910,11 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
     const double eps = abs_eps_p1 + rel_eps_p1 * fabs(par(vp[0]));
     par_eps(vp[0]) = par(vp[0]) + eps;
     p_deri(p2_dfx_eps, time, p_xx, par_eps, sel, 1, vx, 0, vp, p_vv);
-    for (int p = 0; p < n; p++)
+    for (size_t p = 0; p < n; p++)
     {
-      for (int q = 0; q < n; q++)
+      for (size_t q = 0; q < n; q++)
       {
-        for (int idx=0; idx < time.size(); ++idx) out(p, q, idx) = (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) / eps;
+        for (size_t idx=0; idx < time.size(); ++idx) out(p, q, idx) = (p2_dfx_eps(p, q, idx) - p2_dfx(p, q, idx)) / eps;
       }
     }
 //     std::cout<<">";
@@ -929,34 +950,42 @@ void KNSystem::makeSymbolic(const std::string& vffile)
 
 //******** INTERFACE WITH THE SYSTEM DEFINITION ********//
 
-int    KNSystem::ndim() const 
+size_t    KNSystem::ndim() const 
 {
+#ifdef GINAC_FOUND
   if (useVectorField) return ex_ndim;
-  else return (*v_ndim)();
+#endif
+  return (*v_ndim)();
 }
 
-int    KNSystem::npar() const 
+size_t    KNSystem::npar() const 
 {
+#ifdef GINAC_FOUND
   if (useVectorField) return ex_npar;
-  else return (*v_npar)();
+#endif
+  return (*v_npar)();
 }
 
-int    KNSystem::ntau() const
+size_t    KNSystem::ntau() const
 {
+#ifdef GINAC_FOUND
   if (useVectorField) return ex_ntau;
-  else return (*v_ntau)();
+#endif
+  return (*v_ntau)();
 }
 
 // Vectorized versions
 void   KNSystem::p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_tau(out, time, par);
   else
   {
+#endif
     if (v_p_tau != 0) (*v_p_tau)(out, time, par);
     else
     {
-      for (int i=0; i<time.size(); ++i)
+      for (size_t i=0; i<time.size(); ++i)
       {
         KNVector tout(out, i);
         (*v_tau)(tout, time(i), par);
@@ -968,18 +997,22 @@ void   KNSystem::p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, c
 //     for (int i=0; i < out.dim1(); ++i)
 //     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
 //     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << "\n";
-  } 
+#ifdef GINAC_FOUND
+  }
+#endif
 }
 
-void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp )
+void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_dtau(out, time, par, vp);
   else
   {
+#endif
     if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
     else
     {
-      for (int i=0; i<time.size(); ++i)
+      for (size_t i=0; i<time.size(); ++i)
       {
         KNVector tout(out, i);
         (*v_dtau)(tout, time(i), par, vp);
@@ -991,7 +1024,9 @@ void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, 
 //     for (int i=0; i < out.dim1(); ++i)
 //     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
 //     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 void   KNSystem::mass(KNArray1D<double>& out)
@@ -999,19 +1034,21 @@ void   KNSystem::mass(KNArray1D<double>& out)
   if (v_mass != 0)(*v_mass)(out);
   else
   {
-    for(int i=0; i<out.size(); ++i) out(i) = 1.0;
+    for(size_t i=0; i<out.size(); ++i) out(i) = 1.0;
   }
 }
 
-void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_rhs(out, time, x, par, sel);
   else
   {
+#endif
     if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
     else
     {
-      for (int i=0; i<time.size(); ++i)
+      for (size_t i=0; i<time.size(); ++i)
       {
         KNVector vout(out, i);
         KNMatrix xxin(x, i);
@@ -1024,15 +1061,19 @@ void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, c
 //     for (int i=0; i < out.dim1(); ++i)
 //     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
 //     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
-                int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
+                size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_deri(out, time, x, par, sel, nx, vx, np, vp, vv);
   else
   {
+#endif
     if ((nderi == 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
     {
       if (v_p_deri != 0)
@@ -1040,7 +1081,7 @@ void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, 
         (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
       } else
       {
-        for (int i=0; i<time.size(); ++i)
+        for (size_t i=0; i<time.size(); ++i)
         {
           KNMatrix mout(out, i);
           KNMatrix xxin(x, i);
@@ -1059,28 +1100,36 @@ void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, 
 //     for (int j=0; j < out.dim2(); ++j) 
 //     for (int k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) max = fabs(fabs(out_p(i,j,k)-out(i,j,k)));
 //     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX_p: " << max << "\n";
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 // Setting the starting point
 void   KNSystem::stpar(KNVector& par) const
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_stpar(par);
   else
   {
+#endif
     (*v_stpar)(par);
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_stsol(out, time);
   else
   {
+#endif
     if (v_p_stsol != 0) (*v_p_stsol)(out, time);
     else if (v_stsol != 0)
     {
-      for (int i=0; i<time.size(); ++i)
+      for (size_t i=0; i<time.size(); ++i)
       {
         KNVector vf(out, i);
         (*v_stsol)(vf, time(i));
@@ -1092,47 +1141,55 @@ void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time) co
 //     for (int i=0; i < out.dim1(); ++i)
 //     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
 //     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 void   KNSystem::parnames(const char *names[]) const
 {
+#ifdef GINAC_FOUND
   if (useVectorField) sym_parnames(names);
   else
   {
+#endif
     if (v_parnames != 0)
     {
       (*v_parnames)(names);
     }
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
-int KNSystem::sym_ndim() 
+#ifdef GINAC_FOUND
+
+size_t KNSystem::sym_ndim() 
 {
   return ex_ndim;
 }
 
-int KNSystem::sym_npar() 
+size_t KNSystem::sym_npar() 
 {
   return ex_npar;
 }
 
-int KNSystem::sym_ntau() 
+size_t KNSystem::sym_ntau() 
 {
   return ex_ntau;
 }
 
-int KNSystem::sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par ) 
+void KNSystem::sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par ) 
 {
   VectorField::Knut_tau_eval( ex_tau, out, time, par, ex_ndim, ex_npar, ex_ntau );
 }
 
-void KNSystem::sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, int vp )
+void KNSystem::sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
 {
   VectorField::Knut_tau_p_eval( ex_tau_p, out, time, par, vp, ex_ndim, ex_npar, ex_ntau );
 }
 
-void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
 {
 #ifdef GINAC_FOUND
   VectorField::Knut_RHS_eval(ex_rhs, out_p, time, x, par, sel );
@@ -1140,7 +1197,7 @@ void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time,
 }
 
 void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
-                int sel, int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
+                size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
 #ifdef GINAC_FOUND
   if ((np == 1)&&(nx == 0))
@@ -1182,3 +1239,4 @@ void KNSystem::sym_parnames(const char *names[]) const
     names[i] = ex_parnames[i].c_str();
   }
 }
+#endif

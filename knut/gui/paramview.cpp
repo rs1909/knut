@@ -105,12 +105,12 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->EqnTable.size(); ++i) editor->addItem(parameters->EqnTable.CIndexToTypeName(i).c_str());
+      for (size_t i = 0; i < parameters->EqnTable.size(); ++i) editor->addItem(parameters->EqnTable.CIndexToTypeName(i).c_str());
       editor->setCurrentIndex(parameters->EqnTable.TypeToCIndex(parameters->getEqns(index.column())));
     }
     if (index.row() == 1)
     {
-      for (int i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
+      for (size_t i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
       editor->setCurrentIndex(parameters->VarTable.TypeToCIndex(parameters->getVars(index.column())));
     }
   }
@@ -118,7 +118,7 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
   {
     if (index.row() == 0)
     {
-      for (int i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
+      for (size_t i = 0; i < parameters->VarTable.size(); ++i) editor->addItem(parameters->VarTable.CIndexToTypeName(i).c_str());
       editor->setCurrentIndex(parameters->VarTable.TypeToCIndex(parameters->getParx(index.column())));
     }
   }
@@ -147,18 +147,18 @@ QVariant SYMModel::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid()) return QVariant();
 
-  if (index.column() >= parameters->getSymReSize()) return QVariant();
+  if (index.column() >= static_cast<int>(parameters->getSymReSize())) return QVariant();
   if (index.row() >= 2) return QVariant();
 
   if (role == Qt::DisplayRole)
   {
     if (index.row() == 0)
     {
-      return QVariant(parameters->getSymRe(index.column()));
+      return QVariant(static_cast<int>(parameters->getSymRe(index.column())));
     }
     if (index.row() == 1)
     {
-      return QVariant(parameters->getSymIm(index.column()));
+      return QVariant(static_cast<int>(parameters->getSymIm(index.column())));
     }
   }
   return QVariant();

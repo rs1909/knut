@@ -271,11 +271,11 @@ class VectorField : public Symbol
     
     static void Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, const size_t nv, const size_t nps, const size_t nd );
     static void Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp, const size_t nv, const size_t nps, const size_t nd );
-    static void Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel );
-    static void Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int alpha, const size_t nv, const size_t nps, const size_t nd);
-    static void Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, const size_t nv, const size_t nps, const size_t nd);
-    static void Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, int alpha, const size_t nv, const size_t nps, const size_t nd);
-    static void Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, int sel, int del1, int del2, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel );
+    static void Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel, size_t alpha, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel, size_t del, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel, size_t del, size_t alpha, const size_t nv, const size_t nps, const size_t nd);
+    static void Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, size_t sel, size_t del1, size_t del2, const size_t nv, const size_t nps, const size_t nd);
     static void Knut_RHS_stsol_eval( const std::vector<GiNaC::ex>& exls, KNArray2D<double>& out_p, const KNArray1D<double>& time );
 
   private:

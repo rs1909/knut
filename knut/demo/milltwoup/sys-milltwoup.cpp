@@ -185,9 +185,9 @@ static inline double d_scf_x1x2( double phi, double x0, double x1, double x2 )
 extern "C"
 {
 
-int sys_ndim(){ return 2; }
-int sys_npar(){ return 2; }
-int sys_ntau(){ return 3; }
+size_t sys_ndim(){ return 2; }
+size_t sys_npar(){ return 2; }
+size_t sys_ntau(){ return 3; }
 
 // void sys_tau( KNVector& out, double t )
 // {
@@ -203,7 +203,7 @@ void sys_tau( KNVector& out, double t, const KNVector& par )
 	out(2) = 1.0*par(0);
 }
 
-void sys_dtau( KNVector& out, double t, const KNVector& par, int vp )
+void sys_dtau( KNVector& out, double t, const KNVector& par, size_t vp )
 {
 	switch( vp )
 	{
@@ -241,7 +241,7 @@ void sys_rhs( KNVector& out, double t, const KNMatrix& x, const KNVector& par )
 }
 
 void sys_deri( KNMatrix &out, double t, const KNMatrix& x, const KNVector& par, 
-	       int nx, const int* vx, int np, const int* vp, const KNMatrix& vv )
+	       size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNMatrix& vv )
 {
   double g;
   if( (t < 0)||(t > 1) ) cout << "deri: t is not element of the interval\n";

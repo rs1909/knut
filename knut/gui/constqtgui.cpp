@@ -25,6 +25,9 @@ void NConstantsQtGui::constantChanged(const char* name)
       if (type == "int")
       {
         QMetaObject::invokeMethod (object, slotName, Q_ARG(int, *static_cast<const int *>(value)));
+      } else if (type == "size_t")
+      {
+        QMetaObject::invokeMethod (object, slotName, Q_ARG(int, static_cast<const int>(*static_cast<const size_t *>(value))));
       } else if (type == "char")
       {
         std::cout << name << "=" << *static_cast<const char *>(value) << "\n";
@@ -73,6 +76,13 @@ void NConstantsQtGui::constantChanged(const char* name)
           QMetaObject::invokeMethod (object, slotName, Q_ARG(int, static_cast<const std::vector<int>*>(value)->size()) );
         } else
           QMetaObject::invokeMethod (object, slotName, Q_ARG(const std::vector<int>&, *static_cast<const std::vector<int>*>(value)));
+      } else if (type == "vector<size_t>")
+      {
+        if (!strcmp(QSpinBox::staticMetaObject.className(), object->metaObject()->className()))
+        {
+          QMetaObject::invokeMethod (object, slotName, Q_ARG(int, static_cast<const int>(static_cast<const std::vector<size_t>*>(value)->size())) );
+        } else
+          QMetaObject::invokeMethod (object, slotName, Q_ARG(const std::vector<size_t>&, *static_cast<const std::vector<size_t>*>(value)));
       } else
       {
         std::cout << type << " is not a registered type.\n";

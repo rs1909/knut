@@ -63,7 +63,7 @@ class KNArray1D
 
   protected:
 
-    int n;
+    size_t n;
     T  *v;
   private:
     const bool destructable;
@@ -75,21 +75,21 @@ class KNArray1D
     inline KNArray1D(bool /*b*/) : n(0), v(0), destructable(false)
     { }
 
-    inline KNArray1D(int i) : n(i), v(new T[i]), destructable(true)
+    inline KNArray1D(size_t i) : n(i), v(new T[i]), destructable(true)
     {
       clear();
     }
 
     // specially for JagMatrix2D i.e. KNArray1D< KNVector >, which is indexed as (i)(j)
-    inline KNArray1D(int i, int j) : n(i), v(new T[i]), destructable(true)
+    inline KNArray1D(size_t i, size_t j) : n(i), v(new T[i]), destructable(true)
     {
-      for (int r = 0; r < i; r++) v[r].init(j);
+      for (size_t r = 0; r < i; r++) v[r].init(j);
     }
 
     // specially for JagMatrix3D i.e. KNArray1D< KNMatrix >, which is indexed as (i)(j,k)
-    inline KNArray1D(int i, int j, int k) : n(i), v(new T[i]), destructable(true)
+    inline KNArray1D(size_t i, size_t j, size_t k) : n(i), v(new T[i]), destructable(true)
     {
-      for (int r = 0; r < i; r++) v[r].init(j, k);
+      for (size_t r = 0; r < i; r++) v[r].init(j, k);
     }
 
     inline KNArray1D(const KNArray1D<T>& V_) : n(V_.n), v(new T[V_.n]), destructable(true)
@@ -97,17 +97,17 @@ class KNArray1D
       *this = V_;
     }
 
-    inline KNArray1D(T *data, int i) : n(i), v(data), destructable(false)
+    inline KNArray1D(T *data, size_t i) : n(i), v(data), destructable(false)
     { }
 
-    inline KNArray1D(const KNArray2D<T>& v, int i);
+    inline KNArray1D(const KNArray2D<T>& v, size_t i);
 
     inline virtual ~KNArray1D()
     {
       if (destructable) delete[] v;
     }
 
-    inline void init(int i)
+    inline void init(size_t i)
     {
 #ifdef DEBUG
       P_ASSERT_X(destructable, "KNArray1D::init(int)");
@@ -129,7 +129,7 @@ class KNArray1D
       *this = V_;
     }
 
-    inline void init(T *data, int i)
+    inline void init(T *data, size_t i)
     {
 #ifdef DEBUG
       P_ASSERT_X((!destructable), "KNArray1D::init(T *, int)");
@@ -140,7 +140,7 @@ class KNArray1D
 
     inline void clear()
     {
-      for (int j = 0; j < n; j++) v[j] = T();
+      for (size_t j = 0; j < n; j++) v[j] = T();
     } // it was T(0), but for built in types it must be the same
 
     inline T *pointer()
@@ -156,7 +156,7 @@ class KNArray1D
       return &v[i];
     }
 
-    inline int size() const
+    inline size_t size() const
     {
       return n;
     }
@@ -166,11 +166,11 @@ class KNArray1D
 #ifdef DEBUG
       P_ASSERT_X(n == V.n, "KNArray1D::operator=(): incompatible sizes\n");
 #endif
-      for (int i = 0; i < V.n; i++) v[i] = V.v[i];
+      for (size_t i = 0; i < V.n; i++) v[i] = V.v[i];
       return *this;
     }
 
-    inline T& operator()(int i)
+    inline T& operator()(size_t i)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < n && i >= 0, "KNArray1D::bound11&");
@@ -178,7 +178,7 @@ class KNArray1D
       return v[i];
     }
 
-    inline T operator()(int i) const
+    inline T operator()(size_t i) const
     {
 #ifdef DEBUG
       P_ASSERT_X(i < n && i >= 0 , "vec_bound11_\n");
@@ -226,7 +226,7 @@ class KNArray2D
   protected:
 
     T* m;
-    int r, c;
+    size_t r, c;
   private:
     const bool destructable;
   public:
@@ -237,7 +237,7 @@ class KNArray2D
       m = 0;
     }
 
-    inline KNArray2D(int _r, int _c) : r(_r), c(_c), destructable(true)
+    inline KNArray2D(size_t _r, size_t _c) : r(_r), c(_c), destructable(true)
     {
       m = new T[r*c+1];
       clear();
@@ -246,19 +246,19 @@ class KNArray2D
     inline KNArray2D(const KNArray2D<T>& M) : r(M.r), c(M.c), destructable(true)
     {
       m = new T[r*c+1];
-      for (int i = 0; i < r*c; i++) m[i] = M.m[i];
+      for (size_t i = 0; i < r*c; i++) m[i] = M.m[i];
     }
 
-    inline KNArray2D(const KNArray3D<T>& v, int i);
+    inline KNArray2D(const KNArray3D<T>& v, size_t i);
 
     inline virtual ~KNArray2D()
     {
       if (destructable) delete[] m;
     }
-    inline int dim1() const { return r; }
-    inline int dim2() const { return c; }
+    inline size_t dim1() const { return r; }
+    inline size_t dim2() const { return c; }
 
-    inline void init(int _r, int _c)
+    inline void init(size_t _r, size_t _c)
     {
       P_ASSERT_X(destructable, "KNArray2D<T>::Init : trying to resize a non-destructable a");
       delete[] m;
@@ -273,7 +273,7 @@ class KNArray2D
       return m;
     }
 
-    inline T *pointer(const int i, const int j)
+    inline T *pointer(const size_t i, const size_t j)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
@@ -282,7 +282,7 @@ class KNArray2D
       return &m[i + r*j];
     }
 
-    inline const T *pointer(const int i, const int j) const
+    inline const T *pointer(const size_t i, const size_t j) const
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
@@ -293,7 +293,7 @@ class KNArray2D
 
     inline void clear()
     {
-      for (int i = 0; i < r*c; i++) m[i] = T(0);
+      for (size_t i = 0; i < r*c; i++) m[i] = T(0);
     }
 
     inline KNArray2D<T>& operator= (const KNArray2D<T>& M)
@@ -301,11 +301,11 @@ class KNArray2D
 #ifdef DEBUG
       P_ASSERT_X(M.r == r && M.c == c, "KNArray2D<T>::operator= : incompatible sizes");
 #endif
-      for (int i = 0; i < r*c; i++) m[i] = M.m[i];
+      for (size_t i = 0; i < r*c; i++) m[i] = M.m[i];
       return *this;
     }
 
-    inline T& operator()(const int i, const int j)
+    inline T& operator()(const size_t i, const size_t j)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
@@ -314,7 +314,7 @@ class KNArray2D
       return m[i + r*j];
     }
 
-    inline T operator()(const int i, const int j) const
+    inline T operator()(const size_t i, const size_t j) const
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound_ ");
@@ -323,7 +323,7 @@ class KNArray2D
       return m[i + r*j];
     }
 
-    inline T& operator()(const int i)
+    inline T& operator()(const size_t i)
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r*c, "bound11&\n");
@@ -332,7 +332,7 @@ class KNArray2D
       return m[i];
     }
 
-    inline T operator()(const int i) const
+    inline T operator()(const size_t i) const
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r*c, "bound11_\n");
@@ -350,7 +350,7 @@ class KNArray3D
   protected:
 
     T* m;
-    int d1, d2, d3;
+    size_t d1, d2, d3;
 
   public:
     inline KNArray3D()
@@ -359,7 +359,7 @@ class KNArray3D
       m = 0;
     }
 
-    inline KNArray3D(int _d1, int _d2, int _d3) : d1(_d1), d2(_d2), d3(_d3)
+    inline KNArray3D(size_t _d1, size_t _d2, size_t _d3) : d1(_d1), d2(_d2), d3(_d3)
     {
       m = new T[d1*d2*d3+1];
       clear();
@@ -368,7 +368,7 @@ class KNArray3D
     inline KNArray3D(const KNArray3D<T>& M) : d1(M.d1), d2(M.d2), d3(M.d3)
     {
       m = new T[d1*d2*d3+1];
-      for (int i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
+      for (size_t i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
     }
 
     inline virtual ~KNArray3D()
@@ -376,10 +376,10 @@ class KNArray3D
       delete[] m;
     }
 
-    inline int dim1() const { return d1; }
-    inline int dim2() const { return d2; }
-    inline int dim3() const { return d3; }
-    inline void init(int _d1, int _d2, int _d3)
+    inline size_t dim1() const { return d1; }
+    inline size_t dim2() const { return d2; }
+    inline size_t dim3() const { return d3; }
+    inline void init(size_t _d1, size_t _d2, size_t _d3)
     {
       delete[] m;
       d1 = _d1;
@@ -391,9 +391,9 @@ class KNArray3D
 
     inline void clear()
     {
-      for (int i = 0; i < d1*d2*d3; i++) m[i] = 0;
+      for (size_t i = 0; i < d1*d2*d3; i++) m[i] = 0;
     }
-    inline T *pointer(const int i, const int j, const int k)
+    inline T *pointer(const size_t i, const size_t j, const size_t k)
     {
 #ifdef DEBUG
       P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
@@ -407,11 +407,11 @@ class KNArray3D
 #ifdef DEBUG
       P_ASSERT_X((M.d1 == d1) && (M.d2 == d2) && (M.d3 == d3), "KNArray3D<T>::operator= : incompatible sizes\n");
 #endif
-      for (int i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
+      for (size_t i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
       return *this;
     }
 
-    inline T& operator()(const int i, const int j, const int k)
+    inline T& operator()(const size_t i, const size_t j, const size_t k)
     {
 #ifdef DEBUG
       P_ASSERT_X((i < d1) && (j < d2) && (k < d3), "bound&\n");
@@ -420,7 +420,7 @@ class KNArray3D
       return m[i + d1*(j + d2*k)];
     }
 
-    inline T operator()(const int i, const int j, const int k) const
+    inline T operator()(const size_t i, const size_t j, const size_t k) const
     {
 #ifdef DEBUG
       P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
@@ -431,7 +431,7 @@ class KNArray3D
     friend class KNArray2D<T>;
 };
 
-template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, int i) : destructable(false)
+template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, size_t i) : destructable(false)
 {
 #ifdef DEBUG
   P_ASSERT_X((i >= 0)&&(i < vec.c), "bound\n");
@@ -440,7 +440,7 @@ template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, int i)
   n = vec.r;
 }
 
-template<class T> inline KNArray2D<T>::KNArray2D(const KNArray3D<T>& vec, int i) : destructable(false)
+template<class T> inline KNArray2D<T>::KNArray2D(const KNArray3D<T>& vec, size_t i) : destructable(false)
 {
 #ifdef DEBUG
   P_ASSERT_X((i >= 0)&&(i < vec.d3), "bound\n");
@@ -469,12 +469,12 @@ class rng
   public:
     inline rng() : i1(0), i2(0), j1(0), j2(0)
     { }
-    inline rng(int i1_, int i2_) : i1(i1_), i2(i2_), j1(0), j2(0)
+    inline rng(size_t i1_, size_t i2_) : i1(i1_), i2(i2_), j1(0), j2(0)
     { }
-    inline rng(int i1_, int i2_, int j1_, int j2_) : i1(i1_), i2(i2_), j1(j1_), j2(j2_)
+    inline rng(size_t i1_, size_t i2_, size_t j1_, size_t j2_) : i1(i1_), i2(i2_), j1(j1_), j2(j2_)
     { }
 
-    const int i1, i2, j1, j2;
+    const size_t i1, i2, j1, j2;
 };
 
 /// with range
@@ -606,7 +606,7 @@ class KNVector : public KNArray1D<double>
     inline KNVector()
     { }
 
-    inline KNVector(int i) : KNArray1D<double>(i)
+    inline KNVector(size_t i) : KNArray1D<double>(i)
     { }
 
     inline KNVector(bool b) : KNArray1D<double>(b)
@@ -615,7 +615,7 @@ class KNVector : public KNArray1D<double>
     inline KNVector(const KNVector& V) : KNArray1D<double>(V)
     { }
 
-    inline KNVector(const KNArray2D<double>& m, int i) : KNArray1D<double>(m,i)
+    inline KNVector(const KNArray2D<double>& m, size_t i) : KNArray1D<double>(m,i)
     { }
 
     inline virtual ~KNVector()
@@ -625,7 +625,7 @@ class KNVector : public KNArray1D<double>
 
     inline void print() const
     {
-      for (int j = 0; j < n; j++) std::cout << v[j] << '\t';
+      for (size_t j = 0; j < n; j++) std::cout << v[j] << '\t';
       std::cout << '\n';
     }
 
@@ -695,27 +695,27 @@ class KNMatrix : public KNArray2D<double>
     inline KNMatrix()
     { }
 
-    inline KNMatrix(int i, int j) : KNArray2D<double>(i, j)
+    inline KNMatrix(size_t i, size_t j) : KNArray2D<double>(i, j)
     { }
 
     inline KNMatrix(const KNMatrix& M) : KNArray2D<double>(M)
     { }
 
-    inline KNMatrix(const KNArray3D<double>& m, int i) : KNArray2D<double>(m,i)
+    inline KNMatrix(const KNArray3D<double>& m, size_t i) : KNArray2D<double>(m,i)
     { }
 
     inline virtual ~KNMatrix()
     { }
 
-    inline int row() const
+    inline size_t row() const
     {
       return r;
     }
-    inline int col() const
+    inline size_t col() const
     {
       return c;
     }
-    inline int size() const
+    inline size_t size() const
     {
 #ifdef DEBUG
       P_ASSERT_X((r == 1) || (c == 1), "KNMatrix::size(): not a single row or column.\n");
@@ -779,9 +779,9 @@ class KNMatrix : public KNArray2D<double>
     inline void print()
     {
       double sum = 0.0;
-      for (int i = 0; i < r; i++)
+      for (size_t i = 0; i < r; i++)
       {
-        for (int j = 0; j < c; j++)
+        for (size_t j = 0; j < c; j++)
         {
           std::cout << (*this)(i, j) << '\t';
           sum += (*this)(i, j);
@@ -807,10 +807,10 @@ class KNLuMatrix : public KNMatrix
     bool     fact; // == true if factorized
     // for factorizig
     double*  mf;
-    int* ipiv;
+    int* ipiv;      // --
     double*  work;
-    int* iwork;
-    int  info;
+    int* iwork;     // --
+    int  info;      // --
     // for solving
     double rcond;
     double ferr;  // in case of KNVector these are just double
@@ -818,7 +818,7 @@ class KNLuMatrix : public KNMatrix
 
   public:
 
-    inline KNLuMatrix(int _r, int _c) : KNMatrix(_r, _c)
+    inline KNLuMatrix(size_t _r, size_t _c) : KNMatrix(_r, _c)
     {
       fact = false;
       mf = new double[r*c+1];
@@ -856,11 +856,11 @@ class KNLuMatrix : public KNMatrix
       fact = false;
     }
 
-    inline int  row() const
+    inline size_t  row() const
     {
       return KNMatrix::row();
     }
-    inline int  col() const
+    inline size_t  col() const
     {
       return KNMatrix::col();
     }
@@ -876,34 +876,34 @@ typedef KNArray1D< KNVector > JagVector2D;
 /// specialized versions of the Clear function
 template< > inline void KNArray1D< KNArray1D<int> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 template< > inline void KNArray1D< KNArray1D<double> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 template< > inline void KNArray1D< KNVector >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 template< > inline void KNArray1D< KNArray2D<int> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 template< > inline void KNArray1D< KNArray2D<double> >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 template< > inline void KNArray1D< KNMatrix >::clear()
 {
-  for (int i = 0; i < n; i++) v[i].clear();
+  for (size_t i = 0; i < n; i++) v[i].clear();
 }
 
 template< > inline KNArray1D< KNVector >::KNArray1D(const KNArray1D< KNVector >& V_) : destructable(true)
 {
   n = V_.n;
   v = new KNVector[V_.n];
-  for (int i = 0; i < V_.n; i++) v[i].init(V_.v[i]);
+  for (size_t i = 0; i < V_.n; i++) v[i].init(V_.v[i]);
 }
 
 /// Member functions and Operators for __scal_vec_trans_rng

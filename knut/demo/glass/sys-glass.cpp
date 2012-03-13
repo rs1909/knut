@@ -2,26 +2,24 @@
 #include "knutsys.h"
 
 extern "C"
-int sys_ndim(){ return 1; }
-
-extern "C"
 {
 
-int sys_npar(){ return 4; }
-int sys_ntau(){ return 2; }
-int sys_nderi(){ return 2; }
+size_t sys_ndim(){ return 1; }
+size_t sys_npar(){ return 4; }
+size_t sys_ntau(){ return 2; }
+size_t sys_nderi(){ return 2; }
 
 void sys_p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0; out(1,idx) = par(3);
   }
 }
 
-void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par, int vp )
+void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par, size_t vp )
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     switch( vp ) {
       case 0:
@@ -36,18 +34,18 @@ void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KN
   }
 }
 
-void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, int sel)
+void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, size_t sel)
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = par(1)*x(0,0,idx) + par(2)*x(0,1,idx)/(1+pow(x(0,1,idx), 10));
   }
 }
 
-void sys_p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, int sel,
-         int nx, const int* vx, int np, const int* vp, const KNArray3D<double>& vv )
+void sys_p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, size_t sel,
+         size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
     if( (nx == 1) && (np == 0) ) {

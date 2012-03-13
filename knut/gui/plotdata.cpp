@@ -373,7 +373,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
     std::list<PlotItem>::const_iterator it;
     for (it = begin; it != end; it++)
     {
-      for (int k = 0; k < it->x.size(); k++)
+      for (size_t k = 0; k < it->x.size(); k++)
       {
         if (xcoord(it->x(k)) > cvb.xmax) { cvb.xmax = xcoord(it->x(k)); toZoom = true; }
         if (xcoord(it->x(k)) < cvb.xmin) { cvb.xmin = xcoord(it->x(k)); toZoom = true; }
@@ -547,14 +547,14 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   // The profile
   if (x == XMesh && y == YProfile)
   {
-    const int ndeg = data->getNDeg();
-    const int nint = data->getNInt();
+    const size_t ndeg = data->getNDeg();
+    const size_t nint = data->getNInt();
     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.init(ndeg*nint + 1);
     Graph.rbegin()->y.init(ndeg*nint + 1);
-    for (int i = 0; i < nint; i++)
+    for (size_t i = 0; i < nint; i++)
     {
-      for (int j = 0; j < ndeg; j++)
+      for (size_t j = 0; j < ndeg; j++)
       {
         Graph.rbegin()->x(j + ndeg*i) = data->getMesh(pt, i) + data->getElem(pt, j) * (data->getMesh(pt, i + 1) - data->getMesh(pt, i));
         Graph.rbegin()->y(j + ndeg*i) = data->getProfile(pt, dim, j + ndeg * i);
@@ -573,7 +573,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
     Graph.rbegin()->x.init(data->getNMul());
     Graph.rbegin()->y.init(data->getNMul());
-    for (int i = 0; i < data->getNMul(); i++)
+    for (size_t i = 0; i < data->getNMul(); i++)
     {
       Graph.rbegin()->x(i) = data->getMulRe(pt, i);
       Graph.rbegin()->y(i) = data->getMulIm(pt, i);
@@ -586,12 +586,12 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   // multipliers
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
-    for (int r = 0; r < data->getNMul(); r++)
+    for (size_t r = 0; r < data->getNMul(); r++)
     {
       Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
       Graph.rbegin()->x.init(data->getNPoints());
       Graph.rbegin()->y.init(data->getNPoints());
-      for (int i = 0; i < data->getNPoints(); i++)
+      for (size_t i = 0; i < data->getNPoints(); i++)
       {
         if (x >= XParameter0) Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
         else Graph.rbegin()->x(i) = i;
@@ -896,7 +896,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
       ppath.append(PlotPolyLine(ppath.pen));
       ppath.last().path.moveTo(prevPoint);
       
-      for (int k = 1; k < i->x.size(); k++)
+      for (size_t k = 1; k < i->x.size(); k++)
       {
         QPointF currentPoint(xscale*(xcoord(i->x(k)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(k))));
         pointOutside(ppath, BottomLeft, BottomRight, TopLeft, TopRight, prevPoint, currentPoint);
@@ -906,7 +906,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     if ((*i).type == PlotCircleType)
     {
       (*i).data.circle->pos.clear();
-      for (int k = 0; k < i->x.size(); k++)
+      for (size_t k = 0; k < i->x.size(); k++)
       {
         const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
         QRectF& rect = (*i).data.circle->point;
@@ -930,7 +930,7 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     if ((*i).type == PlotPolygonType)
     {
       (*i).data.polygon->pos.clear();
-      for (int k = 0; k < i->x.size(); k++)
+      for (size_t k = 0; k < i->x.size(); k++)
       {
         const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
         if (Box->rect().contains(pt.x(), pt.y())) (*i).data.polygon->pos.push_back(pt);

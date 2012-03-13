@@ -35,9 +35,9 @@ class KNSparseMatrix
   protected:
 
     char format;
-    int n;
-    int m;
-    int size;
+    size_t n;
+    size_t m;
+    size_t size;
     int *Ap;
     int *Ai;
     double *Ax;
@@ -46,11 +46,11 @@ class KNSparseMatrix
 
     inline KNSparseMatrix() : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0)
     { }
-    inline KNSparseMatrix(char F, int n_, int m_, int nz)
+    inline KNSparseMatrix(char F, size_t n_, size_t m_, size_t nz)
     {
       init(F, n_, m_, nz);
     }
-    inline KNSparseMatrix(char F, int n_, int nz)
+    inline KNSparseMatrix(char F, size_t n_, size_t nz)
     {
       init(F, n_, n_, nz);
     }
@@ -60,7 +60,7 @@ class KNSparseMatrix
     }
     inline virtual ~KNSparseMatrix();
 
-    inline void init(char F, int n_, int m_, int nz);
+    inline void init(char F, size_t n_, size_t m_, size_t nz);
     inline void init(const KNSparseMatrix& M);
 
     inline void mmx(enum cspblas_Trans trans, double* out, const double* in, double alpha) const
@@ -71,12 +71,12 @@ class KNSparseMatrix
     {
       cspblas_mmxpy(format, trans, n, m, Ap, Ai, Ax, out, in, alpha, Y, beta);
     }
-    inline void mmxm(enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha, int nrhs) const
+    inline void mmxm(enum cspblas_Trans trans, double* out, size_t ldout, const double* in, size_t ldin, double alpha, size_t nrhs) const
     {
       cspblas_mmxm(format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, nrhs);
     }
-    inline void mmxmpym(enum cspblas_Trans trans, double* out, int ldout, const double* in, int ldin, double alpha,
-                        const double* Y, int ldY, double beta, int nrhs) const
+    inline void mmxmpym(enum cspblas_Trans trans, double* out, size_t ldout, const double* in, size_t ldin, double alpha,
+                        const double* Y, size_t ldY, double beta, size_t nrhs) const
     {
       cspblas_mmxmpym(format, trans, n, m, Ap, Ai, Ax, out, ldout, in, ldin, alpha, Y, ldY, beta, nrhs);
     }
@@ -109,12 +109,12 @@ class KNSparseMatrix
     inline void timesX(double* out, const double* in, double alpha, bool trans) const;
     inline void timesXPlusY(double* out, const double* in, const double* Y, double alpha, double beta, bool trans) const;
 
-    inline int row() const
+    inline size_t row() const
     {
       if (format == 'R') return n;
       else return m;
     }
-    inline int col() const
+    inline size_t col() const
     {
       if (format == 'R') return m;
       else return n;
@@ -129,21 +129,21 @@ class KNSparseMatrix
 
     // Fill in routines
     /// Creates a new line in the matrix
-    inline int newLine(int size_);
+    inline size_t newLine(size_t size_);
     /// Writes or returns the row or column index
     /// into line `l' and the `e'-th element
-    inline int& writeIndex(int l, int e);
+    inline int& writeIndex(size_t l, size_t e);
     /// Writes into line `l' and the `e'-th element
-    inline double& writeData(int l, int e);
+    inline double& writeData(size_t l, size_t e);
     /// returns the length of the n_ -th line in the matrix
-    inline int lineLength(int n_);
+    inline size_t lineLength(size_t n_);
     /// returns the nonzero elements in the matrix
-    inline int nonzeros()
+    inline size_t nonzeros()
     {
-      return Ap[n];
+      return static_cast<size_t>(Ap[n]);
     }
     /// returns the number of lines, e.g. columns or rows in the matrix depending on format
-    inline int lines()
+    inline size_t lines()
     {
       return n;
     }
@@ -156,7 +156,7 @@ class KNSparseMatrix
     /// prints out Ap
     void printAp()
     {
-      for (int i = 0; i < n + 1; i++) std::cout << Ap[i] << '\t';
+      for (size_t i = 0; i < n + 1; i++) std::cout << Ap[i] << '\t';
       std::cout << '\n';
     }
     /// prints the whole matrix onto the screen
@@ -182,9 +182,9 @@ class KNLuSparseMatrix : public KNSparseMatrix
     double *W;
 
   public:
-    void init(int nn_);
-    KNLuSparseMatrix(char F, int n_, int m_, int nz);
-    KNLuSparseMatrix(char F, int n_, int nz);
+    void init(size_t nn_);
+    KNLuSparseMatrix(char F, size_t n_, size_t m_, size_t nz);
+    KNLuSparseMatrix(char F, size_t n_, size_t nz);
     KNLuSparseMatrix(KNSparseMatrix& M);
     inline KNLuSparseMatrix(KNLuSparseMatrix&) : KNSparseMatrix('F', 1, 1)
     {
@@ -225,9 +225,9 @@ class KNSparseMatrixPolynomial
 {
   public:
 
-    KNSparseMatrixPolynomial(int nmat_, int n_, int nz) : A0('R', n_,  nz), AI(nmat_)
+    KNSparseMatrixPolynomial(size_t nmat_, size_t n_, size_t nz) : A0('R', n_,  nz), AI(nmat_)
     {
-      for (int i = 0; i < AI.size(); i++) AI(i).init('R', n_, n_, nz);
+      for (size_t i = 0; i < AI.size(); i++) AI(i).init('R', n_, n_, nz);
       RESID = new double[ AI.size() * n_ + 1 ];
       isINIT = false;
     }
@@ -236,7 +236,7 @@ class KNSparseMatrixPolynomial
       delete[] RESID;
     }
 
-    int                nmat()
+    size_t                nmat()
     {
       return AI.size();
     }
@@ -248,7 +248,7 @@ class KNSparseMatrixPolynomial
     {
       return AI;
     }
-    KNSparseMatrix&          getAI(int i)
+    KNSparseMatrix&          getAI(size_t i)
     {
       return AI(i);
     }
@@ -266,7 +266,7 @@ class KNSparseMatrixPolynomial
 
 // Implementation of KNSparseMatrix
 
-inline void KNSparseMatrix::init(char F, int n_, int m_, int nz)
+inline void KNSparseMatrix::init(char F, size_t n_, size_t m_, size_t nz)
 {
   if ((F != 'R') && (F != 'C')) std::cout << "KNSparseMatrix::CONSTRUCTOR: invalid format specification.\n";
   format = F;
@@ -276,12 +276,12 @@ inline void KNSparseMatrix::init(char F, int n_, int m_, int nz)
   Ap = new int[n_+1];
   Ai = new int[nz];
   Ax = new double[nz];
-  for (int i = 0; i < nz; i++)
+  for (size_t i = 0; i < nz; i++)
   {
     Ai[i] = 0;
     Ax[i] = 0.0;
   }
-  for (int i = 0; i < n_ + 1; i++)
+  for (size_t i = 0; i < n_ + 1; i++)
   {
     Ap[i] = 0;
   }
@@ -297,12 +297,12 @@ inline void KNSparseMatrix::init(const KNSparseMatrix& M)
   Ap = new int[M.n+1];
   Ai = new int[size];
   Ax = new double[size];
-  for (int i = 0; i < size; i++)
+  for (size_t i = 0; i < size; i++)
   {
     Ai[i] = M.Ai[i];
     Ax[i] = M.Ax[i];
   }
-  for (int i = 0; i < n + 1; i++)
+  for (size_t i = 0; i < n + 1; i++)
   {
     Ap[i] = M.Ap[i];
   }
@@ -318,12 +318,12 @@ inline KNSparseMatrix::~KNSparseMatrix()
 inline void KNSparseMatrix::clear()
 {
 
-  for (int i = 0; i < n + 1; i++)
+  for (size_t i = 0; i < n + 1; i++)
   {
     Ap[i] = 0;
   }
   n = 0;
-  for (int i = 0; i < size; i++)
+  for (size_t i = 0; i < size; i++)
   {
     Ai[i] = 0;
     Ax[i] = 0.0;
@@ -333,30 +333,30 @@ inline void KNSparseMatrix::clear()
 inline void KNSparseMatrix::clear(char F)
 {
 
-  for (int i = 0; i < n + 1; i++)
+  for (size_t i = 0; i < n + 1; i++)
   {
     Ap[i] = 0;
   }
   n = 0;
   format = F;
-  for (int i = 0; i < size; i++)
+  for (size_t i = 0; i < size; i++)
   {
     Ai[i] = 0;
     Ax[i] = 0.0;
   }
 }
 
-inline int KNSparseMatrix::newLine(int size_)
+inline size_t KNSparseMatrix::newLine(size_t size_)
 {
   n++;
-  Ap[n] = Ap[n-1] + size_;
+  Ap[n] = Ap[n-1] + (int)size_;
 #ifdef DEBUG
   P_ASSERT_X5(Ap[n] < size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
 #endif
   return n -1;
 }
 
-inline int& KNSparseMatrix::writeIndex(int l, int e)
+inline int& KNSparseMatrix::writeIndex(size_t l, size_t e)
 {
 #ifdef DEBUG
 //   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
@@ -366,11 +366,11 @@ inline int& KNSparseMatrix::writeIndex(int l, int e)
   P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
   P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
-  return Ai[Ap[l] + e];
+  return Ai[(size_t)Ap[l] + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline double& KNSparseMatrix::writeData(int l, int e)
+inline double& KNSparseMatrix::writeData(size_t l, size_t e)
 {
 #ifdef DEBUG
   P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
@@ -379,16 +379,16 @@ inline double& KNSparseMatrix::writeData(int l, int e)
   P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
   P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
-  return Ax[Ap[l] + e];
+  return Ax[(size_t)Ap[l] + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
-inline int KNSparseMatrix::lineLength(int n_)
+inline size_t KNSparseMatrix::lineLength(size_t n_)
 {
 #ifdef DEBUG
   P_ASSERT_X(n_ < n, "KNSparseMatrix::GetL: Error\n");
 #endif
-  return Ap[n_+1] - Ap[n_];
+  return static_cast<size_t>(Ap[n_+1] - Ap[n_]);
 }
 
 inline void KNSparseMatrix::timesX(double* out, const double* in, double alpha, bool trans) const

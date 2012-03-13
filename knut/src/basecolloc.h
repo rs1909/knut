@@ -30,7 +30,7 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
 {
   public:
 
-    KNAbstractBvpCollocation(KNSystem& sys, const int nint, const int ndeg);
+    KNAbstractBvpCollocation(KNSystem& sys, const size_t nint, const size_t ndeg);
 
     virtual ~KNAbstractBvpCollocation() {}
 
@@ -43,9 +43,9 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
 
     static void   getMetric(KNMatrix& mt, const KNVector& t);
     static void   getDiffMetric(KNMatrix& mt, const KNVector& t);
-    static void   star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, int dim);
-    static double integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, int dim);
-    static int meshlookup(const KNVector& mesh, double t);
+    static void   star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, size_t dim);
+    static double integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, size_t dim);
+    static size_t meshlookup(const KNVector& mesh, double t);
 
     void   star(KNVector& out, const KNVector& sol);
     double integrate(const KNVector& v1, const KNVector& v2);
@@ -53,9 +53,9 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     double integrateWithCp(const KNVector& v1, const KNVector& v2, const KNVector& v3);
 
     void   phaseStar(KNVector& V1, const KNVector& V2);
-    void   phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<int>& Re, const KNArray1D<int>& Im);
+    void   phaseRotationStar(KNVector& V1, const KNVector& V2, const KNArray1D<size_t>& Re, const KNArray1D<size_t>& Im);
 
-    void   importProfile(KNVector& out, const KNVector& in, const KNVector& mesh, int deg_, bool adapt);
+    void   importProfile(KNVector& out, const KNVector& in, const KNVector& mesh, size_t deg_, bool adapt);
     void   exportProfile(KNVector& out, const KNVector& mshint, const KNVector& mshdeg, const KNVector& in);
     void   pdMeshConvert(KNVector& newprofile, KNVector& newtangent, const KNVector& oldprofile, const KNVector& oldtangent);
     
@@ -66,23 +66,23 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     // continuation of solution
 
     virtual void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol) = 0;
-    virtual void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p) = 0;   // sol is currently not needed
+    virtual void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p) = 0;   // sol is currently not needed
     virtual void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol) = 0;          // sol is currently not needed
 
     // supplementary
-    inline int nDim() const
+    inline size_t nDim() const
     {
       return ndim;
     }
-    inline int nPar() const
+    inline size_t nPar() const
     {
       return npar;
     }
-    inline int nInt() const
+    inline size_t nInt() const
     {
       return nint;
     }
-    inline int nDeg() const
+    inline size_t nDeg() const
     {
       return ndeg;
     }
@@ -100,7 +100,7 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     {
       return mesh;
     }
-    inline double Profile(int i, int d)
+    inline double Profile(size_t i, size_t d)
     {
       return mesh(i) + meshINT(d)*(mesh(i + 1) - mesh(i));
     }
@@ -113,11 +113,11 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     // the equations
     KNSystem* sys;
 
-    const int ndim;
-    const int npar;
+    const size_t ndim;
+    const size_t npar;
 
-    const int nint;
-    const int ndeg;
+    const size_t nint;
+    const size_t ndeg;
 
     KNVector    time;
     KNArray1D<double> timeMSH;  // the representation points

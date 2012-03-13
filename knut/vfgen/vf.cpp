@@ -293,7 +293,7 @@ void VectorField::AddStateVariable(StateVariable *sv) { StateVariables.push_back
 int VectorField::FindVar(const symbol &var)
 {
   bool found = false;
-  unsigned k;
+  size_t k;
   for (k = 0; k < varname_list.nops(); ++k)
   {
     if (varname_list[k] == var)
@@ -310,16 +310,15 @@ int VectorField::FindVar(const symbol &var)
   }
   else
   {
-    vindex = k;
+    vindex = static_cast<int>(k);
   }
   return vindex;
 }
 
 GiNaC::lst VectorField::FindVarsInEx(const GiNaC::ex &e)
 {
-  unsigned k;
   GiNaC::lst vlist;
-  for (k = 0; k < varname_list.nops(); ++k)
+  for (size_t k = 0; k < varname_list.nops(); ++k)
   {
     if (e.has(varname_list[k])) vlist.append(varname_list[k]);
   }
@@ -333,11 +332,11 @@ void VectorField::AddFunction(Function *f)
 
 ex VectorField::SubsAllExpressions(const ex& e)
 {
-  size_t na = exprname_list.nops();
+  const size_t na = exprname_list.nops();
   ex s = e;
-  for (off_t k = na - 1; k >= 0; --k)
+  for (size_t k = 0; k < na; ++k)
   {
-    s = s.subs(ex_to<symbol>(exprname_list[k]) == exprformula_list[k]);
+    s = s.subs(ex_to<symbol>(exprname_list[k]) == exprformula_list[na-k-1]);
   }
   return s;
 }
@@ -345,7 +344,7 @@ ex VectorField::SubsAllExpressions(const ex& e)
 int VectorField::FindDelay(ex &del)
 {
   bool found = false;
-  unsigned k;
+  size_t k;
   for (k = 0; k < Delays.size(); ++k)
   {
 //     cerr << "FindDelay: Delays[" << k << "] = " << Delays[k] << " " << del << endl;
@@ -363,7 +362,7 @@ int VectorField::FindDelay(ex &del)
   }
   else
   {
-    dindex = k;
+    dindex = static_cast<int>(k);
   }
   return dindex;
 }
@@ -506,7 +505,7 @@ int VectorField::ProcessSymbols(void)
   // Process the state variable names and default ICs
   //   (but not the formulas for the vector field)
   // NAME  __AND__ Initial condition
-  int nv = 0;
+  size_t nv = 0;
   for (vector<StateVariable *>::iterator sv = StateVariables.begin(); sv != StateVariables.end(); ++sv, ++nv)
   {
     symbol var(!(*sv)->Latex().empty()
@@ -557,7 +556,7 @@ int VectorField::ProcessSymbols(void)
   // constants, parameters, and the independent variable [for
   // delay equations].)
   //
-  for (int j = 0; j < nv; ++j)
+  for (size_t j = 0; j < nv; ++j)
   {
     allsymbols.append(varname_list.op(j));
   }

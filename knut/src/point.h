@@ -35,7 +35,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
 
     // constructor
     KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
-      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul = MULTIPLIERS);
+      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul = MULTIPLIERS);
     virtual ~KNDdePeriodicSolution();
 
     void    Stability(bool init);
@@ -54,9 +54,9 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
     inline void    print(char* file)
     {
       std::ofstream ff(file);
-      for (int i = 0; i < colloc->nInt()*colloc->nDeg() + 1; i++)
+      for (size_t i = 0; i < colloc->nInt()*colloc->nDeg() + 1; i++)
       {
-        for (int j = 0; j < colloc->nDim(); j++) ff << sol(colloc->nDim()*i + j) << "\t";
+        for (size_t j = 0; j < colloc->nDim(); j++) ff << sol(colloc->nDim()*i + j) << "\t";
         ff << "\n";
       }
     }
@@ -77,7 +77,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
       KNSparseBlockMatrix& AA, KNBlockVector& RHS,                      // output
       KNVector& parPrev, KNVector& par,                           // parameters
       KNVector& solPrev, KNVector& sol,                           // solution
-      KNArray1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
+      KNArray1D<size_t>& varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
     );
     void postProcess();
@@ -108,7 +108,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
 //     0  0.000000e+00  0.000000e+00  0.000000e+00   0    0
 //-------------------------------------------------------//
 
-inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Var>& var, const std::vector<std::string>& parNames)
+inline void parNamePrint(std::ostream& out, size_t npar, Var cp, const KNArray1D<Var>& var, const std::vector<std::string>& parNames)
 {
 //   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
@@ -118,7 +118,7 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Va
   out << std::left << std::setfill(' ') << std::setw(2) <<  "TP" << ' '; // 3 at the end
   out << ' ' << std::left << std::setfill(' ') << std::setw(12) << "NORM" << "  "; // 2 at the end
   out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(VarToIndex(cp,npar)) << "  "; // 2 at the end
-  for (int j = 1; j < var.size(); j++)
+  for (size_t j = 1; j < var.size(); j++)
   {
     out << ' ' << std::left << std::setfill(' ') << std::setw(12) << parNames.at(VarToIndex(var(j),npar)) << "  "; // 2 at the end
   }
@@ -126,9 +126,9 @@ inline void parNamePrint(std::ostream& out, int npar, Var cp, const KNArray1D<Va
   out << std::left << std::setfill(' ') << std::setw(2) << "IT";
 }
 
-inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const KNArray1D<Var>& var, int lb, BifType tp, double norm, int ustab, int it)
+inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const KNArray1D<Var>& var, size_t lb, BifType tp, double norm, size_t ustab, size_t it)
 {
-  const int npar = par.size() - (VarEnd - VarInternal);
+  const size_t npar = par.size() - (VarEnd - VarInternal);
   out.fill(' ');
   out.unsetf(std::ios::adjustfield);
   out.precision(6);
@@ -145,7 +145,7 @@ inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const 
   else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << par(VarToIndex(cp,npar)) << "  "; // 2 at the end
-  for (int j = 1; j < var.size(); j++)
+  for (size_t j = 1; j < var.size(); j++)
   {
     out << std::right << std::setfill(' ') << std::setw(13) << par(VarToIndex(var(j),npar)) << "  "; // 2 at the end
   }

@@ -115,7 +115,7 @@ void VectorField::Knut_PrintParDerivs(ostream &dout, const vector<ex> &vf0)
   size_t np = parname_list.nops();
   // int na = exprname_list.nops();
   // int nf = funcname_list.nops();
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
 
   for (size_t j = 0; j < np; ++j)
@@ -201,7 +201,7 @@ void VectorField::Knut_PrintXandParJacobians(ostream &dout, const vector<ex> &vf
   // int nf = funcname_list.nops();
   size_t nd = Delays.size();
   
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
 
   std::vector<std::vector<size_t> > row(np*(nd+1));
@@ -366,7 +366,7 @@ void VectorField::Knut_PrintHessiansTimesV(ostream &dout, const vector<ex> &vf0)
 // PrintKnut -- The Knut code generator.
 //
 
-void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
+void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
 {
   size_t nc = conname_list.nops();
   size_t nv = varname_list.nops();
@@ -404,11 +404,11 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << endl;
   sys_out << "extern \"C\" {\n";
   sys_out << endl;
-  sys_out << "int sys_ndim()  { return " << nv << "; }  // KNSystem dimension\n";
-  sys_out << "int sys_npar()  { return " << par_shift + np << "; }  // Number of parameters, plus one (for the period)\n";
-  sys_out << "int sys_ntau()  { return " << 1 + Delays.size() << "; }  // Number of delays, plus one\n";
-  sys_out << "int sys_nderi() { return 2; }  // Order of derivatives computed here\n";
-  sys_out << "int sys_nevent() { return " << nf << "; }  // Number of event functions\n";
+  sys_out << "size_t sys_ndim()  { return " << nv << "; }  // KNSystem dimension\n";
+  sys_out << "size_t sys_npar()  { return " << par_shift + np << "; }  // Number of parameters, plus one (for the period)\n";
+  sys_out << "size_t sys_ntau()  { return " << 1 + Delays.size() << "; }  // Number of delays, plus one\n";
+  sys_out << "size_t sys_nderi() { return 2; }  // Order of derivatives computed here\n";
+  sys_out << "size_t sys_nevent() { return " << nf << "; }  // Number of event functions\n";
   sys_out << endl;
   
   bool hasMass = false;
@@ -435,7 +435,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//" << endl;
   sys_out << "// sys_p_rhs(...) computes the vector field.\n";
   sys_out << "//" << endl;
-  sys_out << "void sys_p_rhs(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, int sel)\n";
+  sys_out << "void sys_p_rhs(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, size_t sel)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -457,7 +457,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
 
@@ -511,7 +511,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     // sys_out << endl;
   }
 
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   //
@@ -543,7 +543,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// with respect to the j-th parameter.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_jacp(KNArray3D<double>& jac_, const KNArray1D<double>& time, int j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_jacp(KNArray3D<double>& jac_, const KNArray1D<double>& time, size_t j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -565,7 +565,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     // sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintParDerivs(sys_out, vf0);
@@ -583,7 +583,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// with respect to the k-th delayed state vector and the j-th parameter.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_jacxp(KNArray3D<double>& jac_, const KNArray1D<double>& time, int k, int j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_jacxp(KNArray3D<double>& jac_, const KNArray1D<double>& time, size_t k, size_t j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -606,7 +606,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     // sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintXandParJacobians(sys_out, vf0);
@@ -626,7 +626,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "// then multiplies this by the m-th column of v to obtain a matrix.\n";
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "static inline void " << Name() << "_hess_times_v(KNArray3D<double>& jac_, const KNArray1D<double>& time, int k1, int k2, int m, const KNArray3D<double>& v_, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
+  sys_out << "static inline void " << Name() << "_hess_times_v(KNArray3D<double>& jac_, const KNArray1D<double>& time, size_t k1, size_t k2, int m, const KNArray3D<double>& v_, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -650,7 +650,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
     GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
     sys_out << endl;
   }
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   Knut_PrintHessiansTimesV(sys_out, vf0);
@@ -690,7 +690,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "//\n";
   // Function definition starts here.
   sys_out << "//" << endl;
-  sys_out << "void sys_p_deri(KNArray3D<double>& jac_, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, int sel,\nint nx_, const int* vx_, int np_, const int* vp_, const KNArray3D<double>& v_)\n";
+  sys_out << "void sys_p_deri(KNArray3D<double>& jac_, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, size_t sel,\nsize_t nx_, const size_t* vx_, size_t np_, const size_t* vp_, const KNArray3D<double>& v_)\n";
   sys_out << "{\n";
   sys_out << "    if (nx_ == 1 && np_ == 0)\n";
   sys_out << "        " << Name() << "_jacx(jac_, time, vx_[0], Zlags_, par_);\n";
@@ -731,7 +731,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    // par_(0) is the period.\n";
   GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
   sys_out << endl;
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   sys_out << "        out(0,idx) = 0.0;\n";
@@ -761,7 +761,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << endl;
   sys_out << "//\n";
   sys_out << endl;
-  sys_out << "void sys_p_dtau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_, int p_)\n";
+  sys_out << "void sys_p_dtau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_, size_t p_)\n";
   sys_out << "{\n";
   if (HasPi)
   {
@@ -778,7 +778,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> options)
   sys_out << "    // par_(0) is the period.\n";
   GetFromVector(sys_out, "    const double ", parname_list, "par_", "()", par_shift, ";");
   sys_out << endl;
-  sys_out << "    for (int idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "    for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "    {\n";
   sys_out << "        const double t = time(idx);\n";
   sys_out << "        out(0,idx) = 0.0;\n";
@@ -933,7 +933,7 @@ void VectorField::Knut_tau_p(std::vector<GiNaC::ex>& exls)
 {
   const size_t nd = Delays.size()+1;
   const size_t np = parname_list.nops();
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
   exls.resize(nd*(np+par_shift));
   for (size_t i = 1; i < nd; ++i) 
@@ -965,7 +965,7 @@ void VectorField::Knut_RHS_p(std::vector<GiNaC::ex>& exls)
 {
   const size_t nv = varvecfield_list.nops();
   const size_t np = parname_list.nops();
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
   exls.resize(nv*(np+par_shift));
   for (size_t i = 0; i < nv; ++i)
@@ -1083,7 +1083,7 @@ void VectorField::Knut_stpar(std::vector<double>& par)
 {  
   const size_t nc = conname_list.nops();
   const size_t np = parname_list.nops();
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
   else par[0] = 1.0;
   par.resize(np+par_shift);
@@ -1140,7 +1140,7 @@ void VectorField::Knut_stsol(std::vector<GiNaC::ex>& exls)
 void VectorField::Knut_parnames(std::vector<std::string>& pnames)
 {
   const size_t np = parname_list.nops();  
-  int par_shift = 1;
+  size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
   pnames.resize(np+par_shift);
   for (size_t k = 0; k < np; ++k)
@@ -1207,21 +1207,21 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     std::string name(ex_to<function>(expr).get_name());
     if (name == "par_")
     {
-      int pid = ex_to<numeric>(expr.op(0)).to_int();
+      size_t pid = static_cast<size_t>(ex_to<numeric>(expr.op(0)).to_int());
       for (size_t k = 0; k < vsize; ++k) res[k*skip] = par(pid);
       return;
     }
     if (name == "Zlags_")
     {
-      int d1 = ex_to<numeric>(expr.op(0)).to_int();
-      int d2 = ex_to<numeric>(expr.op(1)).to_int();
+      size_t d1 = static_cast<size_t>(ex_to<numeric>(expr.op(0)).to_int());
+      size_t d2 = static_cast<size_t>(ex_to<numeric>(expr.op(1)).to_int());
       for (size_t k = 0; k < vsize; ++k) res[k*skip] = x(d1,d2,k);
       return;
     }
     if (name == "VZlags_")
     {
-      int d1 = ex_to<numeric>(expr.op(0)).to_int();
-      int d2 = ex_to<numeric>(expr.op(1)).to_int();
+      size_t d1 = static_cast<size_t>(ex_to<numeric>(expr.op(0)).to_int());
+      size_t d2 = static_cast<size_t>(ex_to<numeric>(expr.op(1)).to_int());
       for (size_t k = 0; k < vsize; ++k) res[k*skip] = v(d1,d2,k);
       return;
     }
@@ -1292,7 +1292,7 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
   }
 }
 
-void VectorField::Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, const size_t nv, const size_t nps, const size_t nd )
+void VectorField::Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, const size_t, const size_t, const size_t nd )
 {
   KNArray3D<double> dummy_x, dummy_v;
   const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
@@ -1302,7 +1302,7 @@ void VectorField::Knut_tau_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>
   }
 }
 
-void VectorField::Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp, const size_t nv, const size_t nps, const size_t nd )
+void VectorField::Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp, const size_t, const size_t, const size_t nd )
 {
   KNArray3D<double> dummy_x, dummy_v;
   const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
@@ -1313,7 +1313,7 @@ void VectorField::Knut_tau_p_eval( std::vector<GiNaC::ex>& exls, KNArray2D<doubl
 }
 
 
-void VectorField::Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel )
+void VectorField::Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t /*sel*/ )
 {
   KNArray3D<double> dummy_v;
   const size_t skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
@@ -1324,7 +1324,7 @@ void VectorField::Knut_RHS_eval( std::vector<GiNaC::ex>& exls, KNArray2D<double>
   }
 }
 
-void VectorField::Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int alpha, const size_t nv, const size_t nps, const size_t nd)
+void VectorField::Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t /*sel*/, size_t alpha, const size_t nv, const size_t /*nps*/, const size_t /*nd*/)
 {
   KNArray3D<double> dummy_v;
   const size_t skip = (((size_t)out.pointer(0,0,1)) - ((size_t)out.pointer(0,0,0)))/sizeof(double);
@@ -1334,7 +1334,7 @@ void VectorField::Knut_RHS_p_eval( std::vector<GiNaC::ex>& exls, KNArray3D<doubl
   }	
 }
 
-void VectorField::Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, const size_t nv, const size_t nps, const size_t nd)
+void VectorField::Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t /*sel*/, size_t del, const size_t nv, const size_t /*nps*/, const size_t nd)
 {
   KNArray3D<double> dummy_v;
   for (size_t i = 0; i < nv; ++i)
@@ -1348,7 +1348,7 @@ void VectorField::Knut_RHS_x_eval( std::vector<GiNaC::ex>& exls, KNArray3D<doubl
   }	
 }
 
-void VectorField::Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, int sel, int del, int alpha, const size_t nv, const size_t nps, const size_t nd)
+void VectorField::Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t /*sel*/, size_t del, size_t alpha, const size_t nv, const size_t nps, const size_t nd)
 {
   KNArray3D<double> dummy_v;
   for (size_t i = 0; i < nv; ++i)
@@ -1362,7 +1362,7 @@ void VectorField::Knut_RHS_xp_eval( std::vector<GiNaC::ex>& exls, KNArray3D<doub
   }	
 }
 
-void VectorField::Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, int sel, int del1, int del2, const size_t nv, const size_t nps, const size_t nd)
+void VectorField::Knut_RHS_xx_eval( std::vector<GiNaC::ex>& exls, KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& vv, const KNVector& par, size_t /*sel*/, size_t del1, size_t del2, const size_t nv, const size_t /*nps*/, const size_t nd)
 {
   KNArray3D<double> dummy_v;
   for (size_t i = 0; i < nv; ++i)

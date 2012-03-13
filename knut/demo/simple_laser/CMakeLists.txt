@@ -9,10 +9,10 @@ INSTALL( FILES sys-${NAME}.cpp
     DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-1
-    COMMAND exec knut -c ${CFILEDIR}/cfile-start.knut )
+    COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-start.knut )
 ADD_CUSTOM_TARGET( ${NAME}-test-2
-    COMMAND exec knut -c ${CFILEDIR}/cfile-hbsw.knut )
+    COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-hbsw.knut )
 ADD_CUSTOM_TARGET( ${NAME}-test-3
-    COMMAND exec knut -c ${CFILEDIR}/cfile-hbct.knut )
+    COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-hbct.knut )
 	
 ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )

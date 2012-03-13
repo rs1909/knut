@@ -19,7 +19,7 @@ class KNBlockVector
 {
   public:
 
-    inline KNBlockVector(int i, int, int k) : V1(i), V3(k)
+    inline KNBlockVector(size_t i, size_t, size_t k) : V1(i), V3(k)
     { }
     inline KNBlockVector(const KNBlockVector& hv) : V1(hv.V1), V3(hv.V3)
     { }
@@ -55,7 +55,7 @@ template< class FACT > class KNBlockMatrix
   public:
 
     // constructing Sparse-Dense type hypermatrix
-    KNBlockMatrix(int i, int, int k, int nz);
+    KNBlockMatrix(size_t i, size_t, size_t k, size_t nz);
     ~KNBlockMatrix();
 
     inline FACT&        getA11()
@@ -66,7 +66,7 @@ template< class FACT > class KNBlockMatrix
     {
       return *A13;
     }
-    inline KNVector&      getA13(int i)
+    inline KNVector&      getA13(size_t i)
     {
       return (*A13)(i);
     }
@@ -74,7 +74,7 @@ template< class FACT > class KNBlockMatrix
     {
       return *A31;
     }
-    inline KNVector&      getA31(int i)
+    inline KNVector&      getA31(size_t i)
     {
       return (*A31)(i);
     }
@@ -82,7 +82,7 @@ template< class FACT > class KNBlockMatrix
     {
       return *A33;
     }
-    inline double&      getA33(int i, int j)
+    inline double&      getA33(size_t i, size_t j)
     {
       return (*A33)(i, j);
     }
@@ -97,18 +97,18 @@ template< class FACT > class KNBlockMatrix
     (
       T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
       JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
-      int j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
+      size_t j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
     );
     template< class T, bool DTR > inline void __BEMWF
     (
-      int bord,
+      size_t bord,
       T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix& D,
       JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector& G,
       JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector& deltaStar
     );
     template< class T, bool trans > inline void __BEMW
     (
-      int bord,
+      size_t bord,
       T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
       JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
       JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector&       deltaStar,
@@ -117,11 +117,11 @@ template< class FACT > class KNBlockMatrix
 
     void solve(KNBlockVector& X, const KNBlockVector& F);
 
-    void solve(KNBlockVector& X, const KNBlockVector& F, int bord);
+    void solve(KNBlockVector& X, const KNBlockVector& F, size_t bord);
 
-    template<bool trans> void multiply(KNBlockVector& X, const KNBlockVector& F, int bord);
+    template<bool trans> void multiply(KNBlockVector& X, const KNBlockVector& F, size_t bord);
 
-    void check(const KNBlockVector& X, const KNBlockVector& F, int bord);
+    void check(const KNBlockVector& X, const KNBlockVector& F, size_t bord);
 
     void solveDirect(KNBlockVector& X, const KNBlockVector& F);
 
@@ -138,13 +138,13 @@ template< class FACT > class KNBlockMatrix
 
     void solveTr(KNVector& x, double& z, const KNVector& f, const double& h);   // BEM
 
-    template<bool trans> void multiply(int bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3);
+    template<bool trans> void multiply(size_t bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3);
 
-    template<bool trans> void check(int bord, const KNVector& x, const KNVector& z, const KNVector& f, const KNVector& h);
+    template<bool trans> void check(size_t bord, const KNVector& x, const KNVector& z, const KNVector& f, const KNVector& h);
 
-    void solve(int bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
+    void solve(size_t bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
 
-    void solveTr(int bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
+    void solveTr(size_t bord, KNVector& x, KNVector& z, const KNVector& f, const KNVector& h);   // BEMW
 
   protected:
 
@@ -188,7 +188,7 @@ typedef KNBlockMatrix<KNLuSparseMatrix> KNSparseBlockMatrix;
 ///--------------------------------
 
 // constructing Sparse-Dense type hypermatrix
-template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(int i, int j, int k, int nz) :
+template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(size_t i, size_t j, size_t k, size_t nz) :
     bem_v_1(i),
     bem_vStar_1(i),
     bem_w_1(i),
@@ -218,7 +218,7 @@ template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(int i, int j, int k, i
     delta1 = new KNVector(k + 1);
     delta1Star = new KNVector(k + 1);
 
-    for (int r = 0; r < k + 1; r++)
+    for (size_t r = 0; r < k + 1; r++)
     {
       (*VV1)(r).init(i + r);
       (*VV1Star)(r).init(i + r);
@@ -321,46 +321,46 @@ inline void KNBlockMatrix<FACT> :: __BEMWS
 (
   T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
   JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
-  int j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
+  size_t j, const JagVector2D& V, const JagVector2D& VStar, const KNVector& delta, const KNVector& deltaStar, bool trans
 )
 {
 
-  for (int k = j; k > 0; k--)
+  for (size_t k = j; k > 0; k--)
   {
-    const int len   = A.col() + k - 1;
-    const int aalen = A.col();
-    const int ddlen = k - 1;
-    const int idx   = k - 1;
+    const size_t len   = A.col() + k - 1;
+    const size_t aalen = A.col();
+    const size_t ddlen = k - 1;
+    const size_t idx   = k - 1;
 
     // Y_k = ( -v*_k 1 )^T . f_k
     Y(k) = F(k)(len);
-    for (int r = 0; r < len; r++) Y(k) -= VStar(k)(r) * F(k)(r);  // ddot with range
+    for (size_t r = 0; r < len; r++) Y(k) -= VStar(k)(r) * F(k)(r);  // ddot with range
     Y(k) /= deltaStar(k);
 
     // residuals
-    for (int r = 0; r < aalen; r++)          F(k - 1)(r)         = F(k)(r)         - B(idx)(r) * Y(k);  // ???
-    if (!DTR) for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = F(k)(aalen + r) - D(r, idx) * Y(k);
-    else     for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = F(k)(aalen + r) - D(idx, r) * Y(k);
+    for (size_t r = 0; r < aalen; r++)          F(k - 1)(r)         = F(k)(r)         - B(idx)(r) * Y(k);  // ???
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = F(k)(aalen + r) - D(r, idx) * Y(k);
+    else     for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = F(k)(aalen + r) - D(idx, r) * Y(k);
     G(k) = F(k)(len) - D(idx, idx) * Y(k);
   }
 
   A.solve(X(0), F(0), trans);
   double ypp;
 
-  for (int k = 1; k <= j; k++)
+  for (size_t k = 1; k <= j; k++)
   {
-    const int len   = A.col() + k - 1;
-    const int aalen = A.col();
-    const int ddlen = k - 1;
-    const int idx   = k - 1;
+    const size_t len   = A.col() + k - 1;
+    const size_t aalen = A.col();
+    const size_t ddlen = k - 1;
+    const size_t idx   = k - 1;
 
     ypp = G(k);
-    for (int r = 0; r < aalen; r++)          ypp -= BStar(idx)(r) * X(k - 1)(r);     // ddot with range
-    if (!DTR) for (int r = 0; r < ddlen; r++) ypp -= D(idx, r) * X(k - 1)(aalen + r);  // ddot with range this won't be vectorized.
-    else     for (int r = 0; r < ddlen; r++) ypp -= D(r, idx) * X(k - 1)(aalen + r);
+    for (size_t r = 0; r < aalen; r++)          ypp -= BStar(idx)(r) * X(k - 1)(r);     // ddot with range
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) ypp -= D(idx, r) * X(k - 1)(aalen + r);  // ddot with range this won't be vectorized.
+    else     for (size_t r = 0; r < ddlen; r++) ypp -= D(r, idx) * X(k - 1)(aalen + r);
     ypp /= delta(k);
 
-    for (int r = 0; r < len; r++) X(k)(r) = X(k - 1)(r) - V(k)(r) * ypp;    // daxpy with range
+    for (size_t r = 0; r < len; r++) X(k)(r) = X(k - 1)(r) - V(k)(r) * ypp;    // daxpy with range
     X(k)(len) = Y(k) + ypp;
   }
 }
@@ -369,48 +369,48 @@ inline void KNBlockMatrix<FACT> :: __BEMWS
 template<class FACT> template<class T, bool DTR>
 inline void KNBlockMatrix<FACT> :: __BEMWF
 (
-  int bord,
+  size_t bord,
   T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix& D,
   JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector& G,
   JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector& deltaStar
 )
 {
-  for (int k = 1; k < bord + 1; k++)
+  for (size_t k = 1; k < bord + 1; k++)
   {
-    const int len   = A.col() + k - 1;
-    const int aalen = A.col();
-    const int ddlen = k - 1;
-    const int idx   = k - 1;
+    const size_t len   = A.col() + k - 1;
+    const size_t aalen = A.col();
+    const size_t ddlen = k - 1;
+    const size_t idx   = k - 1;
 
     // with the ordinary solver
-    for (int r = 0; r < aalen; r++)          F(k - 1)(r)         = B(idx)(r);   // dcopy with range
-    if (!DTR) for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(r, idx);  // dcopy with range
-    else     for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(idx, r);
+    for (size_t r = 0; r < aalen; r++)          F(k - 1)(r)         = B(idx)(r);   // dcopy with range
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(r, idx);  // dcopy with range
+    else     for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(idx, r);
 
     __BEMWS<T, DTR>(A, B, BStar, D, X, Y, F, G, k - 1, V, VStar, delta, deltaStar, DTR);
 
     // VV
-    for (int r = 0; r < len; r++) V(k)(r) = X(k - 1)(r);  // dcopy with range
+    for (size_t r = 0; r < len; r++) V(k)(r) = X(k - 1)(r);  // dcopy with range
     // delta
     delta(k) = D(idx, idx);
-    for (int r = 0; r < aalen; r++)          delta(k) -= BStar(idx)(r) * V(k)(r);   // ddot with range
-    if (!DTR) for (int r = 0; r < ddlen; r++) delta(k) -= D(idx, r) * V(k)(aalen + r);
-    else     for (int r = 0; r < ddlen; r++) delta(k) -= D(r, idx) * V(k)(aalen + r);
+    for (size_t r = 0; r < aalen; r++)          delta(k) -= BStar(idx)(r) * V(k)(r);   // ddot with range
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) delta(k) -= D(idx, r) * V(k)(aalen + r);
+    else     for (size_t r = 0; r < ddlen; r++) delta(k) -= D(r, idx) * V(k)(aalen + r);
 
     // with the adjoint solver
-    for (int r = 0; r < aalen; r++)          F(k - 1)(r)         = BStar(idx)(r);   // dcopy with range
-    if (!DTR) for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(idx, r);
-    else     for (int r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(r, idx);
+    for (size_t r = 0; r < aalen; r++)          F(k - 1)(r)         = BStar(idx)(r);   // dcopy with range
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(idx, r);
+    else     for (size_t r = 0; r < ddlen; r++) F(k - 1)(aalen + r) = D(r, idx);
 
     __BEMWS<T, DTR>(A, B, BStar, D, X, Y, F, G, k - 1, VStar, V, deltaStar, delta, !DTR);
 
     // VV
-    for (int r = 0; r < len; r++) VStar(k)(r) = X(k - 1)(r);             // dcopy with range
+    for (size_t r = 0; r < len; r++) VStar(k)(r) = X(k - 1)(r);             // dcopy with range
     // delta
     deltaStar(k) = D(idx, idx);
-    for (int r = 0; r < aalen; r++)          deltaStar(k) -= B(idx)(r) * VStar(k)(r);          // ddot with range
-    if (!DTR) for (int r = 0; r < ddlen; r++) deltaStar(k) -= D(r, idx) * VStar(k)(aalen + r);
-    else     for (int r = 0; r < ddlen; r++) deltaStar(k) -= D(idx, r) * VStar(k)(aalen + r);
+    for (size_t r = 0; r < aalen; r++)          deltaStar(k) -= B(idx)(r) * VStar(k)(r);          // ddot with range
+    if (!DTR) for (size_t r = 0; r < ddlen; r++) deltaStar(k) -= D(r, idx) * VStar(k)(aalen + r);
+    else     for (size_t r = 0; r < ddlen; r++) deltaStar(k) -= D(idx, r) * VStar(k)(aalen + r);
   }
 }
 
@@ -419,7 +419,7 @@ inline void KNBlockMatrix<FACT> :: __BEMWF
 template<class FACT> template<class T, bool trans>
 inline void KNBlockMatrix<FACT> :: __BEMW
 (
-  int bord,
+  size_t bord,
   T&           A,  JagVector2D& B,      JagVector2D&  BStar, KNMatrix&       D,
   JagVector2D& X,  KNVector&      Y,      JagVector2D&  F,     KNVector&       G,
   JagVector2D& V,  JagVector2D& VStar,  KNVector&       delta, KNVector&       deltaStar,
@@ -428,13 +428,13 @@ inline void KNBlockMatrix<FACT> :: __BEMW
 {
   __BEMWF<T, trans>(bord, A, B, BStar, D, X, Y, F, G, V, VStar, delta, deltaStar);
 
-  for (int i = 0; i < A.row(); i++) F(bord)(i)           = f(i);      // dcopy with range : F(bord)[rng(0,A.Row)] = f;
-  for (int i = 0; i < bord; i++)    F(bord)(A.row() + i) = g(i);      // dcopy with range : F(bord)[rng(A.Row,A.Row+bord)] = g[rng(0,bord)];
+  for (size_t i = 0; i < A.row(); i++) F(bord)(i)           = f(i);      // dcopy with range : F(bord)[rng(0,A.Row)] = f;
+  for (size_t i = 0; i < bord; i++)    F(bord)(A.row() + i) = g(i);      // dcopy with range : F(bord)[rng(A.Row,A.Row+bord)] = g[rng(0,bord)];
 
   __BEMWS<T, trans>(A, B, BStar, D, X, Y, F, G, bord, V, VStar, delta, deltaStar, trans);
 
-  for (int i = 0; i < A.row(); i++) x(i) = X(bord)(i);                // dcopy with range : x = X(bord)[rng(0,A.Row)];
-  for (int i = 0; i < bord; i++)    y(i) = X(bord)(A.row() + i);      // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
+  for (size_t i = 0; i < A.row(); i++) x(i) = X(bord)(i);                // dcopy with range : x = X(bord)[rng(0,A.Row)];
+  for (size_t i = 0; i < bord; i++)    y(i) = X(bord)(A.row() + i);      // dcopy with range : y = X(bord)[rng(A.Row,A.Row+bord)];
 }
 
 template<class FACT> template<bool trans>
@@ -485,7 +485,7 @@ void KNBlockMatrix<FACT>::check(const KNVector& x, const double& z, const KNVect
 }
 
 template<class FACT> template<bool trans>
-void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3)
+void KNBlockMatrix<FACT>::multiply(size_t bord, KNVector& R1, KNVector& R3, const KNVector& X1, const KNVector& X3)
 {
   const FACT&         _A11 = *A11;
   const JagVector2D&  _A13 = *A13;
@@ -498,9 +498,9 @@ void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const K
     else         R1 = !_A11 * X1;
     if (A33)
     {
-      for (int i = 0; i < X1.size(); i++)
+      for (size_t i = 0; i < X1.size(); i++)
       {
-        for (int j = 0; j < bord; j++)
+        for (size_t j = 0; j < bord; j++)
         {
           if (!trans) R1(i) += _A13(j)(i) * X3(j);
           else         R1(i) += _A31(j)(i) * X3(j);
@@ -512,7 +512,7 @@ void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const K
   {
     R1.clear();
   }
-  for (int i = 0; i < bord; i++)
+  for (size_t i = 0; i < bord; i++)
   {
     if (A11)
     {
@@ -526,9 +526,9 @@ void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const K
   }
   if (A33)
   {
-    for (int i = 0; i < bord; i++)
+    for (size_t i = 0; i < bord; i++)
     {
-      for (int j = 0; j < bord; j++)
+      for (size_t j = 0; j < bord; j++)
       {
         if (!trans) R3(i) += _A33(i, j) * X3(j);
         else         R3(i) += _A33(j, i) * X3(j);
@@ -538,13 +538,13 @@ void KNBlockMatrix<FACT>::multiply(int bord, KNVector& R1, KNVector& R3, const K
 }
 
 template<class FACT> template<bool trans>
-void KNBlockMatrix<FACT>::multiply(KNBlockVector& X, const KNBlockVector& F, int bord)
+void KNBlockMatrix<FACT>::multiply(KNBlockVector& X, const KNBlockVector& F, size_t bord)
 {
   multiply<trans> (bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
 
 template<class FACT> template<bool trans>
-void KNBlockMatrix<FACT>::check(int bord, const KNVector& X1, const KNVector& X3, const KNVector& F1, const KNVector& F3)
+void KNBlockMatrix<FACT>::check(size_t bord, const KNVector& X1, const KNVector& X3, const KNVector& F1, const KNVector& F3)
 {
   // this may be buggy with some compilers
   const FACT&         _A11 = *A11;
@@ -566,7 +566,7 @@ void KNBlockMatrix<FACT>::check(int bord, const KNVector& X1, const KNVector& X3
 }
 
 template<class FACT>
-void KNBlockMatrix<FACT>::check(const KNBlockVector& X, const KNBlockVector& F, int bord)
+void KNBlockMatrix<FACT>::check(const KNBlockVector& X, const KNBlockVector& F, size_t bord)
 {
   check<false>(bord, X.getV1(), X.getV3(), F.getV1(), F.getV3());
 }
@@ -585,14 +585,14 @@ void KNBlockMatrix<FACT>::solveTr(KNVector& x, double& z, const KNVector& f, con
 }
 
 template<class FACT>
-void KNBlockMatrix<FACT>::solve(int bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
+void KNBlockMatrix<FACT>::solve(size_t bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
 {
   __BEMW<FACT, false>(bord, *A11, *A13, *A31, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<false>( bord, X1, X3, F1, F3 );
 }
 
 template<class FACT>
-void KNBlockMatrix<FACT>::solveTr(int bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
+void KNBlockMatrix<FACT>::solveTr(size_t bord, KNVector& X1, KNVector& X3, const KNVector& F1, const KNVector& F3)   // BEMW
 {
   __BEMW<FACT, true>(bord, *A11, *A31, *A13, *A33, *XX1, *YY1, *FF1, *GG1, *VV1, *VV1Star, *delta1, *delta1Star, X1, X3, F1, F3);
   // Check<true>( bord, X1, X3, F1, F3 );
@@ -622,7 +622,7 @@ void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F)
 }
 
 template<class FACT>
-void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F, int bord)
+void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F, size_t bord)
 {
   P_ASSERT_X(A11 != 0, "KNBlockMatrix::Solve Error");
   if (A33 != 0)
@@ -647,7 +647,7 @@ void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F, int bo
 template<class FACT>
 void KNBlockMatrix<FACT>::solveDirect(KNBlockVector& X, const KNBlockVector& F)
 {
-  int dim1, dim3;
+  size_t dim1, dim3;
   if (A11) dim1 = A11->col();
   else dim1 = 0;
   if (A33) dim3 = A33->col();
@@ -658,32 +658,32 @@ void KNBlockMatrix<FACT>::solveDirect(KNBlockVector& X, const KNBlockVector& F)
   KNLuSparseMatrix  AA('R', dim1 + dim3, A11S->nonzeros() + (dim1 + dim3)*(dim3) + dim1*dim3 + 10);
   KNVector  XX(dim1 + dim3), FF(dim1 + dim3);
 
-  for (int i = 0; i < dim1; i++)
+  for (size_t i = 0; i < dim1; i++)
   {
     AA.newLine(A11S->lineLength(i) + dim3);
-    for (int j = 0; j < A11S->lineLength(i); j++)
+    for (size_t j = 0; j < A11S->lineLength(i); j++)
     {
       AA.writeIndex(i, j) = A11S->writeIndex(i, j);
       AA.writeData(i, j) = A11S->writeData(i, j);
     }
-    for (int j = 0; j < dim3; j++)
+    for (size_t j = 0; j < dim3; j++)
     {
-      AA.writeIndex(i, A11S->lineLength(i) + j) = dim1 + j;
+      AA.writeIndex(i, A11S->lineLength(i) + j) = static_cast<int>(dim1 + j);
       AA.writeData(i, A11S->lineLength(i) + j) = getA13(j)(i);
     }
     FF(i) = F.getV1()(i);
   }
-  for (int i = 0; i < dim3; i++)
+  for (size_t i = 0; i < dim3; i++)
   {
     AA.newLine(dim1 + dim3);
-    for (int j = 0;j < dim1;j++)
+    for (size_t j = 0;j < dim1;j++)
     {
-      AA.writeIndex(dim1 + i, j) = j;
+      AA.writeIndex(dim1 + i, j) = static_cast<int>(j);
       AA.writeData(dim1 + i, j) = getA31(i)(j);
     }
-    for (int j = 0;j < dim3;j++)
+    for (size_t j = 0;j < dim3;j++)
     {
-      AA.writeIndex(dim1 + i, dim1 + j) = dim1 + j;
+      AA.writeIndex(dim1 + i, dim1 + j) = static_cast<int>(dim1 + j);
       AA.writeData(dim1 + i, dim1 + j) = getA33(i, j);
     }
     FF(dim1 + i) = F.getV3()(i);
@@ -691,8 +691,8 @@ void KNBlockMatrix<FACT>::solveDirect(KNBlockVector& X, const KNBlockVector& F)
 
   AA.solve(XX, FF);
 
-  for (int i = 0; i < dim1; i++)  X.getV1()(i) = XX(i);
-  for (int i = 0; i < dim3; i++)  X.getV3()(i) = XX(dim1 + i);
+  for (size_t i = 0; i < dim1; i++)  X.getV1()(i) = XX(i);
+  for (size_t i = 0; i < dim3; i++)  X.getV3()(i) = XX(dim1 + i);
 
 //  check( X, F );
   std::cout << "DR ";

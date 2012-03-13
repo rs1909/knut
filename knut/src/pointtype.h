@@ -10,8 +10,10 @@
 #ifndef POINTTYPE_H
 #define POINTTYPE_H
 
+#include <cstring>
+
 enum PtType {
-  SolUser      = -1,
+  SolUser      = 64,
   /// ODE
   SolODE       = 0,
   SolAUTODE    = 10,
@@ -90,13 +92,13 @@ enum BifType
   BifNoConvergence
 };
 
-inline int VarToIndex(Var v, int npar)
+inline size_t VarToIndex(Var v, size_t npar)
 {
   if (v < VarInternal) return v - VarPAR0;
   else return npar + (v - VarInternal);
 }
 
-inline Var IndexToVar(int idx, int npar)
+inline Var IndexToVar(size_t idx, size_t npar)
 {
   if (idx < npar) return static_cast<Var>(VarPAR0 + idx);
   else return static_cast<Var>(VarInternal + (idx - npar));
@@ -105,7 +107,7 @@ inline Var IndexToVar(int idx, int npar)
 template< class T > class KNArray1D;
 
 // helper function, implemented in basepoint.cpp
-BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_);
+BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, size_t npar_);
 
 #define SYS_TYPE_SO "so"
 #define SYS_TYPE_CXX "cpp"

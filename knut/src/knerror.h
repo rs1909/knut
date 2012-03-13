@@ -39,6 +39,14 @@ class KNMessage
       message += std::string(buf);
       return *this;
     }
+    KNMessage& operator<<(size_t i)
+    {
+      char buf[31+1];
+      buf[31] = '\0';
+      snprintf(buf, 31, "%lu", i);
+      message += std::string(buf);
+      return *this;
+    }
     KNMessage& operator<<(double i)
     {
       char buf[31+1];

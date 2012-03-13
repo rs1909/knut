@@ -9,21 +9,21 @@ INSTALL( FILES sys-${NAME}.cpp ${NAME}.vf
 	cfile-ns-2.knut cfile-lp-1.knut cfile-lp-2.knut DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-1
-	COMMAND exec knut -c ${CFILEDIR}/cfile-start.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-start.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-2
-	COMMAND exec knut -c ${CFILEDIR}/cfile-nssw.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-nssw.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-3
-	COMMAND exec knut -c ${CFILEDIR}/cfile-ns-1.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-ns-1.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-4
-	COMMAND exec knut -c ${CFILEDIR}/cfile-ns-2.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-ns-2.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-5
-	COMMAND exec knut -c ${CFILEDIR}/cfile-lp-1.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-lp-1.knut )
 
 ADD_CUSTOM_TARGET( ${NAME}-test-6
-	COMMAND exec knut -c ${CFILEDIR}/cfile-lp-2.knut )
+	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-lp-2.knut )
 
 ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )

@@ -31,7 +31,7 @@ QT4_WRAP_CPP( MOC_CONVERT constqtgui.h )
 IF(APPLE)
   QT4_WRAP_CPP( MOC_SRCS macopenevent.h)
   
-  ADD_EXECUTABLE( Knut MACOSX_BUNDLE 
+  ADD_EXECUTABLE( ${GUI_NAME} MACOSX_BUNDLE 
     main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
@@ -53,35 +53,35 @@ IF(APPLE)
     ${KNUT_SOURCE_DIR}/src/knerror.h
     PROPERTIES MACOSX_PACKAGE_LOCATION Headers)
 
-  TARGET_LINK_LIBRARIES( Knut ${QT_LIBS} 
+  TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS} 
 	${INTERNAL_LIBS} ${EXTERNAL_LIBS}
 	${COREFOUNDATION_LIBRARY})
 
-  SET_TARGET_PROPERTIES( Knut
+  SET_TARGET_PROPERTIES( ${GUI_NAME}
     PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${KNUT_BINARY_DIR}/gui/MacOS/Info.plist )
 
-  ADD_CUSTOM_COMMAND(TARGET Knut
+  ADD_CUSTOM_COMMAND(TARGET ${GUI_NAME}
     POST_BUILD
     COMMAND
-    mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Frameworks"\;
-    mkdir -p "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/"\;
-    cp -HR ${QT_QTGUI_LIBRARY_RELEASE}/Versions/4/Resources/qt_menu.nib "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/"\;
+    mkdir -p "${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Frameworks"\;
+    mkdir -p "${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Resources/"\;
+    cp -HR ${QT_QTGUI_LIBRARY_RELEASE}/Versions/4/Resources/qt_menu.nib "${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Resources/"\;
 # Apparently no plugins are required 
-#    cp -HR ${QT_PLUGINS_DIR}/imageformats "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Plugins"\;
+#    cp -HR ${QT_PLUGINS_DIR}/imageformats "${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Plugins"\;
     # SETTING UP THE PLUGIN LOCATIONS
-    rm -f "${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
-    echo "[Paths]" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
-    echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/gui/Knut.app/Contents/Resources/qt.conf"\;
+    rm -f "${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Resources/qt.conf"\;
+    echo "[Paths]" >"${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Resources/qt.conf"\;
+    echo "Plugins = Plugins" >"${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app/Contents/Resources/qt.conf"\;
     cmake -P ${KNUT_SOURCE_DIR}/createAppBundle.cmake ${KNUT_BINARY_DIR}\;
 )
 
-  INSTALL(DIRECTORY ${KNUT_BINARY_DIR}/gui/Knut.app DESTINATION ${CMAKE_INSTALL_PREFIX}
+  INSTALL(DIRECTORY ${KNUT_BINARY_DIR}/gui/${GUI_NAME}.app DESTINATION ${CMAKE_INSTALL_PREFIX}
     USE_SOURCE_PERMISSIONS)
 ENDIF(APPLE)
 
 IF(NOT APPLE)
-  ADD_EXECUTABLE( knut-gui main.cpp
+  ADD_EXECUTABLE( ${GUI_NAME} main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
     plotdata.cpp plotdata.h 
@@ -92,15 +92,15 @@ IF(NOT APPLE)
     ${MOC_SRCS} ${ICONS} )
 
   IF(WIN32)
-    TARGET_LINK_LIBRARIES( knut-gui ${QT_LIBS}
+    TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
       ${INTERNAL_LIBS} AUX_BLAS ${EXTERNAL_LIBS})
-    SET_TARGET_PROPERTIES( knut-gui PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
-    ADD_CUSTOM_COMMAND( TARGET knut-gui PRE_LINK COMMAND i686-pc-mingw32-windres -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )
+    SET_TARGET_PROPERTIES( ${GUI_NAME} PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
+    ADD_CUSTOM_COMMAND( TARGET ${GUI_NAME} PRE_LINK COMMAND i686-pc-mingw32-windres -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )
   ELSE(WIN32)
-    TARGET_LINK_LIBRARIES( knut-gui ${QT_LIBS}
+    TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
       ${INTERNAL_LIBS} ${EXTERNAL_LIBS})
   ENDIF(WIN32)
 
-  INSTALL( TARGETS knut-gui DESTINATION ${KNUT_BIN_DIR} )
+  INSTALL( TARGETS ${GUI_NAME} DESTINATION ${KNUT_BIN_DIR} )
 	
 ENDIF(NOT APPLE)

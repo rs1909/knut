@@ -136,7 +136,7 @@ MainWindow::MainWindow(const QString& appDir) :
 
   QLabel* fromTypeLabel = new QLabel("FROM");
   QComboBox* fromType = new QComboBox();
-  for (int i = 0; i < parameters.BifTypeTable.size(); ++i)
+  for (size_t i = 0; i < parameters.BifTypeTable.size(); ++i)
   {
     fromType->insertItem(i, parameters.BifTypeTable.CIndexToTypeName(i).c_str());
   }
@@ -145,7 +145,7 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
-  for (int i = 0; i < parameters.PtTypeTable.size(); ++i)
+  for (size_t i = 0; i < parameters.PtTypeTable.size(); ++i)
   {
     pttype->insertItem(i, parameters.PtTypeTable.CIndexToTypeName(i).c_str());
   }
@@ -158,7 +158,7 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* branchswLabel = new QLabel("SWITCH");
   branchswLabel->setToolTip("Switches to another branch at the bifurcation point.");
   branchsw = new QComboBox();
-  for (int i = 0; i < parameters.BranchSWTable.size(); ++i)
+  for (size_t i = 0; i < parameters.BranchSWTable.size(); ++i)
   {
     branchsw->insertItem(i, parameters.BranchSWTable.CIndexToTypeName(i).c_str());
   }
@@ -1056,7 +1056,7 @@ void MainWindow::nParChanged(int n)
 {
   cp->blockSignals(true);
   cp->clear();
-  for (int i = 0; i < parameters.VarTable.size(); ++i)
+  for (size_t i = 0; i < parameters.VarTable.size(); ++i)
   {
     cp->insertItem(i, parameters.VarTable.CIndexToTypeName(i).c_str());
   }

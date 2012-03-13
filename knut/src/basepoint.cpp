@@ -27,14 +27,14 @@ struct PtTab
 {
   PtType   type;
   BranchSW sw;
-  int      neqn;
-  int      nparx;
+  size_t   neqn;
+  size_t   nparx;
   Eqn      eqns[5];
   Var      vars[5];
 };
 
 // not even member function public
-BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, int npar_)
+BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArray1D<Var> parx, size_t /*npar_*/)
 {
   PtTab tab;
   const Var PANGLE = VarAngle; // IndexToVar(VarAngle,npar_);
@@ -206,7 +206,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
   P_ERROR_X4(tab.nparx == parx.size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.size());
   eqnr.init(tab.neqn);
   varr.init(tab.neqn);
-  for (int i = 0; i < tab.neqn; i++)
+  for (size_t i = 0; i < tab.neqn; i++)
   {
     eqnr(i) = tab.eqns[i];
     varr(i) = tab.vars[i];
@@ -216,7 +216,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
 
 KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys_, 
  const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
- const int solsize, const int nz_jac_) :
+ const size_t solsize, const size_t nz_jac_) :
     var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1), npar(sys_.npar()),
     sol(solsize), par(VarToIndex(VarEnd,sys_.npar())),
     solNu(solsize), parNu(VarToIndex(VarEnd,sys_.npar())),
@@ -269,7 +269,7 @@ void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& va
   varMapCont.init(var_.size() + 1);
   construct();
   xxDot->getV1() = xxDot_temp->getV1();
-  for (int i = 0; i < std::min<int>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
+  for (size_t i = 0; i < std::min<size_t>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
     xxDot->getV3()(i) = xxDot_temp->getV3()(i);
   delete xxDot_temp;
 }
@@ -279,14 +279,14 @@ void KNAbstractPoint::construct()
   P_ERROR_X1((eqn.size() != 0) && (var.size() != 0) && (eqn.size() == var.size()), "Number of equations and variables do not agree.");
   dim3 = eqn.size() - 1;
 
-  for (int i = 1; i < var.size(); i++)
+  for (size_t i = 1; i < var.size(); i++)
   {
 //    std::cout << "E " << eqn(i) << ", V " << var(i) << "\n";
     varMap(i) = VarToIndex(var(i),npar);
 //    std::cout << varMap(i) << " " << par.size() <<"\n";
-    P_ERROR_X5((varMap(i) >= 0) && (varMap(i) < par.size()), "Non-existing parameter P", varMap(i), " at position ", i, ".");
+    P_ERROR_X5(varMap(i) < par.size(), "Non-existing parameter P", varMap(i), " at position ", i, ".");
   }
-  for (int i = 0; i < var.size(); i++) varMapCont(i) = varMap(i);
+  for (size_t i = 0; i < var.size(); i++) varMapCont(i) = varMap(i);
 
   xxDot   = new KNBlockVector(dim1, 0, dim3 + 1);
   xxDotNu = new KNBlockVector(dim1, 0, dim3 + 1);
@@ -311,7 +311,7 @@ void KNAbstractPoint::destruct()
 }
 
 // this will adapt the mesh whenever it is specified
-int KNAbstractPoint::refine(bool adapt)
+size_t KNAbstractPoint::refine(bool adapt)
 {
   std::ostream& out = outStream();
   // here solNu is the previous solution
@@ -328,7 +328,7 @@ int KNAbstractPoint::refine(bool adapt)
 
   if(!adapt) { out << "IT\tERR\t\tSOLnorm\t\tDIFFnorm\n"; printStream(); }
 
-  int it = 0;
+  size_t it = 0;
   double Xnorm, Dnorm;
   do
   {
@@ -365,7 +365,7 @@ int KNAbstractPoint::refine(bool adapt)
   return it;
 }
 
-int KNAbstractPoint::tangent(bool adapt)
+size_t KNAbstractPoint::tangent(bool adapt)
 {
   std::ostream& out = outStream();
   double norm;
@@ -385,7 +385,7 @@ int KNAbstractPoint::tangent(bool adapt)
   jacobian(*jac, *rhs, par, par, sol, sol, varMapCont, 0.0, true);
 
   double diffnorm = 1.0;
-  int it = 0;
+  size_t it = 0;
   do
   {
     jac->multiply<false>(*rhs, *xxDot, dim3 + 1);
@@ -399,7 +399,7 @@ int KNAbstractPoint::tangent(bool adapt)
     xxDot->getV3() /= norm;
     // putting back the tangent...
     if (dim1 != 0) basecolloc->star(jac->getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
+    for (size_t i = 0; i < dim3 + 1; i++) jac->getA33()(dim3, i) = xxDot->getV3()(i);
   }
   while ((++it < KernIter) && (diffnorm > KernEps));
   if (diffnorm > KernEps)
@@ -416,18 +416,18 @@ int KNAbstractPoint::tangent(bool adapt)
   return it;
 }
 
-int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
+size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
 {
   std::ostream& out = outStream();
   double Xnorm, Dnorm, Rnorm, Tnorm;
 
   parNu = par;
-  for (int i = 0; i < solNu.size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
-  for (int i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
+  for (size_t i = 0; i < solNu.size(); i++)  solNu(i)           = sol(i)           + ds * xxDot->getV1()(i);
+  for (size_t i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) = par(varMapCont(i)) + ds * xxDot->getV3()(i - 1);
   xxDotNu->getV1() = xxDot->getV1();
   xxDotNu->getV3() = xxDot->getV3();
 
-  int  it = 0;
+  size_t  it = 0;
   bool conv;
   do
   {
@@ -473,21 +473,21 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
     double Xnorm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
     out << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
+    for (size_t i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
     out << '\n';
     printStream();
 
     xx->getV1() = solNu;
     xx->getV1() -= sol;
-    for (int i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
+    for (size_t i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
 
     Pnorm = sqrt(xx->getV3()(dim3) * xx->getV3()(dim3)) / ds;
     Xnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1())) / ds;
     Onorm = 0;
-    for (int i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
+    for (size_t i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
     Onorm = sqrt(Onorm) / ds;
     out << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (int i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
+    for (size_t i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
     out << '\n';
     printStream();
     /// END OF CHECKING
@@ -498,7 +498,7 @@ int KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     xx->getV1() -= sol;
     xx->getV1() -= ds*xxDot->getV1();
     double XnormSQ = basecolloc->integrate(xx->getV1(), xx->getV1());
-    for (int i = 1; i < varMapCont.size(); i++)
+    for (size_t i = 1; i < varMapCont.size(); i++)
       XnormSQ += pow(par(varMapCont(i)) + ds * xxDot->getV3()(i - 1) - parNu(varMapCont(i)),2);
     angle = atan(sqrt(XnormSQ)/fabs(ds))/(M_PI/2.0);
     if ((angle < ContCurvature) || jacstep) // dont check curvature at the begining
@@ -548,8 +548,8 @@ void KNAbstractPeriodicSolution::findAngle()
   
   Stability(true); // re-initialize the collocation just in case when the period changes
   double dmin = 10.0;
-  int imin = 0;
-  for (int i = 0; i < mRe.size(); i++)
+  size_t imin = 0;
+  for (size_t i = 0; i < mRe.size(); i++)
   {
     if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
     {
@@ -577,7 +577,7 @@ void KNAbstractPeriodicSolution::findAngle()
   printStream();
 }
 
-void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, int n)
+void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, size_t n)
 {
 //  std::cout << "DAT " << &data << "\n";
   data.lock();
@@ -594,7 +594,7 @@ void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, int 
   data.unlock();
 }
 
-void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, int n)
+void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, size_t n)
 {
   std::ostream& out = outStream();
   data.lock();

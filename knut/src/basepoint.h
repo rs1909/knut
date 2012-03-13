@@ -27,12 +27,12 @@ class KNAbstractPoint
     KNAbstractPoint(); // not defined
     KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys, 
           const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
-          const int solsize, const int nz_jac_);
+          const size_t solsize, const size_t nz_jac_);
     virtual ~KNAbstractPoint();
     void    reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_);
-    int     refine(bool adapt = false);
-    int     tangent(bool adapt = false);
-    int     nextStep(double ds, double& angle, bool jacstep);
+    size_t  refine(bool adapt = false);
+    size_t  tangent(bool adapt = false);
+    size_t  nextStep(double ds, double& angle, bool jacstep);
 
     // supplementary
     inline void    setSol(KNVector& s)
@@ -46,7 +46,7 @@ class KNAbstractPoint
 
     inline void    setPar(KNVector& p)
     {
-      for (int i = 0; (i < p.size()) && (i < par.size()); i++) par(i) = p(i);
+      for (size_t i = 0; (i < p.size()) && (i < par.size()); i++) par(i) = p(i);
     }
     inline KNVector& getPar()
     {
@@ -57,19 +57,19 @@ class KNAbstractPoint
     {
       varMapCont(varMap.size()) = VarToIndex(p, npar);
     }
-    inline int     getCont()
+    inline size_t  getCont()
     {
       return varMapCont(varMap.size());
     }
-    inline void    setRefIter(int i)
+    inline void    setRefIter(size_t i)
     {
       RefIter = i;
     }
-    inline void    setContIter(int i)
+    inline void    setContIter(size_t i)
     {
       ContIter = i;
     }
-    inline void    setKernIter(int i)
+    inline void    setKernIter(size_t i)
     {
       KernIter = i;
     }
@@ -111,7 +111,7 @@ class KNAbstractPoint
       KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
       KNVector& parPrev, KNVector& par,      // parameters
       KNVector& solPrev, KNVector& sol,      // solution
-      KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+      KNArray1D<size_t>& varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     ) = 0;
     virtual void  postProcess() = 0;
@@ -124,21 +124,21 @@ class KNAbstractPoint
     double       RefEps;
     double       ContEps;
     double       KernEps;
-    int          RefIter;
-    int          ContIter;
-    int          KernIter;
+    size_t       RefIter;
+    size_t       ContIter;
+    size_t       KernIter;
     double       ContCurvature;
 
     // variables and equations
     KNArray1D<Var> var;
     KNArray1D<Eqn> eqn;
-    KNArray1D<int> varMap;
-    KNArray1D<int> varMapCont;
+    KNArray1D<size_t> varMap;
+    KNArray1D<size_t> varMapCont;
 
-    int          dim1;
-    int          dim3;
-    int          nz_jac;
-    const int    npar;
+    size_t       dim1;
+    size_t       dim3;
+    size_t       nz_jac;
+    const size_t npar;
 
     // solutions
     KNVector       sol;
@@ -166,19 +166,19 @@ class KNAbstractPoint
 inline void KNAbstractPoint::update(KNBlockVector& X)
 {
   sol += X.getV1();
-  for (int i = 1; i < varMap.size(); i++) par(varMap(i)) += X.getV3()(i - 1);
+  for (size_t i = 1; i < varMap.size(); i++) par(varMap(i)) += X.getV3()(i - 1);
 }
 
 inline void KNAbstractPoint::updateWithCp(KNBlockVector& X)
 {
   solNu += X.getV1();
-  for (int i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
+  for (size_t i = 1; i < varMapCont.size(); i++) parNu(varMapCont(i)) += X.getV3()(i - 1);
 }
 
 inline void KNAbstractPoint::updateWithAdaptation(KNBlockVector& X)
 {
   sol += X.getV1();
-  for (int i = 1; i < varMapCont.size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
+  for (size_t i = 1; i < varMapCont.size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
 }
 
 class KNDataFile;
@@ -189,7 +189,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
   public:
     KNAbstractPeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
       const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
-      const int solsize, const int nz_jac_, const int nmul) 
+      const size_t solsize, const size_t nz_jac_, const size_t nmul) 
       : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), mRePrev(nmul), mImPrev(nmul),
         nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
     virtual ~KNAbstractPeriodicSolution() {}
@@ -200,46 +200,46 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     virtual void SwitchTFHB(double ds) = 0;   // switches branch with testFunct
     
     virtual void findAngle();
-    inline  void setSym(int n, int* sRe, int* sIm)
+    inline  void setSym(size_t n, size_t* sRe, size_t* sIm)
     {
       rotRe.init(n);
       rotIm.init(n);
-      for (int i = 0; i < n; i++)
+      for (size_t i = 0; i < n; i++)
       {
         rotRe(i) = sRe[i];
         rotIm(i) = sIm[i];
       }
     }
 
-    inline void    setSym(KNArray1D<int>& sRe, KNArray1D<int>& sIm)
+    inline void    setSym(KNArray1D<size_t>& sRe, KNArray1D<size_t>& sIm)
     {
       P_ASSERT(sRe.size() == sIm.size());
       rotRe.init(sRe.size());
       rotIm.init(sRe.size());
-      for (int i = 0; i < sRe.size(); i++)
+      for (size_t i = 0; i < sRe.size(); i++)
       {
         rotRe(i) = sRe(i);
         rotIm(i) = sIm(i);
       }
     }
 
-    int     UStab(int pt = 0) { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt); }
-    BifType testBif(int pt = 0)
+    size_t  UStab(size_t pt = 0) { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt); }
+    BifType testBif(size_t pt = 0)
     {
       return bifurcationType(mRePrev, mImPrev, mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt-1, pt);
     }
     void    storeMultiplier() { mRePrev = mRe; mImPrev = mIm; }
     void    clearStability() { mRe.clear(); mIm.clear(); }
-    static inline double  Amplitude(const KNVector& sol, int ndim, int ndeg, int nint)
+    static inline double  Amplitude(const KNVector& sol, size_t ndim, size_t ndeg, size_t nint)
     {
       double nrm = 0.0;
-      for (int p = 0; p < ndim; ++p)
+      for (size_t p = 0; p < ndim; ++p)
       {
         double min = DBL_MAX;
         double max = -DBL_MAX;
-        for (int j = 0; j < nint; ++j)
+        for (size_t j = 0; j < nint; ++j)
         {
-          for (int k = 0; k < ndeg; ++k)
+          for (size_t k = 0; k < ndeg; ++k)
           {
             if (min > sol(p + ndim*(k + ndeg*j))) min = sol(p + ndim*(k + ndeg*j));
             if (max < sol(p + ndim*(k + ndeg*j))) max = sol(p + ndim*(k + ndeg*j));
@@ -251,14 +251,14 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     }
     inline double NormMX()
     {
-      const int ndeg = persolcolloc->nInt();
-      const int nint = persolcolloc->nInt();
-      const int ndim = persolcolloc->nDim();
+      const size_t ndeg = persolcolloc->nInt();
+      const size_t nint = persolcolloc->nInt();
+      const size_t ndim = persolcolloc->nDim();
       return Amplitude(sol, ndim, ndeg, nint);
     }
     
-    void BinaryRead(KNDataFile& data, int n);
-    void BinaryWrite(KNDataFile& data, BifType bif, int n);
+    void BinaryRead(KNDataFile& data, size_t n);
+    void BinaryWrite(KNDataFile& data, BifType bif, size_t n);
 
   protected:
 //    virtual void construct();
@@ -272,11 +272,11 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     KNVector       mRePrev;
     KNVector       mImPrev;
     // number of trivial multipliers
-    int   nTrivMulLP, nTrivMulPD, nTrivMulNS;
+    size_t   nTrivMulLP, nTrivMulPD, nTrivMulNS;
 
     // for the rotation phase conditions
-    KNArray1D<int> rotRe;
-    KNArray1D<int> rotIm;
+    KNArray1D<size_t> rotRe;
+    KNArray1D<size_t> rotIm;
     
     KNAbstractBvpCollocation* persolcolloc;
 };

@@ -23,7 +23,7 @@ class KNDdeTorusSolution : public KNAbstractPoint
 {
   public:
     KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
-      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
+      KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
     ~KNDdeTorusSolution();
 
     inline void    setRho(double rho)
@@ -46,14 +46,14 @@ class KNDdeTorusSolution : public KNAbstractPoint
     }
     inline void    startingPoint(double ds)
     {
-      for (int i = 0; i < xx->getV1().size(); i++) xx->getV1()(i) += ds * (xxDot->getV1()(i));
+      for (size_t i = 0; i < xx->getV1().size(); i++) xx->getV1()(i) += ds * (xxDot->getV1()(i));
     }
 //     inline int     npar()
 //     {
 //       return colloc->system().npar();
 //     }
-    void           loadPoint(KNDataFile& data, int n);
-    void           savePoint(KNDataFile& data, int n);
+    void           loadPoint(KNDataFile& data, size_t n);
+    void           savePoint(KNDataFile& data, size_t n);
 
   private:
 
@@ -65,7 +65,7 @@ class KNDdeTorusSolution : public KNAbstractPoint
       KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
       KNVector& parPrev, KNVector& par,      // parameters
       KNVector& solPrev, KNVector& sol,      // solution
-      KNArray1D<int>&    varMap,           // contains the variables. If cont => contains the P0 too.
+      KNArray1D<size_t>& varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
     );
     virtual void postProcess() {}

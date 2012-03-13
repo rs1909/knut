@@ -135,10 +135,10 @@ static inline double scf( double x0, double x1, double x2 )
 extern "C"
 {
 
-int sys_ndim(){ return 2; }
-int sys_npar(){ return 3; }
-int sys_ntau(){ return 3; }
-int sys_nderi(){ return 0; }
+size_t sys_ndim(){ return 2; }
+size_t sys_npar(){ return 3; }
+size_t sys_ntau(){ return 3; }
+size_t sys_nderi(){ return 0; }
 
 void sys_tau( KNVector& out, double t, const KNVector& par )
 {
@@ -147,7 +147,7 @@ void sys_tau( KNVector& out, double t, const KNVector& par )
 	out(2) = 2.0*par(2);
 }
 
-void sys_dtau( KNVector& out, double t, const KNVector& par, int vp )
+void sys_dtau( KNVector& out, double t, const KNVector& par, size_t vp )
 {
 	switch( vp )
 	{
@@ -175,7 +175,7 @@ void sys_rhs( KNVector& out, double t, const KNMatrix& x, const KNVector& par )
 }
 
 void sys_deri( KNMatrix &out, double t, const KNMatrix& x, const KNVector& par,
-	       int nx, const int* vx, int np, const int* vp, const KNMatrix& vv )
+	       size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNMatrix& vv )
 {
 }
 

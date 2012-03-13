@@ -66,7 +66,7 @@ void KNAbstractContinuation::run(const char* branchFile)
   try
   {
     const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
-    const int npar = sys->npar();
+    const size_t npar = sys->npar();
     std::vector<std::string> parNames = params->getParNames();
 
     screenout << std::scientific;
@@ -106,9 +106,9 @@ void KNAbstractContinuation::run(const char* branchFile)
       pt.setCont(params->getCp());
   
       // setting the symmetric components
-      KNArray1D<int> sre(params->getSymReSize());
-      KNArray1D<int> sim(params->getSymReSize());
-      for (int i = 0; i < sre.size(); ++i)
+      KNArray1D<size_t> sre(params->getSymReSize());
+      KNArray1D<size_t> sim(params->getSymReSize());
+      for (size_t i = 0; i < sre.size(); ++i)
       {
         sre(i) = params->getSymRe(i);
         sim(i) = params->getSymIm(i);
@@ -121,7 +121,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         KNDataFile istr(params->getInputFile());
         if (params->getFromType() != BifNone)
         {
-          int pos = istr.findType(params->getFromType(), params->getLabel() );
+          size_t pos = istr.findType(params->getFromType(), params->getLabel() );
           std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
           if (pos > 0) pt.BinaryRead(istr, pos);
           else P_MESSAGE1("No such point in the input");
@@ -153,11 +153,11 @@ void KNAbstractContinuation::run(const char* branchFile)
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
-      for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
+      for (size_t j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
       //
       parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
-      parValuePrint(screenout, par, params->getCp(), var, -1, BifNone, pt.norm(), 0, 0);
+      parValuePrint(screenout, par, params->getCp(), var, 0, BifNone, pt.norm(), 0, 0);
       screenout << "\n";
       printStream();
 
@@ -197,16 +197,16 @@ void KNAbstractContinuation::run(const char* branchFile)
       screenout << '\n';
       printStream();
       storeCursor();
-      int ustab = 0, ustabprev = 0;
+      size_t ustab = 0, ustabprev = 0;
       double norm = 0.0;
-      const int ithist = ITSTEPS;
-      int printedln = 0;
+      const size_t ithist = ITSTEPS;
+      size_t printedln = 0;
       double ds = params->getDs();
-      for (int i = 0; i < params->getSteps(); i++)  // 35
+      for (size_t i = 0; i < params->getSteps(); i++)  // 35
       {
         //
         double angle;
-        const int itc = pt.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
+        const size_t itc = pt.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
         // step size adaptation
         double dsmul1 = 1.0, dsmul2 = 1.0;
         if      (itc < 2) dsmul1 = 2.0;         // 2
@@ -234,7 +234,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (params->getStab()) pt.Stability(false); // we just stepped: no init
         ustabprev = ustab;
         ustab = pt.UStab();
-        for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
+        for (size_t j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
         norm = pt.norm();
         // console output
         const bool endpoint = i == params->getSteps()-1;
@@ -270,8 +270,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         // adapt mesh if necessary
         if ((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
         {
-          const int itad = pt.refine(true);
-          const int ittan = pt.tangent(true);
+          const size_t itad = pt.refine(true);
+          const size_t ittan = pt.tangent(true);
           if (toprint || (i != 0  && ustab != ustabprev))
           {
             screenout << " " << itad << " " << ittan;
@@ -291,7 +291,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         // branch output
         if (branchFile)
         {
-          for (int j = 0; j < par.size(); j++) ff << par(j) << "\t";
+          for (size_t j = 0; j < par.size(); j++) ff << par(j) << "\t";
           ff << "\t" << norm << "\t" << pt.NormMX() << "\t" << ustab << "\n";
           ff.flush();
         }
@@ -338,8 +338,8 @@ void KNAbstractContinuation::run(const char* branchFile)
 
         // making the mesh for the conversion
         KNVector meshint(params->getNInt1() + 1), meshdeg(params->getNDeg1() + 1);
-        for (int i = 0; i < meshint.size(); i++) meshint(i) = (double)i / (params->getNInt1());
-        for (int i = 0; i < meshdeg.size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
+        for (size_t i = 0; i < meshint.size(); i++) meshint(i) = (double)i / (params->getNInt1());
+        for (size_t i = 0; i < meshdeg.size(); i++) meshdeg(i) = (double)i / (params->getNDeg1());
 
         // getting the sol and tangents
         screenout << "\nSwitching to the torus.\n";
@@ -348,7 +348,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         pt.SwitchTFTRTan(TRe, TIm, alpha, meshint, meshdeg);
 
         // getting the parameters
-        for (int j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
+        for (size_t j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
 
         // destroy point, construct KNDdeTorusSolution
         delete pt_ptr;
@@ -386,7 +386,7 @@ void KNAbstractContinuation::run(const char* branchFile)
       }
 
       double ds = params->getDs();
-      for (int i = 0; i < params->getSteps(); i++)
+      for (size_t i = 0; i < params->getSteps(); i++)
       {
         if (stopFlag)
         {
@@ -396,8 +396,8 @@ void KNAbstractContinuation::run(const char* branchFile)
         }
         // same as for periodic orbits
         double angle;
-        int it = pttr.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
-        for (int j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
+        size_t it = pttr.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
+        for (size_t j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
         double norm = pttr.norm();
         if (i % 24 == 0)
         {
@@ -411,7 +411,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         printStream();
         if (branchFile)
         {
-          for (int j = 0; j < par.size(); j++) ff << par(j) << "\t";
+          for (size_t j = 0; j < par.size(); j++) ff << par(j) << "\t";
           ff << norm << "\n";
           ff.flush();
         }

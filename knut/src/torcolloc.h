@@ -19,11 +19,11 @@ class KNSparseMatrix;
 class KNDdeTorusCollocation : public KNAbstractCollocation
 {
   public:
-    KNDdeTorusCollocation(KNSystem& sys_, int ndeg1_, int ndeg2_, int nint1_, int nint2_);
+    KNDdeTorusCollocation(KNSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
     void init(const KNVector& sol, const KNVector& par);
-    void jacobian(KNSparseMatrix& A, KNArray1D< KNVector* > Avar, KNVector& rhs, KNVector& par, KNVector& sol, KNArray1D<int>& var);
+    void jacobian(KNSparseMatrix& A, KNArray1D< KNVector* > Avar, KNVector& rhs, KNVector& par, KNVector& sol, KNArray1D<size_t>& var);
     // not yet implemented
     // these are easy
     void PhaseONE(KNVector& ph, KNVector& presol);                                       // implemented
@@ -46,26 +46,26 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
       return mesh2;
     }
 
-    inline int Ndeg1()
+    inline size_t Ndeg1()
     {
       return ndeg1;
     }
-    inline int Ndeg2()
+    inline size_t Ndeg2()
     {
       return ndeg2;
     }
-    inline int Nint1()
+    inline size_t Nint1()
     {
       return nint1;
     }
-    inline int Nint2()
+    inline size_t Nint2()
     {
       return nint2;
     }
 
     //utils
-    inline int idxmap(int j1, int j2, int i1, int i2);
-    inline int idxkk(int j1, int j2, int k);
+    inline size_t idxmap(size_t j1, size_t j2, size_t i1, size_t i2);
+    inline size_t idxkk(size_t j1, size_t j2, size_t k);
     inline KNSystem& system()
     {
       return *sys;
@@ -73,9 +73,9 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
 
   private:
     KNSystem* sys;
-    const int ndim, ntau, npar;
-    const int ndeg1, ndeg2;
-    const int nint1, nint2;
+    const size_t ndim, ntau, npar;
+    const size_t ndeg1, ndeg2;
+    const size_t nint1, nint2;
     KNVector col1,  col2;
     KNVector mesh1, mesh2;
     KNArray1D< KNArray1D<double> > lgr1, lgr2; // 1. meshpoint 2. polynom
@@ -85,7 +85,7 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
     KNVector mlg1, mlg2, mlgd1, mlgd2, ilg1, ilg2, ilgd1, ilgd2;
     // for the vectorization
     KNVector          time1, time2;   // ndeg1*ndeg2*nint1*nint2
-    KNArray2D<int>    kk, ee, rr;     // (ntau+1)*(ndeg1+1)*(ndeg2+1) X ndeg1*ndeg2*nint1*nint2
+    KNArray2D<size_t> kk, ee, rr;     // (ntau+1)*(ndeg1+1)*(ndeg2+1) X ndeg1*ndeg2*nint1*nint2
     KNArray2D<double> p_tau, p_dtau;  // ntau X ndeg1*ndeg2*nint1*nint2
     KNArray3D<double> p_xx;           // ndim X ntau+1 X ndeg1*ndeg2*nint1*nint2
     KNArray2D<double> p_fx;           // ndim X ndeg1*ndeg2*nint1*nint2
@@ -95,7 +95,7 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
     // functions
 };
 
-inline int KNDdeTorusCollocation::idxmap(int j1, int j2, int i1, int i2)
+inline size_t KNDdeTorusCollocation::idxmap(size_t j1, size_t j2, size_t i1, size_t i2)
 {
   if (j1 < ndeg1)
   {
@@ -130,7 +130,7 @@ inline int KNDdeTorusCollocation::idxmap(int j1, int j2, int i1, int i2)
   }
 }
 
-inline int KNDdeTorusCollocation::idxkk(int j1, int j2, int k)
+inline size_t KNDdeTorusCollocation::idxkk(size_t j1, size_t j2, size_t k)
 {
   return j1 + j2*(ndeg1 + 1) + k*(ndeg1 + 1)*(ndeg2 + 1);
 }

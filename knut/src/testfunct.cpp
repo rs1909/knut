@@ -27,12 +27,12 @@
 #define NTAU (col.nTau())
 #define NPAR (col.nPar())
 
-template<bool trans> inline void rotbord(KNVector& V, KNDdeBvpCollocation& col, const KNVector& IN, KNArray1D<int>& Re, KNArray1D<int>& Im)
+template<bool trans> inline void rotbord(KNVector& V, KNDdeBvpCollocation& col, const KNVector& IN, KNArray1D<size_t>& Re, KNArray1D<size_t>& Im)
 {
   V.clear();
-  for (int idx = 0; idx < NINT*NDEG + 1; idx++)
+  for (size_t idx = 0; idx < NINT*NDEG + 1; idx++)
   {
-    for (int k = 0; k < Re.size(); k++)
+    for (size_t k = 0; k < Re.size(); k++)
     {
       if (trans)
       {
@@ -50,7 +50,7 @@ template<bool trans> inline void rotbord(KNVector& V, KNDdeBvpCollocation& col, 
 
 inline void conjugate(KNVector& out, const KNVector& inp)
 {
-  for (int i = 0; i < out.size() / 2; ++i)
+  for (size_t i = 0; i < out.size() / 2; ++i)
   {
     out(2*i)   = -inp(2 * i + 1);
     out(2*i + 1) =  inp(2 * i);
@@ -115,7 +115,7 @@ void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const
   uu = AHAT.getA13(0);
 
   double diffnorm = 1.0;
-  int it = 0;
+  size_t it = 0;
   do
   {
     diffnorm = initStep();
@@ -131,12 +131,12 @@ void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const
   uufile.precision(12);
   vvfile.precision(12);
 
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
-    for (int j = 0; j < NDEG + 1; j++)
+    for (size_t j = 0; j < NDEG + 1; j++)
     {
       const double t = col.Profile(i, j);
-      for (int p = 0; p < NDIM; p++)
+      for (size_t p = 0; p < NDIM; p++)
       {
         vvfile << vv(p + (j + i*NDEG)*NDIM) << "\t";
         uufile << uu(p + (j + i*NDEG)*NDIM) << "\t";
@@ -172,7 +172,7 @@ double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, co
   return gg;
 }
 
-double KNTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
+double KNTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, size_t alpha)
 {
   col.interpolate(vvData, vv);
   col.jotf_x_p(A_p, par, vvData, ZZ, alpha);
@@ -204,15 +204,15 @@ KNComplexTestFunctional::KNComplexTestFunctional(KNDdeBvpCollocation& col) :
     A_p(2*NDIM*(NDEG*NINT + 1)),
     A_x('R', 2*NDIM*(NDEG*NINT + 1), NDIM*(NDEG*NINT + 1), 2*NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
     rhs(2*NDIM*(NDEG*NINT + 1)),
-    one(2),
+    one((size_t)2),
     uu(2*NDIM*(NDEG*NINT + 1)),
     vv(2*NDIM*(NDEG*NINT + 1)),
     uudiff(2*NDIM*(NDEG*NINT + 1)),
     vvdiff(2*NDIM*(NDEG*NINT + 1)),
-    gg(2),
-    hh(2),
-    ggdiff(2),
-    hhdiff(2),
+    gg((size_t)2),
+    hh((size_t)2),
+    ggdiff((size_t)2),
+    hhdiff((size_t)2),
     vvDataRe(NDIM, NTAU + 1, NDEG*NINT),
     vvDataIm(NDIM, NTAU + 1, NDEG*NINT)
 {}
@@ -262,7 +262,7 @@ void KNComplexTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par
   conjugate(AHAT.getA13(1), AHAT.getA13(0));
 
   double diffnorm = 1.0;
-  int it = 0;
+  size_t it = 0;
   do
   {
     diffnorm = initStep();
@@ -302,7 +302,7 @@ void KNComplexTestFunctional::funct(double& f1, double& f2,
 
 void KNComplexTestFunctional::funct_p(double& f1, double& f2,
                             KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/,
-                            int alpha)
+                            size_t alpha)
 {
   col.jotf_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
   conjugate(uudiff, uu);
@@ -335,7 +335,7 @@ void KNComplexTestFunctional::kernel(KNVector& Re, KNVector& Im, double& alpha)
 {
   P_ASSERT_X((2*Re.size() == vv.size()) && (2*Im.size() == vv.size()), "KNComplexTestFunctional::Switch: Bad sizes\n");
   std::cout << "zRe=" << ZRe << ", zIm=" << ZIm << "\n";
-  for (int i = 0; i < Re.size(); i++)
+  for (size_t i = 0; i < Re.size(); i++)
   {
     Re(i) = vv(2 * i);
     Im(i) = vv(2 * i + 1);
@@ -360,7 +360,7 @@ double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, K
   else period *= 2 * M_PI / (angle - M_PI);
 
   double norm1 = 0.0;
-  for (int i = 0; i < NDIM; i++)
+  for (size_t i = 0; i < NDIM; i++)
   {
     Re(i) = vv(2 * i);
     Im(i) = vv(2 * i + 1);
@@ -375,12 +375,12 @@ double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, K
 #endif
 
   double dist = 0.0;
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
-    for (int j = 0; j < NDEG + 1; j++)
+    for (size_t j = 0; j < NDEG + 1; j++)
     {
       const double t = col.Profile(i, j);
-      for (int p = 0; p < NDIM; p++)
+      for (size_t p = 0; p < NDIM; p++)
       {
         const double t2 = t*par(0)/period;
         const double d = vv(2*(p + (j + i*NDEG)*NDIM)) - (cos(2.0 * M_PI * t2) * vv(2 * p) + sin(2.0 * M_PI * t2) * vv(2 * p + 1));
@@ -418,9 +418,9 @@ KNLpAutTestFunctional::KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z)
     DxPhi(NDIM*(NDEG*NINT + 1)),
     uu2(NDIM*(NDEG*NINT + 1)),
     vv2(NDIM*(NDEG*NINT + 1)),
-    gg2(2),
-    hh2(2),
-    one2(2),
+    gg2((size_t)2),
+    hh2((size_t)2),
+    one2((size_t)2),
     phiData(NDIM, 2*NTAU + 1, NDEG*NINT),
     vv2Data(NDIM, 2*NTAU + 1, NDEG*NINT),
     solMSHData(NDIM, 2*NTAU + 1, NDEG*NINT + 1)
@@ -462,7 +462,7 @@ void KNLpAutTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, 
   KNVector v2diff(vv2), u2diff(uu2);
   double g2diff, h2diff;
   double diffnorm = 1.0;
-  int it = 0;
+  size_t it = 0;
   do
   {
     AHAT.solve(2, vv2, gg2, rhs, one2);
@@ -524,7 +524,7 @@ double KNLpAutTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& pa
   return gg2(1);
 }
 
-double KNLpAutTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
+double KNLpAutTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, size_t alpha)
 {
   col.jotf_x_p(A_p, par, vv2Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, phiData, ZZ, alpha);
@@ -571,7 +571,7 @@ void   KNLpAutTestFunctional::kernel(KNVector& phi)
 /// test function for FOLD BIFURCATIONS in autonomous systems with SIMMETRY
 /// -----------------------------------------------------------------------
 
-KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNArray1D<int> CRe, KNArray1D<int> CIm, double Z) :
+KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNArray1D<size_t> CRe, KNArray1D<size_t> CIm, double Z) :
     ZZ(Z),
     Re(CRe), Im(CIm),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 3, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
@@ -587,10 +587,10 @@ KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNA
     DxLAM(NDIM*(NDEG*NINT + 1)),
     uu3(NDIM*(NDEG*NINT + 1)),
     vv3(NDIM*(NDEG*NINT + 1)),
-    gg3(3),
-    hh3(3),
+    gg3((size_t)3),
+    hh3((size_t)3),
     rhs3(NDIM*(NDEG*NINT + 1)),
-    one3(3),
+    one3((size_t)3),
     temp(NDIM*(NDEG*NINT + 1)),
     phiData(NDIM, 2*NTAU + 1, NDEG*NINT),
     LAMData(NDIM, 2*NTAU + 1, NDEG*NINT),
@@ -642,7 +642,7 @@ void KNLpAutRotTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& pa
   KNVector v3diff(vv3), u3diff(uu3);
   double g30diff, h30diff, g31diff, h31diff;
   double diffnorm = 1.0;
-  int it = 0;
+  size_t it = 0;
   do
   {
     AHAT.solve(3, vv3, gg3, rhs3, one3);
@@ -721,7 +721,7 @@ double KNLpAutRotTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector&
   return gg3(2);
 }
 
-double KNLpAutRotTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
+double KNLpAutRotTestFunctional::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, size_t alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_trivialKernelOnMesh_p(DpPhi, par, solMSHData, alpha);
@@ -788,7 +788,7 @@ void   KNLpAutRotTestFunctional::kernel(KNVector& phi)
 /// EXTENDED
 /// -----------------------------------------------------------------------
 
-KNLpAutRotTestFunctional2::KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, KNArray1D<int> CRe, KNArray1D<int> CIm, double Z) :
+KNLpAutRotTestFunctional2::KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, KNArray1D<size_t> CRe, KNArray1D<size_t> CIm, double Z) :
     ZZ(Z),
     Re(CRe), Im(CIm),
     AHAT(NDIM*(NDEG*NINT + 1), 0, 3, NDIM*(NDEG*NINT + 1)*NTAU*NDIM*(NDEG + 1)),
@@ -804,19 +804,19 @@ KNLpAutRotTestFunctional2::KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, K
     DxLAM(NDIM*(NDEG*NINT + 1)),
     uu3(NDIM*(NDEG*NINT + 1)),
     vv3(NDIM*(NDEG*NINT + 1)),
-    gg3(3),
-    hh3(3),
-    one3(3),
+    gg3((size_t)3),
+    hh3((size_t)3),
+    one3((size_t)3),
     uu1(NDIM*(NDEG*NINT + 1)),
     vv1(NDIM*(NDEG*NINT + 1)),
-    gg1(2),
-    hh1(2),
-    one1(2),
+    gg1((size_t)2),
+    hh1((size_t)2),
+    one1((size_t)2),
     uu2(NDIM*(NDEG*NINT + 1)),
     vv2(NDIM*(NDEG*NINT + 1)),
-    gg2(2),
-    hh2(2),
-    one2(2),
+    gg2((size_t)2),
+    hh2((size_t)2),
+    one2((size_t)2),
     rhs(NDIM*(NDEG*NINT + 1)),
     temp(NDIM*(NDEG*NINT + 1)),
     vv1Data(NDIM, 2*NTAU + 1, NDEG*NINT),
@@ -860,7 +860,7 @@ void KNLpAutRotTestFunctional2::init(KNDdeBvpCollocation& col, const KNVector& p
   one1(1) = 0.0;
   one2(0) = 0.0;
   one2(1) = 1.0;
-  for (int i = 0; i < kernIter; i++)
+  for (size_t i = 0; i < kernIter; i++)
   {
     AHAT.solve(2, vv1, gg1, rhs, one1);
     AHAT.solve(2, vv2, gg2, rhs, one2);
@@ -889,7 +889,7 @@ void KNLpAutRotTestFunctional2::init(KNDdeBvpCollocation& col, const KNVector& p
   one3(0) = 0.0;
   one3(1) = 0.0;
   one3(2) = 1.0;
-  for (int i = 0; i < kernIter; i++)
+  for (size_t i = 0; i < kernIter; i++)
   {
     AHAT.solve(3, vv3, gg3, rhs, one3);
     AHAT.solveTr(3, uu3, hh3, rhs, one3);
@@ -959,7 +959,7 @@ double KNLpAutRotTestFunctional2::funct(KNDdeBvpCollocation& col, const KNVector
   return gg3(2);
 }
 
-double KNLpAutRotTestFunctional2::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, int alpha)
+double KNLpAutRotTestFunctional2::funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/, size_t alpha)
 {
   col.jotf_x_p(A_p, par, vv3Data, ZZ, alpha);
   col.jotf_mB_p(mB_p, par, vv1Data, ZZ, alpha);

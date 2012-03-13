@@ -34,8 +34,8 @@ class ParamsModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &parent = QModelIndex()) const
     {
-      if (parameters->getPointType() == SolUser) return parameters->getEqnsSize();
-      else return parameters->getParxSize();
+      if (parameters->getPointType() == SolUser) return static_cast<int>(parameters->getEqnsSize());
+      else return static_cast<int>(parameters->getParxSize());
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -136,7 +136,7 @@ class SYMModel : public QAbstractTableModel
     }
     int columnCount(const QModelIndex &parent = QModelIndex()) const
     {
-      return parameters->getSymReSize();
+      return static_cast<int>(parameters->getSymReSize());
     };
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -189,7 +189,7 @@ class SYMTableView : public QTableView
 
   public slots:
 
-    void dataUpdated(const std::vector<int>& val)
+    void dataUpdated(const std::vector<size_t>& val)
     {
       model->dataUpdated();
       this->resetSize();

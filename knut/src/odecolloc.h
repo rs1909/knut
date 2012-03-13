@@ -19,7 +19,7 @@ class KNOdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    KNOdeBvpCollocation(KNSystem& _sys, const int nint, const int ndeg);        // computes mesh, metric, metricD
+    KNOdeBvpCollocation(KNSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
 
     ~KNOdeBvpCollocation()
     {}
@@ -33,7 +33,7 @@ class KNOdeBvpCollocation : public KNAbstractBvpCollocation
     // continuation of solution
 
     void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
-    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, int p);   // sol is currently not needed
+    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p);   // sol is currently not needed
     void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol);          // sol is currently not needed
     void jacobianOfStability(KNSparseMatrix& A, const KNVector& par);
 
@@ -42,23 +42,23 @@ class KNOdeBvpCollocation : public KNAbstractBvpCollocation
     template <bool periodic> void RHS_jacobian(KNSparseMatrix& A, const KNVector& par);
 
     // rINT and rDEG is included in idx. Only rDIM is necessary
-    inline int& WRIDX(KNSparseMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
+    inline int& WRIDX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cDEG, size_t cDIM)
     {
       return A.writeIndex(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
-    inline double& WRDAT(KNSparseMatrix& A, int idx, int rDIM, int cDEG, int cDIM)
+    inline double& WRDAT(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t cDEG, size_t cDIM)
     {
       return A.writeData(ndim + ndim*idx + rDIM, cDIM + ndim*cDEG);
     }
 
     // for CharJac_x
-    inline int& WRIDXCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
+    inline int& WRIDXCPLX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cDEG, size_t cDIM, size_t cIM)
     {
       return A.writeIndex(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }
 
-    inline double& WRDATCPLX(KNSparseMatrix& A, int idx, int rDIM, int rIM, int cDEG, int cDIM, int cIM)
+    inline double& WRDATCPLX(KNSparseMatrix& A, size_t idx, size_t rDIM, size_t rIM, size_t cDEG, size_t cDIM, size_t cIM)
     {
       return A.writeData(rIM + 2*(ndim + ndim*idx + rDIM), cIM + 2*(cDIM + ndim*cDEG));
     }

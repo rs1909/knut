@@ -196,15 +196,15 @@ void plotWindow::setData(const KNDataFile* mat)
   xvarMap.push_back(XTranslate(XLabel, "Label"));
   xvarMap.push_back(XTranslate(XMesh, "Mesh"));
   xvarMap.push_back(XTranslate(XRealMultiplier, "RealMultiplier"));
-  for (int i = 0; i < data->getNPar(); ++i)
+  for (size_t i = 0; i < data->getNPar(); ++i)
   {
-    if (i < (int)parNames.size())
+    if (i < parNames.size())
     {
       xvarMap.push_back(XTranslate((PlotXVariable)(XParameter0 + i), QString::fromStdString(parNames[i])));
     }
   }
   xvar->clear();
-  for (unsigned int i = 0; i < xvarMap.size(); ++i)
+  for (size_t i = 0; i < xvarMap.size(); ++i)
   {
     xvar->insertItem(static_cast<int>(i), xvarMap.at(i).name);
   }
@@ -218,15 +218,15 @@ void plotWindow::setData(const KNDataFile* mat)
   yvarMap.push_back(YTranslate(YImagMultiplier, "ImagMultiplier"));
   yvarMap.push_back(YTranslate(YAbsMultiplier, "AbsMultiplier"));
   yvarMap.push_back(YTranslate(YProfile, "Profile"));
-  for (int i = 0; i < data->getNPar(); ++i)
+  for (size_t i = 0; i < data->getNPar(); ++i)
   {
-    if (i < (int)parNames.size())
+    if (i < parNames.size())
     {
       yvarMap.push_back(YTranslate((PlotYVariable)(YParameter0 + i), QString::fromStdString(parNames[i])));
     }
   }
   yvar->clear();
-  for (unsigned int i = 0; i < yvarMap.size(); ++i)
+  for (size_t i = 0; i < yvarMap.size(); ++i)
   {
     yvar->insertItem(static_cast<int>(i), yvarMap.at(i).name);
   }

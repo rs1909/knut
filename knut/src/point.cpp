@@ -30,7 +30,7 @@
 
 
 KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
-  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, int nint, int ndeg, int nmul) 
+  KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul) 
   : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
     jacStab(0)
 {
@@ -66,7 +66,7 @@ void KNDdePeriodicSolution::construct()
   nTrivMulLP = 0;
   nTrivMulPD = 0;
   nTrivMulNS = 0;
-  for (int i = 1; i < eqn.size(); i++)
+  for (size_t i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -117,7 +117,7 @@ void KNDdePeriodicSolution::construct()
 // private
 void KNDdePeriodicSolution::destruct()
 {
-  for (int i=0; i<testFunct.size(); ++i) delete testFunct(i);
+  for (size_t i=0; i<testFunct.size(); ++i) delete testFunct(i);
   KNAbstractPoint::destruct();
 }
 
@@ -131,7 +131,7 @@ void KNDdePeriodicSolution::jacobian(
   KNSparseBlockMatrix& AA, KNBlockVector& RHS,                      // output
   KNVector& parPrev, KNVector& par,                           // parameters
   KNVector& solPrev, KNVector& sol,                           // solution
-  KNArray1D<int>&    varMap,                                // contains the variables. If cont => contains the P0 too.
+  KNArray1D<size_t>& varMap,                                // contains the variables. If cont => contains the P0 too.
   double ds, bool cont)                                              // cont: true if continuation
 {
 // uses also: eqn, var, varMapCont
@@ -146,7 +146,7 @@ void KNDdePeriodicSolution::jacobian(
     colloc->rightHandSide_x(AA.getA11(), par, sol);
     colloc->rightHandSide(RHS.getV1(), par, sol);
 
-    for (int i = 1; i < varMap.size(); i++)
+    for (size_t i = 1; i < varMap.size(); i++)
     {
       if (varMap(i) < NPAR)
       {
@@ -169,7 +169,7 @@ void KNDdePeriodicSolution::jacobian(
 //
 // ---------------------------------------------------------------------------------------------------------------- //
 
-  for (int i = 1; i < eqn.size(); i++)
+  for (size_t i = 1; i < eqn.size(); i++)
   {
     switch (eqn(i))
     {
@@ -177,7 +177,7 @@ void KNDdePeriodicSolution::jacobian(
       case EqnPhase:
         colloc->phaseStar(AA.getA31(i - 1), solPrev); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.size(); j++)
+        for (size_t j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -197,7 +197,7 @@ void KNDdePeriodicSolution::jacobian(
       case EqnPhaseRot:
         colloc->phaseRotationStar(AA.getA31(i - 1), solPrev, rotRe, rotIm); // this should be the previous solution!!!
         // other variables
-        for (int j = 1; j < varMap.size(); j++)
+        for (size_t j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -220,7 +220,7 @@ void KNDdePeriodicSolution::jacobian(
       case EqnTFLPAUTROT:
         RHS.getV3()(i - 1) = testFunct(i)->funct(*colloc, par, sol);
         testFunct(i)->funct_x(AA.getA31(i - 1), *colloc, par, sol);
-        for (int j = 1; j < varMap.size(); j++)
+        for (size_t j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -242,7 +242,7 @@ void KNDdePeriodicSolution::jacobian(
         testFunct(i)->funct(RHS.getV3()(i - 1), RHS.getV3()(i), *colloc, par, sol,
                          cos(par(VarToIndex(VarAngle,NPAR))), sin(par(VarToIndex(VarAngle,NPAR))));
         testFunct(i)->funct_x(AA.getA31(i - 1), AA.getA31(i), *colloc, par, sol);
-        for (int j = 1; j < varMap.size(); j++)
+        for (size_t j = 1; j < varMap.size(); j++)
         {
           if (varMap(j) < NPAR)
           {
@@ -271,11 +271,11 @@ void KNDdePeriodicSolution::jacobian(
   {
     // copying the tangent
     if (dim1 != 0) colloc->star(AA.getA31(dim3), xxDot->getV1());
-    for (int i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
+    for (size_t i = 0; i < xxDot->getV3().size(); i++) AA.getA33()(dim3, i) = xxDot->getV3()(i);
     if (ds != 0.0)
     {
       RHS.getV3()(dim3) = ds - colloc->integrateWithCp(xxDot->getV1(), sol, solPrev);
-      for (int j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
+      for (size_t j = 1; j < varMapCont.size(); ++j) RHS.getV3()(dim3) -= xxDot->getV3()(j - 1) * (par(varMap(j)) - parPrev(varMap(j)));
     }
     else
     {
@@ -293,7 +293,7 @@ void KNDdePeriodicSolution::jacobian(
 void KNDdePeriodicSolution::postProcess()
 {
   // update test functional
-  for (int idx=0; idx < testFunct.size(); ++idx)
+  for (size_t idx=0; idx < testFunct.size(); ++idx)
   {
     if (testFunct(idx)) testFunct(idx)->initStep();
   }
@@ -306,9 +306,9 @@ void KNDdePeriodicSolution::postProcess()
 void KNDdePeriodicSolution::SwitchTFHB(double ds)
 {
   std::ostream& out = outStream();
-  int idx = -1;
-  for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
-  P_ERROR_X1(idx != -1, "No test functional was selected for Hopf bifurcation switch!" );
+  size_t idx = eqn.size();
+  for (size_t i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  P_ERROR_X1(idx != eqn.size(), "No test functional was selected for Hopf bifurcation switch!" );
   KNComplexTestFunctional *tf = static_cast<KNComplexTestFunctional*>(testFunct(idx));
   KNVector QRE(NDIM), QIM(NDIM);
 
@@ -339,12 +339,12 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds)
   file.precision(12);
 #endif
 
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
-    for (int j = 0; j < NDEG + 1; j++)
+    for (size_t j = 0; j < NDEG + 1; j++)
     {
       const double t = colloc->Profile(i, j);
-      for (int p = 0; p < NDIM; p++)
+      for (size_t p = 0; p < NDIM; p++)
       {
         xxDot->getV1()(p + (j + i*NDEG)*NDIM) = cos(2.0 * M_PI * t) * QRE(p) + sin(2.0 * M_PI * t) * QIM(p);
 #ifdef DEBUG
@@ -360,10 +360,10 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds)
   xxDot->getV1() /= norm;
   xxDot->getV3().clear();
   KNVector eql(NDIM);
-  for (int p = 0; p < NDIM; ++p) eql(p) = sol(p);
-  for (int i = 0; i < NDEG*NINT + 1; ++i)
+  for (size_t p = 0; p < NDIM; ++p) eql(p) = sol(p);
+  for (size_t i = 0; i < NDEG*NINT + 1; ++i)
   {
-    for (int p = 0; p < NDIM; ++p)
+    for (size_t p = 0; p < NDIM; ++p)
     {
       sol(p + i*NDIM) = eql(p) + ds * xxDot->getV1()(p + i * NDIM);
     }
@@ -436,7 +436,7 @@ void KNDdePeriodicSolution::Stability(bool init)
   // it is not always necessary to initialize 
   // especially not after a continuation step
   if (init) colloc->init(sol, par);
-  int nmat = colloc->nMat();
+  size_t nmat = colloc->nMat();
 
   if (jacStab)
   {
@@ -465,10 +465,10 @@ void KNDdePeriodicSolution::Plot(GnuPlot& pl)
 {
   pl.SetPointSize(0.8);
 
-  for (int i = 0; i < NDIM; i++)
+  for (size_t i = 0; i < NDIM; i++)
   {
     pl.Plot(static_cast<unsigned int>(i), "with lines");
-    for (int j = 0; j < NINT*NDEG + 1; j++)
+    for (size_t j = 0; j < NINT*NDEG + 1; j++)
     {
       double t = (double)j / ((double)(NINT * NDEG));
       pl.AddData(static_cast<unsigned int>(i), t, sol(i + NDIM*j));
@@ -486,37 +486,37 @@ void KNDdePeriodicSolution::Write(std::ofstream& file)
   KNVector msh(colloc->getMesh());
 
   file << VarToIndex(VarEnd,NPAR) << "\t";
-  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file << par(i) << "\t";
+  for (size_t i = 0; i < VarToIndex(VarEnd,NPAR); i++) file << par(i) << "\t";
 
   file << mRe.size() << "\t";
-  for (int i = 0; i < mRe.size(); i++) file << mRe(i) << "\t" << mIm(i) << "\t";
+  for (size_t i = 0; i < mRe.size(); i++) file << mRe(i) << "\t" << mIm(i) << "\t";
 
   file << NDIM << "\t";
   file << NINT << "\t";
   file << NDEG << "\t";
-  for (int i = 0; i < NINT; i++)
+  for (size_t i = 0; i < NINT; i++)
   {
-    for (int j = 0; j < NDEG; j++)
+    for (size_t j = 0; j < NDEG; j++)
     {
       file << colloc->Profile(i, j) << "\t";
     }
   }
   file << colloc->getMesh()(NINT) << "\t";
-  for (int i = 0; i < NDIM*(NINT*NDEG + 1); i++) file << sol(i) << "\t";
+  for (size_t i = 0; i < NDIM*(NINT*NDEG + 1); i++) file << sol(i) << "\t";
   file << "\n";
   file.flush();
 }
 
 void KNDdePeriodicSolution::Read(std::ifstream& file)
 {
-  int npar_, nmul_, ndim_, nint_, ndeg_;
+  size_t npar_, nmul_, ndim_, nint_, ndeg_;
   file >> npar_;
   P_ERROR_X3(VarToIndex(VarEnd,NPAR) == npar_, "Not compatible input file (NPAR) ", npar_, ".");
-  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> par(i);
+  for (size_t i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> par(i);
 
   file >> nmul_;
   P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
-  for (int i = 0; i < nmul_; i++)
+  for (size_t i = 0; i < nmul_; i++)
   {
     file >> mRe(i);
     file >> mIm(i);
@@ -530,7 +530,7 @@ void KNDdePeriodicSolution::Read(std::ifstream& file)
 
   KNVector msh(nint_ + 1);
   double t;
-  for (int i = 0; i < ndeg_*nint_ + 1; i++)
+  for (size_t i = 0; i < ndeg_*nint_ + 1; i++)
   {
     file >> t;
     if (i % ndeg_ == 0) msh(i / ndeg_) = t;
@@ -539,13 +539,13 @@ void KNDdePeriodicSolution::Read(std::ifstream& file)
   if ((NINT == nint_) && (NDEG == ndeg_))
   {
     colloc->setMesh(msh);
-    for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> sol(i);
+    for (size_t i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> sol(i);
   }
   else
   {
     KNVector in(NDIM*(nint_*ndeg_ + 1));
 
-    for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
+    for (size_t i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> in(i);
     colloc->importProfile(sol, in, msh, ndeg_, true);
   }
 }
@@ -553,14 +553,14 @@ void KNDdePeriodicSolution::Read(std::ifstream& file)
 void KNDdePeriodicSolution::ReadNull(std::ifstream& file)
 {
   double tmp;
-  int npar_, nmul_, ndim_, nint_, ndeg_;
+  size_t npar_, nmul_, ndim_, nint_, ndeg_;
   file >> npar_;
   P_ERROR_X3(VarToIndex(VarEnd,NPAR) == npar_, "Not compatible input file (NPAR) ", npar_, ".");
-  for (int i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> tmp;
+  for (size_t i = 0; i < VarToIndex(VarEnd,NPAR); i++) file >> tmp;
 
   file >> nmul_;
   P_ERROR_X3(mRe.size() >= nmul_, "Not compatible input file (NMUL) ", nmul_, ".");
-  for (int i = 0; i < nmul_; i++)
+  for (size_t i = 0; i < nmul_; i++)
   {
     file >> tmp;
     file >> tmp;
@@ -572,15 +572,15 @@ void KNDdePeriodicSolution::ReadNull(std::ifstream& file)
 
   P_ERROR_X3(NDIM == ndim_, "Not compatible input file (NDIM) ", ndim_, ".");
 
-  for (int i = 0; i < ndeg_*nint_ + 1; i++) file >> tmp;
-  for (int i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> tmp;
+  for (size_t i = 0; i < ndeg_*nint_ + 1; i++) file >> tmp;
+  for (size_t i = 0; i < NDIM*(nint_*ndeg_ + 1); i++) file >> tmp;
 }
 
 void KNDdePeriodicSolution::SwitchTFTRTan(KNVector& Re, KNVector& Im, double& alpha, const KNVector& mshint, const KNVector& mshdeg)   // starting data for tori: tangent
 {
   KNVector TRe(sol.size()), TIm(sol.size());
-  int idx = 0;
-  for (int i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
+  size_t idx = 0;
+  for (size_t i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   KNComplexTestFunctional* tf = static_cast< KNComplexTestFunctional* >(testFunct(idx));
   if (tf)
   {

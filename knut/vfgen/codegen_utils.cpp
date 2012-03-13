@@ -32,10 +32,10 @@ using namespace GiNaC;
 ex iterated_subs(ex f, lst e)
 {
   ex g = f;
-  size_t n = e.nops();
-  for (off_t i = n - 1; i >= 0; --i)
+  const size_t n = e.nops();
+  for (size_t i = 0; i < n; ++i)
   {
-    g = g.subs(e[i]);
+    g = g.subs(e[n-i-1]);
   }
   return g;
 }

@@ -19,14 +19,14 @@ void poly_d2lg(const KNVector& t, KNVector& out, double c);
 inline void poly_linmul(KNArray1D<double>& pp, double aa, double bb)
 {
   P_ASSERT_X1(pp(pp.size() - 1) == 0.0, "poly_linmul: truncating the highest order term!");
-  for (int i = pp.size() - 1; i > 0; --i)
+  for (size_t i = pp.size() - 1; i > 0; --i)
   {
     pp(i) = aa * pp(i) + bb * pp(i - 1);
   }
   pp(0) = aa * pp(0);
 }
 
-void poly_coeff_lgr(KNArray1D<double>& out, const KNArray1D<double>& t, int i);
+void poly_coeff_lgr(KNArray1D<double>& out, const KNArray1D<double>& t, size_t i);
 
 void poly_coeff_mul(KNArray1D<double>& out, KNArray1D<double>& in1, KNArray1D<double>& in2);
 
@@ -40,6 +40,6 @@ void lobatto(KNArray1D<double>& mesh);
 
 void gauss(KNArray1D<double>& mesh);
 
-double poly_lgr_eval( const KNArray1D<double>& t, int i, double c);
+double poly_lgr_eval( const KNArray1D<double>& t, size_t i, double c);
 
-double poly_dlg_eval( const KNArray1D<double>& t, int i, double c);
+double poly_dlg_eval( const KNArray1D<double>& t, size_t i, double c);

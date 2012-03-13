@@ -9,25 +9,25 @@
 extern "C"
 {
 
-int sys_ndim(){ return 3; }
-int sys_npar(){ return 8; }
-int sys_ntau(){ return 2; }
-int sys_nderi(){ return 2; }
+size_t sys_ndim(){ return 3; }
+size_t sys_npar(){ return 8; }
+size_t sys_ntau(){ return 2; }
+size_t sys_nderi(){ return 2; }
 
 // VECTORIZED DEF.
 
 void sys_p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par )
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     out(0,idx) = 0.0;
     out(1,idx) = par(6);
   }
 }
 
-void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par,                       const int vp )
+void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par,                       const size_t vp )
 {
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     // it is a constant delay
     out(0,idx) = 0.0;
@@ -37,7 +37,7 @@ void sys_p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KN
 }
 
 void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
-                const KNArray3D<double>& xx, const KNArray1D<double>& par, int sel )
+                const KNArray3D<double>& xx, const KNArray1D<double>& par, size_t sel )
 {
   // parameters
   const double alpha = par(1);
@@ -50,7 +50,7 @@ void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
   const double SN = sin((bb + omega_0)*tau);
   const double CS = cos((bb + omega_0)*tau);
 
-  for (int idx=0; idx < time.size(); ++idx)
+  for (size_t idx=0; idx < time.size(); ++idx)
   {
     // state variables
     const double Are = xx(0,0,idx);
@@ -66,8 +66,8 @@ void sys_p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
 }
 
 void sys_p_deri( KNArray3D<double>& mout, const KNArray1D<double>& time,
-                 const KNArray3D<double>& xx, const KNArray1D<double>& par, int sel,
-                 const int nx, const int* vx, const int np, const int* vp,
+                 const KNArray3D<double>& xx, const KNArray1D<double>& par, size_t sel,
+                 const size_t nx, const size_t* vx, const size_t np, const size_t* vp,
                  const KNArray3D<double>& vv )
 {
 #define out(i,j) mout(i,j,idx)
@@ -81,7 +81,7 @@ const double omega_0 = par(7);
 const double SN = sin((bb + omega_0)*tau);
 const double CS = cos((bb + omega_0)*tau);
 
-for (int idx=0; idx<time.size(); ++idx)
+for (size_t idx=0; idx<time.size(); ++idx)
 {
   const double Are = xx(0,0,idx);
   const double Aim = xx(1,0,idx);
@@ -548,7 +548,7 @@ void sys_stpar( KNVector& par )
 
 void sys_stsol( KNVector& out, double t )
 {
-  KNVector par(8);
+  KNVector par((size_t)8);
   sys_stpar(par);
   // parameters
   const double alpha = par(1);
