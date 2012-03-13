@@ -6,7 +6,7 @@ PROJECT( KNUT )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "Knut" )
-SET( PACKAGE_VERSION "3" )
+SET( PACKAGE_VERSION "4" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2010, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
