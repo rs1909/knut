@@ -718,12 +718,12 @@ void KNSystem::generateSystem(const std::string& vffile, const std::string& shob
   if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
   vf.PrintKnut(cxxcode, options);
   try {
-  	std::cout << "Trying compiler ?? is ?? working??\n";
+//  	std::cout << "Trying compiler ?? is ?? working??\n";
     runCompiler(cxxcode.str(), shobj, executableDir);
   }
   catch (KNException& ex)
   {
-  	std::cout << "Compiler is not working! " << ex.str() << "\n";
+//  	std::cout << "Compiler is not working! " << ex.str() << "\n";
   	std::cout.flush();
     workingCompiler = false;
   }
