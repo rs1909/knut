@@ -43,7 +43,7 @@ class KNMessage
     {
       char buf[31+1];
       buf[31] = '\0';
-      snprintf(buf, 31, "%lu", i);
+      snprintf(buf, 31, "%zd", i);
       message += std::string(buf);
       return *this;
     }

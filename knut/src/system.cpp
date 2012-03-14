@@ -16,6 +16,7 @@
 #include <map>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 extern "C"{
 #include <sys/stat.h>
 #ifndef WIN32
