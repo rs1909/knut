@@ -88,7 +88,7 @@ Section "Dummy Section" SecDummy
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
-    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\knut-gui.lnk" "$INSTDIR\bin\knut-gui.exe"
+    CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\knut-gui.lnk" "$INSTDIR\bin\@GUI_NAME@.exe"
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_END

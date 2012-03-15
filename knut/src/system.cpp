@@ -87,6 +87,7 @@ static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::st
   includeArg += DIRSEP;
   includeArg += KNUT_INCLUDE_DIR;
   arglist.push_back(includeArg);
+  arglist.push_back("-pipe");
   arglist.push_back("-x");
   arglist.push_back("c++");
   arglist.push_back("-o");
@@ -265,7 +266,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 // Opens the three pipes for interacting with a program.
 // arglist is the argument list starting with the program name.
 // the int* - s are the file numbers for the three pipes.
-pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
+static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
 {
   if ( (input==0)&&(output==0)&&(error==0) ) return -1;
   char *argv[arglist.size()+1];
@@ -318,6 +319,7 @@ pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* er
   }
   else
   {
+    if (pid == -1) P_MESSAGE2("Failed to fork process: ", strerror(errno));
     /* Close our copy of the write (read) end of the file descriptor.  */
     if (input)
     {
@@ -368,7 +370,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   const char* cxxbuf = cxxstring.c_str();
   size_t cxxlen = cxxstring.size(), wbytes = 0;
   // output and err
-  pollfd fds[3] = {{input, POLLOUT, 0},{output, POLLIN, 0},{error, POLLIN, 0}};
+  pollfd fds[3] = {{input, POLLOUT|POLLHUP, 0},{output, POLLIN|POLLHUP, 0},{error, POLLIN|POLLHUP, 0}};
   const size_t bufsize = 2048;
   char *out_buf = new char[bufsize];
   std::string out_str, err_str;
@@ -696,14 +698,7 @@ void KNSystem::compileSystem(const std::string& cxxfile, const std::string& shob
   {
     cxxcode += buf + '\n';
   }
-  try {
-    runCompiler(cxxcode, shobj, executableDir);
-  }
-  catch (KNException& ex)
-  {
-    workingCompiler = false;
-    throw (ex);
-  }
+  runCompiler(cxxcode, shobj, executableDir);
 }
 
 void KNSystem::generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir)
@@ -734,8 +729,9 @@ void KNSystem::generateSystem(const std::string& vffile, const std::string& shob
 static inline bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src)
 {
 #ifdef __APPLE__
-  return (sbuf_so->st_mtimespec.tv_sec <= sbuf_src->st_mtimespec.tv_sec)&&
-    (sbuf_so->st_mtimespec.tv_nsec <= sbuf_src->st_mtimespec.tv_nsec);
+  if (sbuf_so->st_mtimespec.tv_sec < sbuf_src->st_mtimespec.tv_sec) return true;
+  else if (sbuf_so->st_mtimespec.tv_sec == sbuf_src->st_mtimespec.tv_sec) return (sbuf_so->st_mtimespec.tv_nsec <= sbuf_src->st_mtimespec.tv_nsec);
+  else return false;
 #else
   return (sbuf_so->st_mtime <= sbuf_src->st_mtime);
 #endif
@@ -788,7 +784,8 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     P_ERROR_X3 (res_cxx == 0, "C++ system definition '", sysName, "' is missing.");
     if (res_so != 0) compile_cxx = true;
     else compile_cxx = to_compile(&sbuf_so, &sbuf_cxx);
-    if (compile_cxx && workingCompiler) compileSystem(cxxfile, sofile, executableDir);
+    // try to compile even if compiler is know not to work
+    if (compile_cxx) compileSystem(cxxfile, sofile, executableDir);
     soname = sofile;
     return use_vf;
   } else if (type == SYS_TYPE_VFC)
