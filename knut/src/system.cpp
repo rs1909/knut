@@ -806,6 +806,10 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
       soname = sofile;
       if (workingCompiler) return use_vf;
       type = SYS_TYPE_VF0;
+    } else
+    {
+      soname = sofile;
+      return use_vf;
     }
   } 
   if (type == SYS_TYPE_VF0)
@@ -817,7 +821,7 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     use_vf = true;
     return use_vf;
   }
-  P_MESSAGE3("Invalid system definition type '", type, "'.");
+  P_MESSAGE4("Invalid system definition type '", type, "' of ", sysName);
 //   delete sbuf_vf; sbuf_vf = 0;
 //   delete sbuf_cxx; sbuf_cxx = 0; 
 //   delete sbuf_so; sbuf_so = 0;
