@@ -240,20 +240,31 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
       if (dminb > mabsb) { dminb = mabsb; iminb = k; }
     }
   }
-  const double mreb = (*mulRe1)(iminb);
-  const double mimb = (*mulIm1)(iminb);
-
-//  std :: cerr << "From = (" << mreb << "," << mimb << ")\n";
   const double LPabs = fabs(sqrt((mrea - 1.0) * (mrea - 1.0) + mima * mima));
   const double PDabs = fabs(sqrt((mrea + 1.0) * (mrea + 1.0) + mima * mima));
   const double NSabs = fabs(sqrt(mrea * mrea + mima * mima) - 1.0);
-  if ( (mimb != 0.0)&&(mima != 0.0) )
+  if (iminb < mulRe1->size())
   {
-    return BifNS;
-  } else if ((mimb == 0.0)&&(mima == 0.0))
+    const double mreb = (*mulRe1)(iminb);
+    const double mimb = (*mulIm1)(iminb);
+
+  //  std :: cerr << "From = (" << mreb << "," << mimb << ")\n";
+    if ( (mimb != 0.0)&&(mima != 0.0) )
+    {
+      return BifNS;
+    } else if ((mimb == 0.0)&&(mima == 0.0))
+    {
+      if (LPabs < PDabs) return BifLP;
+      else return BifPD;
+    } else return BifUN;
+  } else
   {
-    if (LPabs < PDabs) return BifLP;
-    else return BifPD;
-  } else return BifUN;
+    if (mima != 0.0) return BifNS;
+    else
+    {
+      if (LPabs < PDabs) return BifLP;
+      else return BifPD;
+    }
+  }
 #undef NCRIT
 }

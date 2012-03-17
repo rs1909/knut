@@ -56,9 +56,9 @@ PlotData::~PlotData()
   clearAll();
 }
 
-int PlotData::nplots()
+size_t PlotData::nplots()
 {
-  unsigned int number = 0, it = 0;
+  size_t number = 0, it = 0;
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -70,9 +70,9 @@ int PlotData::nplots()
   return it;
 }
 
-void PlotData::clear(unsigned int n)
+void PlotData::clear(size_t n)
 {
-  unsigned int number = 0, it = 0;
+  size_t number = 0, it = 0;
   std::list<PlotItem>::iterator i = Graph.begin();
   while (i != Graph.end())
   {
@@ -125,9 +125,9 @@ void PlotData::clear(unsigned int n)
   labelColor();
 }
 
-QColor PlotData::getColor(unsigned int n)
+QColor PlotData::getColor(size_t n)
 {
-  unsigned int number = 0, it = 0;
+  size_t number = 0, it = 0;
   for (std::list<PlotItem>::const_iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -158,9 +158,9 @@ QColor PlotData::getColor(unsigned int n)
   return QColor(Qt::black);
 }
 
-void PlotData::setColor(unsigned int n, QColor& color)
+void PlotData::setColor(size_t n, QColor& color)
 {
-  unsigned int number = 0, it = 0;
+  size_t number = 0, it = 0;
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
   {
     if (i->number != number)
@@ -181,7 +181,7 @@ void PlotData::setColor(unsigned int n, QColor& color)
       }
       else if ((*i).type == PlotCircleType)
       {
-        for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j)
+        for (size_t j = 0; j < (*i).data.circle->item.size(); ++j)
         {
           QPen pen = (*i).data.circle->item[j]->pen();
           pen.setColor(color);
@@ -191,7 +191,7 @@ void PlotData::setColor(unsigned int n, QColor& color)
       }
       else if ((*i).type == PlotPolygonType)
       {
-        for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j)
+        for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j)
         {
           QPen pen = (*i).data.polygon->item[j]->pen();
           pen.setColor(color);
@@ -210,13 +210,13 @@ void PlotData::setColor(unsigned int n, QColor& color)
 
 void PlotData::clearAxes()
 {
-  for (unsigned int i = 0; i < XCoordTextItems.size(); ++i)
+  for (size_t i = 0; i < XCoordTextItems.size(); ++i)
   {
     removeItem(XCoordTextItems[i]);
     delete XCoordTextItems[i];
   }
   XCoordTextItems.clear();
-  for (unsigned int i = 0; i < YCoordTextItems.size(); ++i)
+  for (size_t i = 0; i < YCoordTextItems.size(); ++i)
   {
     removeItem(YCoordTextItems[i]);
     delete YCoordTextItems[i];
@@ -239,12 +239,12 @@ void PlotData::clearAll()
     }
     else if ((*i).type == PlotCircleType)
     {
-      for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
+      for (size_t j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
       delete(*i).data.circle;
     }
     else if ((*i).type == PlotPolygonType)
     {
-      for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
+      for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
       delete(*i).data.polygon;
     }
     else
@@ -270,16 +270,16 @@ void PlotData::clearAll()
 }
 
 /// this computes the minimum and maximum value of an axis
-static inline void adjustAxis(qreal& min, qreal& max, unsigned int& numTicks)
+static inline void adjustAxis(qreal& min, qreal& max, size_t& numTicks)
 {
-  const unsigned int MinTicks = 4;
+  const size_t MinTicks = 4;
   qreal grossStep = (max - min) / MinTicks;
   qreal step = pow(10, floor(log10(grossStep)));
 
   if (5 * step < grossStep) step *= 5;
   else if (2 * step < grossStep) step *= 2;
 
-  numTicks = (unsigned int)(ceil(max / step) - floor(min / step));
+  numTicks = static_cast<size_t>(ceil(max / step) - floor(min / step));
   min = floor(min / step) * step;
   max = ceil(max / step) * step;
 }
@@ -410,42 +410,43 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
 //    - We draw stability in this case with dashed lines
 // 2. everything else doesn't change.
 bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y, 
-  int pt, int dim)
+  size_t pt, size_t dim)
 {
-  int xadded = 0;
-  int yadded = 0;
+  size_t xadded = 0;
+  size_t yadded = 0;
   std::list<PlotItem>::iterator start = --Graph.end();
-  int startnumber = 0;
+  size_t startnumber = 0;
   if (!Graph.empty()) startnumber = Graph.rbegin()->number;
   QColor plcolor, stabcolor(Qt::black);
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
   // get stability data
   bool stab_ini = data->getUnstableMultipliers(0) == 0;
-  std::vector<unsigned int> stabidx;
-  std::vector<unsigned int> bifidx;
-  std::vector<BifType>      biftype;
+  std::vector<size_t> stabidx;
+  std::vector<size_t> bifidx;
+  std::vector<BifType> biftype;
   {
-    int k_p = 0, k;
+    size_t k_p = 0, k;
     bool stab = false;
     stabidx.push_back(0);
     do
     {
       k = data->getNextBifurcation(k_p, &stab);
-      if (k != -1)
+      if (k < data->getNCols())
       {
         bifidx.push_back(k);
         biftype.push_back(data->getBifurcationType(k));
+        std::cout << "get bifurcationtyp " << k << "\n";
         if (stab) stabidx.push_back(k);
         k_p = k;
       }
-    } while (k != -1);
+    } while (k < data->getNCols());
     stabidx.push_back(data->getNPoints()-1);
   }
   // Putting in the data
   if (x > XSeparator && y > YSeparator)
   {
     double pxend = 0.0, pyend = 0.0;
-    for (unsigned int b = 1; b < stabidx.size(); ++b)
+    for (size_t b = 1; b < stabidx.size(); ++b)
     {
 //      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
       Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
@@ -458,11 +459,11 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       // X Coordinate
       if (x == XLabel)
       {
-        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) Graph.rbegin()->x(j) = i;
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) Graph.rbegin()->x(j) = i;
       } else
       if (x >= XParameter0)
       {
-        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           if (x != XParameter0)
             Graph.rbegin()->x(j) = data->getPar(i, x - XParameter0);
@@ -480,7 +481,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         KNMatrix metric(elem.size(), elem.size());
         KNDdeBvpCollocation::getMetric(metric, elem);
         KNVector prof(false), msh(false);
-        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           const_cast<KNDataFile*>(data)->getMeshRef(i, msh);
           const_cast<KNDataFile*>(data)->getProfileRef(i, prof);
@@ -489,19 +490,19 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       } else
       if (y == YAmplitude)
       {
-        const int ndeg = data->getNDeg();
-        const int nint = data->getNInt();
-        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        const size_t ndeg = data->getNDeg();
+        const size_t nint = data->getNInt();
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           double nrm = 0.0;
-          int p = dim;
+          size_t p = dim;
 //          for (int p = 0; p < data->getNDim(); ++p)
 //          {
             double min = DBL_MAX;
             double max = -DBL_MAX;
-            for (int l = 0; l < nint; ++l)
+            for (size_t l = 0; l < nint; ++l)
             {
-              for (int k = 0; k < ndeg; ++k)
+              for (size_t k = 0; k < ndeg; ++k)
               {
                 if (min > data->getProfile(i, p, k + ndeg*l)) min = data->getProfile(i, p, k + ndeg*l);
                 if (max < data->getProfile(i, p, k + ndeg*l)) max = data->getProfile(i, p, k + ndeg*l);
@@ -514,7 +515,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       } else
       if (y >= YParameter0)
       {
-        for (unsigned int i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           if (y != YParameter0)
             Graph.rbegin()->y(j) = data->getPar(i, y - YParameter0);
@@ -525,7 +526,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       } else std::cout << "Bad Y coord\n";
       ++yadded;
       // set the beginning and the end
-      const int end = Graph.rbegin()->x.size()-1;
+      const size_t end = Graph.rbegin()->x.size()-1;
       if (bskip != 0)
       {
         Graph.rbegin()->x(0) = pxend;
@@ -606,8 +607,8 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   if ((x > XSeparator && y > YSeparator) || y == YAbsMultiplier)
   {
     std::list<PlotItem>::const_iterator itc = Graph.end();
-    for (int i = 0; i < xadded; ++i) --itc;
-    for (unsigned int i = 0; i < bifidx.size(); ++i)
+    for (size_t i = 0; i < xadded; ++i) --itc;
+    for (size_t i = 0; i < bifidx.size(); ++i)
     {
       Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
       Graph.rbegin()->x.init(1);
@@ -616,14 +617,14 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       if (y != YAbsMultiplier)
       {
         // find out in which stability region is our point
-        unsigned int k = 1, k2;
+        size_t k = 1, k2;
         while ((bifidx[i] > stabidx[k]) && k < stabidx.size()) ++k;
         const bool stbif = (bifidx[i] == stabidx[k]);
         if (k > 1) k2 = bifidx[i] - stabidx[k-1] + 1;
         else k2 = bifidx[i] - stabidx[k-1];
         
         std::list<PlotItem>::const_iterator it = itc;
-        for (unsigned int p = 0; p < k-1; ++p) ++it;
+        for (size_t p = 0; p < k-1; ++p) ++it;
                 
         if (stbif)
         {
@@ -680,7 +681,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       else YCoordText.push_back(YCoordMap[y]);
       
       std::list<PlotItem>::const_iterator it = Graph.end();
-      for (int i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
+      for (size_t i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
       dataToGraphics(it, Graph.end());
       labelColor();
       return true;
@@ -694,23 +695,23 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 
 struct rcStruc
 {
-  rcStruc(unsigned int n, PlotXVariable x, PlotYVariable y, int p, int d) : 
+  rcStruc(size_t n, PlotXVariable x, PlotYVariable y, size_t p, size_t d) : 
     num(n), pt(p), dim(d), X(x), Y(y) {}
-  const unsigned int num;
-  const int pt;
-  const int dim;
+  const size_t num;
+  const size_t pt;
+  const size_t dim;
   const PlotXVariable X;
   const PlotYVariable Y;
 };
 
 void PlotData::updatePlot(const KNDataFile* mat)
 {
-  unsigned int number = 0;
+  size_t number = 0;
   
   std::list<rcStruc> lst;
   
-  unsigned int ct_num = 0;
-  int ct_it = 0;
+  size_t ct_num = 0;
+  size_t ct_it = 0;
   std::list<PlotItem>::iterator first = Graph.end();
   std::list<PlotItem>::iterator last = Graph.end();
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
@@ -730,7 +731,7 @@ void PlotData::updatePlot(const KNDataFile* mat)
     }
   }
   
-  int it = 0;
+  size_t it = 0;
   for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
   {
     clear(i->num - it);
@@ -803,10 +804,10 @@ static inline void pointOutside(PlotLine& ppath,
                                 const QPointF& A,          const QPointF& B)
 {
   // Handle the easy cases quickly
-  const int Ahoriz = horizPoint (BottomRight, TopLeft, A);
-  const int Bhoriz = horizPoint (BottomRight, TopLeft, B);
-  const int Avert = vertPoint (BottomRight, TopLeft, A);
-  const int Bvert = vertPoint (BottomRight, TopLeft, B);
+  const horizPosition Ahoriz = horizPoint (BottomRight, TopLeft, A);
+  const horizPosition Bhoriz = horizPoint (BottomRight, TopLeft, B);
+  const vertPosition Avert = vertPoint (BottomRight, TopLeft, A);
+  const vertPosition Bvert = vertPoint (BottomRight, TopLeft, B);
     
   if (Ahoriz == HMiddle && Avert == VMiddle && Bhoriz == HMiddle && Bvert == VMiddle)
   {
@@ -1030,7 +1031,7 @@ void PlotData::makeBox()
   Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
 
   // drawing the ticks and tickmarks
-  for (unsigned int i = 0; i < HText.size(); i++)
+  for (size_t i = 0; i < HText.size(); i++)
   {
     removeItem(BottomTicks[i]);
     removeItem(TopTicks[i]);
@@ -1043,7 +1044,7 @@ void PlotData::makeBox()
   TopTicks.clear();
   HText.clear();
   qreal highest = 0;
-  for (unsigned int i = 0; i < cvb.xticks + 1; i++)
+  for (size_t i = 0; i < cvb.xticks + 1; i++)
   {
     BottomTicks.push_back(new QGraphicsLineItem);
     BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
@@ -1061,7 +1062,7 @@ void PlotData::makeBox()
     addItem(HText[i]);
     if (highest < b.height()) highest = b.height();
   }
-  for (unsigned int i = 0; i < VText.size(); i++)
+  for (size_t i = 0; i < VText.size(); i++)
   {
     removeItem(LeftTicks[i]);
     removeItem(RightTicks[i]);
@@ -1074,7 +1075,7 @@ void PlotData::makeBox()
   RightTicks.clear();
   VText.clear();
   qreal widest = 0;
-  for (unsigned int i = 0; i < cvb.yticks + 1; i++)
+  for (size_t i = 0; i < cvb.yticks + 1; i++)
   {
     LeftTicks.push_back(new QGraphicsLineItem);
     LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);
@@ -1098,7 +1099,7 @@ void PlotData::makeBox()
   qreal sumwidth = 0;
   qreal sumheight = 0;
   size_t startmove = 0;
-  for (unsigned int i = 0; i < YCoordText.size(); ++i)
+  for (size_t i = 0; i < YCoordText.size(); ++i)
   {
     YCoordTextItems.push_back(new QGraphicsTextItem);
     YCoordTextItems[i]->setPlainText(YCoordText[i]);
@@ -1174,7 +1175,7 @@ void PlotData::makeBox()
 
 void PlotData::labelColor()
 {
-  unsigned int prenumber = 0, it = 0;
+  size_t prenumber = 0, it = 0;
   for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
   {
     if ((*i).principal && prenumber != (*i).number)
@@ -1192,7 +1193,7 @@ void PlotData::labelColor()
       {
         textColor = (*i).data.polygon->pen.color();
       }
-      unsigned int num = it++;
+      size_t num = it++;
       if (num < XCoordTextItems.size() && num < YCoordTextItems.size() && 
           num < XCoordText.size() && num < YCoordText.size()) // safety measures
       {

@@ -22,6 +22,7 @@ class QGraphicsSceneMouseEvent;
 #include <vector>
 #include <list>
 #include <cmath>
+#include <cstdlib>
 
 #include "matrix.h"
 #include "mat4data.h"
@@ -135,7 +136,7 @@ class PlotItem
 {
   public:
     PlotItem(const KNDataFile* mat, PlotDataType type,
-             PlotXVariable xv, PlotYVariable yv, int pt, int dim)
+             PlotXVariable xv, PlotYVariable yv, size_t pt, size_t dim)
      : dataType(type),
      sourcePath(QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath()),
      varX(xv), varY(yv), point(pt), dimension(dim) {}
@@ -144,21 +145,21 @@ class PlotItem
     PlotItemUnion data;
     PlotType      type;
     PlotDataType  dataType;
-    KNVector        x;
-    KNVector        y;
-    unsigned int  number;
+    KNVector      x;
+    KNVector      y;
+    size_t        number;
     bool          principal;
     QString       sourcePath;
     const PlotXVariable varX;
     const PlotYVariable varY;
-    const int     point;
-    const int     dimension;
+    const size_t  point;
+    const size_t  dimension;
 };
 
 struct ViewBox
 {
   qreal xmax, xmin, ymax, ymin;
-  unsigned int xticks, yticks;
+  size_t xticks, yticks;
 };
 
 class PlotData : public QGraphicsScene
@@ -169,12 +170,12 @@ class PlotData : public QGraphicsScene
     PlotData(QObject *parent = 0);
     ~PlotData();
     bool addPlot(const KNDataFile* mat, 
-      PlotXVariable x, PlotYVariable y, int pt, int dim);
+      PlotXVariable x, PlotYVariable y, size_t pt, size_t dim);
     void clearAll();
-    void clear(unsigned int n);
-    int  nplots();
-    QColor getColor(unsigned int n);
-    void setColor(unsigned int n, QColor& Color);
+    void clear(size_t n);
+    size_t nplots();
+    QColor getColor(size_t n);
+    void setColor(size_t n, QColor& Color);
     void updatePlot(const KNDataFile* mat);
     
   public slots:

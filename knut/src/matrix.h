@@ -148,10 +148,10 @@ class KNArray1D
       return v;
     }
 
-    inline T *pointer(const int i)
+    inline T *pointer(const size_t i)
     {
 #ifdef DEBUG
-      P_ASSERT_X(i < n && i >= 0, "KNArray1D::bound11&");
+      P_ASSERT_X(i < n, "KNArray1D::bound11&");
 #endif
       return &v[i];
     }
@@ -173,7 +173,7 @@ class KNArray1D
     inline T& operator()(size_t i)
     {
 #ifdef DEBUG
-      P_ASSERT_X(i < n && i >= 0, "KNArray1D::bound11&");
+      P_ASSERT_X(i < n, "KNArray1D::bound11&");
 #endif
       return v[i];
     }
@@ -181,7 +181,7 @@ class KNArray1D
     inline T operator()(size_t i) const
     {
 #ifdef DEBUG
-      P_ASSERT_X(i < n && i >= 0 , "vec_bound11_\n");
+      P_ASSERT_X(i < n, "vec_bound11_\n");
 #endif
       return v[i];
     }
@@ -277,7 +277,7 @@ class KNArray2D
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
-      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
+//      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
 #endif
       return &m[i + r*j];
     }
@@ -286,7 +286,7 @@ class KNArray2D
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
-      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
+//      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
 #endif
       return &m[i + r*j];
     }
@@ -309,7 +309,7 @@ class KNArray2D
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound& ");
-      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
+//      P_ASSERT_X(i >= 0 && j >= 0, "lbound& ");
 #endif
       return m[i + r*j];
     }
@@ -318,7 +318,7 @@ class KNArray2D
     {
 #ifdef DEBUG
       P_ASSERT_X(i < r && j < c, "bound_ ");
-      P_ASSERT_X(i >= 0 && j >= 0, "lbound_ ");
+//      P_ASSERT_X(i >= 0 && j >= 0, "lbound_ ");
 #endif
       return m[i + r*j];
     }
@@ -397,7 +397,7 @@ class KNArray3D
     {
 #ifdef DEBUG
       P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
-      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
+//      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
 #endif
       return &m[i + d1*(j + d2*k)];
     }
@@ -415,7 +415,7 @@ class KNArray3D
     {
 #ifdef DEBUG
       P_ASSERT_X((i < d1) && (j < d2) && (k < d3), "bound&\n");
-      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound&\n");
+//      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound&\n");
 #endif
       return m[i + d1*(j + d2*k)];
     }
@@ -424,7 +424,7 @@ class KNArray3D
     {
 #ifdef DEBUG
       P_ASSERT_X11((i < d1) && (j < d2) && (k < d3), d1, "|",i , " ", d2, "|", j, " ", d3, "|", k);
-      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
+//      P_ASSERT_X((i >= 0) && (j >= 0) && (k >= 0), "lbound\n");
 #endif
       return m[i + d1*(j + d2*k)];
     }
@@ -434,7 +434,7 @@ class KNArray3D
 template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, size_t i) : destructable(false)
 {
 #ifdef DEBUG
-  P_ASSERT_X((i >= 0)&&(i < vec.c), "bound\n");
+  P_ASSERT_X(i < vec.c, "bound\n");
 #endif
   v = &vec.m[vec.r*i];
   n = vec.r;
@@ -443,7 +443,7 @@ template<class T> inline KNArray1D<T>::KNArray1D(const KNArray2D<T>& vec, size_t
 template<class T> inline KNArray2D<T>::KNArray2D(const KNArray3D<T>& vec, size_t i) : destructable(false)
 {
 #ifdef DEBUG
-  P_ASSERT_X((i >= 0)&&(i < vec.d3), "bound\n");
+  P_ASSERT_X(i < vec.d3, "bound\n");
 #endif
   m = &vec.m[vec.d1*vec.d2*i];
   r = vec.d1;

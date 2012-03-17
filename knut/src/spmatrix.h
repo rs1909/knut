@@ -349,9 +349,9 @@ inline void KNSparseMatrix::clear(char F)
 inline size_t KNSparseMatrix::newLine(size_t size_)
 {
   n++;
-  Ap[n] = Ap[n-1] + (int)size_;
+  Ap[n] = Ap[n-1] + static_cast<int>(size_);
 #ifdef DEBUG
-  P_ASSERT_X5(Ap[n] < size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
+  P_ASSERT_X5(static_cast<size_t>(Ap[n]) < size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
 #endif
   return n -1;
 }
@@ -361,12 +361,12 @@ inline int& KNSparseMatrix::writeIndex(size_t l, size_t e)
 #ifdef DEBUG
 //   std::cout << "n:" << n << " l:" << l << " lsz:" << Ap[l+1] - Ap[l] << " e:" << e << " size:" << size << " Ap[l] + e:"<<Ap[l] + e<<"\n";
   P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
-  P_ASSERT_X5(e < Ap[l+1]-Ap[l], "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
-  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
-  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
+  P_ASSERT_X5(e < static_cast<size_t>(Ap[l+1]-Ap[l]), "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
+//  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
+//  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
   P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
-  return Ai[(size_t)Ap[l] + e];
+  return Ai[static_cast<size_t>(Ap[l]) + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
@@ -374,12 +374,12 @@ inline double& KNSparseMatrix::writeData(size_t l, size_t e)
 {
 #ifdef DEBUG
   P_ASSERT_X5(l < n, "WrLi bound: n=", n, ", l=", l, ".");
-  P_ASSERT_X5(e < Ap[l+1]-Ap[l], "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
-  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
-  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
-  P_ASSERT_X7(Ap[l] + e < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
+  P_ASSERT_X5(e < static_cast<size_t>(Ap[l+1]-Ap[l]), "WrLi bound: e=", e, " Ap[l+1]-Ap[l]=", Ap[l+1]-Ap[l], ".");
+//  P_ASSERT_X3(e >= 0, "WrLi bound: e=", e, ".");
+//  P_ASSERT_X3(l >= 0, "WrLi bound: l=", l, ".");
+  P_ASSERT_X7(static_cast<size_t>(Ap[l] + e) < size, "WrLi bound: Ap[l]=", Ap[l], ", e=", e, ", size=", size, ".");
 #endif
-  return Ax[(size_t)Ap[l] + e];
+  return Ax[static_cast<size_t>(Ap[l]) + e];
 //  std::cout<<l<<","<<n<<"-"<<Ap[l] + e<<","<<Ap[l+1]<<"\n";
 }
 
