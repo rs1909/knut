@@ -125,14 +125,14 @@ MainWindow::MainWindow(const QString& appDir) :
   // sets up a bidirectional connection
   connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
   parameters.registerCallback("std::string", "sysname", sysname, SIGNAL(textEdited(const QString &)), "setText");
-  parameters.registerCallback("int","nPar", this, 0, "nParChanged");
+  parameters.registerCallback("size_t","nPar", this, 0, "nParChanged");
 
   // setting LABEL
   QLabel* labelLabel = new QLabel("LABEL");
   labelLabel->setToolTip(QString("The label of the solution in the input file to be used as a starting point."));
   label = new QSpinBox();
   label->setRange(0, 0xffff);
-  parameters.registerCallback("int", "label", label, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "label", label, SIGNAL(valueChanged(int)), "setValue");
 
   QLabel* fromTypeLabel = new QLabel("FROM");
   QComboBox* fromType = new QComboBox();
@@ -229,9 +229,9 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(stab, 1, 3, Qt::AlignHCenter);
   numericsGrid->addWidget(curveAngle, 1, 4);
   
-  parameters.registerCallback("int",    "nInt",   nint,       SIGNAL(valueChanged(int)),           "setValue");
-  parameters.registerCallback("int",    "nDeg",   ndeg,       SIGNAL(valueChanged(int)),           "setValue");
-  parameters.registerCallback("int",    "nMul",   nmul,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("size_t",    "nInt",   nint,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("size_t",    "nDeg",   ndeg,       SIGNAL(valueChanged(int)),           "setValue");
+  parameters.registerCallback("size_t",    "nMul",   nmul,       SIGNAL(valueChanged(int)),           "setValue");
   parameters.registerCallback("double", "cAngle", curveAngle, SIGNAL(textEdited(const QString &)), "setText");
   parameters.registerCallback("bool",   "stab",   stab,       SIGNAL(clicked(bool)),               "setChecked");
 
@@ -255,10 +255,10 @@ MainWindow::MainWindow(const QString& appDir) :
   torusGrid->addWidget(nint2, 1, 1);
   torusGrid->addWidget(ndeg1, 1, 2);
   torusGrid->addWidget(ndeg2, 1, 3);
-  parameters.registerCallback("int", "nInt1", nint1, SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nInt2", nint2, SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nDeg1", ndeg1, SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nDeg2", ndeg2, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nInt1", nint1, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nInt2", nint2, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nDeg1", ndeg1, SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nDeg2", ndeg2, SIGNAL(valueChanged(int)), "setValue");
 
   QLabel* stepsLabel = new QLabel("STEPS");
   QLabel* dsLabel = new QLabel("DS");
@@ -290,7 +290,7 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(dsMin, 3, 2);
   numericsGrid->addWidget(dsMax, 3, 3);
   numericsGrid->addWidget(dsStart, 3, 4);
-  parameters.registerCallback("int", "steps", steps,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "steps", steps,   SIGNAL(valueChanged(int)), "setValue");
   parameters.registerCallback("double", "ds", ds,      SIGNAL(textEdited(const QString &)), "setText");
   parameters.registerCallback("double", "dsMin", dsMin,   SIGNAL(textEdited(const QString &)), "setText");
   parameters.registerCallback("double", "dsMax", dsMax,   SIGNAL(textEdited(const QString &)), "setText");
@@ -375,15 +375,15 @@ MainWindow::MainWindow(const QString& appDir) :
   symmetryGrid->addWidget(sym, 3, 0, 2, 5);
   connect(nsym, SIGNAL(valueChanged(int)), this, SLOT(setNSymParameter(int)));
   connect(sym, SIGNAL(sizeChanged(int)), nsym, SLOT(setValue(int)));
-  parameters.registerCallback("int", "nItC", nitC,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nItR", nitR,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nItK", nitK,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "iad", iad,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("int", "nPr", nPr,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("vector<int>", "symRe", sym, 0, "dataUpdated");
-  parameters.registerCallback("vector<int>", "symIm", sym, 0, "dataUpdated");
-  parameters.registerCallback("vector<int>", "symRe", nsym, 0, "setValue");
-  parameters.registerCallback("vector<int>", "symIm", nsym, 0, "setValue");
+  parameters.registerCallback("size_t", "nItC", nitC,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nItR", nitR,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nItK", nitK,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "iad", iad,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("size_t", "nPr", nPr,   SIGNAL(valueChanged(int)), "setValue");
+  parameters.registerCallback("vector<size_t>", "symRe", sym, 0, "dataUpdated");
+  parameters.registerCallback("vector<size_t>", "symIm", sym, 0, "dataUpdated");
+  parameters.registerCallback("vector<size_t>", "symRe", nsym, 0, "setValue");
+  parameters.registerCallback("vector<size_t>", "symIm", nsym, 0, "setValue");
 
   // connecting exceptions
   connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));

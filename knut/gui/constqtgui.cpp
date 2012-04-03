@@ -100,6 +100,9 @@ void NConstantsQtGui::registerCallback(const char * type, const char * name, QOb
   if (!strncmp(type,"int",12))
   {
     connect(object, signal, this, SLOT(slotToInt(int)));
+  } else if (!strncmp(type,"size_t",12))
+  {
+    connect(object, signal, this, SLOT(slotToSizeT(int)));
   } else if (!strncmp(type,"bool",12))
   {
     connect(object, signal, this, SLOT(slotToBool(bool)));
@@ -129,7 +132,7 @@ void NConstantsQtGui::registerCallback(const char * type, const char * name, QOb
 
 /// Note that there is a deficiency; 
 /// if there are two signals connecting from the same object, they cannot be told apart.
-template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConnection(QObject *object, TP val)
+template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConnection(QObject *object)
 {
   int found = 0;
   const char *name = 0;
@@ -147,55 +150,61 @@ template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConn
 
 void NConstantsQtGui::slotToInt(int val)
 {
-  callbackPtr<int> ptr = findConnection<int>(sender(), val);
+  callbackPtr<int> ptr = findConnection<int>(sender());
   if (ptr.value) ptr.value(*this, val);
+}
+
+void NConstantsQtGui::slotToSizeT(int val)
+{
+  callbackPtr<size_t> ptr = findConnection<size_t>(sender());
+  if (ptr.value) ptr.value(*this, static_cast<size_t>(val));
 }
 
 void NConstantsQtGui::slotToBool(bool val)
 {
-  callbackPtr<bool> ptr = findConnection<bool>(sender(), val);
+  callbackPtr<bool> ptr = findConnection<bool>(sender());
   if (ptr.value) ptr.value(*this, val);
 }
 
 void NConstantsQtGui::slotToDouble(const QString& val)
 {
-  callbackPtr<double> ptr = findConnection<double>(sender(), val.toDouble());
+  callbackPtr<double> ptr = findConnection<double>(sender());
   if (ptr.value) ptr.value(*this, val.toDouble());
 }
 
 void NConstantsQtGui::slotToPtType(int val)
 {
-  callbackPtr<PtType> ptr = findConnection<PtType>(sender(), PtTypeTable.CIndexToType(val));
+  callbackPtr<PtType> ptr = findConnection<PtType>(sender());
   if (ptr.value) ptr.value(*this, PtTypeTable.CIndexToType(val));  
 }
 
 void NConstantsQtGui::slotToEqn(int val)
 {
-  callbackPtr<Eqn> ptr = findConnection<Eqn>(sender(), EqnTable.CIndexToType(val));
+  callbackPtr<Eqn> ptr = findConnection<Eqn>(sender());
   if (ptr.value) ptr.value(*this, EqnTable.CIndexToType(val)); 
 }
 
 void NConstantsQtGui::slotToBranchSW(int val)
 {
-  callbackPtr<BranchSW> ptr = findConnection<BranchSW>(sender(), BranchSWTable.CIndexToType(val));
+  callbackPtr<BranchSW> ptr = findConnection<BranchSW>(sender());
   if (ptr.value) ptr.value(*this, BranchSWTable.CIndexToType(val)); 
 }
 
 void NConstantsQtGui::slotToBifType(int val)
 {
-  callbackPtr<BifType> ptr = findConnection<BifType>(sender(), BifTypeTable.CIndexToType(val));
+  callbackPtr<BifType> ptr = findConnection<BifType>(sender());
   if (ptr.value) ptr.value(*this, BifTypeTable.CIndexToType(val)); 
 }
 
 void NConstantsQtGui::slotToVar(int val)
 {
-  callbackPtr<Var> ptr = findConnection<Var>(sender(), VarTable.CIndexToType(val));
+  callbackPtr<Var> ptr = findConnection<Var>(sender());
   if (ptr.value) ptr.value(*this, VarTable.CIndexToType(val));
 //   if ( VarToCIndex(CIndexToVar(val)) != val ) std::cout << "wrong conversion\n";
 }
 
 void NConstantsQtGui::slotToString(const QString& val)
 {
-  callbackPtr<std::string> ptr = findConnection<std::string>(sender(), val.toStdString());
+  callbackPtr<std::string> ptr = findConnection<std::string>(sender());
   if (ptr.value) ptr.value(*this, val.toStdString());
 }

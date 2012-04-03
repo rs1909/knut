@@ -570,7 +570,7 @@ void KNAbstractPeriodicSolution::findAngle()
   }
   else
   {
-    par(VarToIndex(VarAngle,NPAR)) = atan(fabs(zRe / zIm)) + M_PI / 2.0;
+    par(VarToIndex(VarAngle,NPAR)) = M_PI + atan(zIm/ zRe);
   }
   out << "    Z = " << zRe << " + I*" << zIm << "\n" 
          "    Z = " << nrm << " * " << "EXP( " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * I*2Pi )\n";

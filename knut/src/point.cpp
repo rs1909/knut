@@ -313,20 +313,10 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds)
   KNVector QRE(NDIM), QIM(NDIM);
 
   double newperiod = par(0);
-  double dist;
-  do {
-    dist = tf->kernelComplex(newperiod, QRE, QIM, *colloc, par);
-    if (dist < 0.01)
-   	  break;
-   	else
-   	{
-   	  par(0) /= 2.0;
-   	  findAngle();
-   	}
-  } while (true);
+  double dist = tf->kernelComplex(newperiod, QRE, QIM, *colloc, par);
   par(0) = newperiod;
   
-  out << "    T = " << par(0) << ", arg(Z) = " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * 2Pi\n";
+  out << "    T = " << par(0) << ", arg(Z) = " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * 2Pi," << " DST=" << dist << "\n";
 //   std::cerr << "Distance between the predicted and real critial eigenfunctions: " << dist << "\n";
   P_ERROR_X3(dist < 0.01, "Cannot switch branches."
     " The predicted and the computed eigenfunctions are not close enough."

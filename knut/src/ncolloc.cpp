@@ -130,15 +130,15 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   size_t nmat_new = NMAT;
   for (size_t idx = 0; idx < NDEG*NINT; ++idx)
   {
-  	for (size_t k = 0; k < NTAU; k++)
-      {
-  	    if (fabs(p_tau(k,idx)) > nmat_new*par(0)) nmat_new = static_cast<size_t>(ceil(fabs(p_tau(k,idx)/par(0))));
-      }
+    for (size_t k = 0; k < NTAU; k++)
+    {
+      if (fabs(p_tau(k,idx)) > nmat_new*par(0)) nmat_new = std::max(static_cast<size_t>(ceil(fabs(p_tau(k,idx)/par(0)))), (size_t)1);
+    }
   }
   if (nmat_new != NMAT)
   {
-  	NMAT = nmat_new;
-  	szI.init(NMAT + 1, NINT*NDEG);
+    NMAT = nmat_new;
+    szI.init(NMAT + 1, NINT*NDEG);
   }
 //  std::cout << "NMAT_new " << nmat_new << "p_tau(1,0)/par(0)" << p_tau(1,0)/par(0) << "\n";
 

@@ -53,10 +53,11 @@ class NConstantsQtGui : public QObject, public KNConstants
         callbackPtr(KNConstantNames::FPTR v) : value((void (*)(KNConstants&, const A&))v) {}
         void (*value)(KNConstants&, const A&);
     };
-    template<typename B> callbackPtr<B> findConnection(QObject *object, B val);
+    template<typename B> callbackPtr<B> findConnection(QObject *object);
     
   private slots:
     void slotToInt(int val);
+    void slotToSizeT(int val);
     void slotToBool(bool val);
     void slotToDouble(const QString& val);
     void slotToPtType(int val);

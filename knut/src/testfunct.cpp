@@ -352,13 +352,6 @@ void KNComplexTestFunctional::kernel(KNVector& Re, KNVector& Im, double& alpha)
 
 double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par)
 {
-  // computing the period of the new branch
-  double period = par(0);
-  double angle = par(VarToIndex(VarAngle,NPAR));
-  if (par(VarToIndex(VarAngle,NPAR)) < 0) angle *= -1.0;
-  if (par(VarToIndex(VarAngle,NPAR)) < M_PI) period *= 2 * M_PI / angle;
-  else period *= 2 * M_PI / (angle - M_PI);
-
   double norm1 = 0.0;
   for (size_t i = 0; i < NDIM; i++)
   {
@@ -373,28 +366,42 @@ double KNComplexTestFunctional::kernelComplex(double& newperiod, KNVector& Re, K
   file << std::scientific;
   file.precision(12);
 #endif
-
-  double dist = 0.0;
-  for (size_t i = 0; i < NINT; i++)
-  {
-    for (size_t j = 0; j < NDEG + 1; j++)
+  // computing the period of the new branch
+  double period = par(0);
+  double angle = par(VarToIndex(VarAngle,NPAR));
+  if (par(VarToIndex(VarAngle,NPAR)) < 0) angle += 2*M_PI;
+  
+  double dist;
+  size_t it = 0;
+  do {
+  	dist = 0.0;
+    period = par(0)*(2*M_PI/angle);
+  
+    for (size_t i = 0; i < NINT; i++)
     {
-      const double t = col.Profile(i, j);
-      for (size_t p = 0; p < NDIM; p++)
+      for (size_t j = 0; j < NDEG + 1; j++)
       {
-        const double t2 = t*par(0)/period;
-        const double d = vv(2*(p + (j + i*NDEG)*NDIM)) - (cos(2.0 * M_PI * t2) * vv(2 * p) + sin(2.0 * M_PI * t2) * vv(2 * p + 1));
-        if (dist < fabs(d)) dist = fabs(d);
+        const double t = col.Profile(i, j);
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          const double t2 = t*par(0)/period;
+          const double d1 =(cos(2.0 * M_PI * t2) * vv(2 * p) + sin(2.0 * M_PI * t2) * vv(2 * p + 1));
+          const double d2 = vv(2*(p + (j + i*NDEG)*NDIM));
+          const double d = d2 - d1;
+          if (dist < fabs(d)) dist = fabs(d);
+        #ifdef DEBUG
+          file << d1 << "\t" << d2 << "\t";
+        #endif
+        }
       #ifdef DEBUG
-        file << vv(2*(p + (j + i*NDEG)*NDIM)) << "\t";
+        file << par(0)*t << "\n";
       #endif
       }
-    #ifdef DEBUG
-      file << par(0)*t << "\n";
-    #endif
     }
-  }
-
+    angle += 2*M_PI;
+    ++it;
+  } while ( (dist/norm1 > 0.001) && (it < 12) );
+  
   newperiod = period;
   return dist/norm1;
 }
