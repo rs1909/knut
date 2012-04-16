@@ -24,6 +24,7 @@ extern "C"{
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <unistd.h>
 #else
 #include <windows.h>
 #endif 
@@ -375,86 +376,82 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   char *out_buf = new char[bufsize];
   std::string out_str, err_str;
   int rct = 0, ect = 0;
+  size_t iin = 0, iout = 1, ierr = 2, nfds = 3;
   do {
-    int pact = poll(fds, 3, 1000);
-//    std::cerr << "Pipes ready: " << pact 
-//      << " EV0 " <<  fds[0].revents 
-//      << " EV1 " <<  fds[1].revents
-//      << " EV2 " <<  fds[2].revents 
+    int pact = poll(fds, nfds, 1000);
+//     std::cerr << "Pipes ready: " << pact 
+//      << " EV0 " <<  fds[iin].revents 
+//      << " EV1 " <<  fds[iout].revents
+//      << " EV2 " <<  fds[ierr].revents 
 //      << " POLLOUT=" << POLLOUT << " POLLIN=" << POLLIN << " POLLPRI=" << POLLPRI 
 //      << " POLLHUP=" << POLLHUP << " POLLERR=" << POLLERR 
 //      << " POLLWRNORM=" << POLLWRNORM << " POLLWRBAND=" << POLLWRBAND 
 //      << " POLLRDNORM=" << POLLRDNORM << " POLLRDBAND=" << POLLRDBAND << " POLLNVAL=" << POLLNVAL << "\n";
     P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
-    P_ERROR_X2((fds[0].revents & (POLLNVAL|POLLERR)) == 0, "Input pipe error -> ", err_str);
-    P_ERROR_X2((fds[1].revents & (POLLNVAL|POLLERR)) == 0, "Output pipe error -> ", err_str);
-    P_ERROR_X2((fds[2].revents & (POLLNVAL|POLLERR)) == 0, "Error pipe error -> ", err_str);
-    if ((fds[0].revents & POLLHUP) != 0)
+    if (!infin)
     {
-      infin = true;
-      fds[0].events = 0;
-      if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
-    }
-    if ((fds[1].revents & POLLHUP) != 0)
-    {
-      outfin = true;
-      fds[1].events = 0;
-      if (close (output) == -1) P_MESSAGE2("Error closing compiler output pipe: ", strerror(errno));
-    }
-    if ((fds[2].revents & POLLHUP) != 0)
-    {
-      errfin = true;
-      fds[2].events = 0;
-      if (close (error) == -1) P_MESSAGE2("Error closing compiler error pipe: ", strerror(errno));
-    }
-    if (!infin && ((fds[0].revents & POLLOUT) != 0))
-    {
-      ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
-//      std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
-      if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
-      else wbytes += static_cast<size_t>(obytes);
-      if (wbytes == cxxlen) 
-      { 
-        infin = true;
-        fds[0].events = 0;
+      P_ERROR_X2((fds[iin].revents & (POLLNVAL|POLLERR)) == 0, "Input pipe error -> ", err_str);
+      if ((fds[iin].revents & POLLOUT) != 0)
+      {
+        ssize_t obytes = write (input, cxxbuf+wbytes, cxxlen-wbytes);
+//        std::cerr << "runCompiler: Written bytes " << obytes << " out of " << cxxlen << "\n";
+        if (obytes == -1) P_MESSAGE2("Error feeding the compiler: ", strerror(errno));
+        else wbytes += static_cast<size_t>(obytes);
+        if (wbytes == cxxlen) infin = true;
+      }
+      if ((fds[iin].revents & POLLHUP) != 0) infin = true;
+      if (infin)
+      {
+        if (!outfin) { fds[iin] = fds[iout]; iout = iin; }
+        if (!errfin) { fds[iout] = fds[ierr]; ierr = iout; }
+        nfds -= 1;
         if (close (input) == -1) P_MESSAGE2("Error closing compiler input pipe: ", strerror(errno));
       }
     }
-    if (!outfin && ((fds[1].revents & POLLIN) != 0))
+    if (!outfin)
     {
-      ssize_t bytes = read(output, out_buf, bufsize-1);
-      ++rct;
-      if (bytes > 0)
+      P_ERROR_X2((fds[iout].revents & (POLLNVAL|POLLERR)) == 0, "Output pipe error -> ", err_str);
+      if ((fds[iout].revents & POLLIN) != 0)
       {
-//        std::cerr << "runCompiler: stdout bytes " << bytes << "\n";
-        out_buf[bytes] = '\0'; 
-        out_str.append(out_buf);
-      } 
-      else if (bytes == 0)
-      {
-        outfin = true; // finished
-        fds[1].events = 0;
-        if (close (output) == -1) P_MESSAGE2("Error closing output pipe: ", strerror(errno));
+        ssize_t bytes = read(output, out_buf, bufsize-1);
+        ++rct;
+        if (bytes > 0)
+        {
+//          std::cerr << "runCompiler: stdout bytes " << bytes << "\n";
+          out_buf[bytes] = '\0'; 
+          out_str.append(out_buf);
+        } 
+        else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
       }
-      else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
+      if ((fds[iout].revents & POLLHUP) != 0)
+      {
+        outfin = true;
+        if (!errfin) { fds[iout] = fds[ierr]; ierr = iout; }
+        nfds -= 1;
+        if (close (output) == -1) P_MESSAGE2("Error closing compiler output pipe: ", strerror(errno));
+      }
     }
-    if (!errfin && ((fds[2].revents & POLLIN) != 0))
+    if (!errfin)
     {
-      ssize_t bytes = read(error, out_buf, bufsize-1);
-      ++ect;
-      if (bytes > 0)
+      P_ERROR_X2((fds[ierr].revents & (POLLNVAL|POLLERR)) == 0, "Error pipe error -> ", err_str);
+      if ((fds[ierr].revents & POLLIN) != 0)
       {
-//        std::cerr << "runCompiler: stderr bytes " << bytes << "\n";
-        out_buf[bytes] = '\0'; 
-        err_str.append(out_buf);
-      } 
-      else if (bytes == 0) 
-      {
-        errfin = true; // finished
-        fds[2].events = 0;
-        if (close (error) == -1) P_MESSAGE2("Error closing error pipe: ", strerror(errno));
+        ssize_t bytes = read(error, out_buf, bufsize-1);
+        ++ect;
+        if (bytes > 0)
+        {
+//          std::cerr << "runCompiler: stderr bytes " << bytes << "\n";
+          out_buf[bytes] = '\0'; 
+          err_str.append(out_buf);
+        } 
+        else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard error: ", strerror(errno));
       }
-      else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard error: ", strerror(errno));
+      if ((fds[ierr].revents & POLLHUP) != 0)
+      {
+        errfin = true;
+        nfds -= 1;
+        if (close (error) == -1) P_MESSAGE2("Error closing compiler error pipe: ", strerror(errno));
+      }
     }
   } while (!outfin || !infin || !errfin);
   delete[] out_buf; out_buf = 0;
@@ -793,10 +790,10 @@ bool KNSystem::makeSystem(std::string& soname, const std::string& sysName, const
     vffile = sysName;
     sofile = sysName + ".so";
     int res_so = stat(sofile.c_str(), &sbuf_so);
-    int res_vf = stat(vffile.c_str(), &sbuf_cxx);
+    int res_vf = stat(vffile.c_str(), &sbuf_vf);
     P_ERROR_X3 (res_vf == 0, "Vector field system definition '", sysName, "' is missing.");
-    if (res_so != 0) compile_vf = true;
-    else compile_vf = to_compile(&sbuf_so, &sbuf_vf);
+    if (res_so == 0) compile_vf = to_compile(&sbuf_so, &sbuf_vf);
+    else compile_vf = true;
     if (compile_vf)
     {
       generateSystem(vffile, sofile, executableDir);

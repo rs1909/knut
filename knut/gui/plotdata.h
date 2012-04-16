@@ -223,6 +223,7 @@ class PlotData : public QGraphicsScene
     std::list<ViewBox>::iterator currZoom;
     bool xlog;
     bool ylog;
+    static const ViewBox defaultBox;
     // relative geometry
     const qreal AspectRatio;
     const qreal plotXSize, plotYSize;

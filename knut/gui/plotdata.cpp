@@ -21,6 +21,8 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
+const ViewBox PlotData::defaultBox = {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
+
 PlotData::PlotData(QObject *parent) :
     QGraphicsScene(parent),
     xlog(false), ylog(false),
@@ -28,10 +30,7 @@ PlotData::PlotData(QObject *parent) :
     plotXSize(540), plotYSize(plotXSize / AspectRatio),
     FontSize(12), unitCircleItem(0), unitCircleCount(0), Box(0)
 {
-  const ViewBox cvb =
-    {
-      0, 0, 0, 0, 1, 1
-    };
+  const ViewBox cvb = defaultBox;
   setSceneRect(-0.2*plotXSize, -0.2*plotYSize, 1.4*plotXSize, 1.4*plotYSize);
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
@@ -256,7 +255,7 @@ void PlotData::clearAll()
   clearAxes();
   XCoordText.clear();
   YCoordText.clear();
-  const ViewBox cvb = *currZoom;
+  const ViewBox cvb = defaultBox;
   ZoomHistory.clear();
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
@@ -272,6 +271,8 @@ void PlotData::clearAll()
 /// this computes the minimum and maximum value of an axis
 static inline void adjustAxis(qreal& min, qreal& max, size_t& numTicks)
 {
+  // keep invalid axis
+  if (numTicks == 1) return;
   const size_t MinTicks = 4;
   qreal grossStep = (max - min) / MinTicks;
   qreal step = pow(10, floor(log10(grossStep)));
@@ -279,7 +280,7 @@ static inline void adjustAxis(qreal& min, qreal& max, size_t& numTicks)
   if (5 * step < grossStep) step *= 5;
   else if (2 * step < grossStep) step *= 2;
 
-  numTicks = static_cast<size_t>(ceil(max / step) - floor(min / step));
+  numTicks = static_cast<size_t>(fabs(ceil(max / step) - floor(min / step)));
   min = floor(min / step) * step;
   max = ceil(max / step) * step;
 }
@@ -360,16 +361,8 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
   // if current is the top of zoom levels
   if (ZoomHistory.begin() == currZoom)
   {
-    ViewBox cvb;
-    // if invalid box
-    if (begin == Graph.begin() && end == Graph.end())
-    {
-      const ViewBox cvb_ini = { -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
-      cvb = cvb_ini;
-    } else
-    {
-      cvb = *currZoom;
-    }
+    ViewBox cvb = *currZoom;
+    bool touched = false;
     std::list<PlotItem>::const_iterator it;
     for (it = begin; it != end; it++)
     {
@@ -379,12 +372,19 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
         if (xcoord(it->x(k)) < cvb.xmin) { cvb.xmin = xcoord(it->x(k)); toZoom = true; }
         if (ycoord(it->y(k)) > cvb.ymax) { cvb.ymax = ycoord(it->y(k)); toZoom = true; }
         if (ycoord(it->y(k)) < cvb.ymin) { cvb.ymin = ycoord(it->y(k)); toZoom = true; }
+        touched = true;
       }
     }
-    if (cvb.xmax == cvb.xmin ) { cvb.xmin *= 0.95; cvb.xmax *= 1.05; }
-    if (cvb.ymax == cvb.ymin ) { cvb.ymin *= 0.95; cvb.ymax *= 1.05; }
-    adjustAxis(cvb.xmin, cvb.xmax, cvb.xticks);
-    adjustAxis(cvb.ymin, cvb.ymax, cvb.yticks);
+    if (touched)
+    {
+      if (cvb.xmax == cvb.xmin ) { cvb.xmin *= 0.95; cvb.xmax *= 1.05; }
+      if (cvb.ymax == cvb.ymin ) { cvb.ymin *= 0.95; cvb.ymax *= 1.05; }
+      // make them valid axes, in case it was invalid
+      cvb.xticks = std::max(cvb.xticks, (size_t)2u);
+      cvb.yticks = std::max(cvb.yticks, (size_t)2u);
+      adjustAxis(cvb.xmin, cvb.xmax, cvb.xticks);
+      adjustAxis(cvb.ymin, cvb.ymax, cvb.yticks);
+    }
     *currZoom = cvb;
   }
   if (toZoom)
@@ -435,7 +435,6 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       {
         bifidx.push_back(k);
         biftype.push_back(data->getBifurcationType(k));
-        std::cout << "get bifurcationtyp " << k << "\n";
         if (stab) stabidx.push_back(k);
         k_p = k;
       }
@@ -707,6 +706,7 @@ struct rcStruc
 void PlotData::updatePlot(const KNDataFile* mat)
 {
   size_t number = 0;
+  bool dirty = false;
   
   std::list<rcStruc> lst;
   
@@ -725,18 +725,21 @@ void PlotData::updatePlot(const KNDataFile* mat)
       {
         number = i->number;
         lst.push_back(rcStruc(ct_it, i->varX, i->varY, i->point, i->dimension));
-      }
+      } else dirty = true;
       if (first == Graph.end()) first = i;
       last = i;
-    }
+    } else dirty = true;
   }
   
-  size_t it = 0;
-  for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+  if (dirty)
   {
-    clear(i->num - it);
-    ++it;
-  }
+    size_t it = 0;
+    for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+    {
+      clear(i->num - it);
+      ++it;
+    }
+  } else clearAll();
   for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
   {  
     addPlot(mat, i->X, i->Y, i->pt, i->dim);
@@ -964,22 +967,25 @@ void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
     }
 
     ViewBox cvb = *currZoom, newvb;
-    const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
-    const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
+    if ((cvb.xticks > 1)&&(cvb.yticks > 1))
+    {
+      const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
+      const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
 
-    newvb.xmin = qMin(mouseBegin.x(), mouseEnd.x()) / xscale + cvb.xmin;
-    newvb.xmax = qMax(mouseBegin.x(), mouseEnd.x()) / xscale + cvb.xmin;
-    newvb.ymin = cvb.ymax - qMax(mouseBegin.y(), mouseEnd.y()) / yscale;
-    newvb.ymax = cvb.ymax - qMin(mouseBegin.y(), mouseEnd.y()) / yscale;
-    adjustAxis(newvb.xmin, newvb.xmax, newvb.xticks);
-    adjustAxis(newvb.ymin, newvb.ymax, newvb.yticks);
-    // remove the next zoom levels
-    ZoomHistory.erase(++currZoom, ZoomHistory.end());
-    --currZoom;
-    // add the new level
-    ZoomHistory.push_back(newvb);
-    currZoom = --ZoomHistory.end();
-    dataToGraphics(Graph.begin(), Graph.end());
+      newvb.xmin = qMin(mouseBegin.x(), mouseEnd.x()) / xscale + cvb.xmin;
+      newvb.xmax = qMax(mouseBegin.x(), mouseEnd.x()) / xscale + cvb.xmin;
+      newvb.ymin = cvb.ymax - qMax(mouseBegin.y(), mouseEnd.y()) / yscale;
+      newvb.ymax = cvb.ymax - qMin(mouseBegin.y(), mouseEnd.y()) / yscale;
+      adjustAxis(newvb.xmin, newvb.xmax, newvb.xticks);
+      adjustAxis(newvb.ymin, newvb.ymax, newvb.yticks);
+      // remove the next zoom levels
+      ZoomHistory.erase(++currZoom, ZoomHistory.end());
+      --currZoom;
+      // add the new level
+      ZoomHistory.push_back(newvb);
+      currZoom = --ZoomHistory.end();
+      dataToGraphics(Graph.begin(), Graph.end());
+    }
     selection.setVisible(false);
     update(selection.boundingRect().normalized());
     event->accept();
@@ -1029,7 +1035,6 @@ void PlotData::makeBox()
   // drawing the box
   if (Box == 0) Box = addRect(QRectF(0.0, 0.0, plotXSize, plotYSize), QPen(QBrush(Qt::SolidPattern), 2.0));
   Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
-
   // drawing the ticks and tickmarks
   for (size_t i = 0; i < HText.size(); i++)
   {

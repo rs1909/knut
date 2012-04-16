@@ -29,14 +29,14 @@
 //		dmin : the distance from the target (should be small, but not checked)
 static inline size_t findTrivialIndices(const KNVector& mulRe, const KNVector& mulIm,
                                      const size_t lp, const size_t pd, const size_t ns,
-                                     size_t *imin, double* dmin, size_t )
+                                     size_t *imin, double* dmin, size_t delem)
 {
-  for (size_t i = 0; i < lp+pd+ns; ++i)
+  for (size_t i = 0; (i < lp+pd+ns)&&(i < delem); ++i)
   {
     imin[i] = mulRe.size();
     dmin[i] = DBL_MAX;
   }
-  for (size_t j = 0; j < lp+pd+ns; ++j)
+  for (size_t j = 0; (j < lp+pd+ns)&&(j < delem); ++j)
   {
     for (size_t i = 0; i < mulRe.size(); ++i)
     {
@@ -65,7 +65,7 @@ static inline size_t findTrivialIndices(const KNVector& mulRe, const KNVector& m
   {
     const double mabs = (mulRe(i) * mulRe(i) + mulIm(i) * mulIm(i));
     bool ok = true;
-    for (size_t j = 0; j < lp+pd+ns; ++j) if (i == imin[j]) ok = false;
+    for (size_t j = 0; (j < lp+pd+ns)&&(j < delem); ++j) if (i == imin[j]) ok = false;
     if (ok && (mabs > 1.0))  ++ustab;
   }
 //  std::cerr << pt << ". ";
@@ -96,7 +96,7 @@ size_t unstableMultipliers(const KNVector& mulRe, const KNVector& mulIm, const s
   P_ERROR_X1(lp + pd + ns < NCRIT, "Too many critical multipliers. Change the value of NCRIT on the previous line.");
   size_t imin[NCRIT];
   double dmin[NCRIT];
-  return findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin, pt);
+  return findTrivialIndices(mulRe, mulIm, lp, pd, ns, imin, dmin, NCRIT);
 #undef NCRIT
 }
 
@@ -114,8 +114,8 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
   double dmin0[NCRIT];
   double dmin1[NCRIT];
   double dtmp[NCRIT];
-  const size_t us0 = findTrivialIndices(mr0, mi0, lp, pd, ns, imin0, dmin0, pt0);
-  const size_t us1 = findTrivialIndices(mr1, mi1, lp, pd, ns, imin1, dmin1, pt1);
+  const size_t us0 = findTrivialIndices(mr0, mi0, lp, pd, ns, imin0, dmin0, NCRIT);
+  const size_t us1 = findTrivialIndices(mr1, mi1, lp, pd, ns, imin1, dmin1, NCRIT);
   P_ERROR_X1(us0 != us1, "No bifurcation!");
   const KNVector* mulRe0;
   const KNVector* mulRe1;
@@ -180,9 +180,10 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     }
     if (!duplicate[i].empty()) duplicate[i].push_back(i);
   }
+  const size_t delem = 3;
   size_t dnum = 0;
-  size_t imax[3] = {mulRe0->size(), mulRe0->size(), mulRe0->size()};
-  double dmax[3] = {0, 0, 0};
+  size_t imax[delem] = {mulRe0->size(), mulRe0->size(), mulRe0->size()};
+  double dmax[delem] = {0, 0, 0};
   for (size_t i=0; i<duplicate.size(); ++i)
   {
     if (!duplicate[i].empty()) 
@@ -201,7 +202,7 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
 //      std :: cerr << "\n";
       dnum++;
     }
-    if (dnum > 3) break;
+    if (dnum >= delem) break;
   }
 //  std :: cerr << "DNUM " << dnum << "\n";
   if (dnum == 0)

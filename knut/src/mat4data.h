@@ -20,10 +20,6 @@
 #  include <windows.h>
 #endif
 
-#ifndef WIN32
-#  include <sys/file.h>
-#endif
-
 // for the correct integer size
 #ifndef _MSC_VER
 # include <stdint.h>

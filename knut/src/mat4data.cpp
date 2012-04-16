@@ -18,6 +18,8 @@
 #  include <fcntl.h>
 #  include <sys/mman.h>
 #  include <errno.h>
+#  include <unistd.h>
+#  include <sys/file.h>
 #endif
 
 #include "matrix.h"
@@ -913,7 +915,6 @@ BifType  KNDataFile::getBifurcationType(size_t n) const
     const size_t pd = getNTrivMul(1);
     const size_t ns = getNTrivMul(2);
 
-    std::cout << "get bifurcationtyp\n";
     return bifurcationType(mulReA, mulImA, mulReB, mulImB, lp, pd, ns, n-1, n);
   }
   return BifNone;
