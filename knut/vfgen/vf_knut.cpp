@@ -371,7 +371,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   size_t nc = conname_list.nops();
   size_t nv = varname_list.nops();
   size_t np = parname_list.nops();
-  size_t na = exprname_list.nops();
+//  size_t na = exprname_list.nops();
   size_t nf = funcname_list.nops();
   size_t par_shift = 1;
   if (HasPeriod) par_shift = 0;
@@ -1020,11 +1020,11 @@ void VectorField::Knut_RHS_xp(std::vector<GiNaC::ex>& exls)
   for (size_t i = 0; i < nv; ++i)
   {
     ex f = varvecfield_list[i];
+    Knut_ConvertStateToZlags(f);
     for (size_t q = 0; q < np; ++q)
     {
       symbol ps = ex_to<symbol>(parname_list[q]);
       ex dfp = f.diff(ps);
-      Knut_ConvertStateToZlags(dfp);
       Knut_ConvertConstsPars(dfp);
       for (size_t j = 0; j < nv; ++j)
       {
@@ -1150,6 +1150,12 @@ void VectorField::Knut_parnames(std::vector<std::string>& pnames)
   }
 }
 
+static double loc_heaviside(double x)
+{
+  if (x > 0) return 1.0;
+  else return 0.0;
+}
+
 static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray3D<double>& v, const KNVector& par)
 {
   const size_t vsize = time.size();
@@ -1227,15 +1233,15 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     }
     double (*fun_ptr)(double) = 0;
     if (name == "abs") fun_ptr = &fabs;
-    if (name == "step") return;
-    if (name == "csgn") return;
-    if (name == "eta") return;
-    if (name == "Li2") return;
-    if (name == "Li3") return;
-    if (name == "zetaderiv") return;
-    if (name == "factorial") return;
-    if (name == "binomial") return;
-    if (name == "Order") return;
+//    if (name == "step") return;
+//    if (name == "csgn") return;
+//    if (name == "eta") return;
+//    if (name == "Li2") return;
+//    if (name == "Li3") return;
+//    if (name == "zetaderiv") return;
+//    if (name == "factorial") return;
+//    if (name == "binomial") return;
+//    if (name == "Order") return;
     if (name == "exp") fun_ptr = &exp;
     if (name == "log") fun_ptr = &log;
     if (name == "sin") fun_ptr = &sin;
@@ -1244,7 +1250,7 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     if (name == "asin") fun_ptr = &asin;
     if (name == "acos") fun_ptr = &acos;
     if (name == "atan") fun_ptr = &atan;
-    if (name == "atan2") return;
+//    if (name == "atan2") return;
     if (name == "sinh") fun_ptr = &sinh;
     if (name == "cosh") fun_ptr = &cosh;
     if (name == "tanh") fun_ptr = &tanh;
@@ -1253,13 +1259,14 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     if (name == "atanh") fun_ptr = &atanh;
     if (name == "lgamma") fun_ptr = &lgamma;
     if (name == "tgamma") fun_ptr = &tgamma;
-    if (name == "beta") return;
-    if (name == "psi") return;
-    if (name == "G") return;
-    if (name == "Li") return;
-    if (name == "S") return;
-    if (name == "H") return;
-    if (name == "zeta") return;
+//    if (name == "beta") return;
+//    if (name == "psi") return;
+//    if (name == "G") return;
+//    if (name == "Li") return;
+//    if (name == "S") return;
+//    if (name == "H") return;
+//    if (name == "zeta") return;
+    if (name == "heaviside") fun_ptr = &loc_heaviside;
     if (fun_ptr)
     {
       double *res_loc = new double[vsize]; 
@@ -1288,7 +1295,9 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     } else P_MESSAGE3("Unknown symbol ", name, ".");
   } else
   {
-    P_MESSAGE1("Unknown formula component.");
+    std::ostringstream os;
+    os << expr;
+    P_MESSAGE3("Unknown formula component: ", os.str(), ".");
   }
 }
 

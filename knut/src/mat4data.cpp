@@ -299,7 +299,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size_t prof_size = createMatrixHeader(&prof_header, prof_string, ndim * (ndeg * nint + 1), ncols);
   size = prof_offset + prof_size;
 
-  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
+//  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
 #ifndef WIN32
   address = mmapFileWrite(file, fileName, size);
 #else
@@ -760,7 +760,7 @@ void KNDataFile::setBlanket(size_t n, const KNVector& blanket)
   }
   else
   {
-    P_MESSAGE1("Error while writing the MAT file.");
+    P_MESSAGE1("Cannot write such point in MAT file.");
   }
 }
 
@@ -780,7 +780,7 @@ void KNDataFile::getPar(size_t n, KNVector& par) const
   }
   else
   {
-    P_MESSAGE1("Error while reading the MAT file.");
+    P_MESSAGE1("No such point in MAT file.");
   }
 }
 
@@ -797,7 +797,7 @@ void KNDataFile::getMul(size_t n, KNVector& re, KNVector& im) const
   }
   else
   {
-    P_MESSAGE1("Error while reading the MAT file.");
+    P_MESSAGE1("No such point in MAT file.");
   }
 }
 
@@ -817,7 +817,7 @@ void KNDataFile::getElem(size_t n, KNVector& el) const
   }
   else
   {
-    P_MESSAGE1("Error while reading the MAT file.");
+    P_MESSAGE1("No such point in MAT file.");
   }
 }
 
@@ -837,7 +837,7 @@ void KNDataFile::getMesh(size_t n, KNVector& mesh) const
   }
   else
   {
-    P_MESSAGE1("Error while reading the MAT file.");
+    P_MESSAGE1("No such point in MAT file.");
   }
 }
 
@@ -857,7 +857,7 @@ void KNDataFile::getProfile(size_t n, KNVector& prof) const
   }
   else
   {
-    P_MESSAGE1("Error while reading the MAT file.");
+    P_MESSAGE1("No such point in MAT file.");
   }
 }
 

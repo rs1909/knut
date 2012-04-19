@@ -243,10 +243,10 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
   }
   const double LPabs = fabs(sqrt((mrea - 1.0) * (mrea - 1.0) + mima * mima));
   const double PDabs = fabs(sqrt((mrea + 1.0) * (mrea + 1.0) + mima * mima));
-  const double NSabs = fabs(sqrt(mrea * mrea + mima * mima) - 1.0);
+//  const double NSabs = fabs(sqrt(mrea * mrea + mima * mima) - 1.0);
   if (iminb < mulRe1->size())
   {
-    const double mreb = (*mulRe1)(iminb);
+//    const double mreb = (*mulRe1)(iminb);
     const double mimb = (*mulIm1)(iminb);
 
   //  std :: cerr << "From = (" << mreb << "," << mimb << ")\n";

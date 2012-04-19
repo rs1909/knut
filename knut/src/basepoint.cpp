@@ -23,14 +23,16 @@
 #define NKERNITER (20)
 #define NCONTCURVATURE (0.25*M_PI/2.0)
 
+#define MAXEQNS 12
+
 struct PtTab
 {
   PtType   type;
   BranchSW sw;
   size_t   neqn;
   size_t   nparx;
-  Eqn      eqns[5];
-  Var      vars[5];
+  Eqn      eqns[MAXEQNS];
+  Var      vars[MAXEQNS];
 };
 
 // not even member function public
@@ -52,7 +54,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolAUTODE, NOSwitch,   2, 1,
                     { EqnODESol, EqnPhase },
-                    { VarODESol, parx(0) } };
+                    { VarODESol, VarNone } };
       tab = tmp;
     }
     break;
@@ -85,7 +87,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFLP, NOSwitch,   2, 1,
                     { EqnSol, EqnTFLP },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -93,7 +95,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFPD, NOSwitch,   2, 1,
                     { EqnSol, EqnTFPD },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -101,7 +103,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFNS, NOSwitch,   3, 1,
                     { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
-                    { VarSol, PANGLE,        parx(0) } };
+                    { VarSol, PANGLE,        VarNone } };
       tab = tmp;
     }
     break;
@@ -110,7 +112,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTFAUT, NOSwitch,   2, 1,
                     { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -118,7 +120,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTFAUTBRSW, TFBRSwitch, 2, 1,
                     { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -126,7 +128,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTFAUTPDSW, TFPDSwitch, 2, 1,
                     { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -134,7 +136,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTFAUTHBSW, TFHBSwitch, 2, 1,
                     { EqnSol, EqnPhase },
-                    { VarSol, parx(0) } };
+                    { VarSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -142,7 +144,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFAUTLP, NOSwitch,   3, 2,
                     { EqnSol, EqnTFLPAUT, EqnPhase },
-                    { VarSol, parx(0),    parx(1) } };
+                    { VarSol, VarNone,    VarNone } };
       tab = tmp;
     }
     break;
@@ -150,7 +152,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFAUTPD, NOSwitch,   3, 2,
                     { EqnSol, EqnTFPD, EqnPhase },
-                    { VarSol, parx(0), parx(1) } };
+                    { VarSol, VarNone, VarNone } };
       tab = tmp;
     }
     break;
@@ -158,7 +160,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { BifTFAUTNS, NOSwitch,   4, 2,
                     { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM, EqnPhase },
-                    { VarSol, PANGLE,        parx(0),      parx(1) } };
+                    { VarSol, PANGLE,        VarNone,      VarNone } };
       tab = tmp;
     }
     break;
@@ -167,7 +169,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTor, NOSwitch, 2, 1,
                     { EqnTORSol, EqnTORPhase1 },
-                    { VarTORSol, parx(0) } };
+                    { VarTORSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -175,7 +177,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolTor, TFTRSwitch, 2, 1,
                     { EqnTORSol, EqnTORPhase1 },
-                    { VarTORSol, parx(0) } };
+                    { VarTORSol, VarNone } };
       tab = tmp;
     }
     break;
@@ -183,7 +185,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolAUTTor, NOSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-                    { VarTORSol, parx(0),      parx(1) } };
+                    { VarTORSol, VarNone,      VarNone } };
       tab = tmp;
     }
     break;
@@ -191,7 +193,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     {
       PtTab tmp = { SolAUTTor, TFTRSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
-                    { VarTORSol, parx(0),      parx(1) } };
+                    { VarTORSol, VarNone,      VarNone } };
       tab = tmp;
     }
     break;
@@ -204,6 +206,8 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     break;
   }
   P_ERROR_X4(tab.nparx == parx.size(), "Wrong number of additional continuation parameters (NPARX). ", tab.nparx, "!=", parx.size());
+  P_ERROR_X1(tab.neqn < MAXEQNS, "Too many equations and/or parameters.");
+  for (size_t i = 0; i < tab.nparx; i++) tab.vars[(tab.neqn-tab.nparx) + i] = parx(i);
   eqnr.init(tab.neqn);
   varr.init(tab.neqn);
   for (size_t i = 0; i < tab.neqn; i++)

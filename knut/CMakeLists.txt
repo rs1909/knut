@@ -185,8 +185,7 @@ ADD_CUSTOM_TARGET( dist
 	COMMAND ln -s ${KNUT_SOURCE_DIR} ${DIST_DIR}\;
 		ln -s ${KNUT_BINARY_DIR}/knut.spec ${DIST_DIR}/knut.spec\;
 		pushd ${KNUT_SOURCE_DIR}\;
-                git log -n1 HEAD | grep commit | sed -e s/'commit '// | awk -- '// { printf \"%s\", $$0 }' >${KNUT_SOURCE_DIR}/REVISION\;
-                git log -n1 HEAD | grep 'Date' | sed -e s/'Date: '/','/ | awk -- '// { printf \"%s\", $$0 }' >>${KNUT_SOURCE_DIR}/REVISION\;
+                ./mkrevision.sh\;
                 git ls-files | awk -- '/.*./ { print \"${DIST_DIR}/\"$$0}' >${KNUT_BINARY_DIR}/tmp_filelist\;
                 popd\;
 		echo >>tmp_filelist \"${DIST_DIR}/REVISION\"\;

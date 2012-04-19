@@ -87,9 +87,9 @@ double KNTestFunctional::initStep()
   one -= 1.0;
   AHAT.solveTr(uudiff, hhdiff, rhs, one);
   vv -= vvdiff;
-  gg -= ggdiff;
+//  gg -= ggdiff;
   uu -= uudiff;
-  hh -= hhdiff;
+//  hh -= hhdiff;
   vv /= sqrt(vv * vv);
   uu /= sqrt(uu * uu);
   AHAT.getA31(0) = vv;

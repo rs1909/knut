@@ -383,7 +383,6 @@ int VectorField::ReadXML(const std::string& xmlfilename)
        node != NULL;
        node = mxmlFindElement(node, tree, "Expression", NULL, NULL, MXML_DESCEND))
   {
-    bad_attr = false;
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
       string attr = node->value.element.attrs[i].name;

@@ -102,7 +102,6 @@ inline void SpMulC(const size_t n, const size_t m, const int* Ap, const int* Ai,
   for (j = 0; j < n; j += 1)
   {
     t0 = alpha * in[incIN*j];
-    k = Ap[j];
     for (k = Ap[j]; k + 7 < Ap[j+1]; k += 8)
     {
       out[Ai[k]] += Ax[k] * t0;

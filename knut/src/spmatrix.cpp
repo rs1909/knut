@@ -261,6 +261,7 @@ void KNLuSparseMatrix::solve(double* x, double* b, bool trans)
     P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
   }
   status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x, b, Numeric, Control, 0, Wi, W);
+  P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_wsolve()': ", sp_umf_error(status));
 }
 
 void KNLuSparseMatrix::solve(KNVector& x, const KNVector& b, bool trans)
@@ -281,7 +282,7 @@ void KNLuSparseMatrix::solve(KNVector& x, const KNVector& b, bool trans)
   }
 
   status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(), b.v, Numeric, Control, 0, Wi, W);
-  P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
+  P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_wsolve()': ", sp_umf_error(status));
 }
 
 void KNLuSparseMatrix::solve(KNMatrix& x, const KNMatrix &b, bool trans)

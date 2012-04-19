@@ -373,23 +373,6 @@ int VectorField::AddDelay(ex &del)
   if (FindDelay(del) != -1)
     return 1;
   Delays.push_back(del);
-
-  ex s = SubsAllExpressions(del);
-  ex delayedtime = IndVar - s;
-  bool nonconstant = false;
-  // cout << "AddDelay: del=" << del << "  s=" << s << "  delayedtime=" << delayedtime << endl;
-  if (s.has(IndVar)) nonconstant = true;
-  size_t nv = varname_list.nops();
-  for (size_t i = 0; i < nv; ++i)
-  {
-    if (delayedtime.has(varname_list[i]))
-    {
-      nonconstant = true;
-      break;
-    }
-  }
-  // if (nonconstant)
-  //     cout << "AddDelay: " << del << " = " << s << " is a nonconstant delay.\n";
   return 0;
 }
 
