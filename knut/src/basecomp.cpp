@@ -122,7 +122,7 @@ void KNAbstractContinuation::run(const char* branchFile)
         if (params->getFromType() != BifNone)
         {
           size_t pos = istr.findType(params->getFromType(), params->getLabel() );
-          std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
+//          std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
           if (pos < istr.getNCols()) pt.BinaryRead(istr, pos);
           else P_MESSAGE1("No such point in the input");
         } else

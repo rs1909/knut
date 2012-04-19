@@ -23,6 +23,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include <ginac/ginac.h>
 
 #include "vf.h"
@@ -408,6 +409,14 @@ void VectorField::CheckForDelay(const ex& f)
   }
 }
 
+struct tup
+{
+  ex f;
+  std::string eps;
+};
+
+static bool comp(const tup& a, const tup& b) { return a.eps < b.eps; }
+
 int VectorField::ProcessSymbols(void)
 {
   int rval = 0;
@@ -598,7 +607,20 @@ int VectorField::ProcessSymbols(void)
     varvecfield_list[i] = f;
     CheckForDelay(f);
   }
-
+  
+  // alphabetically ordering the delays. 
+  // It is not necessary for functionality, was used to debug a wierd problem
+  tup etup[Delays.size()];
+  std::ostringstream os;
+  for (size_t i = 0; i < Delays.size(); ++i)
+  {
+    os.str("");
+    os << Delays[i];
+    etup[i].eps = os.str();
+    etup[i].f = Delays[i];
+  }
+  std::sort(etup, etup + Delays.size(), comp);
+    
   // Functions
   for (vector<Function *>::iterator f = Functions.begin(); f != Functions.end(); ++f)
   {

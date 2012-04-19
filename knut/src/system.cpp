@@ -17,6 +17,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <limits>
 extern "C"{
 #include <sys/stat.h>
 #ifndef WIN32
@@ -839,12 +840,11 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
   // derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
   if ((nx == 1) && (np == 0))
   {
-//     std::cout<<"@";
+//    std::cout<<"@ " << vx[0] << "\n";
+    p_xx_eps = p_xx;    
     p_rhs(p_fx, time, p_xx, par, sel);
     for (size_t j = 0; j < n; j++)
     {
-      for (size_t p = 0; p < n; p++) 
-          for (size_t idx=0; idx < time.size(); ++idx) p_xx_eps(p,vx[0],idx) = p_xx(p,vx[0],idx);
       for (size_t idx=0; idx < time.size(); ++idx)
       {
         const double eps = abs_eps_x1 + rel_eps_x1 * fabs(p_xx(j, vx[0],idx));
@@ -856,6 +856,8 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
         for (size_t idx=0; idx < time.size(); ++idx)
           out(p, j, idx) = (p_fx_eps(p, idx) - p_fx(p, idx)) / (p_xx_eps(j, vx[0],idx) - p_xx(j, vx[0],idx));
       }
+      // redo the alteration
+      for (size_t idx=0; idx < time.size(); ++idx) p_xx_eps(j, vx[0],idx) = p_xx(j, vx[0],idx);
     }
   }
   // derivatives w.r.t. the parameters, purely, so this results a vector
@@ -876,17 +878,13 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
   if ((nx == 2) && (np == 0))
   {
 //     std::cout<<"<?";
+    p2_xx_eps = p_xx;
     for (size_t j = 0; j < n; j++)
     {
       p_deri(p2_dfx, time, p_xx, par, sel, 1, &vx[0], 0, vp, p_vv);
-      for (size_t p = 0; p < n; p++) 
-        for (size_t q = 0; q < m; q++) 
-          for (size_t idx=0; idx < time.size(); ++idx) p2_xx_eps(p,q,idx) = p_xx(p,q,idx);
-      for (size_t idx=0; idx < time.size(); ++idx)
-      {
-        const double eps = abs_eps_x2 + rel_eps_x2 * fabs(p_xx(j, vx[1], idx));
-        p2_xx_eps(j, vx[1], idx) += eps;
-      }
+      // perturbing solution
+      for (size_t idx=0; idx < time.size(); ++idx) p2_xx_eps(j, vx[1], idx) += abs_eps_x2 + rel_eps_x2 * fabs(p_xx(j, vx[1], idx));
+      // perturbed rhs deri
       p_deri(p2_dfx_eps, time, p2_xx_eps, par, sel, 1, &vx[0], 0, vp, p_vv);
       for (size_t p = 0; p < n; p++)
       {
@@ -897,6 +895,8 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
         }
         for (size_t idx=0; idx < time.size(); ++idx) out(p, j, idx) /= (p2_xx_eps(j, vx[1], idx) - p_xx(j, vx[1], idx));
       }
+      // restoring eps
+      for (size_t idx=0; idx < time.size(); ++idx) p2_xx_eps(j, vx[1], idx) = p_xx(j, vx[1], idx);
     }
 //     std::cout<<">";
   }
@@ -948,12 +948,14 @@ void KNSystem::makeSymbolic(const std::string& vffile)
 #endif
 
 //******** INTERFACE WITH THE SYSTEM DEFINITION ********//
+#define ERR_THRESHOLD 8e6
 
 size_t    KNSystem::ndim() const 
 {
 #ifdef GINAC_FOUND
   if (useVectorField) return ex_ndim;
 #endif
+//  if (ex_ndim != (*v_ndim)()) std::cout << "ndim: " << ex_ndim << "," << (*v_ndim)()<< "\n";
   return (*v_ndim)();
 }
 
@@ -962,6 +964,7 @@ size_t    KNSystem::npar() const
 #ifdef GINAC_FOUND
   if (useVectorField) return ex_npar;
 #endif
+//  if (ex_npar != (*v_npar)()) std::cout << "npar: " << ex_npar << "," << (*v_npar)() << "\n";
   return (*v_npar)();
 }
 
@@ -970,6 +973,7 @@ size_t    KNSystem::ntau() const
 #ifdef GINAC_FOUND
   if (useVectorField) return ex_ntau;
 #endif
+//  if (ex_ntau != (*v_ntau)()) std::cout << "ntau: " << ex_ntau << "," << (*v_ntau)()<< "\n";
   return (*v_ntau)();
 }
 
@@ -990,12 +994,13 @@ void   KNSystem::p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, c
         (*v_tau)(tout, time(i), par);
       }
     }
-//     KNArray2D<double> out_p(out);
-//     sym_tau(out_p, time, par);
-//     double max = 0;
-//     for (int i=0; i < out.dim1(); ++i)
-//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
-//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << "\n";
+//    KNArray2D<double> out_p(out);
+//    sym_tau(out_p, time, par);
+//    double max = 0;
+//    size_t ip=0, jp=0;
+//    for (size_t i=0; i < out.dim1(); ++i)
+//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) { max = (fabs(out_p(i,j)-out(i,j))); ip=i; jp=j; }
+//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << " at (" << ip << "," << jp << ") sym="<< out_p(ip,jp) << " comp=" << out(ip,jp) << "\n";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1017,12 +1022,12 @@ void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, 
         (*v_dtau)(tout, time(i), par, vp);
       }
     }
-//     KNArray2D<double> out_p(out);
-//     sym_dtau(out_p, time, par, vp);
-//     double max = 0;
-//     for (int i=0; i < out.dim1(); ++i)
-//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
-//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
+//    KNArray2D<double> out_p(out);
+//    sym_dtau(out_p, time, par, vp);
+//    double max = 0;
+//    for (size_t i=0; i < out.dim1(); ++i)
+//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs((out_p(i,j)-out(i,j)));
+//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1054,12 +1059,13 @@ void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, c
         (*v_rhs)(vout, time(i), xxin, par);
       }
     }
-//     KNArray2D<double> out_p(out);
-//     sym_rhs(out_p, time, x, par, sel);
-//     double max = 0;
-//     for (int i=0; i < out.dim1(); ++i)
-//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
-//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+//    KNArray2D<double> out_p(out);
+//    sym_rhs(out_p, time, x, par, sel);
+//    double max = 0;
+//    for (size_t i=0; i < out.dim1(); ++i)
+//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = (fabs(out_p(i,j)-out(i,j)));
+//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "p_rhs: " << max << "\n";
+//    std::cout << "+";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1073,7 +1079,7 @@ void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, 
   else
   {
 #endif
-    if ((nderi == 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
+    if ((nderi >= 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
     {
       if (v_p_deri != 0)
       {
@@ -1092,13 +1098,27 @@ void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, 
     {
       p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
     }
-//     KNArray3D<double> out_p(out);
-//     sym_deri(out_p, time, x, par, sel, nx, vx, np, vp, vv);
-//     double max = 0;
-//     for (int i=0; i < out.dim1(); ++i)
-//     for (int j=0; j < out.dim2(); ++j) 
-//     for (int k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) max = fabs(fabs(out_p(i,j,k)-out(i,j,k)));
-//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX_p: " << max << "\n";
+//    KNArray3D<double> out_p(out);
+//    sym_deri(out_p, time, x, par, sel, nx, vx, np, vp, vv);
+//    double max = 0;
+//    size_t ip=0, jp=0, kp=0;
+//    for (size_t i=0; i < out.dim1(); ++i)
+//    for (size_t j=0; j < out.dim2(); ++j) 
+//    for (size_t k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) { max = (fabs(out_p(i,j,k)-out(i,j,k))); ip=i; jp=j; kp=k; }
+//    if ((max) > pow(ERR_THRESHOLD,nx+np)*std::numeric_limits<double>::epsilon( ) ) 
+//    { 
+//      std::cout << "p_deri("<< nx << "," << np << ") " << max << " at (" << ip << "," << jp << "," << kp << ") ";
+//      if (np) std::cout << "vp=[";
+//      for (size_t i=0; i<np; i++) std::cout << vp[i] << ",";
+//      if (np) std::cout << "]";
+//      if (nx) std::cout << "vx=[";
+//      for (size_t i=0; i<nx; i++) std::cout << vx[i] << ",";
+//      if (nx) std::cout << "] ";
+//      std::cout << "sym="<< out_p(ip,jp,kp) << " comp=" << out(ip,jp,kp);
+//      if (nx) std::cout << " f=" << ex_rhs_x[ip + (vx[0] + jp*ex_ntau)*ex_ndim];
+//      std::cout << "\n";
+//    }
+//    std::cout << "+";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1113,6 +1133,11 @@ void   KNSystem::stpar(KNVector& par) const
   {
 #endif
     (*v_stpar)(par);
+//    KNVector par_p(par);
+//    sym_stpar(par_p);
+//    double max = 0;
+//    for (size_t i=0; i < par_p.size(); ++i) if (fabs(par_p(i)-par(i)) > max) max = (fabs(par_p(i)-par(i)));
+//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "stpar: " << max << "\n";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1134,12 +1159,12 @@ void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time) co
         (*v_stsol)(vf, time(i));
       }
     }
-//     KNArray2D<double>& out_p(out);
-//     sym_stsol(out_p, time);
-//     double max = 0;
-//     for (int i=0; i < out.dim1(); ++i)
-//     for (int j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs(fabs(out_p(i,j)-out(i,j)));
-//     if (fabs(max) > 16*std::numeric_limits<double>::epsilon( ) ) std::cout << "MAX: " << max << "\n";
+//    KNArray2D<double>& out_p(out);
+//    sym_stsol(out_p, time);
+//    double max = 0;
+//    for (size_t i=0; i < out.dim1(); ++i)
+//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = (fabs(out_p(i,j)-out(i,j)));
+//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "stsol: " << max << "\n";
 #ifdef GINAC_FOUND
   }
 #endif
@@ -1206,7 +1231,7 @@ void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time
   if ((np == 0)&&(nx == 1))
   {
     VectorField::Knut_RHS_x_eval( ex_rhs_x, out_p, time, x, par, sel, vx[0], ex_ndim, ex_npar, ex_ntau );
-}
+  }
   if ((np == 1)&&(nx == 1))
   {
     VectorField::Knut_RHS_xp_eval( ex_rhs_xp, out_p, time, x, par, sel, vx[0], vp[0], ex_ndim, ex_npar, ex_ntau );

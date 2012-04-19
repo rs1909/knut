@@ -295,13 +295,8 @@ class VectorField : public Symbol
     void CheckForDelay(const GiNaC::ex& f);
     
     void print(void);
-    void Knut_ConvertDelaysToZlags(GiNaC::ex& f);
     void Knut_ConvertStateToZlags(GiNaC::ex& f);
     void Knut_ConvertConstsPars(GiNaC::ex& f);
-    void Knut_PrintParDerivs(std::ostream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintXandParJacobians(std::ostream &dout, const std::vector<GiNaC::ex> &e);
-    void Knut_PrintHessiansTimesV(std::ostream &dout, const std::vector<GiNaC::ex> &e);
 };
 
 #endif
