@@ -74,6 +74,15 @@ void VectorField::Knut_ConvertConstsPars(ex& f)
   }
 }
 
+static void replace_Pi(std::vector<ex>& f)
+{
+  symbol sub_pi("M_PI");
+  for (size_t i=0; i < f.size(); ++i)
+  {
+    f[i] = f[i].subs(Pi == sub_pi);
+  }
+}
+
 //
 // PrintKnut -- The Knut code generator.
 //
@@ -109,7 +118,16 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   Knut_stpar(ex_stpar);
   Knut_stsol(ex_stsol);
   Knut_parnames(ex_parnames);
-        
+  
+  replace_Pi(ex_tau);
+  replace_Pi(ex_tau_p);
+  replace_Pi(ex_rhs);
+  replace_Pi(ex_rhs_p);
+  replace_Pi(ex_rhs_x);
+  replace_Pi(ex_rhs_xp);
+  replace_Pi(ex_rhs_xx);
+  replace_Pi(ex_stsol);
+  
   size_t nc = conname_list.nops();
   size_t nv = varname_list.nops();
   size_t np = parname_list.nops();
@@ -159,10 +177,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << "//" << endl;
   sys_out << "void sys_p_rhs(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_, size_t sel)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
 //  sys_out << "  std::cout << \" rhs\" << \"\\n\"; std::cout.flush();\n";
   sys_out   << "  // Compute the vector field\n";
   sys_out   << "  for (size_t idx=0; idx < time.size(); ++idx)\n";
@@ -187,10 +201,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << "static inline void " << "__jacx(KNArray3D<double>& out, const KNArray1D<double>& time, size_t k, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
 //  sys_out << "  std::cout << \" del=\" << k << \"\\n\";\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
   for (size_t del = 0; del < ex_ntau; ++del)
   {
     if (del == 0)
@@ -231,10 +241,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << endl;
   sys_out << "static inline void " << "__jacp(KNArray3D<double>& out, const KNArray1D<double>& time, size_t k, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "    const double Pi = M_PI;\n";
-  }
   for (size_t alpha = 0; alpha < ex_npar; ++alpha)
   {
     if (alpha == 0)
@@ -270,10 +276,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << endl;
   sys_out << "static inline void " << "__jacxp(KNArray3D<double>& out, const KNArray1D<double>& time, size_t k, size_t j, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
   for (size_t alpha = 0; alpha < ex_npar; ++alpha)
   {
     if (alpha == 0)
@@ -327,10 +329,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << endl;
   sys_out << "static inline void " << "__hess_times_v(KNArray3D<double>& out, const KNArray1D<double>& time, size_t k1, size_t k2, int m, const KNArray3D<double>& VZlags_, const KNArray3D<double>& Zlags_, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
   for (size_t del1 = 0; del1 < ex_ntau; ++del1)
   {
     if (del1 == 0)
@@ -432,10 +430,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << endl;
   sys_out << "void sys_p_tau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "    const double Pi = M_PI;\n";
-  }
   sys_out << "  for (size_t idx=0; idx < time.size(); ++idx)\n";
   sys_out << "  {\n";
   for (size_t j = 0; j < ex_ntau; j++)
@@ -463,10 +457,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out << endl;
   sys_out << "void sys_p_dtau(KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par_, size_t k)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "    const double Pi = M_PI;\n";
-  }
   for (size_t alpha = 0; alpha < ex_npar; ++alpha)
   {
     if (alpha == 0)
@@ -497,10 +487,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   // ***************************************************************************
   sys_out << "void sys_stpar(KNVector& par_)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
   for (size_t j = 0; j < ex_npar; ++j)
   {
     sys_out << "  par_(" << j << ") = " << ex_stpar[j] << ";\n";
@@ -513,10 +499,6 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   // ***************************************************************************
   sys_out << "void sys_stsol(KNVector& out, double t)\n";
   sys_out << "{\n";
-  if (HasPi)
-  {
-    sys_out << "  const double Pi = M_PI;\n";
-  }
   for (size_t j = 0; j < nv; ++j)
   {
     sys_out << "  out(" << j << ") = " << ex_stsol[j] << ";\n";
@@ -735,7 +717,7 @@ void VectorField::Knut_stpar(std::vector<double>& par)
       parsubs.append(conname_list[k] == convalue_list[k]);
     }
     ex defval = pardefval_list[j];
-    defval = iterated_subs(defval, parsubs);
+    defval = iterated_subs(defval, parsubs).evalf();
     if (is_exactly_a<numeric>(defval)) par[j + par_shift] = ex_to<numeric>(defval).to_double();
     else P_MESSAGE1("Starting parameter is not a number.");
   }
@@ -923,6 +905,15 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
       for (size_t k = 0; k < vsize; ++k) res[k*skip] = time(k);
       return;
     } else P_MESSAGE3("Unknown symbol ", name, ".");
+  }
+  else if (is_exactly_a<constant>(expr))
+  {
+    std::string name = ex_to<symbol>(expr).get_name();
+    if (name == "Pi")
+    {
+      for (size_t k = 0; k < vsize; ++k) res[k*skip] = M_PI;
+      return;
+    } else P_MESSAGE3("Unknown constant ", name, ".");
   } else
   {
     std::ostringstream os;

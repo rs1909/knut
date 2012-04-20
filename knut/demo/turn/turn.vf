@@ -3,7 +3,7 @@
 <Parameter  Name="T"    DefaultValue="0.4" Description="Period" />
 <Parameter  Name="kk1"  DefaultValue="0" />
 <Parameter  Name="zeta" DefaultValue="0.015" />
-<Parameter  Name="tau"  DefaultValue="1.5*2*Pi" />
+<Parameter  Name="tau"  DefaultValue="1.5*2*3.14" />
 <Expression Name="DX1"  Formula="delay(X1,tau)" />
 <StateVariable Name="X1" 
   Formula="X2"
