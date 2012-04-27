@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<VectorField Name="laser">
+
+<Parameter  Name="period"   DefaultValue="501.0" Description="Period" />
+<Parameter  Name="alpha"   DefaultValue="4.0" />
+<Parameter  Name="TT"   DefaultValue="1000.0" />
+<Parameter  Name="kappa"   DefaultValue="-bb/(alpha*cos((omega_0+bb)*tau)+sin((omega_0+bb)*tau))" />
+<Parameter  Name="PP"   DefaultValue="0.001" />
+<Parameter  Name="bb"   DefaultValue="-0.0002" />
+<Parameter  Name="tau"   DefaultValue="1000.0" />
+<Parameter  Name="omega_0"   DefaultValue="-1.0/tau" />
+
+<Expression Name="AreD"  Formula="delay(Are,tau)" />
+<Expression Name="AimD"  Formula="delay(Aim,tau)" />
+<Expression Name="phi"   Formula="sigma + thetascale*bb*tau + omega0*tau" />
+<Expression Name="SN"    Formula="sin((bb + omega_0)*tau)" />
+<Expression Name="CS"    Formula="cos((bb + omega_0)*tau)" />
+
+<StateVariable Name="Are"
+  Formula="Aim*bb + AreD*CS*kappa - Aim*alpha*NN + Are*NN + AimD*kappa*SN"
+  DefaultInitialCondition="-0.24721" DefaultHistory="0.0" />
+<StateVariable Name="Aim"
+  Formula="-(Are*bb) + AimD*CS*kappa + Aim*NN + alpha*Are*NN - AreD*kappa*SN"
+  DefaultInitialCondition="-1.86705" DefaultHistory="0.0" />
+<StateVariable Name="NN"
+  Formula="(-NN - (Aim*Aim + Are*Are)*(1 + 2*NN) + PP)/TT"
+  DefaultInitialCondition="-0.005655" DefaultHistory="0.0" />
+
+</VectorField>
+
