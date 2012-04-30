@@ -2,7 +2,7 @@
 <knut version="3">
  <input>out-start.mat</input>
  <output>out-hbct.mat</output>
- <sysname>sys-simple_laser.cpp</sysname>
+ <sysname>simple_laser.vf</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>USER</pointtype>
@@ -17,9 +17,9 @@
  </eqns>
  <vars>
   <var>DDE_LC</var>
-  <var>PAR(1)</var>
-  <var>PAR(3)</var>
-  <var>PAR(5)</var>
+  <var>alpha</var>
+  <var>kappa</var>
+  <var>bb</var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>

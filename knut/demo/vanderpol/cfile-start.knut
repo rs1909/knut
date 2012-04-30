@@ -2,15 +2,15 @@
 <knut version="3">
  <input></input>
  <output>out-start.mat</output>
- <sysname>sys-vanderpol.cpp</sysname>
+ <sysname>vanderpol.vf</sysname>
  <fromtype>NX</fromtype>
  <label>0</label>
  <pointtype>DDE_AUT</pointtype>
- <cp>PAR(1)</cp>
+ <cp>delta</cp>
  <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>PAR(0)</par>
+  <par>T</par>
  </parx>
  <nint>40</nint>
  <ndeg>4</ndeg>

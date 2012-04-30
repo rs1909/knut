@@ -2,15 +2,15 @@
 <knut version="3">
  <input>out-start.mat</input>
  <output>out-ns.mat</output>
- <sysname>sys-milloneup.cpp</sysname>
+ <sysname>milloneup.vf</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>DDE_NS</pointtype>
- <cp>PAR(0)</cp>
+ <cp>T</cp>
  <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>PAR(2)</par>
+  <par>k1</par>
  </parx>
  <nint>100</nint>
  <ndeg>4</ndeg>

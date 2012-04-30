@@ -29,6 +29,7 @@
 #include "vf.h"
 #include "codegen_utils.h"
 #include "knerror.h"
+#include "constants.h"
 
 using namespace std;
 using namespace GiNaC;
@@ -453,6 +454,22 @@ int VectorField::ProcessSymbols(void)
       }
     }
 
+  // Adding internal parameters
+  size_t sz = 0;
+  while (TypeTupleTabBase<Var>::tabStatic[sz].type != VarPAR0) sz++;
+  sz++;
+  while (TypeTupleTabBase<Var>::tabStatic[sz].index < ~(size_t)0)
+  {
+    symbol par(TypeTupleTabBase<Var>::tabStatic[sz].code);
+    std::string defval;
+    if (TypeTupleTabBase<Var>::tabStatic[sz].type == VarPeriod) defval = "1.0";
+    else defval = "0.0";
+    ex e(defval, allsymbols);
+    internal_parname_list.append(par);
+    internal_pardefval_list.append(e);
+    allsymbols.append(par);
+    sz++;
+  }
   // Process the parameters NAME
   for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
   {
@@ -465,6 +482,7 @@ int VectorField::ProcessSymbols(void)
     if (isPeriod) parname_list.prepend(par); else parname_list.append(par);
     allsymbols.append(par);
   }
+ 
   // Process the parameters DEFAULTVALUE
   for (vector<Parameter *>::iterator p = Parameters.begin(); p != Parameters.end(); ++p)
   {

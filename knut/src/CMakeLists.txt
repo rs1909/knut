@@ -5,7 +5,7 @@ ADD_LIBRARY( knutlib
 	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
 	mat4data.cpp mat4data.h matrix.cpp matrix.h
 	ncolloc.cpp ncolloc.h knutsys.h knerror.h knerror.cpp
-	plot.cpp plot.h point.cpp point.h pointtype.h
+	plot.cpp plot.h point.cpp point.h pointtype.h pointtype.cpp
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
 	system.cpp system.h testfunct.cpp testfunct.h
 	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h 

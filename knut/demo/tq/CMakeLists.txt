@@ -1,10 +1,7 @@
 SET( NAME tq )
 
-INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
-ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET( CFILEDIR ${CMAKE_INSTALL_PREFIX}/${KNUT_DEMO_DIR}/${NAME} )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL( FILES sys-${NAME}.cpp
+INSTALL( FILES ${NAME}.vf
         cfile-lp-1-a.knut cfile-lp-2-a.knut cfile-ns.knut cfile-pdsw-2.knut cfile-tr.knut
         cfile-lp-1-b.knut cfile-lp-2-b.knut cfile-pdsw-1.knut cfile-start.knut DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 

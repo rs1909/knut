@@ -2,15 +2,15 @@
 <knut version="3">
  <input>out-pdsw-2.mat</input>
  <output>out-lp-2-a.mat</output>
- <sysname>sys-tq.cpp</sysname>
+ <sysname>tq.vf</sysname>
  <fromtype>NX</fromtype>
  <label>64</label>
  <pointtype>DDE_LP</pointtype>
- <cp>PAR(0)</cp>
+ <cp>T</cp>
  <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>PAR(1)</par>
+  <par>k1</par>
  </parx>
  <nint>100</nint>
  <ndeg>4</ndeg>

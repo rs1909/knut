@@ -2,11 +2,11 @@
 <knut version="3">
  <input></input>
  <output>out-start.mat</output>
- <sysname>sys-milloneup.cpp</sysname>
+ <sysname>milloneup.vf</sysname>
  <fromtype>NX</fromtype>
  <label>0</label>
  <pointtype>DDE_LC</pointtype>
- <cp>PAR(2)</cp>
+ <cp>k1</cp>
  <switch>NX</switch>
  <nparx>0</nparx>
  <nint>100</nint>

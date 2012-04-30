@@ -437,4 +437,10 @@ void sys_stsol( KNVector& out, double t )
   out(1) = 0.0;
 }
 
+void sys_parnames( const char *out[] )
+{
+  out[0] = "T";
+  out[1] = "k1";      
+}
+
 } // extern "C"

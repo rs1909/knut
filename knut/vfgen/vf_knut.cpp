@@ -72,6 +72,10 @@ void VectorField::Knut_ConvertConstsPars(ex& f)
   {
     f = f.subs(parname_list[i] == par_(i));
   }
+  for (size_t i = 0; i < internal_parname_list.nops(); ++i)
+  {
+    f = f.subs(internal_parname_list[i] == par_(parname_list.nops()+i));
+  }
 }
 
 static void replace_Pi(std::vector<ex>& f)
@@ -703,6 +707,11 @@ void VectorField::Knut_stpar(std::vector<double>& par)
   {
     // First make a replacement list with all the other parameters
     GiNaC::lst parsubs;
+    // add internal parameters
+    for (size_t k = 0; k < internal_pardefval_list.nops(); ++k)
+    {
+      parsubs.append(internal_parname_list[k] == internal_pardefval_list[k]);
+    }
     // add other parameters
     for (size_t k = 0; k < np; ++k)
     {

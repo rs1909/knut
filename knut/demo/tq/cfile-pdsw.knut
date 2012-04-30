@@ -2,11 +2,11 @@
 <knut version="3">
  <input>out-start.mat</input>
  <output>out-pdsw-2.mat</output>
- <sysname>sys-tq.cpp</sysname>
+ <sysname>tq.vf</sysname>
  <fromtype>PD</fromtype>
  <label>2</label>
  <pointtype>DDE_PD_SW</pointtype>
- <cp>PAR(1)</cp>
+ <cp>k1</cp>
  <switch>NX</switch>
  <nparx>0</nparx>
  <nint>100</nint>

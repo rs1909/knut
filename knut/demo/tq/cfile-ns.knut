@@ -1,16 +1,16 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut version="3">
+<knut version="4">
  <input>out-start.mat</input>
  <output>out-ns.mat</output>
- <sysname>sys-tq.cpp</sysname>
- <fromtype>NX</fromtype>
- <label>96</label>
+ <sysname type="">tq.vf</sysname>
+ <fromtype>NS</fromtype>
+ <label>1</label>
  <pointtype>DDE_NS</pointtype>
- <cp>PAR(1)</cp>
+ <cp>T</cp>
  <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>PAR(0)</par>
+  <par>k1</par>
  </parx>
  <nint>100</nint>
  <ndeg>4</ndeg>
@@ -27,8 +27,8 @@
  <cpmin>-1.000000000000000E+02</cpmin>
  <cpmax>1.000000000000000E+02</cpmax>
  <ds>-2.000000000000000E-04</ds>
- <dsmin>1.000000000000000E-05</dsmin>
- <dsmax>1.000000000000000E-02</dsmax>
+ <dsmin>1.000000000000000E-04</dsmin>
+ <dsmax>1.000000000000000E-01</dsmax>
  <dsstart>-2.000000000000000E-04</dsstart>
  <epsc>1.000000000000000E-04</epsc>
  <epsr>1.000000000000000E-05</epsr>

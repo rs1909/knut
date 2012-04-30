@@ -1,10 +1,7 @@
 SET( NAME glass )
 
-INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
-ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET( CFILEDIR ${CMAKE_INSTALL_PREFIX}/${KNUT_DEMO_DIR}/${NAME} )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL( FILES sys-${NAME}.cpp mackey-glass.vf
+INSTALL( FILES mackey-glass.vf
     cfile-start.knut cfile-nssw.knut cfile-pdsw.knut cfile-pd.knut
     DESTINATION ${KNUT_DEMO_DIR}/${NAME} )
 

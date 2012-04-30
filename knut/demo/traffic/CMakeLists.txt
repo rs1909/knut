@@ -1,10 +1,7 @@
 SET( NAME traffic3cars )
 
-INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src )
-ADD_LIBRARY( ${NAME} MODULE sys-${NAME}.cpp )
 SET( CFILEDIR ${CMAKE_INSTALL_PREFIX}/${KNUT_DEMO_DIR}/${NAME} )
-SET_TARGET_PROPERTIES( ${NAME} PROPERTIES PREFIX sys- SUFFIX .so )
-INSTALL( FILES sys-${NAME}.cpp ${NAME}.vf
+INSTALL( FILES ${NAME}.vf
 	cfile-start-a.knut cfile-start-b.knut
 	cfile-ns-a.knut cfile-ns-b.knut
 	cfile-nssw-a.knut cfile-nssw-b.knut

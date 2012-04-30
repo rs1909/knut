@@ -2,11 +2,11 @@
 <knut version="3">
  <input>out-start.mat</input>
  <output>out-hbsw.mat</output>
- <sysname>sys-simple_laser.cpp</sysname>
+ <sysname>simple_laser.vf</sysname>
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>USER</pointtype>
- <cp>PAR(5)</cp>
+ <cp>bb</cp>
  <switch>HOPF</switch>
  <neqns>3</neqns>
  <eqns>
@@ -16,8 +16,8 @@
  </eqns>
  <vars>
   <var>DDE_LC</var>
-  <var>PAR(3)</var>
-  <var>PAR(0)</var>
+  <var>kappa</var>
+  <var>period</var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>

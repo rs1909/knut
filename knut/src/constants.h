@@ -104,24 +104,34 @@ class KNConstantNames
     FPTR findFun(const char * name);
 };
 
-template<typename TP> struct TypeTuple
-{
-  size_t       index;
-  TP           type;
-  const char * code;
-  const char * name;
-};
+// forward declearation
+class KNConstantsBase;
 
-template<typename TP> struct TypeTupleStr
+// type declarations
+template<typename TP> class TypeTupleTab  : public TypeTupleTabBase<TP>
 {
-  size_t       index;
-  TP           type;
-  std::string  code;
-  std::string  name;
-};
+  private:
+    std::vector<TypeTupleStr<TP> > tab;
+    size_t sz;
+    const KNConstantsBase *parent;
+  public:
+    TypeTupleTab();
+    TypeTupleTab(const KNConstantsBase *p) : tab(0), parent(p) { update(); }
+    void         update(void); // needs to update 'tab'
+    void         update(const KNConstantsBase *p) { parent = p; update(); }
+    TP           CIndexToType(size_t idx) const;
+    TP           NameToType(const char * name) const;
+    TP           CodeToType(const char * name) const;
+    size_t       TypeToCIndex(TP tp) const;
+    std::string  CIndexToTypeName(size_t idx) const;
+    std::string  TypeToName(TP tp) const;
+    std::string  TypeToCode(TP tp) const;
+    size_t       size() const;
+};  
 
 class KNConstantsBase
 {
+  friend class TypeTupleTab<Var>;
   protected:
     KNConstantNames cnames;
   private:   
@@ -260,33 +270,11 @@ class KNConstantsBase
     // this is to notify the system of changes
     virtual void constantChanged(const char* /*name*/) { }
     
-    // type declarations
-    template<typename TP> class TypeTupleTab
-    {
-    private:
-      static const TypeTuple<TP> tabStatic[];
-      std::vector<TypeTupleStr<TP> > tab;
-      size_t sz;
-      const KNConstantsBase *parent;
-    public:
-      TypeTupleTab();
-      TypeTupleTab(const KNConstantsBase *p) : tab(0), parent(p) { update(); }
-      void         update(void); // needs to update 'tab'
-      void         update(const KNConstantsBase *p) { parent = p; update(); }
-      TP           CIndexToType(size_t idx) const;
-      TP           NameToType(const char * name) const;
-      TP           CodeToType(const char * name) const;
-      size_t       TypeToCIndex(TP tp) const;
-      std::string  CIndexToTypeName(size_t idx) const;
-      std::string  TypeToName(TP tp) const;
-      std::string  TypeToCode(TP tp) const;
-      size_t       size() const;
-    };  
-    KNConstantsBase::TypeTupleTab<PtType> PtTypeTable;
-    KNConstantsBase::TypeTupleTab<Eqn> EqnTable;
-    KNConstantsBase::TypeTupleTab<BranchSW> BranchSWTable;
-    KNConstantsBase::TypeTupleTab<BifType> BifTypeTable;
-    KNConstantsBase::TypeTupleTab<Var> VarTable;
+    TypeTupleTab<PtType> PtTypeTable;
+    TypeTupleTab<Eqn> EqnTable;
+    TypeTupleTab<BranchSW> BranchSWTable;
+    TypeTupleTab<BifType> BifTypeTable;
+    TypeTupleTab<Var> VarTable;
 };
 
 class KNConstants : public KNConstantsBase
@@ -304,56 +292,56 @@ class KNConstants : public KNConstantsBase
     virtual ~KNConstants() { }
 };
 
-template<typename TP> void KNConstantsBase::TypeTupleTab<TP>::update()
+template<typename TP> void TypeTupleTab<TP>::update()
 {
   size_t k = 0;
-  while (tabStatic[k].index < ~(size_t)0) ++k;
+  while (TypeTupleTabBase<TP>::tabStatic[k].index < ~(size_t)0) ++k;
   tab.resize(k);
   for (size_t i=0; i<tab.size(); ++i)
   {
     tab[i].index = i; // tabStatic[i].index;
-    tab[i].type = tabStatic[i].type;
-    tab[i].name = tabStatic[i].name;
-    tab[i].code = tabStatic[i].code;
+    tab[i].type = TypeTupleTabBase<TP>::tabStatic[i].type;
+    tab[i].name = TypeTupleTabBase<TP>::tabStatic[i].name;
+    tab[i].code = TypeTupleTabBase<TP>::tabStatic[i].code;
   }
 }
 
-template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::CIndexToType(size_t idx) const
+template<typename TP> TP TypeTupleTab<TP>::CIndexToType(size_t idx) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].index == idx) return tab[k].type;
   return tab[0].type;
 }
 
-template<typename TP> size_t KNConstantsBase::TypeTupleTab<TP>::TypeToCIndex(TP tp) const
+template<typename TP> size_t TypeTupleTab<TP>::TypeToCIndex(TP tp) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].index;
   return tab[0].index;
 }
 
-template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::TypeToCode(TP tp) const
+template<typename TP> std::string TypeTupleTab<TP>::TypeToCode(TP tp) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].code;
   return tab[0].code;
 }
 
-template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::TypeToName(TP tp) const
+template<typename TP> std::string TypeTupleTab<TP>::TypeToName(TP tp) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].type == tp) return tab[k].name;
   return tab[0].name;
 }
 
-template<typename TP> std::string KNConstantsBase::TypeTupleTab<TP>::CIndexToTypeName(size_t idx) const
+template<typename TP> std::string TypeTupleTab<TP>::CIndexToTypeName(size_t idx) const
 {
   for (size_t k=0; k<tab.size(); ++k)
     if (tab[k].index == idx) return tab[k].name;
   return tab[0].name;
 }
 
-template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::CodeToType(const char * name) const
+template<typename TP> TP TypeTupleTab<TP>::CodeToType(const char * name) const
 {
   if (name)
   {
@@ -363,7 +351,7 @@ template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::CodeToType(const cha
   return tab[0].type;
 }
 
-template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::NameToType(const char * name) const
+template<typename TP> TP TypeTupleTab<TP>::NameToType(const char * name) const
 {
   if (name)
   {
@@ -373,11 +361,11 @@ template<typename TP> TP KNConstantsBase::TypeTupleTab<TP>::NameToType(const cha
   return tab[0].type;
 }
 
-template<typename TP> size_t KNConstantsBase::TypeTupleTab<TP>::size() const
+template<typename TP> size_t TypeTupleTab<TP>::size() const
 {
   return tab.size();
 }
 
-template<> void KNConstantsBase::TypeTupleTab<Var>::update();
+template<> void TypeTupleTab<Var>::update();
 
 #endif

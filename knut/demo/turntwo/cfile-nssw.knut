@@ -6,11 +6,11 @@
  <fromtype>NS</fromtype>
  <label>1</label>
  <pointtype>DDE_AUT_HOPF_SW</pointtype>
- <cp>T</cp>
+ <cp>kk1</cp>
  <switch>NX</switch>
  <nparx>1</nparx>
  <parx>
-  <par>kk1</par>
+  <par>T</par>
  </parx>
  <nint>80</nint>
  <ndeg>4</ndeg>

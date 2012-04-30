@@ -2,11 +2,11 @@
 <knut version="3">
  <input></input>
  <output>out-start.mat</output>
- <sysname>sys-simple_laser.cpp</sysname>
+ <sysname>simple_laser.vf</sysname>
  <fromtype>NX</fromtype>
  <label>0</label>
  <pointtype>USER</pointtype>
- <cp>PAR(3)</cp>
+ <cp>kappa</cp>
  <switch>NX</switch>
  <neqns>2</neqns>
  <eqns>
@@ -15,7 +15,7 @@
  </eqns>
  <vars>
   <var>DDE_LC</var>
-  <var>PAR(5)</var>
+  <var>bb</var>
  </vars>
  <nint>20</nint>
  <ndeg>5</ndeg>

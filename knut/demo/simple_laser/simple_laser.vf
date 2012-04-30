@@ -12,7 +12,6 @@
 
 <Expression Name="AreD"  Formula="delay(Are,tau)" />
 <Expression Name="AimD"  Formula="delay(Aim,tau)" />
-<Expression Name="phi"   Formula="sigma + thetascale*bb*tau + omega0*tau" />
 <Expression Name="SN"    Formula="sin((bb + omega_0)*tau)" />
 <Expression Name="CS"    Formula="cos((bb + omega_0)*tau)" />
 

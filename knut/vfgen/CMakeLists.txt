@@ -11,12 +11,13 @@ INCLUDE_DIRECTORIES(${GINAC_INCLUDE_DIRS}
 	${MXML_INCLUDE_DIRS}
         ${KNUT_SOURCE_DIR}/laarpack
 	${KNUT_SOURCE_DIR}/src
+	${KNUT_SOURCE_DIR}/vfgen
         ${KNUT_BINARY_DIR}/src)
 
 ADD_LIBRARY(vfgenlib ${VFGEN_CPP_SRC_FILES})
 SET(VFGEN_LIBS vfgenlib CACHE INTERNAL "vfgen lib")
 
 ADD_EXECUTABLE(vfgen-knut vfgen.cpp vf.h)
-TARGET_LINK_LIBRARIES(vfgen-knut vfgenlib ${GINAC_LDFLAGS} mxml)
+TARGET_LINK_LIBRARIES(vfgen-knut vfgenlib knutlib ${GINAC_LDFLAGS} mxml)
 
 INSTALL(TARGETS vfgen-knut DESTINATION ${KNUT_BIN_DIR})

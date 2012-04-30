@@ -11,6 +11,7 @@
 #define POINTTYPE_H
 
 #include <cstring>
+#include <string>
 
 enum PtType {
   SolUser      = 64,
@@ -113,5 +114,27 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
 #define SYS_TYPE_CXX "cpp"
 #define SYS_TYPE_VFC "vf"
 #define SYS_TYPE_VF0 "vf0"
+
+template<typename TP> struct TypeTuple
+{
+  size_t       index;
+  TP           type;
+  const char * code;
+  const char * name;
+};
+
+template<typename TP> struct TypeTupleStr
+{
+  size_t       index;
+  TP           type;
+  std::string  code;
+  std::string  name;
+};
+
+template<typename TP> class TypeTupleTabBase
+{
+  public:
+    static const TypeTuple<TP> tabStatic[];
+};
 
 #endif

@@ -202,6 +202,8 @@ class VectorField : public Symbol
     GiNaC::lst convalue_list;    // P
     GiNaC::lst parname_list;     // P
     GiNaC::lst pardefval_list;   // P
+    GiNaC::lst internal_parname_list;     // P
+    GiNaC::lst internal_pardefval_list;   // P
     GiNaC::lst exprname_list;    // P
     GiNaC::lst exprformula_list; // P
     GiNaC::lst expreqn_list;     // P

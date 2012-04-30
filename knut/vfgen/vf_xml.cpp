@@ -101,18 +101,21 @@ void VectorField::PrintXML(const std::string& cmdstr)
   vector<Parameter *>::iterator p;
   for (p = Parameters.begin(); p != Parameters.end(); ++p)
   {
-    cout << "<Parameter";
-    cout << " Name=\"" << (*p)->Name() << "\"";
-    if ((*p)->Description() != "")
+    if ((*p)->Description() != "__internal__")
     {
-      cout << " Description=\"" << (*p)->Description() << "\"";
+      cout << "<Parameter";
+      cout << " Name=\"" << (*p)->Name() << "\"";
+      if ((*p)->Description() != "")
+      {
+        cout << " Description=\"" << (*p)->Description() << "\"";
+      }
+      cout << " DefaultValue=\"" << (*p)->DefaultValue() << "\"";
+      if ((*p)->Latex() != "")
+      {
+        cout << " Latex=\"" << (*p)->Latex() << "\"";
+      }
+      cout << "/>" << endl;
     }
-    cout << " DefaultValue=\"" << (*p)->DefaultValue() << "\"";
-    if ((*p)->Latex() != "")
-    {
-      cout << " Latex=\"" << (*p)->Latex() << "\"";
-    }
-    cout << "/>" << endl;
   }
 
   vector<Expression *>::iterator e;
