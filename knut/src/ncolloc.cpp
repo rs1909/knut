@@ -165,16 +165,16 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
         p_tau(k,idx) /= par(0);
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
 
-        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx) - DBL_EPSILON);  // not separated
+        t(1+k) = (t(0) - p_tau(k,idx)) - (ceil(t(0) - p_tau(k,idx)) - 1);  // not separated
 
         // binary search for in which interval is t-p_tau(k,idx)
-        const size_t low = meshlookup(mesh, t(1+k));
+        const size_t low = meshlookup_right(mesh, t(1+k));
         kk(k + 1, idx) = low;
 
         if (t(0) - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low + NINT;
         else kkS(k + 1, idx) = low;
 
-        kkI(k + 1, idx) = low + NINT * static_cast<size_t>(floor(t(0) - p_tau(k,idx) - DBL_EPSILON)) + NMAT*NINT;
+        kkI(k + 1, idx) = low + NINT * static_cast<size_t>(ceil(t(0) - p_tau(k,idx)) - 1) + NMAT*NINT;
 
 //        std::cout << "low " << low << " t(0) " << t(0) << " p_tau(k,idx) " << p_tau(k,idx);
         const double hk = mesh(low + 1) - mesh(low);
@@ -191,8 +191,8 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
           tt(NTAU + 1 + k, l, idx) = out(l) / hk;
         }
         // creating interpolation at the representation points
-        tMSH(k) = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - DBL_EPSILON);
-        const size_t lowMSH = meshlookup(mesh, tMSH(k));
+        tMSH(k) = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx));
+        const size_t lowMSH = meshlookup_left(mesh, tMSH(k));
         kkMSH(k, idx) = lowMSH;
         const double hkMSH = mesh(lowMSH + 1) - mesh(lowMSH);
         poly_lgr(meshINT, out, (tMSH(k) - mesh(lowMSH)) / hkMSH);

@@ -307,18 +307,32 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const size_t 
   }
 }
 
-size_t KNAbstractBvpCollocation::meshlookup(const KNVector& mesh, double t)
+// closed from the left [t0, t1)
+size_t KNAbstractBvpCollocation::meshlookup_left(const KNVector& mesh, double t)
 {
   // binary search for in which interval is t-tau(k)
-  size_t mid, low = 0, up = mesh.size() - 1;
+  size_t low = 0, up = mesh.size() - 1;
   while (up - low > 1)
   {
-    mid = low + (up - low) / 2;
-    if ((mesh(low) < t) && (t <= mesh(mid))) up = mid;
+    const size_t mid = low + (up - low) / 2;
+    if ((mesh(low) <= t) && (t < mesh(mid))) up = mid;
     else low = mid;
   }
-//  if (mesh(low) == t) std::cout << "-LO-";
-//  if (mesh(low+1) == t) std::cout << "-HI-";
+  return low;
+}
+
+// closed from the right (t0, t1]
+size_t KNAbstractBvpCollocation::meshlookup_right(const KNVector& mesh, double t)
+{
+  if (t == mesh(0)) return 0;
+  // binary search for in which interval is t-tau(k)
+  size_t low = 0, hi = mesh.size() - 1;
+  while (hi - low > 1)
+  {
+    const size_t mid = hi - (hi - low) / 2;
+    if ((mesh(mid) < t) && (t <= mesh(hi))) low = mid;
+    else hi = mid;
+  }
   return low;
 }
 
@@ -338,7 +352,7 @@ static void meshConstruct(KNVector& newmesh, const KNVector& oldmesh, const KNVe
   for (size_t i = 1; i < newmesh.size()-1; i++)
   {
     const double t = eqf(nint)*i/(newmesh.size()-1);
-    const size_t idx = KNAbstractBvpCollocation::meshlookup( eqf, t );
+    const size_t idx = KNAbstractBvpCollocation::meshlookup_right( eqf, t );
     const double d = (t - eqf(idx))/(eqf(idx+1)-eqf(idx));
 //     std::cout<<t<<":"<<d<<":"<<i<<":"<<idx<<":"<<mesh(idx) + d*(mesh(idx+1)-mesh(idx))<<" : "<<mesh(idx+1)-mesh(idx)<<"\n";
     newmesh(i) = oldmesh(idx) + d*(oldmesh(idx+1)-oldmesh(idx));
@@ -452,7 +466,7 @@ static void profileConvert(KNVector& newprofile, const KNVector& newmesh, const 
     for (size_t j = 0; j < new_ndeg; j++)
     {
       const double t = newmesh(i) + j*(newmesh(i+1)-newmesh(i))/new_ndeg;
-      size_t idx = KNAbstractBvpCollocation::meshlookup( mesh, t );
+      size_t idx = KNAbstractBvpCollocation::meshlookup_right( mesh, t );
       const double d = (t - mesh(idx))/(mesh(idx+1)-mesh(idx));
       for (size_t p = 0; p < ndim; p++)
         newprofile(p+ndim*(j+i*new_ndeg)) = 0.0;
@@ -791,7 +805,7 @@ void KNAbstractBvpCollocation::exportProfile(KNVector& outs, const KNVector& msh
     for (size_t j = 0; j < ndeg_; j++)
     {
       double t = mshint(i) + mshdeg(j) / nint_;
-      size_t k = meshlookup(mesh, t);
+      size_t k = meshlookup_right(mesh, t);
       // std::cout<<"int "<<i<<" "<<k<<"\n";
       double c = (t - mesh(k)) / (mesh(k + 1) - mesh(k));  // mesh is the interval mesh in the class
 

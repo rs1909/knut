@@ -45,7 +45,8 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     static void   getDiffMetric(KNMatrix& mt, const KNVector& t);
     static void   star(KNVector& out, const KNVector& in, const KNMatrix& mt, const KNVector& msh, size_t dim);
     static double integrate(const KNVector& v1, const KNVector& v2, const KNMatrix& mt, const KNVector& msh, size_t dim);
-    static size_t meshlookup(const KNVector& mesh, double t);
+    static size_t meshlookup_left(const KNVector& mesh, double t);
+    static size_t meshlookup_right(const KNVector& mesh, double t);
 
     void   star(KNVector& out, const KNVector& sol);
     double integrate(const KNVector& v1, const KNVector& v2);
