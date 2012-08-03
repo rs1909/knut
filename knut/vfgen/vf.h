@@ -211,6 +211,7 @@ class VectorField : public Symbol
     GiNaC::lst varvecfield_list; // P
     GiNaC::lst vardefic_list;    // P
     GiNaC::lst vardefhist_list;  // P
+    GiNaC::lst varmass_list;     // P
     GiNaC::lst funcname_list;    // P
     GiNaC::lst funcformula_list; // P
 
@@ -263,6 +264,7 @@ class VectorField : public Symbol
     // the expressions, constants and parameters are subsituted
     // This is used to evaluate the right-hand-side
     void Knut_RHS(std::vector<GiNaC::ex>&);
+    void Knut_mass(std::vector<double>& out);
     void Knut_RHS_p(std::vector<GiNaC::ex>&);
     void Knut_RHS_x(std::vector<GiNaC::ex>&);
     void Knut_RHS_xp(std::vector<GiNaC::ex>&);

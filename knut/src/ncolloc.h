@@ -160,7 +160,6 @@ class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 
     // for rhs, and derivatives
     // KNMatrix fx, dfx, t_dfx, dummy
-    KNArray1D<double>  mass;
     KNArray3D<double>  solData;
     KNArray2D<double>  p_tau;
     KNArray2D<double>  p_dtau;

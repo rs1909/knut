@@ -100,6 +100,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   std::vector<GiNaC::ex> ex_tau;
   std::vector<GiNaC::ex> ex_tau_p;
   std::vector<GiNaC::ex> ex_rhs;
+  std::vector<double> ex_mass;
   std::vector<GiNaC::ex> ex_rhs_p;
   std::vector<GiNaC::ex> ex_rhs_x;
   std::vector<GiNaC::ex> ex_rhs_xp;
@@ -115,6 +116,7 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   Knut_tau(ex_tau);
   Knut_tau_p(ex_tau_p);
   Knut_RHS(ex_rhs);
+  Knut_mass(ex_mass);
   Knut_RHS_p(ex_rhs_p);
   Knut_RHS_x(ex_rhs_x);
   Knut_RHS_xp(ex_rhs_xp);
@@ -193,6 +195,18 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   sys_out   << "  }\n";
   sys_out   << "}\n";
 
+  // ***************************************************************************
+  // Mass vector
+  // ***************************************************************************
+  sys_out << "void sys_mass(KNArray1D<double>& out)\n";
+  sys_out << "{\n";
+  for (size_t j = 0; j < ex_rhs.size(); ++j)
+  {
+    sys_out << "  out(" << j << ") = " << ex_mass[j] << ";\n";
+  }
+  sys_out << "}\n";
+  sys_out << endl;
+  
   // ***************************************************************************
   //  Derivative with respect to the delays
   // ***************************************************************************
@@ -695,6 +709,26 @@ void VectorField::Knut_RHS_xx(std::vector<GiNaC::ex>& exls)
   }
 }
 
+void VectorField::Knut_mass(std::vector<double>& out)
+{  
+  const size_t nc = conname_list.nops();
+  const size_t nv = varmass_list.nops();
+  out.resize(nv);
+  for (size_t j = 0; j < nv; ++j)
+  {
+    // Make a replacement list with all constant values
+    GiNaC::lst parsubs;
+    for (size_t k = 0; k < nc; ++k)
+    {
+      parsubs.append(conname_list[k] == convalue_list[k]);
+    }
+    ex mass = varmass_list[j];
+    mass = iterated_subs(mass, parsubs).evalf();
+    if (is_exactly_a<numeric>(mass)) out[j] = ex_to<numeric>(mass).to_double();
+    else P_MESSAGE1("Mass constant is not a number.");
+  }
+}
+
 void VectorField::Knut_stpar(std::vector<double>& par)
 {  
   const size_t nc = conname_list.nops();
@@ -918,7 +952,7 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
   else if (is_exactly_a<constant>(expr))
   {
     std::string name = ex_to<symbol>(expr).get_name();
-    if (name == "Pi")
+    if ((name == "Pi") || (name == "\\pi"))
     {
       for (size_t k = 0; k < vsize; ++k) res[k*skip] = M_PI;
       return;

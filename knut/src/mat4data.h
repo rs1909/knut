@@ -227,26 +227,32 @@ class KNDataFile
 
     struct header *getHeader(size_t offset)
     {
+      P_ERROR_X1(offset + sizeof(struct header) < size, "Matrix header is out of bound.");
       return (struct header*)((char*)address + offset);
     }
     const struct header *getHeader(size_t offset) const
-      {
-        return (struct header*)((char*)address + offset);
-      }
+    {
+      P_ERROR_X1(offset + sizeof(struct header) < size, "Matrix header is out of bound.");
+      return (struct header*)((char*)address + offset);
+    }
     double& elem(size_t offset, size_t row, size_t col)
     {
+      P_ERROR_X1(offset + getHeader(offset)->col_off(col) + sizeof(double)*row < size, "Matrix element is out of bound.");
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
     double elem(size_t offset, size_t row, size_t col) const
     {
+      P_ERROR_X1(offset + getHeader(offset)->col_off(col) + sizeof(double)*row < size, "Matrix element is out of bound.");
       return ((double*)((char*)address + offset + getHeader(offset)->col_off(col)))[row];
     }
     double& elem_im(size_t offset, size_t row, size_t col)
     {
+      P_ERROR_X1(offset + getHeader(offset)->col_off(col) + sizeof(double)*row < size, "Matrix element is out of bound.");
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
     const double& elem_im(size_t offset, size_t row, size_t col) const
     {
+      P_ERROR_X1(offset + getHeader(offset)->col_off(col) + sizeof(double)*row < size, "Matrix element is out of bound.");
       return ((double*)((char*)address + offset + getHeader(offset)->col_off_im(col)))[row];
     }
     uint32_t getRows(size_t offset) const

@@ -152,6 +152,7 @@ class KNSystem
     std::vector<GiNaC::ex> ex_tau;
     std::vector<GiNaC::ex> ex_tau_p;
     std::vector<GiNaC::ex> ex_rhs;
+    std::vector<double> ex_mass;
     std::vector<GiNaC::ex> ex_rhs_p;
     std::vector<GiNaC::ex> ex_rhs_x;
     std::vector<GiNaC::ex> ex_rhs_xp;
@@ -166,6 +167,7 @@ class KNSystem
     void sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
     void sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp );
     void sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel );
+    void sym_mass(KNArray1D<double>& out) const;
     void sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
                 size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv );
     void sym_stpar(KNVector& par) const;

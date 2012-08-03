@@ -14,6 +14,7 @@
 #include "polynomial.h"
 
 #include <cmath>
+#include <cfloat>
 
 #ifdef DEBUG
 #include <iostream>
@@ -53,7 +54,6 @@ KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const size_t _nint, con
 
     kkMSH(ntau, nint*ndeg + 1),tt(2*ntau + 1, ndeg + 1, ndeg*nint),
     ttMSH(2*ntau, ndeg + 1, ndeg*nint + 1),
-    mass(ndim),
     solData(ndim, 2*ntau + 1, ndeg*nint),
     p_tau(ntau, nint*ndeg), p_dtau(ntau, nint*ndeg),
     p_fx(ndim, nint*ndeg), p_dfx(ndim,ndim, nint*ndeg), p_dfp(ndim,1, nint*ndeg),
@@ -63,7 +63,6 @@ KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const size_t _nint, con
     p_fxMSH(ndim, nint*ndeg+1), p_dfxMSH(ndim,ndim, nint*ndeg+1), p_dfpMSH(ndim,1, nint*ndeg+1),
     p_dummy(0,0,nint*ndeg+1)
 {
-  for (size_t i=0; i<mass.size(); ++i) mass(i) = 1.0;
 #ifdef DEBUG
   count_reset();
 #endif
@@ -125,7 +124,6 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   timeMSH(NDEG*NINT) = 1.0;
 
   sys->p_tau(p_tau, time, par); // this will be rescaled, so have to call it again
-  sys->mass(mass); // the derivatives will be multiplied by this
 
   size_t nmat_new = NMAT;
   for (size_t idx = 0; idx < NDEG*NINT; ++idx)
@@ -167,7 +165,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
         p_tau(k,idx) /= par(0);
         P_ERROR_X3(p_tau(k,idx) >= 0.0, "Either the delay or the period became negative. k=", k, ".");
 
-        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx));  // not separated
+        t(1+k) = (t(0) - p_tau(k,idx)) - floor(t(0) - p_tau(k,idx) - DBL_EPSILON);  // not separated
 
         // binary search for in which interval is t-p_tau(k,idx)
         const size_t low = meshlookup(mesh, t(1+k));
@@ -176,7 +174,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
         if (t(0) - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low + NINT;
         else kkS(k + 1, idx) = low;
 
-        kkI(k + 1, idx) = low + NINT * static_cast<size_t>(floor(t(0) - p_tau(k,idx))) + NMAT*NINT;
+        kkI(k + 1, idx) = low + NINT * static_cast<size_t>(floor(t(0) - p_tau(k,idx) - DBL_EPSILON)) + NMAT*NINT;
 
 //        std::cout << "low " << low << " t(0) " << t(0) << " p_tau(k,idx) " << p_tau(k,idx);
         const double hk = mesh(low + 1) - mesh(low);
@@ -193,7 +191,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
           tt(NTAU + 1 + k, l, idx) = out(l) / hk;
         }
         // creating interpolation at the representation points
-        tMSH(k) = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx));
+        tMSH(k) = mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - floor(mesh(i) + h0 * meshINT(j) - p_tau(k,idx) - DBL_EPSILON);
         const size_t lowMSH = meshlookup(mesh, tMSH(k));
         kkMSH(k, idx) = lowMSH;
         const double hkMSH = mesh(lowMSH + 1) - mesh(lowMSH);
@@ -370,7 +368,7 @@ void KNDdeBvpCollocation::interpolate(KNArray3D<double>& solData, const KNVector
       {
         solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
       }
-      solData(k, NTAU, idx) *= mass(k);
+//      solData(k, NTAU, idx) *= mass(k);
     }
     // x'(t-\tau_i)
     for (size_t p = 0; p < NTAU; p++)
@@ -436,8 +434,8 @@ void KNDdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArr
         solDataRe(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG))) * tt(0, l, idx);
         solDataIm(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG)) + 1) * tt(0, l, idx);
       }
-      solDataRe(k, NTAU, idx) *= mass(k);
-      solDataIm(k, NTAU, idx) *= mass(k);
+//      solDataRe(k, NTAU, idx) *= mass(k);
+//      solDataIm(k, NTAU, idx) *= mass(k);
     }
   }
 }
@@ -458,7 +456,7 @@ void KNDdeBvpCollocation::rightHandSide(KNVector& rhs, const KNVector& par, cons
   {
     for (size_t idx = 0; idx < NDEG*NINT; ++idx)
     {
-      rhs(NDIM + k + NDIM*idx) = par(0) * p_fx(k, idx) - solData(k, NTAU, idx);
+      rhs(NDIM + k + NDIM*idx) = par(0) * p_fx(k, idx) - mass(k)*solData(k, NTAU, idx);
     }
   }
 }

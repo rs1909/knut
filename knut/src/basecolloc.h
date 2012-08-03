@@ -112,6 +112,7 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
 
     // the equations
     KNSystem* sys;
+    KNArray1D<double>  mass;
 
     const size_t ndim;
     const size_t npar;

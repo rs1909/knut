@@ -937,6 +937,7 @@ void KNSystem::makeSymbolic(const std::string& vffile)
   vf.Knut_tau(ex_tau);
   vf.Knut_tau_p(ex_tau_p);
   vf.Knut_RHS(ex_rhs);
+  vf.Knut_mass(ex_mass);
   vf.Knut_RHS_p(ex_rhs_p);
   vf.Knut_RHS_x(ex_rhs_x);
   vf.Knut_RHS_xp(ex_rhs_xp);
@@ -1035,11 +1036,19 @@ void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, 
 
 void   KNSystem::mass(KNArray1D<double>& out)
 {
-  if (v_mass != 0)(*v_mass)(out);
+#ifdef GINAC_FOUND
+  if (useVectorField) sym_mass(out);
   else
   {
-    for(size_t i=0; i<out.size(); ++i) out(i) = 1.0;
+#endif
+    if (v_mass != 0)(*v_mass)(out);
+    else
+    {
+      for(size_t i=0; i<out.size(); ++i) out(i) = 1.0;
+    }
+#ifdef GINAC_FOUND
   }
+#endif
 }
 
 void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
@@ -1218,6 +1227,16 @@ void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time,
 #ifdef GINAC_FOUND
   VectorField::Knut_RHS_eval(ex_rhs, out_p, time, x, par, sel );
 #endif
+}
+
+void KNSystem::sym_mass(KNArray1D<double>& out) const
+{
+#ifdef GINAC_FOUND
+  for (size_t i = 0; i < ex_ndim; ++i)
+  {
+    out(i) = ex_mass[i];
+  }
+#endif                
 }
 
 void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,

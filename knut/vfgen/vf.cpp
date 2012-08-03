@@ -617,6 +617,20 @@ int VectorField::ProcessSymbols(void)
       rval = -1;
     }
   }
+  for (vector<StateVariable *>::iterator sv = StateVariables.begin(); sv != StateVariables.end(); ++sv)
+  {
+    try
+    {
+      ex mass((*sv)->Mass(), allsymbols);
+      varmass_list.append(mass);
+    }
+    catch (exception &p)
+    {
+      P_MESSAGE6("The mass constant \"", (*sv)->Mass(), "\" for the StateVariable ", (*sv)->Name(), " has an error: ", p.what());
+      rval = -1;
+    }
+  }
+
 
   // checking for delays with everything substituted in the vectorfields
   for (size_t i = 0; i < varvecfield_list.nops(); ++i)
@@ -628,7 +642,7 @@ int VectorField::ProcessSymbols(void)
   
   // alphabetically ordering the delays. 
   // It is not necessary for functionality, was used to debug a wierd problem
-  tup etup[Delays.size()];
+  tup *etup = new tup[Delays.size()];
   std::ostringstream os;
   for (size_t i = 0; i < Delays.size(); ++i)
   {
@@ -638,7 +652,9 @@ int VectorField::ProcessSymbols(void)
     etup[i].f = Delays[i];
   }
   std::sort(etup, etup + Delays.size(), comp);
-    
+  delete[] etup;
+  etup = 0;
+
   // Functions
   for (vector<Function *>::iterator f = Functions.begin(); f != Functions.end(); ++f)
   {

@@ -102,7 +102,7 @@ size_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool 
     }
     cur_off += cur_size;
   }
-  while (cur_off < size);
+  while (cur_off + sizeof(struct header) < size);
   if (test) P_MESSAGE5("Could not find '", name, "' in file '", fileName, "'.");
   return size;
 }

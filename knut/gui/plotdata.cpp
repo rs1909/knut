@@ -450,8 +450,8 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 //      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
       Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
       int bskip = 0, eskip = 0;
-      if (b == 1) bskip == 0; else bskip = 1;
-      if (b == stabidx.size()-1) eskip == 0; else eskip = 1;
+      if (b == 1) bskip = 0; else bskip = 1;
+      if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
       Graph.rbegin()->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
       Graph.rbegin()->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
       

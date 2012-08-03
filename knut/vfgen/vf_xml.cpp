@@ -529,6 +529,9 @@ int VectorField::ReadXML(const std::string& xmlfilename)
       {
         string mass(attr);
         sv->Mass(mass);
+      } else
+      {
+        sv->Mass("1.0");
       }
       attr = mxmlElementGetAttr(node, "Latex");
       if (attr != NULL)
