@@ -14,8 +14,8 @@
 
 \input{macros}
 
-\def\knut{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
-
+% \def\knut{{P\kern-.15emD\kern-.15emD\kern-.15emE\raisebox{.25ex}{-}C\kern-.1emO\kern-.1emN\kern-.05emT}}
+\def\knut{Knut}
 
 \newcommand{\iconAdd}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-add}}
 \newcommand{\iconEraser}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-eraser}}
@@ -33,6 +33,16 @@
 \newcommand{\iconRemove}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-action-remove}}
 \newcommand{\iconSvg}{\protect\includegraphics[height=0.8\baselineskip]{fig/cr32-svg-export}}
 
+\usepackage{tikz}
+\newcommand{\dittotikz}{%
+    \tikz{
+        \draw [line width=0.12ex] (-0.2ex,0) -- +(0,0.8ex)
+            (0.2ex,0) -- +(0,0.8ex);
+        \draw [line width=0.08ex] (-0.6ex,0.4ex) -- +(-1.5em,0)
+            (0.6ex,0.4ex) -- +(1.5em,0);
+    }%
+}
+
 \begin{document}
 \lstset{language=C++,tabsize=3,columns=flexible,breaklines=true,escapechar=\%}
 \makeatother
@@ -41,9 +51,9 @@
 \subtitle{A continuation and bifurcation software for delay-differential
 equations}
 \author{R\'obert Szalai}
-\newcommand{\knutver}{1.2.0}
+\newcommand{\knutver}{5}
 \version{\knutver}
-\date{14 March 2008}
+\date{6 August 2012}
 \maketitle
 
 \begin{center}
@@ -59,12 +69,13 @@ of Technology \\
     \hline 27 December 2005 & 0.9.21 (r83) & Budapest University of Technology and Economics \\
     \hline 16 March 2006 & 1.0.1 (r119) & Budapest University of Technology and Economics \\
     \hline 16 May 2006 & 1.0.2 (r139) & University of Bristol \\
-    \hline 19 June 2006 & 1.0.3 (r153) & University of Bristol \\
-    \hline 24 September 2006 & 1.1.0 (r245) & University of Bristol \\
-    \hline 10 October 2006 & 1.1.1 (r260) & University of Bristol \\
-    \hline 24 December 2006 & 1.1.2 (r315) & University of Bristol \\
-    \hline 4 August 2007 & 1.1.3 (r343) & University of Bristol \\
-    \hline 14 March 2008 & 1.2.0 (?) & University of Bristol \\
+    \hline 19 June 2006 & 1.0.3 (r153) & \dittotikz \\
+    \hline 24 September 2006 & 1.1.0 (r245) & \dittotikz \\
+    \hline 10 October 2006 & 1.1.1 (r260) & \dittotikz \\
+    \hline 24 December 2006 & 1.1.2 (r315) & \dittotikz \\
+    \hline 4 August 2007 & 1.1.3 (r343) & \dittotikz \\
+    \hline 14 March 2008 & 1.2.0 (?) & \dittotikz \\
+    \hline 13 March 2012 & 4 (?) & \dittotikz \\
     \hline
   \end{tabular}
 \end{center}
@@ -139,7 +150,7 @@ available as well.
 For building and configuring the software the CMake\footnote{\url{http://www.cmake.org}}
 utility is used. It is available for various operating systems. For compiling 
 the software the GNU GCC C++ compiler\footnote{\url{http://gcc.gnu.org}} starting with 
-version 3.3.6 is recommended.
+version 4.6.3 is recommended.
 
 The package uses the ATLAS\footnote{\url{http://math-atlas.sourceforge.net}}
 basic linear algebra software library for matrix-vector operations. This library can be
@@ -151,166 +162,132 @@ in the \filef{ATLAS/lib} subdirectory of the source tree, \filef{/usr/lib}, \fil
 and some additional directories in this order.
 
 The (optional) graphical user interface requires the Qt\footnote{\url{http://www.trolltech.com}} 
-toolkit (version 4.3). CMake looks for the \filef{qmake} utility to find the Qt
+toolkit (version 4.8). CMake looks for the \filef{qmake} utility to find the Qt
 installation, so make sure that \filef{qmake} is in your \filef{\$PATH}.
-
-On Unix and Linux systems the \filef{pcompile} script uses
-the \filef{sed} command, which is necessary to compile system definition files.
 
 \subsection{Linux and Unix}
 
 The software comes in a compressed source archive form
-\filef{KNUT-{\knutver}.tar.bz2}, so it has to be uncompressed first into a
+\filef{Knut-{\knutver}.tar.bz2}, so it has to be uncompressed first into a
 convenient directory using the following command:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\ttfamily,frame=single]
-$ bzip2 -d KNUT-%\knutver%.tar.bz2
-$ tar xvf KNUT-%\knutver%.tar
+$ bzip2 -d Knut-%\knutver%.tar.bz2
+$ tar xvf Knut-%\knutver%.tar
 \end{lstlisting} \end{quote} } \noindent
 The second step is to copy the compiled ATLAS library files (\filef{libatlas.a}
 and \filef{libcblas.a}) into the
-\filef{KNUT-\knutver/ATLAS/lib} subdirectory.
+\filef{Knut-\knutver/ATLAS/lib} subdirectory.
 
 Now the package is ready for the automatic configuration:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ cd KNUT-%\knutver%
+$ cd Knut-%\knutver%
 $ ./build-unix.sh
 \end{lstlisting} \end{quote} } \noindent
 This configures and builds software after which it installs into the
-\filef{KNUT/} folder in the user's home directory.
+\filef{knut/} folder in the user's home directory.
 In order to make the software work, the \filef{PATH} environment variable has
 to be set up. In the case of the \filef{bash} shell include the
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-export PATH=$PATH:$HOME/KNUT/bin
+export PATH=$PATH:$HOME/Knut/bin
 \end{lstlisting} \end{quote} } \noindent
 line into the \filef{.bash\_profile} configuration file in your \filef{HOME}
 directory. For the C shell (\filef{csh}) insert the following line
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-setenv PATH $PATH:$HOME/KNUT/bin
+setenv PATH $PATH:$HOME/Knut/bin
 \end{lstlisting} \end{quote} } \noindent
 into \filef{.cshrc}. To activate the changes log out and log in again.
 
 \subsection{Windows}
 
 The simplest way of installing the software is to run the
-\filef{KNUT-{\knutver}.exe}, which will extract the package into a
-preferred directory and set up a \filef{Start Menu} shortcut. In order to be
-able to compile system definition files a recent version of MinGW (at the time
-of writing 5.0.3) should be installed from \url{http://www.mingw.org/} first.
-The MinGW installer will ask you to select options. Tick the boxes of the C, C++
-compiler and the GNU make utility, the other components are not required.
+\filef{Knut-{\knutver}.exe}, which will extract the package into a
+preferred directory and set up a \filef{Start Menu} shortcut.
 
-Installing from source requires more effort. Four other pieces of software has
-to be downloaded and installed:
-\begin{itemize}
-\item[-] MinGW v.\ 5.1.3 or newer as described above,
-\item[-] CMake v.\ 2.4.6 or newer from \url{http://www.cmake.org},
-\item[-] Qt v.\ 4.3.0 or newer from
-\url{http://www.trolltech.com/developer/downloads/qt/windows} (optional, but strongly recommended),
-\item[-] and the ATLAS library.
-\end{itemize}
-Note that \filef{PATH} should be set up in order to be able to use MinGW, CMake and Qt. 
-To compile the software, first uncompress the \knut{} package file
-\filef{KNUT-{\knutver}.tar.bz2} into a convenient directory.
-Copy the (pre)compiled ATLAS library files (\filef{libatlas.a} and
-\filef{libcblas.a}) into the \filef{KNUT-{\knutver}/ATLAS/lib} subdirectory.
-Then start a command prompt (Start Menu $\rightarrow$ Run, type ``cmd'' into the
-box) and enter the directory \filef{KNUT-{\knutver}} where the package was
-extracted. If all the requirements are installed and the ATLAS files are in
-place, issue the
+Cross compilation is also possible on a Linux system using MinGW cross compiler toolchain. 
+The following command will create a package
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
- > build-windows
+build-win-cross.sh
 \end{lstlisting} \end{quote} } \noindent
-command, which will build and install the software into \filef{Program
-Files$\backslash$KNUT}. The program then can be started from the \filef{bin}
-subdirectory. Note that no \filef{Start Menu} entries, no shortcuts are made to
-the software, so these steps have to be performed manually if required. To
-uninstall, simply delete the \filef{KNUT} directory from \filef{Program Files}.
 
 \section{Command line inferface (CLI)}
 
-The software is controlled by the so-called \emph{constants file}. It is a text file
+The software is controlled by the so-called \emph{constants file}. It is an XML file
 that contains instructions about all the operations done by the software and
 also specifies the parameters of the numerical method.
 The name of a constants file can be given to the software using the \funp{-c} option.
-If a previous run is continued, an input file should be specified using the \funp{-i} option. 
-The output - as a default choice - is written into \filef{knut.mat} unless it is specified
-by the \funp{-o} option. The format of the input and output files will
-be described later in this manual. The software also generates an auxiliary file,
-which contains the parameter values and the solution norms along the computed
-solution branch.
-This file can be selected by the \funp{-b} option if this data is not intended
-to be written into the \filef{knut.br} file. The syntax of the command line
-arguments is illustrated as
+The syntax of the command line arguments is illustrated as
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ knut -c <constants-file> [ -i <input-file> [ -o <output-file> ] [-b <branch-file>]]
+$ knut -c <constants-file> 
 \end{lstlisting} \end{quote} } \noindent
 To display version information use the \funp{-v} command line switch.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
 $ knut -v
-This is KNUT version 1.2.0 (1a5157b8d1e7c53fdb39e0295295f2401daf1169, Wed Mar 12 13:20:30 2008 +0000)
+This is Knut version 4 (502, Fri Aug 3 14:33:57 2012 +0100, 19bc64e462a1e1793362eaf2c5d7f29c2d04dbd5)
 \end{lstlisting} \end{quote} } \noindent
 
 
 \subsection{The constants file}
 \label{constfile}
 
-As an example, we included the constants file of the Mackey-Galss equation:
+As an example, we included the constants file of a laser system:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so                SYSNAME
-0                           LABEL
-40 P2 0                     TYPE, P0, NPARX, PARX[NPARX]
-20 4 5 1 1                  NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4                   NINT1, NINT2, NDEG1, NDEG2
-120 3 -100 100              STEPS, IAD, P0MIN, P0MAX
--0.002 0.002 0.002 -0.002   DS, DSMIN, DSMAX, DSSTART
-1e-05 1e-05 1e-06           EPSC, EPSR, EPSK
-12 12 12                    NITC, NITR, NITK
+<?xml version="cfile 1.0" encoding="utf-8"?>
+<knut version="5"> <branch input="" output="out-start.mat"
+sysname="laser.vf" fromtype="NX" label="0" pointtype="USER" cp="eta"
+switch="NX" eqns="DDE_LC,PHASE_ROT" vars="DDE_LC,bb" nint="20" ndeg="5"
+nmul="20" stab="1" curvature="0.25" nint1="12" nint2="12" ndeg1="4"
+ndeg2="4" steps="15" iad="0" npr="10" cpmin="-100" cpmax="100"
+ds="-0.002" dsmin="0.0002" dsmax="0.002" dsstart="0.02" epsc="1e-05"
+epsr="1e-05" epsk="1e-06" nitc="22" nitr="12" nitk="22" nderi="8"
+symre="0,3" symim="1,4" />
+</knut>
 \end{lstlisting} \end{quote} } \noindent
-This file corresponds to continuation of equilibria. In the first separated column 
-of the file are the parameter values and the second column refers to their names. 
-When this file is read the program interprets only the first half of each line,
-that is, it moves to the next line after all the necessary parameters are read.
-Although the rest of the line is simply ignored, 
-it is useful to keep the mnemonics of the parameters there. The meaning of the
+This file corresponds to continuation of equilibria. The meaning of the
 parameters are as follows.
 \begin{description}
-\item[\funp{SYSNAME}] ~\\
-The name of the shared object file (\filef{sys-$<$problem$>$.so}),
-which contains the system definition. It is the compiled version of a C++
-code. The compilation can be performed using \filef{pcompile} or the \iconBuild{} button in the GUI. For details see section \ref{sysdef}.
+\item[\funp{input}] ~\\
+A MATLAB v4 \filef{.mat} file as input, produced in previous runs.
+\item[\funp{output}] ~\\
+A MATLAB v4 \filef{.mat} to be written as an output.
+\item[\funp{sysname}] ~\\
+The name of the the system definition file, which can be a C++ file (\filef{.cpp}), a shared object (\filef{.so}) or a vector field file (\filef{.vf}). The type of the file is automatically detectedm but it can also be specified by the \funp{type} attribute. The value of the type attibute can be \funp{type="so"} for shared object code, \funp{type="cpp"} for C++ definition, \funp{type="vf"} vector field file to be compiled to shared object or \funp{type="vf0"} if no compiler is available on the system. The recommended format is the vector field file.
 %
-\item[\funp{LABEL}] ~\\
-The solution label in the input file. The program continues this
-solution. If \funp{LABEL}=0 it uses the starting solution specified 
+\item[\funp{fromtype}] ~\\\
+The type of the solution to look for in the input file. 
+\funp{NX}: any solution; \funp{NS} Neimark-Sacker bifurcation point; \funp{PD} period doubling; \funp{EP} the last point of the input.
+%
+\item[\funp{label}] ~\\
+The \funp{label}th solution label in the input file, e.g., the 3rd Neimark-Sacker bifurcation. The program continues this
+solution. If \funp{label}=0 it uses the starting solution specified 
 in the system definition file.
 %
-\item[\funp{TYPE}] ~\\
+\item[\funp{pointtype}] ~\\
 Specifies the type of the solution to be continued. It can be one of the following numbers.
 The number surrounded by parantheses refers to how many additional free
 parameters are required.
 
 Algorithms for time-periodic (non-autonomous) systems:
 \begin{description}
-\item[\funp{40} -] Continuation of periodic solutions. (0)
+\item[\funp{DDE\_LC} -] Continuation of periodic solutions. (0)
 %
-\item[\funp{41} -] Continuation of fold bifurcations in two parameters (1). The
+\item[\funp{DDE\_LP} -] Continuation of fold bifurcations in two parameters (1). The
 input is a periodic solution at a fold bifurcation point. The software first
 generates a starting point, that is, it tries to converge to the fold point. After the fold point is found with a good accuracy (see
 \funp{EPSR}), the tangent of the fold curve is computed so that the continuation
 can start. All the bifurcations are started in this way.
 %
-\item[\funp{42} -] Continuation of period doubling bifurcations. (1)
+\item[\funp{DDE\_PD} -] Continuation of period doubling bifurcations. (1)
 %
-\item[\funp{43} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
+\item[\funp{DDE\_NS} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (1)
 %
-\item[\funp{44} -] The software switches to the other solution at a branching point and
+\item[\funp{DDE\_BP\_SW} -] The software switches to the other solution at a branching point and
 follows the new branch. Similar to \funp{TYPE=41}, first the software converges to
 the critical solution. Then it computes the critical eigenfunction
 $\varphi^{cr}$, which will become the tangent of the new branch, so that the
 continuation can start. (0)
 %
-\item[\funp{45} -] The software first switches to the period-two branch at a
+\item[\funp{DDE\_PD\_SW} -] The software first switches to the period-two branch at a
 period doubling bifurcation point
 (-1 multiplier) and then follows the new branch. The internal parameter \funp{I0} is multiplied by two. (0)
 \end{description}
@@ -320,27 +297,27 @@ condition and continue an additional free parameter (e.g., the period). When a
 fold bifurcation is continued a different test functional is used to account for
 the trivial +1 Floquet multiplier of a periodic orbit.
 \begin{description}
-\item[\funp{50} -] Continuation of periodic solutions in autonomous systems. The
-additional parameter is usually the period length \funp{P0}. (1)
+\item[\funp{DDE\_AUT} -] Continuation of periodic solutions in autonomous systems. The
+additional parameter is usually the period length \funp{T}. (1)
 %
-\item[\funp{51} -] Continuation of fold bifurcations in two parameters. (2)
+\item[\funp{DDE\_AUT\_LP} -] Continuation of fold bifurcations in two parameters. (2)
 %
-\item[\funp{52} -] Continuation of period doubling bifurcations. (2)
+\item[\funp{DDE\_AUT\_PD} -] Continuation of period doubling bifurcations. (2)
 %
-\item[\funp{53} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
+\item[\funp{DDE\_AUT\_NS} -] Continuation of Neimark-Sacker (secondary Hopf) bifurcations.
 (2)
 %
-\item[\funp{54} -] Switches to the other solution branch at a branching point and
+\item[\funp{DDE\_AUT\_BP\_SW} -] Switches to the other solution branch at a branching point and
 follows the periodic orbits. (1)
 %
-\item[\funp{55} -] The software first switches to the period-two branch at a
+\item[\funp{DDE\_AUT\_PD\_SW} -] The software first switches to the period-two branch at a
 period doubling bifurcation point
 (-1 multiplier) and then follows the arising orbits. (1)
 %
-\item[\funp{56} -] Switches to the periodic solution branch arising at a Hopf
+\item[\funp{DDE\_AUT\_HOPF\_SW} -] Switches to the periodic solution branch arising at a Hopf
 bifurcation point. The input is a constant solution, which represents a fixed
 point. The failure or success of the switch depends on the choice of the period
-length for the fixed point and the starting solution amplitude \funp{DSSTART}.
+length for the fixed point and the starting solution amplitude \funp{dsstart}.
 As a rule of thumb, the period of the constant solution should be chosen as
 small as possible to reliably detect the period of the arising periodic orbit.
 If chosen period is too large, the period on the new branch will not be reliably detected. 
@@ -354,215 +331,165 @@ feature and  it is tested for non-autonomous systems only. The output has a diff
 than specified in section \ref{matformat}, but it can be plotted using the matlab script 
 \filef{matlab/torplot.m}.
 \begin{description}
-\item[\funp{20} -] Continuation of tori in time-periodic systems. Start from a torus in the input file.
-\item[\funp{21} -] Start at a Neimark-Sacker bifurcation point.
+\item[\funp{DDE\_TORUS} -] Continuation of tori in time-periodic systems. Start from a torus in the input file.
+\item[\funp{DDE\_TORUS\_SW} -] Start at a Neimark-Sacker bifurcation point.
 %
-\item[\funp{30} -] Continuation of tori in autonomous systems. Start from a torus in the input file.
-\item[\funp{31} -] Start at a Neimark-Sacker bifurcation point.
+\item[\funp{DDE\_AUT\_TORUS} -] Continuation of tori in autonomous systems. Start from a torus in the input file.
+\item[\funp{DDE\_AUT\_TORUS\_SW} -] Start at a Neimark-Sacker bifurcation point.
 \end{description}
 If none of the above applies to a problem, it is possible to specify the set of
-equations and variables used in continuation, by setting the \funp{TYPE} to
-\funp{-1}. For details, see section \ref{extendedsys}.
+equations and variables used in continuation, by setting the \funp{pointtype} to
+\funp{USER}.
 %
-\item[\funp{CP}] ~\\
-It defines the main continuation parameter. The parameters always start with the
-letter `\funp{P}', if they are defined by the user or with `\funp{I}' if they are
-internal parameters, such as the argument of the characteristic multiplier or
-the rotation number of a quasiperiodic orbit.
-% (Recognition of internal parameters is not yet implemented, however the can be
-The internal parameters can also be specified using the \funp{P} prefix. If \funp{NPAR} is the number of
-ordinary parameters then an internal parameter is equivalent to P(\funp{NPAR} +internal parameter number)). 
-These  internal parameters are as follows.
+\item[\funp{cp}] ~\\
+It defines the main continuation parameter as it is named in the vector field file. Internal parameters can also be selected:
 \begin{description}
-\item[\funp{I0} -] represents the argument of the characteristic multiplier in the case of
+\item[\funp{PAR\_ANGLE} -] represents the argument of the characteristic multiplier in the case of
 Neimark-Sacker bifurcation continuation.
-\item[\funp{I1} -] It is initialized to 1.0 when \funp{LABEL}=0. It doubles with
+\item[\funp{PAR\_PERIOD} -] It is initialized to 1.0 when \funp{LABEL}=0. It doubles with
 every period doubling branch switch (\funp{TYPE=45,55}). Use this as \fun{par(sys_npar()+1)} in the
 system definition to rescale the delay or adjust the forcing if necessary. (See \filef{demo/tq} as an example.)
-\item[\funp{I2} -] contains the rotation number of a two-torus. Usually this is kept
+\item[\funp{PAR\_ROT\_NUM} -] contains the rotation number of a two-torus. Usually this is kept
 constant in order to avoid strong resonances.
 \end{description}
 %
-\item[\funp{NPARX}] ~\\
-Specifies the number of required additional parameters. This must coincide with
-the expected value (see \funp{TYPE}).
-%
-\item[\funp{PARX}] ~\\
-A sequence of numbers specifying the additional parameters. In
-the case of autonomous problems either \funp{CP} or this should include
-\funp{P0}, which refers to the period length.
-%
-\item[\funp{NINT}] ~\\
-Number of collocation intervals; heavily depends on the problem.
-%
-\item[\funp{NDEG}] ~\\
-Degree of polynomials used in collocation. Usually 4 or 5. 
-5 is recommended because superconvergence is lost for delay equations.
-%
-\item[\funp{NMUL}] ~\\
-The number of Floquet multipliers to be computed.
-%
-\item[\funp{STAB}] ~\\
-If zero, stability is not computed along the branch. In any case, \funp{NMUL}
-must have a reasonable value, because the eigenvalues are used when computing
-the argument of the critical multiplier when starting a Neimark-Sacker
-bifurcation continuation.
-%
-\item[\funp{NMAT}] ~\\
-This is the ratio of the maximum delay and the period length. More precisely, it
-is the smallest integer such that $\funp{NMAT} \ge \tau_{MAX}/T_{MIN}$.
-%
-\item[\funp{STEPS}] ~\\
-Maximum number of steps on the solution branch. The size of the output file is proportional to this number.
-%
-\item[\funp{IAD}] ~\\
-The software adapts the mesh after every \funp{IAD} continuation steps.
-If \funp{IAD}=0, no mesh adaptation will be performed. The recommended value is \funp{IAD}=3,
-although in some cases it might be necessary to turn off the mesh adaptation.
-Here, the same adaptation technique is used as in AUTO, hence, it is not optimal for delay equations. Nevertheless it is sufficiently good.
-%
-\item[\funp{CPMIN}, \funp{CPMAX}] ~\\
-These are the minimal and maximal values of the continuation parameter. The continuation stops if one them is reached.
-%
-\item[\funp{DS}] ~\\
-Starting value of the stepsize in the pseudo-arclength continuation.
-It should be reasonably small depending on the problem. \funp{DS} is adapted in
-every continuation step between its minimum and maximum value. If the Newton
-method exceeds \funp{NITC} iterations and \funp{DS} reached its minimum value,
-the continuation is stopped.
-%
-\item[\funp{DSMIN}, \funp{DSMAX}] ~\\
-The minimum and maximum values of \funp{DS}.
-%
-\item[\funp{DSSTART}] ~\\
-Specifies the $L^2$ distance of the first point on the new branch from the bifurcation 
-point at branch switching (\funp{TYPE=20,30,44,45,54,55,56}).
-%
-\item[\funp{EPSC}] ~\\
-Tolerance of convergence to a periodic solution during continuation. For
-periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of
-bifurcations it can be a bit larger about $10^{-4} - 10^{-5}$ to achieve
-reasonable stepsizes (\funp{DS}).
-%
-\item[\funp{EPSR}] ~\\
-Tolerance in the refinement of periodic solutions. (Solution refinement is used
-only before continuation starts.) It should be less than or equal to
-\funp{EPSC}. This constant is also used when finding bifurcation points.
-%
-\item[\funp{EPSK}] ~\\
-Tolerance when locating a singular vector of an operator. This is used when the initial tangent vector to a branch is sought,
-and when a tangent vector is refined after adapting the mesh. It is also used for setting up a test functional for bifurcation continuation.
-%
-\item[\funp{NITC}] ~\\
-Maximum number of Newton iteration steps within a continuation step.
-%
-\item[\funp{NITR}] ~\\
-Maximum number of Newton iteration steps, when converging to an initial
-solution.
-%
-\item[\funp{NITK}] ~\\
-Maximum number of iteration steps, when locating a singular vector of an operator. (See \funp{EPSK}.)
-%
+\item[\funp{switch}] ~\\
+Branch swithing to be performed for user defined equations.
+\begin{description}
+\item[\funp{NX} -] No switch.
+\item[\funp{BP} -] Switches to the other branch at a branching point. \funp{PAR\_PERIOD} is doubled.
+\item[\funp{PD} -] Switches to the period-two branch at a period doubling
+bifurcation.
+\item[\funp{HOPF} -] Switches to the periodic solution branch at a Hopf
+bifurcation.
+\item[\funp{TORUS} -] Switches to a quasi-periodic torus at a Neimark-Sacker
+bifurcation.
+\item[\funp{AUT\_BP} -] branch switch for autonomous systems;
+\item[\funp{AUT\_ROT\_BP} -] branch swithc for symmetric systems.
 \end{description}
-
-\subsubsection{User defined equations}
-\label{extendedsys}
-
-If the \funp{TYPE} constant equals \funp{-1}, the third line of the constants
-file is different. For example
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so						SYSNAME
-0										LABEL
--1 P2 0 2 E1 E24 2 S1 P0		TYPE, CP, SWITCH, NEQN, EQN[], NVAR, VAR[]
-...
-\end{lstlisting} \end{quote} } \noindent
-specifies two equations and two variables. The first equation and variable is
-always \funp{E1} and \funp{S1}, when a periodic orbit or a periodic solution
-bifurcation is continued. In the example, the second equation \funp{E24} is the
-phase condition of autonomous systems while the second variable is the period
-\funp{P0}. If bifurcations are continued the equations contain at least one of
-the test functionals. If more than one, but different test functionals are used,
-some codimension-two bifurcations can be continued. The other variables can be
-either parameters or one of the internal variables. When a quasi-periodic torus
-is computed there is no need to use this specification since the
-software is only capable of continuing tori of forced or autonomous systems.
-
-The meaning of the system definition line is described below.
-\begin{description}
-\item[\funp{CP}] ~\\
-	The continuation parameter, same as above.
 %
-\item[\funp{SWITCH}] ~\\
-	The software switches to another branch of solutions if it is non-zero.
+\item[\funp{parx}] ~\\
+A comma separated list of parameter names specifying additional continuation parameters. In
+the case of autonomous problems either \funp{cp} or this should include
+\funp{T}, which refers to the period length. Note that internal parameters can also be used.
+%
+\item[\funp{eqns}] ~\\
+For user defined systems, this contains the comma separated list of equations. Possible equations are:
 \begin{description}
-\item[\funp{0} -] No switch.
-\item[\funp{1} -] Switches to the other branch at a branching point. \funp{I1} is doubled.
-\item[\funp{2} -] Switches to the period-two branch at a period doubling
-bifurcation.
-\item[\funp{3} -] Switches to the periodic solution branch at a Hopf
-bifurcation.
-\item[\funp{4} -] Switches to a quasi-periodic torus at a Neimark-Sacker
-bifurcation.
-\end{description}
-\item[\funp{NEQN}] ~\\
-	Number of equations.
-\item[\funp{EQN}] ~\\
-	A sequence of numbers, specifying the equations.
-\begin{description}
-\item[\funp{E0} -] No equation is used.
-\item[\funp{E1} -] Periodic solution. This is always the first equation and can
+\item[\funp{NX} -] No equation is used.
+\item[\funp{DDE\_LC} -] Periodic solution. This is always the first equation and can
 only occur there.
-\item[\funp{E24} -] Phase condition for autonomous systems.
-\item[\funp{E25} -] Phase condition for systems with additional symmetry. (For
+\item[\funp{PHASE} -] Phase condition for autonomous systems.
+\item[\funp{PHASE\_ROT} -] Phase condition for systems with additional symmetry. (For
 details, see \cite{haegeman,roose-szalai}.)
-\item[\funp{E32} -] Quasiperiodic solution on a torus.
-\item[\funp{E40} -] The first phase condition for the torus. This is applied
+\item[\funp{DDE\_TORUS} -] Quasiperiodic solution on a torus.
+\item[\funp{TORUS\_PHS1} -] The first phase condition for the torus. This is applied
 only in the case of autonomous equations.
-\item[\funp{E41} -] The second phase condition for the torus. It is always
+\item[\funp{TORUS\_PHS2} -] The second phase condition for the torus. It is always
 necessary.
-\item[\funp{E64} -] Test functional for fold bifurcations in forced systems.
-\item[\funp{E65} -] Test functional for period doubling bifurcations.
-\item[\funp{E66} -] Test functional for fold bifurcations in autonomous systems.
-\item[\funp{E67} -] Test functional for fold bifurcations in autonomous systems
+\item[\funp{DDE\_TF\_LP} -] Test functional for fold bifurcations in forced systems.
+\item[\funp{DDE\_TF\_PD} -] Test functional for period doubling bifurcations.
+\item[\funp{DDE\_AUT\_TF\_LP} -] Test functional for fold bifurcations in autonomous systems.
+\item[\funp{DDE\_AUT\_ROT\_TF\_LP} -] Test functional for fold bifurcations in autonomous systems
 with symmetry. This is an experimental feature, probably will not work.
-\item[\funp{E68} -] Real part of the complex test functional for Neimark-Sacker
+\item[\funp{DDE\_TF\_NS\_RE} -] Real part of the complex test functional for Neimark-Sacker
 bifurcation.
-\item[\funp{E69} -] Imaginary part of the complex test functional for
+\item[\funp{DDE\_TF\_NS\_IM} -] Imaginary part of the complex test functional for
 Neimark-Sacker bifurcation. This imaginary part should directly follow the real
 part in the list of equation, otherwise the software will not start the
 continuation.
 \end{description}
-\item[\funp{NVAR}] ~\\
-	Number of free variables. This must equal to the number of equations and the
-first variable is always the periodic solution.
-\item[\funp{VAR}] ~\\
-	A sequence of numbers, specifying the free variables. A variable can be one
-of the three types. The starting letters are \funp{S}, \funp{P} or \funp{I},
-referring to a system variable, parameter or internal variable, respectively.
-(For the distinction between parameters and internal variables see the description of \funp{CP}.) The
-system variables are defined as follows.
+%
+\item[\funp{vars}] ~\\
+For user defined systems, this contains the comma separated list of variables. Possible variables are solution profiles, parameters and internal parameters. The code for solution profiles are. The internal parameters are detailed at the description of \funp{cp}.
 \begin{description}
-\item[\funp{S0} -] No variable is used.
-\item[\funp{S1} -] Periodic solution.
-\item[\funp{S32} -] Quasi-periodic solution.
+\item[\funp{NX} -] No variable is used.
+\item[\funp{DDE\_LC} -] Periodic solution.
+\item[\funp{DDE\_TORUS} -] Quasi-periodic solution.
 \end{description}
-In the case of an equation with additional symmetry, when \funp{E25} is
-specified, also the symmetric components of the solution has to be declared.
-The declaration is the last line of the constants file and contains which parts
-of the solution are complex. The first number is the number of complex
-solution components and the following numbers are the real and imaginary components in the solution
-vector. For example
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-...
-12 12 12            NITC, NITR, NITK
-2 0 1 3 4           NSYM, R0, I0, R1, I1
-\end{lstlisting} \end{quote} } \noindent
-specifies two symmetric components, where the first complex variable has its
-real and imaginary parts in the zeroth and first component of the solution
-vector.
-Similarly, the second rotational symmetric complex solution component has its
-real and imaginary part in the third and fourth component of the solution
-vector.
+%
+\item[\funp{nint}] ~\\
+Number of collocation intervals; heavily depends on the problem.
+%
+\item[\funp{ndeg}] ~\\
+Degree of polynomials used in collocation. Usually 4 or 5. 
+5 is recommended because superconvergence is lost for delay equations. Supported up to 25.
+%
+\item[\funp{nmul}] ~\\
+The number of Floquet multipliers to be computed.
+%
+\item[\funp{stab}] ~\\
+If zero, stability is not computed along the branch. In any case, \funp{nmul}
+must have a reasonable value, because the eigenvalues are used when computing
+the argument of the critical multiplier when starting a Neimark-Sacker
+bifurcation continuation.
+%
+\item[\funp{nmat}] ~\\
+This is the ratio of the maximum delay and the period length. More precisely, it
+is the smallest integer such that $\funp{NMAT} \ge \tau_{MAX}/T_{MIN}$.
+%
+\item[\funp{steps}] ~\\
+Maximum number of steps on the solution branch. The size of the output file is proportional to this number.
+%
+\item[\funp{iad}] ~\\
+The software adapts the mesh after every \funp{IAD} continuation steps.
+If \funp{iad}=0, no mesh adaptation will be performed. The recommended value is \funp{IAD}=3,
+although in some cases it might be necessary to turn off the mesh adaptation.
+Here, the same adaptation technique is used as in AUTO, hence, it is not optimal for delay equations. Nevertheless it is sufficiently good.
+%
+\item[\funp{npr}] ~\\
+Print only every \funp{npr}th line.
+%
+\item[\funp{cpmin}, \funp{cpmax}] ~\\
+These are the minimal and maximal values of the continuation parameter. The continuation stops if one them is reached.
+%
+\item[\funp{ds}] ~\\
+Starting value of the stepsize in the pseudo-arclength continuation.
+It should be reasonably small depending on the problem. \funp{ds} is adapted in
+every continuation step between its minimum and maximum value. If the Newton
+method exceeds \funp{nitc} iterations and \funp{ds} reached its minimum value,
+the continuation is stopped.
+%
+\item[\funp{dsmin}, \funp{dsmax}] ~\\
+The minimum and maximum values of \funp{ds}.
+%
+\item[\funp{dsstart}] ~\\
+Specifies the $L^2$ distance of the first point on the new branch from the bifurcation 
+point at branch switching (\funp{TYPE=20,30,44,45,54,55,56}).
+%
+\item[\funp{epsc}] ~\\
+Tolerance of convergence to a periodic solution during continuation. For
+periodic orbit continuation it is about $10^{-5} - 10^{-6}$, for continuation of
+bifurcations it can be a bit larger about $10^{-4} - 10^{-5}$ to achieve
+reasonable stepsizes (\funp{ds}).
+%
+\item[\funp{epsr}] ~\\
+Tolerance in the refinement of periodic solutions. (Solution refinement is used
+only before continuation starts.) It should be less than or equal to
+\funp{epsc}. This constant is also used when finding bifurcation points.
+%
+\item[\funp{epsk}] ~\\
+Tolerance when locating a singular vector of an operator. This is used when the initial tangent vector to a branch is sought,
+and when a tangent vector is refined after adapting the mesh. It is also used for setting up a test functional for bifurcation continuation.
+%
+\item[\funp{nitc}] ~\\
+Maximum number of Newton iteration steps within a continuation step.
+%
+\item[\funp{nitr}] ~\\
+Maximum number of Newton iteration steps, when converging to an initial
+solution.
+%
+\item[\funp{nitk}] ~\\
+Maximum number of iteration steps, when locating a singular vector of an operator. (See \funp{epsk}.)
+%
+\item[\funp{nderi}] ~\\
+The highest order of closed form derivatives to be used. If this number is low, finite difference derivatives will be used instead.
+%
+\item[\funp{symre}] ~\\
+In case of symmetric systems, the comma separated list of indices of the real parts of the symmetric part of the solution.
+%
+\item[\funp{symim}] ~\\
+In case of symmetric systems, the comma separated list of indices of the imaginary parts of the symmetric part of the solution.
 \end{description}
 
 \subsection{Input/output file format}
@@ -581,23 +508,23 @@ Matrix name & Rows & Columns & Content\\
 \funp{knut\_npoints} & 1 & 1 & \begin{minipage}[c]{0.4\linewidth} Number of points
 computed in the branch of solutions. \end{minipage}\\
 \hline
-\funp{knut\_par} & \funp{NPAR}+3 & \funp{STEPS} & Values of parameters. \\
+\funp{knut\_par} & \funp{npar}+3 & \funp{steps} & Values of parameters. \\
 \hline
-\funp{knut\_mul} & \funp{NMUL} & \funp{STEPS} & The Floquet multipliers. \\
+\funp{knut\_mul} & \funp{nmul} & \funp{steps} & The Floquet multipliers. \\
 \hline
 \funp{knut\_ntrivmul} & 1 & 1 & Number of trivial multipliers. \\
 \hline
-\funp{knut\_ndim} & 1 & \funp{STEPS} & \begin{minipage}[c]{0.4\linewidth}
-\funp{NDIM}: dimesion of the right-hand-side function $f$ \end{minipage}\\
+\funp{knut\_ndim} & 1 & \funp{steps} & \begin{minipage}[c]{0.4\linewidth}
+\funp{ndim}: dimesion of the right-hand-side function $f$ \end{minipage}\\
 \hline
-\funp{knut\_elem} & \funp{NDEG}+1 & \funp{STEPS} & Mesh points in a collocation
+\funp{knut\_elem} & \funp{ndeg}+1 & \funp{steps} & Mesh points in a collocation
 interval. \\
 \hline
-\funp{knut\_mesh} & \funp{NINT}+1 & \funp{STEPS} & Mesh points of the solution
+\funp{knut\_mesh} & \funp{nint}+1 & \funp{steps} & Mesh points of the solution
 profile. \\
 \hline
-\funp{knut\_prof} & \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) &
-\funp{STEPS} & The solution profile. \\
+\funp{knut\_prof} & \funp{ndim}$\times$(\funp{nint}$\times$\funp{ndeg}+1) &
+\funp{steps} & The solution profile. \\
 \hline
 \end{tabular}
 \caption{The contents of the {\sc{}mat} files.}
@@ -617,235 +544,21 @@ solution branch structure of DDE-BIFTOOL:
 \end{lstlisting} \end{quote} } \noindent
 To export results out of DDE-BIFTOOL and produce a \knut{} {\sc{}mat} file, issue the command
 { \small \begin{quote} \begin{lstlisting}[frame=single]
->> branch2pmat( 'output-file', psbr, NMUL );
+>> branch2pmat( 'output-file', psbr, nmul );
 \end{lstlisting} \end{quote} } \noindent
 where \funp{NMUL} is the same number as in the constants file where the exported data 
 will be used as a starting solution.
 
-% \subsection{Structure of the ASCII input/output file}
-% [Note: This section is no longer valid, because ASCII output files are not used anymore.]
-% 
-% The output file contains all the computed information of a periodic solution 
-% branch. Also, this file can be used to restart the continuation from a point 
-% on a branch. The above defined restart \funp{LABEL} refers 
-% to the number of a line in this file. The structure of a line is described 
-% in Table \ref{iostruct}.
-% \begin{table}
-% \begin{tabular}{|c|c|l|}
-% \hline
-% Starting & Length & Content\\
-% Column & & \\
-% \hline
-% 1             & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NPAR}, the
-% number of parameters plus the number of internal parameters, which is 3.
-% \end{minipage}\\
-% \hline
-% 2             & \funp{NPAR} & Values of parameters\\
-% \hline
-% \funp{NPAR}+2  & 1       & \funp{NMUL}: number of Floquet multipliers\\
-% \hline
-% \funp{NPAR}+3  & $2\times$\funp{NMUL} & \begin{minipage}[c]{0.5\linewidth} The
-% Floquet multipliers. ( Re($\lambda_1$), Im($\lambda_1$), ...,
-% Re($\lambda_{NMUL}$), Im($\lambda_{NMUL}$) ) \end{minipage} \\
-% \hline
-% \funp{NPAR}+$2\times$\funp{NMUL}+3
-%               & 1       & \begin{minipage}[c]{0.5\linewidth} \funp{NDIM}:
-% dimesion of the right-hand-side function $f$ \end{minipage}\\
-% \hline
-% \funp{NPAR}+$2\times$\funp{NMUL}+4 & 1       & \funp{NINT}: number of
-% collocation intervals\\
-% \hline
-% \funp{NPAR}+$2\times$\funp{NMUL}+5 & 1       & \funp{NDEG}: degree of
-% collocational polynomials\\
-% \hline
-% \funp{NPAR}+$2\times$\funp{NMUL}+6 & \funp{NINT}$\times$\funp{NDEG}+1 & Mesh of
-% the $[0,1]$ interval. \\
-% \hline
-% \begin{minipage}{0.2\linewidth} \begin{center}
-% \funp{NPAR}+$2\times$\funp{NMUL}+\\
-% \funp{NINT}$\times$\funp{NDEG}+7
-% \end{center} \end{minipage} & 
-% \funp{NDIM}$\times$(\funp{NINT}$\times$\funp{NDEG}+1) & 
-% \begin{minipage}[c]{0.5\linewidth} The solution profile, a sequence of
-% \funp{NDIM}-tuples \end{minipage} \\
-% \hline
-% \end{tabular}
-% \caption{The structure of a line in the ASCII input/output files.}
-% \label{iostruct}
-% \end{table}
-% 
-% It is possible to convert the solution profile from DDE-BIFTOOL to this format
-% and back. For this use the matlab scripts \filef{dde2knut.m} or
-% \filef{knut2dde.m} in the \filef{matlab} subdirectory in the following way.
-% Assume that there is branch of periodic solutions (\funp{psbr}). This branch can
-% be exported using the command
-% { \small \begin{quote} \begin{lstlisting}[frame=single]
-% >> dde2knut( 'output-file', psbr.point, NMUL );
-% \end{lstlisting} \end{quote} } \noindent
-% Here, \funp{NMUL} is the same number what is specified in the constants file
-% under the same name.
-% Similarly, the results can be converted back into DDE-BIFTOOL using the command
-% { \small \begin{quote} \begin{lstlisting}[frame=single]
-% >> psbr.point = knut2dde( 'output-file' );
-% \end{lstlisting} \end{quote} } \noindent
-
 \subsection{Defining an equation}
 
-The software uses custom C++ data types to represent matrices and vectors,
-which are called \fun{Matrix} and \fun{Vector}, respectively. For indexing
-these arrays, parentheses are used, that is, the first element of a
-\fun{Vector} \fun{v} is always \fun{v(0)}, the size of the \fun{Vector} is
-\fun{v.Size()} and its last
-element is \fun{v(v.Size()-1)}. A \fun{Matrix} is indexed similarly, e.g., in
-the case of \fun{Matrix m}, \fun{m(i,j)} means the \fun{(j-1)}th element in the
-\fun{(i-1)}th row of the matrix. The number of columns and rows of \fun{m} is returned by \fun{m.Col()} and \fun{m.Row()}, respectively.
-
-\subsubsection{System definition}\label{sysdef}
-
-The system definition file is a C++ source file, which is compiled by the user
-and then loaded by the main program \filef{knut} as a shared object. The
-compilation is done typically by issuing the command%
-\footnote{Note that \filef{pcompile} is not available on Microsoft Windows. Use the GUI instead.}
-{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-$ pcompile sys-<problem>.cpp
-\end{lstlisting} \end{quote} } \noindent
-that produces the file \filef{sys-$<$problem$>$.so}.
-The system definition should include the header file \filef{knutsys.h}
-(\fun{#include knutsys.h}), which defines the syntax of the functions. Also, all
-the functions must be declared as \fun{extern "C"}, to make their exported names
-independent of the C++ name mangling. The definition of a system of equations in
-\knut{} is similar to DDE-BIFTOOL \cite{DDEBIF}. The common input variables that
-are passed to the user defined functions are
-\begin{itemize}
-  \item[-] \fun{t} (\fun{double}) is the time instance within a period. It is
-  scaled into $[ 0, 1 ]$ by the period length $T$, i.e., \fun{t}$ = t/T$. In forced systems
-  it can be scaled by \funp{I1}\fun{=par(sys_npar()+1)} to account for period doubling.
-  \item[-] \fun{par} (\fun{Vector}) is a vector and contains the parameters of
-  the system. \fun{par(0)} is always the period ($T$) of the actual orbit,
-  while others can be chosen.
-  \item[-] \fun{xx} (\fun{Matrix}) contains the solution values at $t -
-  \tau_i$, that is, \fun{xx(j, i)}$= [ x ( t - \tau_i ) ]_{(j+1)}$, where
-$\tau_0$ is generally zero, hence, \fun{xx(j,0)}$=[x(t)]_{j+1}$.
-\end{itemize}
-The required functions are
-\begin{itemize}
-  \item[-] \fun{ int sys_ndim(); } \\ 
-  This function returns the dimension of the
-  system. e.g.: \fun{ int sys_ndim() \{ return 2; \} }
-  
-  \item[-] \fun{ int sys_npar(); } \\ 
-  This function returns the number of parameters. It
-  includes the period $T$, which is the 0th parameter.
-  
-  \item[-] \fun{ int sys_ntau(); } \\ 
-  This function returns the number of delays including the non-delayed term $x (
-t )$, too.
-  
-  \item[-] \fun{ int sys_nderi(); } \\ 
-  This function returns the order of supplied derivatives. In the case of $0$
-\fun{sys_deri(...)} can be empty, although should be defined. For $1$ only the
-first order derivatives with respect to the state variables and the parameters
-need to be supplied. If the returned value is $2$ all the required derivatives
-are supplied by the user. The internal computation technique of the derivatives
-is the same as in DDE-BIFTOOL, which is the finite difference method. The
-derivatives are computed recursively, so the second order derivatives are
-calculated using the first order derivatives.
-  
-  \item[-] \fun{ void sys_tau( Vector\& out, double t, const Vector\& par ); }
-\\
-  The output vector \fun{out} contains the vector of delays
-  including a zero for the non-delayed term. For example for $\dot{x} ( t ) =
-  f ( t, x ( t ), x ( t - T ) )$ \fun{out} is a vector with 2 elements:
-  \fun{out(0)}$=0.0$, \fun{out(1) = par(0)}.
-  
-  \item[-] \fun{void sys_dtau( Vector\& out, double t, const Vector\& par, int p
-);} \\
-  The output vector \fun{out} contains the derivatives of delays with respect to the parameter
-  \fun{p}. If \fun{p==0} in the above example, the result is
-  \fun{out(0)=0.0} and \fun{out(1)=1.0}.
-  
-  \item[-] \fun{void sys_rhs( Vector\& out, double t, const Matrix\& xx, const
-Vector\& par );} \\ 
-  The output vector \fun{out} is simply the right-hand side $f ( t, x ( t ), \ldots, x ( t - \tau_i ),
-\ldots )$ of the equation.
-  
-  \item[-] \fun{void sys_deri( Matrix\& out, double t, const Matrix\& xx, const
-Vector\& par, int nx, const int* vx, int np, const int* vp, const Matrix\& v );} \\
-  This function supplies the derivatives of $f$ with respect to variables and
-parameters. As mentioned before, this function can be empty or can supply some
-or all the necessary derivatives.
-  \fun{nx} is the order (0, 1 or 2) of derivatives with respect to $x( t
-- \tau_{\mathrm{vx[0]}} )$, and \fun{vx[nx]} specifies the delayed state(s) that is(are) used to differentiate $f$.
-If \fun{nx==1} the first order derivatives of $f$ has to be supplied 
-in the matrix \fun{out} with respect its \fun{vx[0]}th vector argument.
-If \fun{nx==2}, the second derivative is calculated with respect to $x(t -
-\tau_{\mathrm{vx[0]}} )$ and $x( t - \tau_{\mathrm{vx[1]}} )$ resulting in a 3
-index tensor, which is finally multiplied by the \fun{vx[0]} the column of
-\fun{v} to get a matrix, see table \ref{deritable}.
-  Derivatives with respect to parameters are requested if \fun{np==1}. If
-\fun{nx==0} the output is a vector, because it is the derivative of the
-right-hand side only with respect to the scalar \fun{par(vp[0])}. However, if
-\fun{nx==1} and \fun{np=1}, the first order derivative w.r.t. the state variables is differentiated further with respect to the \fun{par(vp[0])} resulting in a matrix.
-  \begin{table}
-  \begin{center}
-  \begin{tabular}{ c c c|c }
-  \fun{nx} & \fun{np} & \fun{v} & \fun{out} \\
-  \hline
-  1 & 0 & --- & $\ds \frac{\partial f}{\partial x(t-\tau_{\mathrm{vx[0]}})} =
-A_{\mathrm{vx[0]}} \in \mathbb{R}^{n \times n}$ \\
-  0 & 1 & --- & $\ds \frac{\partial f}{\partial \eta_{\mathrm{vp[0]}}} \in
-\mathbb{R}^{n \times 1}$\\
-  1 & 1 & --- & $\ds \frac{\partial^2 f}{\partial x(t-\tau_{\mathrm{vx[0]}})
-\partial \eta_{\mathrm{vp[0]}}} \in \mathbb{R}^{n \times 1}$ \\
-  2 & 0 & $\ds \in \mathbb{R}^{n \times \funp{NTAU}}$ & $\ds
-\frac{\partial}{\partial x(t-\tau_{\mathrm{vx[1]}})} \left( A_{\mathrm{vx[0]}}
-v(\,.,\mathrm{vx[0]}) \right) $
-  \end{tabular}
-  \end{center}
-  \caption{Possible outputs of \fun{void sys_deri(...)}. }\label{deritable}
-  \end{table}
-  
-  \item[-] \fun{void sys_stpar( Vector\& par );} \\
-  This function returns the parameter values at the starting point, which is a
-known periodic solution of the system.
-  
-  \item[-] \fun{void sys_stsol( Vector\& out, double t );} \\
-  This function returns the value of the known periodic solution at time
-\fun{t}.
-\end{itemize}
-
-\subsubsection{Vectorized system definition}\label{vecsysdef}
-
-In order to reduce the number of function calls to the system definition one can 
-use a vectorized version of \fun{sys_tau(...)}, \fun{sys_dtau(...)}, \fun{sys_rhs(...)} and \fun{sys_deri(...)}. These replacement functions are defined as
-\begin{itemize}
-  \item[-] \fun{void sys_p_tau( Array2D<double>\& out, Array1D<double>\& time, const Array1D<double>\& par );}
-  \item[-] \fun{void sys_p_dtau( Array2D<double>\& out, Array1D<double>\& time, const Array1D<double>\& par, int vp );}
-  \item[-] \fun{void sys_p_rhs( Array2D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par );}
-  \item[-] \fun{void sys_p_deri( Array3D<double>\& out, Array1D<double>\& time, const Array3D<double>\& xx, const Array1D<double>\& par, int nx, const int* vx, int np, const int* vp, const Array3D<double>\& vv );}
-\end{itemize}
-These functions are almost the same as the non-vectorized one, except that some arguments have one more dimension. This additional dimension corresponds to the variation along the solution profile. The body of each vectorized function looks like the following.
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
-{
-  for (int idx=0; idx < time.Size(); ++idx)
-  {
-    const double t = time(idx);
-    // Same as the body of the non-vectorized version
-    // with the following replacements
-    //     out(i)   by out(i,idx)
-    //     out(i,j) by out(i,j,idx)
-    //     xx(i,j)  by xx(i,j,idx)
-    //     vv(i,j)  by vv(i,j,idx)
-  }
-}
-\end{lstlisting} \end{quote} } \noindent
+Use vector field files as described at \url{http://www.warrenweckesser.net/vfgen/menu_fileformat.html}
 
 \subsection{Running the software}
 
 After invoking the software \filef{knut}, it either loads a solution profile
 from the input file (see Sect.\ \ref{constfile}) or uses the 
-\fun{sys_stpar} and \fun{sys_stsol} functions (see Sect.\ \ref{sysdef})
-depending on the value of \funp{LABEL} to obtain an approximate solution at a
+\fun{sys_stpar} and \fun{sys_stsol} functions 
+depending on the value of \funp{label} to obtain an approximate solution at a
 given value of parameters. There are three steps of initializations before the
 continuation starts:
 \begin{enumerate}
@@ -943,147 +656,19 @@ Hale and Sternberg {\cite{sternberg}} that chaos arises due to the transverse
 intersection of the two-dimensional unstable and infinite dimensional stable
 manifold of this periodic orbit.
 
-The system definition file can be found in the directory
-\filef{demo/glass/sys-glass.cpp}. The first few functions are trivial:
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
-#include "knutsys.h"
-#include <cmath>
-
-extern "C" {
-int sys_ndim(){ return 1; }
-int sys_npar(){ return 4; }
-int sys_ntau(){ return 2; }
-int sys_nderi(){ return 2; }
-} // extern "C"
-\end{lstlisting} \end{quote} } \noindent
-Here we have four parameters:
-\funp{P0}$\to T$, the period length;
-\funp{P1}$\to a$;
-\funp{P2}$\to b$; and
-\funp{P3}$\to \tau$, the delay.
-The total number of delays is two, because we have a non-delayed and a delayed
-term.
-The functions that define the delays are
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
-extern "C"
-void sys_tau( Vector& out, double t, const Vector& par ) 
-{
-	out(0) = 0.0;
-	out(1) = par(3);
-}
-
-extern "C"
-void sys_dtau( Vector& out, double t, const Vector& par, int p ) 
-{
-	switch( p )
-	{
-		case 0:
-			out(0) = 0.0; out(1) = 0.0; break;
-		case 1:
-			out(0) = 0.0; out(1) = 0.0; break;
-		case 2:
-			out(0) = 0.0; out(1) = 0.0; break;
-		case 3:
-			out(0) = 0.0; out(1) = 1.0; break;
-	}
-}
-\end{lstlisting} \end{quote} } \noindent
-The values of the delays are returned by \fun{sys_tau(...)} in the \fun{out}
-vector, while their derivatives with respect to the \fun{p}-th parameter are
-returned by \fun{sys_dtau(...)}.
-
-The right-hand side of the equation is defined as (see (\ref{ct:glass}))
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
-extern "C"
-void sys_rhs( Vector& out, double t, const Matrix& x, const Vector& par )
-{
-	out(0) = par(1)*x(0,0) + par(2)*x(0,1)/(1.0+pow(x(0,1), 10.0));
-}
-\end{lstlisting} \end{quote} } \noindent
-Here, the non-delayed term is \fun{x(0,0)} while the delayed term
-is \fun{x(0,1)}.
-
-The most difficult part of the definition is always the derivatives of the
-right-hand side. (Note that the construction of this function can be avoided by
-returning zero in \fun{ int sys_nderi(); }.)
-{ \small \begin{quote} \begin{lstlisting}[frame=single]
-extern "C"
-void sys_deri( Matrix &out, double t, const Matrix& x, const Vector& par, 
-					int nx, const int* vx, int np, const int* vp, const Matrix& vv )
-{
-	// derivatives w.r.t. the dependent variables: x(t), x(t-tau1), etc.
-	if( (nx == 1) && (np == 0) ) {
-		switch( vx[0] ) {
-			case 0:
-				out(0,0) = par(1); break;
-			case 1:
-				out(0,0) = par(2)*(1.0 - 9.0*pow(x(0,1), 10.0) )/
-					( (1+pow(x(0,1), 10.0))*(1+pow(x(0,1), 10.0)) ); break;
-		}
-	}
-	// derivatives w.r.t. the parameters, purely, so this results a vector
-	if( (nx == 0) && (np == 1) )
-	{
-		switch( vp[0] )
-		{
-			case 1:
-				out(0) = x(0,0); break;
-			case 2:
-				out(0) = x(0,1)/(1+pow(x(0,1), 10)); break;
-			case 3:
-				out(0) = 0.0; break;
-		}
-	}
-	// second derivatives w.r.t. x
-	if( (nx == 2) && (np == 0) ) {
-		switch( vx[0] ) {
-			case 0:
-				switch( vx[1] ) {
-					case 0:
-						out(0,0) = 0.0; break;
-					case 1:
-						out(0,0) = 0.0; break;
-				} break;
-			case 1:
-				switch( vx[1] ) {
-					case 0:
-						out(0,0) = 0.0; break;
-					case 1:
-						out(0,0) = 10.0*par(2)*pow(x(0,1), 9.0)*
-							(9.0*pow(x(0,1), 10.0) - 11.0)/
-							pow((1.0+pow(x(0,1), 10.0)), 3.0) * vv(0,1); break;
-				} break;
-		}
-	}
-	// mixed derivative w.r.t. x and the parameters
-	if( (nx == 1) && (np == 1) ) {
-		switch( vp[0] ) {
-			case 1:
-				switch( vx[0] ) {
-					case 0:
-						out(0,0) = 1.0; break;
-					case 1:
-						out(0,0) = 0.0; break;
-				} break;
-			case 2:
-				switch( vx[0] ) {
-					case 0:
-						out(0,0) = 0.0; break;
-					case 1:
-						out(0,0) = (1.0 - 9.0*pow(x(0,1), 10.0) )/
-							((1.0 + pow(x(0,1), 10.0))*(1.0+pow(x(0,1), 10.0)) );
-						break;
-				} break;
-			case 3:
-				switch( vx[0] ) {
-					case 0:
-						out(0,0) = 0.0; break;
-					case 1:
-						out(0,0) = 0.0; break;
-				} break;
-		}
-	}
-}
+The vector field file can be found in the directory \filef{demo/glass/mackey-glass.vf}. 
+{ \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
+<?xml version="1.0"?>
+<VectorField Name="mackey_glass">
+<Parameter  Name="T"   DefaultValue="2.0" Description="Period" />
+<Parameter  Name="a"   DefaultValue="-1.0" />
+<Parameter  Name="b"   DefaultValue="1.5" />
+<Parameter  Name="tau" DefaultValue="2.0" />
+<Expression Name="DX"  Formula="delay(X,tau)" />
+<StateVariable Name="X" 
+  Formula="a*X + b*DX/(1+DX^10)"
+  DefaultInitialCondition="((1.0-1.5)/(-1.0))^(1.0/10.0)" DefaultHistory="0.0" />
+</VectorField>
 \end{lstlisting} \end{quote} } \noindent
 
 The first thing in analyzing the problem is to find a periodic solution
@@ -1091,15 +676,15 @@ branch. To do that we look for a Hopf bifurcation point of the nonzero steady st
 $x_2$ of (\ref{ct:glass}). This steady state is considered as a constant periodic solution of
 fixed period, hence we use the following constants file to continue this equailibrium along $b$ (\funp{P2}).
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so                SYSNAME
-0                           LABEL
-40 P2 0                     TYPE, P0, NPARX, PARX[NPARX]
-20 4 5 1 1                  NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4                   NINT1, NINT2, NDEG1, NDEG2
-120 3 -100 100              STEPS, IAD, P0MIN, P0MAX
--0.002 0.002 0.002 -0.002   DS, DSMIN, DSMAX, DSSTART
-1e-05 1e-05 1e-06           EPSC, EPSR, EPSK
-12 12 12                    NITC, NITR, NITK
+<?xml version="cfile 1.0" encoding="utf-8"?>
+<knut version="5"> <branch input="" output="out-start.mat"
+sysname="mackey-glass.vf" fromtype="NX" label="0" pointtype="DDE_LC"
+cp="b" switch="NX" nint="20" ndeg="4" nmul="5" stab="1" curvature="0.25"
+nint1="12" nint2="12" ndeg1="4" ndeg2="4" steps="120" iad="3" npr="10"
+cpmin="-100" cpmax="100" ds="-0.002" dsmin="0.002" dsmax="0.002"
+dsstart="-0.002" epsc="1e-05" epsr="1e-05" epsk="1e-06" nitc="12"
+nitr="12" nitk="12" nderi="8" />
+</knut>
 \end{lstlisting} \end{quote} } \noindent
 By invoking the program
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -1137,15 +722,15 @@ The periodic solution loses stability at the period doubling bifurcation curve (
 \end{figure}
 
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so                 SYSNAME
-83                           LABEL
-56 P2 1 P0                   TYPE, P0, NPARX, PARX[NPARX]
-80 5 5 1 1                   NINT, NDEG, NMUL, STAB, NMAT
-12 12 4 4                    NINT1, NINT2, NDEG1, NDEG2
-120 3 -100 100               STEPS, IAD, P0MIN, P0MAX
-0.0001 0.0001 0.005 0.0001   DS, DSMIN, DSMAX, DSSTART
-1e-05 1e-05 1e-06            EPSC, EPSR, EPSK
-12 12 12                     NITC, NITR, NITK
+<?xml version="cfile 1.0" encoding="utf-8"?>
+<knut version="5"> <branch input="out-start.mat" output="out-nssw.mat"
+sysname="mackey-glass.vf" fromtype="NS" label="1"
+pointtype="DDE_AUT_HOPF_SW" cp="b" switch="NX" parx="T" nint="80"
+ndeg="5" nmul="5" stab="1" curvature="0.25" nint1="12" nint2="12"
+ndeg1="4" ndeg2="4" steps="120" iad="3" npr="10" cpmin="-100" cpmax="100"
+ds="0.0001" dsmin="0.0001" dsmax="0.005" dsstart="0.0001" epsc="1e-05"
+epsr="1e-05" epsk="1e-06" nitc="12" nitr="12" nitk="12" nderi="8" />
+</knut>
 \end{lstlisting} \end{quote} } \noindent
 
 Checking the the console output, we find that there is a change in
@@ -1184,10 +769,11 @@ This period doubling bifurcation can be continued in two parameters
 by changing the solution type to \funp{12} and including an additional
 parameter.
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so            SYSNAME
-68                      LABEL
-52 P2 2 P0 P1           TYPE, CP, NPARX, PARX ....
-...
+<?xml version="cfile 1.0" encoding="utf-8"?>
+<knut version="5"> <branch input="out-nssw.mat" output="out-pdsw.mat"
+sysname="mackey-glass.vf" fromtype="PD" label="1"
+pointtype="DDE_AUT_PD_SW" cp="b" switch="NX" parx="T"
+... />
 \end{lstlisting} \end{quote} } \noindent
 The continuation starts with the following command
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
@@ -1197,10 +783,11 @@ The period doubling curve can be seen in Fig.\ \ref{pdbif}.
 Also, the arising period-two orbits can be computed by switching to this new
 branch of solutions:
 { \small \begin{quote} \begin{lstlisting}[basicstyle=\tt,frame=single]
-sys-glass.so            SYSNAME
-68                      LABEL
-55 P2 1 P0              TYPE, CP, NPARX, PARX ....
-...
+<?xml version="cfile 1.0" encoding="utf-8"?>
+<knut version="5"> <branch input="out-nssw.mat" output="out-pd.mat"
+sysname="mackey-glass.vf" fromtype="PD" label="1" pointtype="DDE_AUT_PD"
+cp="b" switch="NX" parx="T,a"
+... />
 \end{lstlisting} \end{quote} } \noindent
 %
 \begin{figure}[t!]

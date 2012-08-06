@@ -198,9 +198,9 @@
 		\vskip .5em
 			\noindent \ignorespaces
 			\begin{minipage}{\linewidth} \sf
-			\Large Budapest University of Technology and Economics \\
-			\large Department of Applied Mechanics \\
-			\normalsize 5 M\H{u}egyetem rkp., H-1111, Hungary 
+			\Large University of Bristol \\
+			\large Department of Engineering Mathematics \\
+			\normalsize Queen's building, University Walk, Bristol, BS8 1TR, UK 
 			\end{minipage}
 		\@thanks
 	\end{minipage} }
