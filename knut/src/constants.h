@@ -207,10 +207,16 @@ class KNConstantsBase
                   KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
                   KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                   KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle);
-    void loadXmlFile(const std::string &fileName);
-    void loadXmlFileOld(const std::string &fileName);
-    void saveXmlFile(const std::string &fileName);
-    void printXmlFile(std::ostream& file);
+    void loadXmlFileV5(const std::string &fileName);
+    void printXmlFileV5(std::ostream& file);
+    void saveXmlFileV5(const std::string &fileName);
+
+    // historical    
+    void loadXmlFileV4(const std::string &fileName);
+    void saveXmlFileV4(const std::string &fileName);
+    void printXmlFileV4(std::ostream& file);
+    void loadXmlFileV2(const std::string &fileName);
+
     
     // converting equation numbers to what can be used in continuation
     Eqn eqnFromTypeNum(char type, size_t num) const

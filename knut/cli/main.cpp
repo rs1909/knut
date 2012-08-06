@@ -54,9 +54,9 @@ int main(int argc, const char** argv)
 //              std::cout << "Previous directory " << cwd.c_str() << "\n";
               P_ERROR_X1(err == 0, "Error changing directory.");
               if (constFile[0] != '/') constFile.insert(0, cwd);
-              params->loadXmlFile(constFile);
+              params->loadXmlFileV5(constFile);
             }
-            if (save) { params->printXmlFile(std::cout); exit(0); }
+            if (save) { params->printXmlFileV5(std::cout); exit(0); }
             break;
           case 'b':
             branchFile = argv[++acnt];

@@ -1014,7 +1014,7 @@ void MainWindow::loadFile(const QString &fileName)
   try
   {
     QDir::setCurrent(QFileInfo(fileName).absolutePath());
-    parameters.loadXmlFile(fileName.toStdString());
+    parameters.loadXmlFileV5(fileName.toStdString());
   }
   catch (KNException ex)
   {
@@ -1026,7 +1026,7 @@ void MainWindow::loadFile(const QString &fileName)
 
 bool MainWindow::saveFile(const QString &fileName)
 {
-  parameters.saveXmlFile(fileName.toStdString());
+  parameters.saveXmlFileV5(fileName.toStdString());
   setCurrentFile(fileName);
   statusBar()->showMessage(tr("File saved"), 2000);
 

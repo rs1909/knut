@@ -101,9 +101,9 @@ int main(int argc, char *argv[])
     QFileInfo cfInfo(constFile);
     QDir::setCurrent(cfInfo.absolutePath());
     
-    params.loadXmlFile(cfInfo.fileName().toStdString());
+    params.loadXmlFileV5(cfInfo.fileName().toStdString());
     KNCliContinuation comp(params);
-    params.printXmlFile(std::cout);
+    params.printXmlFileV5(std::cout);
     comp.run();
   } else
   {
