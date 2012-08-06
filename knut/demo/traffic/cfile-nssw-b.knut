@@ -1,41 +1,9 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut version="3">
- <input>out-start-b.mat</input>
- <output>out-nssw-b.mat</output>
- <sysname>traffic3cars.vf</sysname>
- <fromtype>NS</fromtype>
- <label>1</label>
- <pointtype>DDE_AUT_HOPF_SW</pointtype>
- <cp>LpN</cp>
- <switch>NX</switch>
- <nparx>1</nparx>
- <parx>
-  <par>T</par>
- </parx>
- <nint>40</nint>
- <ndeg>5</ndeg>
- <nmul>5</nmul>
- <stab>1</stab>
- <curvature>2.500000000000000E-01</curvature>
- <nint1>12</nint1>
- <nint2>12</nint2>
- <ndeg1>4</ndeg1>
- <ndeg2>4</ndeg2>
- <steps>80</steps>
- <iad>3</iad>
- <npr>10</npr>
- <cpmin>-1.000000000000000E+02</cpmin>
- <cpmax>1.000000000000000E+02</cpmax>
- <ds>2.000000000000000E-03</ds>
- <dsmin>1.000000000000000E-03</dsmin>
- <dsmax>8.000000000000000E-02</dsmax>
- <dsstart>5.000000000000000E-04</dsstart>
- <epsc>1.000000000000000E-04</epsc>
- <epsr>1.000000000000000E-05</epsr>
- <epsk>1.000000000000000E-06</epsk>
- <nitc>32</nitc>
- <nitr>32</nitr>
- <nitk>32</nitk>
- <nderi>8</nderi>
- <nsym>0</nsym>
+<knut version="5"> <branch input="out-start-b.mat"
+output="out-nssw-b.mat" sysname="traffic3cars.vf" fromtype="NS" label="1"
+pointtype="DDE_AUT_HOPF_SW" cp="LpN" switch="NX" parx="T" nint="40"
+ndeg="5" nmul="5" stab="1" curvature="0.25" nint1="12" nint2="12"
+ndeg1="4" ndeg2="4" steps="80" iad="3" npr="10" cpmin="-100" cpmax="100"
+ds="0.002" dsmin="0.001" dsmax="0.08" dsstart="0.0005" epsc="0.0001"
+epsr="1e-05" epsk="1e-06" nitc="32" nitr="32" nitk="32" nderi="8" />
 </knut>

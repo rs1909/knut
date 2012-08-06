@@ -1,42 +1,9 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut version="3">
- <input>out-nssw.mat</input>
- <output>out-pd.mat</output>
- <sysname>mackey-glass.vf</sysname>
- <fromtype>PD</fromtype>
- <label>1</label>
- <pointtype>DDE_AUT_PD</pointtype>
- <cp>b</cp>
- <switch>NX</switch>
- <nparx>2</nparx>
- <parx>
-  <par>T</par>
-  <par>a</par>
- </parx>
- <nint>200</nint>
- <ndeg>5</ndeg>
- <nmul>5</nmul>
- <stab>1</stab>
- <curvature>2.500000000000000E-01</curvature>
- <nint1>12</nint1>
- <nint2>12</nint2>
- <ndeg1>4</ndeg1>
- <ndeg2>4</ndeg2>
- <steps>200</steps>
- <iad>0</iad>
- <npr>10</npr>
- <cpmin>-1.000000000000000E+02</cpmin>
- <cpmax>1.000000000000000E+02</cpmax>
- <ds>-5.000000000000000E-03</ds>
- <dsmin>5.000000000000000E-03</dsmin>
- <dsmax>5.000000000000000E-03</dsmax>
- <dsstart>-5.000000000000000E-03</dsstart>
- <epsc>1.000000000000000E-05</epsc>
- <epsr>1.000000000000000E-05</epsr>
- <epsk>1.000000000000000E-06</epsk>
- <nitc>12</nitc>
- <nitr>12</nitr>
- <nitk>12</nitk>
- <nderi>8</nderi>
- <nsym>0</nsym>
+<knut version="5"> <branch input="out-nssw.mat" output="out-pd.mat"
+sysname="mackey-glass.vf" fromtype="PD" label="1" pointtype="DDE_AUT_PD"
+cp="b" switch="NX" parx="T,a" nint="200" ndeg="5" nmul="5" stab="1"
+curvature="0.25" nint1="12" nint2="12" ndeg1="4" ndeg2="4" steps="200"
+iad="0" npr="10" cpmin="-100" cpmax="100" ds="-0.005" dsmin="0.005"
+dsmax="0.005" dsstart="-0.005" epsc="1e-05" epsr="1e-05" epsk="1e-06"
+nitc="12" nitr="12" nitk="12" nderi="8" />
 </knut>

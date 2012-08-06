@@ -1,60 +1,10 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut version="3">
- <input>out-psol.mat</input>
- <output>out-lp.mat</output>
- <sysname>laser.vf</sysname>
- <fromtype>NX</fromtype>
- <label>138</label>
- <pointtype>USER</pointtype>
- <cp>T</cp>
- <switch>NX</switch>
- <neqns>4</neqns>
- <eqns>
-  <eqn>DDE_LC</eqn>
-  <eqn>PHASE</eqn>
-  <eqn>PHASE_ROT</eqn>
-  <eqn>DDE_AUT_ROT_TF_LP</eqn>
- </eqns>
- <vars>
-  <var>DDE_LC</var>
-  <var>sigma</var>
-  <var>bb</var>
-  <var>eta</var>
- </vars>
- <nint>20</nint>
- <ndeg>5</ndeg>
- <nmul>20</nmul>
- <stab>0</stab>
- <curvature>2.500000000000000E-01</curvature>
- <nint1>12</nint1>
- <nint2>12</nint2>
- <ndeg1>4</ndeg1>
- <ndeg2>4</ndeg2>
- <steps>500</steps>
- <iad>3</iad>
- <npr>10</npr>
- <cpmin>-1.000000000000000E+02</cpmin>
- <cpmax>1.000000000000000E+02</cpmax>
- <ds>1.000000000000000E-04</ds>
- <dsmin>1.000000000000000E-06</dsmin>
- <dsmax>1.000000000000000E-02</dsmax>
- <dsstart>1.000000000000000E-04</dsstart>
- <epsc>1.000000000000000E-05</epsc>
- <epsr>1.000000000000000E-05</epsr>
- <epsk>1.000000000000000E-07</epsk>
- <nitc>24</nitc>
- <nitr>24</nitr>
- <nitk>24</nitk>
- <nderi>8</nderi>
- <nsym>2</nsym>
- <sym>
-  <dim>
-   <real>0</real>
-   <imag>1</imag>
-  </dim>
-  <dim>
-   <real>3</real>
-   <imag>4</imag>
-  </dim>
- </sym>
+<knut version="5"> <branch input="out-psol.mat" output="out-lp.mat"
+sysname="laser.vf" fromtype="NX" label="138" pointtype="USER" cp="T"
+switch="NX" eqns="DDE_LC,PHASE,PHASE_ROT,DDE_AUT_ROT_TF_LP"
+vars="DDE_LC,sigma,bb,eta" nint="20" ndeg="5" nmul="20" stab="0"
+curvature="0.25" nint1="12" nint2="12" ndeg1="4" ndeg2="4" steps="500"
+iad="3" npr="10" cpmin="-100" cpmax="100" ds="0.0001" dsmin="1e-06"
+dsmax="0.01" dsstart="0.0001" epsc="1e-05" epsr="1e-05" epsk="1e-07"
+nitc="24" nitr="24" nitk="24" nderi="8" symre="0,3" symim="1,4" />
 </knut>

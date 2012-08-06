@@ -1,56 +1,11 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
-<knut version="3">
- <input>out-start.mat</input>
- <output>out-hbct.mat</output>
- <sysname>simple_laser.vf</sysname>
- <fromtype>NS</fromtype>
- <label>1</label>
- <pointtype>USER</pointtype>
- <cp>PAR_ANGLE</cp>
- <switch>NX</switch>
- <neqns>4</neqns>
- <eqns>
-  <eqn>DDE_LC</eqn>
-  <eqn>PHASE_ROT</eqn>
-  <eqn>DDE_TF_NS_RE</eqn>
-  <eqn>DDE_TF_NS_IM</eqn>
- </eqns>
- <vars>
-  <var>DDE_LC</var>
-  <var>alpha</var>
-  <var>kappa</var>
-  <var>bb</var>
- </vars>
- <nint>20</nint>
- <ndeg>5</ndeg>
- <nmul>20</nmul>
- <stab>0</stab>
- <curvature>2.500000000000000E-01</curvature>
- <nint1>12</nint1>
- <nint2>12</nint2>
- <ndeg1>4</ndeg1>
- <ndeg2>4</ndeg2>
- <steps>1500</steps>
- <iad>0</iad>
- <npr>10</npr>
- <cpmin>-1.000000000000000E+02</cpmin>
- <cpmax>1.000000000000000E+02</cpmax>
- <ds>-2.000000000000000E-03</ds>
- <dsmin>2.000000000000000E-03</dsmin>
- <dsmax>1.000000000000000E-02</dsmax>
- <dsstart>3.000000000000000E-03</dsstart>
- <epsc>1.000000000000000E-05</epsc>
- <epsr>1.000000000000000E-05</epsr>
- <epsk>1.000000000000000E-06</epsk>
- <nitc>22</nitc>
- <nitr>22</nitr>
- <nitk>22</nitk>
- <nderi>8</nderi>
- <nsym>1</nsym>
- <sym>
-  <dim>
-   <real>0</real>
-   <imag>1</imag>
-  </dim>
- </sym>
+<knut version="5"> <branch input="out-start.mat" output="out-hbct.mat"
+sysname="simple_laser.vf" fromtype="NS" label="1" pointtype="USER"
+cp="PAR_ANGLE" switch="NX"
+eqns="DDE_LC,PHASE_ROT,DDE_TF_NS_RE,DDE_TF_NS_IM"
+vars="DDE_LC,alpha,kappa,bb" nint="20" ndeg="5" nmul="20" stab="0"
+curvature="0.25" nint1="12" nint2="12" ndeg1="4" ndeg2="4" steps="1500"
+iad="0" npr="10" cpmin="-100" cpmax="100" ds="-0.002" dsmin="0.002"
+dsmax="0.01" dsstart="0.003" epsc="1e-05" epsr="1e-05" epsk="1e-06"
+nitc="22" nitr="22" nitk="22" nderi="8" symre="0" symim="1" />
 </knut>
