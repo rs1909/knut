@@ -1224,25 +1224,20 @@ void KNSystem::sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, 
 
 void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
 {
-#ifdef GINAC_FOUND
   VectorField::Knut_RHS_eval(ex_rhs, out_p, time, x, par, sel );
-#endif
 }
 
 void KNSystem::sym_mass(KNArray1D<double>& out) const
 {
-#ifdef GINAC_FOUND
   for (size_t i = 0; i < ex_ndim; ++i)
   {
     out(i) = ex_mass[i];
   }
-#endif                
 }
 
 void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
                 size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
-#ifdef GINAC_FOUND
   if ((np == 1)&&(nx == 0))
   {
     VectorField::Knut_RHS_p_eval( ex_rhs_p, out_p, time, x, par, sel, vp[0], ex_ndim, ex_npar, ex_ntau );
@@ -1259,7 +1254,6 @@ void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time
   {
     VectorField::Knut_RHS_xx_eval( ex_rhs_xx, out_p, time, x, vv, par, sel, vx[0], vx[1], ex_ndim, ex_npar, ex_ntau );
   }
-#endif                
 }
 
 void KNSystem::sym_stpar(KNVector& par) const
@@ -1282,4 +1276,4 @@ void KNSystem::sym_parnames(const char *names[]) const
     names[i] = ex_parnames[i].c_str();
   }
 }
-#endif
+#endif /*GINAC_FOUND*/

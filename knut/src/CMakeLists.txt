@@ -2,8 +2,8 @@ ADD_LIBRARY( knutlib
 	basecolloc.h basecolloc.cpp
 	basepoint.h basepoint.cpp
 	basecomp.h basecomp.cpp
-	constants.cpp constants.h cspblas.c cspblas.h hypermatrix.h
-	mat4data.cpp mat4data.h matrix.cpp matrix.h
+	constants.cpp constants_compat.cpp constants.h cspblas.c cspblas.h 
+	hypermatrix.h mat4data.cpp mat4data.h matrix.cpp matrix.h
 	ncolloc.cpp ncolloc.h knutsys.h knerror.h knerror.cpp
 	plot.cpp plot.h point.cpp point.h pointtype.h pointtype.cpp
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h

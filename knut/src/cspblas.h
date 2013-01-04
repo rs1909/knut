@@ -11,23 +11,24 @@
 #define CSPBLAS_H
 
 #include <stdlib.h>
+#include <stddef.h>
 
 enum cspblas_Trans{ NoTrans = 0, Trans = 1 };
 
 /* SPARSE MATRIX ROUTINES*/
 
-void cspblas_mmx(char format, enum cspblas_Trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+void cspblas_mmx(char format, enum cspblas_Trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                  double* out, const double* in, double alpha);
 
-void cspblas_mmxpy(char format, enum cspblas_Trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+void cspblas_mmxpy(char format, enum cspblas_Trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                    double* out, const double* in, double alpha, const double* C, double beta);
 
-void cspblas_mmxm(char format, enum cspblas_Trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                  double* out, size_t ldout, const double* in, size_t ldin, double alpha, size_t nrhs);
+void cspblas_mmxm(char format, enum cspblas_Trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                  double* out, ptrdiff_t ldout, const double* in, ptrdiff_t ldin, double alpha, ptrdiff_t nrhs);
 
-void cspblas_mmxmpym(char format, enum cspblas_Trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                     double* out, size_t ldout,
-                     const double* in, size_t ldin, double alpha,
-                     const double* Y, size_t ldY, double beta, size_t nrhs);
+void cspblas_mmxmpym(char format, enum cspblas_Trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                     double* out, ptrdiff_t ldout,
+                     const double* in, ptrdiff_t ldin, double alpha,
+                     const double* Y, ptrdiff_t ldY, double beta, ptrdiff_t nrhs);
 
 #endif

@@ -31,7 +31,12 @@ void KNAbstractContinuation::run(const char* branchFile)
   }
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
+  run(sys, branchFile);
+}
 
+void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
+{
+  setStopFlag(false);
   KNVector par(VarToIndex(VarEnd,sys->npar()));
   std::ofstream ff;
   if (branchFile)

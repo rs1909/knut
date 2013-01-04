@@ -221,8 +221,8 @@ class VectorField : public Symbol
     std::vector<std::vector<double> > mass_matrix;
 
     // Everything is public, for now.
-//  public:
-	// These are added by the ReadXML
+  protected:
+    // These are added by the ReadXML
     std::string IndependentVariable;             // X
     std::vector<Constant *>      Constants;      // X
     std::vector<Parameter *>     Parameters;     // X
@@ -246,7 +246,7 @@ class VectorField : public Symbol
     // Destructor
     ~VectorField();
 
-    void PrintXML(const std::string& cmdstr);
+    void PrintXML(std::ostream& outstr, const std::string& cmdstr);
     int  ReadXML(const std::string& xmlfilename);
     int  ProcessSymbols(void);
     void PrintKnut(std::ostream& sys_out, std::map<std::string, std::string> options);

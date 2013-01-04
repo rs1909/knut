@@ -324,7 +324,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
 {
   P_ERROR_X1((wr.size() == wi.size()) && (wr.size() > 1), "Real and imaginary vectors are not of the same size.");
 
-  int     IDO      = 0;
+  blasint IDO      = 0;
   char    BMAT     = 'I';
   size_t  N        = AI.size() * A0.col();
   char    WHICH[]  = {'L', 'M'};
@@ -334,7 +334,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   size_t  NCV      = 2 * NEV + 1;
   double* V        = new double[(N+1)*(NCV+1)];
   size_t  LDV      = N;
-  int IPARAM[] = {1,     // ISHIFT
+  blasint IPARAM[] = {1,     // ISHIFT
                   0,     // n.a.ff
                   300,   // MXITER
                   1,     // NB
@@ -346,11 +346,11 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
                   0,     // NUMOPB
                   0,     // NUMREO
                   0 };   // padding
-  int IPNTR[14];
+  blasint IPNTR[14];
   double* WORKD     = new double[4*N+1]; //3*N
   size_t  LWORKL    = 3 * NCV * NCV + 6 * NCV;
   double* WORKL     = new double[LWORKL+1];
-  int INFO;
+  blasint INFO;
   // whether we need to create a new RESID or we can use it from a previous run
   if (isINIT) INFO = 1;
   else INFO = 0;
@@ -397,7 +397,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   delete[] tvec;
 
   const size_t NCONV = NEV; // IPARAM[4];
-  int      RVEC     = 0;
+  blasint  RVEC     = 0;
   char     HOWMNY   = 'A';
   bool*    SELECT   = new bool[NCV+1];
   double*  DR       = new double[NCONV+2];

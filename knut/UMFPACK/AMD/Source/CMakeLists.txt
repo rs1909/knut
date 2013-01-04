@@ -5,7 +5,8 @@ SET( ALL_SOURCES amd_aat.c amd_1.c amd_2.c amd_dump.c
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
                      ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Source 
-                     ${KNUT_SOURCE_DIR}/UMFPACK/UFconfig )
+                     ${KNUT_SOURCE_DIR}/UMFPACK/UFconfig
+                     ${KNUT_BINARY_DIR}/src/ )
 
 SET( FLT DINT ) # from DINT DLONG
 

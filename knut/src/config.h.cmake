@@ -24,3 +24,6 @@
 /* whether build the GUI */
 #cmakedefine KNUT_GUI
 #cmakedefine GINAC_FOUND
+
+/* whether 64bit BLAS installed */
+#cmakedefine LONGBLAS

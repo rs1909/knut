@@ -42,6 +42,26 @@ static inline int toInt(size_t x)
   else { P_MESSAGE1("Out of range."); return 0; }
 }
 
+class KNAbstractConstantsReader
+{
+  public:
+    virtual bool getTextField(const char* field, std::string& strout) = 0;
+    virtual bool getIndexField(const char* field, size_t& out) = 0;
+    virtual bool getDoubleField(const char* field, double& out) = 0;
+    virtual bool getStringListField(const char* field, std::vector<std::string>& out) = 0;
+    virtual bool getIndexListField(const char* field, std::vector<size_t>& out) = 0;
+};
+
+class KNAbstractConstantsWriter
+{
+  public:
+    virtual void setTextField(const char* fieldname, const std::string& str) = 0;
+    virtual void setDoubleField(const char* fieldname, double val) = 0;
+    virtual void setIndexField(const char* fieldname, size_t val) = 0;
+    virtual void setStringListField(const char* field, const std::vector<std::string>& vec) = 0;
+    virtual void setIndexListField(const char* field, const std::vector<size_t>& vec) = 0;
+};
+
 #define KN_CONSTANT(type, name, capsName, defaultValue) private: \
     class var_##name { public: type value; KNConstantsBase* base; \
       var_##name (); \
@@ -72,6 +92,7 @@ static inline int toInt(size_t x)
     } name; \
   public: \
     const std::vector<type> & get##capsName##Vector() const { return name.value; } \
+    void set##capsName##Vector(const std::vector<type> &v) { name.value = v; } \
     type get##capsName(size_t i) const \
       { if (i<get##capsName##Size()) return name.value[i]; else return zero; } \
     void set##capsName(size_t i, type d) { name.value[i] = d; constantChanged(#name); } \
@@ -121,11 +142,13 @@ template<typename TP> class TypeTupleTab  : public TypeTupleTabBase<TP>
     void         update(const KNConstantsBase *p) { parent = p; update(); }
     TP           CIndexToType(size_t idx) const;
     TP           NameToType(const char * name) const;
-    TP           CodeToType(const char * name) const;
+    TP           CodeToType(const char * code) const;
+    void         CodeToTypeVector (std::vector<TP>& tp, const std::vector<std::string>& code);
     size_t       TypeToCIndex(TP tp) const;
     std::string  CIndexToTypeName(size_t idx) const;
     std::string  TypeToName(TP tp) const;
     std::string  TypeToCode(TP tp) const;
+    void         TypeToCodeVector (std::vector<std::string>& code, const std::vector<TP>& tp);
     size_t       size() const;
 };  
 
@@ -210,6 +233,8 @@ class KNConstantsBase
     void loadXmlFileV5(const std::string &fileName);
     void printXmlFileV5(std::ostream& file);
     void saveXmlFileV5(const std::string &fileName);
+    void read(KNAbstractConstantsReader& reader);
+    void write(KNAbstractConstantsWriter& writer);
 
     // historical    
     void loadXmlFileV4(const std::string &fileName);
@@ -333,6 +358,12 @@ template<typename TP> std::string TypeTupleTab<TP>::TypeToCode(TP tp) const
   return tab[0].code;
 }
 
+template<typename TP> void TypeTupleTab<TP>::TypeToCodeVector (std::vector<std::string>& code, const std::vector<TP>& tp)
+{
+  code.resize(tp.size());
+  for (size_t k=0; k < tp.size(); ++k) code[k] = TypeToCode(tp[k]);
+}
+
 template<typename TP> std::string TypeTupleTab<TP>::TypeToName(TP tp) const
 {
   for (size_t k=0; k<tab.size(); ++k)
@@ -347,14 +378,20 @@ template<typename TP> std::string TypeTupleTab<TP>::CIndexToTypeName(size_t idx)
   return tab[0].name;
 }
 
-template<typename TP> TP TypeTupleTab<TP>::CodeToType(const char * name) const
+template<typename TP> TP TypeTupleTab<TP>::CodeToType(const char * code) const
 {
-  if (name)
+  if (code)
   {
     for (size_t k=0; k<tab.size(); ++k)
-      if (!tab[k].code.compare(name)) return tab[k].type;
+      if (!tab[k].code.compare(code)) return tab[k].type;
   }
   return tab[0].type;
+}
+
+template<typename TP> void TypeTupleTab<TP>::CodeToTypeVector (std::vector<TP>& tp, const std::vector<std::string>& code)
+{
+  tp.resize(code.size());
+  for (size_t k=0; k < code.size(); ++k) tp[k] = CodeToType(code[k].c_str());
 }
 
 template<typename TP> TP TypeTupleTab<TP>::NameToType(const char * name) const

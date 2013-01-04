@@ -631,12 +631,12 @@ class KNVector : public KNArray1D<double>
 
     inline void random()
     {
-      static int idist = 2;
-      static int iseed[4] =
+      static blasint idist = 2;
+      static blasint iseed[4] =
         {
           1, 3, 5, 7
         };
-      int N = static_cast<int>(n);
+      blasint N = static_cast<blasint>(n);
       knut_dlarnv(&idist, iseed, &N, v);
     }
 
@@ -807,10 +807,10 @@ class KNLuMatrix : public KNMatrix
     bool     fact; // == true if factorized
     // for factorizig
     double*  mf;
-    int* ipiv;      // --
+    blasint* ipiv;      // --
     double*  work;
-    int* iwork;     // --
-    int  info;      // --
+    blasint* iwork;     // --
+    blasint  info;      // --
     // for solving
     double rcond;
     double ferr;  // in case of KNVector these are just double
@@ -822,18 +822,18 @@ class KNLuMatrix : public KNMatrix
     {
       fact = false;
       mf = new double[r*c+1];
-      ipiv = new int[this->r+1];
+      ipiv = new blasint[this->r+1];
       work = new double[4*(this->r)];
-      iwork = new int[this->r];
+      iwork = new blasint[this->r];
     }
 
     inline KNLuMatrix(const KNMatrix& M) : KNMatrix(M)
     {
       fact = false;
       mf = new double[r*c+1];
-      ipiv = new int[this->r+1];
+      ipiv = new blasint[this->r+1];
       work = new double[4*(this->r)];
-      iwork = new int[this->r];
+      iwork = new blasint[this->r];
     }
 
     inline virtual ~KNLuMatrix()

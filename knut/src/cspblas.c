@@ -10,10 +10,10 @@
 #include "cspblas.h"
 
 static
-inline void SpMulR(const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                   double* out, const double* in, const double alpha, const size_t incIN)
+inline void SpMulR(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                   double* out, const double* in, const double alpha, const ptrdiff_t incIN)
 {
-  register size_t j;
+  register ptrdiff_t j;
   register int k;
   register double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
 
@@ -43,11 +43,11 @@ inline void SpMulR(const size_t n, const size_t m, const int* Ap, const int* Ai,
 }
 
 static
-inline void SpMulRpY(const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+inline void SpMulRpY(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                      double* out, const double* in, const double alpha,
-                     const double* Y, double beta, const size_t incIN, const size_t incY)
+                     const double* Y, double beta, const ptrdiff_t incIN, const ptrdiff_t incY)
 {
-  register size_t j;
+  register ptrdiff_t j;
   register int k;
   register double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
 
@@ -77,10 +77,10 @@ inline void SpMulRpY(const size_t n, const size_t m, const int* Ap, const int* A
 }
 
 static
-inline void SpMulC(const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                   double* out, const double* in, const double alpha, const size_t incIN)
+inline void SpMulC(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                   double* out, const double* in, const double alpha, const ptrdiff_t incIN)
 {
-  register size_t i, j;
+  register ptrdiff_t i, j;
   register int k;
   register double t0;
 
@@ -121,11 +121,11 @@ inline void SpMulC(const size_t n, const size_t m, const int* Ap, const int* Ai,
 }
 
 static
-inline void SpMulCpY(const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+inline void SpMulCpY(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                      double* out, const double* in, const double alpha,
-                     const double* Y, const double beta, const size_t incIN, const size_t incY)
+                     const double* Y, const double beta, const ptrdiff_t incIN, const ptrdiff_t incY)
 {
-  register size_t i, j;
+  register ptrdiff_t i, j;
   register int k;
   register double t0;
 
@@ -165,7 +165,7 @@ inline void SpMulCpY(const size_t n, const size_t m, const int* Ap, const int* A
   }
 }
 
-void cspblas_mmx(char format, enum cspblas_Trans trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+void cspblas_mmx(char format, enum cspblas_Trans trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                  double* out, const double* in, double alpha)
 {
   if (alpha == 1.0)
@@ -204,7 +204,7 @@ void cspblas_mmx(char format, enum cspblas_Trans trans, const size_t n, const si
     }
 }
 
-void cspblas_mmxpy(char format, enum cspblas_Trans trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
+void cspblas_mmxpy(char format, enum cspblas_Trans trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                    double* out, const double* in, double alpha, const double* C, double beta)
 {
   if (alpha == 1.0)
@@ -243,10 +243,10 @@ void cspblas_mmxpy(char format, enum cspblas_Trans trans, const size_t n, const 
     }
 }
 
-void cspblas_mmxm(char format, enum cspblas_Trans trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                  double* out, size_t ldout, const double* in, size_t ldin, double alpha, size_t nrhs)
+void cspblas_mmxm(char format, enum cspblas_Trans trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                  double* out, ptrdiff_t ldout, const double* in, ptrdiff_t ldin, double alpha, ptrdiff_t nrhs)
 {
-  size_t c;
+  ptrdiff_t c;
   if (alpha == 1.0)
   {
     if (((format == 'C') && (trans == NoTrans)) || ((format == 'R') && (trans == Trans)))
@@ -283,12 +283,12 @@ void cspblas_mmxm(char format, enum cspblas_Trans trans, const size_t n, const s
   }
 }
 
-void cspblas_mmxmpym(char format, enum cspblas_Trans trans, const size_t n, const size_t m, const int* Ap, const int* Ai, const double* Ax,
-                     double* out, size_t ldout,
-                     const double* in, size_t ldin, double alpha,
-                     const double* Y, size_t ldY, double beta, size_t nrhs)
+void cspblas_mmxmpym(char format, enum cspblas_Trans trans, const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
+                     double* out, ptrdiff_t ldout,
+                     const double* in, ptrdiff_t ldin, double alpha,
+                     const double* Y, ptrdiff_t ldY, double beta, ptrdiff_t nrhs)
 {
-  size_t c;
+  ptrdiff_t c;
   if (alpha == 1.0)
   {
     if (((format == 'C') && (trans == NoTrans)) || ((format == 'R') && (trans == Trans)))

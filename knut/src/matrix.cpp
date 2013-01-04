@@ -79,11 +79,11 @@ void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi)
 
   char    jobvl = 'N', jobvr = 'N';
   KNMatrix  vl(this->r, 1), vr(this->r, 1);
-  size_t n = this->r, lda = this->r;
-  size_t ldvl = 1, ldvr = 1;
+  ptrdiff_t n = this->r, lda = this->r;
+  ptrdiff_t ldvl = 1, ldvr = 1;
   KNMatrix  work(this->r, 4);
-  size_t lwork = 4 * (this->r);
-  int info;
+  ptrdiff_t lwork = 4 * (this->r);
+  blasint info;
 
   knut_dgeev(jobvl, jobvr, n, this->m, lda,
              wr.pointer(), wi.pointer(), vl.m, ldvl, vr.m, ldvr,
@@ -109,11 +109,11 @@ void KNMatrix::eigenvalues(KNVector& wr, KNVector& wi, KNMatrix& vl, KNMatrix& v
   }
 
   char jobvl = 'V', jobvr = 'V';
-  size_t  n = this->r, lda = this->r;
-  size_t  ldvl = vl.row(), ldvr = vr.row();
+  ptrdiff_t  n = this->r, lda = this->r;
+  ptrdiff_t  ldvl = vl.row(), ldvr = vr.row();
   KNMatrix work(this->r, 10);
-  size_t  lwork = 10 * (this->r);
-  int  info;
+  ptrdiff_t  lwork = 10 * (this->r);
+  blasint  info;
 
   knut_dgeev(jobvl, jobvr, n, this->m, lda,
              wr.pointer(), wi.pointer(), vl.m, ldvl, vr.m, ldvr,
@@ -128,8 +128,8 @@ void KNLuMatrix::luFactorize()
   P_ASSERT_X(this->r == this->c, "KNLuMatrix::Fact wrong dimensions");
 
   char FACT = 'N', trans = 'N', equed = 'N';
-  size_t n = this->r;
-  size_t nrhs = 0;
+  ptrdiff_t n = this->r;
+  ptrdiff_t nrhs = 0;
 
   knut_dgesvx(FACT, trans, n, nrhs, this->m, n, this->mf, n,
               ipiv, equed, NULL, NULL, NULL, n, NULL, n,

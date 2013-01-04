@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     
     params.loadXmlFileV5(cfInfo.fileName().toStdString());
     KNCliContinuation comp(params);
-    params.printXmlFileV5(std::cout);
+//    params.printXmlFileV5(std::cout);
     comp.run();
   } else
   {

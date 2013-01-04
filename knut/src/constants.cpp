@@ -16,6 +16,77 @@
 // For loading XML constant files
 #include "mxml.h"
 
+class KNXmlConstantsReader : public KNAbstractConstantsReader
+{
+  public:
+    KNXmlConstantsReader();
+    KNXmlConstantsReader(mxml_node_t * tree);
+    ~KNXmlConstantsReader();
+    virtual bool getTextField(const char* field, std::string& strout);
+    virtual bool getIndexField(const char* field, size_t& out);
+    virtual bool getDoubleField(const char* field, double& out);
+    virtual bool getStringListField(const char* field, std::vector<std::string>& out);
+    virtual bool getIndexListField(const char* field, std::vector<size_t>& out);
+  private:
+    const std::string filename;
+    mxml_node_t* tree;
+    mxml_node_t* node;
+};
+
+static int getXmlTree(const std::string& filename, mxml_node_t ** ptree)
+{
+  FILE *fp;
+  mxml_node_t *tree;
+
+  fp = fopen(filename.c_str(), "r");
+  if (fp == 0) return -1;
+  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
+  fclose(fp);
+
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  if (!root_nd)
+  {
+    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+  }
+  int ver = -1;
+  const char *attr = mxmlElementGetAttr(root_nd, "version");
+  if (attr) ver = strtol(attr, 0, 10);
+  *ptree = tree;
+  return ver;  
+}
+
+KNXmlConstantsReader::KNXmlConstantsReader(mxml_node_t * xtree) : tree(xtree)
+{
+  mxml_node_t* root_nd = mxmlFindElement(xtree, xtree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  if (!root_nd)
+  {
+    root_nd = mxmlFindElement(xtree, xtree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+  }
+  node = mxmlFindElement(root_nd, root_nd, "branch", 0, 0, MXML_DESCEND_FIRST);
+}
+
+KNXmlConstantsReader::~KNXmlConstantsReader()
+{
+  mxmlDelete(tree);
+}
+
+class KNXmlConstantsWriter : public KNAbstractConstantsWriter
+{
+  public:
+    KNXmlConstantsWriter();
+    KNXmlConstantsWriter(const std::string& filename);
+    ~KNXmlConstantsWriter();
+    virtual void setTextField(const char* fieldname, const std::string& str);
+    virtual void setDoubleField(const char* fieldname, double val);
+    virtual void setIndexField(const char* fieldname, size_t val);
+    virtual void setStringListField(const char* field, const std::vector<std::string>& vec);
+    virtual void setIndexListField(const char* field, const std::vector<size_t>& vec);
+  private:
+    const std::string filename;
+    mxml_node_t *xml;
+    mxml_node_t *node;
+};
+
 void KNConstantNames::addConstantName(const char * type, const char * name, void * var, void(*nsetFun)())
 { 
   if (nlist.find (name) == nlist.end())
@@ -44,7 +115,7 @@ KNConstantNames::FPTR KNConstantNames::findFun(const char * name)
   } else return 0;
 }
 
-static const char *knut_whitespace_cb(mxml_node_t *node, int where)	
+const char *knut_whitespace_cb(mxml_node_t *node, int where)
 {
   const unsigned int max_levels = 12;
   const unsigned int tab = 1;
@@ -107,113 +178,6 @@ static inline bool inputAssert(std::istream& is)
   return false;
 }
 
-static inline mxml_node_t *setNodeIndex(mxml_node_t *parent, size_t idx)
-{
-  std::ostringstream strstr;
-  strstr << idx;
-  return mxmlNewOpaque (parent, strstr.str().c_str());
-}
-
-static inline const char *getNodeText(mxml_node_t* nd)
-{
-  if (nd != 0)
-  {
-    if (nd->child != 0)
-    {
-      if (nd->child == nd->last_child)
-      {
-        if (nd->child->type == MXML_OPAQUE)
-        {
-          return nd->child->value.opaque; //text.string;
-        } else P_MESSAGE1("MXML: wrong element type.");
-      } else P_MESSAGE1("MXML: node has too many children.");
-    } else return 0;
-  } else return 0;
-}
-
-static inline const char *getNodeText(mxml_node_t* nd, const char* def_value)
-{
-  const char* str = getNodeText(nd);
-//#ifdef DEBUG
-//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
-//#endif
-  if (str) return str;
-  else return def_value;
-}
-
-static inline char getNodeChar(mxml_node_t* nd, const char *line = "")
-{
-  const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  return str[0];
-}
-
-static inline int getNodeInteger(mxml_node_t* nd, const char *line = "")
-{
-  const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  return toInt(strtol(str, 0, 10));
-}
-
-static inline int getNodeInteger(mxml_node_t* nd, int def_value)
-{
-  const char* str = getNodeText(nd);
-//#ifdef DEBUG
-//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
-//#endif
-  if (str != 0) return toInt(strtol(str, 0, 10));
-  else return def_value;
-}
-
-static inline size_t getNodeIndex(mxml_node_t* nd, const char *line = "")
-{
-  const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  return toSizeT(strtol(str, 0, 10));
-}
-
-static inline size_t getNodeIndex(mxml_node_t* nd, size_t def_value)
-{
-  const char* str = getNodeText(nd);
-//#ifdef DEBUG
-//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
-//#endif
-  if (str != 0) return toSizeT(strtol(str, 0, 10));
-  else return def_value;
-}
-
-static inline double getNodeReal(mxml_node_t* nd, const char *line = "")
-{
-  const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  std::istringstream strstr(str);
-  double val;
-  strstr >> val;
-  return val;
-}
-
-static inline double getNodeReal(mxml_node_t* nd, double def_value)
-{
-  const char* str = getNodeText(nd);
-//#ifdef DEBUG
-//  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
-//#endif
-  if (str != 0)
-  {
-    std::istringstream strstr(str);
-    double val;
-    strstr >> val;
-    return val;
-  } else return def_value;
-}
-
-#define STRX(x) #x
-#define STR(x) STRX(x)
-#define getNodeCharM(nd) getNodeChar(nd,STR(__LINE__))
-#define getNodeIntegerM(nd) getNodeInteger(nd,STR(__LINE__))
-#define getNodeIndexM(nd) getNodeIndex(nd,STR(__LINE__))
-#define getNodeRealM(nd) getNodeReal(nd,STR(__LINE__))
-
 static inline const char* c2s(char *buf, char c)
 {
   buf[0] = c;
@@ -221,70 +185,9 @@ static inline const char* c2s(char *buf, char c)
   return buf;
 }
 
-// these are for the attribute based constants
-static inline void mxmlElementSetAttrIndex(mxml_node_t *node, const char* attr, size_t idx)
-{
-  std::ostringstream strstr;
-  strstr << idx;
-  mxmlElementSetAttr (node, attr, strstr.str().c_str());
-}
-
-static inline void mxmlElementSetAttrDouble(mxml_node_t *node, const char* attr, double d)
-{
-  std::ostringstream strstr;
-  strstr.precision(15);
-  strstr << d;
-  mxmlElementSetAttr (node, attr, strstr.str().c_str());
-}
-
-static const char* mxmlElementGetAttrText(mxml_node_t* nd, const char* attr, const char* def = 0)
-{
-  const char* str = mxmlElementGetAttr(nd, attr);
-  P_ERROR_X3((str != 0)||(def != 0), "MXML: attribute \"", attr, "\" could not be found.");
-  if (str != 0) return str;
-  else return def;
-}
-
-static size_t mxmlElementGetAttrIndex(mxml_node_t* nd, const char* attr)
-{
-  const char* str = mxmlElementGetAttrText(nd, attr);
-  return toSizeT(strtol(str, 0, 10));
-}
-
-static double mxmlElementGetAttrDouble(mxml_node_t* nd, const char* attr)
-{
-  const char* str = mxmlElementGetAttrText(nd, attr);
-  std::istringstream strstr(str);
-  double val;
-  strstr >> val;
-  return val;
-}
-
-static size_t mxmlElementGetAttrIndex(mxml_node_t* nd, const char* attr, size_t def_value)
-{
-  const char* def = "";
-  const char* str = mxmlElementGetAttrText(nd, attr, def);
-  if (str != def) return toSizeT(strtol(str, 0, 10));
-  else return def_value;
-}
-
-static double mxmlElementGetAttrDouble(mxml_node_t* nd, const char* attr, double def_value)
-{
-  const char* def = "";
-  const char* str = mxmlElementGetAttrText(nd, attr, def);
-  if (str != def)
-  {
-    std::istringstream strstr(str);
-    double val;
-    strstr >> val;
-    return val;
-  } else return def_value;
-}
-
-static void commaToVector(const char *str_, std::vector<std::string>& list)
+static void commaToVector(const std::string& str, std::vector<std::string>& list)
 {
   list.clear();
-  std::string str(str_);
   size_t pos = 0, npos;
   do {
     npos = str.find(',', pos);
@@ -298,10 +201,9 @@ static void commaToVector(const char *str_, std::vector<std::string>& list)
   } while (npos != str.size());
 }
 
-static void commaToVector(const char *str_, std::vector<size_t>& list)
+static void commaToVector(const std::string& str, std::vector<size_t>& list)
 {
   list.clear();
-  std::string str(str_);
   size_t pos = 0, npos;
   do {
     npos = str.find(',', pos);
@@ -317,23 +219,10 @@ static void commaToVector(const char *str_, std::vector<size_t>& list)
 
 void KNConstantsBase::loadXmlFileV5(const std::string &fileName)
 {
-  FILE *fp;
   mxml_node_t *tree;
+  int ver = getXmlTree(fileName, &tree);
 
-  fp = fopen(fileName.c_str(), "r");
-  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
-  fclose(fp);
-
-  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
-  if (!root_nd)
-  {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
-  }
-  size_t ver = -1;
-  const char *attr = mxmlElementGetAttr(root_nd, "version");
-  if (attr) ver = toSizeT(strtol(attr, 0, 10));
+  // compatibility options
   if ((ver < 5) && (ver > 2))
   {
     loadXmlFileV4(fileName);
@@ -343,742 +232,264 @@ void KNConstantsBase::loadXmlFileV5(const std::string &fileName)
     loadXmlFileV2(fileName);
     return;
   }
-  
-  nd = mxmlFindElement(root_nd, root_nd, "branch", 0, 0, MXML_DESCEND_FIRST);
-
-  setInputFile(mxmlElementGetAttrText(nd, "input", ""));
-  setOutputFile(mxmlElementGetAttrText(nd, "output"));
-  setSysNameText(mxmlElementGetAttrText(nd, "sysname", ""));
-  setSysType(mxmlElementGetAttrText(nd, "systype", ""));
-  setFromType(BifTypeTable.CodeToType(mxmlElementGetAttrText(nd, "fromtype", "NX")));
-  setLabel(mxmlElementGetAttrIndex(nd, "label", 0));
-  setPointType(PtTypeTable.CodeToType(mxmlElementGetAttrText(nd, "pointtype")));
-  setCp(VarTable.CodeToType(mxmlElementGetAttrText(nd, "cp")));
-  setBranchSW(BranchSWTable.CodeToType(mxmlElementGetAttrText(nd, "switch", "NX")));
-  
-  std::vector<std::string> parx_list;
-  commaToVector(mxmlElementGetAttrText(nd, "parx", ""), parx_list);
-  setParxSize(parx_list.size());
-  for (size_t i=0; i < parx_list.size(); i++) setParx(i, VarTable.CodeToType(parx_list[i].c_str()));
-
-  std::vector<std::string> eqns_list;
-  commaToVector(mxmlElementGetAttrText(nd, "eqns", ""), eqns_list);
-  setEqnsSize(eqns_list.size());
-  for (size_t i=0; i < eqns_list.size(); i++) setEqns(i, EqnTable.CodeToType(eqns_list[i].c_str()));
-
-  std::vector<std::string> vars_list;
-  commaToVector(mxmlElementGetAttrText(nd, "vars", ""), vars_list);
-  setVarsSize(vars_list.size());
-  for (size_t i=0; i < vars_list.size(); i++) setVars(i, VarTable.CodeToType(vars_list[i].c_str()));
-    
-  setNInt(mxmlElementGetAttrIndex(nd, "nint"));
-  setNDeg(mxmlElementGetAttrIndex(nd, "ndeg"));
-  setNMul(mxmlElementGetAttrIndex(nd, "nmul"));
-  setStab(mxmlElementGetAttrIndex(nd, "stab"));
-  setCAngle(mxmlElementGetAttrDouble(nd, "curvature"));
-  setNInt1(mxmlElementGetAttrIndex(nd, "nint1"));
-  setNInt2(mxmlElementGetAttrIndex(nd, "nint2"));
-  setNDeg1(mxmlElementGetAttrIndex(nd, "ndeg1"));
-  setNDeg2(mxmlElementGetAttrIndex(nd, "ndeg2"));
-  setSteps(mxmlElementGetAttrIndex(nd, "steps"));
-  setIad(mxmlElementGetAttrIndex(nd, "iad"));
-  setNPr(mxmlElementGetAttrIndex(nd, "npr"));
-  setCpMin(mxmlElementGetAttrDouble(nd, "cpmin"));
-  setCpMax(mxmlElementGetAttrDouble(nd, "cpmax"));
-  setDs(mxmlElementGetAttrDouble(nd, "ds"));
-  setDsMin(mxmlElementGetAttrDouble(nd, "dsmin"));
-  setDsMax(mxmlElementGetAttrDouble(nd, "dsmax"));
-  setDsStart(mxmlElementGetAttrDouble(nd, "dsstart"));
-  setEpsC(mxmlElementGetAttrDouble(nd, "epsc"));
-  setEpsR(mxmlElementGetAttrDouble(nd, "epsr"));
-  setEpsK(mxmlElementGetAttrDouble(nd, "epsk"));
-  setNItC(mxmlElementGetAttrIndex(nd, "nitc"));
-//  std::cout << "nitc=" << mxmlElementGetAttrIndex(nd, "nitc") << "," << getNItC() << "\n";
-  setNItR(mxmlElementGetAttrIndex(nd, "nitr"));
-  setNItK(mxmlElementGetAttrIndex(nd, "nitk"));
-  setNDeri(mxmlElementGetAttrIndex(nd, "nderi"));
-
-  std::vector<size_t> symre_list, symim_list;
-  commaToVector(mxmlElementGetAttrText(nd, "symre", ""), symre_list);
-  commaToVector(mxmlElementGetAttrText(nd, "symim", ""), symim_list);
-  setSymReSize(symre_list.size());
-  setSymImSize(symim_list.size());
-  for (size_t i=0; i < symre_list.size(); i++) setSymRe(i, symre_list[i]);
-  for (size_t i=0; i < symim_list.size(); i++) setSymIm(i, symim_list[i]);
-  
-  mxmlDelete(tree);
-}
-
-void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
-{
-  FILE *fp;
-  mxml_node_t *tree;
-
-  fp = fopen(fileName.c_str(), "r");
-  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
-  fclose(fp);
-
-  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
-  if (!root_nd)
-  {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
-  }
-  
-  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
-  setInputFile(getNodeText(nd, ""));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
-  setOutputFile(getNodeText(nd, ""));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
-  // This has to load the system definition
-  const char *s_type = mxmlElementGetAttr(nd, "type");
-  if (s_type) setSysType(s_type);
-  setSysNameText(getNodeText(nd, ""));
-
-  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
-  setFromType(BifTypeTable.CodeToType(getNodeText(nd))); // -> default
-
-  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
-  setLabel(getNodeIndexM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
-  setPointType(PtTypeTable.CodeToType(getNodeText(nd)));
-    
-  nd = mxmlFindElement(root_nd, root_nd, "cp", 0, 0, MXML_DESCEND_FIRST);
-  setCp(VarTable.CodeToType(getNodeText(nd)));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
-  setBranchSW(BranchSWTable.CodeToType(getNodeText(nd))); // -> default
-
-  if (getPointType() != SolUser)
-  {
-    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
-    setParxSize(getNodeIndexM(nd));
-    if (getParxSize() != 0)
-    {
-      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
-      
-      size_t it = 0;
-      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
-      {
-        setParx(it, VarTable.CodeToType(getNodeText(nd)));
-        ++it;
-      }
-    }
-  } else
-  {
-    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
-    setEqnsSize(getNodeIndexM(nd));
-    setVarsSize(getNodeIndexM(nd));
-    if (getEqnsSize() != 0)
-    {
-      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
-      size_t it = 0;
-      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
-      {
-        setEqns(it, EqnTable.CodeToType(getNodeText(nd)));
-        ++it;
-      }
-      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
-      it = 0;
-      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
-      {
-        setVars(it, VarTable.CodeToType(getNodeText(nd)));
-        ++it;
-      }
-    }
-  }
-  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
-  setNInt(getNodeIndex(nd, 20));
-
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg(getNodeIndex(nd, 5));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
-  setNMul(getNodeIndex(nd, 5));
-
-  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
-  setStab(getNodeIndex(nd, (size_t)0) != 0);
-  
-  nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
-  setCAngle(getNodeReal(nd, getCAngle()));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
-  setNInt1(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
-  setNInt2(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg1(getNodeIndex(nd, 4));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg2(getNodeIndex(nd, 4));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
-  setSteps(getNodeIndex(nd, 100));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
-  setIad(getNodeIndex(nd, 3));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
-  setNPr(getNodeIndex(nd, 10));
-  P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
-  
-  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
-  setCpMin(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
-  setCpMax(getNodeReal(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
-  setDs(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
-  setDsMin(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
-  setDsMax(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
-  setDsStart(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
-  setEpsC(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
-  setEpsR(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
-  setEpsK(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
-  setNItC(getNodeIndex(nd, 5));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
-  setNItR(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
-  setNItK(getNodeIndex(nd, 12));
-
-  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
-  setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
-
-  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
-  setSymReSize(getNodeIndex(nd, (size_t)0));
-  setSymImSize(getNodeIndex(nd, (size_t)0));
-
-  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
-  size_t it = 0;
-  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
-       nd != 0;
-       nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
-  {
-    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
-    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
-    setSymRe(it, getNodeIndexM(nd_real));
-    setSymIm(it, getNodeIndexM(nd_imag));
-    ++it; 
-  }
-  mxmlDelete(tree);
-}
-
-void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
-{
-  FILE *fp;
-  mxml_node_t *tree;
-
-  fp = fopen(fileName.c_str(), "r");
-  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
-  fclose(fp);
-
-  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
-  if (!root_nd)
-  {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
-  }
-  
-  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
-  setInputFile(getNodeText(nd, ""));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
-  setOutputFile(getNodeText(nd, ""));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
-  // This has to load the system definition
-  setSysNameText(getNodeText(nd, ""));
-
-  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
-  setFromType(static_cast<BifType>(getNodeIndex(nd, BifNone)));
-
-  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
-  setLabel(getNodeIndexM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
-  setPointType(static_cast<PtType>(getNodeIndexM(nd)));
-    
-  nd_a = mxmlFindElement(root_nd, root_nd, "cptype", 0, 0, MXML_DESCEND_FIRST);
-  const char cp_type = getNodeCharM(nd_a); 
-  
-  nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", 0, 0, MXML_DESCEND_FIRST);
-  const size_t cp_num = getNodeIndexM(nd_b);
-  
-  setCp(varFromTypeNum(cp_type,cp_num));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
-  setBranchSW(static_cast<BranchSW>(getNodeIndex(nd, NOSwitch)));
-
-  if (getPointType() != SolUser)
-  {
-    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
-    setParxSize(getNodeIndexM(nd));
-    if (getParxSize() != 0)
-    {
-      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
-      
-      size_t it = 0;
-      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
-      {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
-        const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const size_t num = getNodeIndexM(nd_num);
-        setParx(it, varFromTypeNum(type,num));
-        ++it;
-      }
-    } 
-  } else
-  {
-    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
-    setEqnsSize(getNodeIndexM(nd));
-    setVarsSize(getNodeIndexM(nd));
-    if (getEqnsSize() != 0)
-    {
-      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
-      size_t it = 0;
-      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
-      {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
-        const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const size_t num = getNodeIndexM(nd_num);
-        setEqns(it, eqnFromTypeNum(type,num));
-        ++it;
-      }
-      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
-      it = 0;
-      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
-      {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
-        const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
-        const size_t num = getNodeIndexM(nd_num);
-        setVars(it, varFromTypeNum(type,num));
-        ++it;
-      }
-    }
-  }
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
-  setNInt(getNodeIndex(nd, 20));
-
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg(getNodeIndex(nd, 5));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
-  setNMul(getNodeIndex(nd, 5));
-
-  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
-  setStab(getNodeIndex(nd, (size_t)0) != 0);
-  
-  nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
-  setCAngle(getNodeReal(nd, getCAngle()));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
-  setNInt1(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
-  setNInt2(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg1(getNodeIndex(nd, 4));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
-  setNDeg2(getNodeIndex(nd, 4));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
-  setSteps(getNodeIndex(nd, 100));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
-  setIad(getNodeIndex(nd, 3));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
-  setNPr(getNodeIndex(nd, 10));
-  P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
-  
-  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
-  setCpMin(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
-  setCpMax(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
-  setDs(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
-  setDsMin(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
-  setDsMax(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
-  setDsStart(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
-  setEpsC(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
-  setEpsR(getNodeRealM(nd));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
-  setEpsK(getNodeRealM(nd));
-
-  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
-  setNItC(getNodeIndex(nd, 5));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
-  setNItR(getNodeIndex(nd, 12));
-  
-  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
-  setNItK(getNodeIndex(nd, 12));
-
-  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
-  setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
-
-  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
-  setSymReSize(getNodeIndex(nd, (size_t)0));
-  setSymImSize(getNodeIndex(nd, (size_t)0));
-
-  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
-  size_t it = 0;
-  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
-       nd != 0;
-       nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
-  {
-    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
-    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
-    setSymRe(it, getNodeIndexM(nd_real));
-    setSymIm(it, getNodeIndexM(nd_imag));
-    ++it; 
-  }
-  mxmlDelete(tree);
-}
-
-void KNConstantsBase::saveXmlFileV4(const std::string &fileName)
-{
-  std::ofstream file(fileName.c_str());
-  printXmlFileV4(file);
+  // continuing normal
+  KNXmlConstantsReader reader(tree);
+  read(reader);
 }
 
 void KNConstantsBase::saveXmlFileV5(const std::string &fileName)
 {
-  std::ofstream file(fileName.c_str());
-  printXmlFileV5(file);
+  KNXmlConstantsWriter writer(fileName);
+  write(writer);
 }
 
-static inline void mxmlNewDouble(mxml_node_t *node, double dbl)
+void KNConstantsBase::write(KNAbstractConstantsWriter& writer)
 {
-  mxmlNewTextf(node, 0, "%.15E", dbl);
-}
-
-void KNConstantsBase::printXmlFileV4(std::ostream& file)
-{
-  char cbuf[2];
-  mxml_node_t *node = 0;
+  writer.setTextField ("input", getInputFile());
+  writer.setTextField ("output", getOutputFile());
+  if (!getSysName().empty()) writer.setTextField ("sysname", getSysName());
+  if (!getSysType().empty()) writer.setTextField ("systype", getSysType());
+  writer.setTextField ("fromtype", BifTypeTable.TypeToCode(getFromType()));
+  writer.setIndexField ("label", getLabel());
+  writer.setTextField ("pointtype", PtTypeTable.TypeToCode(getPointType()));
+  writer.setTextField ("cp", VarTable.TypeToCode(getCp()));
+  writer.setTextField ("switch", BranchSWTable.TypeToCode(getBranchSW()));
   
-  mxml_node_t *xml = mxmlNewXML("cfile 1.0");
+  std::vector<std::string> parx_list;
+  VarTable.TypeToCodeVector (parx_list, getParxVector());
+  writer.setStringListField("parx", parx_list);
+
+  std::vector<std::string> eqns_list;
+  EqnTable.TypeToCodeVector (eqns_list, getEqnsVector());
+  writer.setStringListField("eqns", eqns_list);
+
+  std::vector<std::string> vars_list;
+  VarTable.TypeToCodeVector (vars_list, getVarsVector());
+  writer.setStringListField("vars", vars_list);
+    
+  writer.setIndexField ("nint", getNInt());
+  writer.setIndexField ("ndeg", getNDeg());
+  writer.setIndexField ("nmul", getNMul());
+  writer.setIndexField ("stab", getStab());
+  writer.setDoubleField ("curvature", getCAngle());
+  writer.setIndexField ("nint1", getNInt1());
+  writer.setIndexField ("nint2", getNInt2());
+  writer.setIndexField ("steps", getSteps());
+  writer.setIndexField ("iad", getIad());
+  writer.setIndexField ("npr", getNPr());
+  writer.setDoubleField ("cpmin", getCpMin());
+  writer.setDoubleField ("cpmax", getCpMax());
+  writer.setDoubleField ("ds", getDs());
+  writer.setDoubleField ("dsmin", getDsMin());
+  writer.setDoubleField ("dsmax", getDsMax());
+  writer.setDoubleField ("dsstart", getDsStart());
+  writer.setDoubleField ("epsc", getEpsC());
+  writer.setDoubleField ("epsr", getEpsR());
+  writer.setDoubleField ("epsk", getEpsK());
+  writer.setIndexField ("nitc", getNItC());
+  writer.setIndexField ("nitr", getNItR());
+  writer.setIndexField ("nitk", getNItK());
+  writer.setIndexField ("nderi", getNDeri());
+  
+  writer.setIndexListField("symre", getSymReVector());
+  writer.setIndexListField("symim", getSymImVector());
+}
+
+void KNConstantsBase::read(KNAbstractConstantsReader& reader)
+{
+  std::string buf;
+  size_t idx;
+  double dbl;
+
+  if (reader.getTextField("input", buf)) setInputFile(buf);
+  if (reader.getTextField("output", buf)) setOutputFile(buf);
+  if (reader.getTextField("sysname", buf)) setSysNameText(buf);
+  if (reader.getTextField("systype", buf)) setSysType(buf);
+  if (reader.getTextField("fromtype", buf)) setFromType(BifTypeTable.CodeToType(buf.c_str()));
+  if (reader.getIndexField("label", idx)) setLabel(idx);
+  if (reader.getTextField("pointtype", buf)) setPointType(PtTypeTable.CodeToType(buf.c_str()));
+  if (reader.getTextField("cp", buf)) setCp(VarTable.CodeToType(buf.c_str()));
+  if (reader.getTextField("switch", buf)) setBranchSW(BranchSWTable.CodeToType(buf.c_str()));
+
+  std::vector<std::string> parx_list;
+  std::vector<Var> parx_tp;
+  reader.getStringListField("parx", parx_list);
+  VarTable.CodeToTypeVector(parx_tp, parx_list);
+  setParxVector(parx_tp);
+
+  std::vector<std::string> eqns_list;
+  std::vector<Eqn> eqns_tp;
+  reader.getStringListField("eqns", eqns_list);
+  EqnTable.CodeToTypeVector(eqns_tp, eqns_list);
+  setEqnsVector(eqns_tp);
+  
+  std::vector<std::string> vars_list;
+  std::vector<Var> vars_tp;
+  reader.getStringListField("vars", vars_list);
+  VarTable.CodeToTypeVector(vars_tp, vars_list);
+  setVarsVector(vars_tp);
+
+  if (reader.getIndexField("nint", idx)) setNInt(idx);
+  if (reader.getIndexField("ndeg", idx)) setNDeg(idx);
+  if (reader.getIndexField("nmul", idx)) setNMul(idx);
+  if (reader.getIndexField("stab", idx)) setStab(idx);
+  if (reader.getDoubleField("curvature", dbl)) setCAngle(dbl);
+  if (reader.getIndexField("nint1", idx)) setNInt1(idx);
+  if (reader.getIndexField("nint2", idx)) setNInt2(idx);
+  if (reader.getIndexField("ndeg1", idx)) setNDeg1(idx);
+  if (reader.getIndexField("ndeg2", idx)) setNDeg2(idx);
+  if (reader.getIndexField("steps", idx)) setSteps(idx);
+  if (reader.getIndexField("iad", idx)) setIad(idx);
+  if (reader.getIndexField("npr", idx)) setNPr(idx);
+  if (reader.getDoubleField("cpmin", dbl)) setCpMin(dbl);
+  if (reader.getDoubleField("cpmax", dbl)) setCpMax(dbl);
+  if (reader.getDoubleField("ds", dbl)) setDs(dbl);
+  if (reader.getDoubleField("dsmin", dbl)) setDsMin(dbl);
+  if (reader.getDoubleField("dsmax", dbl)) setDsMax(dbl);
+  if (reader.getDoubleField("dsstart", dbl)) setDsStart(dbl);
+  if (reader.getDoubleField("epsc", dbl)) setEpsC(dbl);
+  if (reader.getDoubleField("epsr", dbl)) setEpsR(dbl);
+  if (reader.getDoubleField("epsk", dbl)) setEpsK(dbl);
+  if (reader.getIndexField("nitc", idx)) setNItC(idx);
+  if (reader.getIndexField("nitr", idx)) setNItR(idx);
+  if (reader.getIndexField("nitk", idx)) setNItK(idx);
+  if (reader.getIndexField("nderi", idx)) setNDeri(idx);
+
+  std::vector<size_t> symre_list, symim_list;
+  reader.getIndexListField("symre", symre_list);
+  reader.getIndexListField("symim", symim_list);
+  setSymReVector(symre_list);
+  setSymImVector(symim_list);
+}
+
+bool KNXmlConstantsReader::getTextField(const char* field, std::string& strout)
+{
+  const char* str = mxmlElementGetAttr(node, field);
+  if (str)
+  {
+    strout = str;
+    return true;
+  }
+  return false;
+}
+
+bool KNXmlConstantsReader::getIndexField(const char* field, size_t& out)
+{
+  const char* str = mxmlElementGetAttr(node, field);
+  if (str)
+  {
+    out = toSizeT(strtol(str, 0, 10));
+    return true;
+  }
+  return false;
+}
+
+bool KNXmlConstantsReader::getDoubleField(const char* field, double& out)
+{
+  const char* str = mxmlElementGetAttr(node, field);
+  if (str)
+  {
+    std::istringstream strstr(str);
+    strstr >> out;
+    return true;
+  }
+  return false;
+}
+
+bool KNXmlConstantsReader::getStringListField(const char* field, std::vector<std::string>& out)
+{
+  std::string str;
+  if ( getTextField(field, str) )
+  {
+    commaToVector(str, out);
+    return true;
+  }
+  return false;
+}
+
+bool KNXmlConstantsReader::getIndexListField(const char* field, std::vector<size_t>& out)
+{
+  std::string str;
+  if ( getTextField(field, str) )
+  {
+    commaToVector(str, out);
+    return true;
+  }
+  return false;
+}
+
+KNXmlConstantsWriter::KNXmlConstantsWriter(const std::string& fname) : filename(fname)
+{
+  xml = mxmlNewXML("cfile 1.0");
   mxml_node_t *data = mxmlNewElement(xml, "knut");
   mxmlElementSetAttr( data, "version", PACKAGE_VERSION);
-  
-  node = mxmlNewElement(data, "input");
-  mxmlNewText(node, 0, getInputFile().c_str());
-  
-  node = mxmlNewElement(data, "output");
-  mxmlNewText(node, 0, getOutputFile().c_str());
-  
-  node = mxmlNewElement(data, "sysname");
-  mxmlNewText(node, 0, getSysName().c_str());
-  mxmlElementSetAttr(node, "type", getSysType().c_str());
-  
-  node = mxmlNewElement(data, "fromtype");
-  mxmlNewText(node, 0, BifTypeTable.TypeToCode(getFromType()).c_str());
-  
-  node = mxmlNewElement(data, "label");
-  setNodeIndex(node, getLabel());
-  
-  node = mxmlNewElement(data, "pointtype");
-  mxmlNewText(node, 0, PtTypeTable.TypeToCode(getPointType()).c_str());
-  
-  node = mxmlNewElement(data, "cp");
-  mxmlNewText(node, 0, VarTable.TypeToCode(getCp()).c_str());
+  node = mxmlNewElement(data, "branch");  
+}
 
-  node = mxmlNewElement(data, "switch");
-  mxmlNewText(node, 0, BranchSWTable.TypeToCode(getBranchSW()).c_str());
- 
-  if (getPointType() != SolUser)
-  {
-    node = mxmlNewElement(data, "nparx");
-    setNodeIndex(node, getParxSize());
-
-    if (getParxSize() != 0)
-    {
-      mxml_node_t *group_parx = mxmlNewElement(data, "parx");
-      for (size_t i = 0; i < getParxSize(); ++i)
-      {
-        node = mxmlNewElement(group_parx, "par");
-        mxmlNewText(node, 0, VarTable.TypeToCode(getParx(i)).c_str());
-      }
-    }
-  }
-  else
-  {
-    node = mxmlNewElement(data, "neqns");
-    setNodeIndex(node, getEqnsSize());
-
-    if (getEqnsSize() != 0)
-    {
-      mxml_node_t *group_eqns = mxmlNewElement(data, "eqns");
-      mxml_node_t *group_vars = mxmlNewElement(data, "vars");
-
-      for (size_t i = 0; i < getEqnsSize(); ++i)
-      {
-        node = mxmlNewElement(group_eqns, "eqn");
-        mxmlNewText(node, 0, EqnTable.TypeToCode(getEqns(i)).c_str());
-      }
-      for (size_t i = 0; i < getVarsSize(); ++i)
-      {        
-        node = mxmlNewElement(group_vars, "var");
-        mxmlNewText(node, 0, VarTable.TypeToCode(getVars(i)).c_str());
-      }
-    }
-  }
-  node = mxmlNewElement(data, "nint");
-  setNodeIndex(node, getNInt());
-
-  node = mxmlNewElement(data, "ndeg");
-  setNodeIndex(node, getNDeg());
-  
-  node = mxmlNewElement(data, "nmul");
-  setNodeIndex(node, getNMul());
-  
-  node = mxmlNewElement(data, "stab");
-  setNodeIndex(node, getStab());
-  
-  node = mxmlNewElement(data, "curvature");
-  mxmlNewDouble(node, getCAngle());
-  
-  node = mxmlNewElement(data, "nint1");
-  setNodeIndex(node, getNInt1());
-
-  node = mxmlNewElement(data, "nint2");
-  setNodeIndex(node, getNInt2());
-  
-  node = mxmlNewElement(data, "ndeg1");
-  setNodeIndex(node, getNDeg1());
-  
-  node = mxmlNewElement(data, "ndeg2");
-  setNodeIndex(node, getNDeg2());
-  
-  node = mxmlNewElement(data, "steps");
-  setNodeIndex(node, getSteps());
-
-  node = mxmlNewElement(data, "iad");
-  setNodeIndex(node, getIad());
-  
-  node = mxmlNewElement(data, "npr");
-  setNodeIndex(node, getNPr());
-  
-  node = mxmlNewElement(data, "cpmin");
-  mxmlNewDouble(node, getCpMin());
-  
-  node = mxmlNewElement(data, "cpmax");
-  mxmlNewDouble(node, getCpMax());
-  
-  node = mxmlNewElement(data, "ds");
-  mxmlNewDouble(node, getDs());
-  
-  node = mxmlNewElement(data, "dsmin");
-  mxmlNewDouble(node, getDsMin());
-  
-  node = mxmlNewElement(data, "dsmax");
-  mxmlNewDouble(node, getDsMax());
-  
-  node = mxmlNewElement(data, "dsstart");
-  mxmlNewDouble(node, getDsStart());
-
-  node = mxmlNewElement(data, "epsc");
-  mxmlNewDouble(node, getEpsC());
-  
-  node = mxmlNewElement(data, "epsr");
-  mxmlNewDouble(node, getEpsR());
-  
-  node = mxmlNewElement(data, "epsk");
-  mxmlNewDouble(node, getEpsK());
-
-  node = mxmlNewElement(data, "nitc");
-  setNodeIndex(node, getNItC());
-  
-  node = mxmlNewElement(data, "nitr");
-  setNodeIndex(node, getNItR());
-  
-  node = mxmlNewElement(data, "nitk");
-  setNodeIndex(node, getNItK());
-  
-  node = mxmlNewElement(data, "nderi");
-  setNodeIndex(node, getNDeri());
-
-  node = mxmlNewElement(data, "nsym");
-  setNodeIndex(node, getSymReSize());
-
-  if (getSymReSize() != 0)
-  {
-    mxml_node_t *group_sym = mxmlNewElement(data, "sym");
-    for (size_t i = 0; i < getSymReSize(); ++i)
-    {
-      mxml_node_t *group_dim = mxmlNewElement(group_sym, "dim");
-      
-      node = mxmlNewElement(group_dim, "real");
-      setNodeIndex(node, getSymRe(i));
-      
-      node = mxmlNewElement(group_dim, "imag");
-      setNodeIndex(node, getSymIm(i));
-    }
-  }
-  
+KNXmlConstantsWriter::~KNXmlConstantsWriter()
+{
   char *xmlString = mxmlSaveAllocString (xml, knut_whitespace_cb);
   if (xmlString)
   {
-   file << xmlString;
-   free(xmlString);
+    if (!filename.empty()) 
+    {
+      std::ofstream file(filename.c_str());
+      file << xmlString;
+    } else
+    {
+      std::cout << xmlString;
+    }
+    free(xmlString);
   }
   mxmlDelete(xml);
 }
 
-void KNConstantsBase::printXmlFileV5(std::ostream& file)
+void KNXmlConstantsWriter::setTextField(const char* fieldname, const std::string& str)
 {
-  char cbuf[2];
-  mxml_node_t *node = 0;
-  
-  mxml_node_t *xml = mxmlNewXML("cfile 1.0");
-  mxml_node_t *data = mxmlNewElement(xml, "knut");
-  mxmlElementSetAttr( data, "version", PACKAGE_VERSION);
-  
-  node = mxmlNewElement(data, "branch");
-  mxmlElementSetAttr(node, "input", getInputFile().c_str());
-  mxmlElementSetAttr(node, "output", getOutputFile().c_str());
-  mxmlElementSetAttr(node, "sysname", getSysName().c_str());
-  if (!getSysType().empty()) mxmlElementSetAttr(node, "systype", getSysType().c_str());
-  mxmlElementSetAttr(node, "fromtype", BifTypeTable.TypeToCode(getFromType()).c_str());
-  mxmlElementSetAttrIndex(node, "label", getLabel());
-  mxmlElementSetAttr(node, "pointtype", PtTypeTable.TypeToCode(getPointType()).c_str());
-  mxmlElementSetAttr(node, "cp", VarTable.TypeToCode(getCp()).c_str());
-  mxmlElementSetAttr(node, "switch", BranchSWTable.TypeToCode(getBranchSW()).c_str());
+  mxmlElementSetAttr(node, fieldname, str.c_str());
+}
 
-  if (getParxSize() != 0)
-  {
-    std::string parx_str;
-    for (size_t i = 0; i < getParxSize(); ++i)
-    {
-      if (i != 0) parx_str.append(",");
-      parx_str.append(VarTable.TypeToCode(getParx(i)));
-    }
-    mxmlElementSetAttr(node, "parx", parx_str.c_str()); // --- this is a comma separaeted array
-  }
+void KNXmlConstantsWriter::setDoubleField(const char* fieldname, double val)
+{
+  std::ostringstream strstr;
+  strstr.precision(15);
+  strstr << val;
+  mxmlElementSetAttr (node, fieldname, strstr.str().c_str());
+}
 
-  if (getEqnsSize() != 0)
-  {
-    std::string eqns_str;
-    for (size_t i = 0; i < getEqnsSize(); ++i)
-    {
-      if (i != 0) eqns_str.append(",");
-      eqns_str.append(EqnTable.TypeToCode(getEqns(i)));
-    }
-    mxmlElementSetAttr(node, "eqns", eqns_str.c_str()); // --- this is a comma separaeted array
-  }
+void KNXmlConstantsWriter::setIndexField(const char* fieldname, size_t val)
+{
+  std::ostringstream strstr;
+  strstr << val;
+  mxmlElementSetAttr (node, fieldname, strstr.str().c_str());
+}
 
-  if (getVarsSize() != 0)
+void KNXmlConstantsWriter::setStringListField(const char* field, const std::vector<std::string>& vec)
+{
+  if (vec.size() != 0)
   {
-    std::string vars_str;
-    for (size_t i = 0; i < getVarsSize(); ++i)
+    std::string field_str;
+    for (size_t i = 0; i < vec.size(); ++i)
     {
-      if (i != 0) vars_str.append(",");
-      vars_str.append(VarTable.TypeToCode(getVars(i)));
+      if (i != 0) field_str.append(",");
+      field_str.append(vec[i]);
     }
-    mxmlElementSetAttr(node, "vars", vars_str.c_str()); // --- this is a comma separaeted array
+    setTextField(field, field_str); // --- this is a comma separated array
   }
-  
-  mxmlElementSetAttrIndex(node, "nint", getNInt());
-  mxmlElementSetAttrIndex(node, "ndeg", getNDeg());
-  mxmlElementSetAttrIndex(node, "nmul", getNMul());
-  mxmlElementSetAttrIndex(node, "stab", getStab());
-  mxmlElementSetAttrDouble(node, "curvature", getCAngle());
-  mxmlElementSetAttrIndex(node, "nint1", getNInt1());
-  mxmlElementSetAttrIndex(node, "nint2", getNInt2());
-  mxmlElementSetAttrIndex(node, "ndeg1", getNDeg1());
-  mxmlElementSetAttrIndex(node, "ndeg2", getNDeg2());
-  mxmlElementSetAttrIndex(node, "steps", getSteps());
-  mxmlElementSetAttrIndex(node, "iad", getIad());
-  mxmlElementSetAttrIndex(node, "npr", getNPr());
-  mxmlElementSetAttrDouble(node, "cpmin", getCpMin());
-  mxmlElementSetAttrDouble(node, "cpmax", getCpMax());
-  mxmlElementSetAttrDouble(node, "ds", getDs());
-  mxmlElementSetAttrDouble(node, "dsmin", getDsMin());
-  mxmlElementSetAttrDouble(node, "dsmax", getDsMax());
-  mxmlElementSetAttrDouble(node, "dsstart", getDsStart());
-  mxmlElementSetAttrDouble(node, "epsc", getEpsC());
-  mxmlElementSetAttrDouble(node, "epsr", getEpsR());
-  mxmlElementSetAttrDouble(node, "epsk", getEpsK());
-  mxmlElementSetAttrIndex(node, "nitc", getNItC());
-  mxmlElementSetAttrIndex(node, "nitr", getNItR());
-  mxmlElementSetAttrIndex(node, "nitk", getNItK());
-  mxmlElementSetAttrIndex(node, "nderi", getNDeri());
+}
 
-  if (getSymReSize() != 0)
+void KNXmlConstantsWriter::setIndexListField(const char* field, const std::vector<size_t>& vec)
+{
+  if (vec.size() != 0)
   {
-    std::ostringstream symre_str, symim_str;
-    for (size_t i = 0; i < getSymReSize(); ++i)
+    std::ostringstream field_str;
+    for (size_t i = 0; i < vec.size(); ++i)
     {
-      if (i != 0) { symre_str << ","; symim_str << ","; }
-      symre_str << getSymRe(i); symim_str << getSymIm(i);
+      if (i != 0) field_str << ",";
+      field_str << vec[i];
     }
-    mxmlElementSetAttr(node, "symre", symre_str.str().c_str()); // --- this is a comma separaeted array
-    mxmlElementSetAttr(node, "symim", symim_str.str().c_str()); // --- this is a comma separaeted array
+    setTextField(field, field_str.str().c_str()); // --- this is a comma separated array
   }
-  
-  char *xmlString = mxmlSaveAllocString (xml, knut_whitespace_cb);
-  if (xmlString)
-  {
-   file << xmlString;
-   free(xmlString);
-  }
-  mxmlDelete(xml);
 }
 
 bool KNConstantsBase::toEqnVar(KNSystem& sys,

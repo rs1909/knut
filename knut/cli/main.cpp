@@ -56,7 +56,7 @@ int main(int argc, const char** argv)
               if (constFile[0] != '/') constFile.insert(0, cwd);
               params->loadXmlFileV5(constFile);
             }
-            if (save) { params->printXmlFileV5(std::cout); exit(0); }
+            if (save) { params->saveXmlFileV5(""); exit(0); }
             break;
           case 'b':
             branchFile = argv[++acnt];

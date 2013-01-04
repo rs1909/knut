@@ -21,6 +21,7 @@ class KNAbstractContinuation
       delete params;
       params = new KNConstants(constants);
     }
+    void run(KNSystem* sys, const char* branchFile);
     void run(const char* branchFile);
     void run() { run(0); }
     void setStopFlag(bool flag)
@@ -36,6 +37,11 @@ class KNAbstractContinuation
     virtual KNDataFile& data() = 0;
     virtual void deleteData() = 0;
     virtual void dataUpdated() = 0;
+    static void printException(std::ostream& err, const KNException& ex)
+    {
+      err << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
+    }
+
   protected:
     KNConstants* params;
     bool        stopFlag;
@@ -56,7 +62,7 @@ class KNCliContinuation : public KNAbstractContinuation
     }
     static void printException(const KNException& ex)
     {
-      std::cerr << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
+      KNAbstractContinuation::printException(std::cerr, ex);
     }
     void raiseException(const KNException& ex)
     {
