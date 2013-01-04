@@ -147,12 +147,18 @@ ENDIF( EXISTS ${MEX_EXECUTABLE} )
 
 ENABLE_LANGUAGE( Fortran )
 
-FIND_LIBRARY( OPENBLAS NAMES libopenblas-64.a PATHS ${OPENBLAS_SEARCH_PATHS} ${KNUT_SOURCE_DIR}/laarpack/ )
-IF( EXISTS ${OPENBLAS} )
-  MESSAGE( STATUS "openBLAS was found as ${OPENBLAS}." )
-  SET( BLAS_LIBS ${OPENBLAS} -lpthread )
-ENDIF( EXISTS ${OPENBLAS} )
-SET( LONGBLAS TRUE )
+FIND_LIBRARY( OPENBLAS64 NAMES libopenblas64.a PATHS ${OPENBLAS_SEARCH_PATHS} ${KNUT_SOURCE_DIR} )
+IF( EXISTS ${OPENBLAS64} )
+  MESSAGE( STATUS "openBLAS64 was found as ${OPENBLAS64}." )
+  SET( BLAS_LIBS ${OPENBLAS64} -lpthread )
+  SET( LONGBLAS TRUE )
+ELSE( EXISTS ${OPENBLAS64} )
+  FIND_LIBRARY( OPENBLAS NAMES libopenblas.a PATHS ${OPENBLAS_SEARCH_PATHS} ${KNUT_SOURCE_DIR} )
+  IF( EXISTS ${OPENBLAS} )
+    MESSAGE( STATUS "openBLAS was found as ${OPENBLAS}." )
+    SET( BLAS_LIBS ${OPENBLAS} -lpthread )
+  ENDIF( EXISTS ${OPENBLAS} )
+ENDIF( EXISTS ${OPENBLAS64} )
 
 #------------------------------------------------------------------------------
 # Writing the generated files
@@ -179,43 +185,6 @@ ELSE( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
   ADD_DEFINITIONS( -DHAVE_CONFIG_H )
   SET(KNUT_RELEASE TRUE)
 ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
-
-#------------------------------------------------------------------------------
-# Finding ATLAS
-#------------------------------------------------------------------------------
-
-# IF(APPLE)
-#   # We need to search for ATLAS in MacPorts' location, too: /opt/local/lib
-#   SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /opt/local/lib /usr/lib )
-#   FIND_LIBRARY( ATLAS_CBLAS NAMES libf77blas.a cblas PATHS ${ATLAS_SEARCH_PATHS} )
-#   FIND_LIBRARY( ATLAS_ATLAS NAMES libatlas.a atlas PATHS ${ATLAS_SEARCH_PATHS} )
-# ELSE(APPLE)
-#   IF(WIN32)
-#    SET( ATLAS_SEARCH_PATHS ${KNUT_BINARY_DIR} )
-#    FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${KNUT_BINARY_DIR} )
-#    FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${KNUT_BINARY_DIR} )
-#   ELSE(WIN32)
-#     # For Linux distributions ATLAS can be located in many places
-#     SET( ATLAS_SEARCH_PATHS ${KNUT_SOURCE_DIR}/ATLAS/lib /usr/lib64/atlas /usr/lib /usr/lib/atlas
-#     /usr/lib/sse /usr/lib/sse2 /usr/lib/3dnow )
-#     FIND_LIBRARY( ATLAS_CBLAS NAMES f77blas PATHS ${ATLAS_SEARCH_PATHS} )
-#     FIND_LIBRARY( ATLAS_ATLAS NAMES atlas PATHS ${ATLAS_SEARCH_PATHS} )
-#   ENDIF(WIN32)
-# ENDIF(APPLE)
-# 
-# IF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
-# 	MESSAGE( STATUS "ATLAS was found as ${ATLAS_CBLAS} and ${ATLAS_ATLAS}" )
-# 	SET( BLAS_LIBS ${ATLAS_CBLAS} ${ATLAS_ATLAS} )
-# 	get_filename_component(ATLAS_CBLAS_PATH ${ATLAS_CBLAS} PATH CACHE)
-# 	get_filename_component(ATLAS_ATLAS_PATH ${ATLAS_ATLAS} PATH CACHE)
-# 	get_filename_component(ATLAS_CBLAS_NAME_TMP ${ATLAS_CBLAS} NAME_WE CACHE)
-# 	get_filename_component(ATLAS_ATLAS_NAME_TMP ${ATLAS_ATLAS} NAME_WE CACHE)
-# 	string( REGEX REPLACE "lib(.*)" "\\1" ATLAS_CBLAS_NAME ${ATLAS_CBLAS_NAME_TMP} )
-# ELSE( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
-# 	MESSAGE( STATUS "ATLAS was NOT found!" )
-# 	SET( USE_REFBLAS TRUE )
-# 	SET( BLAS_LIBS REF_BLAS AUX_BLAS )
-# ENDIF( EXISTS ${ATLAS_CBLAS} AND EXISTS ${ATLAS_ATLAS} )
 
 #------------------------------------------------------------------------------
 # DISTRIBUTING WITH GIT
