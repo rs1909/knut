@@ -1,6 +1,5 @@
 INCLUDE( ${QT_USE_FILE} )
 
-LINK_DIRECTORIES( ${CBLAS_PATH} ${ATLAS_PATH} )
 SET(INTERNAL_LIBS knutlib laarpack umfpack amd ${VFGEN_LIBS} mxml)
 SET(EXTERNAL_LIBS ${GINAC_LDFLAGS} ${BLAS_LIBS}
         ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
@@ -91,14 +90,11 @@ IF(NOT APPLE)
     screendialog.h
     ${MOC_SRCS} ${ICONS} )
 
+  TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
+    ${INTERNAL_LIBS} ${EXTERNAL_LIBS})
   IF(WIN32)
-    TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} AUX_BLAS ${EXTERNAL_LIBS})
     SET_TARGET_PROPERTIES( ${GUI_NAME} PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
     ADD_CUSTOM_COMMAND( TARGET ${GUI_NAME} PRE_LINK COMMAND ${CMAKE_RC_COMPILER} -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )
-  ELSE(WIN32)
-    TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS})
   ENDIF(WIN32)
 
   INSTALL( TARGETS ${GUI_NAME} DESTINATION ${KNUT_BIN_DIR} )
