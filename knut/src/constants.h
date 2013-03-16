@@ -92,7 +92,7 @@ class KNAbstractConstantsWriter
     } name; \
   public: \
     const std::vector<type> & get##capsName##Vector() const { return name.value; } \
-    void set##capsName##Vector(const std::vector<type> &v) { name.value = v; } \
+    void set##capsName##Vector(const std::vector<type> &v) { name.value = v; constantChanged(#name); } \
     type get##capsName(size_t i) const \
       { if (i<get##capsName##Size()) return name.value[i]; else return zero; } \
     void set##capsName(size_t i, type d) { name.value[i] = d; constantChanged(#name); } \
