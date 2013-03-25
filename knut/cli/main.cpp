@@ -13,6 +13,7 @@
 #include "basecomp.h"
 #include "knerror.h"
 #include <unistd.h>
+#include <new>
 // #include "constants.h" included in basecomp
 // #include <iostream> included in basecomp
 
@@ -96,7 +97,10 @@ int main(int argc, const char** argv)
 #endif
     exit(-1);
   }
-
+  catch (std::bad_alloc& ba)
+  {
+    std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+  }
   delete params;
   return 0;
 }

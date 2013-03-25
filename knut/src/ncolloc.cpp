@@ -340,7 +340,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
   interpolate(solData, sol);
   // diagnostics
 #ifdef DEBUG
-  count_print();
+//  count_print();
   count_reset();
 #endif
 }
@@ -353,33 +353,26 @@ void KNDdeBvpCollocation::interpolate(KNArray3D<double>& solData, const KNVector
     {
       for (size_t k = 0; k < NDIM; k++)
       {
+        // sol. values
         solData(k, p, idx) = 0.0;
+        // derivatives
+        solData(k, NTAU + 1 + p, idx) = 0.0;
         for (size_t l = 0; l < NDEG + 1; l++)
         {
+          // sol. values
           solData(k, p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(p + 1, l, idx);
+          // derivatives
+          solData(k, NTAU + 1 + p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(NTAU + 1 + p, l, idx);
         }
       }
     }
-    // x'(t)
+    // derivative for the left hand side
     for (size_t k = 0; k < NDIM; k++)
     {
       solData(k, NTAU, idx) = 0.0;
       for (size_t l = 0; l < NDEG + 1; l++)
       {
         solData(k, NTAU, idx) += sol(k + NDIM * (l + kk(0, idx) * NDEG)) * tt(0, l, idx);
-      }
-//      solData(k, NTAU, idx) *= mass(k);
-    }
-    // x'(t-\tau_i)
-    for (size_t p = 0; p < NTAU; p++)
-    {
-      for (size_t k = 0; k < NDIM; k++)
-      {
-        solData(k, NTAU + 1 + p, idx) = 0.0;
-        for (size_t l = 0; l < NDEG + 1; l++)
-        {
-          solData(k, NTAU + 1 + p, idx) += sol(k + NDIM * (l + kk(p + 1, idx) * NDEG)) * tt(NTAU + 1 + p, l, idx);
-        }
       }
     }
   }
@@ -416,15 +409,24 @@ void KNDdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArr
     {
       for (size_t k = 0; k < NDIM; k++)
       {
+        // sol. values
         solDataRe(k, p, idx) = 0.0;
         solDataIm(k, p, idx) = 0.0;
+        // derivatives
+        solDataRe(k, NTAU + 1 + p, idx) = 0.0;
+        solDataIm(k, NTAU + 1 + p, idx) = 0.0;
         for (size_t l = 0; l < NDEG + 1; l++)
         {
+          // sol. values
           solDataRe(k, p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG))) * tt(p + 1, l, idx);
           solDataIm(k, p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG)) + 1) * tt(p + 1, l, idx);
+          // derivatives
+          solDataRe(k, NTAU + 1 + p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG))) * tt(NTAU + 1 + p, l, idx);
+          solDataIm(k, NTAU + 1 + p, idx) += sol(2 * (k + NDIM * (l + kk(p + 1, idx) * NDEG)) + 1) * tt(NTAU + 1 + p, l, idx);
         }
       }
     }
+    // derivative for the left hand side
     for (size_t k = 0; k < NDIM; k++)
     {
       solDataRe(k, NTAU, idx) = 0.0;
@@ -434,8 +436,6 @@ void KNDdeBvpCollocation::interpolateComplex(KNArray3D<double>& solDataRe, KNArr
         solDataRe(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG))) * tt(0, l, idx);
         solDataIm(k, NTAU, idx) += sol(2 * (k + NDIM * (l + kk(0, idx) * NDEG)) + 1) * tt(0, l, idx);
       }
-//      solDataRe(k, NTAU, idx) *= mass(k);
-//      solDataIm(k, NTAU, idx) *= mass(k);
     }
   }
 }
@@ -888,18 +888,35 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par, const KNArr
     for (size_t k = 0; k < NTAU; k++)
     {
       size_t nx = 1, vx[2], np = 1, vp = alpha;
+      
       nx = 1;
-      np = 0;
+      np = 1;
       vx[0] = k;
+      vp = alpha;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.clear(); //OK this is cleared, but why here?
+      p_fx.clear();
       for (size_t idx = 0; idx < NDEG*NINT; ++idx)
       {
         for (size_t p = 0; p < NDIM; p++)
         {
           for (size_t q = 0; q < NDIM; q++)
           {
-            p_fx(p, idx) -= p_dfx(p, q, idx) * phiData(q, k, idx);
+            p_fx(p, idx) -= par(0) * p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+      
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          for (size_t q = 0; q < NDIM; q++)
+          {
+            p_fx(p, idx) -= p_dfx(p, q, idx) * (phiData(q, k, idx) + (p_tau(k,idx)/par(0) - p_dtau(k,idx)) * phiData(q, NTAU + 1 + k, idx));
           }
         }
       }
@@ -982,6 +999,20 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par, const KNArr
           }
         }
       }
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          for (size_t q = 0; q < NDIM; q++)
+          {
+            p_fx(p, idx) += p_dtau(k, idx) * p_dfx(p, q, idx) * phiData(q, NTAU + 1 + k, idx);
+          }
+        }
+      }
       for (size_t idx = 0; idx < NDEG*NINT; ++idx)
       {
         const size_t zpow = mmI(k+1, idx);
@@ -1039,9 +1070,11 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
     for (size_t k = 0; k < NTAU; k++)
     {
       size_t nx = 1, vx[2], np = 1, vp = alpha;
+      
       nx = 1;
-      np = 0;
+      np = 1;
       vx[0] = k;
+      vp = alpha; // though, this last is never changed...
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fxRe.clear(); //OK this is cleared, but why here?
       p_fxIm.clear();
@@ -1051,8 +1084,24 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
         {
           for (size_t q = 0; q < NDIM; q++)
           {
-            p_fxRe(p, idx) -= p_dfx(p, q, idx) * phiDataRe(q, k, idx);
-            p_fxIm(p, idx) -= p_dfx(p, q, idx) * phiDataIm(q, k, idx);
+            p_fxRe(p,idx) -= par(0) * p_dfx(p, q, idx) * phiDataRe(q, k, idx);
+            p_fxIm(p,idx) -= par(0) * p_dfx(p, q, idx) * phiDataIm(q, k, idx);
+          }
+        }
+      }
+
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          for (size_t q = 0; q < NDIM; q++)
+          {
+            p_fxRe(p, idx) -= p_dfx(p, q, idx) * (phiDataRe(q, k, idx) + (p_tau(k,idx)/par(0) - p_dtau(k,idx)) * phiDataRe(q, NTAU + 1 + k, idx));
+            p_fxIm(p, idx) -= p_dfx(p, q, idx) * (phiDataIm(q, k, idx) + (p_tau(k,idx)/par(0) - p_dtau(k,idx)) * phiDataIm(q, NTAU + 1 + k, idx));
           }
         }
       }
@@ -1139,6 +1188,21 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
               p_fxRe(p, idx) += p_dtau(r, idx) * p_dfxRe(p, q, idx) * solData(q, NTAU + 1 + r, idx);
               p_fxIm(p, idx) += p_dtau(r, idx) * p_dfxIm(p, q, idx) * solData(q, NTAU + 1 + r, idx);
             }
+          }
+        }
+      }
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          for (size_t q = 0; q < NDIM; q++)
+          {
+            p_fxRe(p, idx) += p_dtau(k, idx) * p_dfx(p, q, idx) * phiDataRe(q, NTAU + 1 + k, idx);
+            p_fxIm(p, idx) += p_dtau(k, idx) * p_dfx(p, q, idx) * phiDataIm(q, NTAU + 1 + k, idx);
           }
         }
       }
@@ -1504,17 +1568,33 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
       // START verbatim from CharJac_x_p
       size_t nx = 1, vx[2], np = 1, vp = alpha;
       nx = 1;
+      np = 1;
+      vx[0] = k;
+      vp = alpha;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      p_fx.clear();
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
+        for (size_t p = 0; p < NDIM; p++)
+        {
+          for (size_t q = 0; q < NDIM; q++)
+          {
+            p_fx(p, idx) -= par(0) * p_dfx(p, q, idx) * phiData(q, k, idx);
+          }
+        }
+      }
+      
+      nx = 1;
       np = 0;
       vx[0] = k;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
-      p_fx.clear(); //OK this is cleared, but why here?
-      for (size_t p = 0; p < NDIM; p++)
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
       {
-        for (size_t q = 0; q < NDIM; q++)
+        for (size_t p = 0; p < NDIM; p++)
         {
-          for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+          for (size_t q = 0; q < NDIM; q++)
           {
-            p_fx(p, idx) -= p_dfx(p, q, idx) * phiData(q, k, idx);
+            p_fx(p, idx) -= p_dfx(p, q, idx) * (phiData(q, k, idx) + (p_tau(k,idx)/par(0) - p_dtau(k,idx)) * phiData(q, NTAU + 1 + k, idx));
           }
         }
       }
@@ -1526,11 +1606,11 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
         vx[1] = r;
         vx[0] = k;
         sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
-        for (size_t p = 0; p < NDIM; p++)
+        for (size_t idx = 0; idx < NDEG*NINT; ++idx)
         {
-          for (size_t q = 0; q < NDIM; q++)
+          for (size_t p = 0; p < NDIM; p++)
           {
-            for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+            for (size_t q = 0; q < NDIM; q++)
             {
               p_fx(p, idx) += (p_dtau(r,idx) - p_tau(r,idx) / par(0)) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
             }
@@ -1565,11 +1645,11 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
       vp = alpha; // though, this last is never changed...
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
       p_fx.clear();
-      for (size_t p = 0; p < NDIM; p++)
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
       {
-        for (size_t q = 0; q < NDIM; q++)
+        for (size_t p = 0; p < NDIM; p++)
         {
-          for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+          for (size_t q = 0; q < NDIM; q++)
           {
             p_fx(p,idx) -= par(0) * p_dfx(p, q, idx) * phiData(q, k, idx);
           }
@@ -1583,14 +1663,28 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
         vx[1] = r;
         vx[0] = k; // CHANGE THIS to 0, 1
         sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, phiData);
+        for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+        {
+          for (size_t p = 0; p < NDIM; p++)
+          {
+            for (size_t q = 0; q < NDIM; q++)
+            {
+              p_fx(p, idx) += p_dtau(r, idx) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
+            }
+          }
+        }
+      }
+      nx = 1;
+      np = 0;
+      vx[0] = k;
+      sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx[0], np, &vp, p_dummy);
+      for (size_t idx = 0; idx < NDEG*NINT; ++idx)
+      {
         for (size_t p = 0; p < NDIM; p++)
         {
           for (size_t q = 0; q < NDIM; q++)
           {
-            for (size_t idx = 0; idx < NDEG*NINT; ++idx)
-            {
-              p_fx(p, idx) += p_dtau(r, idx) * p_dfx(p, q, idx) * solData(q, NTAU + 1 + r, idx);
-            }
+            p_fx(p, idx) += p_dtau(k, idx) * p_dfx(p, q, idx) * phiData(q, NTAU + 1 + k, idx);
           }
         }
       }

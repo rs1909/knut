@@ -295,7 +295,7 @@ void KNDdePeriodicSolution::postProcess()
   // update test functional
   for (size_t idx=0; idx < testFunct.size(); ++idx)
   {
-    if (testFunct(idx)) testFunct(idx)->initStep();
+    if (testFunct(idx)) testFunct(idx)->initStep(*colloc);
   }
 }
 

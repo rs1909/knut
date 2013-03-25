@@ -25,7 +25,7 @@ class KNAbstractTestFunctional
     virtual        ~KNAbstractTestFunctional()
     {}
     virtual void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) = 0;
-    virtual double initStep() = 0;
+    virtual double initStep(KNDdeBvpCollocation&) = 0;
     virtual double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) = 0;
     virtual double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) = 0;
     virtual void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par) = 0;
@@ -54,7 +54,7 @@ class KNTestFunctional : public KNAbstractTestFunctional
     KNTestFunctional(KNDdeBvpCollocation& col, double Z);
     ~KNTestFunctional();
     void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep();
+    double initStep(KNDdeBvpCollocation&);
     double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
     double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
     void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
@@ -105,7 +105,7 @@ class KNComplexTestFunctional : public KNAbstractTestFunctional
 
     void init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol,
               double Re, double Im);
-    double initStep();
+    double initStep(KNDdeBvpCollocation&);
     void funct(double& f1, double& f2,
                KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, double Re, double Im);
     void funct_p(double& f1, double& f2,
@@ -146,7 +146,7 @@ class KNLpAutTestFunctional : public KNAbstractTestFunctional
     KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z);
     ~KNLpAutTestFunctional();
     void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep();
+    double initStep(KNDdeBvpCollocation&);
     double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
     double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
     void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par);
@@ -193,7 +193,7 @@ class KNLpAutRotTestFunctional : public KNAbstractTestFunctional
     KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNArray1D<size_t> CRe, KNArray1D<size_t> CIm, double Z);
     ~KNLpAutRotTestFunctional();
     void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep();
+    double initStep(KNDdeBvpCollocation&);
     double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
     double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
     void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
@@ -251,7 +251,7 @@ class KNLpAutRotTestFunctional2 : public KNAbstractTestFunctional
 
     void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
     {}
-    double initStep()
+    double initStep(KNDdeBvpCollocation&)
     { return 0.0; }
     void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
     {}
@@ -309,7 +309,7 @@ class TestFunctIntersect : public KNAbstractTestFunctional
     {}
     // only first derivatives
     virtual void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    virtual double initStep();
+    virtual double initStep(KNDdeBvpCollocation&);
     // return value
     virtual double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
     // derivative w.r.t. alpha
@@ -340,7 +340,7 @@ class TestFunctGrazing : public KNAbstractTestFunctional
     {}
     // set up second derivatives
     virtual void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    virtual double initStep();
+    virtual double initStep(KNDdeBvpCollocation&);
     // return value
     virtual double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
     // derivative w.r.t. alpha

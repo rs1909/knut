@@ -73,7 +73,7 @@ KNTestFunctional::KNTestFunctional(KNDdeBvpCollocation& col, double Z) :
 KNTestFunctional::~KNTestFunctional()
 {}
 
-double KNTestFunctional::initStep()
+double KNTestFunctional::initStep(KNDdeBvpCollocation&)
 {
   double one = 1.0;
   double gg = 0.0;
@@ -118,7 +118,7 @@ void KNTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par, const
   size_t it = 0;
   do
   {
-    diffnorm = initStep();
+    diffnorm = initStep(col);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
   if (diffnorm > kernEps) std::cout << "KNTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
@@ -213,14 +213,14 @@ KNComplexTestFunctional::KNComplexTestFunctional(KNDdeBvpCollocation& col) :
     hh((size_t)2),
     ggdiff((size_t)2),
     hhdiff((size_t)2),
-    vvDataRe(NDIM, NTAU + 1, NDEG*NINT),
-    vvDataIm(NDIM, NTAU + 1, NDEG*NINT)
+    vvDataRe(NDIM, 2*NTAU + 1, NDEG*NINT),
+    vvDataIm(NDIM, 2*NTAU + 1, NDEG*NINT)
 {}
 
 KNComplexTestFunctional::~KNComplexTestFunctional()
 {}
 
-double KNComplexTestFunctional::initStep()
+double KNComplexTestFunctional::initStep(KNDdeBvpCollocation& col)
 {
   AHAT.multiply<false>(2, rhs, one, vv, gg);
   one(0) -= 1.0;
@@ -232,15 +232,17 @@ double KNComplexTestFunctional::initStep()
   gg -= ggdiff;
   uu -= uudiff;
   hh -= hhdiff;
-  vv /= sqrt(vv * vv);
-  uu /= sqrt(uu * uu);
+
+  vv /= sqrt(vv*vv);
+  uu /= sqrt(uu*uu);
   AHAT.getA31(0) = vv;
+  conjugate(AHAT.getA31(1), vv);
   AHAT.getA13(0) = uu;
-  conjugate(AHAT.getA13(1), AHAT.getA13(0));
-  conjugate(AHAT.getA31(1), AHAT.getA31(0));
+  conjugate(AHAT.getA13(1), uu);
+  
   const double diffnorm = std::max<double>(sqrt(uudiff * uudiff), sqrt(vvdiff * vvdiff));
 #ifdef DEBUG
-  std::cout << "dnorCX " << diffnorm << "\n";
+  std::cout << "KNComplexTestFunctional::initStep() = " << diffnorm << "\n";
 #endif
   return diffnorm;
 }
@@ -251,21 +253,24 @@ void KNComplexTestFunctional::init(KNDdeBvpCollocation& col, const KNVector& par
   ZRe = Re;
   ZIm = Im;
   col.jotf_x(AHAT.getA11(), par, Re, Im);
-  AHAT.getA13(0).random();
-  AHAT.getA31(0).random();
+  uu.random();
+  vv.random();
   AHAT.getA33().clear();
   // norming the borders
-  AHAT.getA31(0) /= sqrt(AHAT.getA31(0) * AHAT.getA31(0));
-  AHAT.getA13(0) /= sqrt(AHAT.getA13(0) * AHAT.getA13(0));
-  // conjugate
-  conjugate(AHAT.getA31(1), AHAT.getA31(0));
-  conjugate(AHAT.getA13(1), AHAT.getA13(0));
-
+  vv /= sqrt(vv*vv);
+  uu /= sqrt(uu*uu);
+  AHAT.getA31(0) = vv;
+  conjugate(AHAT.getA31(1), vv);
+  AHAT.getA13(0) = uu;
+  conjugate(AHAT.getA13(1), uu);
+  
+//   std::cout << "KNComplexTestFunctional::init() = " << std::max<double>(sqrt(uudiff * uudiff), sqrt(vvdiff * vvdiff)) << "\n";
+  
   double diffnorm = 1.0;
   size_t it = 0;
   do
   {
-    diffnorm = initStep();
+    diffnorm = initStep(col);
   }
   while ((++it < kernIter) && (diffnorm > kernEps));
   if (diffnorm > kernEps) std::cout << "KNComplexTestFunctional::Init: warning: No convergence in finding the singular vector. Residual = " << diffnorm << "\n";
@@ -301,7 +306,7 @@ void KNComplexTestFunctional::funct(double& f1, double& f2,
 }
 
 void KNComplexTestFunctional::funct_p(double& f1, double& f2,
-                            KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/,
+                            KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol,
                             size_t alpha)
 {
   col.jotf_x_p(A_p, par, vvDataRe, vvDataIm, ZRe, ZIm, alpha);
@@ -438,7 +443,7 @@ KNLpAutTestFunctional::KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z)
 KNLpAutTestFunctional::~KNLpAutTestFunctional()
 {}
 
-double KNLpAutTestFunctional::initStep()
+double KNLpAutTestFunctional::initStep(KNDdeBvpCollocation&)
 {
   return 0.0;
 }
@@ -610,7 +615,7 @@ KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNA
 KNLpAutRotTestFunctional::~KNLpAutRotTestFunctional()
 {}
 
-double KNLpAutRotTestFunctional::initStep()
+double KNLpAutRotTestFunctional::initStep(KNDdeBvpCollocation&)
 {
   return 0.0;
 }

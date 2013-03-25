@@ -431,6 +431,15 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
   xxDotNu->getV1() = xxDot->getV1();
   xxDotNu->getV3() = xxDot->getV3();
 
+#ifdef DEBUG
+    out << "Iteration: Tangent (T), updated tangent (U) and actual difference (A)\n";
+    const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
+    
+    out << "TX = " << T1norm;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " T" << varMapCont(i) << " = " << xxDot->getV3()(i - 1);
+    out << " TC = " << xxDot->getV3()(dim3) << '\n';
+    printStream();
+#endif /*DEBUG*/
   size_t  it = 0;
   bool conv;
   do
@@ -449,7 +458,10 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     conv = (Dnorm / (1.0 + Xnorm) < ContEps) && (Rnorm / (1.0 + Xnorm) < ContEps);
 
 #ifdef DEBUG
-    out << "Dnorm: " << Dnorm << " Rnorm: " << Rnorm << " Xnorm: " << Xnorm << "\n";
+    const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
+    out << "AX = " << A1norm/ds;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/ds;
+    out << '\n';
     printStream();
 #endif /*DEBUG*/
     // updating the tangent if converged or jacstep == false
@@ -473,25 +485,25 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
   if (conv)
   {
 #ifdef DEBUG
-    /// checking the tangent and the secant
-    double Pnorm = sqrt(xxDotNu->getV3()(dim3) * xxDotNu->getV3()(dim3));
-    double Xnorm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1())), Onorm = sqrt((xxDotNu->getV3()) * (xxDotNu->getV3()));
-    out << "Cnorm: " << Tnorm << "\nDot Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (size_t i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xxDotNu->getV3()(i - 1);
-    out << '\n';
-    printStream();
-
+    // xx strores the actual difference
     xx->getV1() = solNu;
     xx->getV1() -= sol;
     for (size_t i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
 
-    Pnorm = sqrt(xx->getV3()(dim3) * xx->getV3()(dim3)) / ds;
-    Xnorm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1())) / ds;
-    Onorm = 0;
-    for (size_t i = 0; i < dim3 + 1; i++) Onorm += (xx->getV3()(i)) * (xx->getV3()(i));
-    Onorm = sqrt(Onorm) / ds;
-    out << "Dif Pnorm: " << Pnorm << " Xnorm: " << Xnorm << " Onorm: " << Onorm;
-    for (size_t i = 1; i < varMap.size(); i++) std::cout << " O" << varMap(i) << ": " << xx->getV3()(i - 1) / ds;
+    // checking the tangent and the secant
+    out << "Finish: tangent (T), updated tangent (U) and actual difference (A)\n";
+    const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
+    const double U1norm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1()));
+    const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
+    
+    out << "TX = " << T1norm;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " T" << varMapCont(i) << " = " << xxDot->getV3()(i - 1);
+    out << '\n';
+    out << "UX = " << U1norm;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " U" << varMapCont(i) << " = " << xxDotNu->getV3()(i - 1);
+    out << '\n';
+    out << "AX = " << A1norm/ds;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/ds;
     out << '\n';
     printStream();
     /// END OF CHECKING

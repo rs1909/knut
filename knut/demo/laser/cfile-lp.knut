@@ -1,6 +1,6 @@
 <?xml version="cfile 1.0" encoding="utf-8"?>
 <knut version="5"> <branch input="out-psol.mat" output="out-lp.mat"
-sysname="laser.vf" fromtype="NX" label="138" pointtype="USER" cp="T"
+sysname="laser.vf" fromtype="LP" label="1" pointtype="USER" cp="T"
 switch="NX" eqns="DDE_LC,PHASE,PHASE_ROT,DDE_AUT_ROT_TF_LP"
 vars="DDE_LC,sigma,bb,eta" nint="20" ndeg="5" nmul="20" stab="0"
 curvature="0.25" nint1="12" nint2="12" ndeg1="4" ndeg2="4" steps="500"

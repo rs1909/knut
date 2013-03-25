@@ -309,8 +309,8 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
           break;
         }
         // stop continuation if CP has reached the bounds
-        if ((par(params->getCp() - VarPAR0) < params->getCpMin())||
-            (par(params->getCp() - VarPAR0) > params->getCpMax()))
+        if ((par(VarToIndex(params->getCp(),sys->npar())) < params->getCpMin())||
+            (par(VarToIndex(params->getCp(),sys->npar())) > params->getCpMax()))
         {
           parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, itc);
           screenout << '\n';
