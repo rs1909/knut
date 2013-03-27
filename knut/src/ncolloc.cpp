@@ -1820,6 +1820,10 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
     for (size_t r = 0; r < NTAU; r++)
     {
       size_t nx, vx, np, vp;
+      nx = 0, np = 1;
+      vp = alpha;
+      sys->p_deri(p_dfpMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
+
       nx = 1;
       np = 0;
       vx = r;
@@ -1831,7 +1835,8 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
         {
           for (size_t idx = 0; idx < NDEG*NINT+1; ++idx)   // i: interval; j: which collocation point
           {
-            V(p + NDIM*idx) += ((p_dtauMSH(r,idx) - p_tauMSH(r,idx) / par(0)) / par(0)) * p_dfxMSH(p, q, idx) * solMSHData(q, NTAU + r, idx);
+            V(p + NDIM*idx) += ((p_dtauMSH(r,idx) - p_tauMSH(r,idx) / par(0)) / par(0)) * p_dfxMSH(p, q, idx) * solMSHData(q, NTAU + r, idx)
+                                - p_dfpMSH(p,0,idx);
           }
         }
       }
