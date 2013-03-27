@@ -211,7 +211,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
       {
         //
         double angle;
-        const size_t itc = pt.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
+        const size_t itc = pt.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
         // step size adaptation
         double dsmul1 = 1.0, dsmul2 = 1.0;
         if      (itc < 2) dsmul1 = 2.0;         // 2
@@ -261,13 +261,13 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
           parValuePrint(screenout, par, params->getCp(), var, i, bif, norm, ustab, itc);
           if ( (fabs(ds)*dsmul < params->getDsMin()) )
           {
-            screenout << "--";
+            screenout << "-0";
           } else if ( (fabs(ds)*dsmul > params->getDsMax()) )
           {
-            screenout << "++";
+            screenout << "+0";
           } else
           {
-            screenout << " " << std::showpos << static_cast<int>(round(2*log(dsmul)/log(2))) << std::noshowpos;
+            screenout << std::showpos << static_cast<int>(round(2*log(dsmul)/log(2))) << std::noshowpos;
           }
           printStream();
           ++printedln;
@@ -275,13 +275,9 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         // adapt mesh if necessary
         if ((params->getIad() != 0) && (((i+1) % params->getIad()) == 0))
         {
-          const size_t itad = pt.refine(true);
-          const size_t ittan = pt.tangent(true);
-          if (toprint || (i != 0  && ustab != ustabprev))
-          {
-            screenout << " " << itad << " " << ittan;
-            printStream();
-          }
+          pt.adapt();
+          const size_t itad = pt.nextStep(0.0, angle, IterateTangent::yes);
+//          if (itad >= params->getNItC()) break;
         }
         if (toprint || stabchange)
         {
@@ -387,7 +383,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         }
       } else
       {
-        P_MESSAGE1("Invalid barnch switch.");
+        P_MESSAGE1("Invalid branch switch.");
       }
 
       double ds = params->getDs();
@@ -401,7 +397,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         }
         // same as for periodic orbits
         double angle;
-        size_t it = pttr.nextStep(ds, angle, (i == 0) && (params->getBranchSW() != NOSwitch));
+        size_t it = pttr.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
         for (size_t j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
         double norm = pttr.norm();
         if (i % 24 == 0)

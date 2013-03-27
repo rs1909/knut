@@ -420,7 +420,7 @@ size_t KNAbstractPoint::tangent(bool adapt)
   return it;
 }
 
-size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
+size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent jacstep)
 {
   std::ostream& out = outStream();
   double Xnorm, Dnorm, Rnorm, Tnorm;
@@ -432,7 +432,8 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
   xxDotNu->getV3() = xxDot->getV3();
 
 #ifdef DEBUG
-    out << "Iteration: Tangent (T), updated tangent (U) and actual difference (A)\n";
+    if (ds != 0.0) out << "Iteration: Tangent (T), updated tangent (U) and actual difference (A)\n";
+    else out << "Refine (Cont): Tangent (T), updated tangent (U) and actual difference (A)\n";
     const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
     
     out << "TX = " << T1norm;
@@ -459,13 +460,14 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
 
 #ifdef DEBUG
     const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
-    out << "AX = " << A1norm/ds;
-    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/ds;
+    const double dsdiv = (ds == 0.0) ? 1.0 : ds; 
+    out << "AX = " << A1norm/dsdiv;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/dsdiv;
     out << '\n';
     printStream();
 #endif /*DEBUG*/
     // updating the tangent if converged or jacstep == false
-    if (!jacstep || conv)
+    if ((jacstep == IterateTangent::yes) || conv)
     {
       // tangent
       jac->multiply<false>(*rhs, *xxDotNu, dim3 + 1);
@@ -478,7 +480,8 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
       xxDotNu->getV3() /= Tnorm;
     }
     // end updating tangent
-    out << '.';
+    if (ds != 0.0) out << '.';
+    else out << 'o';
     printStream();
   }
   while (!conv /*&& (Dnorm/(1.0+Xnorm) < 1.0)*/ && (++it < ContIter));
@@ -491,7 +494,8 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     for (size_t i = 1; i < varMapCont.size(); i++) xx->getV3()(i - 1) = parNu(varMapCont(i)) - par(varMapCont(i));
 
     // checking the tangent and the secant
-    out << "Finish: tangent (T), updated tangent (U) and actual difference (A)\n";
+    if (ds != 0.0) out << "Finish: tangent (T), updated tangent (U) and actual difference (A)\n";
+    else out << "Refine finish: tangent (T), updated tangent (U) and actual difference (A)\n";
     const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
     const double U1norm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1()));
     const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
@@ -502,8 +506,9 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     out << "UX = " << U1norm;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " U" << varMapCont(i) << " = " << xxDotNu->getV3()(i - 1);
     out << '\n';
-    out << "AX = " << A1norm/ds;
-    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/ds;
+    const double dsdiv = (ds == 0.0) ? 1.0 : ds; 
+    out << "AX = " << A1norm/dsdiv;
+    for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/dsdiv;
     out << '\n';
     printStream();
     /// END OF CHECKING
@@ -517,7 +522,7 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, bool jacstep)
     for (size_t i = 1; i < varMapCont.size(); i++)
       XnormSQ += pow(par(varMapCont(i)) + ds * xxDot->getV3()(i - 1) - parNu(varMapCont(i)),2);
     angle = atan(sqrt(XnormSQ)/fabs(ds))/(M_PI/2.0);
-    if ((angle < ContCurvature) || jacstep) // dont check curvature at the begining
+    if ((angle < ContCurvature) || (jacstep == IterateTangent::no)) // dont check curvature at the begining
     {
       // copying back the solution
       sol = solNu;

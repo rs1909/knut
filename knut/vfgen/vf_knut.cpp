@@ -862,10 +862,10 @@ static void expeval(const GiNaC::ex& expr, double* res, size_t skip, const KNArr
     delete[] res_loc;
     return;
   } 
-  else if (is_exactly_a<function>(expr))
+  else if (is_exactly_a<GiNaC::function>(expr))
   {
 //    std::cout << " function -> " << ex_to<function>(expr).get_name() << "(" << expr.op(0) << ")";
-    std::string name(ex_to<function>(expr).get_name());
+    std::string name(ex_to<GiNaC::function>(expr).get_name());
     if (name == "par_")
     {
       size_t pid = static_cast<size_t>(ex_to<numeric>(expr.op(0)).to_int());

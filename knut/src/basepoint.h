@@ -20,6 +20,8 @@
 class KNSystem;
 class KNAbstractContinuation;
 
+enum class IterateTangent { no, yes };
+
 class KNAbstractPoint
 {
   public:
@@ -30,9 +32,15 @@ class KNAbstractPoint
           const size_t solsize, const size_t nz_jac_);
     virtual ~KNAbstractPoint();
     void    reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_);
+    void    adapt()
+    {
+      basecolloc->meshAdapt(solNu, sol, xxDotNu->getV1(), xxDot->getV1());
+      sol = solNu;
+      xxDot->getV1() = xxDotNu->getV1();
+    }
     size_t  refine(bool adapt = false);
     size_t  tangent(bool adapt = false);
-    size_t  nextStep(double ds, double& angle, bool jacstep);
+    size_t  nextStep(double ds, double& angle, const IterateTangent jacstep);
 
     // supplementary
     inline void    setSol(KNVector& s)
