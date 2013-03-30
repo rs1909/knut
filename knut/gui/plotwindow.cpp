@@ -64,7 +64,7 @@ void plotWindow::init(Var cp)
   if (found)
   {
     yvar->setCurrentIndex(2); // Amplitude
-    emit requestPlot ();
+    emit requestPlot (dataFileInfo.absoluteFilePath());
   }
 }
 

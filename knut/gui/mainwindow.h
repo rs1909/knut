@@ -102,7 +102,7 @@ class MainWindow : public QMainWindow
     void setPointType();
     void inputPlot();
     void outputPlot();
-    void plotReq();
+    void plotReq(const QString& fileName);
     void plotOpenFile(const QString& fileName);
     void plotDestroyed();
     void terminalView();

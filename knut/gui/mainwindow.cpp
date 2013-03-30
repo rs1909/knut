@@ -444,6 +444,8 @@ void MainWindow::stopped()
 
 void MainWindow::threadDataDelete()
 {
+  if (inThreadMatFile == inputMatFile) inputMatFile = 0;
+  if (inThreadMatFile == outputMatFile) outputMatFile = 0;
   delete inThreadMatFile;
   inThreadMatFile = 0;
   emit threadDataDeleteAck();
@@ -531,13 +533,13 @@ void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, con
                 *window, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
       connect (*window, SIGNAL(updated()),
                 &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
-      connect (*window, SIGNAL(requestPlot()), this, SLOT(plotReq()));
+      connect (*window, SIGNAL(requestPlot(const QString&)), this, SLOT(plotReq(const QString&)));
       connect (*window, SIGNAL(openFile(const QString&)), this, SLOT(plotOpenFile(const QString&)));
+      connect (*window, SIGNAL(windowClosed()), this, SLOT(plotDestroyed()));
 
-      compThread.dataChangedAck();
+      // calling the slot in a thread safe way (and not directly)
+      QMetaObject::invokeMethod (&compThread, "dataChangedAck", Qt::QueuedConnection);
       (*window)->init (parameters.getCp());
-      
-      connect(*window, SIGNAL(windowClosed()), this, SLOT(plotDestroyed()));
       (*window)->setWindowTitle("Plot data");
       (*window)->show();
     }
@@ -585,7 +587,7 @@ void MainWindow::outputPlot ()
   raisePlot (&outputPlotWindow, &outputMatFile, outputFile->text());
 }
 
-void MainWindow::plotOpenFile(const QString& fileName)
+void MainWindow::plotOpenFile (const QString& fileName)
 {
   if (sender() == inputPlotWindow)
   {
@@ -601,16 +603,26 @@ void MainWindow::plotOpenFile(const QString& fileName)
   }
 }
 
-void MainWindow::plotReq ()
+void MainWindow::plotReq (const QString& fileName)
 {
   if (sender() == inputPlotWindow) 
   {
 //     std::cout << "MainWindow::plotReq inputPlotWindow\n";
+    if (inputMatFile == 0)
+    {
+      openMatFile(&inputMatFile, fileName);
+      if (inputMatFile) inputPlotWindow->initPlot (inputMatFile);
+    }
     inputPlotWindow->addPlot (inputMatFile);
   }
   if (sender() == outputPlotWindow)
   {
 //     std::cout << "MainWindow::plotReq outputPlotWindow\n";
+    if (outputMatFile == 0)
+    {
+      openMatFile(&outputMatFile, fileName);
+      if (outputMatFile) outputPlotWindow->initPlot (outputMatFile);
+    }
     outputPlotWindow->addPlot (outputMatFile);
   }
 }

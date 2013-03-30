@@ -65,7 +65,7 @@ class plotWindow : public QSplitter
     QFileInfo dataFileInfo;
   private slots:
     // this is connected to the addplpot button
-    void addPlot() { emit requestPlot (); }
+    void addPlot() { emit requestPlot (dataFileInfo.absoluteFilePath()); }
     void clearPlot();
     void open();
     void removePlot();
@@ -80,7 +80,7 @@ class plotWindow : public QSplitter
     // is called when the computing thread made a step
     void updatePlot(const KNDataFile* dataFile);
   signals:
-    void requestPlot();
+    void requestPlot(const QString& fileName);
     void windowClosed();
     // gets emitted when a new file is opened
     // this makes the system open the file
