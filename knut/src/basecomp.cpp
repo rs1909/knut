@@ -152,9 +152,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     if (eqn(0) != EqnTORSol)
     {
       KNAbstractPeriodicSolution& pt = *pt_ptr;
-      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
-                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
-                           params->getNInt(), params->getNDeg(), params->getNMul()));
+      createDataLC (params->getOutputFile(), sys->ndim(), sys->npar(), params);
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
@@ -318,9 +316,10 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     }
     else
     {
-      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
-                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
-                           params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
+      createDataTR (params->getOutputFile(), sys->ndim(), sys->npar(), params);
+//      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
+//                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
+//                           params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
 
       screenout << "ENTERING THE TORUS CODE!\n";
       printStream();
@@ -432,4 +431,20 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     deleteData();
     raiseException(ex);
   }
+}
+
+// create a data file for limit cycles
+void KNCliContinuation::createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+{
+  output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt(), prms->getNDeg(), prms->getNMul());
+}
+
+// create a data file for tori
+void KNCliContinuation::createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+{
+  output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
 }

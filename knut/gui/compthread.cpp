@@ -8,9 +8,10 @@
 // ------------------------------------------------------------------------- //
 
 #include "compthread.h"
+#include <QCoreApplication>
 
 MThread::MThread(const KNConstants& constants, QObject* parent) 
-  : QThread(parent), KNAbstractContinuation(constants), output(0), changeQueued(false)
+  : QObject(parent), KNAbstractContinuation(constants), output(0), changeQueued(false)
 {
 }
 
@@ -18,9 +19,10 @@ MThread::~MThread()
 {
 }
 
-void MThread::run()
+void MThread::process()
 {
   KNAbstractContinuation::run();
+  emit finished();
 }
 
 void MThread::printStream()
@@ -31,13 +33,6 @@ void MThread::printStream()
 void MThread::raiseException(const KNException& ex)
 {
   emit exceptionOccured(ex);
-}
-
-void MThread::setData(KNDataFile* data)
-{
-  output = data;
-//  std::cout << "MThread: new data\n";
-  emit dataSet(output);
 }
 
 KNDataFile& MThread::data()
@@ -53,45 +48,72 @@ const KNDataFile* MThread::dataPointer()
 // deleteData -> dataDeleteReq -> <MainWindow> -> dataDeleteAck
 void MThread::deleteData()
 {
+//   std::cout << "MThread::deleteData in\n";
   if (output) emit dataDeleteReq();
+  // wait for the slot to be activated, output turns zero
+  do {
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+  } while (output != 0);
+//   std::cout << "MThread::deleteData out\n";
+}
+
+void MThread::dataDeleteAck()
+{
+  output = 0;
 }
 
 void MThread::dataUpdated()
 {
-  changeLock.lock();
-  volatile bool queued = changeQueued;
-  changeLock.unlock();
-  if (!queued)
+  QCoreApplication::processEvents ();
+  if (!changeQueued)
   {
-    changeLock.lock();
     changeQueued = true;
-    changeLock.unlock();
-//    std::cout << "+req " << queued << "\n";
+//     std::cout << "+req " << changeQueued << "\n";
     emit dataChanged( const_cast<const KNDataFile*>(output) );
   } else
   {
-//    std::cout << "0req " << queued << "\n";
+//     std::cout << "0req " << changeQueued << "\n";
   }
 }
 
 // SLOTS:
 
-void MThread::dataDeleteAck()
-{
-//  std::cout << "MThread: delete data\n";
-  delete output;
-  output = 0;
-}
-
+// this is called to notify that the result is plotted already
 void MThread::dataChangedAck()
 {
-//  std::cout << "-ack\n";
-  changeLock.lock();
+//   std::cout << "-ack\n";
   changeQueued = false;
-  changeLock.unlock();
 }
 
 void MThread::consolePrint(const std::string& str)
 {
   std::cout << str;
+}
+
+void MThread::dataCreated(KNDataFile* dataFile)
+{
+//   std::cout << "MThread::dataCreated\n";
+  output = dataFile;
+}
+
+void MThread::createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+{
+//   std::cout << "MThread::createDataLC in\n";
+  output = 0;
+  emit createDataRequestLC (fileName, ndim, npar, prms);
+  // wait for the slot to be activated, output turns nonzero
+  do {
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+//     std::cout << "MThread::createDataLC loop " << output << "\n";
+  } while (output == 0);
+//   std::cout << "MThread::createDataLC out\n";
+}
+
+void MThread::createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+{
+  output = 0;
+  emit createDataRequestTR (fileName, ndim, npar, prms);
+  do {
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+  } while (output == 0);
 }

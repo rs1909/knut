@@ -16,38 +16,43 @@
 
 class KNDataFile;
 
-class MThread : public QThread, public KNAbstractContinuation
+class MThread : public QObject, public KNAbstractContinuation
 {
     Q_OBJECT
   public:
     MThread(const KNConstants& constants, QObject* parent = 0);
     ~MThread();
-    void run();
     void printStream();
     void clearLastLine() { emit printClearLastLine(); }
     void storeCursor() { emit printStoreCursor(); }
     void raiseException(const KNException& ex);
-    void setData(KNDataFile* data);
+    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
     KNDataFile& data();
     const KNDataFile* dataPointer();
     void deleteData();
     void dataUpdated();
   public slots:
+    void process();
     void consolePrint(const std::string& str);
     void dataDeleteAck();
     void dataChangedAck();
+    void dataCreated(KNDataFile* dataFile);
 
   signals:
+    void finished();
     void exceptionOccured(const KNException& ex);
     void printStoreCursor();
     void printClearLastLine();
     void printToScreen(const std::string& str) const;
     void dataChanged(const KNDataFile* dataFile);
+    // called by deleteData(). This notifies the system that the continuation has finished.
     void dataDeleteReq();
-    void dataSet(const KNDataFile* dataFile);
+    // these have to be connected and in return call dataCreated()
+    void createDataRequestLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createDataRequestTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
 
   private:
     KNDataFile* output;
     bool changeQueued;
-    QMutex changeLock;
 };

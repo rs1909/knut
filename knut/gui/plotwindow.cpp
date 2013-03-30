@@ -32,7 +32,7 @@
 #include <QSvgGenerator>
 
 plotWindow::plotWindow(QWidget *parent) :
-    QSplitter(parent), data(0)
+    QSplitter(parent) //, data(0)
 {
   setupPlotWindow();
 }
@@ -46,7 +46,7 @@ plotWindow::plotWindow(const QString& filename, QWidget *parent) :
 
 plotWindow::~plotWindow()
 {
-  if (data) emit closeFile(data);
+//  if (data) emit closeFile(data);
 }
 
 void plotWindow::init(Var cp)
@@ -55,16 +55,16 @@ void plotWindow::init(Var cp)
   bool found = false;
   for (unsigned int i=0; i < xvarMap.size(); ++i)
   {
-       if ((xvarMap[i].value-XParameter0) == (cp-VarPAR0))
-       {
-         xvar->setCurrentIndex(i);
-         found = true;
-       }
+    if ((xvarMap[i].value-XParameter0) == (cp-VarPAR0))
+    {
+      xvar->setCurrentIndex(i);
+      found = true;
+    }
   }
   if (found)
   {
-       yvar->setCurrentIndex(2); // Amplitude
-       addPlot();
+    yvar->setCurrentIndex(2); // Amplitude
+    emit requestPlot ();
   }
 }
 
@@ -179,24 +179,29 @@ void plotWindow::setupPlotWindow()
                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
 }
 
-void plotWindow::setData(const KNDataFile* mat)
+void plotWindow::initPlot(const KNDataFile* mat)
 {
   if (mat == 0) { std::cout << "Can't set data\n"; return; }
-  data = mat;
-  matfile->setText(QDir::current().relativeFilePath(data->getFileName().c_str()));
-  data->lock(); 
-  ptlabel->setRange(0, data->getNCols() - 1);
-  dim->setRange(0, data->getNDim() - 1);
+//  data = mat;
+  mat->lock();
+  QFileInfo fi(QString::fromStdString(mat->getFileName()));
+  if (fi.isSymLink()) fi = QFileInfo(fi.symLinkTarget());
+  dataFileInfo = fi;
+  shortFileName = fi.fileName();
+
+  matfile->setText(QDir::current().relativeFilePath(mat->getFileName().c_str()));
+  ptlabel->setRange(0, mat->getNCols() - 1);
+  dim->setRange(0, mat->getNDim() - 1);
 
   const int xidx = xvar->currentIndex();
   std::vector<std::string> parNames;
-  data->getParNames(parNames);
+  mat->getParNames(parNames);
   xvarMap.clear();
   xvarMap.push_back(XTranslate(XNone, "None"));
   xvarMap.push_back(XTranslate(XLabel, "Label"));
   xvarMap.push_back(XTranslate(XMesh, "Mesh"));
   xvarMap.push_back(XTranslate(XRealMultiplier, "RealMultiplier"));
-  for (size_t i = 0; i < data->getNPar(); ++i)
+  for (size_t i = 0; i < mat->getNPar(); ++i)
   {
     if (i < parNames.size())
     {
@@ -218,7 +223,7 @@ void plotWindow::setData(const KNDataFile* mat)
   yvarMap.push_back(YTranslate(YImagMultiplier, "ImagMultiplier"));
   yvarMap.push_back(YTranslate(YAbsMultiplier, "AbsMultiplier"));
   yvarMap.push_back(YTranslate(YProfile, "Profile"));
-  for (size_t i = 0; i < data->getNPar(); ++i)
+  for (size_t i = 0; i < mat->getNPar(); ++i)
   {
     if (i < parNames.size())
     {
@@ -231,10 +236,8 @@ void plotWindow::setData(const KNDataFile* mat)
     yvar->insertItem(static_cast<int>(i), yvarMap.at(i).name);
   }
   if ((yidx != -1) && (yidx < yvar->count())) yvar->setCurrentIndex(yidx);
-  data->unlock();
 
-  QFileInfo fi(QString::fromStdString(data->getFileName()));
-  shortFileName = fi.fileName();
+  mat->unlock();
 }
 
 void plotWindow::open()
@@ -246,10 +249,19 @@ void plotWindow::open()
   }
 }
 
-void plotWindow::addPlot()
+void plotWindow::addPlot(const KNDataFile* data)
 {
+  // Need to query data
   if (data)
   {
+//     std::cout << "plotWindow::addPlot 1\n";
+    data->lock();
+    QFileInfo fi(QString::fromStdString(data->getFileName()));
+    data->unlock();
+    if (fi.isSymLink()) fi = QFileInfo(fi.symLinkTarget());
+    if (dataFileInfo != fi) return; // exit if not the same file as before
+//     std::cout << "plotWindow::addPlot 2\n";
+
     data->lock();
     // make sure that the data is consistent
     const_cast<KNDataFile*>(data)->initHeaders();
@@ -336,6 +348,9 @@ void plotWindow::exportSvg()
 
 void plotWindow::updatePlot(const KNDataFile* data)
 {
+//   std::cout << "plotWindow::updatePlot\n";
+  data->lock();
   plotdata.updatePlot(data);
+  data->unlock();
   emit updated();
 }

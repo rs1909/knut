@@ -8,39 +8,45 @@
 class KNAbstractContinuation
 {
   public:
-    KNAbstractContinuation(const KNConstants& constants) : stopFlag(false)
-    {
-      params = new KNConstants(constants);
-    }
-    virtual ~KNAbstractContinuation()
-    {
-      delete params;
-    }
-    void setConstants(const KNConstants& constants)
-    {
-      delete params;
-      params = new KNConstants(constants);
-    }
+    KNAbstractContinuation(const KNConstants& constants);
+    virtual ~KNAbstractContinuation();
+    
+    // sets the constants file pointer
+    void setConstants(const KNConstants& constants);
+    // run the continuation 
     void run(KNSystem* sys, const char* branchFile);
     void run(const char* branchFile);
     void run() { run(0); }
-    void setStopFlag(bool flag)
-    {
-      stopFlag = flag;
-    }
+    // sets the flag to stop computation
+    void setStopFlag(bool flag);
+
+    // these are all called from the thread, hence should not be called from outside.
     virtual std::ostream& outStream() { return screenout; };
+    // screenout should be printed to the output
     virtual void printStream() = 0;
+    // clear the last line on the screen
     virtual void clearLastLine() = 0;
+    // store the current position on the screen so that on can delete anything after that
     virtual void storeCursor() = 0;
+    // notify the user that an exception has occured
     virtual void raiseException(const KNException& ex) = 0;
-    virtual void setData(KNDataFile* data) = 0;
-    virtual KNDataFile& data() = 0;
-    virtual void deleteData() = 0;
-    virtual void dataUpdated() = 0;
+    // transforms error message into a stream
     static void printException(std::ostream& err, const KNException& ex)
     {
       err << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
     }
+    // create a data file for limit cycles
+    virtual void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms) = 0;
+    // create a data file for tori
+    virtual void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms) = 0;
+    // the thread sets the data file
+//    virtual void setData(KNDataFile* data) = 0;
+    // the thread requests the data file
+    virtual KNDataFile& data() = 0;
+    // the thread wants to close the data file
+    virtual void deleteData() = 0;
+    // the thread notifies when data should be closed
+    virtual void dataUpdated() = 0;
 
   protected:
     KNConstants* params;
@@ -48,6 +54,27 @@ class KNAbstractContinuation
     // this is used within the thread
     std::ostringstream screenout;
 };
+
+inline KNAbstractContinuation::KNAbstractContinuation(const KNConstants& constants) : stopFlag(false)
+{
+  params = new KNConstants(constants);
+}
+
+inline KNAbstractContinuation::~KNAbstractContinuation()
+{
+  delete params;
+}
+
+void inline KNAbstractContinuation::setConstants(const KNConstants& constants)
+{
+  delete params;
+  params = new KNConstants(constants);
+}
+
+void inline KNAbstractContinuation::setStopFlag(bool flag)
+{
+  stopFlag = flag;
+}
 
 class KNCliContinuation : public KNAbstractContinuation
 {
@@ -69,7 +96,9 @@ class KNCliContinuation : public KNAbstractContinuation
       printException(ex);
       exit(-1);
     }
-    void setData(KNDataFile* data) { output = data; }
+    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+//    void setData(KNDataFile* data) { output = data; }
     KNDataFile& data() { return *output; }
     void deleteData() { delete output; output = 0; }
     void dataUpdated() { }

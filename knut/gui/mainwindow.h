@@ -73,6 +73,10 @@ class MainWindow : public QMainWindow
       showException(this, ex);
     }
 
+  signals:
+    void threadDataCreated(KNDataFile* dataFile);
+    void threadDataDeleteAck();
+
   protected:
     void closeEvent(QCloseEvent *event);
 
@@ -83,7 +87,8 @@ class MainWindow : public QMainWindow
   private slots:
     void stopped();
     void threadDataDelete();
-    void threadDataSet(const KNDataFile* dataFile);
+    void createThreadDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createThreadDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
     void stop();
     void newFile();
     void open();
@@ -96,9 +101,10 @@ class MainWindow : public QMainWindow
     void setOutputFile();
     void setPointType();
     void inputPlot();
-    void inputPlotDestroyed();
     void outputPlot();
-    void outputPlotDestroyed();
+    void plotReq();
+    void plotOpenFile(const QString& fileName);
+    void plotDestroyed();
     void terminalView();
     void terminalViewDestroyed();
     void terminalTextAppend(const std::string& str)
@@ -115,10 +121,6 @@ class MainWindow : public QMainWindow
     }
     void compileSystem();
     void generateSystem();
-    void openInputMatFile(const QString& fileName);
-    void closeInputMatFile(const KNDataFile* dataFile);
-    void openOutputMatFile(const QString& fileName);
-    void closeOutputMatFile(const KNDataFile* dataFile);
     void nParChanged(int n);
     
   private:
@@ -134,6 +136,9 @@ class MainWindow : public QMainWindow
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
+    
+    void openMatFile (const KNDataFile** matFile, const QString& fileName);
+    void raisePlot (plotWindow **window, const KNDataFile** matFile, const QString& fileName);
 
     // path of the executable
     QString     executableDir;
@@ -141,6 +146,7 @@ class MainWindow : public QMainWindow
     // all the parameters
     NConstantsQtGui parameters;
     MThread      compThread;
+    QThread     *workThread;
     QWidget     *paramsWidget;
     QGridLayout *paramsGrid;
     QLabel      *eqnsLabel;
@@ -209,7 +215,7 @@ class MainWindow : public QMainWindow
     
     const KNDataFile* inputMatFile;
     const KNDataFile* outputMatFile;
-    const KNDataFile* inThreadMatFile;
+    KNDataFile* inThreadMatFile;
 };
 
 #endif

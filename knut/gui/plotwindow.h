@@ -40,28 +40,15 @@ class plotWindow : public QSplitter
     plotWindow(QWidget *parent = 0);
     ~plotWindow();
     void init(Var cp);
-    bool isDataSet()
-    {
-      return data != 0;
-    }
-    bool isThisData(const KNDataFile* dataFile)
-    {
-      QFileInfo f1(QString::fromStdString(data->getFileName()));
-      QFileInfo f2(QString::fromStdString(dataFile->getFileName()));
-//      std::cout << f1.canonicalFilePath().toStdString() << " v.s.\n"
-//                << f2.canonicalFilePath().toStdString() << "\n" << (int)(f1 == f2) << "\n";
-      return (f1.canonicalFilePath() == f2.canonicalFilePath());
-    }
   protected:
-  	void closeEvent(QCloseEvent *event)
- 	{
- 	  emit windowClosed();
+    void closeEvent(QCloseEvent *event)
+    {
+      emit windowClosed();
       event->accept();
     }
   private:
     void setupPlotWindow();
     // variables
-    const KNDataFile* data;
     PlotData plotdata;
     QGraphicsView *plot;
     // gui elements
@@ -77,7 +64,8 @@ class plotWindow : public QSplitter
     QString   shortFileName;
     QFileInfo dataFileInfo;
   private slots:
-    void addPlot();
+    // this is connected to the addplpot button
+    void addPlot() { emit requestPlot (); }
     void clearPlot();
     void open();
     void removePlot();
@@ -85,18 +73,18 @@ class plotWindow : public QSplitter
     void print();
     void exportSvg();
   public slots:
-    // sets the data file
-    void setData(const KNDataFile* dataFile);
+    // this is when it is called for the first time with the same data file
+    void initPlot(const KNDataFile* dataFile);
+    // add a plot with the same data file
+    void addPlot(const KNDataFile* mat);
     // is called when the computing thread made a step
     void updatePlot(const KNDataFile* dataFile);
   signals:
+    void requestPlot();
     void windowClosed();
     // gets emitted when a new file is opened
-    // this makes the system open the file and the will called
-    // the setData slot to add the plot
+    // this makes the system open the file
     void openFile(const QString& filename);
-    // if the file is no longer in use, the signal is emitted
-    void closeFile(const KNDataFile* dataFile);
     // called when plotting is finished
     void updated();
 };

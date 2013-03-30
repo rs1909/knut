@@ -404,101 +404,65 @@ MainWindow::MainWindow(const QString& appDir) :
 
   // compThread is a permanent object
   // should it be dynamic?
-  connect(&compThread, SIGNAL(finished()), this, SLOT(stopped()));
-  connect(&compThread, SIGNAL(dataDeleteReq()), this, SLOT(threadDataDelete()));
-  connect(&compThread, SIGNAL(dataSet(const KNDataFile*)), this, SLOT(threadDataSet(const KNDataFile*)));
+  workThread = new QThread;
+  compThread.moveToThread(workThread);
+  connect(workThread, SIGNAL(started()), &compThread, SLOT(process()));
+  connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()));
+  connect(workThread, SIGNAL(finished()), this, SLOT(stopped()), Qt::QueuedConnection);
+  // opening the file
+  connect(&compThread, SIGNAL(createDataRequestLC (const std::string&, size_t, size_t, KNConstants*)), 
+          this,           SLOT(createThreadDataLC (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
+  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)), 
+          this,           SLOT(createThreadDataTR (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
+  connect(this, SIGNAL(threadDataCreated(KNDataFile*)), &compThread, SLOT(dataCreated(KNDataFile*)), Qt::QueuedConnection);
+  // closing the file
+  connect(&compThread, SIGNAL(dataDeleteReq()), this, SLOT(threadDataDelete()), Qt::QueuedConnection);
+  connect(this, SIGNAL(threadDataDeleteAck()), &compThread, SLOT(dataDeleteAck()), Qt::QueuedConnection);
 }
 
 void MainWindow::run()
 {
-  if (!compThread.isRunning())
+  if (!workThread->isRunning())
   {
     terminalText.clear();
     setSysNameParameter(); // this is probably not updated by editingFinished()
     compThread.setConstants(parameters);
     compThread.setStopFlag(false);
-    compThread.start();
+    workThread->start();
     stopAct->setEnabled(true);
+  } else
+  {
+//     std::cout << "MainWindow::run running!\n";
   }
 }
 
 void MainWindow::stopped()
 {
   stopAct->setEnabled(false);
+//   std::cout << "MainWindow::stopped\n";
 }
 
 void MainWindow::threadDataDelete()
 {
-  // don't let it delete if the plotter is using it,
-  // take away ownership in any case
-  bool inToDelete = true, outToDelete = true; 
-  if (inputMatFile)
-    if(inputMatFile == inThreadMatFile)
-      inToDelete = false;
-  if (outputMatFile)
-    if(outputMatFile == inThreadMatFile)
-      outToDelete = false;
-  if (inToDelete && outToDelete)
-  {
-    compThread.dataDeleteAck();
-//    std::cout << " --- Deleting\n";
-  } else
-  {
-    const std::string fn(inThreadMatFile->getFileName());
-//    std::cout << " --- reopening as read only " << fn << "\n";
-    compThread.dataDeleteAck();
-    const KNDataFile* df = new KNDataFile(fn);
-    if (!inToDelete) 
-    {
-      inputMatFile = df;
-      if (inputPlotWindow) inputPlotWindow->setData(df);
-    }
-    if (!outToDelete)
-    {
-      outputMatFile = df;
-      if (outputPlotWindow) outputPlotWindow->setData(df);
-    }
-//    std::cout << " --- reopened as read only " << df->getFileName() << "\n";
-  }
+  delete inThreadMatFile;
   inThreadMatFile = 0;
+  emit threadDataDeleteAck();
 }
 
-void MainWindow::threadDataSet(const KNDataFile* dataFile)
+void MainWindow::createThreadDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
 {
-  if (inThreadMatFile)
-  {
-//    std::cout << "One is already in thread\n";
-  } else
-  {
-//    std::cout << "setting inThreadMatFile\n";
-    inThreadMatFile = dataFile;
-    // is the opened data used somewhere?
-    // if yes, set it to the new, the old will be deleted
-    if (inputPlotWindow)
-    {
-//      std::cout << "intest " << inputMatFile << "\n";
-      if (inputPlotWindow->isThisData(dataFile))
-      {
-//        std::cout << "Same as Inp. 1\n";
-        if (inputMatFile) delete inputMatFile;
-        inputMatFile = dataFile;
-        inputPlotWindow->setData(dataFile);
-//        std::cout << "Same as Inp. 2\n";
-      }
-    }
-    if (outputPlotWindow)
-    {
-//      std::cout << "outtest " << outputMatFile << "\n";
-      if (outputPlotWindow->isThisData(dataFile))
-      {
-//        std::cout << "Same as Outp. 1\n";
-        if (outputMatFile) delete outputMatFile;
-        outputMatFile = dataFile;
-        outputPlotWindow->setData(dataFile);
-//        std::cout << "Same as Outp. 2\n";
-      }
-    }
-  }
+  inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt(), prms->getNDeg(), prms->getNMul());
+  emit threadDataCreated (inThreadMatFile);
+}
+
+void MainWindow::createThreadDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+{
+  inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
+  emit threadDataCreated (inThreadMatFile);
 }
 
 void MainWindow::stop()
@@ -552,222 +516,129 @@ void MainWindow::setPointType()
 }
 
 // --------------------------------------------------------------------------------------
-
-void MainWindow::inputPlot()
+void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, const QString& fileName)
 {
-  if (inputPlotWindow == 0)
+//   std::cout << "raiseplot 0\n";
+  if (*window == 0)
   {
-    inputPlotWindow = new plotWindow(inputFile->text());
-    connect(inputPlotWindow, SIGNAL(openFile(const QString&)), this, SLOT(openInputMatFile(const QString&)));
-    connect(inputPlotWindow, SIGNAL(closeFile(const KNDataFile*)), this, SLOT(closeInputMatFile(const KNDataFile*)));
-    connect(&compThread, SIGNAL(dataChanged(const KNDataFile*)), 
-            inputPlotWindow, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
-    connect(inputPlotWindow, SIGNAL(updated()),
-            &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
-    compThread.dataChangedAck();
-    inputPlotWindow->init(parameters.getCp());
-    if (inputPlotWindow->isDataSet())
+//     std::cout << "raiseplot 1\n";
+    // opening the data file
+    openMatFile (matFile, fileName);
+    if (*matFile)
     {
-      connect(inputPlotWindow, SIGNAL(windowClosed()), this, SLOT(inputPlotDestroyed()));
-      inputPlotWindow->setWindowTitle("Plot - input data");
-      inputPlotWindow->show();
-    }
-    else
-    {
-      inputPlotDestroyed();
+      *window = new plotWindow(fileName);
+      connect (&compThread, SIGNAL(dataChanged(const KNDataFile*)), 
+                *window, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
+      connect (*window, SIGNAL(updated()),
+                &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
+      connect (*window, SIGNAL(requestPlot()), this, SLOT(plotReq()));
+      connect (*window, SIGNAL(openFile(const QString&)), this, SLOT(plotOpenFile(const QString&)));
+
+      compThread.dataChangedAck();
+      (*window)->init (parameters.getCp());
+      
+      connect(*window, SIGNAL(windowClosed()), this, SLOT(plotDestroyed()));
+      (*window)->setWindowTitle("Plot data");
+      (*window)->show();
     }
   }
 }
 
 // a slot that is called back from plotWindow to open a file
-void MainWindow::openInputMatFile(const QString& fileName)
+// if the inThreadMatFile is the same as the input then we would need to use that
+void MainWindow::openMatFile (const KNDataFile** matFile, const QString& fileName)
 {
   if (fileName.isEmpty())
   {
-//    std::cout << "Empty fileName\n";
     return;
   }
-  if (inThreadMatFile)
+  if (*matFile != 0)
   {
-    if (QFileInfo(fileName) == QFileInfo(QString::fromStdString(inThreadMatFile->getFileName())))
+    if (QFileInfo(fileName) == QFileInfo(QString::fromStdString((*matFile)->getFileName())))
     {
-      if (inputMatFile != inThreadMatFile && inputMatFile != 0) delete inputMatFile;
-      inputMatFile = inThreadMatFile;
-      if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
-//      std::cout << "Already open in compThread " << fileName.toStdString() << "\n";
-      return;
+      return; // nothing to open
+    }
+    if (*matFile != inThreadMatFile)
+    {
+      delete *matFile;
+      *matFile = 0;
     }
   }
-  if (inputMatFile)
+  try {
+    *matFile = new KNDataFile(fileName.toStdString());
+  }
+  catch (KNException ex) 
   {
-    if (QFileInfo(fileName) != QFileInfo(QString::fromStdString(inputMatFile->getFileName())))
-    {
-      // if it is not used in computation -> safe to delete;
-      if (inputMatFile != inThreadMatFile) { delete inputMatFile; inputMatFile = 0; }
-      try {
-        inputMatFile = new KNDataFile(fileName.toStdString());
-//         std::cout << "mat4data that A " << inputMatFile << "\n";
-//        std::cout << "Openining (1)" << fileName.toStdString() << "\n";
-      }
-      catch (KNException ex) 
-      {
-//        std::cout << "mat4data that B " << inputMatFile << "\n";
-        delete inputMatFile;
-        inputMatFile = 0;
-        externalException(ex);
-        return;
-      }
-      if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
-      return;
-    } else
-    {
-//      std::cout << "Already open in MainWindow" << fileName.toStdString() << "\n";
-    }
-  } else
+    delete *matFile;
+    *matFile = 0;
+    externalException(ex);
+  }
+}
+
+void MainWindow::inputPlot ()
+{
+  raisePlot (&inputPlotWindow, &inputMatFile, inputFile->text());
+}
+
+void MainWindow::outputPlot ()
+{
+  raisePlot (&outputPlotWindow, &outputMatFile, outputFile->text());
+}
+
+void MainWindow::plotOpenFile(const QString& fileName)
+{
+  if (sender() == inputPlotWindow)
   {
-    try {
-      inputMatFile = new KNDataFile(fileName.toStdString());
-//      std::cout << "Openining (2)" << fileName.toStdString() << "\n";
-      if (inputPlotWindow) inputPlotWindow->setData(inputMatFile);
-      return;
-    }
-    catch (KNException ex) 
+//     std::cout << "MainWindow::plotOpenFile inputPlotWindow\n";
+    openMatFile(&inputMatFile, fileName);
+    if (inputMatFile) inputPlotWindow->initPlot (inputMatFile);
+  }
+  if (sender() == outputPlotWindow)
+  {
+//     std::cout << "MainWindow::plotOpenFile outputPlotWindow\n";
+    openMatFile(&outputMatFile, fileName);
+    if (outputMatFile) outputPlotWindow->initPlot (outputMatFile);
+  }
+}
+
+void MainWindow::plotReq ()
+{
+  if (sender() == inputPlotWindow) 
+  {
+//     std::cout << "MainWindow::plotReq inputPlotWindow\n";
+    inputPlotWindow->addPlot (inputMatFile);
+  }
+  if (sender() == outputPlotWindow)
+  {
+//     std::cout << "MainWindow::plotReq outputPlotWindow\n";
+    outputPlotWindow->addPlot (outputMatFile);
+  }
+}
+
+void MainWindow::plotDestroyed ()
+{
+  if (sender() == inputPlotWindow) 
+  {
+//     std::cout << "MainWindow::plotReq inputPlotWindow\n";
+    if (inputMatFile != inThreadMatFile)
     {
       delete inputMatFile;
-      inputMatFile = 0;
-      externalException(ex);
-      return;
     }
-  }
-//  std::cout << "should not have ended up here.\n";
-}
-
-void MainWindow::closeInputMatFile(const KNDataFile* dataFile)
-{
-  if (dataFile == inputMatFile)
-  {
-    if (inputMatFile != inThreadMatFile) delete dataFile;
+    delete inputPlotWindow;
+    inputPlotWindow = 0;
     inputMatFile = 0;
-  } else
-  {
-//    std::cerr << "Mismatch of datafiles in plotWindow and MainWindow.\n";
   }
-}
-
-void MainWindow::inputPlotDestroyed()
-{
-//  std::cout<<"plot destroyed\n";
-  delete inputPlotWindow;
-  inputPlotWindow = 0;
-  inputMatFile = 0;
-}
-
-// --------------------------------------------------------------------------------------
-
-void MainWindow::outputPlot()
-{
-  if (outputPlotWindow == 0)
+  if (sender() == outputPlotWindow)
   {
-    outputPlotWindow = new plotWindow(outputFile->text());
-    connect(outputPlotWindow, SIGNAL(openFile(const QString&)), this, SLOT(openOutputMatFile(const QString&)));
-    connect(outputPlotWindow, SIGNAL(closeFile(const KNDataFile*)), this, SLOT(closeOutputMatFile(const KNDataFile*)));
-    connect(&compThread, SIGNAL(dataChanged(const KNDataFile*)), 
-            outputPlotWindow, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
-    connect(outputPlotWindow, SIGNAL(updated()),
-            &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
-    compThread.dataChangedAck();
-    outputPlotWindow->init(parameters.getCp());
-    if (outputPlotWindow->isDataSet())
+//     std::cout << "MainWindow::plotReq outputPlotWindow\n";
+    if (outputMatFile != inThreadMatFile)
     {
-      connect(outputPlotWindow, SIGNAL(windowClosed()), this, SLOT(outputPlotDestroyed()));
-      outputPlotWindow->setWindowTitle("Plot - output data");
-      outputPlotWindow->setWindowFlags(Qt::Window);
-      outputPlotWindow->show();
+      delete outputMatFile;
     }
-    else
-    {
-      outputPlotDestroyed();
-    }
-  }
-}
-
-// a slot that is called back from plotWindow to open a file
-void MainWindow::openOutputMatFile(const QString& fileName)
-{
-  if (fileName.isEmpty())
-  {
-//    std::cout << "Empty fileName\n";
-    return;
-  }
-  if (inThreadMatFile)
-  {
-    if (QFileInfo(fileName) == QFileInfo(QString::fromStdString(inThreadMatFile->getFileName())))
-    {
-      if (outputMatFile != inThreadMatFile && outputMatFile != 0) delete outputMatFile;
-      outputMatFile = inThreadMatFile;
-      if (outputPlotWindow) outputPlotWindow->setData(outputMatFile);
-//      std::cout << "Already open in compThread " << fileName.toStdString() << "\n";
-      return;
-    }
-  }
-  if (outputMatFile)
-  {
-    if (QFileInfo(fileName) != QFileInfo(QString::fromStdString(outputMatFile->getFileName())))
-    {
-      // if it is not used in computation -> safe to delete;
-      if (outputMatFile != inThreadMatFile) { delete outputMatFile; outputMatFile = 0; }
-      try {
-        outputMatFile = new KNDataFile(fileName.toStdString());
-//        std::cout << "Openining (1)" << fileName.toStdString() << "\n";
-      }
-      catch (KNException ex) 
-      {
-        delete outputMatFile;
-        outputMatFile = 0;
-        externalException(ex);
-        return;
-      }
-      if (outputPlotWindow) outputPlotWindow->setData(outputMatFile);
-      return;
-    } else
-    {
-//      std::cout << "Already open in MainWindow" << fileName.toStdString() << "\n";
-    }
-  } else
-  {
-    try {
-      outputMatFile = new KNDataFile(fileName.toStdString());
-//      std::cout << "Openining (2)" << fileName.toStdString() << "\n";
-      if (outputPlotWindow) outputPlotWindow->setData(outputMatFile);
-      return;
-    }
-    catch (KNException ex) 
-    {
-      externalException(ex);
-      return;
-    }
-  }
-//  std::cout << "should not have ended up here.\n";
-}
-
-void MainWindow::closeOutputMatFile(const KNDataFile* dataFile)
-{
-  if (dataFile == outputMatFile)
-  {
-    if (outputMatFile != inThreadMatFile) delete dataFile;
+    delete outputPlotWindow;
+    outputPlotWindow = 0;
     outputMatFile = 0;
-  } else
-  {
-//    std::cerr << "Mismatch of datafiles in plotWindow and MainWindow.\n";
   }
-}
-
-void MainWindow::outputPlotDestroyed()
-{
-//  std::cout<<"plot destroyed\n";
-  delete outputPlotWindow;
-  outputPlotWindow = 0;
-  outputMatFile = 0;
 }
 
 // --------------------------------------------------------------------------------------
@@ -842,11 +713,13 @@ void MainWindow::generateSystem()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-  if (compThread.isRunning())
+  if (workThread->isRunning())
   {
     compThread.setStopFlag(true);
-    compThread.wait();
+    workThread->wait();
   }
+  delete workThread;
+  workThread = 0;
   writeSettings();
   qApp->quit();
   event->accept();
@@ -1010,7 +883,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::loadFile(const QString &fileName)
 {
-  bool success = true;
+//   bool success = true;
   try
   {
     QDir::setCurrent(QFileInfo(fileName).absolutePath());

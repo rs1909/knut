@@ -107,6 +107,12 @@ int main(int argc, char *argv[])
     comp.run();
   } else
   {
+    qRegisterMetaType<KNException>("KNException");
+    qRegisterMetaType<std::string>("std::string");
+    qRegisterMetaType<KNDataFile*>("KNDataFile*");
+    qRegisterMetaType<size_t>("size_t");
+    qRegisterMetaType<KNConstants*>("KNConstants*");
+
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
 #ifdef Q_WS_WIN
@@ -119,8 +125,7 @@ int main(int argc, char *argv[])
     app.installEventFilter(openEvent);
     QObject::connect(openEvent, SIGNAL(open(const QString&)), &mainWin, SLOT(loadFile(const QString&)));
 #endif
-    qRegisterMetaType<KNException>("KNException");
-    qRegisterMetaType<std::string>("std::string");
+    
     mainWin.show();
     return app.exec();
   }
