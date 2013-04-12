@@ -386,13 +386,13 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("vector<size_t>", "symIm", nsym, 0, "setValue");
 
   // connecting exceptions
-  connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));
-  connect(&parameters, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)));
-  connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)));
+  connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
+  connect(&parameters, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
+  connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)), Qt::QueuedConnection);
   // text output
-  connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)));
-  connect(&compThread, SIGNAL(printStoreCursor()), this, SLOT(terminalStoreCursor()));
-  connect(&compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()));
+  connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)), Qt::QueuedConnection);
+  connect(&compThread, SIGNAL(printStoreCursor()), this, SLOT(terminalStoreCursor()), Qt::QueuedConnection);
+  connect(&compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()), Qt::QueuedConnection);
 
   createActions();
   createMenus();
@@ -406,8 +406,8 @@ MainWindow::MainWindow(const QString& appDir) :
   // should it be dynamic?
   workThread = new QThread;
   compThread.moveToThread(workThread);
-  connect(workThread, SIGNAL(started()), &compThread, SLOT(process()));
-  connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()));
+  connect(workThread, SIGNAL(started()), &compThread, SLOT(process()), Qt::QueuedConnection);
+  connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()), Qt::QueuedConnection);
   connect(workThread, SIGNAL(finished()), this, SLOT(stopped()), Qt::QueuedConnection);
   // opening the file
   connect(&compThread, SIGNAL(createDataRequestLC (const std::string&, size_t, size_t, KNConstants*)), 
@@ -427,7 +427,9 @@ void MainWindow::run()
     terminalText.clear();
     setSysNameParameter(); // this is probably not updated by editingFinished()
     compThread.setConstants(parameters);
-    compThread.setStopFlag(false);
+//    compThread.setStopFlag(false);
+    const bool fflag = false;
+    QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
     workThread->start();
     stopAct->setEnabled(true);
   } else
@@ -469,7 +471,9 @@ void MainWindow::createThreadDataTR (const std::string& fileName, size_t ndim, s
 
 void MainWindow::stop()
 {
-  compThread.setStopFlag(true);
+  const bool fflag = true;
+  QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
+//  compThread.setStopFlag(true);
 }
 
 void MainWindow::setSysName()
@@ -668,9 +672,9 @@ void MainWindow::terminalView()
   {
     terminalDialog = new screenDialog(0);
     terminalDialog->setWindowTitle("terminal view");
-    connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)));
-    connect(&compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()));
-    connect(&compThread, SIGNAL(printStoreCursor()), terminalDialog, SLOT(storeCursor()));
+    connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)), Qt::QueuedConnection);
+    connect(&compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()), Qt::QueuedConnection);
+    connect(&compThread, SIGNAL(printStoreCursor()), terminalDialog, SLOT(storeCursor()), Qt::QueuedConnection);
     connect(terminalDialog, SIGNAL(windowClosed()), this, SLOT(terminalViewDestroyed()));
     terminalDialog->show();
     terminalDialog->setText(terminalText);
@@ -727,7 +731,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (workThread->isRunning())
   {
-    compThread.setStopFlag(true);
+  	const bool fflag = true;
+  	QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
+//    compThread.setStopFlag(true);
     workThread->wait();
   }
   delete workThread;

@@ -19,6 +19,8 @@ MThread::~MThread()
 {
 }
 
+const QEventLoop::ProcessEventsFlags MThread::waitFlag = QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers;
+
 void MThread::process()
 {
   KNAbstractContinuation::run();
@@ -27,7 +29,9 @@ void MThread::process()
 
 void MThread::printStream()
 {
+//  std::cout << "MThread::printStream in\n";
   emit printToScreen(screenout.str()); screenout.str("");
+//  std::cout << "MThread::printStream out\n";
 }
 
 void MThread::raiseException(const KNException& ex)
@@ -48,13 +52,17 @@ const KNDataFile* MThread::dataPointer()
 // deleteData -> dataDeleteReq -> <MainWindow> -> dataDeleteAck
 void MThread::deleteData()
 {
-//   std::cout << "MThread::deleteData in\n";
+//  std::cout << "MThread::deleteData in\n";
   if (output) emit dataDeleteReq();
   // wait for the slot to be activated, output turns zero
+  int it = 0;
   do {
-    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    if (it == 0) QCoreApplication::processEvents(waitFlag);
+    else QCoreApplication::processEvents(waitFlag, 100);
+    ++it;
+//    std::cout << "MThread::deleteData loop " << output << " " << it << "\n";
   } while (output != 0);
-//   std::cout << "MThread::deleteData out\n";
+//  std::cout << "MThread::deleteData out\n";
 }
 
 void MThread::dataDeleteAck()
@@ -68,7 +76,7 @@ void MThread::dataUpdated()
   if (!changeQueued)
   {
     changeQueued = true;
-//     std::cout << "+req " << changeQueued << "\n";
+//    std::cout << "+req " << changeQueued << "\n";
     emit dataChanged( const_cast<const KNDataFile*>(output) );
   } else
   {
@@ -78,10 +86,15 @@ void MThread::dataUpdated()
 
 // SLOTS:
 
+void MThread::stopReq(bool flag)
+{
+  KNAbstractContinuation::setStopFlag(flag);
+}
+
 // this is called to notify that the result is plotted already
 void MThread::dataChangedAck()
 {
-//   std::cout << "-ack\n";
+//  std::cout << "-ack\n";
   changeQueued = false;
 }
 
@@ -92,28 +105,34 @@ void MThread::consolePrint(const std::string& str)
 
 void MThread::dataCreated(KNDataFile* dataFile)
 {
-//   std::cout << "MThread::dataCreated\n";
+//  std::cout << "MThread::dataCreated\n";
   output = dataFile;
 }
 
 void MThread::createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
 {
-//   std::cout << "MThread::createDataLC in\n";
+//  std::cout << "MThread::createDataLC in\n";
   output = 0;
   emit createDataRequestLC (fileName, ndim, npar, prms);
   // wait for the slot to be activated, output turns nonzero
+  int it = 0;
   do {
-    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
-//     std::cout << "MThread::createDataLC loop " << output << "\n";
+    if (it == 0) QCoreApplication::processEvents(waitFlag);
+    else QCoreApplication::processEvents(waitFlag, 100);
+    ++it;
+//    std::cout << "MThread::createDataLC loop " << output << " " << it << "\n";
   } while (output == 0);
-//   std::cout << "MThread::createDataLC out\n";
+//  std::cout << "MThread::createDataLC out\n";
 }
 
 void MThread::createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
 {
   output = 0;
   emit createDataRequestTR (fileName, ndim, npar, prms);
+  int it = 0;
   do {
-    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    if (it == 0) QCoreApplication::processEvents(waitFlag);
+    else QCoreApplication::processEvents(waitFlag, 100);
+    ++it;
   } while (output == 0);
 }

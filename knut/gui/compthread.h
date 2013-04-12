@@ -13,7 +13,8 @@
 #include <sstream>
 #include <QThread>
 #include <QMutex>
-
+#include <QEventLoop>
+ 
 class KNDataFile;
 
 class MThread : public QObject, public KNAbstractContinuation
@@ -33,6 +34,7 @@ class MThread : public QObject, public KNAbstractContinuation
     void deleteData();
     void dataUpdated();
   public slots:
+    void stopReq(bool flag);
     void process();
     void consolePrint(const std::string& str);
     void dataDeleteAck();
@@ -55,4 +57,5 @@ class MThread : public QObject, public KNAbstractContinuation
   private:
     KNDataFile* output;
     bool changeQueued;
+    static const QEventLoop::ProcessEventsFlags waitFlag;
 };
