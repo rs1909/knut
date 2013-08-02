@@ -3,7 +3,7 @@
 sysname="mackey-glass.vf" fromtype="PD" label="1"
 pointtype="DDE_AUT_PD_SW" cp="b" switch="NX" parx="T" nint="200" ndeg="5"
 nmul="5" stab="1" curvature="0.25" nint1="12" nint2="12" ndeg1="4"
-ndeg2="4" steps="1200" iad="3" npr="10" cpmin="-100" cpmax="100"
+ndeg2="4" steps="200" iad="3" npr="10" cpmin="-100" cpmax="100"
 ds="-0.002" dsmin="0.002" dsmax="0.004" dsstart="0" epsc="1e-05"
 epsr="1e-05" epsk="1e-06" nitc="12" nitr="12" nitk="12" nderi="8" />
 </knut>

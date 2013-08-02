@@ -13,7 +13,7 @@
 #include "compthread.h"
 #include "paramview.h"
 #include "screendialog.h"
-#include "system.h"
+#include "exprsystem.h"
 
 #include <QMainWindow>
 #include <QCheckBox>
@@ -87,8 +87,8 @@ class MainWindow : public QMainWindow
   private slots:
     void stopped();
     void threadDataDelete();
-    void createThreadDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-    void createThreadDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createThreadData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
+//    void createThreadDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
     void stop();
     void newFile();
     void open();
@@ -119,8 +119,8 @@ class MainWindow : public QMainWindow
     {
       terminalText.truncate(terminalTextSize);
     }
-    void compileSystem();
-    void generateSystem();
+//     void compileSystem();
+//     void generateSystem();
     void nParChanged(int n);
     
   private:
@@ -198,7 +198,7 @@ class MainWindow : public QMainWindow
     EqnVarTableView* table;
 
     QString  curFile;
-    QProcess *compilerProcess;
+//     QProcess *compilerProcess;
 
     QMenu    *fileMenu;
     QMenu    *helpMenu;

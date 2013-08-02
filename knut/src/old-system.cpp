@@ -35,9 +35,6 @@ extern "C"{
 #include "matrix.h"
 #include "pointtype.h"
 // #include "config.h" // already included from system.h
-#ifdef GINAC_FOUND
-#include "vf.h"
-#endif
 
 #ifdef __APPLE__
 #include <CoreFoundation/CFBase.h>
@@ -478,9 +475,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 #endif
 
 KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, size_t usederi)
-#ifdef GINAC_FOUND
- : useVectorField(false)
-#endif
+ : exsys (sysName, sysType, usederi)
 {
   std::string sname(sysName);
   if (sysName.find('/') == std::string::npos) sname = "./" + sysName;
@@ -528,137 +523,94 @@ KNSystem::KNSystem(const std::string& sysName, const std::string& sysType, size_
   
   // making the shared object or loading the vector field file
   std::string objname;
-#ifdef GINAC_FOUND
-  useVectorField = makeSystem(objname, sname, sysType, executableDir);
-  if (useVectorField)
-  {
-    try {
-      makeSymbolic(sname);
-    }
-    catch (KNException& ex)
-    {
-      useVectorField = false;
-      throw (ex);
-    }
-  }
-#else
   makeSystem(objname, sname, sysType, executableDir);
-#endif
   // filling up the function pointers
-#ifdef GINAC_FOUND
-  if (!useVectorField)
-  {
-#endif
-    char * c_objname = new char[objname.size()+1];
-    strncpy (c_objname, objname.c_str(), objname.size()+1);
-    handle = tdlopen(c_objname);
-    delete[] c_objname; c_objname = 0;
-    P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
-    
-    tdlerror();    /* Clear any existing error */
-    void* nd_res = tdlsym(handle, "sys_ndim");
-    v_ndim = reinterpret_cast<tp_sys_ndim>( nd_res );
-    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_npar = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_npar"));
-    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_ntau = reinterpret_cast<tp_sys_ntau>(tdlsym(handle, "sys_ntau"));
-    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_nderi = reinterpret_cast<tp_sys_nderi>(tdlsym(handle, "sys_nderi"));
-    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_nevent = reinterpret_cast<tp_sys_nevent>(tdlsym(handle, "sys_nevent"));
-    if ((error = tdlerror()) != 0) v_nevent = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_tau = reinterpret_cast<tp_sys_tau>(tdlsym(handle, "sys_tau"));
-    if ((error = tdlerror()) != 0) v_tau = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_dtau = reinterpret_cast<tp_sys_dtau>(tdlsym(handle, "sys_dtau"));
-    if ((error = tdlerror()) != 0) v_dtau = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_mass = reinterpret_cast<tp_sys_mass>(tdlsym(handle, "sys_mass"));
-    if ((error = tdlerror()) != 0) v_mass = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_rhs = reinterpret_cast<tp_sys_rhs>(tdlsym(handle, "sys_rhs"));
-    if ((error = tdlerror()) != 0) v_rhs = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_deri = reinterpret_cast<tp_sys_deri>(tdlsym(handle, "sys_deri"));
-    if ((error = tdlerror()) != 0) v_deri = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_stpar = reinterpret_cast<tp_sys_stpar>(tdlsym(handle, "sys_stpar"));
-    P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_stsol = reinterpret_cast<tp_sys_stsol>(tdlsym(handle, "sys_stsol"));
-    if ((error = tdlerror()) != 0) v_stsol = 0;
-    
-    tdlerror();    /* Clear any existing error */
-    v_parnames = reinterpret_cast<tp_sys_parnames>(tdlsym(handle, "sys_parnames"));
-    if ((error = tdlerror()) != 0) v_parnames = 0;
-    
-    /* Vectorized versions */
-    tdlerror();    /* Clear any existing error */
-    v_p_tau = reinterpret_cast<tp_sys_p_tau>(tdlsym(handle, "sys_p_tau"));
-    if ((error = tdlerror()) != 0) v_p_tau = 0;
-    if ((v_tau == 0) && (v_p_tau == 0)) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_p_dtau = reinterpret_cast<tp_sys_p_dtau>(tdlsym(handle, "sys_p_dtau"));
-    if ((error = tdlerror()) != 0) v_p_dtau = 0;
-    if ((v_dtau == 0) && (v_p_dtau == 0)) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_p_rhs = reinterpret_cast<tp_sys_p_rhs>(tdlsym(handle, "sys_p_rhs"));
-    if ((error = tdlerror()) != 0) v_p_rhs = 0;
-    if ((v_rhs == 0) && (v_p_rhs == 0)) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_p_deri = reinterpret_cast<tp_sys_p_deri>(tdlsym(handle, "sys_p_deri"));
-    if ((error = tdlerror()) != 0) v_p_deri = 0;
-    if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
-    
-    tdlerror();    /* Clear any existing error */
-    v_p_stsol = reinterpret_cast<tp_sys_p_stsol>(tdlsym(handle, "sys_p_stsol"));
-    if ((error = tdlerror()) == 0) v_p_stsol = 0;
-    if ((v_stsol == 0) && (v_p_stsol == 0)) P_MESSAGE3("Cannot find either sys_stsol() or sys_p_stsol(): ", error, ".");
-    nderi = std::min ( (*v_nderi)(), usederi );  
-#ifdef GINAC_FOUND
-  } else
-  {
-    handle = 0;
-    v_ndim = 0;
-    v_npar = 0;
-    v_ntau = 0;
-    v_nderi = 0;
-    v_nevent = 0;
-    v_tau = 0; 
-    v_dtau = 0; 
-    v_mass = 0; 
-    v_rhs = 0;
-    v_deri = 0;
-    v_p_tau = 0; 
-    v_p_dtau = 0; 
-    v_p_rhs = 0; 
-    v_p_deri = 0; 
-    v_p_event = 0;
-    v_stpar = 0; 
-    v_stsol = 0; 
-    v_parnames = 0;
-    nderi = 2;
-  }
-#endif
+  char * c_objname = new char[objname.size()+1];
+  strncpy (c_objname, objname.c_str(), objname.size()+1);
+  handle = tdlopen(c_objname);
+  delete[] c_objname; c_objname = 0;
+  P_ERROR_X5(handle != 0, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", objname, "'.");
+  
+  tdlerror();    /* Clear any existing error */
+  void* nd_res = tdlsym(handle, "sys_ndim");
+  v_ndim = reinterpret_cast<tp_sys_ndim>( nd_res );
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_npar = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_npar"));
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_ntau = reinterpret_cast<tp_sys_ntau>(tdlsym(handle, "sys_ntau"));
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_nderi = reinterpret_cast<tp_sys_nderi>(tdlsym(handle, "sys_nderi"));
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_nderi(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_nevent = reinterpret_cast<tp_sys_nevent>(tdlsym(handle, "sys_nevent"));
+  if ((error = tdlerror()) != 0) v_nevent = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_tau = reinterpret_cast<tp_sys_tau>(tdlsym(handle, "sys_tau"));
+  if ((error = tdlerror()) != 0) v_tau = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_dtau = reinterpret_cast<tp_sys_dtau>(tdlsym(handle, "sys_dtau"));
+  if ((error = tdlerror()) != 0) v_dtau = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_mass = reinterpret_cast<tp_sys_mass>(tdlsym(handle, "sys_mass"));
+  if ((error = tdlerror()) != 0) v_mass = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_rhs = reinterpret_cast<tp_sys_rhs>(tdlsym(handle, "sys_rhs"));
+  if ((error = tdlerror()) != 0) v_rhs = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_deri = reinterpret_cast<tp_sys_deri>(tdlsym(handle, "sys_deri"));
+  if ((error = tdlerror()) != 0) v_deri = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_stpar = reinterpret_cast<tp_sys_stpar>(tdlsym(handle, "sys_stpar"));
+  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_stsol = reinterpret_cast<tp_sys_stsol>(tdlsym(handle, "sys_stsol"));
+  if ((error = tdlerror()) != 0) v_stsol = 0;
+  
+  tdlerror();    /* Clear any existing error */
+  v_parnames = reinterpret_cast<tp_sys_parnames>(tdlsym(handle, "sys_parnames"));
+  if ((error = tdlerror()) != 0) v_parnames = 0;
+  
+  /* Vectorized versions */
+  tdlerror();    /* Clear any existing error */
+  v_p_tau = reinterpret_cast<tp_sys_p_tau>(tdlsym(handle, "sys_p_tau"));
+  if ((error = tdlerror()) != 0) v_p_tau = 0;
+  if ((v_tau == 0) && (v_p_tau == 0)) P_MESSAGE3("Cannot find either sys_tau() or sys_p_tau(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_p_dtau = reinterpret_cast<tp_sys_p_dtau>(tdlsym(handle, "sys_p_dtau"));
+  if ((error = tdlerror()) != 0) v_p_dtau = 0;
+  if ((v_dtau == 0) && (v_p_dtau == 0)) P_MESSAGE3("Cannot find either sys_dtau() or sys_p_dtau(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_p_rhs = reinterpret_cast<tp_sys_p_rhs>(tdlsym(handle, "sys_p_rhs"));
+  if ((error = tdlerror()) != 0) v_p_rhs = 0;
+  if ((v_rhs == 0) && (v_p_rhs == 0)) P_MESSAGE3("Cannot find either sys_rhs() or sys_p_rhs(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_p_deri = reinterpret_cast<tp_sys_p_deri>(tdlsym(handle, "sys_p_deri"));
+  if ((error = tdlerror()) != 0) v_p_deri = 0;
+  if ((v_deri == 0) && (v_p_deri == 0)) P_MESSAGE3("Cannot find either sys_deri() or sys_p_deri(): ", error, ".");
+  
+  tdlerror();    /* Clear any existing error */
+  v_p_stsol = reinterpret_cast<tp_sys_p_stsol>(tdlsym(handle, "sys_p_stsol"));
+  if ((error = tdlerror()) == 0) v_p_stsol = 0;
+  if ((v_stsol == 0) && (v_p_stsol == 0)) P_MESSAGE3("Cannot find either sys_stsol() or sys_p_stsol(): ", error, ".");
+  nderi = std::min ( (*v_nderi)(), usederi );  
+
   f.init(this->ndim()), f_eps.init(this->ndim());
   f2.init(ndim()), f_eps2.init(ndim());
   xx_eps.init(ndim(), 2 * ntau() + 1);
@@ -701,27 +653,27 @@ void KNSystem::compileSystem(const std::string& cxxfile, const std::string& shob
 
 void KNSystem::generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir)
 {
-#ifdef GINAC_FOUND
-  // parsing the vector field file
-  std::ostringstream cxxcode;
-  std::map<std::string, std::string> options;
-  VectorField vf;
-  vf.ReadXML(vffile);
-  int pserr = vf.ProcessSymbols();
-  if (pserr == -1) P_MESSAGE1("Could not parse the vector field definition.");
-  if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
-  vf.PrintKnut(cxxcode, options);
-  try {
-//  	std::cout << "Trying compiler ?? is ?? working??\n";
-    runCompiler(cxxcode.str(), shobj, executableDir);
-  }
-  catch (KNException& ex)
-  {
-//  	std::cout << "Compiler is not working! " << ex.str() << "\n";
-  	std::cout.flush();
-    workingCompiler = false;
-  }
-#endif
+// #ifdef GINAC_FOUND
+//   // parsing the vector field file
+//   std::ostringstream cxxcode;
+//   std::map<std::string, std::string> options;
+//   VectorField vf;
+//   vf.ReadXML(vffile);
+//   int pserr = vf.ProcessSymbols();
+//   if (pserr == -1) P_MESSAGE1("Could not parse the vector field definition.");
+//   if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
+//   vf.PrintKnut(cxxcode, options);
+//   try {
+// //  	std::cout << "Trying compiler ?? is ?? working??\n";
+//     runCompiler(cxxcode.str(), shobj, executableDir);
+//   }
+//   catch (KNException& ex)
+//   {
+// //  	std::cout << "Compiler is not working! " << ex.str() << "\n";
+//   	std::cout.flush();
+//     workingCompiler = false;
+//   }
+// #endif
 }
 
 static inline bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src)
@@ -920,360 +872,188 @@ void KNSystem::p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& tim
   }
 }
 
-#ifdef GINAC_FOUND
-void KNSystem::makeSymbolic(const std::string& vffile)
-{
-  // load the vector field file and generate expressions
-//   std::cout << "This is from a vector field file.\n";
-  VectorField vf;
-  vf.ReadXML(vffile.c_str());
-  int pserr = vf.ProcessSymbols();
-  if (pserr == -1) P_MESSAGE1("Could not parse the vector field definition.");
-  if (vf.isStateDependentDelay()) P_MESSAGE1("State dependent delays are not suported yet.");
-  ex_ndim = vf.Knut_ndim();
-  ex_npar = vf.Knut_npar();
-  ex_ntau = vf.Knut_ntau();
-  ex_nevent = vf.Knut_nevent();
-  vf.Knut_tau(ex_tau);
-  vf.Knut_tau_p(ex_tau_p);
-  vf.Knut_RHS(ex_rhs);
-  vf.Knut_mass(ex_mass);
-  vf.Knut_RHS_p(ex_rhs_p);
-  vf.Knut_RHS_x(ex_rhs_x);
-  vf.Knut_RHS_xp(ex_rhs_xp);
-  vf.Knut_RHS_xx(ex_rhs_xx);
-  vf.Knut_stpar(ex_stpar);
-  vf.Knut_stsol(ex_stsol);
-  vf.Knut_parnames(ex_parnames);
-}
-#endif
-
 //******** INTERFACE WITH THE SYSTEM DEFINITION ********//
 #define ERR_THRESHOLD 8e6
 
 size_t    KNSystem::ndim() const 
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) return ex_ndim;
-#endif
-//  if (ex_ndim != (*v_ndim)()) std::cout << "ndim: " << ex_ndim << "," << (*v_ndim)()<< "\n";
+  if (exsys.ndim() != (*v_ndim)()) std::cout << "ndim: " << exsys.ndim() << "," << (*v_ndim)()<< "\n";
   return (*v_ndim)();
 }
 
 size_t    KNSystem::npar() const 
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) return ex_npar;
-#endif
-//  if (ex_npar != (*v_npar)()) std::cout << "npar: " << ex_npar << "," << (*v_npar)() << "\n";
+  if (exsys.npar()-3 != (*v_npar)()) std::cout << "npar: " << exsys.npar() << "," << (*v_npar)() << "\n";
   return (*v_npar)();
 }
 
 size_t    KNSystem::ntau() const
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) return ex_ntau;
-#endif
-//  if (ex_ntau != (*v_ntau)()) std::cout << "ntau: " << ex_ntau << "," << (*v_ntau)()<< "\n";
+  if (exsys.ntau() != (*v_ntau)()) std::cout << "ntau: " << exsys.ntau() << "," << (*v_ntau)()<< "\n";
   return (*v_ntau)();
 }
 
 // Vectorized versions
 void   KNSystem::p_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_tau(out, time, par);
+  if (v_p_tau != 0) (*v_p_tau)(out, time, par);
   else
   {
-#endif
-    if (v_p_tau != 0) (*v_p_tau)(out, time, par);
-    else
+    for (size_t i=0; i<time.size(); ++i)
     {
-      for (size_t i=0; i<time.size(); ++i)
-      {
-        KNVector tout(out, i);
-        (*v_tau)(tout, time(i), par);
-      }
+      KNVector tout(out, i);
+      (*v_tau)(tout, time(i), par);
     }
-//    KNArray2D<double> out_p(out);
-//    sym_tau(out_p, time, par);
-//    double max = 0;
-//    size_t ip=0, jp=0;
-//    for (size_t i=0; i < out.dim1(); ++i)
-//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) { max = (fabs(out_p(i,j)-out(i,j))); ip=i; jp=j; }
-//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << " at (" << ip << "," << jp << ") sym="<< out_p(ip,jp) << " comp=" << out(ip,jp) << "\n";
-#ifdef GINAC_FOUND
   }
-#endif
+  KNArray2D<double> out_p(out.dim1(), out.dim2());
+  exsys.p_tau(out_p, time, par);
+  double max = 0;
+  size_t ip=0, jp=0;
+  for (size_t i=0; i < out.dim1(); ++i)
+  for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) { max = (fabs(out_p(i,j)-out(i,j))); ip=i; jp=j; }
+  if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "tau: " << max << " at (" << ip << "," << jp << ") sym="<< out_p(ip,jp) << " comp=" << out(ip,jp) << "\n";
 }
 
 void   KNSystem::p_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_dtau(out, time, par, vp);
+  if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
   else
   {
-#endif
-    if (v_p_dtau != 0) (*v_p_dtau)(out, time, par, vp);
-    else
+    for (size_t i=0; i<time.size(); ++i)
     {
-      for (size_t i=0; i<time.size(); ++i)
-      {
-        KNVector tout(out, i);
-        (*v_dtau)(tout, time(i), par, vp);
-      }
+      KNVector tout(out, i);
+      (*v_dtau)(tout, time(i), par, vp);
     }
-//    KNArray2D<double> out_p(out);
-//    sym_dtau(out_p, time, par, vp);
-//    double max = 0;
-//    for (size_t i=0; i < out.dim1(); ++i)
-//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs((out_p(i,j)-out(i,j)));
-//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
-#ifdef GINAC_FOUND
   }
-#endif
+  // testing
+  KNArray2D<double> out_p(out.dim1(), out.dim2());
+  exsys.p_dtau(out_p, time, par, vp);
+  double max = 0;
+  for (size_t i=0; i < out.dim1(); ++i)
+  for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = fabs((out_p(i,j)-out(i,j)));
+  if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "dtau: " << max << "\n";
 }
 
 void   KNSystem::mass(KNArray1D<double>& out)
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_mass(out);
+  if (v_mass != 0)(*v_mass)(out);
   else
   {
-#endif
-    if (v_mass != 0)(*v_mass)(out);
-    else
-    {
-      for(size_t i=0; i<out.size(); ++i) out(i) = 1.0;
-    }
-#ifdef GINAC_FOUND
+    for(size_t i=0; i<out.size(); ++i) out(i) = 1.0;
   }
-#endif
 }
 
 void   KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_rhs(out, time, x, par, sel);
+  if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
   else
   {
-#endif
-    if (v_p_rhs != 0) (*v_p_rhs)(out, time, x, par, sel);
-    else
+    for (size_t i=0; i<time.size(); ++i)
     {
-      for (size_t i=0; i<time.size(); ++i)
-      {
-        KNVector vout(out, i);
-        KNMatrix xxin(x, i);
-        (*v_rhs)(vout, time(i), xxin, par);
-      }
+      KNVector vout(out, i);
+      KNMatrix xxin(x, i);
+      (*v_rhs)(vout, time(i), xxin, par);
     }
-//    KNArray2D<double> out_p(out);
-//    sym_rhs(out_p, time, x, par, sel);
-//    double max = 0;
-//    for (size_t i=0; i < out.dim1(); ++i)
-//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = (fabs(out_p(i,j)-out(i,j)));
-//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "p_rhs: " << max << "\n";
-//    std::cout << "+";
-#ifdef GINAC_FOUND
   }
-#endif
+  // testing
+  KNArray2D<double> out_p(out.dim1(), out.dim2());
+  exsys.p_rhs(out_p, time, x, par, sel);
+  double max = 0;
+  size_t ip=0, jp=0;
+  for (size_t i=0; i < out.dim1(); ++i)
+  for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) { max = (fabs(out_p(i,j)-out(i,j))); ip=i; jp=j;}
+  if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) )
+  {
+    std::cout << "p_rhs . at (" << ip << "," << jp << ") ";
+    std::cout << "sym="<< out_p(ip,jp) << " comp=" << out(ip,jp);
+    exsys.varprint( time, x, par, jp );
+    std::cout << "\n";
+  }
+//   std::cout << "+";
 }
 
 void   KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
                 size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_deri(out, time, x, par, sel, nx, vx, np, vp, vv);
-  else
+  if ((nderi >= 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
   {
-#endif
-    if ((nderi >= 2) || ((nderi == 1) && ((nx == 1 && np == 0) || (nx == 0 && np == 1))))
+    if (v_p_deri != 0)
     {
-      if (v_p_deri != 0)
-      {
-        (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
-      } else
-      {
-        for (size_t i=0; i<time.size(); ++i)
-        {
-          KNMatrix mout(out, i);
-          KNMatrix xxin(x, i);
-          KNMatrix vvin(vv, i);
-          (*v_deri)(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
-        }
-      }
+      (*v_p_deri)(out, time, x, par, sel, nx, vx, np, vp, vv);
     } else
     {
-      p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
+      for (size_t i=0; i<time.size(); ++i)
+      {
+        KNMatrix mout(out, i);
+        KNMatrix xxin(x, i);
+        KNMatrix vvin(vv, i);
+        (*v_deri)(mout, time(i), xxin, par, nx, vx, np, vp, vvin);
+      }
     }
-//    KNArray3D<double> out_p(out);
-//    sym_deri(out_p, time, x, par, sel, nx, vx, np, vp, vv);
-//    double max = 0;
-//    size_t ip=0, jp=0, kp=0;
-//    for (size_t i=0; i < out.dim1(); ++i)
-//    for (size_t j=0; j < out.dim2(); ++j) 
-//    for (size_t k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) { max = (fabs(out_p(i,j,k)-out(i,j,k))); ip=i; jp=j; kp=k; }
-//    if ((max) > pow(ERR_THRESHOLD,nx+np)*std::numeric_limits<double>::epsilon( ) ) 
-//    { 
-//      std::cout << "p_deri("<< nx << "," << np << ") " << max << " at (" << ip << "," << jp << "," << kp << ") ";
-//      if (np) std::cout << "vp=[";
-//      for (size_t i=0; i<np; i++) std::cout << vp[i] << ",";
-//      if (np) std::cout << "]";
-//      if (nx) std::cout << "vx=[";
-//      for (size_t i=0; i<nx; i++) std::cout << vx[i] << ",";
-//      if (nx) std::cout << "] ";
-//      std::cout << "sym="<< out_p(ip,jp,kp) << " comp=" << out(ip,jp,kp);
-//      if (nx) std::cout << " f=" << ex_rhs_x[ip + (vx[0] + jp*ex_ntau)*ex_ndim];
-//      std::cout << "\n";
-//    }
-//    std::cout << "+";
-#ifdef GINAC_FOUND
+  } else
+  {
+    p_discrderi(out, time, x, par, sel, nx, vx, np, vp, vv);
   }
-#endif
+  // testing
+  KNArray3D<double> out_p(out.dim1(), out.dim2(), out.dim3());
+  exsys.p_deri(out_p, time, x, par, sel, nx, vx, np, vp, vv);
+  double max = 0;
+  size_t ip=0, jp=0, kp=0;
+  for (size_t i=0; i < out.dim1(); ++i)
+  for (size_t j=0; j < out.dim2(); ++j) 
+  for (size_t k=0; k < out.dim3(); ++k) if (fabs(out_p(i,j,k)-out(i,j,k)) > max) { max = (fabs(out_p(i,j,k)-out(i,j,k))); ip=i; jp=j; kp=k; }
+  if ((max) > pow(ERR_THRESHOLD,nx+np)*std::numeric_limits<double>::epsilon( ) ) 
+  { 
+    std::cout << "p_deri("<< nx << "," << np << ") " << max << " at (" << ip << "," << jp << "," << kp << ") ";
+    if (np) std::cout << "vp=[";
+    for (size_t i=0; i<np; i++) std::cout << vp[i] << ",";
+    if (np) std::cout << "]";
+    if (nx) std::cout << "vx=[";
+    for (size_t i=0; i<nx; i++) std::cout << vx[i] << ",";
+    if (nx) std::cout << "] ";
+    std::cout << "sym="<< out_p(ip,jp,kp) << " comp=" << out(ip,jp,kp);
+    exsys.varprint( time, x, par, kp );
+//     if (nx) std::cout << " f=" << ex_rhs_x[ip + (vx[0] + jp*ex_ntau)*ex_ndim];
+    std::cout << "\n";
+  }
+//   std::cout << "+";
 }
 
 // Setting the starting point
 void   KNSystem::stpar(KNVector& par) const
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_stpar(par);
-  else
-  {
-#endif
-    (*v_stpar)(par);
-//    KNVector par_p(par);
-//    sym_stpar(par_p);
-//    double max = 0;
-//    for (size_t i=0; i < par_p.size(); ++i) if (fabs(par_p(i)-par(i)) > max) max = (fabs(par_p(i)-par(i)));
-//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "stpar: " << max << "\n";
-#ifdef GINAC_FOUND
-  }
-#endif
+  if (v_stpar != nullptr) (*v_stpar)(par);
+  // testing
+  KNVector par_p(par.size());
+  exsys.stpar(par_p);
+  double max = 0;
+  for (size_t i=0; i < par_p.size(); ++i) if (fabs(par_p(i)-par(i)) > max) max = (fabs(par_p(i)-par(i)));
+  if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "SYS stpar: " << max << "\n";
 }
 
-void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const
+void   KNSystem::stsol(KNArray2D<double>& out, const KNArray1D<double>& time)
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_stsol(out, time);
-  else
+  if (v_p_stsol != 0) (*v_p_stsol)(out, time);
+  else if (v_stsol != 0)
   {
-#endif
-    if (v_p_stsol != 0) (*v_p_stsol)(out, time);
-    else if (v_stsol != 0)
+    for (size_t i=0; i<time.size(); ++i)
     {
-      for (size_t i=0; i<time.size(); ++i)
-      {
-        KNVector vf(out, i);
-        (*v_stsol)(vf, time(i));
-      }
+      KNVector vf(out, i);
+      (*v_stsol)(vf, time(i));
     }
-//    KNArray2D<double>& out_p(out);
-//    sym_stsol(out_p, time);
-//    double max = 0;
-//    for (size_t i=0; i < out.dim1(); ++i)
-//    for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = (fabs(out_p(i,j)-out(i,j)));
-//    if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "stsol: " << max << "\n";
-#ifdef GINAC_FOUND
   }
-#endif
+  KNArray2D<double> out_p(out.dim1(), out.dim2());
+  exsys.stsol(out_p, time);
+  double max = 0;
+  for (size_t i=0; i < out.dim1(); ++i)
+  for (size_t j=0; j < out.dim2(); ++j) if (fabs(out_p(i,j)-out(i,j)) > max) max = (fabs(out_p(i,j)-out(i,j)));
+  if ((max) > ERR_THRESHOLD*std::numeric_limits<double>::epsilon( ) ) std::cout << "SYS stsol: " << max << "\n";
 }
 
 void   KNSystem::parnames(const char *names[]) const
 {
-#ifdef GINAC_FOUND
-  if (useVectorField) sym_parnames(names);
-  else
+  if (v_parnames != 0)
   {
-#endif
-    if (v_parnames != 0)
-    {
-      (*v_parnames)(names);
-    }
-#ifdef GINAC_FOUND
-  }
-#endif
-}
-
-#ifdef GINAC_FOUND
-
-size_t KNSystem::sym_ndim() 
-{
-  return ex_ndim;
-}
-
-size_t KNSystem::sym_npar() 
-{
-  return ex_npar;
-}
-
-size_t KNSystem::sym_ntau() 
-{
-  return ex_ntau;
-}
-
-void KNSystem::sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par ) 
-{
-  VectorField::Knut_tau_eval( ex_tau, out, time, par, ex_ndim, ex_npar, ex_ntau );
-}
-
-void KNSystem::sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
-{
-  VectorField::Knut_tau_p_eval( ex_tau_p, out, time, par, vp, ex_ndim, ex_npar, ex_ntau );
-}
-
-void KNSystem::sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
-{
-  VectorField::Knut_RHS_eval(ex_rhs, out_p, time, x, par, sel );
-}
-
-void KNSystem::sym_mass(KNArray1D<double>& out) const
-{
-  for (size_t i = 0; i < ex_ndim; ++i)
-  {
-    out(i) = ex_mass[i];
+    (*v_parnames)(names);
   }
 }
-
-void KNSystem::sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
-                size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
-{
-  if ((np == 1)&&(nx == 0))
-  {
-    VectorField::Knut_RHS_p_eval( ex_rhs_p, out_p, time, x, par, sel, vp[0], ex_ndim, ex_npar, ex_ntau );
-  }
-  if ((np == 0)&&(nx == 1))
-  {
-    VectorField::Knut_RHS_x_eval( ex_rhs_x, out_p, time, x, par, sel, vx[0], ex_ndim, ex_npar, ex_ntau );
-  }
-  if ((np == 1)&&(nx == 1))
-  {
-    VectorField::Knut_RHS_xp_eval( ex_rhs_xp, out_p, time, x, par, sel, vx[0], vp[0], ex_ndim, ex_npar, ex_ntau );
-  }
-  if ((np == 0)&&(nx == 2))
-  {
-    VectorField::Knut_RHS_xx_eval( ex_rhs_xx, out_p, time, x, vv, par, sel, vx[0], vx[1], ex_ndim, ex_npar, ex_ntau );
-  }
-}
-
-void KNSystem::sym_stpar(KNVector& par) const
-{
-  for (size_t i = 0; i < ex_npar; ++i)
-  {
-    par(i) = ex_stpar[i];
-  }
-}
-
-void KNSystem::sym_stsol(KNArray2D<double>& out_p, const KNArray1D<double>& time) const
-{
-  VectorField::Knut_RHS_stsol_eval( ex_stsol, out_p, time );
-}
-
-void KNSystem::sym_parnames(const char *names[]) const
-{
-  for (size_t i = 0; i < ex_npar; ++i)
-  {
-    names[i] = ex_parnames[i].c_str();
-  }
-}
-#endif /*GINAC_FOUND*/

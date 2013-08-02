@@ -109,11 +109,11 @@ void MThread::dataCreated(KNDataFile* dataFile)
   output = dataFile;
 }
 
-void MThread::createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+void MThread::createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
 //  std::cout << "MThread::createDataLC in\n";
   output = 0;
-  emit createDataRequestLC (fileName, ndim, npar, prms);
+  emit createDataRequest (fileName, t, ndim, npar, prms);
   // wait for the slot to be activated, output turns nonzero
   int it = 0;
   do {
@@ -123,16 +123,4 @@ void MThread::createDataLC (const std::string& fileName, size_t ndim, size_t npa
 //    std::cout << "MThread::createDataLC loop " << output << " " << it << "\n";
   } while (output == 0);
 //  std::cout << "MThread::createDataLC out\n";
-}
-
-void MThread::createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
-{
-  output = 0;
-  emit createDataRequestTR (fileName, ndim, npar, prms);
-  int it = 0;
-  do {
-    if (it == 0) QCoreApplication::processEvents(waitFlag);
-    else QCoreApplication::processEvents(waitFlag, 100);
-    ++it;
-  } while (output == 0);
 }

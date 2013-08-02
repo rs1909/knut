@@ -18,9 +18,14 @@ class KNAbstractCollocation
 {
   public:
     virtual ~KNAbstractCollocation() {}
+
+    // init(...) is called before any attempt to solve to calculate the jacobians
     virtual void   init(const KNVector& sol, const KNVector& par) = 0;
+    // this provides adjoint vectors
     virtual void   star(KNVector& out, const KNVector& sol) = 0;
+    // this defines the inner product on the space
     virtual double integrate(const KNVector& v1, const KNVector& v2) = 0;
+    // this adapts the mesh of the numerical scheme
     virtual void   meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent) = 0;
 };
 

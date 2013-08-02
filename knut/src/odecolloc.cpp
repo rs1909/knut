@@ -9,7 +9,7 @@
 
 #include "knerror.h"
 #include "odecolloc.h"
-#include "system.h"
+#include "exprsystem.h"
 #include "matrix.h"
 #include "polynomial.h"
 

@@ -52,7 +52,8 @@ class ParamsModel : public QAbstractTableModel
   public slots:
     void dataUpdated()
     {
-      reset();
+      beginResetModel();
+      endResetModel();
     }
   private:
     NConstantsQtGui* parameters;
@@ -149,7 +150,8 @@ class SYMModel : public QAbstractTableModel
 
     void dataUpdated()
     {
-      reset();
+      beginResetModel();
+      endResetModel();
     }
 
   private:

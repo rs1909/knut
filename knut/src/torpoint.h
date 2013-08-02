@@ -54,6 +54,9 @@ class KNDdeTorusSolution : public KNAbstractPoint
 //     }
     void           loadPoint(KNDataFile& data, size_t n);
     void           savePoint(KNDataFile& data, size_t n);
+    void           BinaryRead(KNDataFile& data, size_t n) { loadPoint(data, n); }
+    void           BinaryWrite(KNDataFile& data, BifType bif, size_t n) { savePoint(data, n); }
+
 
   private:
 

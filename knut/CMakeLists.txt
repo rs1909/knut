@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.11)
 PROJECT( KNUT )
 
 #------------------------------------------------------------------------------
@@ -67,23 +67,11 @@ ENDIF( MSVC )
 SET( MXML_INCLUDE_DIRS ${KNUT_SOURCE_DIR}/mxml )
 
 #------------------------------------------------------------------------------
-# finding Qt4
-#------------------------------------------------------------------------------
-
-SET( QT_MIN_VERSION "4.4.0" )
-FIND_PACKAGE( Qt4 REQUIRED)
-
-IF(WIN32)
-  FIND_LIBRARY( KNUT_QTMAIN qtmain ${QT_LIBRARY_DIR} )
-  MESSAGE( STATUS "QtMain as ${KNUT_QTMAIN} was found" )
-ENDIF(WIN32)
-
-#------------------------------------------------------------------------------
 # finding GiNaC
 #------------------------------------------------------------------------------
 
-include(FindPkgConfig)
-pkg_check_modules (GINAC ginac)
+#include(FindPkgConfig)
+#pkg_check_modules (GINAC ginac)
 
 #------------------------------------------------------------------------------
 # finding libstdc++
@@ -132,7 +120,7 @@ ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
 
 MESSAGE( STATUS "The DYNAMIC FORTRAN runtime library is ${RES}" )
 SET( KNUT_FORTRAN_DYN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
-get_filename_component(KNUT_FORTRAN_DYN_RUNTIME_PATH ${KNUT_FORTRAN_DYN_RUNTIME} PATH CACHE)
+get_filename_component(KNUT_FORTRAN_DYN_RUNTIME_PATH ${KNUT_FORTRAN_DYN_RUNTIME} PATH)
 
 #------------------------------------------------------------------------------
 # Find MATLAB mex compiler
@@ -250,39 +238,22 @@ ADD_SUBDIRECTORY(UMFPACK)
 ADD_SUBDIRECTORY(mxml)
 
 # The vector field generator
-IF(GINAC_FOUND)
-  ADD_SUBDIRECTORY(vfgen)
-  MESSAGE( STATUS "Vector field generator will be built" )
-ELSE(GINAC_FOUND)
-  MESSAGE( STATUS "Vector field generator will NOT be built" )
-ENDIF(GINAC_FOUND)
+#IF(GINAC_FOUND)
+#  ADD_SUBDIRECTORY(vfgen)
+#  MESSAGE( STATUS "Vector field generator will be built" )
+#ELSE(GINAC_FOUND)
+#  MESSAGE( STATUS "Vector field generator will NOT be built" )
+#ENDIF(GINAC_FOUND)
 
 # This is where the whole computation is
 # this produces a library "libknut.a"
 ADD_SUBDIRECTORY(src)
 
 # The command line interface
-# IF(NOT APPLE)
-  # NO NEED FOR THE CLI
-  ADD_SUBDIRECTORY(cli)
-# ENDIF(NOT APPLE)
+ADD_SUBDIRECTORY(cli)
 
 # graphical user interface
-IF( EXISTS ${QT_QMAKE_EXECUTABLE} )
-  IF(KNUT_QTMAIN)
-    SET(BUILDGUI TRUE)
-  ENDIF(KNUT_QTMAIN)
-  IF(NOT WIN32)
-    SET(BUILDGUI TRUE)
-  ENDIF(NOT WIN32)
-ENDIF( EXISTS ${QT_QMAKE_EXECUTABLE} )
-
-IF(BUILDGUI)
-  ADD_SUBDIRECTORY(gui)
-  MESSAGE( STATUS "GUI will be built" )
-ELSE(BUILDGUI)  
-  MESSAGE( STATUS "GUI will NOT be built" )
-ENDIF(BUILDGUI)
+ADD_SUBDIRECTORY(gui)
 
 # demo programs
 ADD_SUBDIRECTORY(demo)

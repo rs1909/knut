@@ -7,11 +7,16 @@ ADD_LIBRARY( knutlib
 	ncolloc.cpp ncolloc.h knutsys.h knerror.h knerror.cpp
 	plot.cpp plot.h point.cpp point.h pointtype.h pointtype.cpp
 	polynomial.cpp polynomial.h spmatrix.cpp spmatrix.h
-	system.cpp system.h testfunct.cpp testfunct.h
+#	system.cpp system.h 
+	expr.cpp expr.h
+	exprsystem.cpp exprsystem.h
+        testfunct.cpp testfunct.h
 	torcolloc.cpp torcolloc.h torpoint.cpp torpoint.h 
 	multipliers.cpp multipliers.h
 	odecolloc.cpp odecolloc.h
-	odepoint.cpp odepoint.h )
+	odepoint.cpp odepoint.h 
+	stcolloc.cpp stcolloc.h 
+        stpoint.cpp stpoint.h )
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
 	${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include

@@ -7,7 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
-#include "system.h"
+#include "exprsystem.h"
 #include "matrix.h"
 #include "spmatrix.h"
 #include "hypermatrix.h"

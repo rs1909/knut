@@ -5,6 +5,8 @@
 #include "mat4data.h"
 #include <iostream>
 
+enum class DataType : int { ST, LC, TR };
+
 class KNAbstractContinuation
 {
   public:
@@ -35,12 +37,8 @@ class KNAbstractContinuation
     {
       err << ex.getMessage().str() << " This has occurred in file '" << ex.getFile() << "' at line " << ex.getLine() << ".\n";
     }
-    // create a data file for limit cycles
-    virtual void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms) = 0;
-    // create a data file for tori
-    virtual void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms) = 0;
-    // the thread sets the data file
-//    virtual void setData(KNDataFile* data) = 0;
+    // create a data file for steady states
+    virtual void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms) = 0;
     // the thread requests the data file
     virtual KNDataFile& data() = 0;
     // the thread wants to close the data file
@@ -96,9 +94,7 @@ class KNCliContinuation : public KNAbstractContinuation
       printException(ex);
       exit(-1);
     }
-    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-//    void setData(KNDataFile* data) { output = data; }
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
     KNDataFile& data() { return *output; }
     void deleteData() { delete output; output = 0; }
     void dataUpdated() { }

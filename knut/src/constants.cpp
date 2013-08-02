@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "constants.h"
+#include "matrix.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -685,7 +686,7 @@ void KNConstantsBase::setSysNameText(const std::string& str, bool /*testing*/)
   KNSystem* sys = 0;
   try
   {
-    sys = new KNSystem(getSysName(), getSysType(), getNDeri());
+    sys = new KNSystem(getSysName());
     initDimensions(sys);
     delete sys;
     sys = 0;

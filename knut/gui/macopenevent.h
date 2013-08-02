@@ -1,3 +1,6 @@
+#ifndef MACOPENEVENT_H
+#define MACOPENEVENT_H
+
 #include <QFileOpenEvent>
 
 // for MacOS files are opened throught events
@@ -23,3 +26,5 @@ class FileOpenEvent : public QObject
   signals:
     void open(const QString& file);
 };
+
+#endif

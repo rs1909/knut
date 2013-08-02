@@ -7,6 +7,9 @@
 //
 // ------------------------------------------------------------------------- //
 
+#ifndef COMPTHREAD_H
+#define COMPTHREAD_H
+
 #include "constqtgui.h"
 #include "basecomp.h"
 #include <string>
@@ -27,8 +30,9 @@ class MThread : public QObject, public KNAbstractContinuation
     void clearLastLine() { emit printClearLastLine(); }
     void storeCursor() { emit printStoreCursor(); }
     void raiseException(const KNException& ex);
-    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
+//    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+//    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
     KNDataFile& data();
     const KNDataFile* dataPointer();
     void deleteData();
@@ -51,11 +55,14 @@ class MThread : public QObject, public KNAbstractContinuation
     // called by deleteData(). This notifies the system that the continuation has finished.
     void dataDeleteReq();
     // these have to be connected and in return call dataCreated()
-    void createDataRequestLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-    void createDataRequestTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+    void createDataRequest (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
+//    void createDataRequestLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
+//    void createDataRequestTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
 
   private:
     KNDataFile* output;
     bool changeQueued;
     static const QEventLoop::ProcessEventsFlags waitFlag;
 };
+
+#endif

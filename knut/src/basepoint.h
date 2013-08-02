@@ -17,6 +17,8 @@
 #include "multipliers.h"
 #include <cfloat>
 
+
+class KNDataFile;
 class KNSystem;
 class KNAbstractContinuation;
 
@@ -104,9 +106,16 @@ class KNAbstractPoint
       // for( int j=0; j<colloc->nDim(); j++ ) e += sol(j)*sol(j); // does not matter that headpoint or tailpoint, its periodic...
       return sqrt(basecolloc->integrate(sol, sol));
     }
+    virtual inline double  normMX() { return norm(); }
+    
     std::ostream& outStream();
     void printStream();
     void setNotifyObject(KNAbstractContinuation* cnt);
+    
+    /// I/O to REIMPLEMENT
+    virtual void BinaryRead(KNDataFile& data, size_t n) = 0;
+    virtual void BinaryWrite(KNDataFile& data, BifType bif, size_t n) = 0;
+
 /// END BASE CLASS
   protected:
     virtual void construct();
@@ -257,7 +266,8 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       }
       return nrm;
     }
-    inline double NormMX()
+    // redefinition of the abstract version
+    inline double normMX()
     {
       const size_t ndeg = persolcolloc->nInt();
       const size_t nint = persolcolloc->nInt();

@@ -12,7 +12,8 @@
 
 // Includes local
 #include "pointtype.h"
-#include "system.h"
+#include "exprsystem.h"
+#include "knerror.h"
 
 // Includes standard library
 #include <iostream>

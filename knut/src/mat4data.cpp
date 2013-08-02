@@ -703,7 +703,7 @@ void KNDataFile::setProfile(size_t n, const KNVector& prof)
     }
     else
     {
-      P_MESSAGE1("Error while writing the MAT file.");
+      P_MESSAGE4("Error while writing the MAT file: (prof:size vs. ndim*(ndeg*nint + 1))", prof.size(), " vs. ", ndim*(ndeg*nint + 1));
     }
   }
   else

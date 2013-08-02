@@ -351,7 +351,7 @@ inline size_t KNSparseMatrix::newLine(size_t size_)
   n++;
   Ap[n] = Ap[n-1] + static_cast<int>(size_);
 #ifdef DEBUG
-  P_ASSERT_X5(static_cast<size_t>(Ap[n]) < size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
+  P_ASSERT_X5(static_cast<size_t>(Ap[n]) <= size, "WrLi bound: Ap[n]=", Ap[n], ", size=", size, ".");
 #endif
   return n -1;
 }

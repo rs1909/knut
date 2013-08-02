@@ -515,12 +515,16 @@ void VectorField::PrintKnut(ostream& sys_out, map<string, string> /*options*/)
   // ***************************************************************************
   // Starting solution
   // ***************************************************************************
-  sys_out << "void sys_stsol(KNVector& out, double t)\n";
+  sys_out << "void sys_p_stsol(KNArray2D<double>& out, const KNArray1D<double>& time)\n";
   sys_out << "{\n";
+  sys_out << "  for (size_t idx=0; idx < time.size(); ++idx)\n";
+  sys_out << "  {\n";
+  sys_out << "    const double t = time(idx);\n";
   for (size_t j = 0; j < nv; ++j)
   {
-    sys_out << "  out(" << j << ") = " << ex_stsol[j] << ";\n";
+    sys_out << "    out(" << j << ",idx) = " << ex_stsol[j] << ";\n";
   }
+  sys_out << "  }\n";
   sys_out << "}\n";
   sys_out << endl;
 

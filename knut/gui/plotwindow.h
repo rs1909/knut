@@ -7,6 +7,9 @@
 //
 // ------------------------------------------------------------------------- //
 
+#ifndef PLOTWINDOW_H
+#define PLOTWINDOW_H
+
 #include "plotdata.h"
 #include "pointtype.h"
 
@@ -88,3 +91,5 @@ class plotWindow : public QSplitter
     // called when plotting is finished
     void updated();
 };
+
+#endif

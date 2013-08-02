@@ -12,7 +12,7 @@
 #include "knerror.h"
 #include "point.h"
 #include "ncolloc.h"
-#include "system.h"
+#include "exprsystem.h"
 #include "matrix.h"
 #include "spmatrix.h"
 #include "plot.h"

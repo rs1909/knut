@@ -256,8 +256,8 @@ void EqnVarTableView::resetSize()
   resizeRowsToContents();
 //   resizeColumnsToContents(); // Do not resize, it gets too small
   horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-  horizontalHeader()->setResizeMode(QHeaderView::Fixed);
-  verticalHeader()->setResizeMode(QHeaderView::Fixed);
+  horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   
@@ -298,8 +298,8 @@ void SYMTableView::resetSize()
   resizeRowsToContents();
 //   resizeColumnsToContents(); // Do not resize, it gets too small
   horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-  horizontalHeader()->setResizeMode(QHeaderView::Fixed);
-  verticalHeader()->setResizeMode(QHeaderView::Fixed);
+  horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   

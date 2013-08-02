@@ -11,7 +11,7 @@
 #define NCOLLOC_H
 
 #include "basecolloc.h"
-#include "system.h"
+#include "exprsystem.h"
 #include "matrix.h"
 #include "spmatrix.h"
 

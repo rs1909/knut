@@ -273,6 +273,7 @@ static inline void adjustAxis(qreal& min, qreal& max, size_t& numTicks)
 {
   // keep invalid axis
   if (numTicks == 1) return;
+  if (min == max) return;
   const size_t MinTicks = 4;
   qreal grossStep = (max - min) / MinTicks;
   qreal step = pow(10, floor(log10(grossStep)));
@@ -364,6 +365,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
     ViewBox cvb = *currZoom;
     bool touched = false;
     std::list<PlotItem>::const_iterator it;
+//    std::cout << "ENTER ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
     for (it = begin; it != end; it++)
     {
       for (size_t k = 0; k < it->x.size(); k++)
@@ -372,9 +374,11 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
         if (xcoord(it->x(k)) < cvb.xmin) { cvb.xmin = xcoord(it->x(k)); toZoom = true; }
         if (ycoord(it->y(k)) > cvb.ymax) { cvb.ymax = ycoord(it->y(k)); toZoom = true; }
         if (ycoord(it->y(k)) < cvb.ymin) { cvb.ymin = ycoord(it->y(k)); toZoom = true; }
+//        std::cout << "y=" << ycoord(it->y(k)) << "\n";
         touched = true;
       }
     }
+//    std::cout << "MID ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
     if (touched)
     {
       if (cvb.xmax == cvb.xmin ) { cvb.xmin *= 0.95; cvb.xmax *= 1.05; }
@@ -386,6 +390,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
       adjustAxis(cvb.ymin, cvb.ymax, cvb.yticks);
     }
     *currZoom = cvb;
+//    std::cout << "EXIT ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
   }
   if (toZoom)
   {
@@ -491,14 +496,15 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       {
         const size_t ndeg = data->getNDeg();
         const size_t nint = data->getNInt();
+//        std::cout << "NINT " << nint << " NDEG " << ndeg << "\n";
         for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           double nrm = 0.0;
           size_t p = dim;
 //          for (int p = 0; p < data->getNDim(); ++p)
 //          {
-            double min = DBL_MAX;
-            double max = -DBL_MAX;
+            double min = data->getProfile(i, p, 0);
+            double max = data->getProfile(i, p, 0);
             for (size_t l = 0; l < nint; ++l)
             {
               for (size_t k = 0; k < ndeg; ++k)
@@ -509,7 +515,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
             }
             nrm += (max - min) * (max - min);
 //          }
-          Graph.rbegin()->y(j) = sqrt(nrm);
+//          std::cout << "min " << min << " max " << max << " nrm " << nrm << " j=" << j <<"\n";
+          if (nint == 0) Graph.rbegin()->y(j) = data->getProfile(i, p, 0);
+          else Graph.rbegin()->y(j) = sqrt(nrm);
         }
       } else
       if (y >= YParameter0)
@@ -880,6 +888,9 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
 {
   ViewBox cvb = *currZoom;
 
+  if (cvb.xmax == cvb.xmin) return;
+  if (cvb.ymax == cvb.ymin) return;
+  
   const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
   const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
 
@@ -967,6 +978,11 @@ void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
     }
 
     ViewBox cvb = *currZoom, newvb;
+    if ((cvb.xmax == cvb.xmin) || (cvb.ymax == cvb.ymin))
+    {
+      event->accept();
+      return;
+    }
     if ((cvb.xticks > 1)&&(cvb.yticks > 1))
     {
       const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
@@ -1049,6 +1065,7 @@ void PlotData::makeBox()
   TopTicks.clear();
   HText.clear();
   qreal highest = 0;
+//  std::cout << "xmin " << cvb.xmin << ", xmax" << cvb.xmax << " ticks " << cvb.xticks << "\n";
   for (size_t i = 0; i < cvb.xticks + 1; i++)
   {
     BottomTicks.push_back(new QGraphicsLineItem);
@@ -1080,6 +1097,7 @@ void PlotData::makeBox()
   RightTicks.clear();
   VText.clear();
   qreal widest = 0;
+//  std::cout << "ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
   for (size_t i = 0; i < cvb.yticks + 1; i++)
   {
     LeftTicks.push_back(new QGraphicsLineItem);
@@ -1168,6 +1186,7 @@ void PlotData::makeBox()
   }
   if (unitCircleCount > 0)
   {
+    if ((cvb.xmax == cvb.xmin) || (cvb.ymax == cvb.ymin)) return;
     const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
     const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
     const QPointF pos = QPointF(xscale * (xcoord(0.0) - cvb.xmin), yscale * (cvb.ymax - ycoord(0.0)));
@@ -1224,7 +1243,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
       {
         delete it->item;
-        it->item = new QGraphicsPathItem(it->path, Box, this);
+        it->item = new QGraphicsPathItem(it->path, Box);
         it->item->setPen(it->pen);
       }
     }
@@ -1233,7 +1252,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j)
       {
         delete (*i).data.circle->item[j];
-        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, Box, this);
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, Box);
         item->setPen((*i).data.circle->pen);
         item->setPos((*i).data.circle->pos[j]);
         (*i).data.circle->item[j] = item;
@@ -1244,7 +1263,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j)
       {
         delete (*i).data.polygon->item[j];
-        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, Box, this);
+        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, Box);
         item->setPen((*i).data.polygon->pen);
         item->setPos((*i).data.polygon->pos[j]);
         (*i).data.polygon->item[j] = item;

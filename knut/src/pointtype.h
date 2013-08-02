@@ -18,6 +18,8 @@ enum PtType {
   /// ODE
   SolODE       = 0,
   SolAUTODE    = 10,
+  /// Steady state for DDE
+  SolSteady    = 15,
   /// TORUS for DDE
   SolTor       = 20,
   SolTorNS     = 21,
@@ -44,6 +46,7 @@ enum Eqn {
   EqnNone           = 0,
   EqnSol            = 1,
   EqnODESol         = 2,
+  EqnSteady         = 3,
   EqnPhase          = 24,
   EqnPhaseRot       = 25,
   EqnTORSol         = 32,
@@ -61,6 +64,7 @@ enum Var {
   VarNone      = 0,
   VarSol       = 1,
   VarODESol    = 2,
+  VarSteady    = 3,
   VarTORSol    = 32,
   VarPAR0      = 100,
   VarInternal  = 4000,

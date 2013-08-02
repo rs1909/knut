@@ -2,8 +2,9 @@
 #include "knerror.h"
 #include "point.h"
 #include "odepoint.h"
+#include "stpoint.h"
 #include "torpoint.h"
-#include "system.h"
+#include "exprsystem.h"
 
 #include <iostream>
 #include <iomanip>
@@ -21,7 +22,7 @@ void KNAbstractContinuation::run(const char* branchFile)
   KNSystem *sys = 0;
   try
   {
-    sys = new KNSystem(params->getSysName(), params->getSysType(), params->getNDeri());
+    sys = new KNSystem(params->getSysName());
   }
   catch (KNException ex)
   {
@@ -67,7 +68,8 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
   //
   //-----------------------------------------------------------------------------------------------------------
 
-  KNAbstractPeriodicSolution* pt_ptr = 0;
+  KNAbstractPoint* pt_ptr = 0;
+  KNAbstractPeriodicSolution* pt_per_ptr = 0;
   try
   {
     const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
@@ -96,10 +98,12 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     // Note that eqn_refine is _NEVER_ set to torus so we cannot rely on that.
     if (eqn_start(0) != EqnTORSol)
     {
-      if (eqn_start(0) == EqnSol) pt_ptr = new KNDdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul());
-      else if (eqn_start(0) == EqnODESol) pt_ptr = new KNOdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      if (eqn_start(0) == EqnSol) pt_per_ptr = new KNDdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg(), params->getNMul());
+      else if (eqn_start(0) == EqnODESol) pt_per_ptr = new KNOdePeriodicSolution(this, *sys, eqn_refine, var_refine, params->getNInt(), params->getNDeg());
+      else if (eqn_start(0) == EqnSteady) pt_ptr = new KNSteadyStateSolution(this, *sys, eqn_refine, var_refine);
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
-      KNAbstractPeriodicSolution& pt = *pt_ptr;
+      if (pt_per_ptr) pt_ptr = pt_per_ptr;
+      KNAbstractPoint& pt = *pt_ptr;
   
       pt.setContIter(params->getNItC());
       pt.setRefIter(params->getNItR());
@@ -118,7 +122,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         sre(i) = params->getSymRe(i);
         sim(i) = params->getSymIm(i);
       }
-      if (params->getSymReSize() != 0) pt.setSym(sre, sim);
+      if (params->getSymReSize() != 0 && pt_per_ptr) pt_per_ptr->setSym(sre, sim); // !!
 
       // load the initial guess
       if (params->getLabel() != 0)
@@ -128,11 +132,11 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         {
           size_t pos = istr.findType(params->getFromType(), params->getLabel() );
 //          std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
-          if (pos < istr.getNCols()) pt.BinaryRead(istr, pos);
+          if (pos < istr.getNCols()) pt.BinaryRead(istr, pos); // !!
           else P_MESSAGE1("No such point in the input");
         } else
         {
-          pt.BinaryRead(istr, params->getLabel()-1);
+          pt.BinaryRead(istr, params->getLabel()-1); // !!
         }
       }
 
@@ -144,15 +148,15 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.reset(eqn_start, var_start);
         pt.setCont(params->getCp());
-        if (findangle) pt.findAngle();   // it only computes the angle from the test functional
+        if (findangle && pt_per_ptr) pt_per_ptr->findAngle();   // it only computes the angle from the test functional // !!
         pt.refine();
       }
     }
     // start the continuation!
     if (eqn(0) != EqnTORSol)
     {
-      KNAbstractPeriodicSolution& pt = *pt_ptr;
-      createDataLC (params->getOutputFile(), sys->ndim(), sys->npar(), params);
+      KNAbstractPoint& pt = *pt_ptr;
+      createData (params->getOutputFile(), pt_per_ptr != 0 ? DataType::LC : DataType::ST, sys->ndim(), sys->npar(), params);
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
@@ -170,19 +174,19 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         case TFPDSwitch:
           screenout << "\nSwitching to the period two branch (TF).\n";
           printStream();
-          pt.SwitchTFPD(params->getDsStart());
+          if (pt_per_ptr) pt_per_ptr->SwitchTFPD(params->getDsStart()); // !!
           break;
         case TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
           printStream();
-          pt.SwitchTFHB(params->getDsStart());
+          if (pt_per_ptr) pt_per_ptr->SwitchTFHB(params->getDsStart()); // !!
           break;
         case TFBRSwitch:
         case TFBRAUTSwitch:
         case TFBRAUTROTSwitch:
           screenout << "\nSwitching to the other branch (TF).\n";
           printStream();
-          pt.SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart());
+          if (pt_per_ptr) pt_per_ptr->SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart()); // !!
           break;
         default:
           screenout << "\nFinding the tangent.\n";
@@ -195,7 +199,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
       pt.setCont(params->getCp());
 
       // if no stability computation then clear the previously computed multipliers
-      if (!(params->getStab())) pt.clearStability();
+      if (!(params->getStab()) && pt_per_ptr) pt_per_ptr->clearStability(); // !!
 
       screenout << '\n';
       printStream();
@@ -233,12 +237,16 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
           return;
         }
         //
-        pt.storeMultiplier();
-        if (params->getStab()) pt.Stability(false); // we just stepped: no init
-        ustabprev = ustab;
-        ustab = pt.UStab();
+        if (pt_per_ptr)
+        {
+          pt_per_ptr->storeMultiplier(); // !!
+          if (params->getStab()) pt_per_ptr->Stability(false); // we just stepped: no init // !!
+          ustabprev = ustab;
+          ustab = pt_per_ptr->UStab(); // !!
+        }
         for (size_t j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
         norm = pt.norm();
+        
         // console output
         const bool endpoint = i == params->getSteps()-1;
         const bool stabchange = (i != 0) && (ustab != ustabprev);
@@ -246,7 +254,8 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         // stability output
         BifType bif = BifNone;
         if (endpoint) bif = BifEndPoint;
-        if (stabchange) bif = pt.testBif();
+        if (stabchange && pt_per_ptr != 0) bif =  pt_per_ptr->testBif(); // !!
+
         if (toprint || stabchange || endpoint)
         {
           // ereases everyting from the last saved cursor
@@ -291,7 +300,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         if (branchFile)
         {
           for (size_t j = 0; j < par.size(); j++) ff << par(j) << "\t";
-          ff << "\t" << norm << "\t" << pt.NormMX() << "\t" << ustab << "\n";
+          ff << "\t" << norm << "\t" << pt.normMX() << "\t" << ustab << "\n"; // !!
           ff.flush();
         }
         if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
@@ -316,7 +325,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     }
     else
     {
-      createDataTR (params->getOutputFile(), sys->ndim(), sys->npar(), params);
+      createData (params->getOutputFile(), DataType::TR, sys->ndim(), sys->npar(), params);
 //      setData(new KNDataFile(params->getOutputFile(), params->getParNames(),
 //                           params->getSteps(), sys->ndim(), VarToIndex(VarEnd,sys->npar()),
 //                           params->getNInt1(), params->getNInt2(), params->getNDeg1(), params->getNDeg2()));
@@ -433,18 +442,20 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
   }
 }
 
-// create a data file for limit cycles
-void KNCliContinuation::createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+// create a data file for steady states
+void KNCliContinuation::createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
-  output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
-                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
-                          prms->getNInt(), prms->getNDeg(), prms->getNMul());
-}
-
-// create a data file for tori
-void KNCliContinuation::createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
-{
-  output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
-                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
-                          prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
+  if (t == DataType::ST) {
+    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                            0, 0, prms->getNMul());
+  } else if (t == DataType::LC) {
+    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                            prms->getNInt(), prms->getNDeg(), prms->getNMul());
+  } else if (t == DataType::TR) {
+    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                            prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
+  }
 }

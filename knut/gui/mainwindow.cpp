@@ -18,12 +18,21 @@
 #include <cfloat>
 
 #include <QtGui/QtGui>
+#include <QLabel>
+#include <QAction>
+#include <QToolButton>
+#include <QHBoxLayout>
+#include <QToolBar>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QStatusBar>
 
 MainWindow::MainWindow(const QString& appDir) :
     executableDir(appDir), compThread(parameters),
     terminalTextSize(0),
     inputPlotWindow(0), outputPlotWindow(0),
-    terminalDialog(0), compilerProcess(0),
+    terminalDialog(0), // compilerProcess(0),
     inputMatFile(0), outputMatFile(0), inThreadMatFile(0)
 {
 #if WIN32
@@ -101,27 +110,27 @@ MainWindow::MainWindow(const QString& appDir) :
   // this only for setting SYSNAME
   QHBoxLayout *sysnameLayout = new QHBoxLayout;
   QLabel* sysnameLabel = new QLabel("SYSNAME");
-  sysnameLabel->setToolTip(QString("The compiled system definition, e.g., \"sys-problem.so\""));
+  sysnameLabel->setToolTip(QString("Vector field file, e.g., \"sys-problem.vf\""));
   sysname = new QLineEdit();
   QAction* sysdefAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
-  QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-compile.png"), tr("&Compile..."), this);
-  QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);  
+//   QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-compile.png"), tr("&Compile..."), this);
+//   QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);  
   QToolButton* getSysdef = new QToolButton();
-  QToolButton* compile = new QToolButton();
-  QToolButton* generate = new QToolButton();
+//   QToolButton* compile = new QToolButton();
+//   QToolButton* generate = new QToolButton();
   getSysdef->setDefaultAction(sysdefAct);
-  compile->setDefaultAction(compileAct);
-  generate->setDefaultAction(generateAct);
+//   compile->setDefaultAction(compileAct);
+//   generate->setDefaultAction(generateAct);
   sysnameLayout->addWidget(getSysdef);
-  sysnameLayout->addWidget(compile);
-  sysnameLayout->addWidget(generate);
+//   sysnameLayout->addWidget(compile);
+//   sysnameLayout->addWidget(generate);
   sysnameLayout->addStretch();
   systemGrid->addWidget(sysnameLabel, 2, 0, Qt::AlignLeft | Qt::AlignVCenter);
   systemGrid->addWidget(sysname, 2, 1, 1, 3);
   systemGrid->addLayout(sysnameLayout, 2, 4);
   connect(sysdefAct, SIGNAL(triggered()), this, SLOT(setSysName()));
-  connect(compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
-  connect(generateAct, SIGNAL(triggered()), this, SLOT(generateSystem()));
+//   connect(compileAct, SIGNAL(triggered()), this, SLOT(compileSystem()));
+//   connect(generateAct, SIGNAL(triggered()), this, SLOT(generateSystem()));
   // sets up a bidirectional connection
   connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
   parameters.registerCallback("std::string", "sysname", sysname, SIGNAL(textEdited(const QString &)), "setText");
@@ -410,10 +419,10 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()), Qt::QueuedConnection);
   connect(workThread, SIGNAL(finished()), this, SLOT(stopped()), Qt::QueuedConnection);
   // opening the file
-  connect(&compThread, SIGNAL(createDataRequestLC (const std::string&, size_t, size_t, KNConstants*)), 
-          this,           SLOT(createThreadDataLC (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
-  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)), 
-          this,           SLOT(createThreadDataTR (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
+  connect(&compThread, SIGNAL(createDataRequest (const std::string&, DataType, size_t, size_t, KNConstants*)), 
+          this,           SLOT(createThreadData (const std::string&, DataType, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
+//  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)), 
+//          this,           SLOT(createThreadDataTR (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
   connect(this, SIGNAL(threadDataCreated(KNDataFile*)), &compThread, SLOT(dataCreated(KNDataFile*)), Qt::QueuedConnection);
   // closing the file
   connect(&compThread, SIGNAL(dataDeleteReq()), this, SLOT(threadDataDelete()), Qt::QueuedConnection);
@@ -453,19 +462,21 @@ void MainWindow::threadDataDelete()
   emit threadDataDeleteAck();
 }
 
-void MainWindow::createThreadDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
+void MainWindow::createThreadData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
-  inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+  if (t == DataType::LC) {
+    inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
                           prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
                           prms->getNInt(), prms->getNDeg(), prms->getNMul());
-  emit threadDataCreated (inThreadMatFile);
-}
-
-void MainWindow::createThreadDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms)
-{
-  inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+  } else if(t == DataType::TR) {
+    inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
                           prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
                           prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
+  } else if(t == DataType::ST) {
+    inThreadMatFile = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          0, 0, prms->getNMul());
+  } else return;
   emit threadDataCreated (inThreadMatFile);
 }
 
@@ -479,7 +490,7 @@ void MainWindow::stop()
 void MainWindow::setSysName()
 {
   QString fileName = QFileDialog::getOpenFileName(this, "Open system definition file",
-                                                  QString(), "Shared object (*.so);;All files (*)");
+                                                  QString(), "Vector field (*.vf);;All files (*)");
   if (!fileName.isEmpty())
   {
     sysname->setText(QDir::current().relativeFilePath(fileName));
@@ -691,41 +702,41 @@ void MainWindow::setSysNameParameter()
   parameters.setSysNameText(sysname->text().toStdString(), true);
 }
 
-void MainWindow::compileSystem()
-{
-  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "C++ source (*.cpp)");
-  if (!fileName.isEmpty() && compilerProcess == 0)
-  {
-    QString newfile(fileName);
-    newfile.replace(QString(".cpp"), QString(".so"));
-    try {
-      KNSystem::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
-      sysname->setText(QDir::current().relativeFilePath(fileName));
-      setSysNameParameter();
-    }
-    catch (KNException ex)
-    {
-      externalException(ex);
-    }
-  }
-}
-
-void MainWindow::generateSystem()
-{
-  QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");
-  if (!fileName.isEmpty() && compilerProcess == 0)
-  {
-    try {
-      KNSystem::generateSystem(fileName.toStdString(), SYS_TYPE_VFC, executableDir.toStdString());
-      sysname->setText(QDir::current().relativeFilePath(fileName));
-      setSysNameParameter();
-    }
-    catch (KNException ex)
-    {
-      externalException(ex);
-    }
-  }
-}
+// void MainWindow::compileSystem()
+// {
+//   QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "C++ source (*.cpp)");
+//   if (!fileName.isEmpty() && compilerProcess == 0)
+//   {
+//     QString newfile(fileName);
+//     newfile.replace(QString(".cpp"), QString(".so"));
+//     try {
+//       KNSystem::compileSystem(fileName.toStdString(), newfile.toStdString(), executableDir.toStdString());
+//       sysname->setText(QDir::current().relativeFilePath(fileName));
+//       setSysNameParameter();
+//     }
+//     catch (KNException ex)
+//     {
+//       externalException(ex);
+//     }
+//   }
+// }
+// 
+// void MainWindow::generateSystem()
+// {
+//   QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");
+//   if (!fileName.isEmpty() && compilerProcess == 0)
+//   {
+//     try {
+//       KNSystem::generateSystem(fileName.toStdString(), SYS_TYPE_VFC, executableDir.toStdString());
+//       sysname->setText(QDir::current().relativeFilePath(fileName));
+//       setSysNameParameter();
+//     }
+//     catch (KNException ex)
+//     {
+//       externalException(ex);
+//     }
+//   }
+// }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {

@@ -10,7 +10,7 @@
 #include <cmath>
 #include "basecolloc.h"
 #include "polynomial.h"
-#include "system.h"
+#include "exprsystem.h"
 
 #ifdef DEBUG
 #include <iostream>

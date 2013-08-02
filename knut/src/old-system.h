@@ -12,9 +12,8 @@
 
 #include "matrix.h"
 #include "config.h"
-#ifdef GINAC_FOUND
-#include "vf.h"
-#endif
+
+#include "exprsystem.h"
 
 #ifndef _WIN32
 extern "C"
@@ -55,7 +54,7 @@ class KNSystem
     ~KNSystem();
     static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
     static void generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir);
-    static bool makeSystem(std::string& soname, const std::string& sysName, const std::string& sysType, const std::string& executableDir);
+//     static bool makeSystem(std::string& soname, const std::string& sysName, const std::string& sysType, const std::string& executableDir);
 
     size_t  ndim() const ;
     size_t  npar() const ;
@@ -69,10 +68,14 @@ class KNSystem
                    size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv );
     // Setting the starting point
     void   stpar(KNVector& par) const;
-    void   stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const;
+    void   stsol(KNArray2D<double>& out, const KNArray1D<double>& time);
     void   parnames(const char *names[]) const;
 
   private:
+//     static void compileSystem(const std::string& cxxfile, const std::string& shobj, const std::string& executableDir);
+//     static void generateSystem(const std::string& vffile, const std::string& shobj, const std::string& executableDir);
+    static bool makeSystem(std::string& soname, const std::string& sysName, const std::string& sysType, const std::string& executableDir);
+
     void   p_discrderi( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& p_xx, const KNVector& par, size_t sel,
                         size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& p_vv );
     void   p_resize(size_t sz)
@@ -142,39 +145,8 @@ class KNSystem
     tp_sys_p_stsol  v_p_stsol;
     tp_sys_parnames v_parnames;
 
-#ifdef GINAC_FOUND
-    void makeSymbolic(const std::string& vffile);
-    bool useVectorField;  // use the vector field file directly, no compilation
-    size_t ex_ndim;
-    size_t ex_npar;
-    size_t ex_ntau;
-    size_t ex_nevent;
-    std::vector<GiNaC::ex> ex_tau;
-    std::vector<GiNaC::ex> ex_tau_p;
-    std::vector<GiNaC::ex> ex_rhs;
-    std::vector<double> ex_mass;
-    std::vector<GiNaC::ex> ex_rhs_p;
-    std::vector<GiNaC::ex> ex_rhs_x;
-    std::vector<GiNaC::ex> ex_rhs_xp;
-    std::vector<GiNaC::ex> ex_rhs_xx;
-    std::vector<double> ex_stpar;
-    std::vector<GiNaC::ex> ex_stsol;
-    std::vector<std::string> ex_parnames;
-    
-    size_t sym_ndim();
-    size_t sym_npar();
-    size_t sym_ntau();
-    void sym_tau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par );
-    void sym_dtau( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp );
-    void sym_rhs( KNArray2D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel );
-    void sym_mass(KNArray1D<double>& out) const;
-    void sym_deri( KNArray3D<double>& out_p, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
-                size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv );
-    void sym_stpar(KNVector& par) const;
-    void sym_stsol(KNArray2D<double>& out, const KNArray1D<double>& time) const;
-    void sym_parnames(const char *names[]) const;
-#endif
     static bool workingCompiler;
+    ExpTree::KNSystem exsys;
 };
 
 inline KNSystem::tdlhand KNSystem::tdlopen(const char* fname)

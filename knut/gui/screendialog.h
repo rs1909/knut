@@ -1,3 +1,6 @@
+#ifndef SCREENDIALOG_H
+#define SCREENDIALOG_H
+
 #include <QTextEdit>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -79,3 +82,5 @@ class screenDialog : public QTextEdit
   private:
     int savedPosition;
 };
+
+#endif

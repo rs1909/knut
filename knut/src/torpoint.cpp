@@ -10,7 +10,7 @@
 #include <cmath>
 
 #include "knerror.h"
-#include "system.h"
+#include "exprsystem.h"
 #include "torpoint.h"
 #include "mat4data.h"
 

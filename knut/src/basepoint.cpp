@@ -9,7 +9,7 @@
 
 #include "basepoint.h"
 #include "basecomp.h"
-#include "system.h"
+#include "exprsystem.h"
 #include "mat4data.h"
 #include <sstream>
 
@@ -55,6 +55,14 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
       PtTab tmp = { SolAUTODE, NOSwitch,   2, 1,
                     { EqnODESol, EqnPhase },
                     { VarODESol, VarNone } };
+      tab = tmp;
+    }
+    break;
+    case SolSteady:
+    {
+      PtTab tmp = { SolSteady, NOSwitch,   1, 0,
+                    { EqnSteady },
+                    { VarSteady } };
       tab = tmp;
     }
     break;

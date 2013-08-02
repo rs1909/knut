@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<KNDataFile*>("KNDataFile*");
     qRegisterMetaType<size_t>("size_t");
     qRegisterMetaType<KNConstants*>("KNConstants*");
+    qRegisterMetaType<KNConstants*>("DataType");
 
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
