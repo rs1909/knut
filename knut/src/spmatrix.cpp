@@ -397,7 +397,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   delete[] tvec;
 
   const size_t NCONV = NEV; // IPARAM[4];
-  blasint  RVEC     = 0;
+//   blasint  RVEC     = 0;
   char     HOWMNY   = 'A';
   bool*    SELECT   = new bool[NCV+1];
   double*  DR       = new double[NCONV+2];

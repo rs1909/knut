@@ -153,7 +153,6 @@ double KNTestFunctional::funct(KNDdeBvpCollocation& col, const KNVector& par, co
   double one = 1.0;
   double gg = 0.0;
   double hh = 0.0;
-  double ggdiff, hhdiff;
 
   if (first)
   {

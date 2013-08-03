@@ -206,7 +206,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
       storeCursor();
       size_t ustab = 0, ustabprev = 0;
       double norm = 0.0;
-      const size_t ithist = ITSTEPS;
+//       const size_t ithist = ITSTEPS;
       size_t printedln = 0;
       double ds = params->getDs();
       for (size_t i = 0; i < params->getSteps(); i++)  // 35
@@ -284,7 +284,7 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         {
           pt.adapt();
           const size_t itad = pt.nextStep(0.0, angle, IterateTangent::yes);
-//          if (itad >= params->getNItC()) break;
+          if (itad >= params->getNItC()) break;
         }
         if (toprint || stabchange)
         {

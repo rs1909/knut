@@ -231,14 +231,15 @@ KNSystem::KNSystem(const std::string& sysName, bool trycompile) : handle(nullptr
       toCxx (cxxstring);
       try {
         runCompiler (cxxstring, shobj, executableDir);
+        setupFunctions (shobj);
       }
       catch (KNException& ex)
       {
         workingCompiler = false;
-        throw (ex);
+        std::cerr << "Cannot compile the C++ system definition.\n" << ex.str();
+        std::cerr.flush ();
       }
     }
-    setupFunctions (shobj);
   }
 }
 
@@ -1240,7 +1241,8 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   //   std::cout << cmdline << std::endl;
   // running the command
   int input, output, error;
-  pid_t pid = pipeOpen(arglist, &input, &output, &error);
+  // pid_t pid = pipeOpen ( ... could wait for this pid specifically
+  pipeOpen(arglist, &input, &output, &error);
   // we need to write and read until all of them are finished
   bool outfin = false, infin = false, errfin = false;
   // input

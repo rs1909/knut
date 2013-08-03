@@ -141,7 +141,7 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
   tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
   fclose(fp);
 
-  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
+  mxml_node_t* nd = 0;
   mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
   if (!root_nd)
   {
@@ -316,7 +316,6 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
 
 void KNConstantsBase::printXmlFileV4(std::ostream& file)
 {
-  char cbuf[2];
   mxml_node_t *node = 0;
   
   mxml_node_t *xml = mxmlNewXML("cfile 1.0");

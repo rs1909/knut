@@ -176,7 +176,7 @@ class KNLuSparseMatrix : public KNSparseMatrix
     bool   fact;
     void   *Numeric;
     double Control[UMFPACK_CONTROL];
-    double Info[UMFPACK_INFO];
+//     double Info[UMFPACK_INFO];
     // temporary space
     int    *Wi;
     double *W;

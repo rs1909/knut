@@ -465,10 +465,10 @@ void KNBlockMatrix<FACT>::multiply(KNVector& R1, double& R3, const KNVector& X1,
 template<class FACT> template<bool trans>
 void KNBlockMatrix<FACT>::check(const KNVector& x, const double& z, const KNVector& f, const double& h)
 {
-  const FACT&         _A11 = *A11;
-  const JagVector2D&  _A13 = *A13;
-  const JagVector2D&  _A31 = *A31;
-  const KNMatrix&       _A33 = *A33;
+//   const FACT&         _A11 = *A11;
+//   const JagVector2D&  _A13 = *A13;
+//   const JagVector2D&  _A31 = *A31;
+//   const KNMatrix&       _A33 = *A33;
   KNVector              R1(x.size());
   double              R3;
   multiply<trans>(R1, R3, x, z);
@@ -547,8 +547,8 @@ template<class FACT> template<bool trans>
 void KNBlockMatrix<FACT>::check(size_t bord, const KNVector& X1, const KNVector& X3, const KNVector& F1, const KNVector& F3)
 {
   // this may be buggy with some compilers
-  const FACT&         _A11 = *A11;
-  const KNMatrix&       _A33 = *A33;
+//   const FACT&         _A11 = *A11;
+//   const KNMatrix&       _A33 = *A33;
   //multiply back...
   KNVector R1(X1.size());
   KNVector R3(X3.size());

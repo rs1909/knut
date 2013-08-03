@@ -272,7 +272,7 @@ class KNDataFile
     int    file;
 #endif
     const std::string matFileName;
-    size_t filesize;
+//     size_t filesize;
     void  *address;
     size_t size;
     size_t ncols;

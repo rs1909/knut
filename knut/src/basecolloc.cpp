@@ -210,46 +210,47 @@ static void poly_int(KNMatrix& out, const KNVector& t)
 //   for (i = 0; i < t.size(); i++) out(i,i) = 1.0/t.size();
 }
 
-static void poly_diff_int(KNMatrix& out, const KNVector& t)
-{
-  size_t i, j, k;
-  KNVector poly(2*t.size());
-  KNVector poly1(t.size());
-  KNVector poly1_d(t.size());
-  KNVector poly2(t.size());
-
-  for (i = 0; i < t.size(); i++)
-  {
-    for (j = 0; j < t.size(); j++)
-    {
-      poly.clear();
-      poly1.clear();
-      poly1_d.clear();
-      poly2.clear();
-      poly1(0) = 1.0;
-      poly2(0) = 1.0;
-      //      poly.print();
-      // i,j az out matrix indexe
-      //      cout<<"in:poly_mul\n";
-      for (k = 0; k < t.size(); k++)
-      {
-        if (k != i)
-          poly_mul(poly1, 1.0, -t(k));
-        if (k != j)
-          poly_mul(poly2, 1.0, -t(k));
-      }
-      poly1 /= poly_eval(poly1,t(i));
-      poly2 /= poly_eval(poly2,t(j));
-      poly_coeff_diff(poly1_d, poly1);
-      poly_coeff_mul(poly, poly1_d, poly2);
-      // integrate
-      for (k = 0; k < poly.size(); k++) poly(k) /= k + 1.0;
-      out(i, j) = 0.0;
-      // evaluate at x = 0..1
-      for (k = 0; k < poly.size(); k++) out(i, j) += poly(k);
-    }
-  }
-}
+// // Keep it for future use. Currently trapezoidal integration is used
+// static void poly_diff_int(KNMatrix& out, const KNVector& t)
+// {
+//   size_t i, j, k;
+//   KNVector poly(2*t.size());
+//   KNVector poly1(t.size());
+//   KNVector poly1_d(t.size());
+//   KNVector poly2(t.size());
+// 
+//   for (i = 0; i < t.size(); i++)
+//   {
+//     for (j = 0; j < t.size(); j++)
+//     {
+//       poly.clear();
+//       poly1.clear();
+//       poly1_d.clear();
+//       poly2.clear();
+//       poly1(0) = 1.0;
+//       poly2(0) = 1.0;
+//       //      poly.print();
+//       // i,j az out matrix indexe
+//       //      cout<<"in:poly_mul\n";
+//       for (k = 0; k < t.size(); k++)
+//       {
+//         if (k != i)
+//           poly_mul(poly1, 1.0, -t(k));
+//         if (k != j)
+//           poly_mul(poly2, 1.0, -t(k));
+//       }
+//       poly1 /= poly_eval(poly1,t(i));
+//       poly2 /= poly_eval(poly2,t(j));
+//       poly_coeff_diff(poly1_d, poly1);
+//       poly_coeff_mul(poly, poly1_d, poly2);
+//       // integrate
+//       for (k = 0; k < poly.size(); k++) poly(k) /= k + 1.0;
+//       out(i, j) = 0.0;
+//       // evaluate at x = 0..1
+//       for (k = 0; k < poly.size(); k++) out(i, j) += poly(k);
+//     }
+//   }
+// }
 
 #define NDIM ndim
 #define NPAR npar

@@ -842,7 +842,7 @@ static inline void pointOutside(PlotLine& ppath,
   int twoSideIt = 0;
   int oneSidePt[4];
   int twoSidePt[4];
-  int otherSidePt[4];
+//   int otherSidePt[4];
   for (int i = 0; i < 4; ++i)
   {
     if (it[i])
