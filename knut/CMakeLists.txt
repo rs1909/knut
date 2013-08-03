@@ -67,13 +67,6 @@ ENDIF( MSVC )
 SET( MXML_INCLUDE_DIRS ${KNUT_SOURCE_DIR}/mxml )
 
 #------------------------------------------------------------------------------
-# finding GiNaC
-#------------------------------------------------------------------------------
-
-#include(FindPkgConfig)
-#pkg_check_modules (GINAC ginac)
-
-#------------------------------------------------------------------------------
 # finding libstdc++
 #------------------------------------------------------------------------------
 
@@ -236,14 +229,6 @@ ADD_SUBDIRECTORY(UMFPACK)
 
 # The Mini-Xml library
 ADD_SUBDIRECTORY(mxml)
-
-# The vector field generator
-#IF(GINAC_FOUND)
-#  ADD_SUBDIRECTORY(vfgen)
-#  MESSAGE( STATUS "Vector field generator will be built" )
-#ELSE(GINAC_FOUND)
-#  MESSAGE( STATUS "Vector field generator will NOT be built" )
-#ENDIF(GINAC_FOUND)
 
 # This is where the whole computation is
 # this produces a library "libknut.a"
