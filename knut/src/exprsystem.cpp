@@ -49,20 +49,38 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 static void getExecutableDir (std::string& executableDir);
 static bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src);
 
-KNSystem::KNSystem(const std::string& sysName, bool trycompile) : handle(nullptr)
+KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 {
   std::string vfexpr;
   Expression::fromXML (vfexpr, sysName);
-  Expression expr (vfexpr);
+  KNExprSystem::constructor (vfexpr, sysName, trycompile);
+}
+
+KNExprSystem::KNExprSystem () : handle(nullptr)
+{
+}
+
+KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : handle(nullptr)
+{
+  constructor (vfexpr, std::string(), trycompile);
+}
+  
+void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sysName, bool trycompile)
+{
+  std::string vfName;
+  expr.fromString (vfexpr);
   try
   {
-    expr.knutSplit (varName, varDotExpr, varInit, delayExpr, parName, parInit );
+    expr.knutSplit (vfName, varName, varDotExpr, varInit, delayExpr, parName, parInit );
   }
   catch (KNException& ex)
   {
     std::cout << ex.str();
   }
-    
+  
+  // no name was provided
+  if (vfName.empty ()) trycompile = false;
+  
   // Delay W.R.T. parameters
   delayExprDeri.resize (delayExpr.size()*parName.size());
   for (size_t p = 0; p < parName.size(); p++)
@@ -210,18 +228,21 @@ KNSystem::KNSystem(const std::string& sysName, bool trycompile) : handle(nullptr
   // try to compile
   if (workingCompiler && trycompile)
   {
-    std::string shobj(sysName);
+    std::string shobj(vfName);
     shobj += ".so";
     
     struct stat sbuf_so;
     struct stat sbuf_vf;
     
-    bool compile_cxx = false;
-    int res_so = stat(shobj.c_str(), &sbuf_so);
-    int res_vf = stat(sysName.c_str(), &sbuf_vf);
-    P_ERROR_X3 (res_vf == 0, "Vector field definition '", sysName, "' is missing.");
-    if (res_so != 0) compile_cxx = true;
-    else compile_cxx = to_compile(&sbuf_so, &sbuf_vf);
+    bool compile_cxx = true;
+    if (!sysName.empty ())
+    {
+      int res_so = stat(shobj.c_str(), &sbuf_so);
+      int res_vf = stat(sysName.c_str(), &sbuf_vf);
+      P_ERROR_X3 (res_vf == 0, "Vector field definition '", sysName, "' is missing.");
+      if (res_so != 0) compile_cxx = true;
+      else compile_cxx = to_compile(&sbuf_so, &sbuf_vf);
+    }
     
     if (compile_cxx)
     {
@@ -243,7 +264,7 @@ KNSystem::KNSystem(const std::string& sysName, bool trycompile) : handle(nullptr
   }
 }
 
-KNSystem::~KNSystem()
+KNExprSystem::~KNExprSystem()
 {
   for (size_t k = 1; k < stack.size(); k++)
   {
@@ -252,8 +273,15 @@ KNSystem::~KNSystem()
   if (handle != 0) tdlclose(handle);
 }
 
+void KNExprSystem::toString (std::string& vfexpr)
+{
+  std::ostringstream ostr;
+  expr.print (ostr);
+  vfexpr = ostr.str ();
+}
+
 // private
-void KNSystem::resizeStackVector (size_t vectorlen)
+void KNExprSystem::resizeStackVector (size_t vectorlen)
 {
   if (vectorlen > vectorSize)
   {
@@ -268,14 +296,14 @@ void KNSystem::resizeStackVector (size_t vectorlen)
 }
 
 // private
-void KNSystem::fillTime (const KNArray1D<double>& time)
+void KNExprSystem::fillTime (const KNArray1D<double>& time)
 {
   varArray[0].data = const_cast<KNArray1D<double>&>(time).pointer ();
   varArray[0].skip = 1;
 }
 
 // private
-void KNSystem::fillVar (const KNArray3D<double>& var)
+void KNExprSystem::fillVar (const KNArray3D<double>& var)
 {
   for (size_t p = 0; p < varDotExpr.size(); p++)
   {
@@ -290,7 +318,7 @@ void KNSystem::fillVar (const KNArray3D<double>& var)
 }
 
 // private
-void KNSystem::fillVar2 (const KNArray3D<double>& vv)
+void KNExprSystem::fillVar2 (const KNArray3D<double>& vv)
 {
   const size_t skip = 1 + varDotExpr.size()*(delayExpr.size() + 1);
   for (size_t p = 0; p < varDotExpr.size(); p++)
@@ -306,7 +334,7 @@ void KNSystem::fillVar2 (const KNArray3D<double>& vv)
 }
 
 // private
-void KNSystem::fillPar (const KNVector& par)
+void KNExprSystem::fillPar (const KNVector& par)
 {
   for (size_t p = 0; p < parName.size(); p++)
   {
@@ -314,27 +342,27 @@ void KNSystem::fillPar (const KNVector& par)
   }
 }
 
-size_t KNSystem::ndim() const 
+size_t KNExprSystem::ndim() const 
 {
   if (fp_ndim) return fp_ndim ();
   else return varDotExpr.size();
 }
 
 /// WARNING Why do we need to add 3 to it?
-size_t KNSystem::npar() const 
+size_t KNExprSystem::npar() const 
 {
   if (fp_npar) return fp_npar ();
   else return parName.size() - 3;
 }
 
-size_t KNSystem::ntau() const 
+size_t KNExprSystem::ntau() const 
 {
   if (fp_ntau) return fp_ntau ();
   else return delayExpr.size() + 1;
 }
 
 // delay values
-void KNSystem::p_tau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
+void KNExprSystem::p_tau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
 {
   if (fp_p_tau) fp_p_tau (out, time, par);
   else
@@ -353,7 +381,7 @@ void KNSystem::p_tau ( KNArray2D<double>& out, const KNArray1D<double>& time, co
   }
 }
 
-void KNSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
+void KNExprSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
 {
   if (fp_p_dtau) fp_p_dtau (out, time, par, vp);
   else
@@ -373,7 +401,7 @@ void KNSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& time, c
 }
 
 // no mass is implemented yet
-void KNSystem::mass(KNArray1D<double>& out)
+void KNExprSystem::mass(KNArray1D<double>& out)
 {
   for (size_t k = 0; k < varDotExpr.size(); k++)
   {
@@ -381,7 +409,7 @@ void KNSystem::mass(KNArray1D<double>& out)
   }
 }
 
-void KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
+void KNExprSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
 {
   if (fp_p_rhs) fp_p_rhs (out, time, x, par, sel);
   else
@@ -400,7 +428,7 @@ void KNSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, con
   }
 }
 
-void KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
+void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
   size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
   if (fp_p_deri) fp_p_deri (out, time, x, par, sel, nx, vx, np, vp, vv);
@@ -504,7 +532,7 @@ void KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, co
 }
 
 // for previous debug purposes
-// void KNSystem::varprint( const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t pos )
+// void KNExprSystem::varprint( const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t pos )
 // {
 //   resizeStackVector (time.size ());
 //   fillTime (time);
@@ -533,7 +561,7 @@ void KNSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, co
 // }
 
 // Setting the starting point
-void KNSystem::stpar(KNVector& par) const
+void KNExprSystem::stpar(KNVector& par) const
 {
   if (fp_stpar) fp_stpar (par);
   else
@@ -545,7 +573,7 @@ void KNSystem::stpar(KNVector& par) const
   }
 }
 
-void KNSystem::stsol (KNArray2D<double>& out, const KNArray1D<double>& time)
+void KNExprSystem::stsol (KNArray2D<double>& out, const KNArray1D<double>& time)
 {
   if (fp_p_stsol) fp_p_stsol (out, time);
   else
@@ -561,7 +589,7 @@ void KNSystem::stsol (KNArray2D<double>& out, const KNArray1D<double>& time)
   }
 }
 
-void KNSystem::parnames (const char *names[]) const
+void KNExprSystem::parnames (const char *names[]) const
 {
   if (fp_parnames) fp_parnames (names);
   else
@@ -591,7 +619,7 @@ static Node* indicesToCxx(const Expression& expr,
   return nd;
 }
 
-void KNSystem::toCxx (std::string& cxx) const
+void KNExprSystem::toCxx (std::string& cxx) const
 {
   std::ostringstream out;
   std::vector<NodePar*> parlist (parName.size());
@@ -647,7 +675,7 @@ void KNSystem::toCxx (std::string& cxx) const
          "\n"
          "extern \"C\" {\n"
          "\n"
-         "size_t sys_ndim()  { return " << varDotExpr.size() << "; }  // KNSystem dimension\n"
+         "size_t sys_ndim()  { return " << varDotExpr.size() << "; }  // KNExprSystem dimension\n"
          "size_t sys_npar()  { return " << NPAR << "; }  // Number of parameters, plus one (for the period)\n"
          "size_t sys_ntau()  { return " << delayExpr.size() + 1 << "; }  // Number of delays, plus one\n"
          "size_t sys_nderi() { return 2; }  // Order of derivatives computed here\n"
@@ -876,7 +904,7 @@ void KNSystem::toCxx (std::string& cxx) const
 #define DIRSEP '/'
 #endif
 
-bool KNSystem::workingCompiler = true;
+bool KNExprSystem::workingCompiler = true;
 
 static void getExecutableDir (std::string& executableDir)
 {
@@ -1352,7 +1380,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   }
 }
 
-KNSystem::tdlhand KNSystem::tdlopen(const char* fname)
+KNExprSystem::tdlhand KNExprSystem::tdlopen(const char* fname)
 {
 #ifndef _WIN32
   return dlopen(fname, RTLD_NOW);
@@ -1361,7 +1389,7 @@ KNSystem::tdlhand KNSystem::tdlopen(const char* fname)
 #endif
 }
 
-void* KNSystem::tdlsym(tdlhand h, const char* sname)
+void* KNExprSystem::tdlsym(tdlhand h, const char* sname)
 {
 #ifndef _WIN32
   void * res = dlsym(h, sname);
@@ -1371,7 +1399,7 @@ void* KNSystem::tdlsym(tdlhand h, const char* sname)
 #endif
 }
 
-int KNSystem::tdlclose(KNSystem::tdlhand h)
+int KNExprSystem::tdlclose(KNExprSystem::tdlhand h)
 {
 #ifndef _WIN32
   return dlclose(h);
@@ -1380,14 +1408,14 @@ int KNSystem::tdlclose(KNSystem::tdlhand h)
 #endif
 }
 
-const char* KNSystem::tdlerror()
+const char* KNExprSystem::tdlerror()
 {
 #ifndef _WIN32
   return dlerror();
 #else
   DWORD errcode = GetLastError();
   SetLastError(0);
-  if (errcode != 0) return "Windows KNSystem Error\n";
+  if (errcode != 0) return "Windows KNExprSystem Error\n";
   else return 0;
 #endif
 }
@@ -1405,7 +1433,7 @@ extern "C" {
   typedef void(*tp_sys_parnames)(const char *names[]);
 }
 
-void KNSystem::setupFunctions (const std::string& shobj)
+void KNExprSystem::setupFunctions (const std::string& shobj)
 {
   handle = tdlopen(shobj.c_str());
   P_ERROR_X5(handle != nullptr, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", shobj, "'.");

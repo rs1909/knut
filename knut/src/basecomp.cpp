@@ -17,35 +17,31 @@
 #define ITLIM1 3
 #define ITLIM2 5
 
-void KNAbstractContinuation::run(const char* branchFile)
+// void KNAbstractContinuation::run(const char* branchFile)
+// {
+//   KNSystem *sys = 0;
+//   try
+//   {
+//     sys = new KNSystem(params->getSysName());
+//   }
+//   catch (KNException ex)
+//   {
+//     delete sys; sys = 0;
+//     raiseException(ex);
+//     return;
+//   }
+//   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
+//   params->initDimensions(sys);
+//   run(sys, branchFile);
+// }
+
+void KNAbstractContinuation::run(KNSystem* sys, KNConstants* params)
 {
-  KNSystem *sys = 0;
-  try
-  {
-    sys = new KNSystem(params->getSysName());
-  }
-  catch (KNException ex)
-  {
-    delete sys; sys = 0;
-    raiseException(ex);
-    return;
-  }
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
-  run(sys, branchFile);
-}
 
-void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
-{
   setStopFlag(false);
   KNVector par(VarToIndex(VarEnd,sys->npar()));
-  std::ofstream ff;
-  if (branchFile)
-  {
-    ff.open(branchFile);
-    ff << std::scientific;
-    ff.precision(12);
-  }
 
   //-----------------------------------------------------------------------------------------------------------
   //
@@ -296,13 +292,6 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         pt.BinaryWrite(data(), bif, i);
         dataUpdated();
 
-        // branch output
-        if (branchFile)
-        {
-          for (size_t j = 0; j < par.size(); j++) ff << par(j) << "\t";
-          ff << "\t" << norm << "\t" << pt.normMX() << "\t" << ustab << "\n"; // !!
-          ff.flush();
-        }
         if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
         else if ((itc >= params->getNItC()) && (fabs(ds)*dsmul < params->getDsMin()))
         {
@@ -418,12 +407,6 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
         parValuePrint(screenout, par, params->getCp(), var, i, BifNone, norm, 0, it);
         screenout << "\n";
         printStream();
-        if (branchFile)
-        {
-          for (size_t j = 0; j < par.size(); j++) ff << par(j) << "\t";
-          ff << norm << "\n";
-          ff.flush();
-        }
         pttr.savePoint(data(), i);
         dataUpdated();
       }
@@ -431,12 +414,12 @@ void KNAbstractContinuation::run(KNSystem* sys, const char* branchFile)
     }
     // **********************************************************************************************************
     delete pt_ptr; pt_ptr = 0;
-    delete sys; sys = 0;
+//     delete sys; sys = 0;
   }
   catch (KNException ex)
   {
     delete pt_ptr; pt_ptr = 0;
-    delete sys; sys = 0;
+//     delete sys; sys = 0;
     deleteData();
     raiseException(ex);
   }

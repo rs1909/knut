@@ -20,8 +20,8 @@
 int main(int argc, const char** argv)
 {
   // parameters
-  KNConstants*  params = 0;
-  const char*  branchFile = 0;
+  KNConstants* params = nullptr;
+  KNSystem* sys = nullptr;
 
   bool save = false;
   try
@@ -59,9 +59,6 @@ int main(int argc, const char** argv)
             }
             if (save) { params->saveXmlFileV5(""); exit(0); }
             break;
-          case 'b':
-            branchFile = argv[++acnt];
-            break;
           case 'v':
 #ifdef HAVE_CONFIG_H
             std::cout << "This is " << PACKAGE_NAME << " version " << PACKAGE_VERSION << " (" << PACKAGE_REVISION << ")\n";
@@ -85,9 +82,9 @@ int main(int argc, const char** argv)
       exit(-1);
     }
   
-    KNCliContinuation comp(*params);
-    if (branchFile == 0) comp.run();
-    else comp.run(branchFile);
+    KNCliContinuation comp;
+    sys = new KNSystem (params->getSysName ());
+    comp.run(sys, params);
   }
   catch (KNException ex)
   {
@@ -102,5 +99,6 @@ int main(int argc, const char** argv)
     std::cerr << "bad_alloc caught: " << ba.what() << '\n';
   }
   delete params;
+  delete sys;
   return 0;
 }

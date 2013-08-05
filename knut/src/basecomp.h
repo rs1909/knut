@@ -10,15 +10,16 @@ enum class DataType : int { ST, LC, TR };
 class KNAbstractContinuation
 {
   public:
-    KNAbstractContinuation(const KNConstants& constants);
+    KNAbstractContinuation ();
+//     KNAbstractContinuation(const KNConstants& constants);
     virtual ~KNAbstractContinuation();
     
     // sets the constants file pointer
-    void setConstants(const KNConstants& constants);
+//     void setConstants(const KNConstants& constants);
     // run the continuation 
-    void run(KNSystem* sys, const char* branchFile);
-    void run(const char* branchFile);
-    void run() { run(0); }
+    void run(KNSystem* sys, KNConstants* constants);
+//     void run(const char* branchFile);
+//     void run() { run(0); }
     // sets the flag to stop computation
     void setStopFlag(bool flag);
 
@@ -47,27 +48,29 @@ class KNAbstractContinuation
     virtual void dataUpdated() = 0;
 
   protected:
-    KNConstants* params;
+//     KNConstants* params;
     bool        stopFlag;
     // this is used within the thread
     std::ostringstream screenout;
 };
 
-inline KNAbstractContinuation::KNAbstractContinuation(const KNConstants& constants) : stopFlag(false)
-{
-  params = new KNConstants(constants);
-}
+inline KNAbstractContinuation::KNAbstractContinuation () : stopFlag(false) {}
+
+// inline KNAbstractContinuation::KNAbstractContinuation(const KNConstants& constants) : stopFlag(false)
+// {
+//   params = new KNConstants(constants);
+// }
 
 inline KNAbstractContinuation::~KNAbstractContinuation()
 {
-  delete params;
+//   delete params;
 }
 
-void inline KNAbstractContinuation::setConstants(const KNConstants& constants)
-{
-  delete params;
-  params = new KNConstants(constants);
-}
+// void inline KNAbstractContinuation::setConstants(const KNConstants& constants)
+// {
+//   delete params;
+//   params = new KNConstants(constants);
+// }
 
 void inline KNAbstractContinuation::setStopFlag(bool flag)
 {
@@ -77,7 +80,8 @@ void inline KNAbstractContinuation::setStopFlag(bool flag)
 class KNCliContinuation : public KNAbstractContinuation
 {
   public:
-    KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0), charsPrinted(0) { }
+//     KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0), charsPrinted(0) { }
+    KNCliContinuation () : output(0), charsPrinted(0) { }
     ~KNCliContinuation() { }
     void printStream() { std::cout << screenout.str(); charsPrinted += screenout.str().size(); screenout.str(""); std::cout.flush();  }
     virtual void storeCursor() { charsPrinted = 0; }

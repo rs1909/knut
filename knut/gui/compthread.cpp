@@ -10,8 +10,8 @@
 #include "compthread.h"
 #include <QCoreApplication>
 
-MThread::MThread(const KNConstants& constants, QObject* parent) 
-  : QObject(parent), KNAbstractContinuation(constants), output(0), changeQueued(false)
+MThread::MThread(QObject* parent) 
+  : QObject(parent), output(0), changeQueued(false)
 {
 }
 
@@ -19,11 +19,17 @@ MThread::~MThread()
 {
 }
 
+void MThread::setConstants (const KNConstants& prms)
+{
+  params = new KNConstants(prms);
+  sys = new KNSystem (prms.getSysName ());
+}
+
 const QEventLoop::ProcessEventsFlags MThread::waitFlag = QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers;
 
 void MThread::process()
 {
-  KNAbstractContinuation::run();
+  if ((sys != nullptr) && (params != nullptr))KNAbstractContinuation::run(sys, params);
   emit finished();
 }
 

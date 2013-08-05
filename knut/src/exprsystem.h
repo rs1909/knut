@@ -26,13 +26,14 @@ template <class T> class KNArray2D;
 template <class T> class KNArray3D;
 class KNVector;
 
-class KNSystem
+class KNExprSystem
 {
 public:
 
   // sysName : the name of the vector field file
-  KNSystem(const std::string& sysName, bool trycompile = true);
-  ~KNSystem();
+  KNExprSystem (); // this is to facilitate inheritance
+  KNExprSystem (const std::string& vfexpr, bool trycompile = true);
+  ~KNExprSystem ();
 
   size_t  ndim() const ;
   size_t  npar() const ;
@@ -50,9 +51,17 @@ public:
   void   parnames(const char *names[]) const;
   // create a C++ file
   void   toCxx (std::string& cxx) const;
+  void   toString (std::string& vfexpr);
   // diagnostics
 //   void   varprint( const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t pos );
+protected:
+  // vfexpr : the vector field expression
+  // sysName : the file where vfexpr comes from (to track changes)
+  // trycompile : whether to attempt to compile
+  void constructor (const std::string& vfexpr, const std::string& sysName, bool trycompile = true);
+    
 private:
+  ExpTree::Expression expr;
   std::vector<std::string> varName;
   std::vector<ExpTree::Expression> varDotExpr;
   std::vector<ExpTree::Expression> varInit;
@@ -117,6 +126,13 @@ private:
 
   tdlhand handle;
   const char* error;
+};
+
+class KNSystem : public KNExprSystem
+{
+public:
+  KNSystem ();
+  KNSystem (const std::string& sysName, bool trycompile = true);
 };
 
 #endif

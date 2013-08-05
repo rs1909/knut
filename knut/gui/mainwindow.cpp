@@ -29,7 +29,7 @@
 #include <QStatusBar>
 
 MainWindow::MainWindow(const QString& appDir) :
-    executableDir(appDir), compThread(parameters),
+    executableDir(appDir),
     terminalTextSize(0),
     inputPlotWindow(0), outputPlotWindow(0),
     terminalDialog(0), // compilerProcess(0),

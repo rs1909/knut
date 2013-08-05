@@ -24,7 +24,7 @@ class MThread : public QObject, public KNAbstractContinuation
 {
     Q_OBJECT
   public:
-    MThread(const KNConstants& constants, QObject* parent = 0);
+    MThread(QObject* parent = 0);
     ~MThread();
     void printStream();
     void clearLastLine() { emit printClearLastLine(); }
@@ -37,6 +37,7 @@ class MThread : public QObject, public KNAbstractContinuation
     const KNDataFile* dataPointer();
     void deleteData();
     void dataUpdated();
+    void setConstants (const KNConstants& params);
   public slots:
     void stopReq(bool flag);
     void process();
@@ -60,6 +61,8 @@ class MThread : public QObject, public KNAbstractContinuation
 //    void createDataRequestTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
 
   private:
+    KNConstants* params;
+    KNSystem* sys;
     KNDataFile* output;
     bool changeQueued;
     static const QEventLoop::ProcessEventsFlags waitFlag;

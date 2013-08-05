@@ -2189,7 +2189,8 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
 }
 
 // needs to handle period(), time(), PAR_PERIOD
-void splitExpression (std::vector<NodeSymbol*>& var_name,
+void splitExpression (std::string& sysName, 
+  std::vector<NodeSymbol*>& var_name,
   std::vector<Node*>& var_dot,
   std::vector<Node*>& var_init, 
   std::vector<NodeSymbol*>& par_name,
@@ -2203,8 +2204,9 @@ void splitExpression (std::vector<NodeSymbol*>& var_name,
   par_value.push_back(nullptr);
   if (root->type == TokenType::Semicolon)
   {
+    Node* cp = root -> copy ();
     std::list<Node*> lst;
-    static_cast<NodeSemicolon*>(root)->toList(lst);
+    static_cast<NodeSemicolon*>(cp)->toList(lst);
     for (auto it : lst)
     {
       if (it->type == TokenType::Equals)
@@ -2272,6 +2274,11 @@ void splitExpression (std::vector<NodeSymbol*>& var_name,
             P_ERROR_X1(fun->children() == 0, "Too many arguments");
             P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
             time.push_back (static_cast<NodeSymbol*>(right->copy()));
+          } else if (fun->getName() == "vfname")
+          {
+            P_ERROR_X1(fun->children() == 0, "Too many arguments");
+            P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+            sysName = static_cast<const NodeSymbol*>(right)->getName ();
           } else
           {
             // a simple macro
@@ -2293,6 +2300,8 @@ void splitExpression (std::vector<NodeSymbol*>& var_name,
       }
     }
     for (auto it : lst) { it->deleteTree (); delete it; }
+    cp -> deleteTree ();
+    delete cp;
   } else
   {
     P_MESSAGE1("Cannot split expression\n");
@@ -2340,7 +2349,20 @@ Expression::Expression (const std::string& str)
   root = parser.parse (str);
 }
 
+void Expression::fromString (const std::string& str)
+{
+  if (root != nullptr)
+  {
+    root -> deleteTree ();
+    delete root;
+    root = nullptr;
+  }
+  ExpressionParser parser;
+  root = parser.parse (str);
+}
+
 void Expression::knutSplit (
+  std::string& sysName,
   std::vector<std::string>& varName,
   std::vector<Expression>& varDotExpr,
   std::vector<Expression>& varInit,
@@ -2362,7 +2384,7 @@ void Expression::knutSplit (
   pi_eq -> addArgument (1, new NodeNumber(M_PI));
   macro.push_back (pi_eq);
 
-  splitExpression (var_name, var_dot, var_init, par_name, par_value, time, macro, root);
+  splitExpression (sysName, var_name, var_dot, var_init, par_name, par_value, time, macro, root);
 
   // if no independent variable or period is set we set the default
   if (time.empty()) time.push_back (new NodeSymbol("t"));

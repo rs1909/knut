@@ -330,6 +330,7 @@ public:
   // copy operator
   const Expression& operator = (const Expression& exp); // disable copy operator
   // takes over the management of the Node rt
+  void fromString (const std::string& str);
   void fromNode (Node* rt)
   {
     if (root != nullptr)
@@ -360,6 +361,7 @@ public:
     if (root != nullptr) root -> evaluate (stack, 0, var, par);
   }
   void knutSplit (
+    std::string& sysName,
     std::vector<std::string>& varName,
     std::vector<Expression>& varDotExpr,
     std::vector<Expression>& varInit,

@@ -102,9 +102,10 @@ int main(int argc, char *argv[])
     QDir::setCurrent(cfInfo.absolutePath());
     
     params.loadXmlFileV5(cfInfo.fileName().toStdString());
-    KNCliContinuation comp(params);
+    KNCliContinuation comp;
+    KNSystem *sys = new KNSystem (params.getSysName ());
 //    params.printXmlFileV5(std::cout);
-    comp.run();
+    comp.run(sys, &params);
   } else
   {
     qRegisterMetaType<KNException>("KNException");

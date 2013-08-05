@@ -42,7 +42,7 @@ ELSE( LONGBLAS )
 ENDIF( LONGBLAS )
 
 add_custom_target(knut.mex COMMAND mex -cxx CFLAGS='-std=c++11 ${KNUT_CXX_FLAGS}' knut.o 
-${KNUT_BINARY_DIR}/src/libknutlib.a ${KNUT_BINARY_DIR}/vfgen/libvfgenlib.a ${GINAC_LDFLAGS} ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
+${KNUT_BINARY_DIR}/src/libknutlib.a ${GINAC_LDFLAGS} ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
 -lmwblas -lut -lgfortran -lstdc++ -ldl ${CFFRAME}
 DEPENDS knut.o)
 
