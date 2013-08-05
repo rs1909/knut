@@ -13,7 +13,7 @@
 
 #include "basepoint.h"
 
-class KNSystem;
+class KNExprSystem;
 class KNVector;
 class KNBlockVector;
 class KNSteadyStateJacobian;
@@ -23,7 +23,7 @@ class KNSteadyStateSolution : public KNAbstractPoint
 {
   public:
 
-    KNSteadyStateSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+    KNSteadyStateSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_);
     ~KNSteadyStateSolution();
     

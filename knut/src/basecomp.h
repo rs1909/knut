@@ -17,11 +17,12 @@ class KNAbstractContinuation
     // sets the constants file pointer
 //     void setConstants(const KNConstants& constants);
     // run the continuation 
-    void run(KNSystem* sys, KNConstants* constants);
+    void run(KNExprSystem* sys, KNConstants* constants);
 //     void run(const char* branchFile);
 //     void run() { run(0); }
     // sets the flag to stop computation
     void setStopFlag(bool flag);
+    bool getStopFlag () { return stopFlag;}
 
     // these are all called from the thread, hence should not be called from outside.
     virtual std::ostream& outStream() { return screenout; };

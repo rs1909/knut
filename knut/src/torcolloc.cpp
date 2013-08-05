@@ -48,7 +48,7 @@ struct comp : public std::binary_function<size_t, size_t, bool>
 #include "torcolloc.h"
 #include "pointtype.h"
 
-KNDdeTorusCollocation::KNDdeTorusCollocation(KNSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_) :
+KNDdeTorusCollocation::KNDdeTorusCollocation(KNExprSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_) :
     sys(&sys_),
     ndim(sys_.ndim()), ntau(sys_.ntau()), npar(sys_.npar()),
     ndeg1(ndeg1_), ndeg2(ndeg2_), nint1(nint1_), nint2(nint2_),

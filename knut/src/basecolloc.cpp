@@ -257,7 +257,7 @@ static void poly_int(KNMatrix& out, const KNVector& t)
 #define NINT nint
 #define NDEG ndeg
 
-KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNSystem& _sys, const size_t _nint, const size_t _ndeg) :
+KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNExprSystem& _sys, const size_t _nint, const size_t _ndeg) :
     mass(_sys.ndim()),
     ndim(_sys.ndim()), npar(_sys.npar()),
     nint(_nint), ndeg(_ndeg),
@@ -824,7 +824,7 @@ void KNAbstractBvpCollocation::exportProfile(KNVector& outs, const KNVector& msh
   }
 }
 
-void KNAbstractBvpCollocation::resetProfile(KNSystem& sys, KNVector& profile)
+void KNAbstractBvpCollocation::resetProfile(KNExprSystem& sys, KNVector& profile)
 {
    KNArray2D<double> tmp(NDIM, time.size());
    sys.stsol (tmp, time);

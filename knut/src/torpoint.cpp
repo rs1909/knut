@@ -14,7 +14,7 @@
 #include "torpoint.h"
 #include "mat4data.h"
 
-KNDdeTorusSolution::KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+KNDdeTorusSolution::KNDdeTorusSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
   KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_)
   : KNAbstractPoint(cnt, sys_, eqn_, var_, sys_.ndim()*((ndeg1_*nint1_))*((ndeg2_*nint2_)),
     sys_.ndim()*(ndeg1_*nint1_)*(ndeg2_*nint2_)*sys_.ndim()*(sys_.ntau()+1)*(ndeg1_+1)*(ndeg2_+1))

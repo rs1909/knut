@@ -17,7 +17,7 @@
 
 class KNAbstractContinuation;
           
-KNSteadyStateSolution::KNSteadyStateSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+KNSteadyStateSolution::KNSteadyStateSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
   KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_)
   : KNAbstractPoint(cnt, sys_, eqn_, var_, sys_.ndim(), sys_.ndim()*sys_.ndim()),
    jacStab('R', sys_.ndim(), sys_.ndim()*sys_.ndim())

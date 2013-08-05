@@ -15,7 +15,7 @@
 #define NPAR npar
 #define NTAU ntau
 
-KNSteadyStateJacobian::KNSteadyStateJacobian(KNSystem& _sys) : sys(&_sys),
+KNSteadyStateJacobian::KNSteadyStateJacobian(KNExprSystem& _sys) : sys(&_sys),
     ndim(_sys.ndim()), npar(_sys.npar()), ntau(_sys.ntau()),
     time((size_t)1), solData(ndim, 2*ntau + 1, 1),
     p_fx(ndim, 1), p_dfx(ndim,ndim, 1), p_dfp(ndim,1, 1),

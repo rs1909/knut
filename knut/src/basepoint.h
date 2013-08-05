@@ -19,7 +19,7 @@
 
 
 class KNDataFile;
-class KNSystem;
+class KNExprSystem;
 class KNAbstractContinuation;
 
 enum class IterateTangent { no, yes };
@@ -29,7 +29,7 @@ class KNAbstractPoint
   public:
     // members
     KNAbstractPoint(); // not defined
-    KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys, 
+    KNAbstractPoint(KNAbstractContinuation* cnt, KNExprSystem& sys, 
           const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
           const size_t solsize, const size_t nz_jac_);
     virtual ~KNAbstractPoint();
@@ -204,7 +204,7 @@ class KNAbstractBvpCollocation;
 class KNAbstractPeriodicSolution : public KNAbstractPoint
 {
   public:
-    KNAbstractPeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+    KNAbstractPeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
       const size_t solsize, const size_t nz_jac_, const size_t nmul) 
       : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), mRePrev(nmul), mImPrev(nmul),
@@ -281,7 +281,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
   protected:
 //    virtual void construct();
 //    virtual void destruct();
-    void         FillSol(KNSystem& sys_);
+    void         FillSol(KNExprSystem& sys_);
 
     // multipliers
     KNVector       mRe;

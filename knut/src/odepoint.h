@@ -13,7 +13,7 @@
 #include "pointtype.h"
 #include "basepoint.h"
 
-class KNSystem;
+class KNExprSystem;
 class KNVector;
 class KNBlockVector;
 class KNOdeBvpCollocation;
@@ -23,7 +23,7 @@ class KNOdePeriodicSolution : public KNAbstractPeriodicSolution
 {
   public:
 
-    KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+    KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg);
     ~KNOdePeriodicSolution();
     

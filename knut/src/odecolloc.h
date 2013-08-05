@@ -19,7 +19,7 @@ class KNOdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    KNOdeBvpCollocation(KNSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
+    KNOdeBvpCollocation(KNExprSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
 
     ~KNOdeBvpCollocation()
     {}

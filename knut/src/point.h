@@ -34,7 +34,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
   public:
 
     // constructor
-    KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys, 
+    KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul = MULTIPLIERS);
     virtual ~KNDdePeriodicSolution();
 

@@ -16,7 +16,8 @@ ADD_LIBRARY( mxml
   mxml-entity.c
   mxml-index.c 
   mxml-private.c mxml-private.h
-  mxml-set.c	
+  mxml-get.c
+  mxml-set.c
   mxml-attr.c
   mxml-file.c
   mxml-node.c	

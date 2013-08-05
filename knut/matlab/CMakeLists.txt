@@ -23,13 +23,13 @@ ENDIF(${CMAKE_DL_LIBS} MATCHES ".*lib.*")
 string(REPLACE " " ";" KNUT_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
 
 add_custom_target(knut.o COMMAND
-${CMAKE_CXX_COMPILER} -std=c++11 ${KNUT_CXX_FLAGS} -fPIC -c ${KNUT_SOURCE_DIR}/matlab/knut.cpp -I${KNUT_SOURCE_DIR}/src/ -I${KNUT_SOURCE_DIR}/laarpack/ -I${KNUT_SOURCE_DIR}/vfgen/ -I${KNUT_BINARY_DIR}/src ${GINAC_CFLAGS} -I${MATLAB_BIN_PATH}/../extern/include/ -o knut.o
+${CMAKE_CXX_COMPILER} -std=c++11 -stdlib=libc++ ${KNUT_CXX_FLAGS} -fPIC -c ${KNUT_SOURCE_DIR}/matlab/knut.cpp -I${KNUT_SOURCE_DIR}/src/ -I${KNUT_SOURCE_DIR}/laarpack/ -I${KNUT_BINARY_DIR}/src -I${MATLAB_BIN_PATH}/../extern/include/ -o knut.o
 DEPENDS ${CLI_NAME})
 
 IF(APPLE)
   SET(MEX_SUFF maci64)
   SET(DIR_SUFF maci64)
-  SET(CFFRAME LDFLAGS=\"-framework CoreFoundation\")
+  SET(CFFRAME LDFLAGS=\"-framework CoreFoundation -undefined dynamic_lookup -bundle\")
 ELSE(APPLE)
   SET(MEX_SUFF a64)
   SET(DIR_SUFF glnxa64)
@@ -41,15 +41,15 @@ ELSE( LONGBLAS )
   SET(MWBLAS -lmwblascompat32)
 ENDIF( LONGBLAS )
 
-add_custom_target(knut.mex COMMAND mex -cxx CFLAGS='-std=c++11 ${KNUT_CXX_FLAGS}' knut.o 
-${KNUT_BINARY_DIR}/src/libknutlib.a ${GINAC_LDFLAGS} ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
--lmwblas -lut -lgfortran -lstdc++ -ldl ${CFFRAME}
+add_custom_target(knut.mex COMMAND mex -cxx CXX='clang++' CFLAGS='-std=c++11 -stdlib=libc++ ${KNUT_CXX_FLAGS}' knut.o 
+${KNUT_BINARY_DIR}/src/libknutlib.a ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
+-lmwblas -lut -lgfortran -ldl ${CFFRAME}
 DEPENDS knut.o)
 
 # add_custom_target(knut.mex COMMAND 
 # ${CMAKE_CXX_COMPILER} -std=c++11 ${KNUT_CXX_FLAGS} -shared knut.o -Wl,-rpath-link,${MATLAB_BIN_PATH}/${MEX_SUFF}/ -L${MATLAB_BIN_PATH}/${DIR_SUFF}/ -lmx -lmex -lut ${KNUT_BINARY_DIR}/src/libknutlib.a ${KNUT_BINARY_DIR}/vfgen/libvfgenlib.a ${GINAC_LDFLAGS} ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
 # ${KNUT_BINARY_DIR}/laarpack/libREF_BLAS.a ${KNUT_BINARY_DIR}/laarpack/libAUX_BLAS.a
-# -lgfortran -lstdc++ ${CFFRAME} -ldl -o knut.mex${MEX_SUFF}
+# -lgfortran -lc++ ${CFFRAME} -ldl -o knut.mex${MEX_SUFF}
 # DEPENDS knut.o)
 
 # ${KNUT_BINARY_DIR}/laarpack/libREF_BLAS.a ${KNUT_BINARY_DIR}/laarpack/libAUX_BLAS.a 

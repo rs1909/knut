@@ -16,6 +16,7 @@
 #include <string>
 #define __GXX_EXPERIMENTAL_CXX0X__ 1
 #include <functional>
+#include <algorithm>
 // #include "constants.h" included in basecomp
 // #include <iostream> included in basecomp
 extern "C"
@@ -31,11 +32,22 @@ bool utIsInterruptPending();
 }
 // #include "vf.h"
 
+static void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) 
+{
+  size_t pos = 0;
+  while ((pos = subject.find(search, pos)) != std::string::npos)
+  {
+    subject.replace(pos, search.length(), replace);
+    pos += replace.length();
+  }
+}
+
 class KNMatlabConstantsReader : public KNAbstractConstantsReader
 {
   public:
     KNMatlabConstantsReader();
     KNMatlabConstantsReader(const mxArray *options) : options_in(options) {}
+    virtual bool getSystem(std::string& strout);
     virtual bool getTextField(const char* field, std::string& strout);
     virtual bool getIndexField(const char* field, size_t& out);
     virtual bool getDoubleField(const char* field, double& out);
@@ -49,6 +61,7 @@ class KNMatlabConstantsWriter : public KNAbstractConstantsWriter
 {
   public:
     KNMatlabConstantsWriter() {}
+    virtual void setSystem(const std::string& strout);
     virtual void setTextField(const char* fieldname, const std::string& str);
     virtual void setDoubleField(const char* fieldname, double val);
     virtual void setIndexField(const char* fieldname, size_t val);
@@ -77,14 +90,14 @@ class KNMatlabConstants : public KNConstants
 class KNMatlabContinuation : public KNCliContinuation
 {
   public:
-    KNMatlabContinuation () : output(0), charsPrinted(0) { }
+    KNMatlabContinuation () : charsPrinted(0) { }
     ~KNMatlabContinuation () { }
     void printStream () 
     {
       mexPrintf (screenout.str().c_str());
       charsPrinted += screenout.str().size(); screenout.str("");
       mexEvalString("drawnow");
-      if (utIsInterruptPending()) /* check for a Ctrl-C event */
+      if (utIsInterruptPending() && !getStopFlag()) /* check for a Ctrl-C event */
       {
 	setStopFlag(true);
 	mexPrintf("Ctrl-C Detected. END\n\n");
@@ -102,11 +115,11 @@ class KNMatlabContinuation : public KNCliContinuation
       mexErrMsgIdAndTxt ("MATLAB:Knut", err.str().c_str());
       std::cout <<"MATLAB:Knut" << err.str().c_str() << "\n";
     }
-    KNDataFile& data () { return *output; }
-    void deleteData () { delete output; output = 0; }
-    void dataUpdated () { }
+//    KNDataFile& data () { return *output; }
+//    void deleteData () { delete output; output = 0; }
+//    void dataUpdated () { }
   private:
-    KNDataFile* output;
+//    KNDataFile* output;
     size_t charsPrinted;
 };
 
@@ -154,15 +167,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
     } else if (cmd.compare("run") == 0)
     {
       P_ERROR_X1 (params != 0, "No constants are specified");
-      KNCliContinuation comp;
+      KNMatlabContinuation comp;
       KNSystem* sys = new KNSystem (params->getSysName ());
 //       comp.run(sys, params);
       mexPrintf ("%s\n", params->getSysName ().c_str());
       std::string tmp;
       sys->toString (tmp);
+      // making matlab string
+      tmp.insert (tmp.begin(), '\'');
+      tmp.insert (tmp.begin(), '[');
+      tmp.push_back ('\'');
+      tmp.push_back (']');
+      ReplaceStringInPlace (tmp, "\n", "'.""..\n'");
       mexPrintf ("%s\n", tmp.c_str());
       comp.run (sys, params);
-      mexPrintf ("END\n");
+//      mexPrintf ("END\n");
       delete sys;
     } else if (cmd.compare("cfile") == 0)
     {
@@ -202,6 +221,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
     delete params;
 //     exit(-1);
   }
+}
+
+bool KNMatlabConstantsReader::getSystem(std::string& strout)
+{
+  return getTextField ("system", strout);
 }
 
 bool KNMatlabConstantsReader::getTextField(const char* field, std::string& strout)
@@ -285,6 +309,11 @@ bool KNMatlabConstantsReader::getIndexListField(const char* field, std::vector<s
     }
   }
   return false;
+}
+
+void KNMatlabConstantsWriter::setSystem(const std::string& str)
+{
+  setTextField("system", str);
 }
 
 void KNMatlabConstantsWriter::setTextField(const char* fieldname, const std::string& str)

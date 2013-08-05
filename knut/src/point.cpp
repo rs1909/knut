@@ -29,7 +29,7 @@
 #define NDEG colloc->nDeg()
 
 
-KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
   KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul) 
   : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
     jacStab(0)

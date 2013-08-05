@@ -37,7 +37,7 @@
 #define NDEG ndeg
 #define NMAT nmat
 
-KNDdeBvpCollocation::KNDdeBvpCollocation(KNSystem& _sys, const size_t _nint, const size_t _ndeg) :
+KNDdeBvpCollocation::KNDdeBvpCollocation(KNExprSystem& _sys, const size_t _nint, const size_t _ndeg) :
     KNAbstractBvpCollocation(_sys, _nint, _ndeg),
     ntau(_sys.ntau()), nmat(1),
 

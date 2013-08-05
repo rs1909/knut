@@ -12,7 +12,7 @@
 #include "matrix.h"
 #include "hypermatrix.h"
 
-KNOdePeriodicSolution::KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+KNOdePeriodicSolution::KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
   KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg)
   : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1), sys_.ndim()),
    jacStab('R', sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ndim()*(ndeg+1)),

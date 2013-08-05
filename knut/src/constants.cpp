@@ -23,6 +23,7 @@ class KNXmlConstantsReader : public KNAbstractConstantsReader
     KNXmlConstantsReader();
     KNXmlConstantsReader(mxml_node_t * tree);
     ~KNXmlConstantsReader();
+    virtual bool getSystem(std::string& strout);
     virtual bool getTextField(const char* field, std::string& strout);
     virtual bool getIndexField(const char* field, size_t& out);
     virtual bool getDoubleField(const char* field, double& out);
@@ -31,7 +32,8 @@ class KNXmlConstantsReader : public KNAbstractConstantsReader
   private:
     const std::string filename;
     mxml_node_t* tree;
-    mxml_node_t* node;
+    mxml_node_t* knut_node;
+    mxml_node_t* branch_node;
 };
 
 static int getXmlTree(const std::string& filename, mxml_node_t ** ptree)
@@ -56,14 +58,14 @@ static int getXmlTree(const std::string& filename, mxml_node_t ** ptree)
   return ver;  
 }
 
-KNXmlConstantsReader::KNXmlConstantsReader(mxml_node_t * xtree) : tree(xtree)
+KNXmlConstantsReader::KNXmlConstantsReader(mxml_node_t * xtree) : tree(xtree), knut_node(nullptr), branch_node(nullptr)
 {
-  mxml_node_t* root_nd = mxmlFindElement(xtree, xtree, "knut", 0, 0, MXML_DESCEND_FIRST);
-  if (!root_nd)
+  knut_node = mxmlFindElement(xtree, xtree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  if (knut_node == nullptr)
   {
-    root_nd = mxmlFindElement(xtree, xtree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+    knut_node = mxmlFindElement(xtree, xtree, "pdde", 0, 0, MXML_DESCEND_FIRST);
   }
-  node = mxmlFindElement(root_nd, root_nd, "branch", 0, 0, MXML_DESCEND_FIRST);
+  branch_node = mxmlFindElement(knut_node, knut_node, "branch", 0, 0, MXML_DESCEND_FIRST);
 }
 
 KNXmlConstantsReader::~KNXmlConstantsReader()
@@ -77,6 +79,7 @@ class KNXmlConstantsWriter : public KNAbstractConstantsWriter
     KNXmlConstantsWriter();
     KNXmlConstantsWriter(const std::string& filename);
     ~KNXmlConstantsWriter();
+    virtual void setSystem(const std::string& str);
     virtual void setTextField(const char* fieldname, const std::string& str);
     virtual void setDoubleField(const char* fieldname, double val);
     virtual void setIndexField(const char* fieldname, size_t val);
@@ -85,7 +88,9 @@ class KNXmlConstantsWriter : public KNAbstractConstantsWriter
   private:
     const std::string filename;
     mxml_node_t *xml;
-    mxml_node_t *node;
+    mxml_node_t *knut_node;
+    mxml_node_t *system_node;
+    mxml_node_t *branch_node;
 };
 
 void KNConstantNames::addConstantName(const char * type, const char * name, void * var, void(*nsetFun)())
@@ -246,6 +251,7 @@ void KNConstantsBase::saveXmlFileV5(const std::string &fileName)
 
 void KNConstantsBase::write(KNAbstractConstantsWriter& writer)
 {
+  writer.setSystem (getSystem());
   writer.setTextField ("input", getInputFile());
   writer.setTextField ("output", getOutputFile());
   if (!getSysName().empty()) writer.setTextField ("sysname", getSysName());
@@ -302,6 +308,7 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
   size_t idx;
   double dbl;
 
+  if (reader.getSystem(buf)) setSystemText (buf);
   if (reader.getTextField("input", buf)) setInputFile(buf);
   if (reader.getTextField("output", buf)) setOutputFile(buf);
   if (reader.getTextField("sysname", buf)) setSysNameText(buf);
@@ -363,9 +370,24 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
   setSymImVector(symim_list);
 }
 
+bool KNXmlConstantsReader::getSystem(std::string& strout)
+{
+  mxml_node_t* system_node = mxmlFindElement(knut_node, knut_node, "system", 0, 0, MXML_DESCEND_FIRST);
+  if (system_node != nullptr)
+  {
+    const char* str = mxmlGetOpaque (system_node);
+    if (str)
+    {
+      strout = str;
+      return true;
+    }
+  }
+  return false;
+}
+
 bool KNXmlConstantsReader::getTextField(const char* field, std::string& strout)
 {
-  const char* str = mxmlElementGetAttr(node, field);
+  const char* str = mxmlElementGetAttr(branch_node, field);
   if (str)
   {
     strout = str;
@@ -376,7 +398,7 @@ bool KNXmlConstantsReader::getTextField(const char* field, std::string& strout)
 
 bool KNXmlConstantsReader::getIndexField(const char* field, size_t& out)
 {
-  const char* str = mxmlElementGetAttr(node, field);
+  const char* str = mxmlElementGetAttr(branch_node, field);
   if (str)
   {
     out = toSizeT(strtol(str, 0, 10));
@@ -387,7 +409,7 @@ bool KNXmlConstantsReader::getIndexField(const char* field, size_t& out)
 
 bool KNXmlConstantsReader::getDoubleField(const char* field, double& out)
 {
-  const char* str = mxmlElementGetAttr(node, field);
+  const char* str = mxmlElementGetAttr(branch_node, field);
   if (str)
   {
     std::istringstream strstr(str);
@@ -421,10 +443,11 @@ bool KNXmlConstantsReader::getIndexListField(const char* field, std::vector<size
 
 KNXmlConstantsWriter::KNXmlConstantsWriter(const std::string& fname) : filename(fname)
 {
-  xml = mxmlNewXML("cfile 1.0");
-  mxml_node_t *data = mxmlNewElement(xml, "knut");
-  mxmlElementSetAttr( data, "version", PACKAGE_VERSION);
-  node = mxmlNewElement(data, "branch");  
+  xml = mxmlNewXML ("cfile 1.0");
+  knut_node = mxmlNewElement (xml, "knut");
+  mxmlElementSetAttr (knut_node, "version", PACKAGE_VERSION);
+  system_node = mxmlNewElement (knut_node, "system");
+  branch_node = mxmlNewElement (knut_node, "branch");  
 }
 
 KNXmlConstantsWriter::~KNXmlConstantsWriter()
@@ -445,9 +468,14 @@ KNXmlConstantsWriter::~KNXmlConstantsWriter()
   mxmlDelete(xml);
 }
 
+void KNXmlConstantsWriter::setSystem (const std::string& str)
+{
+  mxmlNewOpaque (system_node, str.c_str());
+}
+
 void KNXmlConstantsWriter::setTextField(const char* fieldname, const std::string& str)
 {
-  mxmlElementSetAttr(node, fieldname, str.c_str());
+  mxmlElementSetAttr(branch_node, fieldname, str.c_str());
 }
 
 void KNXmlConstantsWriter::setDoubleField(const char* fieldname, double val)
@@ -455,14 +483,14 @@ void KNXmlConstantsWriter::setDoubleField(const char* fieldname, double val)
   std::ostringstream strstr;
   strstr.precision(15);
   strstr << val;
-  mxmlElementSetAttr (node, fieldname, strstr.str().c_str());
+  mxmlElementSetAttr (branch_node, fieldname, strstr.str().c_str());
 }
 
 void KNXmlConstantsWriter::setIndexField(const char* fieldname, size_t val)
 {
   std::ostringstream strstr;
   strstr << val;
-  mxmlElementSetAttr (node, fieldname, strstr.str().c_str());
+  mxmlElementSetAttr (branch_node, fieldname, strstr.str().c_str());
 }
 
 void KNXmlConstantsWriter::setStringListField(const char* field, const std::vector<std::string>& vec)
@@ -493,7 +521,7 @@ void KNXmlConstantsWriter::setIndexListField(const char* field, const std::vecto
   }
 }
 
-bool KNConstantsBase::toEqnVar(KNSystem& sys,
+bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
                           KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
                           KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                           KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle)
@@ -663,7 +691,7 @@ tfskip:
   return needTF;
 }
 
-void KNConstantsBase::initDimensions(const KNSystem* sys)
+void KNConstantsBase::initDimensions(const KNExprSystem* sys)
 {
   initParNames(sys->npar());
   const char **names = new const char *[sys->npar()+1];
@@ -680,13 +708,34 @@ void KNConstantsBase::initDimensions(const KNSystem* sys)
   setNPar(sys->npar());
 }
 
+void KNConstantsBase::setSystemText (const std::string& str)
+{
+  setSystem (str);
+  KNExprSystem* sys = 0;
+  try
+  {
+    sys = new KNExprSystem (getSystem (), false);
+    initDimensions (sys);
+    delete sys;
+    sys = 0;
+  }
+  catch (KNException& ex)
+  {
+    delete sys;
+    sys = 0;
+    setNPar (0);
+    setNDim (0);
+    throw (ex);
+  }
+}
+
 void KNConstantsBase::setSysNameText(const std::string& str, bool /*testing*/)
 {
   setSysName(str);
   KNSystem* sys = 0;
   try
   {
-    sys = new KNSystem(getSysName());
+    sys = new KNSystem(getSysName(), false);
     initDimensions(sys);
     delete sys;
     sys = 0;

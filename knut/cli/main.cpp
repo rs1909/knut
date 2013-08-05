@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
 {
   // parameters
   KNConstants* params = nullptr;
-  KNSystem* sys = nullptr;
+  KNExprSystem* sys = nullptr;
 
   bool save = false;
   try
@@ -56,6 +56,18 @@ int main(int argc, const char** argv)
               P_ERROR_X1(err == 0, "Error changing directory.");
               if (constFile[0] != '/') constFile.insert(0, cwd);
               params->loadXmlFileV5(constFile);
+              if (params->getSystem ().empty ())
+              {
+                sys = new KNSystem (params->getSysName ());
+                std::string tmp;
+                sys -> toString (tmp);
+                params->setSystemText (tmp);
+                params->setSysName ("");
+              } else
+              {
+          //      std::cout << params->getSystem () << "\n";
+                sys = new KNExprSystem (params->getSystem ());
+              }
             }
             if (save) { params->saveXmlFileV5(""); exit(0); }
             break;
@@ -83,7 +95,6 @@ int main(int argc, const char** argv)
     }
   
     KNCliContinuation comp;
-    sys = new KNSystem (params->getSysName ());
     comp.run(sys, params);
   }
   catch (KNException ex)

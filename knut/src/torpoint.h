@@ -10,7 +10,7 @@
 #ifndef TORPOINT_H
 #define TORPOINT_H
 
-class KNSystem;
+class KNExprSystem;
 class KNDataFile;
 
 #include "matrix.h"
@@ -22,7 +22,7 @@ class KNDataFile;
 class KNDdeTorusSolution : public KNAbstractPoint
 {
   public:
-    KNDdeTorusSolution(KNAbstractContinuation* cnt, KNSystem& sys_, 
+    KNDdeTorusSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
     ~KNDdeTorusSolution();
 

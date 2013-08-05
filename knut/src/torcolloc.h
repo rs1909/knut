@@ -13,13 +13,13 @@
 #include "matrix.h"
 #include "basecolloc.h"
 
-class KNSystem;
+class KNExprSystem;
 class KNSparseMatrix;
 
 class KNDdeTorusCollocation : public KNAbstractCollocation
 {
   public:
-    KNDdeTorusCollocation(KNSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
+    KNDdeTorusCollocation(KNExprSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
     void init(const KNVector& sol, const KNVector& par);
@@ -66,13 +66,13 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
     //utils
     inline size_t idxmap(size_t j1, size_t j2, size_t i1, size_t i2);
     inline size_t idxkk(size_t j1, size_t j2, size_t k);
-    inline KNSystem& system()
+    inline KNExprSystem& system()
     {
       return *sys;
     }
 
   private:
-    KNSystem* sys;
+    KNExprSystem* sys;
     const size_t ndim, ntau, npar;
     const size_t ndeg1, ndeg2;
     const size_t nint1, nint2;

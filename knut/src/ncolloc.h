@@ -11,15 +11,15 @@
 #define NCOLLOC_H
 
 #include "basecolloc.h"
-#include "exprsystem.h"
 #include "matrix.h"
 #include "spmatrix.h"
+#include "exprsystem.h"
 
 class KNDdeBvpCollocation : public KNAbstractBvpCollocation
 {
   public:
 
-    KNDdeBvpCollocation(KNSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
+    KNDdeBvpCollocation(KNExprSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
 
     ~KNDdeBvpCollocation() {}
 

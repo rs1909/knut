@@ -35,7 +35,7 @@
 //   run(sys, branchFile);
 // }
 
-void KNAbstractContinuation::run(KNSystem* sys, KNConstants* params)
+void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params)
 {
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
@@ -229,7 +229,7 @@ void KNAbstractContinuation::run(KNSystem* sys, KNConstants* params)
         {
           deleteData();
           delete pt_ptr; pt_ptr = 0;
-          delete sys; sys = 0;
+//          delete sys; sys = 0;
           return;
         }
         //
@@ -389,7 +389,7 @@ void KNAbstractContinuation::run(KNSystem* sys, KNConstants* params)
         if (stopFlag)
         {
           deleteData();
-          delete sys; sys = 0;
+//          delete sys; sys = 0;
           return;
         }
         // same as for periodic orbits

@@ -25,7 +25,7 @@
 #define NINT nint
 #define NDEG ndeg
 
-KNOdeBvpCollocation::KNOdeBvpCollocation(KNSystem& _sys, const size_t _nint, const size_t _ndeg)
+KNOdeBvpCollocation::KNOdeBvpCollocation(KNExprSystem& _sys, const size_t _nint, const size_t _ndeg)
     : KNAbstractBvpCollocation(_sys, _nint, _ndeg),
     tt(2, ndeg + 1, ndeg*nint),
     ttMSH(2, ndeg + 1, ndeg*nint + 1),

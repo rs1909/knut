@@ -46,6 +46,7 @@ static inline int toInt(size_t x)
 class KNAbstractConstantsReader
 {
   public:
+    virtual bool getSystem(std::string& strout) = 0;
     virtual bool getTextField(const char* field, std::string& strout) = 0;
     virtual bool getIndexField(const char* field, size_t& out) = 0;
     virtual bool getDoubleField(const char* field, double& out) = 0;
@@ -56,6 +57,7 @@ class KNAbstractConstantsReader
 class KNAbstractConstantsWriter
 {
   public:
+    virtual void setSystem(const std::string& str) = 0;
     virtual void setTextField(const char* fieldname, const std::string& str) = 0;
     virtual void setDoubleField(const char* fieldname, double val) = 0;
     virtual void setIndexField(const char* fieldname, size_t val) = 0;
@@ -159,6 +161,7 @@ class KNConstantsBase
   protected:
     KNConstantNames cnames;
   private:   
+    KN_CONSTANT(       std::string, system,     System,     "")
     KN_CONSTANT(       std::string, inputFile,  InputFile,  "") 
     KN_CONSTANT(       std::string, outputFile, OutputFile, "")
     KN_CONSTANT(       std::string, sysname,    SysName,    "")
@@ -208,6 +211,7 @@ class KNConstantsBase
  
   public:
     KNConstantsBase() : 
+      system(this), 
       inputFile(this), outputFile(this), sysname(this), sysType(this), fromType(this), label(this), pointType(this),
       cp(this), branchSW(this), parx(this), eqns(this), vars(this), nInt(this), nDeg(this),
       nMul(this), stab(this), nInt1(this), nInt2(this), nDeg1(this), nDeg2(this), 
@@ -217,6 +221,7 @@ class KNConstantsBase
       nPar(this), nDim(this),
       PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
     KNConstantsBase(const KNConstantsBase* src) : 
+      system(this, src), 
       inputFile(this,src), outputFile(this,src), sysname(this,src), sysType(this,src), fromType(this,src), label(this,src), pointType(this,src),
       cp(this,src), branchSW(this,src), parx(this,src), eqns(this,src), vars(this,src), nInt(this,src), nDeg(this,src),
       nMul(this,src), stab(this,src), nInt1(this,src), nInt2(this,src), nDeg1(this,src), nDeg2(this,src), 
@@ -227,7 +232,7 @@ class KNConstantsBase
       PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
     virtual ~KNConstantsBase() { }
     // for setting up the continuation
-    bool toEqnVar(KNSystem& sys,
+    bool toEqnVar(KNExprSystem& sys,
                   KNArray1D<Eqn>& eqn, KNArray1D<Var>& var,                 // input
                   KNArray1D<Eqn>& eqn_refine, KNArray1D<Var>& var_refine,   // output
                   KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle);
@@ -295,10 +300,11 @@ class KNConstantsBase
       parNames[VarToIndex(VarAngle,np)] = "Angle (NS)";
       parNames[VarToIndex(VarRot,np)] = "Rotation num.";      
     }
-    void initDimensions(const KNSystem* sys);
+    void initDimensions (const KNExprSystem* sys);
     // This loads the shared object file
-    virtual void setSysNameText(const std::string& str, bool testing = false);
-    const std::vector<std::string>& getParNames() const { return parNames; }
+    virtual void setSystemText (const std::string& str);
+    virtual void setSysNameText (const std::string& str, bool testing = false);
+    const std::vector<std::string>& getParNames () const { return parNames; }
     // this is to notify the system of changes
     virtual void constantChanged(const char* /*name*/) { }
     

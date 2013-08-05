@@ -226,7 +226,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
   return tab.sw;
 }
 
-KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNSystem& sys_, 
+KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
  const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
  const size_t solsize, const size_t nz_jac_) :
     var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1), npar(sys_.npar()),
@@ -559,7 +559,7 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent 
 #define NDEG persolcolloc->nDeg()
 
 // private
-void KNAbstractPeriodicSolution::FillSol(KNSystem& sys_)
+void KNAbstractPeriodicSolution::FillSol(KNExprSystem& sys_)
 {
   persolcolloc->resetProfile(sys_, sol);
   sys_.stpar(par);

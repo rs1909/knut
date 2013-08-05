@@ -1900,6 +1900,10 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
   {
     switch (tk.type)
     {
+      case TokenType::LeftParen:
+      case TokenType::RightParen:
+        P_MESSAGE3("Unexpected Parenthesis ", tk.name, ".");
+        break;
       case TokenType::Symbol:
       {
         char* endptr;
@@ -2088,24 +2092,33 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       // bind items on the stack ...
       opToTree (treestack, token_stream[k], 0);
     }
-    else if (token_stream[k].type == TokenType::Function) 
+    else if (token_stream[k].type == TokenType::Function)
     {
+      if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
       ops.push_back (token_stream[k]);
     }
     else if (token_stream[k].type == TokenType::Comma)
     {
+      if (!funargs.empty()) if (funargs.back() == 0)
+      {
+//        for (auto it : funargs) std::cout << "FA=" << it << ",";
+//        std::cout << "\n";
+        P_MESSAGE1("Empty argument\n");
+      }
       if (!funargs.empty()) funargs.back() += 1;
-      else P_MESSAGE1("not a function\n");
+      else P_MESSAGE1("Not a function\n");
       while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
       {
         // bind items on the stack ...
+        P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (1).");
         opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
         ops.pop_back();
       }
-      if (ops.empty()) P_MESSAGE1("1Misplaced comma or missing \')\'\n"); 
+      if (ops.empty()) P_MESSAGE1("Misplaced comma or missing \')\'\n"); 
     }
     else if (token_stream[k].isOp())
     {
+      if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
       while (!ops.empty())
       {
         if ( (ops.back().isOp())&&
@@ -2114,38 +2127,48 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
               (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
         {
           // bind items on the stack ...
+          P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (2).");
           opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
           ops.pop_back();
         } else break;
       }
+//      std::cout <<"op(" << token_stream[k].name << ")=" << funargs.back () << " ";
       ops.push_back(token_stream[k]);
     }
     else if (token_stream[k].type == TokenType::LeftParen)
     {
+//      std::cout <<"Left : " << funargs.back () << " ";
       funargs.push_back(0);
       ops.push_back(token_stream[k]);
     }
     else if (token_stream[k].type == TokenType::RightParen)
     {
+      size_t currentArgs = funargs.back ();
+//      std::cout <<"Right : " << funargs.back () << " ";
+      size_t it = 0;
       while (!ops.empty())
       {
         if (ops.back().type != TokenType::LeftParen)
         {
           // bind items on the stack ...
-          opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
+          if (ops.back().type == TokenType::Function) opToTree (treestack, ops.back(), currentArgs);
+          else opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
           ops.pop_back();
+          it++;
         } else 
         { 
+          funargs.pop_back();
+          ops.pop_back();
           break;
         }
-      } 
+      }
+      if ((!funargs.empty()) && (it != 0)) if (funargs.back() == 0) funargs.back() = 1;
       // the right paren is still on the stack
-      if (!ops.empty()) ops.pop_back();
-      else
+      if (ops.empty())
       {
         // there was noting on the stack
 	std::ostringstream msg;
-	msg << "2Mismatched prenthesis\n BEGIN@ ";
+	msg << "Mismatched prenthesis (2)\nBEGIN@ ";
         for (size_t p=0; p<k+1; p++) msg << token_stream[p].name;
         msg << " @ ";
         for (size_t p=k+1; p<token_stream.size(); p++) msg << token_stream[p].name;
@@ -2155,17 +2178,19 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       if (!ops.empty()) if (ops.back().type == TokenType::Function)
       {
         // bind items on the stack ...
-        opToTree (treestack, ops.back(), funargs.back());
+        opToTree (treestack, ops.back(), currentArgs);
         ops.pop_back();
       }
-      funargs.pop_back();
+    } else
+    {
+      P_MESSAGE3("Not accounted for token: ", ops.back().name, "\n");
     }
     k++;
   }
   // no more tokens
   while (!ops.empty())
   {
-    if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis\n");
+    if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis (3).");
     else
     {
       // bind items on the stack ...
@@ -2182,6 +2207,10 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
     {
       msg << "@@OP =\n\t";
       if (*k) (*k)->print (msg); msg << "\n";
+    }
+    for (auto k=token_stream.begin(); k != token_stream.end(); ++k)
+    {
+      msg << k->name << "{" << static_cast<int>(k->type) << "}";
     }
     P_MESSAGE1(msg.str().c_str());
   }

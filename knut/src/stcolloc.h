@@ -13,12 +13,12 @@
 #include "matrix.h"
 #include "basecolloc.h"
 
-class KNSystem;
+class KNExprSystem;
 
 class KNSteadyStateJacobian : public KNAbstractCollocation
 {
   public:
-    KNSteadyStateJacobian(KNSystem& sys_);
+    KNSteadyStateJacobian(KNExprSystem& sys_);
     virtual ~KNSteadyStateJacobian() {}
     
     // init(...) is called before any attempt to solve to calculate the jacobians
@@ -54,7 +54,7 @@ class KNSteadyStateJacobian : public KNAbstractCollocation
   private:
 
     // the equations
-    KNSystem* sys;
+    KNExprSystem* sys;
 
     const size_t ndim;
     const size_t npar;
