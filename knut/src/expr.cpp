@@ -2221,7 +2221,8 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
 void splitExpression (std::string& sysName, 
   std::vector<NodeSymbol*>& var_name,
   std::vector<Node*>& var_dot,
-  std::vector<Node*>& var_init, 
+  std::vector<Node*>& var_init,
+  std::vector<Node*>& var_mass,
   std::vector<NodeSymbol*>& par_name,
   std::vector<Node*>& par_value,
   std::vector<NodeSymbol*>& time,
@@ -2256,18 +2257,8 @@ void splitExpression (std::string& sysName,
               {
                 var_name.push_back (static_cast<NodeSymbol*>(statevariable->copy()));
                 var_dot.push_back (right->copy());
-              }
-            } else P_MESSAGE1("Dot: wrong number of arguments\n");
-          } else if (fun->getName() == "par")
-          {
-            // parameter
-            if (fun->children() == 1)
-            {
-              const Node* par = fun->getChild(0);
-              if (par->type == TokenType::Symbol)
-              {
-                par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
-                par_value.push_back (right->copy());
+                var_init.push_back (nullptr);
+                var_mass.push_back (nullptr);
               }
             } else P_MESSAGE1("Dot: wrong number of arguments\n");
           } else if (fun->getName() == "init")
@@ -2279,18 +2270,43 @@ void splitExpression (std::string& sysName,
               if (init->type == TokenType::Symbol)
               {
                 const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                bool found = false;
                 // find the corresponding state variable
-                var_init.resize(var_name.size());
                 for (size_t k=0; k<var_name.size(); k++)
                 {
                   if (var_name[k]->getName() == sym->getName())
                   {
                     var_init[k] = right->copy();
+                    found = true;
                     break;
                   }
                 }
-              }
-            } else P_MESSAGE1("Dot: wrong number of arguments\n");
+                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
+              } else P_MESSAGE1("Init: state variable is not a symbol.");
+            } else P_MESSAGE1("Init: wrong number of arguments\n");
+          } else if (fun->getName() == "mass")
+          {
+            // starting solution
+            if (fun->children() == 1)
+            {
+              const Node* init = fun->getChild(0);
+              if (init->type == TokenType::Symbol)
+              {
+                const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                bool found = false;
+                // find the corresponding state variable
+                for (size_t k=0; k<var_name.size(); k++)
+                {
+                  if (var_name[k]->getName() == sym->getName())
+                  {
+                    var_mass[k] = right->copy();
+                    found = true;
+                    break;
+                  }
+                }
+                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
+              } else P_MESSAGE1("Mass: state variable is not a symbol.");
+            } else P_MESSAGE1("Mass: wrong number of arguments\n");
           } else if (fun->getName() == "period")
           {
             if (par_name.size() > 0) P_ERROR_X1(par_name[0] == nullptr, "Period is already defined.");
@@ -2298,6 +2314,18 @@ void splitExpression (std::string& sysName,
             P_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, "Not a symbol");
             par_name[0] = static_cast<NodeSymbol*>(fun->getChild(0)->copy());
             par_value[0] = right->copy();
+          } else if (fun->getName() == "par")
+          {
+            // parameter
+            if (fun->children() == 1)
+            {
+              const Node* par = fun->getChild(0);
+              if (par->type == TokenType::Symbol)
+              {
+                par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
+                par_value.push_back (right->copy());
+              }
+            } else P_MESSAGE1("Par: wrong number of arguments\n");
           } else if (fun->getName() == "time")
           {
             P_ERROR_X1(fun->children() == 0, "Too many arguments");
@@ -2395,13 +2423,15 @@ void Expression::knutSplit (
   std::vector<std::string>& varName,
   std::vector<Expression>& varDotExpr,
   std::vector<Expression>& varInit,
+  std::vector<double>& varMass,
   std::vector<Expression>& delayExpr,
   std::vector<std::string>& parName,
-  std::vector<double>& parInit )
+  std::vector<double>& parInit)
 {
   std::vector<NodeSymbol*> var_name;
   std::vector<Node*> var_dot;
-  std::vector<Node*> var_init; 
+  std::vector<Node*> var_init;
+  std::vector<Node*> var_mass;
   std::vector<NodeSymbol*> par_name;
   std::vector<Node*> par_value;
   std::vector<NodeSymbol*> time;
@@ -2413,7 +2443,7 @@ void Expression::knutSplit (
   pi_eq -> addArgument (1, new NodeNumber(M_PI));
   macro.push_back (pi_eq);
 
-  splitExpression (sysName, var_name, var_dot, var_init, par_name, par_value, time, macro, root);
+  splitExpression (sysName, var_name, var_dot, var_init, var_mass, par_name, par_value, time, macro, root);
 
   // if no independent variable or period is set we set the default
   if (time.empty()) time.push_back (new NodeSymbol("t"));
@@ -2477,6 +2507,22 @@ void Expression::knutSplit (
     var_init[p] -> replaceSymbol (*time[0], *time_var, &var_init[p]);
   }
 
+  for (size_t p = 0; p < var_mass.size(); p++)
+  {
+    if (var_mass[p] != nullptr)
+    {
+      for (size_t q = 0; q < macro.size(); q++)
+      {
+        var_mass[p] -> replaceSymbol (*macro[q], &var_mass[p]);
+      }
+      for (size_t q = 0; q < par_name.size(); q++)
+      {
+        var_mass[p] -> replaceSymbol (*par_name[q], *par_value[q], &var_mass[p]);
+      }
+      var_mass[p] -> replaceSymbol (*time[0], *time_var, &var_mass[p]);
+    }
+  }
+  
   for (size_t p = 0; p < par_name.size(); p++)
   {
     // other params
@@ -2489,7 +2535,7 @@ void Expression::knutSplit (
     {
       if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
     }
-    for (size_t q = 0; q < macro.size(); q++)
+    for (size_t q = 0; q < macro.size (); q++)
     {
       par_value[p] -> replaceSymbol (*macro[q], &par_value[p]);
     }
@@ -2500,9 +2546,9 @@ void Expression::knutSplit (
   for (size_t p = 0; p < par_name.size(); p++)
   {
     size_t stmax = 0;
-    par_value[p] -> stackCount(0,stmax);
-    std::vector<double> stack(stmax);
-    par_value[p] -> evaluate(stack, 0, var_numval, parInit);
+    par_value[p] -> stackCount (0,stmax);
+    std::vector<double> stack (stmax);
+    par_value[p] -> evaluate (stack, 0, var_numval, parInit);
     parInit[p] = stack[0];
   }
 
@@ -2511,6 +2557,20 @@ void Expression::knutSplit (
   for (size_t p = 0; p < var_init.size(); p++)
   {
     varInit[p].fromNode (var_init[p]);
+  }
+
+  // fill up the mass
+  varMass.resize (var_mass.size ());
+  for (size_t p = 0; p < var_mass.size (); p++)
+  {
+    if (var_mass[p] != nullptr)
+    {
+      size_t stmax = 0;
+      var_mass[p] -> stackCount(0,stmax);
+      std::vector<double> stack(stmax);
+      var_mass[p] -> evaluate (stack, 0, var_numval, parInit);
+      varMass[p] = stack[0];
+    } else varMass[p] = 1.0;
   }
   
   // START :: HANDLING THE DELAYS
@@ -2623,7 +2683,7 @@ bool isValidName(const std::string s)
 {
   const std::string lower("abcdefghijklmnopqrstuvwxyz");
   const std::string upper("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-  const std::string letters = lower + upper + "_";
+  const std::string letters = lower + upper + "_(),";
   const std::string digits("0123456789");
   const std::string validchars = letters + digits;
 
@@ -2643,30 +2703,29 @@ bool isValidName(const std::string s)
   return true;
 }
 
-void Expression::fromXML (std::string& oexpr, const std::string& xmlfilename)
+// This is a compatibility function, it is depreceated
+// converts xmlstring into an expression to be parsed.
+// returns true if it was a real XML file, otherwise, false
+bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
 {
   std::ostringstream out;
-  FILE *xmlfile;
   mxml_node_t *tree;
   mxml_node_t *node;
-  bool bad_attr;
+//   bool bad_attr;
 
-  xmlfile = fopen(xmlfilename.c_str(), "r");
-  P_ERROR_X3(xmlfile != NULL, "Error: Unable to open ", xmlfilename, "\n");
-  tree = mxmlLoadFile(NULL, xmlfile, MXML_NO_CALLBACK);
-  fclose(xmlfile);
+  tree = mxmlLoadString (NULL, xmlstring.c_str (), MXML_NO_CALLBACK);
   if (tree == NULL)
   {
-    mxmlDelete(tree);
-    P_MESSAGE3("Error: Unable to load the vector field from the file ", xmlfilename, 
-               ". There may be an error in the XML definition of the vector field.");
+    // Not an XML string
+    return false;
   }
 
   node = mxmlFindElement(tree, tree, "VectorField", NULL, NULL, MXML_DESCEND);
   if (node == NULL)
   {
     mxmlDelete(tree);
-    P_MESSAGE1("Error: No VectorField element found in XML defintion.\n");
+//     P_MESSAGE1("Error: No VectorField element found in XML defintion.\n");
+    return false;
   }
   else
   {
@@ -2773,7 +2832,7 @@ void Expression::fromXML (std::string& oexpr, const std::string& xmlfilename)
       {
         mxmlDelete(tree);
         P_MESSAGE3("Error: A Parameter element has an unknown attribute: ", attr, "Valid Parameter attributes are: Name, DefaultValue, Description, Latex.");
-        bad_attr = true;
+//         bad_attr = true;
       }
     }
     const char *attr;
@@ -2959,8 +3018,9 @@ void Expression::fromXML (std::string& oexpr, const std::string& xmlfilename)
     }
   }
 
-  mxmlDelete(tree);
+  mxmlDelete (tree);
   oexpr = out.str ();
+  return true;
 }
 
 } // namespace

@@ -47,7 +47,8 @@ class KNAbstractContinuation
     virtual void deleteData() = 0;
     // the thread notifies when data should be closed
     virtual void dataUpdated() = 0;
-
+    // create a data file, to be used to implement the virtual function
+    static KNDataFile* createDataStatic (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
   protected:
 //     KNConstants* params;
     bool        stopFlag;
@@ -99,7 +100,10 @@ class KNCliContinuation : public KNAbstractContinuation
       printException(ex);
       exit(-1);
     }
-    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
+    {
+      output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
+    }
     KNDataFile& data() { return *output; }
     void deleteData() { delete output; output = 0; }
     void dataUpdated() { }

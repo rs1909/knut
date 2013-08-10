@@ -1,14 +1,11 @@
-<?xml version="1.0"?>
-<VectorField Name="mackey_glass">
-<Parameter  Name="T"    DefaultValue="0.4" Description="Period" />
-<Parameter  Name="kk1"  DefaultValue="0" />
-<Parameter  Name="zeta" DefaultValue="0.015" />
-<Parameter  Name="tau"  DefaultValue="1.5*2*3.14" />
-<Expression Name="DX1"  Formula="delay(X1,tau)" />
-<StateVariable Name="X1" 
-  Formula="X2"
-  DefaultInitialCondition="0" DefaultHistory="0.0" />
-<StateVariable Name="X2" 
-  Formula="-X1 - 2*zeta*X2 + kk1*((1+DX1-X1)^0.75) - kk1"
-  DefaultInitialCondition="0" DefaultHistory="0.0" />
-</VectorField>
+vfname()=mackey_glass;
+time()=t;
+period(T)=0.4;
+par(kk1)=0;
+par(zeta)=0.015;
+par(tau)=1.5*2*3.14;
+DX1=delay(X1,tau);
+dot(X1)=X2;
+init(X1)=0;
+dot(X2)=-X1 - 2*zeta*X2 + kk1*((1+DX1-X1)^0.75) - kk1;
+init(X2)=0;

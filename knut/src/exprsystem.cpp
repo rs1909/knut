@@ -51,8 +51,21 @@ static bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src);
 
 KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 {
+  std::string contents;
+  std::ifstream in (sysName, std::ios::in | std::ios::binary);
+  if (in)
+  {
+    in.seekg (0, std::ios::end);
+    contents.resize (in.tellg());
+    in.seekg (0, std::ios::beg);
+    in.read (&contents[0], contents.size());
+    in.close ();
+  }
+  
   std::string vfexpr;
-  Expression::fromXML (vfexpr, sysName);
+  if (Expression::fromXML (vfexpr, contents)) {}
+  else vfexpr = contents;
+ 
   KNExprSystem::constructor (vfexpr, sysName, trycompile);
 }
 
@@ -71,7 +84,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   expr.fromString (vfexpr);
   try
   {
-    expr.knutSplit (vfName, varName, varDotExpr, varInit, delayExpr, parName, parInit );
+    expr.knutSplit (vfName, varName, varDotExpr, varInit, varMass, delayExpr, parName, parInit );
   }
   catch (KNException& ex)
   {
@@ -405,7 +418,7 @@ void KNExprSystem::mass(KNArray1D<double>& out)
 {
   for (size_t k = 0; k < varDotExpr.size(); k++)
   {
-    out (k) = 1.0;
+    out (k) = varMass[k];
   }
 }
 
@@ -1436,7 +1449,7 @@ extern "C" {
 void KNExprSystem::setupFunctions (const std::string& shobj)
 {
   handle = tdlopen(shobj.c_str());
-  P_ERROR_X5(handle != nullptr, "Cannot open system definition file. Error code", tdlerror(), ". The offending file was '", shobj, "'.");
+  P_ERROR_X5(handle != nullptr, "Cannot open system definition file `", shobj, "'. Error code `", tdlerror(), "'.");
   
   tdlerror();    /* Clear any existing error */
   fp_ndim = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_ndim"));

@@ -426,19 +426,20 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params)
 }
 
 // create a data file for steady states
-void KNCliContinuation::createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
+KNDataFile* KNAbstractContinuation::createDataStatic (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
   if (t == DataType::ST) {
-    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
-                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
-                            0, 0, prms->getNMul());
+    return new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          0, 0, prms->getNMul());
   } else if (t == DataType::LC) {
-    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
-                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
-                            prms->getNInt(), prms->getNDeg(), prms->getNMul());
+    return new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt(), prms->getNDeg(), prms->getNMul());
   } else if (t == DataType::TR) {
-    output = new KNDataFile(prms->getOutputFile(), prms->getParNames(),
-                            prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
-                            prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
+    return new KNDataFile(prms->getOutputFile(), prms->getParNames(),
+                          prms->getSteps(), ndim, VarToIndex(VarEnd,npar),
+                          prms->getNInt1(), prms->getNInt2(), prms->getNDeg1(), prms->getNDeg2());
   }
+  return nullptr;
 }

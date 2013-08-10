@@ -1,28 +1,21 @@
-<?xml version="1.0"?>
-<VectorField Name="milloneup">
-
-<Parameter  Name="T"   DefaultValue="1.31*Pi" Description="Period" />
-<Parameter  Name="k1"  DefaultValue="0" Description="Cutting coefficient" />
-
-<Constant   Name="cf_a" Value="2.13727" />
-<Constant   Name="cf_b" Value="-1.28236/H0" />
-<Constant   Name="cf_c" Value="0.467529/H0/H0" />
-<Constant   Name="H0"   Value="1.0" />
-<Constant   Name="ZETA" Value="0.0032" />
-<Constant   Name="CC"   Value="15.0" />
-<Constant   Name="TAU2" Value="0.1618" />
-<Constant   Name="KKN" Value="0.3636" />
-
-<Expression Name="g"    Formula="heaviside(t) - heaviside(t-TAU2)" />
-<Expression Name="phi"  Formula="2*Pi*t" />
-<Expression Name="dxd1" Formula="(H0+delay(x1,T/PAR_PERIOD) - x1)*sin(phi)" />
-<Expression Name="cf1"  Formula="dxd1*( cf_a + cf_b*dxd1 + cf_c*dxd1*dxd1 ) * (1.0+tanh(CC*dxd1))/2.0" />
-<Expression Name="scf"  Formula="(cos(phi)+KKN*sin(phi)) * cf1" />
-
-<StateVariable Name="x1" 
-  Formula="x2"
-  DefaultInitialCondition="0.0" DefaultHistory="0.0" />
-<StateVariable Name="x2" 
-  Formula="-x1 - 2*ZETA*x2 + g*k1*scf"
-  DefaultInitialCondition="0.0" DefaultHistory="0.0" />
-</VectorField>
+vfname()=milloneup;
+time()=t;
+cf_a=2.13727;
+cf_b=-1.28236/H0;
+cf_c=0.467529/H0/H0;
+H0=1.0;
+ZETA=0.0032;
+CC=15.0;
+TAU2=0.1618;
+KKN=0.3636;
+period(T)=1.31*Pi;
+par(k1)=0;
+g=heaviside(t) - heaviside(t-TAU2);
+phi=2*Pi*t;
+dxd1=(H0+delay(x1,T/PAR_PERIOD) - x1)*sin(phi);
+cf1=dxd1*( cf_a + cf_b*dxd1 + cf_c*dxd1*dxd1 ) * (1.0+tanh(CC*dxd1))/2.0;
+scf=(cos(phi)+KKN*sin(phi)) * cf1;
+dot(x1)=x2;
+init(x1)=0.0;
+dot(x2)=-x1 - 2*ZETA*x2 + g*k1*scf;
+init(x2)=0.0;

@@ -1,51 +1,45 @@
-<?xml version="1.0"?>
-<VectorField Name="laser">
-<Parameter  Name="T"   DefaultValue="10.0" Description="Period" />
-<Parameter  Name="alpha"   DefaultValue="5.000000000000e+00" />
-<Parameter  Name="eta"   DefaultValue="2.908215e-02" />
-<Parameter  Name="TT"   DefaultValue="1.000000000000e+02" />
-<Parameter  Name="Pc"   DefaultValue="3.500000000000e+00" />
-<Parameter  Name="lambda"   DefaultValue="7.000000000000e-03" />
-<Parameter  Name="sigma"   DefaultValue="6.073745796940e+00" />
-<Parameter  Name="omegaM"   DefaultValue="-7.000000000000e-03" />
-<Parameter  Name="thetascale"   DefaultValue="1.000000000000e+00" />
-<Parameter  Name="Escale"   DefaultValue="1.000000000000e+00" />
-<Parameter  Name="Nscale"   DefaultValue="1.000000000000e+00" />
-<Parameter  Name="bb"   DefaultValue="-3.259566e-03" />
-<Parameter  Name="tau"   DefaultValue="5.000000000000e+02" />
-<Parameter  Name="omega0"   DefaultValue="0" />
-<Expression Name="dAx"  Formula="delay(Ax,tau)" />
-<Expression Name="dAy"  Formula="delay(Ay,tau)" />
-<Expression  Name="phi"   Formula="sigma + thetascale*bb*tau + omega0*tau" />
-<StateVariable Name="Ax"
-  Formula="(thetascale*(Escale*bb*Ay
+vfname()=laser;
+time()=t;
+period(T)=10.0;
+par(alpha)=5.000000000000e+00;
+par(eta)=2.908215e-02;
+par(TT)=1.000000000000e+02;
+par(Pc)=3.500000000000e+00;
+par(lambda)=7.000000000000e-03;
+par(sigma)=6.073745796940e+00;
+par(omegaM)=-7.000000000000e-03;
+par(thetascale)=1.000000000000e+00;
+par(Escale)=1.000000000000e+00;
+par(Nscale)=1.000000000000e+00;
+par(bb)=-3.259566e-03;
+par(tau)=5.000000000000e+02;
+par(omega0)=0;
+dAx=delay(Ax,tau);
+dAy=delay(Ay,tau);
+phi=sigma + thetascale*bb*tau + omega0*tau;
+dot(Ax)=(thetascale*(Escale*bb*Ay
                 +Escale*Nscale*Ax*ZZ
                 -alpha*Escale*Nscale*Ay*ZZ
-               +eta*Escale*Xx))/Escale"
-  DefaultInitialCondition="-0.24721" DefaultHistory="0.0" />
-<StateVariable Name="Ay"
-  Formula="(thetascale*(-(Escale*bb*Ax)
+               +eta*Escale*Xx))/Escale;
+init(Ax)=-0.24721;
+dot(Ay)=(thetascale*(-(Escale*bb*Ax)
                 +alpha*Escale*Nscale*Ax*ZZ
                 +Escale*Nscale*Ay*ZZ
-                +eta*Escale*Xy))/Escale"
-  DefaultInitialCondition="-1.86705" DefaultHistory="0.0" />
-<StateVariable Name="ZZ"
-  Formula="(thetascale*(Pc
+                +eta*Escale*Xy))/Escale;
+init(Ay)=-1.86705;
+dot(ZZ)=(thetascale*(Pc
                 -Nscale*ZZ
-                -(pow(Escale*Ax,2.0) + pow(Escale*Ay,2.0))*(1 + 2*Nscale*ZZ)))/(TT*Nscale)"
-  DefaultInitialCondition="-0.005655" DefaultHistory="0.0" />
-<StateVariable Name="Xx"
-  Formula="(thetascale*(cos(phi)*lambda*Escale*dAx
+                -(pow(Escale*Ax,2.0) + pow(Escale*Ay,2.0))*(1 + 2*Nscale*ZZ)))/(TT*Nscale);
+init(ZZ)=-0.005655;
+dot(Xx)=(thetascale*(cos(phi)*lambda*Escale*dAx
                 +lambda*Escale*sin(phi)*dAy
                 -lambda*Escale*Xx
                 -(omegaM-omega0)*Escale*Xy
-                +Escale*bb*Xy))/Escale"
-  DefaultInitialCondition="1.5585" DefaultHistory="0.0" />
-<StateVariable Name="Xy"
-  Formula="(thetascale*(-(lambda*Escale*sin(phi)*dAx)
+                +Escale*bb*Xy))/Escale;
+init(Xx)=1.5585;
+dot(Xy)=(thetascale*(-(lambda*Escale*sin(phi)*dAx)
                 +cos(phi)*lambda*Escale*dAy
                 +(omegaM-omega0)*Escale*Xx
                 -Escale*bb*Xx
-                -lambda*Escale*Xy))/Escale"
-  DefaultInitialCondition="-0.573614" DefaultHistory="0.0" />
-</VectorField>
+                -lambda*Escale*Xy))/Escale;
+init(Xy)=-0.573614;

@@ -100,6 +100,8 @@ int main(int argc, const char** argv)
   catch (KNException ex)
   {
     KNCliContinuation::printException(ex);
+    delete params;
+    delete sys;
 #ifdef DEBUG
     throw(-1);
 #endif

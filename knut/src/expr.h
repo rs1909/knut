@@ -365,10 +365,11 @@ public:
     std::vector<std::string>& varName,
     std::vector<Expression>& varDotExpr,
     std::vector<Expression>& varInit,
+    std::vector<double>& mass,
     std::vector<Expression>& delayExpr,
     std::vector<std::string>& parName,
     std::vector<double>& parInit);
-  static void fromXML (std::string& oexpr, const std::string& xmlfilename);
+  static bool fromXML (std::string& oexpr, const std::string& xmlstring);
 private:
   // takes over ownership
   Expression (Node* rt) : root(rt) { }

@@ -1,28 +1,25 @@
-<?xml version="1.0"?>
-<VectorField Name="mackey_glass">
-<Parameter  Name="T"    DefaultValue="0.4" Description="Period" />
-<Parameter  Name="kk1"  DefaultValue="0" />
-<Parameter  Name="zeta" DefaultValue="0.015" />
-<Parameter  Name="tau"  DefaultValue="1.5*2*Pi" />
-<Constant   Name="H0"   Value="1" />
-<Constant   Name="CC"   Value="15" />
-<Constant   Name="cfa"   Value="(270.0/161.0)" />
-<Constant   Name="cfb"   Value="(-72.0/161.0)" />
-<Constant   Name="cfc"   Value="(5.0/69.0)" />
-<Expression Name="DX1"  Formula="delay(X1,tau)" />
-<Expression Name="DDX1" Formula="delay(X1,2*tau)" />
-<Expression Name="AD" Formula="H0+DDX1-DX1" />
-<Expression Name="A1" Formula="H0+DX1-X1" />
-<Expression Name="A2" Formula="2*H0+DDX1-X1" />
-<Expression Name="cg2AD" Formula="(1.0+tanh(CC*AD))/2.0" />
-<Expression Name="cg2mAD" Formula="(1.0+tanh(-CC*AD))/2.0" />
-<Expression Name="cfA1"   Formula="A1*( cfa + cfb*A1 + cfc*A1*A1 )" />
-<Expression Name="cfA2"   Formula="A2*( cfa + cfb*A2 + cfc*A2*A2 )" />
-<Expression Name="scf"    Formula="cfA1*cg2AD + cfA2*cg2mAD" />
-<StateVariable Name="X1" 
-  Formula="X2"
-  DefaultInitialCondition="0" DefaultHistory="0.0" />
-<StateVariable Name="X2" 
-  Formula="-X1 - 2*zeta*X2 + kk1*scf"
-  DefaultInitialCondition="0" DefaultHistory="0.0" />
-</VectorField>
+vfname()=mackey_glass;
+time()=t;
+H0=1;
+CC=15;
+cfa=(270.0/161.0);
+cfb=(-72.0/161.0);
+cfc=(5.0/69.0);
+period(T)=0.4;
+par(kk1)=0;
+par(zeta)=0.015;
+par(tau)=1.5*2*Pi;
+DX1=delay(X1,tau);
+DDX1=delay(X1,2*tau);
+AD=H0+DDX1-DX1;
+A1=H0+DX1-X1;
+A2=2*H0+DDX1-X1;
+cg2AD=(1.0+tanh(CC*AD))/2.0;
+cg2mAD=(1.0+tanh(-CC*AD))/2.0;
+cfA1=A1*( cfa + cfb*A1 + cfc*A1*A1 );
+cfA2=A2*( cfa + cfb*A2 + cfc*A2*A2 );
+scf=cfA1*cg2AD + cfA2*cg2mAD;
+dot(X1)=X2;
+init(X1)=0;
+dot(X2)=-X1 - 2*zeta*X2 + kk1*scf;
+init(X2)=0;

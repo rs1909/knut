@@ -65,6 +65,7 @@ private:
   std::vector<std::string> varName;
   std::vector<ExpTree::Expression> varDotExpr;
   std::vector<ExpTree::Expression> varInit;
+  std::vector<double> varMass;
   std::vector<ExpTree::Expression> delayExpr;
   std::vector<std::string> parName;
   std::vector<double> parInit;

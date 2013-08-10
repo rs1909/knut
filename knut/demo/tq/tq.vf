@@ -1,31 +1,23 @@
-<?xml version="1.0"?>
-<VectorField Name="tq">
-
-<Parameter  Name="T"   DefaultValue="14.75" Description="Period" />
-<Parameter  Name="k1"  DefaultValue="0" Description="Cutting coefficient" />
-
-<Constant   Name="cf_a" Value="(120.0/59.0)" />
-<Constant   Name="cf_b" Value="(-48.0/59.0)" />
-<Constant   Name="cf_c" Value="(35.0/177.0)" />
-<Constant   Name="H0"   Value="1.0" />
-<Constant   Name="ZETA" Value="0.015" />
-<Constant   Name="CC"   Value="20.0" />
-<Constant   Name="TAU2" Value="0.1" />
-
-<Expression Name="dxd1" Formula="H0+delay(x1,T/PAR_PERIOD) - x1" />
-<Expression Name="dxd2" Formula="2*H0+delay(x1,2*T/PAR_PERIOD) - x1" />
-<Expression Name="dxd3" Formula="H0+delay(x1,2*T/PAR_PERIOD) - delay(x1,T/PAR_PERIOD)" />
-<Expression Name="cf1"  Formula="dxd1*( cf_a + cf_b*dxd1 + cf_c*dxd1*dxd1 ) * (1.0+tanh(CC*dxd1))/2.0" />
-<Expression Name="cf2"  Formula="dxd2*( cf_a + cf_b*dxd2 + cf_c*dxd1*dxd2 ) * (1.0+tanh(CC*dxd2))/2.0" />
-<Expression Name="scf"  Formula="cf1 * (1.0+tanh(CC*dxd3))/2 + cf2 * (1.0+tanh(-CC*dxd3))/2" />
-
-<Expression Name="nt"   Formula="t*PAR_PERIOD" />
-<Expression Name="g"    Formula="(heaviside(nt) - heaviside(nt-TAU2)) + (heaviside(nt - 1) - heaviside(nt-TAU2 - 1))" />
-
-<StateVariable Name="x1" 
-  Formula="x2"
-  DefaultInitialCondition="0.0" DefaultHistory="0.0" />
-<StateVariable Name="x2" 
-  Formula="-x1 - 2*ZETA*x2 + g*k1*scf"
-  DefaultInitialCondition="0.0" DefaultHistory="0.0" />
-</VectorField>
+vfname()=tq;
+time()=t;
+cf_a=(120.0/59.0);
+cf_b=(-48.0/59.0);
+cf_c=(35.0/177.0);
+H0=1.0;
+ZETA=0.015;
+CC=20.0;
+TAU2=0.1;
+period(T)=14.75;
+par(k1)=0;
+dxd1=H0+delay(x1,T/PAR_PERIOD) - x1;
+dxd2=2*H0+delay(x1,2*T/PAR_PERIOD) - x1;
+dxd3=H0+delay(x1,2*T/PAR_PERIOD) - delay(x1,T/PAR_PERIOD);
+cf1=dxd1*( cf_a + cf_b*dxd1 + cf_c*dxd1*dxd1 ) * (1.0+tanh(CC*dxd1))/2.0;
+cf2=dxd2*( cf_a + cf_b*dxd2 + cf_c*dxd1*dxd2 ) * (1.0+tanh(CC*dxd2))/2.0;
+scf=cf1 * (1.0+tanh(CC*dxd3))/2 + cf2 * (1.0+tanh(-CC*dxd3))/2;
+nt=t*PAR_PERIOD;
+g=(heaviside(nt) - heaviside(nt-TAU2)) + (heaviside(nt - 1) - heaviside(nt-TAU2 - 1));
+dot(x1)=x2;
+init(x1)=0.0;
+dot(x2)=-x1 - 2*ZETA*x2 + g*k1*scf;
+init(x2)=0.0;

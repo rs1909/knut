@@ -1,11 +1,8 @@
-<?xml version="1.0"?>
-<VectorField Name="vanderpol">
-<Parameter  Name="T"     DefaultValue="2.0*Pi" Description="Period" />
-<Parameter  Name="delta" DefaultValue="0.1" />
-<StateVariable Name="x1" 
-  Formula="x2"
-  DefaultInitialCondition="sin(2.0*Pi*t)" DefaultHistory="0.0" />
-<StateVariable Name="x2" 
-  Formula="-x1 - delta*(x1*x1 - 1.0)*x2"
-  DefaultInitialCondition="cos(2.0*Pi*t)" DefaultHistory="0.0" />
-</VectorField>
+vfname()=vanderpol;
+time()=t;
+period(T)=2.0*Pi;
+par(delta)=0.1;
+dot(x1)=x2;
+init(x1)=sin(2.0*Pi*t);
+dot(x2)=-x1 - delta*(x1*x1 - 1.0)*x2;
+init(x2)=cos(2.0*Pi*t);

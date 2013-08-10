@@ -87,11 +87,11 @@ class KNMatlabConstants : public KNConstants
 //   void fromMatlab(const mxArray *);
 // };
 
-class KNMatlabContinuation : public KNCliContinuation
+class KNMatlabContinuation : public KNAbstractContinuation
 {
   public:
-    KNMatlabContinuation () : charsPrinted(0) { }
-    ~KNMatlabContinuation () { }
+    KNMatlabContinuation () : output(nullptr), charsPrinted(0) { }
+    ~KNMatlabContinuation () { delete output; }
     void printStream () 
     {
       mexPrintf (screenout.str().c_str());
@@ -99,8 +99,8 @@ class KNMatlabContinuation : public KNCliContinuation
       mexEvalString("drawnow");
       if (utIsInterruptPending() && !getStopFlag()) /* check for a Ctrl-C event */
       {
-	setStopFlag(true);
-	mexPrintf("Ctrl-C Detected. END\n\n");
+        setStopFlag (true);
+        mexPrintf ("Ctrl-C Detected. END\n\n");
       }
     }
     virtual void storeCursor () { charsPrinted = 0; }
@@ -115,11 +115,21 @@ class KNMatlabContinuation : public KNCliContinuation
       mexErrMsgIdAndTxt ("MATLAB:Knut", err.str().c_str());
       std::cout <<"MATLAB:Knut" << err.str().c_str() << "\n";
     }
-//    KNDataFile& data () { return *output; }
-//    void deleteData () { delete output; output = 0; }
-//    void dataUpdated () { }
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
+    {
+      delete output;
+      output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
+    }
+    KNDataFile& data () { return *output; }
+    void deleteData () { /*delete output; output = 0;*/ }
+    void dataUpdated () 
+    {
+      // this is the place to put a callback to MATLAB
+//       mexPrintf ("C");
+    }
+    bool validData () { return output != nullptr; }
   private:
-//    KNDataFile* output;
+    KNDataFile* output;
     size_t charsPrinted;
 };
 
@@ -135,10 +145,16 @@ static bool getText(const mxArray *elem, std::string& strout)
   return false;
 }
 
+// API:
+// 'get'
+// 'set' +1 parameter
+// 'run'
+// 'cfile' +1 parameter
 void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[] )
 {  
   static KNMatlabConstants* params = nullptr;
+  static KNMatlabContinuation* comp = nullptr;
   static std::string* vfString = nullptr;
   try {
 //     P_ERROR_X1(nlhs == 0, "does not provide output.");
@@ -167,8 +183,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
     } else if (cmd.compare("run") == 0)
     {
       P_ERROR_X1 (params != 0, "No constants are specified");
-      KNMatlabContinuation comp;
-      KNSystem* sys = new KNSystem (params->getSysName ());
+      if (!comp) comp = new KNMatlabContinuation;
+      else mexPrintf ("Not the first computation.\n");
+      KNExprSystem* sys = new KNExprSystem (params->getSystem ());
 //       comp.run(sys, params);
       mexPrintf ("%s\n", params->getSysName ().c_str());
       std::string tmp;
@@ -180,8 +197,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
       tmp.push_back (']');
       ReplaceStringInPlace (tmp, "\n", "'.""..\n'");
       mexPrintf ("%s\n", tmp.c_str());
-      comp.run (sys, params);
-//      mexPrintf ("END\n");
+      // E
+      comp -> run (sys, params);
       delete sys;
     } else if (cmd.compare("cfile") == 0)
     {
@@ -191,26 +208,112 @@ void mexFunction( int nlhs, mxArray *plhs[],
       if (!params) params = new KNMatlabConstants;
       else mexPrintf ("Not a new instance.\n");
       params->loadXmlFileV5(fname);
-    } else if (cmd.compare("system") == 0)
+    } else if (cmd.compare("steps") == 0)
     {
-      if (params)
+      if (comp)
       {
-// 	P_ERROR_X1(nlhs == 1, "output struct is required");
-//         KNMatlabVectorField vf;
-// 	vf.ReadXML(params->getSysName());
-// 	int pserr = vf.ProcessSymbols();
-// 	plhs[0] = vf.toMatlab();
+        if (comp -> validData ())
+        {
+          plhs[0] = mxCreateDoubleScalar (comp -> data() . getNCols());
+        }
       }
-    } else if (cmd.compare("load") == 0)
+    } else if (cmd.compare("par") == 0)
     {
-      P_ERROR_X1(nrhs == 2, "output struct is required");
-      std::string vfexpr;
-      getText(prhs[1], vfexpr);
-      KNExprSystem vf (vfexpr, false);
-      std::string tmp;
-      vf.toString (tmp);
-      mexPrintf ("%s\n", tmp.c_str());
+      // getting the parameter values
+      if (comp)
+      {
+        if (comp -> validData ())
+        {
+          if (nrhs == 2)
+          {
+            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
+            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
+            const size_t npar = comp -> data() . getNPar ();
+            plhs[0] = mxCreateDoubleMatrix(1, npar, mxREAL);
+            double* data = mxGetPr(plhs[0]);
+            for (size_t k = 0; k < npar; k++)
+            {
+              data [k] = comp -> data() . getPar (idx, k);
+            }
+          }
+        }
+      }
+    } else if (cmd.compare("sol") == 0)
+    {
+      // getting the parameter values
+      if (comp)
+      {
+        if (comp -> validData ())
+        {
+          if (nrhs == 2)
+          {
+            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
+            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
+            const size_t ndim = comp -> data() . getNDim ();
+            const size_t nint = comp -> data() . getNInt ();
+            const size_t ndeg = comp -> data() . getNDeg ();
+            plhs[0] = mxCreateNumericMatrix (ndim, nint*ndeg + 1, mxDOUBLE_CLASS, mxREAL);
+            double* data = mxGetPr(plhs[0]);
+            for (size_t p = 0; p < nint*ndeg + 1; p++)
+            {
+              for (size_t q = 0; q < ndim; q++)
+              {
+                data [q + p*ndim] = comp -> data() . getProfile (idx, q, p);
+              }
+            }
+          }
+        }
+      }
+    } else if (cmd.compare("mesh") == 0)
+    {
+      // getting the parameter values
+      if (comp)
+      {
+        if (comp -> validData ())
+        {
+          if (nrhs == 2)
+          {
+            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
+            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
+            KNVector elemRef (false), meshRef (false);
+            comp -> data() . getElemRef (idx, elemRef);
+            comp -> data() . getMeshRef (idx, meshRef);
+            const size_t nint = meshRef.size () - 1;
+            const size_t ndeg = elemRef.size () - 1;
+            plhs[0] = mxCreateNumericMatrix (1, nint*ndeg + 1, mxDOUBLE_CLASS, mxREAL);
+            double* data = mxGetPr(plhs[0]);
+            for (size_t p = 0; p < nint; p++)
+            {
+              for (size_t q = 0; q < ndeg; q++)
+              {
+                data [q + p*ndeg] = meshRef(p) + elemRef(q)*(meshRef(p + 1) - meshRef(p));
+              }
+            }
+            data [nint*ndeg] = 1.0;
+          }
+        }
+      }
     }
+//     else if (cmd.compare("system") == 0)
+//     {
+//       if (params)
+//       {
+// // 	P_ERROR_X1(nlhs == 1, "output struct is required");
+// //         KNMatlabVectorField vf;
+// // 	vf.ReadXML(params->getSysName());
+// // 	int pserr = vf.ProcessSymbols();
+// // 	plhs[0] = vf.toMatlab();
+//       }
+//     } else if (cmd.compare("load") == 0)
+//     {
+//       P_ERROR_X1(nrhs == 2, "output struct is required");
+//       std::string vfexpr;
+//       getText(prhs[1], vfexpr);
+//       KNExprSystem vf (vfexpr, false);
+//       std::string tmp;
+//       vf.toString (tmp);
+//       mexPrintf ("%s\n", tmp.c_str());
+//     }
   }
   catch (KNException ex)
   {
