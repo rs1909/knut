@@ -10,7 +10,9 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
 
 #ifndef KNUTSYS_H
 #include <iostream>

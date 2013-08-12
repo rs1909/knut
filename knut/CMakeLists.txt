@@ -159,25 +159,29 @@ ENDIF( EXISTS ${OPENBLAS64} )
 # Finding Qt
 #------------------------------------------------------------------------------
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5Svg REQUIRED)
+find_package(Qt5Core)
+if(${Qt5Core_FOUND})
+  message(STATUS "--> Qt5Core found.")
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5PrintSupport REQUIRED)
+  find_package(Qt5Svg REQUIRED)
 
-IF(WIN32)
-  get_target_property(QtCore_location Qt5::Core LOCATION)
-  get_target_property(QtGui_location Qt5::Gui LOCATION)
-  get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
-  get_target_property(QtPrintSupport_location Qt5::PrintSupport LOCATION)
-  get_target_property(QtSvg_location Qt5::Svg LOCATION)
-  string(REPLACE "/" "\\" QtCoreLoc ${QtCore_location} )
-  string(REPLACE "/" "\\" QtGuiLoc ${QtGui_location} )
-  string(REPLACE "/" "\\" QtWidgetsLoc ${QtWidgets_location} )
-  string(REPLACE "/" "\\" QtPrintSupportLoc ${QtPrintSupport_location} )
-  string(REPLACE "/" "\\" QtSvgLoc ${QtSvg_location} )
-  get_filename_component(QtCorePath_TMP ${QtCore_location} PATH)
-  string(REPLACE "/" "\\" QtCorePath ${QtCorePath_TMP} )
-ENDIF(WIN32)
+  if(WIN32)
+    get_target_property(QtCore_location Qt5::Core LOCATION)
+    get_target_property(QtGui_location Qt5::Gui LOCATION)
+    get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
+    get_target_property(QtPrintSupport_location Qt5::PrintSupport LOCATION)
+    get_target_property(QtSvg_location Qt5::Svg LOCATION)
+    string(REPLACE "/" "\\" QtCoreLoc ${QtCore_location} )
+    string(REPLACE "/" "\\" QtGuiLoc ${QtGui_location} )
+    string(REPLACE "/" "\\" QtWidgetsLoc ${QtWidgets_location} )
+    string(REPLACE "/" "\\" QtPrintSupportLoc ${QtPrintSupport_location} )
+    string(REPLACE "/" "\\" QtSvgLoc ${QtSvg_location} )
+    get_filename_component(QtCorePath_TMP ${QtCore_location} PATH)
+    string(REPLACE "/" "\\" QtCorePath ${QtCorePath_TMP} )
+  endif(WIN32)
+endif(${Qt5Core_FOUND})
+
 
 #------------------------------------------------------------------------------
 # Writing the generated files
@@ -262,7 +266,9 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(cli)
 
 # graphical user interface
+if(${Qt5Core_FOUND})
 ADD_SUBDIRECTORY(gui)
+endif(${Qt5Core_FOUND})
 
 # demo programs
 ADD_SUBDIRECTORY(demo)
