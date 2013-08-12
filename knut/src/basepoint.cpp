@@ -6,13 +6,14 @@
 // For license, see the file COPYING in the package's root directory
 //
 // ------------------------------------------------------------------------- //
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #include "basepoint.h"
 #include "basecomp.h"
 #include "exprsystem.h"
 #include "mat4data.h"
 #include <sstream>
-
 
 // specified in the constants file
 #define REFEPS    (1E-5)

@@ -12,7 +12,7 @@
 #include <cfloat>
 #include <cstring>
 
-#ifndef WIN32
+#ifndef _WIN32
 #  include <sys/types.h>
 #  include <sys/stat.h>
 #  include <fcntl.h>
@@ -40,7 +40,7 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 void KNDataFile::lock() const
 {
@@ -107,7 +107,7 @@ size_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool 
   return size;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 static inline void *mmapFileWrite(int& file, const std::string& fileName, size_t size)
 {
@@ -300,7 +300,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size = prof_offset + prof_size;
 
 //  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
-#ifndef WIN32
+#ifndef _WIN32
   address = mmapFileWrite(file, fileName, size);
 #else
   address = mmapFileWrite(file, mapHandle, fileName, size);
@@ -417,7 +417,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size_t blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
 
-#ifndef WIN32
+#ifndef _WIN32
   address = mmapFileWrite(file, fileName, size);
 #else
   address = mmapFileWrite(file, mapHandle, fileName, size);
@@ -546,7 +546,7 @@ void KNDataFile::initHeaders()
 
 void KNDataFile::openReadOnly(const std::string& fileName)
 {
-#ifndef WIN32
+#ifndef _WIN32
   address = mmapFileRead(file, fileName, size);
 #else
   address = mmapFileRead(file, mapHandle, fileName, size);
@@ -561,7 +561,7 @@ void KNDataFile::openReadOnly(const std::string& fileName)
 // Use mmremap instead so that only the smaller file is written.
 KNDataFile::~KNDataFile()
 {
-#ifndef WIN32
+#ifndef _WIN32
   size_t oldsize = size;
   condenseData();
 //  std::cout << "MUNMAP\n";

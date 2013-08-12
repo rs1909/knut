@@ -16,12 +16,12 @@
 #include <vector>
 #include <cstddef>
 // HANDLE is defined here
-#ifdef WIN32
+#ifdef _WIN32
 #  include <windows.h>
 #endif
 
 // for the correct integer size
-#ifndef _MSC_VER
+#ifndef _WIN32
 # include <stdint.h>
 #else
 # define int32_t INT32
@@ -264,15 +264,15 @@ class KNDataFile
       return getHeader(offset)->ncols;
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     HANDLE file;
     OVERLAPPED fileOverlapped;
     HANDLE mapHandle;
+    size_t filesize;
 #else
     int    file;
 #endif
     const std::string matFileName;
-//     size_t filesize;
     void  *address;
     size_t size;
     size_t ncols;

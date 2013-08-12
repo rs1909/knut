@@ -14,6 +14,6 @@ cmake -DCMAKE_TOOLCHAIN_FILE=$SCRIPTDIR/wintoolchain \
 	-DCMAKE_CXX_FLAGS="-g -O2 -std=c++11 -W -Wall -Wextra -Wno-unused" \
 	-DCMAKE_Fortran_FLAGS="-g -O3" \
 	-DCMAKE_INSTALL_PREFIX=$HOME/WinKnut/ $SCRIPTDIR
-make
-make install
-makensis wininstaller.nsi
+#make
+#make install
+#makensis wininstaller.nsi

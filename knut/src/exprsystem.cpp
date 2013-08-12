@@ -29,7 +29,7 @@
 
 extern "C"{
 #include <sys/stat.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -911,7 +911,7 @@ void KNExprSystem::toCxx (std::string& cxx) const
 #include <CoreFoundation/CFBundle.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define DIRSEP '\\'
 #else
 #define DIRSEP '/'
@@ -947,7 +947,7 @@ static void getExecutableDir (std::string& executableDir)
   const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
   if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
   delete[] buf; buf = 0;
-#elif WIN32
+#elif _WIN32
   char *buf = new char[MAX_PATH]; //always use MAX_PATH for filepaths
   GetModuleFileName(NULL, buf, MAX_PATH*sizeof(char));
   executableFile = buf;
@@ -977,7 +977,7 @@ static void addArgList(std::list<std::string>& argv, const std::string& str)
 // Constructs the command line and the argument list of the GNU C++ compiler (g++).
 static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::string& cmdline, const std::string& shobj, const std::string& executableDir)
 {
-#ifdef WIN32
+#ifdef _WIN32
   std::string cxxcomp("g++");
   arglist.push_back(cxxcomp);
 #else
@@ -1006,7 +1006,7 @@ static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::st
   for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
   {
     if (it != arglist.begin()) cmdline += ' ';
-#ifdef WIN32
+#ifdef _WIN32
     if (it != arglist.begin()) cmdline += "\"";
     cmdline += *it;
     if (it != arglist.begin()) cmdline += "\"";
@@ -1027,7 +1027,7 @@ static bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src)
 #endif
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 // Run the compiler with cxxstring as the program to compile.
 // Catch the standard input, output and error streams to interact.
@@ -1393,6 +1393,8 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   }
 }
 
+#endif
+
 KNExprSystem::tdlhand KNExprSystem::tdlopen(const char* fname)
 {
 #ifndef _WIN32
@@ -1492,5 +1494,3 @@ void KNExprSystem::setupFunctions (const std::string& shobj)
   fp_parnames = reinterpret_cast<tp_sys_parnames>(tdlsym(handle, "sys_parnames"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_parnames(): ", error, ".");
 }
-
-#endif

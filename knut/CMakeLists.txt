@@ -6,14 +6,14 @@ PROJECT( KNUT )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "Knut" )
-SET( PACKAGE_VERSION "7" )
+SET( PACKAGE_VERSION "8" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
-SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2010, Robert Szalai")
+SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2013, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
 
-if(UNIX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
-endif()
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+get_filename_component(CMAKE_FIND_ROOT_TMP ${CMAKE_CXX_COMPILER} PATH)
+string(REPLACE "/" "\\" CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_TMP} )
 
 enable_language (Fortran)
 
@@ -154,6 +154,30 @@ ELSE( EXISTS ${OPENBLAS64} )
     MESSAGE( WARNING "Using reference BLAS. Please provide an optimised version." )
   ENDIF( EXISTS ${OPENBLAS} )
 ENDIF( EXISTS ${OPENBLAS64} )
+
+#------------------------------------------------------------------------------
+# Finding Qt
+#------------------------------------------------------------------------------
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
+find_package(Qt5Svg REQUIRED)
+
+IF(WIN32)
+  get_target_property(QtCore_location Qt5::Core LOCATION)
+  get_target_property(QtGui_location Qt5::Gui LOCATION)
+  get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
+  get_target_property(QtPrintSupport_location Qt5::PrintSupport LOCATION)
+  get_target_property(QtSvg_location Qt5::Svg LOCATION)
+  string(REPLACE "/" "\\" QtCoreLoc ${QtCore_location} )
+  string(REPLACE "/" "\\" QtGuiLoc ${QtGui_location} )
+  string(REPLACE "/" "\\" QtWidgetsLoc ${QtWidgets_location} )
+  string(REPLACE "/" "\\" QtPrintSupportLoc ${QtPrintSupport_location} )
+  string(REPLACE "/" "\\" QtSvgLoc ${QtSvg_location} )
+  get_filename_component(QtCorePath_TMP ${QtCore_location} PATH)
+  string(REPLACE "/" "\\" QtCorePath ${QtCorePath_TMP} )
+ENDIF(WIN32)
 
 #------------------------------------------------------------------------------
 # Writing the generated files
