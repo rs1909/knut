@@ -183,7 +183,7 @@ void plotWindow::initPlot(const KNDataFile* mat)
 {
   if (mat == 0) { std::cout << "Can't set data\n"; return; }
 //  data = mat;
-  mat->lock();
+  mat->lockRead();
   QFileInfo fi(QString::fromStdString(mat->getFileName()));
   if (fi.isSymLink()) fi = QFileInfo(fi.symLinkTarget());
   dataFileInfo = fi;
@@ -255,14 +255,14 @@ void plotWindow::addPlot(const KNDataFile* data)
   if (data)
   {
 //     std::cout << "plotWindow::addPlot 1\n";
-    data->lock();
+    data->lockRead();
     QFileInfo fi(QString::fromStdString(data->getFileName()));
     data->unlock();
     if (fi.isSymLink()) fi = QFileInfo(fi.symLinkTarget());
     if (dataFileInfo != fi) return; // exit if not the same file as before
 //     std::cout << "plotWindow::addPlot 2\n";
 
-    data->lock();
+    data->lockRead();
     // make sure that the data is consistent
     const_cast<KNDataFile*>(data)->initHeaders();
     if (!data->isTorus())
@@ -349,7 +349,7 @@ void plotWindow::exportSvg()
 void plotWindow::updatePlot(const KNDataFile* data)
 {
 //   std::cout << "plotWindow::updatePlot\n";
-  data->lock();
+  data->lockRead();
   plotdata.updatePlot(data);
   data->unlock();
   emit updated();

@@ -610,7 +610,7 @@ void KNAbstractPeriodicSolution::findAngle()
 void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, size_t n)
 {
 //  std::cout << "DAT " << &data << "\n";
-  data.lock();
+  data.lockWrite();
   data.setNTrivMul(0, nTrivMulLP);
   data.setNTrivMul(1, nTrivMulPD);
   data.setNTrivMul(2, nTrivMulNS);
@@ -627,7 +627,7 @@ void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, size
 void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, size_t n)
 {
   std::ostream& out = outStream();
-  data.lock();
+  data.lockRead();
   KNVector msh(data.getNInt() + 1);
   P_ERROR_X1(data.getNPar() == VarToIndex(VarEnd,NPAR), "Wrong number of parameters in the input MAT file.");
   data.getPar(n, par);

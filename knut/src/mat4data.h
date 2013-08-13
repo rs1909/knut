@@ -18,6 +18,8 @@
 // HANDLE is defined here
 #ifdef _WIN32
 #  include <windows.h>
+#else
+#  include <fcntl.h>
 #endif
 
 // for the correct integer size
@@ -41,7 +43,8 @@ class KNDataFile
     // unmaps the memory, truncates the file if necessary, closes the file
     virtual ~KNDataFile();
     
-    virtual void lock() const;
+    virtual void lockRead() const;
+    virtual void lockWrite() const;
     virtual void unlock() const;
 
     const std::string& getFileName() const { return matFileName; }
@@ -271,6 +274,7 @@ class KNDataFile
     size_t filesize;
 #else
     int    file;
+    struct flock fileLock;
 #endif
     const std::string matFileName;
     void  *address;

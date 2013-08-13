@@ -42,21 +42,38 @@ static int32_t byte_order()
 
 #ifndef _WIN32
 
-void KNDataFile::lock() const
+void static __filelock (int fid, struct flock* fl, short type)
+{
+  fl->l_type = type;
+  fl->l_whence = SEEK_SET;
+  fl->l_start = 0;
+  fl->l_len = 0;
+  if (fcntl(fid, F_SETLKW, fl) != 0) std::cerr<<"Error locking " << strerror(errno) << "\n";
+}
+
+void KNDataFile::lockRead() const
 {
 //  std::cout<<"L " << matFileName << "\n";
-  if (flock(file, LOCK_EX) != 0) std::cerr<<"Error locking\n";
+  __filelock (file, const_cast<struct flock*>(&fileLock), F_RDLCK);
+}
+
+void KNDataFile::lockWrite() const
+{
+//  std::cout<<"L " << matFileName << "\n";
+  __filelock (file, const_cast<struct flock*>(&fileLock), F_WRLCK);
 }
 
 void KNDataFile::unlock() const
 {
 //  std::cout<<"U " << matFileName << "\n";
-  if (flock(file, LOCK_UN) != 0) std::cerr<<"Error locking\n";
+  struct flock* fl = const_cast<struct flock*>(&fileLock);
+  fl->l_type = F_UNLCK;
+  if (fcntl(file, F_SETLK, &fileLock) != 0) std::cerr<<"Error unlocking "<< strerror(errno) << "\n";
 }
 
 #else
 
-void KNDataFile::lock() const
+void KNDataFile::lockRead () const
 {
   // it is opened synchronous, so LockFileEx will wait until the lock is acquired
 //   std::cout << "Trying to Lock " << matFileName <<"\n"; std::cout.flush();
@@ -66,6 +83,11 @@ void KNDataFile::lock() const
   BOOL res = LockFileEx(file, LOCKFILE_EXCLUSIVE_LOCK, 0, filesize & 0xffffffff, filesize >> 32, const_cast<OVERLAPPED*>(&fileOverlapped));
   if( res != TRUE ) 
     P_MESSAGE3("MAT file '", matFileName, "' cannot be locked.");
+}
+
+void KNDataFile::lockWrite () const
+{
+  lockRead ();
 }
 
 void KNDataFile::unlock() const
@@ -306,7 +328,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   address = mmapFileWrite(file, mapHandle, fileName, size);
 #endif
 
-  lock();
+  lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -422,7 +444,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
 #else
   address = mmapFileWrite(file, mapHandle, fileName, size);
 #endif
-  lock();
+  lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -473,7 +495,7 @@ void KNDataFile::condenseData()
   // condense the fields so that it is only the size of npoints, where it counts
   if (wperm)
   {
-    lock();
+    lockWrite();
     const size_t npoints = getNPoints();
     if (!torus)
     {
@@ -551,7 +573,7 @@ void KNDataFile::openReadOnly(const std::string& fileName)
 #else
   address = mmapFileRead(file, mapHandle, fileName, size);
 #endif
-  lock();
+  lockRead();
   initHeaders();
 //   std::cout << "mat4data address RD " << address << "\n";
   unlock();
