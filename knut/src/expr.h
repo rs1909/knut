@@ -345,10 +345,12 @@ public:
     if(root != nullptr)
     {
       Node* deri = root->derivative (nd);
+//      Node* deri = root->copy ();
       deri -> optimize (&deri);
       ex.fromNode (deri);
     }
   }
+  void optimize () { if (root != nullptr) root -> optimize (&root); }
   void print (std::ostream& out) const { if (root != nullptr) root -> print (out); }
   Node* copy () const { if(root != nullptr) return root -> copy (); else return nullptr; }
   void stackCount (size_t& max_stack) const { if(root != nullptr) root -> stackCount (0, max_stack); }

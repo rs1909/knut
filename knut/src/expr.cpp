@@ -690,7 +690,9 @@ Node* NodePower::derivative (const Node* var) const
   s2 -> addArgument (1, t2, 1.0);
   t3 -> addArgument (0, pw, 1.0, false);
   t3 -> addArgument (1, s2, 1.0, false);
-  return t3;
+  Node* t4 = t3;
+  t4 -> optimize (&t4);
+  return t4;
 }
 
 void NodePower::optimize (Node** parent) 
@@ -1057,19 +1059,6 @@ void NodeFunction::specialize (NodeFunction** parent)
 
 void NodeFunction::optimize (Node** parent)
 {
-  bool isnum = true;
-  for (size_t k=0; k<args.size(); k++) 
-  {
-    args[k]->optimize (&args[k]);
-    if (args[k]->type != TokenType::Number) isnum = false;
-  }
-  // TODO
-  // if all are numbers -> evaluate
-  if (isnum)
-  {
-//       int res;
-//       static_cast<Node*>(this)->evaluate (&res, std::vector<const int*>(1), std::vector<int>(1));
-  }
   // replace power with NodePower
   if (name == "pow")
   {
@@ -1078,6 +1067,24 @@ void NodeFunction::optimize (Node** parent)
     pw -> addArgument (1, args[1]);
     delete (*parent);
     (*parent) = pw;
+    return;
+  }
+  bool isnum = true;
+  for (size_t k=0; k<args.size(); k++) 
+  {
+    args[k]->optimize (&args[k]);
+    if (args[k]->type != TokenType::Number) isnum = false;
+  }
+  // if all are numbers -> evaluate
+  if (isnum)
+  {
+    std::vector<double> stack (args.size()+1, 0.0);
+    std::vector<double> var;
+    std::vector<double> par;
+    this->evaluate (stack, 0, var, par);
+    NodeNumber* num = new NodeNumber (stack[0]);
+    delete (*parent);
+    (*parent) = num;
     return;
   }
   if (*parent == this)
@@ -1222,7 +1229,7 @@ void NodeTimes::optimize (Node** parent)
     {
       newsmul *= -1.0;
       newargs.push_back (neg->getChild (0));
-      newdivide.push_back (child->divide[k]);
+      newdivide.push_back (false);
       delete neg;
       continue;
     }
@@ -1376,7 +1383,9 @@ Node* NodeTimes::derivative (const Node* var) const
     }
     root -> addArgument (k, cp, 1.0);
   }
-  return root;
+  Node* res = root;
+  res -> optimize (&res);
+  return res;
 }
 
 Node* NodeFunction::derivative (const Node* var) const
@@ -1799,6 +1808,13 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
   size_t k = 0;
   while (k < len)
   {
+    // ignore comments
+    if (str[k] == '#')
+    {
+      while (str[k] != '\n') k++;
+      continue;
+    }
+    // ignore space
     if (findCharType (str[k]) == CharType::Space)
     {
       k++;
@@ -2617,6 +2633,7 @@ void Expression::knutSplit (
     }
   }
   
+  var_numval.resize (var_name.size()*(1+unique_delays.size()));
   // fill up the delays
   delayExpr.resize (unique_delays.size());
   for (size_t r = 0; r < unique_delays.size(); r++)
@@ -2631,6 +2648,11 @@ void Expression::knutSplit (
     delay -> replaceSymbol (*time[0], *time_var, &delay);
     // take over ownership
     delayExpr[r].fromNode (delay);
+    // evaluate to find undefined symbols
+    size_t stmax = 0;
+    delayExpr[r].stackCount (stmax);
+    std::vector<double> stack (stmax);
+    delayExpr[r].evaluate (stack, var_numval, parInit);
   }
 
   // render delay into identity
@@ -2665,6 +2687,11 @@ void Expression::knutSplit (
   for (size_t q = 0; q < var_dot.size(); q++)
   {
     varDotExpr[q].fromNode (var_dot[q]);
+    // evaluate to find undefined symbols
+    size_t stmax = 0;
+    varDotExpr[q].stackCount (stmax);
+    std::vector<double> stack (stmax);
+    varDotExpr[q].evaluate (stack, var_numval, parInit);
   }
 
   // cleaning up the variables

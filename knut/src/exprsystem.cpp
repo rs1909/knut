@@ -82,6 +82,9 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 {
   std::string vfName;
   expr.fromString (vfexpr);
+  expr.print (std::cout);
+  std::cout << "END EX\n";
+  std::cout.flush ();
   try
   {
     expr.knutSplit (vfName, varName, varDotExpr, varInit, varMass, delayExpr, parName, parInit );
@@ -91,6 +94,15 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     std::cout << ex.str();
   }
   
+  // print everything to see if there's an error
+  std::cout << "NAME = "<< vfName << "\n";
+  for (std::string& it : varName ) std::cout << "VAR = " << it << "\n";
+  for (ExpTree::Expression& it : varDotExpr ) { it.optimize (); std::cout << "DOT = "; it.print (std::cout); std::cout << "\n"; }
+  for (ExpTree::Expression& it : varInit ) { it.optimize (); std::cout << "INIT = "; it.print (std::cout); std::cout << "\n"; }
+  for (double& it : varMass ) std::cout << "MASS = " << it << "\n";
+  for (ExpTree::Expression& it : delayExpr ) { it.optimize ();std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
+  for (std::string& it : parName ) std::cout << "PAR = " << it << "\n";
+  for (double& it : parInit ) std::cout << "PARINIT = " << it << "\n";
   // no name was provided
   if (vfName.empty ()) trycompile = false;
   
@@ -141,42 +153,43 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     }
   }  
   // Hessian
-  varDot_xx.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1));
-  // Matrix - Vector multiplication with the Jacobian & taking the derivative
-  std::vector<NodeVar*> newvar(varDotExpr.size()*(delayExpr.size() + 1));
-  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-  {
-    newvar[p] = new NodeVar(1 + p + varDotExpr.size()*(delayExpr.size() + 1));
-  }
-  
-  for (size_t q = 0; q < varDotExpr.size(); q++)
-  {
-    NodeAdd* ta = new NodeAdd(varDotExpr.size()*(delayExpr.size() + 1));
-    for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-    {
-      NodeTimes* tm = new NodeTimes(2);
-      tm -> addArgument (0, varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)].copy(), 1.0, false);
-      tm -> addArgument (1, newvar[p] -> copy(), 1.0, false);
-      ta -> addArgument (p, tm, 1.0);
-    }
-    Node* opta = ta;
-    ta = 0;
-    opta -> optimize (&opta);
-    for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
-    {
-      NodeVar vid(1 + k);
-      Node* deri = opta -> derivative (&vid);
-      deri -> optimize (&deri);
-      varDot_xx[k + q*varDotExpr.size()*(delayExpr.size() + 1)].fromNode (deri);
-    }
-    opta -> deleteTree ();
-    delete opta;
-  }
-  // cleaning up
-  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-  {
-    delete newvar[p];
-  }
+//  varDot_xx.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1));
+//  // Matrix - Vector multiplication with the Jacobian & taking the derivative
+//  std::vector<NodeVar*> newvar(varDotExpr.size()*(delayExpr.size() + 1));
+//  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
+//  {
+//    newvar[p] = new NodeVar(1 + p + varDotExpr.size()*(delayExpr.size() + 1));
+//  }
+//  
+//  for (size_t q = 0; q < varDotExpr.size(); q++)
+//  {
+//    NodeAdd* ta = new NodeAdd(varDotExpr.size()*(delayExpr.size() + 1));
+//    for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
+//    {
+//      NodeTimes* tm = new NodeTimes(2);
+//      tm -> addArgument (0, varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)].copy(), 1.0, false);
+//      tm -> addArgument (1, newvar[p] -> copy(), 1.0, false);
+//      ta -> addArgument (p, tm, 1.0);
+//    }
+//    Node* opta = ta;
+//    ta = 0;
+//    opta -> optimize (&opta);
+//    for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
+//    {
+//      NodeVar vid(1 + k);
+//      Node* deri = opta -> derivative (&vid);
+////      Node* deri = opta -> copy ();
+//      deri -> optimize (&deri);
+//      varDot_xx[k + q*varDotExpr.size()*(delayExpr.size() + 1)].fromNode (deri);
+//    }
+//    opta -> deleteTree ();
+//    delete opta;
+//  }
+//  // cleaning up
+//  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
+//  {
+//    delete newvar[p];
+//  }
 
   // hessian original interpretation (INEFFICIENT)
   varDot_hess.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1));
@@ -203,11 +216,12 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
       }
       Node* opta = ta;
       ta = 0;
-      opta -> optimize (&opta);
+//      opta -> optimize (&opta);
       for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
       {
         NodeVar vid(1 + k);
         Node* deri = opta -> derivative (&vid);
+//        Node* deri = opta -> copy ();
         deri -> optimize (&deri);
         size_t idx = k + l*varDotExpr.size()*(delayExpr.size() + 1) + 
            q*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1);
