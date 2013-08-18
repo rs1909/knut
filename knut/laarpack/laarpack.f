@@ -4198,9 +4198,9 @@ c     | Check for further orthogonalization. |
 c     %--------------------------------------%
 c
       if (msglvl .gt. 2) then
-          call dvout (logfil, 1, rnorm0, ndigit, 
+          call dvoutscalar (logfil, 1, rnorm0, ndigit, 
      &                '_getv0: re-orthonalization ; rnorm0 is')
-          call dvout (logfil, 1, rnorm, ndigit, 
+          call dvoutscalar (logfil, 1, rnorm, ndigit, 
      &                '_getv0: re-orthonalization ; rnorm is')
       end if
 c
@@ -4231,7 +4231,7 @@ c
    50 continue
 c
       if (msglvl .gt. 0) then
-         call dvout (logfil, 1, rnorm, ndigit,
+         call dvoutscalar (logfil, 1, rnorm, ndigit,
      &        '_getv0: B-norm of initial / restarted starting vector')
       end if
       if (msglvl .gt. 3) then
@@ -17048,9 +17048,9 @@ c     %--------------------------------------------------------------%
  1000 continue
 c
          if (msglvl .gt. 1) then
-            call ivout (logfil, 1, j, ndigit, 
+            call ivoutscalar (logfil, 1, j, ndigit, 
      &                  '_naitr: generating Arnoldi vector number')
-            call dvout (logfil, 1, rnorm, ndigit, 
+            call dvoutscalar (logfil, 1, rnorm, ndigit, 
      &                  '_naitr: B-norm of the current residual is')
          end if
 c 
@@ -17070,7 +17070,7 @@ c           | basis and continue the iteration.                 |
 c           %---------------------------------------------------%
 c
             if (msglvl .gt. 0) then
-               call ivout (logfil, 1, j, ndigit,
+               call ivoutscalar (logfil, 1, j, ndigit,
      &                     '_naitr: ****** RESTART AT STEP ******')
             end if
 c 
@@ -17398,7 +17398,7 @@ c
          end if
 c
          if (msglvl .gt. 0 .and. iter .gt. 0) then
-            call ivout (logfil, 1, j, ndigit,
+            call ivoutscalar (logfil, 1, j, ndigit,
      &           '_naitr: Iterative refinement for Arnoldi residual')
             if (msglvl .gt. 2) then
                 xtemp(1) = rnorm
@@ -17783,11 +17783,11 @@ c
          sigmai = shifti(jj)
 c
          if (msglvl .gt. 2 ) then
-            call ivout (logfil, 1, jj, ndigit, 
+            call ivoutscalar (logfil, 1, jj, ndigit, 
      &               '_napps: shift number.')
-            call dvout (logfil, 1, sigmar, ndigit, 
+            call dvoutscalar (logfil, 1, sigmar, ndigit, 
      &               '_napps: The real part of the shift ')
-            call dvout (logfil, 1, sigmai, ndigit, 
+            call dvoutscalar (logfil, 1, sigmai, ndigit, 
      &               '_napps: The imaginary part of the shift ')
          end if
 c
@@ -17852,9 +17852,9 @@ c
      &         tst1 = dlanhs( '1', kplusp-jj+1, h, ldh, workl )
             if( abs( h( i+1,i ) ).le.max( ulp*tst1, smlnum ) ) then
                if (msglvl .gt. 0) then
-                  call ivout (logfil, 1, i, ndigit, 
+                  call ivoutscalar (logfil, 1, i, ndigit, 
      &                 '_napps: matrix splitting at row/column no.')
-                  call ivout (logfil, 1, jj, ndigit, 
+                  call ivoutscalar (logfil, 1, jj, ndigit, 
      &                 '_napps: matrix splitting with shift number.')
                   call dvout (logfil, 1, h(i+1,i), ndigit, 
      &                 '_napps: off diagonal element.')
@@ -17868,9 +17868,9 @@ c
    40    continue
 c
          if (msglvl .gt. 2) then
-             call ivout (logfil, 1, istart, ndigit, 
+             call ivoutscalar (logfil, 1, istart, ndigit, 
      &                   '_napps: Start of current block ')
-             call ivout (logfil, 1, iend, ndigit, 
+             call ivoutscalar (logfil, 1, iend, ndigit, 
      &                   '_napps: End of current block ')
          end if
 c
@@ -18142,7 +18142,7 @@ c
      &        '_napps: sigmak = (e_{kev+p}^T*Q)*e_{kev}')
          call dvout (logfil, 1, h(kev+1,kev), ndigit,
      &        '_napps: betak = e_{kev+1}^T*H*e_{kev}')
-         call ivout (logfil, 1, kev, ndigit, 
+         call ivoutscalar (logfil, 1, kev, ndigit, 
      &               '_napps: Order of the final Hessenberg matrix ')
          if (msglvl .gt. 2) then
             call dmout (logfil, kev, kev, h, ldh, ndigit,
@@ -18552,7 +18552,7 @@ c
          iter = iter + 1
 c
          if (msglvl .gt. 0) then
-            call ivout (logfil, 1, iter, ndigit, 
+            call ivoutscalar (logfil, 1, iter, ndigit, 
      &           '_naup2: **** Start of major iteration number ****')
          end if
 c 
@@ -18565,9 +18565,9 @@ c
          np  = kplusp - nev
 c
          if (msglvl .gt. 1) then
-            call ivout (logfil, 1, nev, ndigit, 
+            call ivoutscalar (logfil, 1, nev, ndigit, 
      &     '_naup2: The length of the current Arnoldi factorization')
-            call ivout (logfil, 1, np, ndigit, 
+            call ivoutscalar (logfil, 1, np, ndigit, 
      &           '_naup2: Extend the Arnoldi factorization by')
          end if
 c
@@ -18599,7 +18599,7 @@ c
          update = .false.
 c
          if (msglvl .gt. 1) then
-            call dvout (logfil, 1, rnorm, ndigit, 
+            call dvoutscalar (logfil, 1, rnorm, ndigit, 
      &           '_naup2: Corresponding B-norm of the residual')
          end if
 c 
@@ -18842,7 +18842,7 @@ c
          end if              
 c     
          if (msglvl .gt. 0) then
-            call ivout (logfil, 1, nconv, ndigit, 
+            call ivoutscalar (logfil, 1, nconv, ndigit, 
      &           '_naup2: no. of "converged" Ritz values at this iter.')
             if (msglvl .gt. 1) then
                kp(1) = nev
@@ -18894,7 +18894,7 @@ c
          end if
 c
          if (msglvl .gt. 2) then 
-            call ivout (logfil, 1, np, ndigit, 
+            call ivoutscalar (logfil, 1, np, ndigit, 
      &                  '_naup2: The number of shifts to apply ')
             call dvout (logfil, np, ritzr, ndigit,
      &                  '_naup2: Real part of the shifts')
@@ -18960,7 +18960,7 @@ c
          cnorm = .false.
 c
          if (msglvl .gt. 2) then
-            call dvout (logfil, 1, rnorm, ndigit, 
+            call dvoutscalar (logfil, 1, rnorm, ndigit, 
      &      '_naup2: B-norm of residual for compressed factorization')
             call dmout (logfil, nev, nev, h, ldh, ndigit,
      &        '_naup2: Compressed upper Hessenberg matrix H')
@@ -19627,9 +19627,9 @@ c
       if (info .eq. 2) info = 3
 c
       if (msglvl .gt. 0) then
-         call ivout (logfil, 1, mxiter, ndigit,
+         call ivoutscalar (logfil, 1, mxiter, ndigit,
      &               '_naupd: Number of update iterations taken')
-         call ivout (logfil, 1, np, ndigit,
+         call ivoutscalar (logfil, 1, np, ndigit,
      &               '_naupd: Number of wanted "converged" Ritz values')
          call dvout (logfil, np, workl(ritzr), ndigit, 
      &               '_naupd: Real part of the final Ritz values')
@@ -20753,9 +20753,9 @@ c        | caused by incorrect passing of the dnaupd data.           |
 c        %-----------------------------------------------------------%
 c
          if (msglvl .gt. 2) then
-             call ivout(logfil, 1, numcnv, ndigit,
+             call ivoutscalar(logfil, 1, numcnv, ndigit,
      &            '_neupd: Number of specified eigenvalues')
-             call ivout(logfil, 1, nconv, ndigit,
+             call ivoutscalar(logfil, 1, nconv, ndigit,
      &            '_neupd: Number of "converged" eigenvalues')
          end if
 c
@@ -21427,8 +21427,8 @@ c
       tngets = tngets + (t1 - t0)
 c
       if (msglvl .gt. 0) then
-         call ivout (logfil, 1, kev, ndigit, '_ngets: KEV is')
-         call ivout (logfil, 1, np, ndigit, '_ngets: NP is')
+         call ivoutscalar (logfil, 1, kev, ndigit, '_ngets: KEV is')
+         call ivoutscalar (logfil, 1, np, ndigit, '_ngets: NP is')
          call dvout (logfil, kev+np, ritzr, ndigit,
      &        '_ngets: Eigenvalues of current H matrix -- real part')
          call dvout (logfil, kev+np, ritzi, ndigit,
@@ -26334,6 +26334,19 @@ c
 *     End of DTRSYL
 *
       END
+
+      SUBROUTINE DVOUTSCALAR ( LOUT, N, SX, IDIGIT, IFMT )
+*     ...
+*     ... SPECIFICATIONS FOR ARGUMENTS
+      CHARACTER*( * )    IFMT
+      INTEGER            IDIGIT, LOUT, N
+      DOUBLE PRECISION   SX
+*     ...
+*     ... SPECIFICATIONS FOR LOCAL VARIABLES
+      DOUBLE PRECISION   SXA(1)
+      SXA(1) = SX;
+      CALL DVOUT (LOUT, N, SXA, IDIGIT, IFMT)
+      END
 *-----------------------------------------------------------------------
 *  Routine:    DVOUT
 *
@@ -27540,6 +27553,17 @@ c
 *
 *     ==== End of IPARMQ ====
 *
+      END
+      SUBROUTINE IVOUTSCALAR (LOUT, N, IX, IDIGIT, IFMT)
+C     ...
+C     ... SPECIFICATIONS FOR ARGUMENTS
+      INTEGER    IX, N, IDIGIT, LOUT
+      CHARACTER  IFMT*(*)
+C     ...
+C     ... SPECIFICATIONS FOR LOCAL VARIABLES
+      INTEGER IXA(1)
+      IXA(1) = IX
+      CALL IVOUT (LOUT, N, IXA, IDIGIT, IFMT)
       END
 C-----------------------------------------------------------------------
 C  Routine:    IVOUT
