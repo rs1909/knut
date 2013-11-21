@@ -2494,6 +2494,24 @@ void Expression::knutSplit (
   }
 
   // Applying the macros to both parameters and variables
+  for (size_t p = 0; p < par_name.size(); p++)
+  {
+    // other params
+    for (size_t q = 0; q < par_name.size(); q++)
+    {
+      if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
+    }
+    // twice
+    for (size_t q = 0; q < par_name.size(); q++)
+    {
+      if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
+    }
+    for (size_t q = 0; q < macro.size (); q++)
+    {
+      par_value[p] -> replaceSymbol (*macro[q], &par_value[p]);
+    }
+  }
+
   for (size_t p = 0; p < macro.size(); p++)
   {
     for (size_t q = 0; q < macro.size(); q++)
@@ -2539,24 +2557,6 @@ void Expression::knutSplit (
     }
   }
   
-  for (size_t p = 0; p < par_name.size(); p++)
-  {
-    // other params
-    for (size_t q = 0; q < par_name.size(); q++)
-    {
-      if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
-    }
-    // twice
-    for (size_t q = 0; q < par_name.size(); q++)
-    {
-      if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
-    }
-    for (size_t q = 0; q < macro.size (); q++)
-    {
-      par_value[p] -> replaceSymbol (*macro[q], &par_value[p]);
-    }
-  }
-
   // fill up the parameter values
   parInit.resize (par_name.size());
   for (size_t p = 0; p < par_name.size(); p++)
