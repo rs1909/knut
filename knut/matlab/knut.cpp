@@ -26,11 +26,16 @@ extern "C"
 // just to make the compiler accept the header file
 #define __STDC_UTF_16__
 #include "mex.h"
-
-bool utIsInterruptPending();
-  
 }
-// #include "vf.h"
+
+#ifdef MATLAB_MEX_FILE
+extern "C" bool utIsInterruptPending();
+#else
+#include <octave/oct.h>
+#include <octave/unwind-prot.h>
+#endif
+
+#include "mxdata.h"
 
 static void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) 
 {
@@ -80,13 +85,6 @@ class KNMatlabConstants : public KNConstants
     mxArray * toMatlab();
 };
 
-// class KNMatlabVectorField : public VectorField
-// {
-// public:
-//   mxArray * toMatlab();
-//   void fromMatlab(const mxArray *);
-// };
-
 class KNMatlabContinuation : public KNAbstractContinuation
 {
   public:
@@ -97,11 +95,15 @@ class KNMatlabContinuation : public KNAbstractContinuation
       mexPrintf (screenout.str().c_str());
       charsPrinted += screenout.str().size(); screenout.str("");
       mexEvalString("drawnow");
+    #ifdef MATLAB_MEX_FILE
       if (utIsInterruptPending() && !getStopFlag()) /* check for a Ctrl-C event */
       {
         setStopFlag (true);
         mexPrintf ("Ctrl-C Detected. END\n\n");
       }
+    #else
+      OCTAVE_QUIT;
+    #endif
     }
     virtual void storeCursor () { charsPrinted = 0; }
     virtual void clearLastLine ()
@@ -118,9 +120,9 @@ class KNMatlabContinuation : public KNAbstractContinuation
     void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
     {
       delete output;
-      output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
+      output = KNMatlabData::createDataStatic (t, ndim, npar, prms);
     }
-    KNDataFile& data () { return *output; }
+    KNMatlabData& data () { return *output; }
     void deleteData () { /*delete output; output = 0;*/ }
     void dataUpdated () 
     {
@@ -129,7 +131,7 @@ class KNMatlabContinuation : public KNAbstractContinuation
     }
     bool validData () { return output != nullptr; }
   private:
-    KNDataFile* output;
+    KNMatlabData* output;
     size_t charsPrinted;
 };
 
@@ -155,7 +157,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 {  
   static KNMatlabConstants* params = nullptr;
   static KNMatlabContinuation* comp = nullptr;
-  static std::string* vfString = nullptr;
+//   static std::string* vfString = nullptr;
   try {
 //     P_ERROR_X1(nlhs == 0, "does not provide output.");
     P_ERROR_X1(nrhs > 0, "at least a command.");
@@ -168,26 +170,28 @@ void mexFunction( int nlhs, mxArray *plhs[],
       if (!params) params = new KNMatlabConstants;
       else mexPrintf ("Not a new instance.\n");
       params->fromMatlab (prhs[1]);
-//       delete params;
     } else if (cmd.compare("get") == 0)
     {
       if (params)
       {
-// 	mexPrintf ("Getting someting.\n");
-	P_ERROR_X1(nlhs == 1, "output struct is required");
-// 	mexPrintf ("ptr b %d.\n", plhs[0]);
-	mxDestroyArray(plhs[0]);
-	plhs[0] = params->toMatlab();
-// 	mexPrintf ("ptr e %d.\n", plhs[0]);
+        P_ERROR_X1(nlhs == 1, "output struct is required");
+        mxDestroyArray(plhs[0]);
+        plhs[0] = params->toMatlab();
       }
     } else if (cmd.compare("run") == 0)
     {
       P_ERROR_X1 (params != 0, "No constants are specified");
+      P_ERROR_X1(nlhs == 1, "output struct is required");
       if (!comp) comp = new KNMatlabContinuation;
       else mexPrintf ("Not the first computation.\n");
-      KNExprSystem* sys = new KNExprSystem (params->getSystem ());
-//       comp.run(sys, params);
-      mexPrintf ("%s\n", params->getSysName ().c_str());
+      KNExprSystem* sys = nullptr;
+      if (params->getSystem ().empty())
+      {
+        sys = new KNSystem (params->getSysName (), false);
+      } else
+      {
+        sys = new KNExprSystem (params->getSystem (), false);
+      }
       std::string tmp;
       sys->toString (tmp);
       // making matlab string
@@ -198,7 +202,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
       ReplaceStringInPlace (tmp, "\n", "'.""..\n'");
       mexPrintf ("%s\n", tmp.c_str());
       // E
-      comp -> run (sys, params);
+      KNMatlabData* inputData = 0;
+      if (nrhs == 2) inputData = new KNMatlabData (prhs[1]);
+      comp -> run (sys, params, inputData);
+      if (comp -> validData ()) plhs[0] = comp -> data() . getData();
       delete sys;
     } else if (cmd.compare("cfile") == 0)
     {
@@ -217,112 +224,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
           plhs[0] = mxCreateDoubleScalar (comp -> data() . getNCols());
         }
       }
-    } else if (cmd.compare("par") == 0)
-    {
-      // getting the parameter values
-      if (comp)
-      {
-        if (comp -> validData ())
-        {
-          if (nrhs == 2)
-          {
-            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
-            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
-            const size_t npar = comp -> data() . getNPar ();
-            plhs[0] = mxCreateDoubleMatrix(1, npar, mxREAL);
-            double* data = mxGetPr(plhs[0]);
-            for (size_t k = 0; k < npar; k++)
-            {
-              data [k] = comp -> data() . getPar (idx, k);
-            }
-          }
-        }
-      }
-    } else if (cmd.compare("sol") == 0)
-    {
-      // getting the parameter values
-      if (comp)
-      {
-        if (comp -> validData ())
-        {
-          if (nrhs == 2)
-          {
-            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
-            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
-            const size_t ndim = comp -> data() . getNDim ();
-            const size_t nint = comp -> data() . getNInt ();
-            const size_t ndeg = comp -> data() . getNDeg ();
-            plhs[0] = mxCreateNumericMatrix (ndim, nint*ndeg + 1, mxDOUBLE_CLASS, mxREAL);
-            double* data = mxGetPr(plhs[0]);
-            for (size_t p = 0; p < nint*ndeg + 1; p++)
-            {
-              for (size_t q = 0; q < ndim; q++)
-              {
-                data [q + p*ndim] = comp -> data() . getProfile (idx, q, p);
-              }
-            }
-          }
-        }
-      }
-    } else if (cmd.compare("mesh") == 0)
-    {
-      // getting the parameter values
-      if (comp)
-      {
-        if (comp -> validData ())
-        {
-          if (nrhs == 2)
-          {
-            size_t idx = static_cast<size_t> (mxGetScalar (prhs[1])) - 1;
-            P_ERROR_X1(idx < comp -> data() . getNCols(), "index out of range.");
-            KNVector elemRef (false), meshRef (false);
-            comp -> data() . getElemRef (idx, elemRef);
-            comp -> data() . getMeshRef (idx, meshRef);
-            const size_t nint = meshRef.size () - 1;
-            const size_t ndeg = elemRef.size () - 1;
-            plhs[0] = mxCreateNumericMatrix (1, nint*ndeg + 1, mxDOUBLE_CLASS, mxREAL);
-            double* data = mxGetPr(plhs[0]);
-            for (size_t p = 0; p < nint; p++)
-            {
-              for (size_t q = 0; q < ndeg; q++)
-              {
-                data [q + p*ndeg] = meshRef(p) + elemRef(q)*(meshRef(p + 1) - meshRef(p));
-              }
-            }
-            data [nint*ndeg] = 1.0;
-          }
-        }
-      }
     }
-//     else if (cmd.compare("system") == 0)
-//     {
-//       if (params)
-//       {
-// // 	P_ERROR_X1(nlhs == 1, "output struct is required");
-// //         KNMatlabVectorField vf;
-// // 	vf.ReadXML(params->getSysName());
-// // 	int pserr = vf.ProcessSymbols();
-// // 	plhs[0] = vf.toMatlab();
-//       }
-//     } else if (cmd.compare("load") == 0)
-//     {
-//       P_ERROR_X1(nrhs == 2, "output struct is required");
-//       std::string vfexpr;
-//       getText(prhs[1], vfexpr);
-//       KNExprSystem vf (vfexpr, false);
-//       std::string tmp;
-//       vf.toString (tmp);
-//       mexPrintf ("%s\n", tmp.c_str());
-//     }
   }
   catch (KNException ex)
   {
     std::ostringstream err;
     KNAbstractContinuation::printException (err, ex);
     mexErrMsgIdAndTxt ("MATLAB:Knut", err.str().c_str());
-//     std::cout <<"MATLAB:Knut" << err.str().c_str() << "\n";
     delete params;
-//     exit(-1);
   }
 }
 
@@ -378,11 +287,10 @@ bool KNMatlabConstantsReader::getStringListField(const char* field, std::vector<
       for (size_t k = 0; k < len_cell; k++)
       {
         mxArray* celem = mxGetCell(elem, k);
-	if (celem)
-	{
-	  getText(celem, out[k]);
-// 	  mexPrintf ("%s[%d] is being set to %s\n", field, k, out[k].c_str());
-	}
+        if (celem)
+        {
+          getText(celem, out[k]);
+        }
       }
       return true;
     }
@@ -402,11 +310,10 @@ bool KNMatlabConstantsReader::getIndexListField(const char* field, std::vector<s
       for (size_t k = 0; k < len_cell; k++)
       {
         mxArray* celem = mxGetCell(elem, k);
-	if (celem)
-	{
-	  out[k] = static_cast<size_t>(mxGetScalar(celem));
-// 	  mexPrintf ("%s[%d] is being set to %lf\n", field, k, out[k]);
-	}
+        if (celem)
+        {
+          out[k] = static_cast<size_t>(mxGetScalar(celem));
+        }
       }
       return true;
     }
@@ -446,7 +353,7 @@ void KNMatlabConstantsWriter::setIndexField(const char* fieldname, size_t val)
 void KNMatlabConstantsWriter::setStringListField(const char* fieldname, const std::vector<std::string>& vec)
 {
   mxArray* cell = mxCreateCellMatrix(1, vec.size());
-  for (int k = 0; k < vec.size(); k++)
+  for (size_t k = 0; k < vec.size(); k++)
   {
     mxArray *el = mxCreateString(vec[k].c_str());
     mxSetCell(cell, k, el);
@@ -458,7 +365,7 @@ void KNMatlabConstantsWriter::setStringListField(const char* fieldname, const st
 void KNMatlabConstantsWriter::setIndexListField(const char* fieldname, const std::vector<size_t>& vec)
 {
   mxArray* cell = mxCreateCellMatrix(1, vec.size());
-  for (int k = 0; k < vec.size(); k++)
+  for (size_t k = 0; k < vec.size(); k++)
   {
     mxArray *el = mxCreateDoubleScalar(vec[k]);
     mxSetCell(cell, k, el);
@@ -488,189 +395,3 @@ mxArray * KNMatlabConstants::toMatlab()
   write(writer);
   return writer.write();
 }
-
-class fieldWriter
-{
-public:
-  void addField(const char *field, mxArray *src)
-  {
-    if (src)
-    {
-      fieldname.push_back(field);
-      source.push_back(src);
-    }
-  }
-  mxArray *write()
-  {
-    if (fieldname.size() > 0)
-    {
-      const char * fields[fieldname.size()];
-      for (size_t k = 0; k < fieldname.size(); k++) fields[k] = fieldname[k];
-      mxArray *res = mxCreateStructMatrix(1, 1, fieldname.size(), fields);
-      for (size_t k = 0; k < fieldname.size(); k++) mxSetField(res, 0, fieldname[k], source[k]);
-      return res;
-    }
-    return 0;
-  }
-private:
-  std::vector<const char *> fieldname;
-  std::vector<mxArray *> source;
-};
-
-static void makeCellField(fieldWriter& writer, const char *field, size_t sz, std::function<const std::string& (size_t)> func)
-{
-  mxArray* cell = mxCreateCellMatrix(1, sz);
-  bool nonempty = false;
-  for (size_t k = 0; k < sz; k++) { mxSetCell(cell, k, mxCreateString(func(k).c_str())); nonempty |= !func(k).empty(); }
-  if (nonempty) writer.addField(field, cell);
-}
-
-// mxArray * KNMatlabVectorField::toMatlab()
-// {
-//   fieldWriter writer;
-//     
-//   fieldWriter name;
-//   makeCellField(name, "name", 1, [this] (size_t k) { return this->Name(); } );
-//   makeCellField(name, "description", 1, [this] (size_t k) { return this->Description(); } );
-//   makeCellField(name, "independentvariable", 1, [this] (size_t k) { return this->IndependentVariable; } );
-//   writer.addField( "name", name.write() );
-//   
-//   fieldWriter constant_writer;
-//   makeCellField(constant_writer, "name", Constants.size(), [this] (size_t k) { return this->Constants[k]->Name(); } );
-//   makeCellField(constant_writer, "value", Constants.size(), [this] (size_t k) { return this->Constants[k]->Value(); } );
-//   makeCellField(constant_writer, "description", Constants.size(), [this] (size_t k) { return this->Constants[k]->Description(); } );
-//   makeCellField(constant_writer, "latex", Constants.size(), [this] (size_t k) { return this->Constants[k]->Latex(); } );
-//   writer.addField( "constant", constant_writer.write() );
-//     
-//   fieldWriter parameter;
-//   makeCellField(parameter, "name", Parameters.size(), [this] (size_t k) { return this->Parameters[k]->Name(); } );
-//   makeCellField(parameter, "defaultvalue", Parameters.size(), [this] (size_t k) { return this->Parameters[k]->DefaultValue(); } );
-//   makeCellField(parameter, "description", Parameters.size(), [this] (size_t k) { return this->Parameters[k]->Description(); } );
-//   makeCellField(parameter, "latex", Parameters.size(), [this] (size_t k) { return this->Parameters[k]->Latex(); } );
-//   writer.addField( "parameter", parameter.write() );
-//   
-//   fieldWriter expression;
-//   makeCellField(expression, "name", Expressions.size(), [this] (size_t k) { return this->Expressions[k]->Name(); } );
-//   makeCellField(expression, "formula", Expressions.size(), [this] (size_t k) { return this->Expressions[k]->Formula(); } );
-//   makeCellField(expression, "description", Expressions.size(), [this] (size_t k) { return this->Expressions[k]->Description(); } );
-//   makeCellField(expression, "latex", Expressions.size(), [this] (size_t k) { return this->Expressions[k]->Latex(); } );
-//   writer.addField( "expression", expression.write() );
-// 
-//   fieldWriter statevariable;
-//   makeCellField(statevariable, "name", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->Name(); } );
-//   makeCellField(statevariable, "formula", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->Formula(); } );
-//   makeCellField(statevariable, "description", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->Description(); } );
-//   makeCellField(statevariable, "latex", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->Latex(); } );
-//   makeCellField(statevariable, "periodfrom", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->PeriodicFrom(); } );
-//   makeCellField(statevariable, "periodto", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->PeriodicTo(); } );
-//   makeCellField(statevariable, "defaultinitialcondition", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->DefaultInitialCondition(); } );
-//   makeCellField(statevariable, "defaulthistory", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->DefaultHistory(); } );
-//   makeCellField(statevariable, "mass", StateVariables.size(), [this] (size_t k) { return this->StateVariables[k]->Mass(); } );
-//   writer.addField( "statevariable", statevariable.write() );
-//   
-//   fieldWriter function;
-//   makeCellField(function, "name", Functions.size(), [this] (size_t k) { return this->Functions[k]->Name(); } );
-//   makeCellField(function, "formula", Functions.size(), [this] (size_t k) { return this->Functions[k]->Formula(); } );
-//   makeCellField(function, "description", Functions.size(), [this] (size_t k) { return this->Functions[k]->Description(); } );
-//   writer.addField( "function", function.write() );
-//   
-//   return writer.write();
-// }
-
-template<class T> static void resize_vec(std::vector<T*>& vec, size_t sz )
-{
-  const size_t szp = vec.size();
-  for (int k = sz; k < vec.size(); k++) delete vec[k];
-  if (szp != sz) vec.resize(sz);
-  for (int k = szp; k < sz; k++) vec[k] = new T("");
-}
-
-static size_t getCellField(mxArray* source, const char *field, 
-			   std::function<void (size_t k)> rsfunc, 
-			   std::function<void (size_t k, const char *)> func)
-{
-  if (source)
-  {
-    mxArray* cell = mxGetField(source, 0, field);
-    if ((cell != 0) && (mxIsCell(cell)))
-    {
-      const size_t len = mxGetM(cell)*mxGetN(cell);
-      if (rsfunc) rsfunc(len);
-      for (size_t k = 0; k < len; k++)
-      {
-	mxArray* elem = mxGetCell(cell, k);
-	if (elem)
-	{
-	  const size_t lens = mxGetM(elem)*mxGetN(elem);
-	  char * str = new char[lens+2];
-	  int c = mxGetString(elem, str, lens+1);
-	  if (!c) func(k, str);
-	  delete[] str;
-	}
-      }
-      return len;
-    }
-  }
-  return 0;
-}
-
-// void KNMatlabVectorField::fromMatlab(const mxArray *vf)
-// {
-//   mxArray *elem = mxGetField(vf, 0, "name");
-//   if (elem) 
-//   {
-//     getCellField(elem, "name", 0, [this] (size_t k, const char * str) { this->Name(str); } );
-//     getCellField(elem, "description", 0, [this] (size_t k, const char * str) { this->Description(str); } );
-//     getCellField(elem, "independentvariable", 0, [this] (size_t k, const char * str) { this->IndependentVariable = str; } );
-//   }
-//   
-//   elem = mxGetField(vf, 0, "constant");
-//   if (elem)
-//   {
-//     getCellField(elem, "name", [this](size_t k){resize_vec<Constant>(this->Constants,k);}, [this] (size_t k, const char * str) { this->Constants[k]->Name(str); } );
-//     getCellField(elem, "value", [this](size_t k){resize_vec<Constant>(this->Constants,k);}, [this] (size_t k, const char * str) { this->Constants[k]->Value(str); } );
-//     getCellField(elem, "description", [this](size_t k){resize_vec<Constant>(this->Constants,k);}, [this] (size_t k, const char * str) { this->Constants[k]->Description(str); } );
-//     getCellField(elem, "latex", [this](size_t k){resize_vec<Constant>(this->Constants,k);}, [this] (size_t k, const char * str) { this->Constants[k]->Latex(str); } );
-//   }
-// 
-//   elem = mxGetField(vf, 0, "parameter");
-//   if (elem)
-//   {
-//     getCellField(elem, "name", [this](size_t k){resize_vec<Parameter>(this->Parameters,k);}, [this] (size_t k, const char * str) { this->Parameters[k]->Name(str); } );
-//     getCellField(elem, "defaultvalue", [this](size_t k){resize_vec<Parameter>(this->Parameters,k);}, [this] (size_t k, const char * str) { this->Parameters[k]->DefaultValue(str); });
-//     getCellField(elem, "description", [this](size_t k){resize_vec<Parameter>(this->Parameters,k);}, [this] (size_t k, const char * str) { this->Parameters[k]->Description(str); });
-//     getCellField(elem, "latex", [this](size_t k){resize_vec<Parameter>(this->Parameters,k);}, [this] (size_t k, const char * str) { this->Parameters[k]->Latex(str); });
-//   }
-//   
-//   elem = mxGetField(vf, 0, "expression");
-//   if (elem)
-//   {
-//     getCellField(elem, "name", [this](size_t k){resize_vec<Expression>(this->Expressions,k);}, [this] (size_t k, const char * str) { this->Expressions[k]->Name(str); } );
-//     getCellField(elem, "formula", [this](size_t k){resize_vec<Expression>(this->Expressions,k);}, [this] (size_t k, const char * str) { this->Expressions[k]->Formula(str); } );
-//     getCellField(elem, "description", [this](size_t k){resize_vec<Expression>(this->Expressions,k);}, [this] (size_t k, const char * str) { this->Expressions[k]->Description(str); } );
-//     getCellField(elem, "latex", [this](size_t k){resize_vec<Expression>(this->Expressions,k);}, [this] (size_t k, const char * str) { this->Expressions[k]->Latex(str); } );
-//   }
-// 
-//   elem = mxGetField(vf, 0, "statevariable");
-//   if (elem)
-//   {
-//     getCellField(elem, "name", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->Name(str); } );
-//     getCellField(elem, "formula", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->Formula(str); } );
-//     getCellField(elem, "description", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->Description(str); } );
-//     getCellField(elem, "latex", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->Latex(str); } );
-//     getCellField(elem, "periodfrom", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->PeriodicFrom(str); } );
-//     getCellField(elem, "periodto", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->PeriodicTo(str); } );
-//     getCellField(elem, "defaultinitialcondition", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->DefaultInitialCondition(str); } );
-//     getCellField(elem, "defaulthistory", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->DefaultHistory(str); } );
-//     getCellField(elem, "mass", [this](size_t k){resize_vec<StateVariable>(this->StateVariables,k);}, [this] (size_t k, const char * str) { this->StateVariables[k]->Mass(str); } );
-//   }
-//   
-//   elem = mxGetField(vf, 0, "function");
-//   if (elem)
-//   {
-//     getCellField(elem, "name", [this](size_t k){resize_vec<Function>(this->Functions,k);}, [this] (size_t k, const char * str) { this->Functions[k]->Name(str); } );
-//     getCellField(elem, "formula", [this](size_t k){resize_vec<Function>(this->Functions,k);}, [this] (size_t k, const char * str) { this->Functions[k]->Formula(str); } );
-//     getCellField(elem, "description", [this](size_t k){resize_vec<Function>(this->Functions,k);}, [this] (size_t k, const char * str) { this->Functions[k]->Description(str); } );
-//     getCellField(elem, "latex", [this](size_t k){resize_vec<Function>(this->Functions,k);}, [this] (size_t k, const char * str) { this->Functions[k]->Latex(str); } );
-//   }
-// }

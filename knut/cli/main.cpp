@@ -95,7 +95,13 @@ int main(int argc, const char** argv)
     }
   
     KNCliContinuation comp;
-    comp.run(sys, params);
+    KNDataFile *inputData = nullptr;
+    if (params->getLabel() != 0)
+    {
+      inputData = new KNDataFile (params->getInputFile());
+    }
+    comp.run(sys, params, inputData);
+    delete inputData;
   }
   catch (KNException ex)
   {

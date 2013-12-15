@@ -18,7 +18,7 @@
 #include <cfloat>
 
 
-class KNDataFile;
+class KNAbstractData;
 class KNExprSystem;
 class KNAbstractContinuation;
 
@@ -113,8 +113,8 @@ class KNAbstractPoint
     void setNotifyObject(KNAbstractContinuation* cnt);
     
     /// I/O to REIMPLEMENT
-    virtual void BinaryRead(KNDataFile& data, size_t n) = 0;
-    virtual void BinaryWrite(KNDataFile& data, BifType bif, size_t n) = 0;
+    virtual void BinaryRead(const KNAbstractData& data, size_t n) = 0;
+    virtual void BinaryWrite(KNAbstractData& data, BifType bif, size_t n) = 0;
 
 /// END BASE CLASS
   protected:
@@ -198,7 +198,6 @@ inline void KNAbstractPoint::updateWithAdaptation(KNBlockVector& X)
   for (size_t i = 1; i < varMapCont.size(); i++) par(varMapCont(i)) += X.getV3()(i - 1);
 }
 
-class KNDataFile;
 class KNAbstractBvpCollocation;
 
 class KNAbstractPeriodicSolution : public KNAbstractPoint
@@ -275,8 +274,8 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       return Amplitude(sol, ndim, ndeg, nint);
     }
     
-    void BinaryRead(KNDataFile& data, size_t n);
-    void BinaryWrite(KNDataFile& data, BifType bif, size_t n);
+    void BinaryRead(const KNAbstractData& data, size_t n);
+    void BinaryWrite(KNAbstractData& data, BifType bif, size_t n);
 
   protected:
 //    virtual void construct();

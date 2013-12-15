@@ -86,14 +86,10 @@ IF(NOT APPLE)
     qt5_use_modules(${GUI_NAME} Svg)
 
   IF(WIN32)
-    SET(CMAKE_RC_COMPILER "windres")
-    SET(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> <FLAGS> <DEFINES> -O coff -o <OBJECT> <SOURCE>")
-    ENABLE_LANGUAGE(RC) 
+    set_target_properties (${GUI_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     # need to add 
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-    ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain )
-#     SET_TARGET_PROPERTIES( ${GUI_NAME} PROPERTIES LINK_FLAGS "-mthreads -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc -Wl,-s -Wl,-subsystem,windows knut_res.o" )
-#     ADD_CUSTOM_COMMAND( TARGET ${GUI_NAME} PRE_LINK COMMAND ${CMAKE_RC_COMPILER} -i ${KNUT_SOURCE_DIR}/gui/knut.rc -o knut_res.o --include-dir=${KNUT_SOURCE_DIR}/gui )
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain )
   ELSE(WIN32)
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
       ${INTERNAL_LIBS} ${EXTERNAL_LIBS} )

@@ -17,7 +17,8 @@ class KNAbstractContinuation
     // sets the constants file pointer
 //     void setConstants(const KNConstants& constants);
     // run the continuation 
-    void run(KNExprSystem* sys, KNConstants* constants);
+    void run(KNExprSystem* sys, KNConstants* constants, 
+             const KNAbstractData* inputData);
 //     void run(const char* branchFile);
 //     void run() { run(0); }
     // sets the flag to stop computation
@@ -42,7 +43,7 @@ class KNAbstractContinuation
     // create a data file for steady states
     virtual void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms) = 0;
     // the thread requests the data file
-    virtual KNDataFile& data() = 0;
+    virtual KNAbstractData& data() = 0;
     // the thread wants to close the data file
     virtual void deleteData() = 0;
     // the thread notifies when data should be closed
@@ -104,7 +105,7 @@ class KNCliContinuation : public KNAbstractContinuation
     {
       output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
     }
-    KNDataFile& data() { return *output; }
+    KNAbstractData& data() { return *output; }
     void deleteData() { delete output; output = 0; }
     void dataUpdated() { }
   private:

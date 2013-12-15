@@ -52,7 +52,7 @@ static bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src);
 KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 {
   std::string contents;
-  std::ifstream in (sysName, std::ios::in | std::ios::binary);
+  std::ifstream in (sysName);
   if (in)
   {
     in.seekg (0, std::ios::end);
@@ -60,11 +60,21 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
     in.seekg (0, std::ios::beg);
     in.read (&contents[0], contents.size());
     in.close ();
+  } else
+  {
+    P_MESSAGE2("Cannot open ", sysName);
   }
   
   std::string vfexpr;
   if (Expression::fromXML (vfexpr, contents)) {}
   else vfexpr = contents;
+
+//   std::cout << "-BEGIN EX " << sysName << "\n";
+//   std::cout << vfexpr << "\n";
+//   std::cout << "-MID EX\n";
+//   std::cout << contents << "\n";
+//   std::cout << "-END EX\n";
+//   std::cout.flush ();
  
   KNExprSystem::constructor (vfexpr, sysName, trycompile);
 }
@@ -81,10 +91,14 @@ KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : handle
 void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sysName, bool trycompile)
 {
   std::string vfName;
+//   std::cout << "BEGIN EX\n";
+//   std::cout << vfexpr << "\n";
+//   std::cout << "MID EX\n";
+//   std::cout.flush ();
   expr.fromString (vfexpr);
-  expr.print (std::cout);
-  std::cout << "END EX\n";
-  std::cout.flush ();
+//   expr.print (std::cout);
+//   std::cout << "END EX\n";
+//   std::cout.flush ();
   try
   {
     expr.knutSplit (vfName, varName, varDotExpr, varInit, varMass, delayExpr, parName, parInit );
@@ -94,6 +108,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     std::cout << ex.str();
   }
   
+#ifdef DEBUG
   // print everything to see if there's an error
   std::cout << "NAME = "<< vfName << "\n";
   for (std::string& it : varName ) std::cout << "VAR = " << it << "\n";
@@ -103,6 +118,8 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   for (ExpTree::Expression& it : delayExpr ) { it.optimize ();std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
   for (std::string& it : parName ) std::cout << "PAR = " << it << "\n";
   for (double& it : parInit ) std::cout << "PARINIT = " << it << "\n";
+#endif
+  
   // no name was provided
   if (vfName.empty ()) trycompile = false;
   

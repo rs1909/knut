@@ -33,19 +33,33 @@ ELSE(APPLE)
 ENDIF(APPLE)
 
 IF( LONGBLAS )
-  SET(MWBLAS -lmwblas)
+  SET(MWBLAS -largeArrayDims)
+  MESSAGE(STATUS "Using LONG BLAS")
 ELSE( LONGBLAS )
-  SET(MWBLAS -lmwblascompat32)
+  SET(MWBLAS -compatibleArrayDims)
+  MESSAGE(STATUS "Using regular BLAS")
 ENDIF( LONGBLAS )
 
-add_custom_target(knut.o COMMAND
-${CMAKE_CXX_COMPILER} -std=c++11 ${STDLIB} ${KNUT_CXX_FLAGS} -fPIC -c ${KNUT_SOURCE_DIR}/matlab/knut.cpp -I${KNUT_SOURCE_DIR}/src/ -I${KNUT_SOURCE_DIR}/laarpack/ -I${KNUT_BINARY_DIR}/src -I${MATLAB_BIN_PATH}/../extern/include/ -o knut.o
-DEPENDS ${CLI_NAME})
+INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
+        ${KNUT_BINARY_DIR}/src
+        ${KNUT_SOURCE_DIR}/laarpack
+        ${MATLAB_BIN_PATH}/../extern/include/ )
+        
+ADD_LIBRARY( mxknut knut.cpp mxdata.cpp mxdata.h )
+SET_TARGET_PROPERTIES( mxknut PROPERTIES COMPILE_FLAGS 
+"-DMATLAB_MEX_FILE")
 
-add_custom_target(knut.mex COMMAND mex -cxx CXX='${CMAKE_CXX_COMPILER}' CFLAGS='-std=c++11 ${STDLIB} ${KNUT_CXX_FLAGS}' knut.o 
+# add_custom_target(knut.o COMMAND
+# ${CMAKE_CXX_COMPILER} -DMATLAB_MEX_FILE -std=c++11 ${STDLIB} ${KNUT_CXX_FLAGS} -fPIC -c ${KNUT_SOURCE_DIR}/matlab/knut.cpp -I${KNUT_SOURCE_DIR}/src/ -I${KNUT_SOURCE_DIR}/laarpack/ -I${KNUT_BINARY_DIR}/src -I${MATLAB_BIN_PATH}/../extern/include/ -o knut.o
+# DEPENDS ${CLI_NAME})
+
+add_custom_target(knut.mex COMMAND 
+${CMAKE_AR} x libmxknut.a \;
+mex -cxx ${MWBLAS} -output knut CXX='${CMAKE_CXX_COMPILER}' CFLAGS='-std=c++11 ${STDLIB} ${KNUT_CXX_FLAGS}'
+knut.cpp.o mxdata.cpp.o
 ${KNUT_BINARY_DIR}/src/libknutlib.a ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 
 -lmwblas -lut -lgfortran -ldl ${CFFRAME}
-DEPENDS knut.o)
+DEPENDS mxknut)
 
 # add_custom_target(knut.mex COMMAND 
 # ${CMAKE_CXX_COMPILER} -std=c++11 ${KNUT_CXX_FLAGS} -shared knut.o -Wl,-rpath-link,${MATLAB_BIN_PATH}/${MEX_SUFF}/ -L${MATLAB_BIN_PATH}/${DIR_SUFF}/ -lmx -lmex -lut ${KNUT_BINARY_DIR}/src/libknutlib.a ${KNUT_BINARY_DIR}/vfgen/libvfgenlib.a ${GINAC_LDFLAGS} ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a ${KNUT_BINARY_DIR}/mxml/libmxml.a ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a 

@@ -105,7 +105,13 @@ int main(int argc, char *argv[])
     KNCliContinuation comp;
     KNSystem *sys = new KNSystem (params.getSysName ());
 //    params.printXmlFileV5(std::cout);
-    comp.run(sys, &params);
+    KNDataFile *inputData = nullptr;
+    if (params.getLabel() != 0)
+    {
+      inputData = new KNDataFile (params.getInputFile());
+    }
+    comp.run (sys, &params, inputData);
+    delete inputData;
   } else
   {
     qRegisterMetaType<KNException>("KNException");

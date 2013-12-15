@@ -27,8 +27,8 @@ class KNSteadyStateSolution : public KNAbstractPoint
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_);
     ~KNSteadyStateSolution();
     
-    virtual void BinaryRead(KNDataFile& data, size_t n);
-    virtual void BinaryWrite(KNDataFile& data, BifType bif, size_t n);
+    virtual void BinaryRead(const KNAbstractData& data, size_t n);
+    virtual void BinaryWrite(KNAbstractData& data, BifType bif, size_t n);
 
     virtual void SwitchTFLP(BranchSW , double ) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
     virtual void SwitchTFPD(double ) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct

@@ -52,10 +52,10 @@ class KNDdeTorusSolution : public KNAbstractPoint
 //     {
 //       return colloc->system().npar();
 //     }
-    void           loadPoint(KNDataFile& data, size_t n);
-    void           savePoint(KNDataFile& data, size_t n);
-    void           BinaryRead(KNDataFile& data, size_t n) { loadPoint(data, n); }
-    void           BinaryWrite(KNDataFile& data, BifType bif, size_t n) { savePoint(data, n); }
+    void           loadPoint(const KNAbstractData& data, size_t n);
+    void           savePoint(KNAbstractData& data, size_t n);
+    void           BinaryRead(const KNAbstractData& data, size_t n) { loadPoint(data, n); }
+    void           BinaryWrite(KNAbstractData& data, BifType bif, size_t n) { savePoint(data, n); }
 
 
   private:

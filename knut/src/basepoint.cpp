@@ -607,7 +607,7 @@ void KNAbstractPeriodicSolution::findAngle()
   printStream();
 }
 
-void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, size_t n)
+void KNAbstractPeriodicSolution::BinaryWrite(KNAbstractData& data, BifType bif, size_t n)
 {
 //  std::cout << "DAT " << &data << "\n";
   data.lockWrite();
@@ -624,7 +624,7 @@ void KNAbstractPeriodicSolution::BinaryWrite(KNDataFile& data, BifType bif, size
   data.unlock();
 }
 
-void KNAbstractPeriodicSolution::BinaryRead(KNDataFile& data, size_t n)
+void KNAbstractPeriodicSolution::BinaryRead(const KNAbstractData& data, size_t n)
 {
   std::ostream& out = outStream();
   data.lockRead();

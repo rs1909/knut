@@ -734,7 +734,7 @@ void KNDataFile::setProfile(size_t n, const KNVector& prof)
   }
 }
 
-void KNDataFile::getBlanket(size_t n, KNVector& blanket)
+void KNDataFile::getBlanket(size_t n, KNVector& blanket) const
 {
   const size_t curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
   if ((blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
@@ -942,7 +942,7 @@ BifType  KNDataFile::getBifurcationType(size_t n) const
   return BifNone;
 }
 
-size_t KNDataFile::findType(int32_t type, size_t n) const
+size_t KNAbstractData::findType(int32_t type, size_t n) const
 {
   size_t found = 0;
   for (size_t i=0; i<getNCols(); ++i)
@@ -950,5 +950,5 @@ size_t KNDataFile::findType(int32_t type, size_t n) const
     if (getMagic(i) == type) found++;
     if (found == n) return i;
   }
-  return ncols;
+  return getNCols();
 }

@@ -35,7 +35,8 @@
 //   run(sys, branchFile);
 // }
 
-void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params)
+void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params, 
+                                 const KNAbstractData* inputData)
 {
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
@@ -123,17 +124,19 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params)
       // load the initial guess
       if (params->getLabel() != 0)
       {
-        KNDataFile istr(params->getInputFile());
-        if (params->getFromType() != BifNone)
+        if (inputData != nullptr)
         {
-          size_t pos = istr.findType(params->getFromType(), params->getLabel() );
-//          std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
-          if (pos < istr.getNCols()) pt.BinaryRead(istr, pos); // !!
-          else P_MESSAGE1("No such point in the input");
-        } else
-        {
-          pt.BinaryRead(istr, params->getLabel()-1); // !!
-        }
+          if (params->getFromType() != BifNone)
+          {
+            size_t pos = inputData->findType(params->getFromType(), params->getLabel() );
+//             std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
+            if (pos < inputData->getNCols()) pt.BinaryRead(*inputData, pos); // !!
+            else P_MESSAGE1("No such point in the input");
+          } else
+          {
+            pt.BinaryRead(*inputData, params->getLabel()-1); // !!
+          }
+        } else P_MESSAGE1("Missing input data.");
       }
 
       screenout   << "\n---      Refine supplied solution      ---\n";
@@ -425,7 +428,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params)
   }
 }
 
-// create a data file for steady states
+// create a data file for different type of solutions
 KNDataFile* KNAbstractContinuation::createDataStatic (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
   if (t == DataType::ST) {

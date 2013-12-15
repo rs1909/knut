@@ -126,13 +126,13 @@ void KNDdeTorusSolution::jacobian(
 #define NINT1 colloc->Nint1()
 #define NINT2 colloc->Nint2()
 
-void KNDdeTorusSolution::loadPoint(KNDataFile& data, size_t n)
+void KNDdeTorusSolution::loadPoint(const KNAbstractData& data, size_t n)
 {
   data.getBlanket(n, sol);
   data.getPar(n, par);
 }
 
-void KNDdeTorusSolution::savePoint(KNDataFile& data, size_t n)
+void KNDdeTorusSolution::savePoint(KNAbstractData& data, size_t n)
 {
   data.setPar(n, par);
   for (size_t i = 0; i < NINT1; ++i)

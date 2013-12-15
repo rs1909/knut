@@ -107,7 +107,7 @@ void KNSteadyStateSolution::jacobian(
 //  par.print();
 }
 
-void KNSteadyStateSolution::BinaryRead(KNDataFile& data, size_t n)
+void KNSteadyStateSolution::BinaryRead(const KNAbstractData& data, size_t n)
 {
   data.lockRead();
   P_ERROR_X1(data.getNPar() == VarToIndex(VarEnd,NPAR), "Wrong number of parameters in the input MAT file.");
@@ -120,7 +120,7 @@ void KNSteadyStateSolution::BinaryRead(KNDataFile& data, size_t n)
   data.unlock();
 }
 
-void KNSteadyStateSolution::BinaryWrite(KNDataFile& data, BifType bif, size_t n)
+void KNSteadyStateSolution::BinaryWrite(KNAbstractData& data, BifType bif, size_t n)
 {
         //  std::cout << "DAT " << &data << "\n";
   data.lockWrite();

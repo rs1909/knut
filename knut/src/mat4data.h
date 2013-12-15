@@ -29,7 +29,41 @@
 # define int32_t INT32
 #endif
 
-class KNDataFile
+// TODO: make it possible to release data once it is not needed, e.g., after reading
+// TODO: or just delete the data in 'basecomp.cpp'
+
+class KNAbstractData
+{
+  public:
+    virtual void lockRead() const = 0;
+    virtual void lockWrite() const = 0;
+    virtual void unlock() const = 0;
+    virtual void   setNTrivMul(const size_t j, size_t i) = 0;
+    virtual void   setMagic(size_t n, int32_t magic) = 0;
+    virtual void   setPar(size_t n, const KNVector& par) = 0;
+    virtual void   setMul(size_t n, const KNVector& real, const KNVector& imag) = 0;
+    virtual void   setElem(size_t n, const KNVector& el) = 0;
+    virtual void   setMesh(size_t n, const KNVector& mesh) = 0;
+    virtual void   setProfile(size_t n, const KNVector& profile) = 0;
+    virtual void   getPar(size_t n, KNVector& par) const = 0;
+    virtual void   getMul(size_t n, KNVector& real, KNVector& imag) const = 0;
+    virtual void   getMesh(size_t n, KNVector& mesh) const = 0;
+    virtual size_t  getNPar() const = 0;
+    virtual size_t  getNDim() const = 0;
+    virtual size_t  getNInt() const = 0;
+    virtual size_t  getNDeg() const = 0;
+    virtual size_t  getNCols() const = 0;
+    virtual int32_t getMagic(size_t n) const = 0;
+    virtual void   getProfile(size_t n, KNVector& profile) const = 0;
+    size_t findType(int32_t type, size_t n) const;
+    // the extra bit for tori
+    virtual void   setMesh1(size_t n, size_t j, double d) = 0;
+    virtual void   setMesh2(size_t n, size_t j, double d) = 0;
+    virtual void   getBlanket(size_t n, KNVector& blanket) const = 0;
+    virtual void   setBlanket(size_t n, const KNVector& blanket) = 0;
+};
+
+class KNDataFile : public KNAbstractData
 {
   public:
 
@@ -65,7 +99,7 @@ class KNDataFile
     {
       elem(mesh2_offset, j, n) = d;
     }
-    void   getBlanket(size_t n, KNVector& blanket);
+    void   getBlanket(size_t n, KNVector& blanket) const;
     void   setBlanket(size_t n, const KNVector& blanket);
     void   setMagic(size_t n, int32_t magic)
     {
@@ -173,7 +207,8 @@ class KNDataFile
     size_t  getUnstableMultipliers(size_t n) const;
     size_t  getNextBifurcation(size_t n, bool* stab = 0) const;
     BifType getBifurcationType(size_t n) const;
-    size_t  findType(int32_t type, size_t n) const; // to find the n-th point of type; returns index
+    // moved to Abstract subclass
+//     size_t  findType(int32_t type, size_t n) const; // to find the n-th point of type; returns index
     bool isTorus() const
     {
       return torus;

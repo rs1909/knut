@@ -29,7 +29,16 @@ const QEventLoop::ProcessEventsFlags MThread::waitFlag = QEventLoop::WaitForMore
 
 void MThread::process()
 {
-  if ((sys != nullptr) && (params != nullptr))KNAbstractContinuation::run(sys, params);
+  if ((sys != nullptr) && (params != nullptr))
+  {
+    KNDataFile *inputData = nullptr;
+    if (params->getLabel() != 0)
+    {
+      inputData = new KNDataFile (params->getInputFile());
+    }
+    KNAbstractContinuation::run(sys, params, inputData);
+    delete inputData;
+  }
   emit finished();
 }
 

@@ -308,10 +308,10 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
   size_t idx;
   double dbl;
 
-  if (reader.getSystem(buf)) setSystemText (buf);
+  if (reader.getSystem(buf)) if (!buf.empty()) setSystemText (buf);
   if (reader.getTextField("input", buf)) setInputFile(buf);
   if (reader.getTextField("output", buf)) setOutputFile(buf);
-  if (reader.getTextField("sysname", buf)) setSysNameText(buf);
+  if (reader.getTextField("sysname", buf)) if (!buf.empty()) setSysNameText(buf);
   if (reader.getTextField("systype", buf)) setSysType(buf);
   if (reader.getTextField("fromtype", buf)) setFromType(BifTypeTable.CodeToType(buf.c_str()));
   if (reader.getIndexField("label", idx)) setLabel(idx);
