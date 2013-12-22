@@ -83,20 +83,9 @@ private:
   // Hessian (ORIG)
   std::vector<ExpTree::Expression> varDot_hess;
 
-  // stack size
-  size_t vectorSize;
-  size_t stackSize;
-  std::vector<ExpTree::Value> stack;
+  ExpTree::ValueStack stack;
   
-  void resizeStackVector (size_t vectorlen);
-  
-  std::vector<ExpTree::Value> varArray; 
-  std::vector<double> parArray;
-  
-  void fillTime (const KNArray1D<double>& time);
-  void fillVar (const KNArray3D<double>& x);
-  void fillVar2 (const KNArray3D<double>& vv);
-  void fillPar (const KNVector& par);
+  // loading compiled sysdef file
   void setupFunctions (const std::string& shobj);
   
   // functions

@@ -26,6 +26,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <cmath>
 
 extern "C"{
 #include <sys/stat.h>
@@ -79,11 +80,11 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
   KNExprSystem::constructor (vfexpr, sysName, trycompile);
 }
 
-KNExprSystem::KNExprSystem () : handle(nullptr)
+KNExprSystem::KNExprSystem () : stack (nullptr, 1), handle(nullptr)
 {
 }
 
-KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : handle(nullptr)
+KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : stack (nullptr, 1), handle(nullptr)
 {
   constructor (vfexpr, std::string(), trycompile);
 }
@@ -253,21 +254,6 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     delete vvsub[p];
   }
-  
-  stackSize = 0;
-  vectorSize = 0;
-  for (Expression& it : delayExpr) { it.stackCount (stackSize); }
-  for (Expression& it : delayExprDeri) { it.stackCount (stackSize); }
-  for (Expression& it : varDotExpr) { it.stackCount (stackSize); }
-  for (Expression& it : varDot_p) { it.stackCount (stackSize); }
-  for (Expression& it : varDot_x) { it.stackCount (stackSize); }
-  for (Expression& it : varDot_x_p) { it.stackCount (stackSize); }
-  for (Expression& it : varDot_xx) { it.stackCount (stackSize); }
-  for (Expression& it : varDot_hess) { it.stackCount (stackSize); }
-  stack.resize (stackSize+1);
-  
-  varArray.resize (1 + 2*varDotExpr.size()*(delayExpr.size() + 1));
-  parArray.resize (parName.size());
 
   // try to compile
   if (workingCompiler && trycompile)
@@ -279,9 +265,9 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     struct stat sbuf_vf;
     
     bool compile_cxx = true;
+    int res_so = stat(shobj.c_str(), &sbuf_so);
     if (!sysName.empty ())
     {
-      int res_so = stat(shobj.c_str(), &sbuf_so);
       int res_vf = stat(sysName.c_str(), &sbuf_vf);
       P_ERROR_X3 (res_vf == 0, "Vector field definition '", sysName, "' is missing.");
       if (res_so != 0) compile_cxx = true;
@@ -304,16 +290,23 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
         std::cerr << "Cannot compile the C++ system definition.\n" << ex.str();
         std::cerr.flush ();
       }
+    } else if (res_so == 0)
+    {
+      try {
+        setupFunctions (shobj);
+      }
+      catch (KNException& ex)
+      {
+        workingCompiler = false;
+        std::cerr << "Cannot load the C++ system definition.\n" << ex.str();
+        std::cerr.flush ();
+      }
     }
   }
 }
 
 KNExprSystem::~KNExprSystem()
 {
-  for (size_t k = 1; k < stack.size(); k++)
-  {
-    delete[] stack [k].data;
-  }
   if (handle != 0) tdlclose(handle);
 }
 
@@ -324,67 +317,97 @@ void KNExprSystem::toString (std::string& vfexpr)
   vfexpr = ostr.str ();
 }
 
-// private
-void KNExprSystem::resizeStackVector (size_t vectorlen)
+static inline const ConstValue knsys_fun_par (size_t idx, const KNVector& par)
 {
-  if (vectorlen > vectorSize)
+  ExpTree::ConstValue val;
+  val.data = par.pointer(idx);
+  val.skip = 1;
+  return val;
+}
+
+static inline const ConstValue knsys_fun_var (size_t x, size_t d, const KNArray3D<double>& var)
+{
+  ExpTree::ConstValue val;
+  val.data = const_cast<KNArray3D<double>&>(var).pointer (x,d,0);
+  val.skip = (((size_t)const_cast<KNArray3D<double>&>(var).pointer(x,d,1)) - ((size_t)const_cast<KNArray3D<double>&>(var).pointer(x,d,0)))/sizeof(double);
+  return val;
+}
+
+static const ConstValue knsys_fun_var_vv (const Node* node, const size_t ndim, const size_t ntau, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
+{
+  const NodePar* par_node = dynamic_cast<const NodePar*>(node);
+  if (par_node != nullptr)
   {
-    for (size_t k = 1; k < stack.size(); k++)
-    {
-      delete[] stack [k].data;
-      stack [k].data = new double[vectorlen];
-      stack [k].skip = 1;
-    }
-    vectorSize = vectorlen;
+    return knsys_fun_par (par_node->getIdx(), par);
   }
-}
 
-// private
-void KNExprSystem::fillTime (const KNArray1D<double>& time)
-{
-  varArray[0].data = const_cast<KNArray1D<double>&>(time).pointer ();
-  varArray[0].skip = 1;
-}
-
-// private
-void KNExprSystem::fillVar (const KNArray3D<double>& var)
-{
-  for (size_t p = 0; p < varDotExpr.size(); p++)
+  const NodeVar* var_node = dynamic_cast<const NodeVar*>(node);
+  if (var_node != nullptr)
   {
-    for (size_t q = 0; q < delayExpr.size() + 1; q++)
+    const size_t idx = var_node->getIdx();
+    if (idx == 0)
     {
-      varArray[1 + p + q*varDotExpr.size()].data 
-        = const_cast<KNArray3D<double>&>(var).pointer (p,q,0);
-      varArray[1 + p + q*varDotExpr.size()].skip 
-        = (((size_t)const_cast<KNArray3D<double>&>(var).pointer(p,q,1)) - ((size_t)const_cast<KNArray3D<double>&>(var).pointer(p,q,0)))/sizeof(double);
+      ExpTree::ConstValue val;
+      val.skip = 1;
+      val.data = time.pointer(0);
+      return val;
     }
-  }
-}
-
-// private
-void KNExprSystem::fillVar2 (const KNArray3D<double>& vv)
-{
-  const size_t skip = 1 + varDotExpr.size()*(delayExpr.size() + 1);
-  for (size_t p = 0; p < varDotExpr.size(); p++)
-  {
-    for (size_t q = 0; q < delayExpr.size() + 1; q++)
+    else if (idx < (ndim*ntau + 1))
     {
-      varArray[skip + p + q*varDotExpr.size()].data 
-        = const_cast<KNArray3D<double>&>(vv).pointer (p,q,0);
-      varArray[skip + p + q*varDotExpr.size()].skip 
-        = (((size_t)const_cast<KNArray3D<double>&>(vv).pointer(p,q,1)) - ((size_t)const_cast<KNArray3D<double>&>(vv).pointer(p,q,0)))/sizeof(double);
+      const size_t d = (idx-1) / ndim;
+      const size_t x = (idx-1) % ndim;
+      return knsys_fun_var (x, d, var);
+    } else
+    {
+      const size_t id2 = idx - (ndim*ntau + 1);
+      const size_t d = id2 / ndim;
+      const size_t x = id2 % ndim;
+      return knsys_fun_var (x, d, vv);
     }
   }
+  P_MESSAGE1("Invalid Node.");
+  return ExpTree::ConstValue();
 }
 
-// private
-void KNExprSystem::fillPar (const KNVector& par)
+#ifdef DEBUG
+static inline double comp2D (const KNArray2D<double>& a1, const KNArray2D<double>& a2)
 {
-  for (size_t p = 0; p < parName.size(); p++)
+  double mx = 0.0;
+  size_t ip=0, iq=0;
+  for (size_t p=0; p<a1.dim1(); p++)
   {
-    parArray[p] = par(p);
+    for (size_t q=0; q<a1.dim2(); q++)
+    {
+      const double dst = std::fabs(a1(p,q) - a2(p,q));
+      if (dst > mx) { ip = p; iq = q; mx = dst; }
+    }
   }
+  if (mx > 1e-5) std::cout << "@" << ip << "," << iq << "-";
+  return mx;
 }
+
+static inline double comp3D (const KNArray3D<double>& a1, const KNArray3D<double>& a2)
+{
+  double mx = 0.0;
+  size_t ip=0, iq=0, ir=0;
+  for (size_t p=0; p<a1.dim1(); p++)
+  {
+    for (size_t q=0; q<a1.dim2(); q++)
+    {
+      for (size_t r=0; r<a1.dim3(); r++)
+      {
+        const double dst = std::fabs(a1(p,q,r) - a2(p,q,r));
+        if (dst > mx) { ip = p; iq = q; ir = r; mx = dst; }
+      }
+    }
+  }
+  if (mx > 1e-5)
+  {
+    std::cout << "@" << ip << "," << iq << "," << ir << "-";
+  }
+  return mx;
+}
+#endif
 
 size_t KNExprSystem::ndim() const 
 {
@@ -408,40 +431,69 @@ size_t KNExprSystem::ntau() const
 // delay values
 void KNExprSystem::p_tau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par )
 {
+#ifdef DEBUG
+  KNArray2D<double> o2(out);
+  if (fp_p_tau) fp_p_tau (o2, time, par);
+#else
   if (fp_p_tau) fp_p_tau (out, time, par);
   else
+#endif
   {
-    resizeStackVector (time.size ());
+    stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-    fillTime (time);
-    fillPar (par);
+//     fillTime (time);
+//     fillPar (par);
+    
+    const KNArray3D<double> var (ndim(), 0, 0);
+    const KNArray3D<double> vv (ndim(), 0, 0);
+    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+    for (size_t k = 0; k < time.size (); k++) out (0,k) = 0.0;
+    for (size_t k = 0; k < delayExpr.size(); k++)
+    {
+      stack[0].data = out.pointer(1 + k,0);
+      delayExpr[k].evaluate (stack, fun, time.size ());
+    }
+  }
+#ifdef DEBUG
+  double res = comp2D (o2, out);
+  if (res > 1e-5)
+  {
+    std::cout << "TAU diff=" << res << "\n";
+  }
+#endif
+}
+
+void KNExprSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
+{
+#ifdef DEBUG
+  KNArray2D<double> o2(out);
+  if (fp_p_dtau) fp_p_dtau (o2, time, par, vp);
+#else
+  if (fp_p_dtau) fp_p_dtau (out, time, par, vp);
+  else
+#endif
+  {
+    P_ERROR(vp < parName.size() + 1);
+    stack.resizeWidth (time.size ());
+    stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+    const KNArray3D<double> var (ndim(), 0, 0);
+    const KNArray3D<double> vv (ndim(), 0, 0);
+    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
     
     for (size_t k = 0; k < time.size (); k++) out (0,k) = 0.0;
     for (size_t k = 0; k < delayExpr.size(); k++)
     {
       stack[0].data = out.pointer(1 + k,0);
-      delayExpr[k].evaluate (stack, varArray, parArray, time.size ());
+      delayExprDeri[vp + k*parName.size()].evaluate (stack, fun, time.size ());
     }
   }
-}
-
-void KNExprSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& time, const KNVector& par, size_t vp )
-{
-  if (fp_p_dtau) fp_p_dtau (out, time, par, vp);
-  else
+#ifdef DEBUG
+  double res = comp2D (o2, out);
+  if (res > 1e-5)
   {
-    P_ERROR(vp < parName.size() + 1);
-    resizeStackVector (time.size ());
-    stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-    fillPar (par);
-    fillTime (time);
-    for (size_t k = 0; k < time.size (); k++) out (0,k) = 0.0;
-    for (size_t k = 0; k < delayExpr.size(); k++)
-    {
-      stack[0].data = out.pointer(1 + k,0);
-      delayExprDeri[vp + k*parName.size()].evaluate (stack, varArray, parArray, time.size ());
-    }
+    std::cout << "DTAU diff=" << res << "\n";
   }
+#endif
 }
 
 // no mass is implemented yet
@@ -453,40 +505,56 @@ void KNExprSystem::mass(KNArray1D<double>& out)
   }
 }
 
-void KNExprSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel )
+void KNExprSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNVector& par, size_t sel )
 {
-  if (fp_p_rhs) fp_p_rhs (out, time, x, par, sel);
+#ifdef DEBUG
+  KNArray2D<double> o2(out);
+  if (fp_p_rhs) fp_p_rhs (o2, time, var, par, sel);
+#else
+  if (fp_p_rhs) fp_p_rhs (out, time, var, par, sel);
   else
+#endif
   {
-    resizeStackVector (time.size ());
+    stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-    fillTime (time);
-    fillPar (par);
-    fillVar (x);
+//     const KNArray3D<double> var (ndim(), 0, 0);
+    const KNArray3D<double> vv (ndim(), 0, 0);
+    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
 
     for (size_t k = 0; k < varDotExpr.size(); k++)
     {
       stack[0].data = out.pointer (k,0);
-      varDotExpr[k].evaluate (stack, varArray, parArray, time.size ());
+      varDotExpr[k].evaluate (stack, fun, time.size ());
     }
   }
+#ifdef DEBUG
+  double res = comp2D (o2, out);
+  if (res > 1e-5)
+  {
+    std::cout << "RHS diff=" << res << "\n";
+  }
+#endif
 }
 
-void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par,
+void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNVector& par,
   size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv )
 {
-  if (fp_p_deri) fp_p_deri (out, time, x, par, sel, nx, vx, np, vp, vv);
+#ifdef DEBUG
+  KNArray3D<double> o2 (out);
+  if (fp_p_deri) fp_p_deri (o2, time, var, par, sel, nx, vx, np, vp, vv);
+#else
+  if (fp_p_deri) fp_p_deri (out, time, var, par, sel, nx, vx, np, vp, vv);
   else
+#endif
   {
-    resizeStackVector (time.size ());
+    stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,0,1)) - ((size_t)out.pointer(0,0,0)))/sizeof(double);
-    fillTime (time);
-    fillPar (par);
-    fillVar (x);
+    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+
     P_ERROR( par.size() >= parInit.size () );
-    P_ERROR( x.dim3() == time.size () );
-    P_ERROR( x.dim2() >= (delayExpr.size() + 1) );
-    P_ERROR( x.dim1() == varDotExpr.size() );
+    P_ERROR( var.dim3() == time.size () );
+    P_ERROR( var.dim2() >= (delayExpr.size() + 1) );
+    P_ERROR( var.dim1() == varDotExpr.size() );
     
     // parameters
     if (nx == 0 && np == 1)
@@ -498,7 +566,7 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
       {
         stack[0].data = out.pointer (k,0,0);
         stack[0].skip = (((size_t)out.pointer(k,0,1)) - ((size_t)out.pointer(k,0,0)))/sizeof(double);
-        varDot_p[vp[0] + k*parName.size()].evaluate (stack, varArray, parArray, time.size ());
+        varDot_p[vp[0] + k*parName.size()].evaluate (stack, fun, time.size ());
       }    
     }
     // jacobian
@@ -513,7 +581,7 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
         {
           stack[0].data = out.pointer (q,p,0);
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
-          varDot_x[p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].evaluate (stack, varArray, parArray, time.size ());
+          varDot_x[p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].evaluate (stack, fun, time.size ());
         }
       }
     }
@@ -526,7 +594,7 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
         {
           stack[0].data = out.pointer (q,p,0);
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
-          varDot_x_p[vp[0] + (p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()].evaluate (stack, varArray, parArray, time.size ());
+          varDot_x_p[vp[0] + (p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()].evaluate (stack, fun, time.size ());
         }
       }
     }
@@ -551,7 +619,7 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
   // hessian OLD TYPE
     if (nx == 2 && np == 0)
     {
-      fillVar2 (vv);
+//       fillVar2 (vv);
       P_ERROR( out.dim3() == time.size () );
       P_ERROR( out.dim2() == varDotExpr.size() );
       P_ERROR( out.dim1() == varDotExpr.size() );
@@ -568,41 +636,19 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
           const size_t idx = p + vx[1]*varDotExpr.size() + vx[0]*varDotExpr.size()*(delayExpr.size() + 1) + 
             q*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1);
-          varDot_hess[idx].evaluate (stack, varArray, parArray, time.size ());
+          varDot_hess[idx].evaluate (stack, fun, time.size ());
         }
       }
     }
   }
+#ifdef DEBUG
+  double res = comp3D (o2, out);
+  if (res > 1e-5)
+  {
+    std::cout << "DERI diff=" << res << " np=" << np << " nx=" << nx << "\n";
+  }
+#endif
 }
-
-// for previous debug purposes
-// void KNExprSystem::varprint( const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t pos )
-// {
-//   resizeStackVector (time.size ());
-//   fillTime (time);
-//   fillPar (par);
-//   fillVar (x);
-//   std::vector<double> locst (stack.size());
-//   std::vector<double> locvar (varArray.size());
-//   for (size_t k = 0; k < 1 + varDotExpr.size()*(delayExpr.size() + 1); k++) locvar[k] = varArray[k].data[pos];
-// 
-//   std::cout << "{";
-//   for (size_t q = 0; q < parArray.size(); q++)
-//   {
-//     if (q != 0) std::cout << ",";
-//     std::cout << "P[" << q << "]->" << parArray[q];
-//   }
-//   std::cout << "V[0]->" << time (pos) << ",";
-//   for (size_t q = 0; q < (delayExpr.size() + 1); q++)
-//   {
-//     for (size_t p = 0; p < varDotExpr.size(); p++)
-//     {
-//       if (q != 0 || p != 0) std::cout << ",";
-//       std::cout << "V[" << 1 + p + q*varDotExpr.size() << "]->" << x(p,q,pos);
-//     }
-//   }
-//   std::cout << "}\n";
-// }
 
 // Setting the starting point
 void KNExprSystem::stpar(KNVector& par) const
@@ -622,13 +668,17 @@ void KNExprSystem::stsol (KNArray2D<double>& out, const KNArray1D<double>& time)
   if (fp_p_stsol) fp_p_stsol (out, time);
   else
   {
-    resizeStackVector (time.size ());
+    stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-    fillTime (time);
+    const KNArray3D<double> var (ndim(), 0, 0);
+    const KNArray3D<double> vv (ndim(), 0, 0);
+    const KNVector par;
+    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+    
     for (size_t k = 0; k < varInit.size(); k++)
     {
       stack[0].data = out.pointer(k,0);
-      varInit[k].evaluate (stack, varArray, parArray, time.size ());
+      varInit[k].evaluate (stack, fun, time.size ());
     }
   }
 }
@@ -1481,7 +1531,9 @@ extern "C" {
 
 void KNExprSystem::setupFunctions (const std::string& shobj)
 {
-  handle = tdlopen(shobj.c_str());
+  std::string nsh = "./" + shobj;
+  std::cout << "SETTING UP FUNCTIONS FROM '" << nsh << "'.\n";
+  handle = tdlopen(nsh.c_str());
   P_ERROR_X5(handle != nullptr, "Cannot open system definition file `", shobj, "'. Error code `", tdlerror(), "'.");
   
   tdlerror();    /* Clear any existing error */

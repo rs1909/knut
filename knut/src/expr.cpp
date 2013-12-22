@@ -261,14 +261,6 @@ void NodeFunction::findFunction (std::vector<const NodeFunction*>& lst, const st
   if (name == nm) lst.push_back (this);
 }
 
-size_t NodeFunction::stackCount(size_t sp, size_t& max_stack) 
-{
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> stackCount(sp+k, max_stack); }
-  if (max_stack < spi) max_stack = spi; 
-  return sp;
-}
-
 static double localSign (double v)
 {
   if (v > 0.0) return 1.0;
@@ -288,8 +280,7 @@ class NodeFunctionA1 : public NodeFunction
   public:
     NodeFunctionA1 (const std::string& nm);
     Node* copy () const;
-    size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
-    size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const;
+    size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const;
   private:
     std::function<double(double)> function;
 };
@@ -329,8 +320,7 @@ class NodeFunctionA2 : public NodeFunction
   public:
     NodeFunctionA2 (const std::string& nm);
     Node* copy () const;
-    size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
-    size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const;
+    size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const;
   private:
     std::function<double(double,double)> function;
 };
@@ -437,14 +427,6 @@ void NodeAdd::replaceSymbol(const Node& node, Node** parent)
 void NodeAdd::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
   for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
-}
-
-size_t NodeAdd::stackCount(size_t sp, size_t& max_stack) 
-{
-  size_t spi = sp + 1;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> stackCount(sp+k+1, max_stack); }
-  if (max_stack < spi) max_stack = spi;
-  return sp;
 }
 
 void NodeAdd::sort ()
@@ -555,14 +537,6 @@ void NodeTimes::replaceSymbol(const Node& node, Node** parent)
 void NodeTimes::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
   for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
-}
-
-size_t NodeTimes::stackCount(size_t sp, size_t& max_stack) 
-{
-  size_t spi = sp + 1;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> stackCount(sp+k+1, max_stack); }
-  if (max_stack < spi) max_stack = spi; 
-  return sp;
 }
 
 void NodeTimes::sort ()
@@ -730,14 +704,6 @@ void NodePower::optimize (Node** parent)
   }
 }
 
-size_t NodePower::stackCount(size_t sp, size_t& max_stack) 
-{
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> stackCount(sp+k, max_stack); }
-  if (max_stack < spi) max_stack = spi; 
-  return sp;
-}
-
 class NodePlus : public Node
 {
 public:
@@ -751,9 +717,7 @@ public:
   }
   size_t children () const { return 1; }
   const Node* getChild (size_t n) const { return arg; }
-  size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const 
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
-  size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
   { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
@@ -800,10 +764,6 @@ public:
     (*parent) = tmp;
     return;
   }
-  size_t stackCount(size_t sp, size_t& max_stack) 
-  {
-    return arg -> stackCount(sp, max_stack);
-  }
   // specific
   void addArgument (size_t pos, Node* arg_) { arg = arg_; }
 private:
@@ -824,11 +784,9 @@ public:
   size_t children () const { return 1; }
   const Node* getChild (size_t n) const { return arg; }
   Node* getChild (size_t n) { return arg; }
-  size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const 
-  { arg -> evaluate(stack, sp, var, par); stack[sp] *= -1.0; /*std::cout << "evMinus\n";*/ return sp; }
-  size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
   {
-    arg -> evaluate(stack, sp, var, par, len);
+    arg -> evaluate(stack, sp, fun, len);
     for (size_t p = 0; p < len; p++) stack[sp].data[p*stack[sp].skip] *= -1.0;
     return sp;
   }
@@ -887,10 +845,6 @@ public:
       return;      
     }
   }
-  size_t stackCount(size_t sp, size_t& max_stack) 
-  {
-    return arg -> stackCount(sp, max_stack);
-  }
   // specific
   void addArgument (size_t pos, Node* arg_) { arg = arg_; }
 private:
@@ -913,9 +867,7 @@ public:
   }
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
-  size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
-  size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
   { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
@@ -955,11 +907,6 @@ public:
   }
   Node* derivative (const Node* var) const { return new NodeNumber(0.0); }
   void optimize (Node** parent) { for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k]); }  
-  size_t stackCount(size_t sp, size_t& max_stack) 
-  {
-    P_MESSAGE1("NOT IMPLEMENTED!\n"); 
-    return sp;
-  }
   // specific
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
 private:
@@ -991,9 +938,7 @@ public:
     }
     return nullptr;
   }
-  size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
-  size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
   { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
@@ -1021,11 +966,6 @@ public:
   Node* derivative (const Node* var) const { return new NodeNumber(0.0); }
   // specific
   void optimize (Node** parent);
-  size_t stackCount(size_t sp, size_t& max_stack) 
-  {
-    P_MESSAGE1("NOT IMPLEMENTED!\n"); 
-    return sp;
-  }
   void addArgumentBack (Node* arg) { args.push_back (arg); }
   void addArgumentFront (Node* arg) { args.push_front (arg); }
   void toList(std::list<Node*>& lst)
@@ -1078,11 +1018,12 @@ void NodeFunction::optimize (Node** parent)
   // if all are numbers -> evaluate
   if (isnum)
   {
-    std::vector<double> stack (args.size()+1, 0.0);
-    std::vector<double> var;
+//     std::vector<double> stack (args.size()+1, 0.0);
+//     std::vector<double> var;
     std::vector<double> par;
-    this->evaluate (stack, 0, var, par);
-    NodeNumber* num = new NodeNumber (stack[0]);
+    double res;
+    this->evaluateWithPar (&res, par);
+    NodeNumber* num = new NodeNumber (res);
     delete (*parent);
     (*parent) = num;
     return;
@@ -1563,98 +1504,30 @@ Node* NodeFunction::derivative (const Node* var) const
 
 // Evaluating the expression
 
-size_t NodeNumber::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
+void Node::evaluateWithPar (double *res, const std::vector<double>& parInit)
 {
-  stack[sp] = value;
-  return sp;
-}
-
-size_t NodeSymbol::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  P_MESSAGE2("Undefined symbol : ", name);
-  stack[sp] = 0;
-  return sp;
-}
-
-size_t NodeVar::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  stack[sp] = var[idx];
-  return sp;
-}
-
-size_t NodePar::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  stack[sp] = par[idx];
-  return sp;
-}
-
-size_t NodeFunction::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  P_MESSAGE3("NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k, var, par); }
-  if (spi != sp + args.size() - 1) 
-    P_MESSAGE7("NodeFunction::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
-  stack[sp] = 1.0;
-  return sp;
-}
-
-size_t NodeFunctionA1::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  size_t sp1 = args[0] -> evaluate(stack, sp, var, par);
-  stack[sp1] = function(stack[sp1]);
-  return sp1;
-}
-
-size_t NodeFunctionA2::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  size_t sp1 = args[0] -> evaluate(stack, sp, var, par);
-  size_t sp2 = args[1] -> evaluate(stack, sp+1, var, par);
-  stack[sp1] = function(stack[sp1], stack[sp2]);
-  return sp1;
-}
-
-size_t NodeAdd::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
-  stack[sp] = 0;
-  for (size_t k=0; k<args.size(); k++)
+  auto fun = [parInit] (const Node* node) 
   {
-    stack[sp] += mul[k] * stack[sp+k+1];
-  }
-  return sp;
+    ConstValue val;
+    const NodePar* par_node = dynamic_cast<const NodePar*>(node);
+    if (par_node != nullptr)
+    {
+      val.data = &(parInit [par_node->getIdx()] );
+      val.skip = 1;
+      return val;
+    }
+    P_MESSAGE1("Not a parameter.");
+    return val;
+  };
+  ValueStack stk (res, 1);
+  evaluate (stk, 0, fun, 1);
 }
 
-size_t NodeTimes::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-{
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
-  stack[sp] = smul;
-  for (size_t k=0; k<args.size(); k++)
-  {
-    if (divide[k]) stack[sp] /= stack[sp+k+1];
-    else stack[sp] *= stack[sp+k+1];
-  }
-  return sp;
-}
+// Vector AND Function arguments
 
-size_t NodePower::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
+size_t NodeNumber::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
-  size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k, var, par); }
-  if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
-  stack[sp] = pow (stack[sp], stack[sp+1]);
-  return sp;
-}
-
-// ----------------------------------------------------------------------------------------------------------------------------
-// Vector arguments
-
-size_t NodeNumber::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
-{
+  // stack should be pre-allocated
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
   for (size_t k = 0; k < len; k++)
@@ -1664,9 +1537,11 @@ size_t NodeNumber::evaluate (std::vector<Value>& stack, size_t sp, const std::ve
   return sp;
 }
 
-size_t NodeSymbol::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeSymbol::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // this is an unresolved symbol, should not be called
   P_MESSAGE2("Undefined symbol : ", name);
+  // stack should be pre-allocated
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
   for (size_t k = 0; k < len; k++)
@@ -1676,37 +1551,42 @@ size_t NodeSymbol::evaluate (std::vector<Value>& stack, size_t sp, const std::ve
   return sp;
 }
 
-size_t NodeVar::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeVar::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // stack should be pre-allocated
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
+  ConstValue val = fun (this);
   for (size_t k = 0; k < len; k++)
   {
-    data[skip*k] = var[idx].data[k*var[idx].skip];
+    data[skip*k] = val.data[k*val.skip];
   }
   return sp;
 }
 
-size_t NodePar::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodePar::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // stack should be pre-allocated
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
+  ConstValue val = fun (this);
   for (size_t k = 0; k < len; k++)
   {
-    data[skip*k] = par[idx];
+    data[skip*k] = val.data[0];
   }
   return sp;
 }
 
-size_t NodeFunction::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeFunction::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
   P_MESSAGE3("NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
   return sp;
 }
 
-size_t NodeFunctionA1::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeFunctionA1::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
-  args[0] -> evaluate(stack, sp, var, par, len);
+  // stack should be pre-allocated
+  args[0] -> evaluate(stack, sp, fun, len);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
   for (size_t k = 0; k < len; k++)
@@ -1716,10 +1596,12 @@ size_t NodeFunctionA1::evaluate (std::vector<Value>& stack, size_t sp, const std
   return sp;
 }
 
-size_t NodeFunctionA2::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeFunctionA2::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
-  args[0] -> evaluate(stack, sp, var, par, len);
-  args[1] -> evaluate(stack, sp+1, var, par, len);
+  // stack needs one more element
+  if (stack.size() - 1 < sp + 1) stack.resizeDepth (sp + 2 + KNUT_STACK_INCREMENT);
+  args[0] -> evaluate(stack, sp, fun, len);
+  args[1] -> evaluate(stack, sp+1, fun, len);
   double* data1 = stack[sp].data;
   size_t skip1 = stack[sp].skip;
   double* data2 = stack[sp+1].data;
@@ -1731,10 +1613,15 @@ size_t NodeFunctionA2::evaluate (std::vector<Value>& stack, size_t sp, const std
   return sp;
 }
 
-size_t NodeAdd::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeAdd::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // stack needs more elements
+  if (stack.size() - 1 < sp + args.size()) 
+  {
+    stack.resizeDepth (sp + args.size() + KNUT_STACK_INCREMENT);
+  }
   size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par, len); }
+  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, fun, len); }
   if (spi != sp + args.size()) P_MESSAGE7("NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
@@ -1750,10 +1637,15 @@ size_t NodeAdd::evaluate (std::vector<Value>& stack, size_t sp, const std::vecto
   return sp;
 }
 
-size_t NodeTimes::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodeTimes::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // stack needs more elements
+  if (stack.size() - 1 < sp + args.size()) 
+  {
+    stack.resizeDepth (sp + args.size() + KNUT_STACK_INCREMENT);
+  }
   size_t spi = sp;
-  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par, len); }
+  for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, fun, len); }
   if (spi != sp + args.size()) P_MESSAGE7("NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
@@ -1770,11 +1662,16 @@ size_t NodeTimes::evaluate (std::vector<Value>& stack, size_t sp, const std::vec
   return sp;
 }
 
-size_t NodePower::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
+size_t NodePower::evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node*)> fun, size_t len) const
 {
+  // stack needs more elements
+  if (stack.size() - 1 < sp + args.size()) 
+  {
+    stack.resizeDepth (sp + args.size() + KNUT_STACK_INCREMENT);
+  }
   size_t spi = sp;
-  spi = args[0] -> evaluate(stack, sp, var, par, len);
-  spi = args[1] -> evaluate(stack, sp+1, var, par, len);
+  spi = args[0] -> evaluate(stack, sp, fun, len);
+  spi = args[1] -> evaluate(stack, sp+1, fun, len);
   if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   for (size_t p = 0; p < len; p++)
   {
@@ -2561,11 +2458,7 @@ void Expression::knutSplit (
   parInit.resize (par_name.size());
   for (size_t p = 0; p < par_name.size(); p++)
   {
-    size_t stmax = 0;
-    par_value[p] -> stackCount (0,stmax);
-    std::vector<double> stack (stmax);
-    par_value[p] -> evaluate (stack, 0, var_numval, parInit);
-    parInit[p] = stack[0];
+    par_value[p] -> evaluateWithPar (&parInit[p], parInit);
   }
 
   // fill up the starting point
@@ -2581,11 +2474,7 @@ void Expression::knutSplit (
   {
     if (var_mass[p] != nullptr)
     {
-      size_t stmax = 0;
-      var_mass[p] -> stackCount(0,stmax);
-      std::vector<double> stack(stmax);
-      var_mass[p] -> evaluate (stack, 0, var_numval, parInit);
-      varMass[p] = stack[0];
+      var_mass[p] -> evaluateWithPar (&varMass[p], parInit);
     } else varMass[p] = 1.0;
   }
   
@@ -2649,10 +2538,7 @@ void Expression::knutSplit (
     // take over ownership
     delayExpr[r].fromNode (delay);
     // evaluate to find undefined symbols
-    size_t stmax = 0;
-    delayExpr[r].stackCount (stmax);
-    std::vector<double> stack (stmax);
-    delayExpr[r].evaluate (stack, var_numval, parInit);
+    delayExpr[r].test ();
   }
 
   // render delay into identity
@@ -2688,10 +2574,7 @@ void Expression::knutSplit (
   {
     varDotExpr[q].fromNode (var_dot[q]);
     // evaluate to find undefined symbols
-    size_t stmax = 0;
-    varDotExpr[q].stackCount (stmax);
-    std::vector<double> stack (stmax);
-    varDotExpr[q].evaluate (stack, var_numval, parInit);
+    varDotExpr[q].test ();
   }
 
   // cleaning up the variables

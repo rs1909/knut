@@ -160,6 +160,14 @@ class KNArray1D
       return &v[i];
     }
 
+    inline const T *pointer(const size_t i) const
+    {
+#ifdef DEBUG
+      P_ASSERT_X(i < n, "KNArray1D::bound11&");
+#endif
+      return &v[i];
+    }
+
     inline size_t size() const
     {
       return n;
@@ -365,14 +373,20 @@ class KNArray3D
 
     inline KNArray3D(size_t _d1, size_t _d2, size_t _d3) : d1(_d1), d2(_d2), d3(_d3)
     {
-      m = new T[d1*d2*d3+1];
-      clear();
+      if (d1*d2*d3 > 0)
+      {
+        m = new T[d1*d2*d3+1];
+        clear();
+      } else m = nullptr;
     }
 
     inline KNArray3D(const KNArray3D<T>& M) : d1(M.d1), d2(M.d2), d3(M.d3)
     {
-      m = new T[d1*d2*d3+1];
-      for (size_t i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
+      if (d1*d2*d3 > 0)
+      {
+        m = new T[d1*d2*d3+1];
+        for (size_t i = 0; i < d1*d2*d3; i++) m[i] = M.m[i];
+      } else m = nullptr;
     }
 
     inline virtual ~KNArray3D()
