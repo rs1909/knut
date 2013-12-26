@@ -6,7 +6,7 @@ PROJECT( KNUT )
 #------------------------------------------------------------------------------
 
 SET( PACKAGE_NAME "Knut" )
-SET( PACKAGE_VERSION "8" )
+SET( PACKAGE_VERSION "9" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2013, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
@@ -217,7 +217,7 @@ ENDIF( CMAKE_BUILD_TYPE MATCHES "[D,d][E,e][B,b][U,u][G,g]" )
 #------------------------------------------------------------------------------
 
 SET( DIST_DIR ${PACKAGE_NAME}-${PACKAGE_VERSION} )
-ADD_CUSTOM_TARGET( dist 
+ADD_CUSTOM_TARGET( dist
 	COMMAND ln -s ${KNUT_SOURCE_DIR} ${DIST_DIR}\;
 		ln -s ${KNUT_BINARY_DIR}/knut.spec ${DIST_DIR}/knut.spec\;
 		pushd ${KNUT_SOURCE_DIR}\;
@@ -236,11 +236,11 @@ ADD_CUSTOM_TARGET( dist
 IF(APPLE)
   # FOR DETERMINING THE APPLICATION FILE PATH
   FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation )
-  # CREATING A MAC OSX DISK IMAGE  
+  # CREATING A MAC OSX DISK IMAGE
   ADD_CUSTOM_TARGET( dmg
     COMMAND pushd ${CMAKE_INSTALL_PREFIX}\;
     rm -f "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg" \;
-    hdiutil create -volname "Knut" -srcfolder Knut.app/ 
+    hdiutil create -volname "Knut" -srcfolder Knut.app/
       -srcfolder matlab/
       -srcfolder demo/
       "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg" \;
@@ -277,4 +277,6 @@ endif(${Qt5Core_FOUND})
 ADD_SUBDIRECTORY(demo)
 
 # MATLAB scripts
+IF( EXISTS ${MEX_EXECUTABLE} )
 ADD_SUBDIRECTORY(matlab)
+ENDIF( EXISTS ${MEX_EXECUTABLE} )
