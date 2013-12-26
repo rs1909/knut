@@ -7,13 +7,14 @@
 //
 // ------------------------------------------------------------------------- //
 
-#define KNUTSYS_H 
+#define KNUTSYS_H
 
 #include "expr.h"
 #include "exprsystem.h"
 #include "knerror.h"
 #include "matrix.h"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -38,7 +39,7 @@ extern "C"{
 #include <unistd.h>
 #else
 #include <windows.h>
-#endif 
+#endif
 }
 
 // for the compile time check results
@@ -65,7 +66,7 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
   {
     P_MESSAGE2("Cannot open ", sysName);
   }
-  
+
   std::string vfexpr;
   if (Expression::fromXML (vfexpr, contents)) {}
   else vfexpr = contents;
@@ -76,19 +77,53 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 //   std::cout << contents << "\n";
 //   std::cout << "-END EX\n";
 //   std::cout.flush ();
- 
+
   KNExprSystem::constructor (vfexpr, sysName, trycompile);
 }
 
-KNExprSystem::KNExprSystem () : stack (nullptr, 1), handle(nullptr)
+KNExprSystem::KNExprSystem () : stack (nullptr, 1), handle (nullptr)
 {
 }
 
-KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : stack (nullptr, 1), handle(nullptr)
+KNExprSystem::KNExprSystem (const std::string& vfexpr, bool trycompile) : stack (nullptr, 1), handle (nullptr)
 {
   constructor (vfexpr, std::string(), trycompile);
 }
-  
+
+bool KNExprSystem::checkExpression (const NodeExpr* expr) const
+{
+//   std::cout << "tried:";expr->print (std::cout); std::cout << "-";
+  if (expr != nullptr)
+  {
+    //   const size_t NE = exprFormula.size();
+    const size_t NX = varDotExpr.size();
+    const size_t NP = parName.size();
+    const size_t NT = delayExpr.size() + 1;
+    const size_t q = expr->getIdx ();
+    const size_t nv = expr->getNv ();
+    const size_t np = expr->getNp ();
+
+    if ((nv == 0) && (np == 0)) return exprFormula[q].isZero ();
+
+    const size_t dp = expr->getDp ();
+    if ((nv == 0) && (np == 1)) return exprFormula_p[dp + q*NP].isZero ();
+
+    const size_t dv0 = (expr->getDv0 ()) - 1; // time is removed
+    if ((nv == 1) && (np == 0)) return exprFormula_x[dv0 + q*NX*NT].isZero ();
+    if ((nv == 1) && (np == 1)) return exprFormula_x_p[dp + (dv0 + q*NX*NT)*NP].isZero ();
+
+    const size_t dv1 = (expr->getDv1 ()) - 1; // time is removed
+    if ((nv == 2) && (np == 0))
+    {
+//       expr->print (std::cout); std::cout << "=";
+//       exprFormula_hess[dv1 + (dv0 + q*NX*NT)*NX*NT].print(std::cout); std::cout << " - ";
+      return exprFormula_hess[dv1 + (dv0 + q*NX*NT)*NX*NT].isZero ();
+    }
+  }
+  std::cout << "NAE ";
+  return false;
+}
+
 void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sysName, bool trycompile)
 {
   std::string vfName;
@@ -102,28 +137,34 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 //   std::cout.flush ();
   try
   {
-    expr.knutSplit (vfName, varName, varDotExpr, varInit, varMass, delayExpr, parName, parInit );
+    expr.knutSplit (vfName, varName, varDotExpr, exprName, exprFormula, varInit, varMass, delayExpr, parName, parInit );
   }
   catch (KNException& ex)
   {
     std::cout << ex.str();
   }
-  
+
 #ifdef DEBUG
   // print everything to see if there's an error
   std::cout << "NAME = "<< vfName << "\n";
+  for (std::string& it : exprName ) std::cout << "EXPR = " << it << "\n";
+  for (ExpTree::Expression& it : exprFormula ) { it.optimize (); std::cout << "EFORM = "; it.print (std::cout); std::cout << "\n"; }
   for (std::string& it : varName ) std::cout << "VAR = " << it << "\n";
-  for (ExpTree::Expression& it : varDotExpr ) { it.optimize (); std::cout << "DOT = "; it.print (std::cout); std::cout << "\n"; }
+  for (ExpTree::Expression& it : varDotExpr )
+  {
+    it.optimize ();
+    std::cout << "DOT = "; it.print (std::cout); std::cout << "\n";
+  }
   for (ExpTree::Expression& it : varInit ) { it.optimize (); std::cout << "INIT = "; it.print (std::cout); std::cout << "\n"; }
   for (double& it : varMass ) std::cout << "MASS = " << it << "\n";
   for (ExpTree::Expression& it : delayExpr ) { it.optimize ();std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
   for (std::string& it : parName ) std::cout << "PAR = " << it << "\n";
   for (double& it : parInit ) std::cout << "PARINIT = " << it << "\n";
 #endif
-  
+
   // no name was provided
   if (vfName.empty ()) trycompile = false;
-  
+
   // Delay W.R.T. parameters
   delayExprDeri.resize (delayExpr.size()*parName.size());
   for (size_t p = 0; p < parName.size(); p++)
@@ -134,121 +175,162 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
       delayExpr[q].derivative(delayExprDeri[p + q*parName.size()], &pid);
     }
   }
-  
-  // W.R.T. parameters
-  varDot_p.resize (varDotExpr.size()*parName.size());
-  for (size_t q = 0; q < varDotExpr.size(); q++)
-  {
-    for (size_t p = 0; p < parName.size(); p++)
-    {
-      NodePar pid(p);
-      varDotExpr[q].derivative(varDot_p[p + q*parName.size()], &pid);
-    }
-  }
 
-  // Jacobian
-  varDot_x.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1));
-  for (size_t q = 0; q < varDotExpr.size(); q++)
-  {
-    for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-    {
-      NodeVar vid(1 + p);
-      varDotExpr[q].derivative(varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)], &vid);
-    }
-  }
-  // mixed
-  varDot_x_p.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1)*parName.size());
-  for (size_t r = 0; r < parName.size(); r++)
-  {
-    NodePar pid(r);
-    for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-    {
-      for (size_t q = 0; q < varDotExpr.size(); q++)
-      {
-        varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)].
-          derivative(varDot_x_p[r + (p + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()], &pid);
-      }
-    }
-  }  
-  // Hessian
-//  varDot_xx.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1));
-//  // Matrix - Vector multiplication with the Jacobian & taking the derivative
-//  std::vector<NodeVar*> newvar(varDotExpr.size()*(delayExpr.size() + 1));
-//  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-//  {
-//    newvar[p] = new NodeVar(1 + p + varDotExpr.size()*(delayExpr.size() + 1));
-//  }
-//  
-//  for (size_t q = 0; q < varDotExpr.size(); q++)
-//  {
-//    NodeAdd* ta = new NodeAdd(varDotExpr.size()*(delayExpr.size() + 1));
-//    for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-//    {
-//      NodeTimes* tm = new NodeTimes(2);
-//      tm -> addArgument (0, varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)].copy(), 1.0, false);
-//      tm -> addArgument (1, newvar[p] -> copy(), 1.0, false);
-//      ta -> addArgument (p, tm, 1.0);
-//    }
-//    Node* opta = ta;
-//    ta = 0;
-//    opta -> optimize (&opta);
-//    for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
-//    {
-//      NodeVar vid(1 + k);
-//      Node* deri = opta -> derivative (&vid);
-////      Node* deri = opta -> copy ();
-//      deri -> optimize (&deri);
-//      varDot_xx[k + q*varDotExpr.size()*(delayExpr.size() + 1)].fromNode (deri);
-//    }
-//    opta -> deleteTree ();
-//    delete opta;
-//  }
-//  // cleaning up
-//  for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
-//  {
-//    delete newvar[p];
-//  }
-
-  // hessian original interpretation (INEFFICIENT)
-  varDot_hess.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1));
-  // k : dim1 = varDotExpr.size()*(delayExpr.size() + 1) deri w.r.t
-  // l : dim2 = vx[0] which delay of vv
-  // q : dim3 = rhs index
-  // Matrix - Vector multiplication with the Jacobian & taking the derivative
+  // needed for the hessian
   std::vector<NodeVar*> vvsub(varDotExpr.size()*(delayExpr.size() + 1));
   for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
   {
     vvsub[p] = new NodeVar(1 + p + varDotExpr.size()*(delayExpr.size() + 1));
   }
-  for (size_t q = 0; q < varDotExpr.size(); q++)
+
+  // The expression formulae
+  const size_t NE = exprFormula.size();
+  const size_t NX = varDotExpr.size();
+  const size_t NP = parName.size();
+  const size_t NT = delayExpr.size() + 1;
+
+  // establish dependencies
+//   varDot_deps.resize (NX);
+//   for (size_t q = 0; q < NX; q++)
+//   {
+//     size_t ref = exprFormula.size ();
+//     dependsOn (varDot_deps[q], varDotExpr[q].node (), ref);
+//   }
+
+  // this is checking if something is zero
+  auto echeck = [this](const Node* ex) { return checkExpression (dynamic_cast<const NodeExpr*>(ex)); };
+
+  // W.R.T. parameters
+  exprFormula_p.resize (NE*NP);
+  for (size_t q = 0; q < NE; q++)
   {
-    for (size_t l = 0; l < (delayExpr.size() + 1); l++)
+    for (size_t p = 0; p < NP; p++)
     {
-      NodeAdd* ta = new NodeAdd(varDotExpr.size());
-      for (size_t p = 0; p < varDotExpr.size(); p++)
+      NodePar pid(p);
+      exprFormula[q].derivative(exprFormula_p[p + q*NP], &pid, echeck);
+    }
+  }
+
+  // Jacobian
+  exprFormula_x.resize (NE*NX*NT);
+  for (size_t q = 0; q < NE; q++)
+  {
+    for (size_t p = 0; p < NX*NT; p++)
+    {
+      NodeVar vid(1 + p);
+      exprFormula[q].derivative(exprFormula_x[p + q*NX*NT], &vid, echeck);
+    }
+  }
+  // mixed
+  exprFormula_x_p.resize (NE*NX*NT*NP);
+  for (size_t r = 0; r < NP; r++)
+  {
+    NodePar pid(r);
+    for (size_t p = 0; p < NX*NT; p++)
+    {
+      for (size_t q = 0; q < NE; q++)
+      {
+        exprFormula_x[p + q*NX*NT].derivative(exprFormula_x_p[r + (p + q*NX*NT)*NP], &pid, echeck);
+      }
+    }
+  }
+  // Hessian
+//   std::cout << "HESSIAN\n";
+  exprFormula_hess.resize (NE*NX*NX*NT*NT);
+  for (size_t q = 0; q < NE; q++)
+  {
+    for (size_t p = 0; p < NX*NT; p++)
+    {
+      for (size_t r = 0; r < NX*NT; r++)
+      {
+        NodeVar vid(1 + r);
+        const size_t idx = r + (p + q*NX*NT)*NX*NT;
+        exprFormula_x[p + q*NX*NT].derivative(exprFormula_hess[idx], &vid, echeck);
+//         if (!exprFormula_hess[idx].isZero())
+//         {
+//           std::cout << exprName[q] << "=";
+//           exprFormula[q].print(std::cout);
+//           std::cout << "__(" << p << "," << r << ")=";
+//           exprFormula_hess[idx].print (std::cout);
+//           std::cout << "\n";
+//         }
+      }
+    }
+  }
+
+  // The RHS formulae
+  // W.R.T. parameters
+  varDot_p.resize (NX*NP);
+  for (size_t q = 0; q < NX; q++)
+  {
+    for (size_t p = 0; p < NP; p++)
+    {
+      NodePar pid(p);
+      varDotExpr[q].derivative(varDot_p[p + q*NP], &pid, echeck);
+    }
+  }
+
+  // Jacobian
+  varDot_x.resize (NX*NX*NT);
+  for (size_t q = 0; q < NX; q++)
+  {
+    for (size_t p = 0; p < NX*NT; p++)
+    {
+      NodeVar vid(1 + p);
+      varDotExpr[q].derivative(varDot_x[p + q*NX*NT], &vid, echeck);
+    }
+  }
+  // mixed
+  varDot_x_p.resize (NX*NX*NT*NP);
+  for (size_t r = 0; r < NP; r++)
+  {
+    NodePar pid(r);
+    for (size_t p = 0; p < NX*NT; p++)
+    {
+      for (size_t q = 0; q < NX; q++)
+      {
+        varDot_x[p + q*NX*NT].
+          derivative(varDot_x_p[r + (p + q*NX*NT)*NP], &pid, echeck);
+      }
+    }
+  }
+  // Hessian
+  varDot_hess.resize (NX*NX*NT*NT);
+  // k : dim1 = NX*NT deri w.r.t
+  // l : dim2 = vx[0] which delay of vv
+  // q : dim3 = rhs index
+  // Matrix - Vector multiplication with the Jacobian & taking the derivative
+//   std::cout << "START HESSIAN\n";
+  for (size_t q = 0; q < NX; q++)
+  {
+    for (size_t l = 0; l < NT; l++)
+    {
+      NodeAdd* ta = new NodeAdd(NX);
+      for (size_t p = 0; p < NX; p++)
       {
         NodeTimes* tm = new NodeTimes(2);
-        tm -> addArgument (0, varDot_x[p + l*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].copy(), 1.0, false);
-        tm -> addArgument (1, vvsub[p + l*varDotExpr.size()] -> copy(), 1.0, false);
+        tm -> addArgument (0, varDot_x[p + l*NX + q*NX*NT].copy(), 1.0, false);
+        tm -> addArgument (1, vvsub[p + l*NX] -> copy(), 1.0, false);
         ta -> addArgument (p, tm, 1.0);
       }
       Node* opta = ta;
       ta = 0;
 //      opta -> optimize (&opta);
-      for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
+      for (size_t k = 0; k < NX*NT; k++)
       {
         NodeVar vid(1 + k);
-        Node* deri = opta -> derivative (&vid);
+        Node* deri = opta -> derivative (&vid, echeck);
 //        Node* deri = opta -> copy ();
-        deri -> optimize (&deri);
-        size_t idx = k + l*varDotExpr.size()*(delayExpr.size() + 1) + 
-           q*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1);
+        deri -> optimize (&deri, echeck);
+        size_t idx = k + l*NX*NT +
+           q*NX*NT*NT;
         varDot_hess[idx].fromNode (deri);
       }
       opta -> deleteTree ();
       delete opta;
     }
   }
+//   std::cout << "END HESSIAN\n";
   // cleaning up
   for (size_t p = 0; p < vvsub.size(); p++)
   {
@@ -260,10 +342,10 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     std::string shobj(vfName);
     shobj += ".so";
-    
+
     struct stat sbuf_so;
     struct stat sbuf_vf;
-    
+
     bool compile_cxx = true;
     int res_so = stat(shobj.c_str(), &sbuf_so);
     if (!sysName.empty ())
@@ -273,7 +355,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
       if (res_so != 0) compile_cxx = true;
       else compile_cxx = to_compile(&sbuf_so, &sbuf_vf);
     }
-    
+
     if (compile_cxx)
     {
       std::string executableDir;
@@ -317,28 +399,24 @@ void KNExprSystem::toString (std::string& vfexpr)
   vfexpr = ostr.str ();
 }
 
-static inline const ConstValue knsys_fun_par (size_t idx, const KNVector& par)
+// should use the same stack
+// otherwise it only works with a single expression
+const void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
 {
-  ExpTree::ConstValue val;
-  val.data = par.pointer(idx);
-  val.skip = 1;
-  return val;
-}
+  const size_t ND = var.dim1 ();
+  const size_t NT = delayExpr.size () + 1;
+  const size_t NX = varDotExpr.size ();
+  const size_t NP = parName.size ();
+  const size_t len = time.size ();
 
-static inline const ConstValue knsys_fun_var (size_t x, size_t d, const KNArray3D<double>& var)
-{
-  ExpTree::ConstValue val;
-  val.data = const_cast<KNArray3D<double>&>(var).pointer (x,d,0);
-  val.skip = (((size_t)const_cast<KNArray3D<double>&>(var).pointer(x,d,1)) - ((size_t)const_cast<KNArray3D<double>&>(var).pointer(x,d,0)))/sizeof(double);
-  return val;
-}
-
-static const ConstValue knsys_fun_var_vv (const Node* node, const size_t ndim, const size_t ntau, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
-{
   const NodePar* par_node = dynamic_cast<const NodePar*>(node);
   if (par_node != nullptr)
   {
-    return knsys_fun_par (par_node->getIdx(), par);
+    for (size_t k = 0; k < len; k++)
+    {
+      stack[sp].data[(stack[sp].skip)*k] = par (par_node->getIdx());
+    }
+    return;
   }
 
   const NodeVar* var_node = dynamic_cast<const NodeVar*>(node);
@@ -347,26 +425,76 @@ static const ConstValue knsys_fun_var_vv (const Node* node, const size_t ndim, c
     const size_t idx = var_node->getIdx();
     if (idx == 0)
     {
-      ExpTree::ConstValue val;
-      val.skip = 1;
-      val.data = time.pointer(0);
-      return val;
+      for (size_t k = 0; k < len; k++)
+      {
+        stack[sp].data[(stack[sp].skip)*k] = time (k);
+      }
+      return;
     }
-    else if (idx < (ndim*ntau + 1))
+    else if (idx < (ND*NT + 1))
     {
-      const size_t d = (idx-1) / ndim;
-      const size_t x = (idx-1) % ndim;
-      return knsys_fun_var (x, d, var);
+      const size_t d = (idx - 1) / ND;
+      const size_t x = (idx - 1) % ND;
+      for (size_t k = 0; k < len; k++)
+      {
+        stack[sp].data[(stack[sp].skip)*k] = var (x,d,k);
+      }
+      return;
     } else
     {
-      const size_t id2 = idx - (ndim*ntau + 1);
-      const size_t d = id2 / ndim;
-      const size_t x = id2 % ndim;
-      return knsys_fun_var (x, d, vv);
+      const size_t id2 = idx - (ND*NT + 1);
+      const size_t d = id2 / ND;
+      const size_t x = id2 % ND;
+      for (size_t k = 0; k < len; k++)
+      {
+        stack[sp].data[(stack[sp].skip)*k] = vv (x,d,k);
+      }
+      return;
+    }
+  }
+
+  const NodeExpr* expr_node = dynamic_cast<const NodeExpr*>(node);
+  if (expr_node != nullptr)
+  {
+    const size_t q = expr_node->getIdx ();
+    const size_t nv = expr_node->getNv ();
+    const size_t np = expr_node->getNp ();
+    auto callback = [this, time, var, vv, par] (size_t sp1, const Node* node)
+    { knsys_fun_expr (sp1, node, time, var, vv, par); };
+
+    if ((nv == 0) && (np == 0))
+    {
+      exprFormula[q].evaluate (stack, callback, sp, time.size());
+      return;
+    }
+
+    const size_t dp = expr_node->getDp ();
+    if ((nv == 0) && (np == 1))
+    {
+      exprFormula_p[dp + q*NP].evaluate (stack, callback, sp, time.size());
+      return;
+    }
+
+    const size_t dv0 = expr_node->getDv0 () - 1; // time is removed
+    if ((nv == 1) && (np == 0))
+    {
+      exprFormula_x[dv0 + q*NX*NT].evaluate (stack, callback, sp, time.size());
+      return;
+    }
+    if ((nv == 1) && (np == 1))
+    {
+      exprFormula_x_p[dp + (dv0 + q*NX*NT)*NP].evaluate (stack, callback, sp, time.size());
+      return;
+    }
+
+    const size_t dv1 = expr_node->getDv1 () - 1; // time is removed
+    if ((nv == 2) && (np == 0))
+    {
+      exprFormula_hess[dv1 + (dv0 + q*NX*NT)*NX*NT].evaluate (stack, callback, sp, time.size());
+      return;
     }
   }
   P_MESSAGE1("Invalid Node.");
-  return ExpTree::ConstValue();
 }
 
 #ifdef DEBUG
@@ -409,20 +537,20 @@ static inline double comp3D (const KNArray3D<double>& a1, const KNArray3D<double
 }
 #endif
 
-size_t KNExprSystem::ndim() const 
+size_t KNExprSystem::ndim() const
 {
   if (fp_ndim) return fp_ndim ();
   else return varDotExpr.size();
 }
 
 /// WARNING Why do we need to add 3 to it?
-size_t KNExprSystem::npar() const 
+size_t KNExprSystem::npar() const
 {
   if (fp_npar) return fp_npar ();
   else return parName.size() - 3;
 }
 
-size_t KNExprSystem::ntau() const 
+size_t KNExprSystem::ntau() const
 {
   if (fp_ntau) return fp_ntau ();
   else return delayExpr.size() + 1;
@@ -441,17 +569,16 @@ void KNExprSystem::p_tau ( KNArray2D<double>& out, const KNArray1D<double>& time
   {
     stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-//     fillTime (time);
-//     fillPar (par);
-    
+
     const KNArray3D<double> var (ndim(), 0, 0);
     const KNArray3D<double> vv (ndim(), 0, 0);
-    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+    auto fun = [this, time, var, vv, par] (size_t sp1, const Node* node) { knsys_fun_expr (sp1, node, time, var, vv, par); };
+
     for (size_t k = 0; k < time.size (); k++) out (0,k) = 0.0;
     for (size_t k = 0; k < delayExpr.size(); k++)
     {
       stack[0].data = out.pointer(1 + k,0);
-      delayExpr[k].evaluate (stack, fun, time.size ());
+      delayExpr[k].evaluate (stack, fun, 0, time.size ());
     }
   }
 #ifdef DEBUG
@@ -476,15 +603,16 @@ void KNExprSystem::p_dtau ( KNArray2D<double>& out, const KNArray1D<double>& tim
     P_ERROR(vp < parName.size() + 1);
     stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+
     const KNArray3D<double> var (ndim(), 0, 0);
     const KNArray3D<double> vv (ndim(), 0, 0);
-    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
-    
+    auto fun = [this, time, var, vv, par] (size_t sp1, const Node* node) { knsys_fun_expr (sp1, node, time, var, vv, par); };
+
     for (size_t k = 0; k < time.size (); k++) out (0,k) = 0.0;
     for (size_t k = 0; k < delayExpr.size(); k++)
     {
       stack[0].data = out.pointer(1 + k,0);
-      delayExprDeri[vp + k*parName.size()].evaluate (stack, fun, time.size ());
+      delayExprDeri[vp + k*parName.size()].evaluate (stack, fun, 0, time.size ());
     }
   }
 #ifdef DEBUG
@@ -517,14 +645,14 @@ void KNExprSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
   {
     stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
-//     const KNArray3D<double> var (ndim(), 0, 0);
+
     const KNArray3D<double> vv (ndim(), 0, 0);
-    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+    auto fun = [this, time, var, vv, par] (size_t sp1, const Node* node) { knsys_fun_expr (sp1, node, time, var, vv, par); };
 
     for (size_t k = 0; k < varDotExpr.size(); k++)
     {
       stack[0].data = out.pointer (k,0);
-      varDotExpr[k].evaluate (stack, fun, time.size ());
+      varDotExpr[k].evaluate (stack, fun, 0, time.size ());
     }
   }
 #ifdef DEBUG
@@ -532,6 +660,14 @@ void KNExprSystem::p_rhs( KNArray2D<double>& out, const KNArray1D<double>& time,
   if (res > 1e-5)
   {
     std::cout << "RHS diff=" << res << "\n";
+    for (size_t k = 0; k < out.dim1(); k++)
+    {
+      for (size_t l = 0; l < out.dim2(); l++)
+      {
+        std::cout << out(k,l) - o2(k,l) << "|";
+      }
+      std::cout << "\n";
+    }
   }
 #endif
 }
@@ -549,13 +685,13 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
   {
     stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,0,1)) - ((size_t)out.pointer(0,0,0)))/sizeof(double);
-    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
+    auto fun = [this, time, var, vv, par] (size_t sp1, const Node* node) { knsys_fun_expr (sp1, node, time, var, vv, par); };
 
     P_ERROR( par.size() >= parInit.size () );
     P_ERROR( var.dim3() == time.size () );
     P_ERROR( var.dim2() >= (delayExpr.size() + 1) );
     P_ERROR( var.dim1() == varDotExpr.size() );
-    
+
     // parameters
     if (nx == 0 && np == 1)
     {
@@ -566,8 +702,8 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
       {
         stack[0].data = out.pointer (k,0,0);
         stack[0].skip = (((size_t)out.pointer(k,0,1)) - ((size_t)out.pointer(k,0,0)))/sizeof(double);
-        varDot_p[vp[0] + k*parName.size()].evaluate (stack, fun, time.size ());
-      }    
+        varDot_p[vp[0] + k*parName.size()].evaluate (stack, fun, 0, time.size ());
+      }
     }
     // jacobian
     if (nx == 1 && np == 0)
@@ -581,7 +717,7 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
         {
           stack[0].data = out.pointer (q,p,0);
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
-          varDot_x[p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].evaluate (stack, fun, time.size ());
+          varDot_x[p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].evaluate (stack, fun, 0, time.size ());
         }
       }
     }
@@ -594,32 +730,13 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
         {
           stack[0].data = out.pointer (q,p,0);
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
-          varDot_x_p[vp[0] + (p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()].evaluate (stack, fun, time.size ());
+          varDot_x_p[vp[0] + (p + vx[0]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()].evaluate (stack, fun, 0, time.size ());
         }
       }
     }
-    // hessian NEW
-  //   if (nx == 2 && np == 0)
-  //   {
-  //     if (vx[0] != 0) { out.clear (); return; }
-  // //    std::cout << "waring: HESSIAN called\n"; // currently incompatible ...
-  //     fillVar2 (vv);
-  //     for (size_t q = 0; q < varDotExpr.size(); q++)
-  //     {
-  //       for (size_t p = 0; p < varDotExpr.size(); p++)
-  //       {
-  //         stack[0].data = out.pointer (q,p,0);
-  //         varDot_xx[p + vx[1]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].evaluate (stack, varArray, parArray, time.size ());
-  // //        std::cout << "d_xx("<< q << "," << p << ") = "; std::cout.flush();
-  // //        varDot_xx[p + vx[1]*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].print(std::cout);
-  // //        std::cout << " = " << stack[0].data[0] << "\n";
-  //       }
-  //     }
-  //   }
-  // hessian OLD TYPE
+    // hessian
     if (nx == 2 && np == 0)
     {
-//       fillVar2 (vv);
       P_ERROR( out.dim3() == time.size () );
       P_ERROR( out.dim2() == varDotExpr.size() );
       P_ERROR( out.dim1() == varDotExpr.size() );
@@ -634,9 +751,9 @@ void KNExprSystem::p_deri( KNArray3D<double>& out, const KNArray1D<double>& time
         {
           stack[0].data = out.pointer (q,p,0);
           stack[0].skip = (((size_t)out.pointer(q,p,1)) - ((size_t)out.pointer(q,p,0)))/sizeof(double);
-          const size_t idx = p + vx[1]*varDotExpr.size() + vx[0]*varDotExpr.size()*(delayExpr.size() + 1) + 
+          const size_t idx = p + vx[1]*varDotExpr.size() + vx[0]*varDotExpr.size()*(delayExpr.size() + 1) +
             q*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1);
-          varDot_hess[idx].evaluate (stack, fun, time.size ());
+          varDot_hess[idx].evaluate (stack, fun, 0, time.size ());
         }
       }
     }
@@ -670,15 +787,16 @@ void KNExprSystem::stsol (KNArray2D<double>& out, const KNArray1D<double>& time)
   {
     stack.resizeWidth (time.size ());
     stack[0].skip = (((size_t)out.pointer(0,1)) - ((size_t)out.pointer(0,0)))/sizeof(double);
+
     const KNArray3D<double> var (ndim(), 0, 0);
     const KNArray3D<double> vv (ndim(), 0, 0);
     const KNVector par;
-    auto fun = [this, time, var, vv, par] (const Node* node) -> const ConstValue { return knsys_fun_var_vv (node, ndim(), ntau(), time, var, vv, par); };
-    
+    auto fun = [this, time, var, vv, par] (size_t sp1, const Node* node) { knsys_fun_expr (sp1, node, time, var, vv, par); };
+
     for (size_t k = 0; k < varInit.size(); k++)
     {
       stack[0].data = out.pointer(k,0);
-      varInit[k].evaluate (stack, fun, time.size ());
+      varInit[k].evaluate (stack, fun, 0, time.size ());
     }
   }
 }
@@ -695,7 +813,7 @@ void KNExprSystem::parnames (const char *names[]) const
   }
 }
 
-static Node* indicesToCxx(const Expression& expr, 
+static Node* indicesToCxx(const Expression& expr,
                          const std::vector<NodePar*>& parlist,
                          const std::vector<NodeSymbol*>& parsymlist,
                          const std::vector<NodeVar*>& varlist,
@@ -713,19 +831,220 @@ static Node* indicesToCxx(const Expression& expr,
   return nd;
 }
 
+void KNExprSystem::printExpr (std::ostream& out, size_t spaces,
+                         const std::vector<NodePar*>& parlist,
+                         const std::vector<NodeSymbol*>& parsymlist,
+                         const std::vector<NodeVar*>& varlist,
+                         const std::vector<NodeSymbol*>& varsymlist) const
+{
+  const size_t NE = exprFormula.size();
+  for (size_t k = 0; k < NE; k++)
+  {
+    Node* nd = indicesToCxx (exprFormula[k], parlist, parsymlist, varlist, varsymlist);
+    for (size_t s = 0; s < spaces; s++) out << ' ';
+    out << "const double ex" << k << " = ";
+    nd -> print (out);
+    out << ";\n";
+    nd -> deleteTree();
+    delete nd;
+  }
+}
+
+void KNExprSystem::printExpr_x (std::ostream& out, size_t k, size_t spaces,
+                         const std::vector<NodePar*>& parlist,
+                         const std::vector<NodeSymbol*>& parsymlist,
+                         const std::vector<NodeVar*>& varlist,
+                         const std::vector<NodeSymbol*>& varsymlist) const
+{
+  const size_t NT = delayExpr.size() + 1;
+  const size_t NX = varDotExpr.size();
+  const size_t NE = exprFormula.size();
+  for (size_t q = 0; q < NE; q++)
+  {
+    for (size_t p = 0; p < NX; p++)
+    {
+      if (!exprFormula_x[p + k*NX + q*NX*NT].isZero())
+      {
+        Node* nd = indicesToCxx(exprFormula_x[p + k*NX + q*NX*NT], parlist, parsymlist, varlist, varsymlist);
+        for (size_t s = 0; s < spaces; s++) out << ' ';
+        out << "const double ex" << q << "_v" << p + k*NX + 1 << " = ";
+        nd -> print (out);
+        out << ";\n";
+        nd -> deleteTree();
+        delete nd;
+      }
+    }
+  }
+}
+
+void KNExprSystem::printExpr_p (std::ostream& out, size_t p, size_t spaces,
+                         const std::vector<NodePar*>& parlist,
+                         const std::vector<NodeSymbol*>& parsymlist,
+                         const std::vector<NodeVar*>& varlist,
+                         const std::vector<NodeSymbol*>& varsymlist) const
+{
+  const size_t NE = exprFormula.size();
+  const size_t NP = parName.size();
+  for (size_t k = 0; k < NE; k++)
+  {
+    if (!exprFormula_p[p + k*NP].isZero())
+    {
+      Node* nd = indicesToCxx(exprFormula_p[p + k*NP], parlist, parsymlist, varlist, varsymlist);
+      for (size_t s = 0; s < spaces; s++) out << ' ';
+      out << "const double ex" << k << "_p" << p << " = ";
+      nd -> print (out);
+      out << ";\n";
+      nd -> deleteTree();
+      delete nd;
+    }
+  }
+}
+
+void KNExprSystem::printExpr_x_p (std::ostream& out, size_t k, size_t p, size_t spaces,
+                         const std::vector<NodePar*>& parlist,
+                         const std::vector<NodeSymbol*>& parsymlist,
+                         const std::vector<NodeVar*>& varlist,
+                         const std::vector<NodeSymbol*>& varsymlist) const
+{
+  const size_t NT = delayExpr.size() + 1;
+  const size_t NX = varDotExpr.size();
+  const size_t NE = exprFormula.size();
+  const size_t NP = parName.size();
+  for (size_t q = 0; q < NE; q++)
+  {
+    for (size_t r = 0; r < NX; r++)
+    {
+      if (!exprFormula_x_p[p + (r + k*NX + q*NX*NT)*NP].isZero())
+      {
+        Node* nd = indicesToCxx(exprFormula_x_p[p + (r + k*NX + q*NX*NT)*NP],
+                                parlist, parsymlist, varlist, varsymlist);
+        for (size_t s = 0; s < spaces; s++) out << ' ';
+        out << "const double ex" << q << "_p" << p << "_v" << r + k*NX + 1 << " = ";
+        nd -> print (out);
+        out << ";\n";
+        nd -> deleteTree();
+        delete nd;
+      }
+    }
+  }
+}
+
+void KNExprSystem::printExpr_hess (std::ostream& out, size_t k1, size_t k2, size_t spaces,
+                         const std::vector<NodePar*>& parlist,
+                         const std::vector<NodeSymbol*>& parsymlist,
+                         const std::vector<NodeVar*>& varlist,
+                         const std::vector<NodeSymbol*>& varsymlist) const
+{
+  const size_t NT = delayExpr.size() + 1;
+  const size_t NX = varDotExpr.size();
+  const size_t NE = exprFormula.size();
+  for (size_t q = 0; q < NE; q++)
+  {
+    for (size_t p = 0; p < NX; p++)
+    {
+      size_t lim = NX;
+      if (k1 == k2) lim = p+1;
+      for (size_t r = 0; r < lim; r++)
+      {
+        const size_t i1 = p + k1*NX;
+        const size_t i2 = r + k2*NX;
+        const size_t idx = i1 + (i2 + q*NX*NT)*NX*NT;
+        if (!exprFormula_hess[idx].isZero())
+        {
+          Node* nd = indicesToCxx(exprFormula_hess[idx], parlist, parsymlist, varlist, varsymlist);
+          for (size_t s = 0; s < spaces; s++) out << ' ';
+          if (i1 < i2) out << "const double ex" << q << "_v" << i1 + 1 << "_v" << i2 + 1 << " = ";
+          else out << "const double ex" << q << "_v" << i2 + 1 << "_v" << i1 + 1 << " = ";
+          nd -> print (out);
+          out << ";\n";
+          nd -> deleteTree();
+          delete nd;
+        }
+      }
+    }
+  }
+}
+
+// static size_t inline remove_duplicates (std::list<const NodeExpr*>& deps)
+// {
+//   size_t count = 0;
+//   auto k = deps.begin();
+//   while (k != deps.end())
+//   {
+//     auto next = k;
+//     next++;
+//     if (next != deps.end())
+//     {
+//       if ((*k)->getIdx () == (*next)->getIdx ()) deps.erase (next);
+//       else { k++; count++; }
+//     } else { k = next; count++; }
+//   }
+//   return count;
+// }
+//
+// // Assumes no derivatives.
+// // Need to detect circular dependencies:
+// // The idx is the index of the calling expression if it is encountered again,
+// // there is an error
+// void KNExprSystem::dependsOnP1 (std::list<const NodeExpr*>& deps, const Node* node, size_t idx)
+// {
+//   std::list<const NodeExpr*> lst;
+//
+//   auto found = [&lst] (const Node* nd)
+//   {
+//     const NodeExpr* ex = dynamic_cast<const NodeExpr*>(nd);
+//     if (ex != nullptr) lst.push_back (ex);
+//   };
+//   node -> find (TokenType::Expr, found);
+//   // sort and remove duplication
+//   lst.sort ([] (const NodeExpr* a, const NodeExpr* b) { return (a->getIdx ()) < (b->getIdx ());});
+//   remove_duplicates (lst);
+//   for (auto it : lst)
+//   {
+//     P_ERROR_X1 (it->getIdx() != idx, "Circular references to expressions.");
+//     P_ERROR_X1 (it->getIdx() < exprFormula.size(), "Invalid reference to an expression.");
+//     size_t totest = idx;
+//     if (idx == exprFormula.size()) totest = it->getIdx ();
+//     deps.push_back (it);
+//     dependsOnP1 (deps, exprFormula[it->getIdx()].node (), totest);
+//   }
+// }
+//
+// void KNExprSystem::dependsOn (std::vector<size_t>& deps, const Node* node, size_t idx)
+// {
+//   std::list<const NodeExpr*> lst;
+//   dependsOnP1 (lst, node, idx);
+//   // sort and remove duplication
+//   lst.sort ([] (const NodeExpr* a, const NodeExpr* b) { return (a->getIdx ()) < (b->getIdx ()); });
+//   size_t count = remove_duplicates (lst);
+//   deps.resize (count);
+// //   std::cout << "LIST " << count << "\n";
+//   size_t k = 0;
+//   for (auto it : lst)
+//   {
+//     deps[k] = it->getIdx ();
+//     k++;
+// //     it->print (std::cout); std::cout << " --\n";
+//   }
+// }
+
 void KNExprSystem::toCxx (std::string& cxx) const
 {
+  const size_t NT = delayExpr.size() + 1;
+  const size_t NX = varDotExpr.size();
+  const size_t NP = parName.size();
+
   std::ostringstream out;
-  std::vector<NodePar*> parlist (parName.size());
-  std::vector<NodeSymbol*> parsymlist (parName.size());
-  std::vector<NodeVar*> varlist (1+2*(delayExpr.size() + 1)*varDotExpr.size());
-  std::vector<NodeSymbol*> varsymlist (1+2*(delayExpr.size() + 1)*varDotExpr.size());
+  std::vector<NodePar*> parlist (NP);
+  std::vector<NodeSymbol*> parsymlist (NP);
+  std::vector<NodeVar*> varlist (1+2*NT*NX);
+  std::vector<NodeSymbol*> varsymlist (1+2*NT*NX);
 
   out.precision (std::numeric_limits<double>::digits10 + 1);
   out.setf (std::ios::scientific);
-  
+
   std::ostringstream symtext;
-  for (size_t q = 0; q < parName.size(); q++)
+  for (size_t q = 0; q < NP; q++)
   {
     parlist[q] = new NodePar (q);
     symtext << "par(" << q << ")";
@@ -735,29 +1054,29 @@ void KNExprSystem::toCxx (std::string& cxx) const
 
   varlist[0] = new NodeVar (0);
   varsymlist[0] = new NodeSymbol ("time(idx)");
-  for (size_t q = 0; q < (delayExpr.size() + 1); q++)
+  for (size_t q = 0; q < NT; q++)
   {
-    for (size_t p = 0; p < varDotExpr.size(); p++)
+    for (size_t p = 0; p < NX; p++)
     {
-      varlist[1 + p + q*varDotExpr.size()] = new NodeVar (1 + p + q*varDotExpr.size());
+      varlist[1 + p + q*NX] = new NodeVar (1 + p + q*NX);
       symtext << "x(" << p << "," << q << "," << "idx)";
-      varsymlist[1 + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str ());
+      varsymlist[1 + p + q*NX] = new NodeSymbol (symtext.str ());
       symtext.str (std::string());
     }
   }
-  const size_t skip = 1+(delayExpr.size() + 1)*varDotExpr.size();
-  for (size_t q = 0; q < (delayExpr.size() + 1); q++)
+  const size_t skip = 1+NT*NX;
+  for (size_t q = 0; q < NT; q++)
   {
-    for (size_t p = 0; p < varDotExpr.size(); p++)
+    for (size_t p = 0; p < NX; p++)
     {
-      varlist[skip + p + q*varDotExpr.size()] = new NodeVar (skip + p + q*varDotExpr.size());
+      varlist[skip + p + q*NX] = new NodeVar (skip + p + q*NX);
       symtext << "v(" << p << "," << q << "," << "idx)";
-      varsymlist[skip + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str ());
+      varsymlist[skip + p + q*NX] = new NodeSymbol (symtext.str ());
       symtext.str (std::string());
     }
   }
   // -- printing starts
-  const size_t NPAR = parName.size()-3;
+  const size_t NPAR = NP-3;
   out << "#include <cmath>\n"
          "#include \"knutsys.h\"\n"
          "\n"
@@ -769,7 +1088,7 @@ void KNExprSystem::toCxx (std::string& cxx) const
          "\n"
          "extern \"C\" {\n"
          "\n"
-         "size_t sys_ndim()  { return " << varDotExpr.size() << "; }  // KNExprSystem dimension\n"
+         "size_t sys_ndim()  { return " << NX << "; }  // KNExprSystem dimension\n"
          "size_t sys_npar()  { return " << NPAR << "; }  // Number of parameters, plus one (for the period)\n"
          "size_t sys_ntau()  { return " << delayExpr.size() + 1 << "; }  // Number of delays, plus one\n"
          "size_t sys_nderi() { return 2; }  // Order of derivatives computed here\n"
@@ -786,7 +1105,7 @@ void KNExprSystem::toCxx (std::string& cxx) const
     nd -> print (out);
     out << ";\n";
     nd -> deleteTree();
-    delete nd;    
+    delete nd;
   }
   out << "  }\n"
          "}\n";
@@ -801,12 +1120,12 @@ void KNExprSystem::toCxx (std::string& cxx) const
            "      out(0,idx) = 0.0;\n";
     for (size_t q = 0; q < delayExpr.size(); q++)
     {
-      Node* nd = indicesToCxx(delayExprDeri[p + q*parName.size()], parlist, parsymlist, varlist, varsymlist);
+      Node* nd = indicesToCxx(delayExprDeri[p + q*NP], parlist, parsymlist, varlist, varsymlist);
       out << "      out(" << 1+q << ",idx) = ";
       nd -> print (out);
       out << ";\n";
       nd -> deleteTree();
-      delete nd;    
+      delete nd;
     }
     out << "    }\n"
            "  }\n";
@@ -817,7 +1136,8 @@ void KNExprSystem::toCxx (std::string& cxx) const
          "  // Compute the vector field\n"
          "  for (size_t idx = 0; idx < time.size(); idx++)\n"
          "  {\n";
-  for (size_t k = 0; k < varDotExpr.size(); k++)
+  printExpr (out, 4, parlist, parsymlist, varlist, varsymlist);
+  for (size_t k = 0; k < NX; k++)
   {
     Node* nd = indicesToCxx(varDotExpr[k], parlist, parsymlist, varlist, varsymlist);
     out << "    out(" << k << ",idx) = ";
@@ -829,7 +1149,7 @@ void KNExprSystem::toCxx (std::string& cxx) const
   out << "  }\n"
          "}\n";
   // --- derivatives
-  out << "void sys_p_deri(KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par,\n" 
+  out << "void sys_p_deri(KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par,\n"
          "                size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& v)\n"
          "{\n"
          "  if (nx == 1 && np == 0)\n"
@@ -840,11 +1160,13 @@ void KNExprSystem::toCxx (std::string& cxx) const
            "    {\n"
            "      for (size_t idx = 0; idx < time.size(); idx++)\n"
            "      {\n";
-    for (size_t q = 0; q < varDotExpr.size(); q++)
+    printExpr (out, 8, parlist, parsymlist, varlist, varsymlist);
+    printExpr_x (out, k, 8, parlist, parsymlist, varlist, varsymlist);
+    for (size_t q = 0; q < NX; q++)
     {
-      for (size_t p = 0; p < varDotExpr.size(); p++)
+      for (size_t p = 0; p < NX; p++)
       {
-        Node* nd = indicesToCxx(varDot_x[p + k*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)], parlist, parsymlist, varlist, varsymlist);
+        Node* nd = indicesToCxx(varDot_x[p + k*NX + q*NX*NT], parlist, parsymlist, varlist, varsymlist);
         out << "        out(" << q << "," << p << ",idx) = ";
         nd -> print (out);
         out << ";\n";
@@ -853,7 +1175,7 @@ void KNExprSystem::toCxx (std::string& cxx) const
       }
     }
     out << "      }\n"
-           "    }\n";   
+           "    }\n";
   }
   out << "  }\n"
          "  else if (nx == 0 && np == 1)\n"
@@ -864,9 +1186,11 @@ void KNExprSystem::toCxx (std::string& cxx) const
            "    {\n"
            "      for (size_t idx = 0; idx < time.size(); idx++)\n"
            "      {\n";
-    for (size_t k = 0; k < varDotExpr.size(); k++)
-    {   
-      Node* nd = indicesToCxx(varDot_p[p + k*parName.size()], parlist, parsymlist, varlist, varsymlist);
+    printExpr (out, 8, parlist, parsymlist, varlist, varsymlist);
+    printExpr_p (out, p, 8, parlist, parsymlist, varlist, varsymlist);
+    for (size_t k = 0; k < NX; k++)
+    {
+      Node* nd = indicesToCxx(varDot_p[p + k*NP], parlist, parsymlist, varlist, varsymlist);
       out << "        out(" << k << "," << 0 << ",idx) = ";
       nd -> print (out);
       out << ";\n";
@@ -889,11 +1213,15 @@ void KNExprSystem::toCxx (std::string& cxx) const
              "      {\n"
              "        for (size_t idx = 0; idx < time.size(); idx++)\n"
              "        {\n";
-      for (size_t q = 0; q < varDotExpr.size(); q++)
+      printExpr (out, 10, parlist, parsymlist, varlist, varsymlist);
+      printExpr_x (out, k, 10, parlist, parsymlist, varlist, varsymlist);
+      printExpr_p (out, p, 10, parlist, parsymlist, varlist, varsymlist);
+      printExpr_x_p (out, k, p, 10, parlist, parsymlist, varlist, varsymlist);
+      for (size_t q = 0; q < NX; q++)
       {
-        for (size_t r = 0; r < varDotExpr.size(); r++)
+        for (size_t r = 0; r < NX; r++)
         {
-          Node* nd = indicesToCxx(varDot_x_p[p + (r + k*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1))*parName.size()], 
+          Node* nd = indicesToCxx(varDot_x_p[p + (r + k*NX + q*NX*NT)*NP],
                                   parlist, parsymlist, varlist, varsymlist);
           out << "          out(" << q << "," << r << ",idx) = ";
           nd -> print (out);
@@ -903,11 +1231,11 @@ void KNExprSystem::toCxx (std::string& cxx) const
         }
       }
       out << "        }\n"
-             "      }\n";   
+             "      }\n";
     }
     out << "    }\n";
   }
-   
+
   out << "  }\n"
          "  else if (nx == 2 && np == 0)\n"
          "  {\n";
@@ -921,12 +1249,15 @@ void KNExprSystem::toCxx (std::string& cxx) const
              "      {\n"
              "        for (size_t idx = 0; idx < time.size(); idx++)\n"
              "        {\n";
-      for (size_t q = 0; q < varDotExpr.size(); q++)
+      printExpr (out, 10, parlist, parsymlist, varlist, varsymlist);
+      printExpr_x (out, r, 10, parlist, parsymlist, varlist, varsymlist);
+      if (r != k) printExpr_x (out, k, 10, parlist, parsymlist, varlist, varsymlist);
+      printExpr_hess (out, r, k, 10, parlist, parsymlist, varlist, varsymlist);
+      for (size_t q = 0; q < NX; q++)
       {
-        for (size_t p = 0; p < varDotExpr.size(); p++)
+        for (size_t p = 0; p < NX; p++)
         {
-          const size_t idx = p + k*varDotExpr.size() + r*varDotExpr.size()*(delayExpr.size() + 1) + 
-            q*varDotExpr.size()*(delayExpr.size() + 1)*(delayExpr.size() + 1);
+          const size_t idx = p + k*NX + r*NX*NT + q*NX*NT*NT;
           Node* nd = indicesToCxx(varDot_hess[idx], parlist, parsymlist, varlist, varsymlist);
           out << "          out(" << q << "," << p << ",idx) = ";
           nd -> print (out);
@@ -949,14 +1280,14 @@ void KNExprSystem::toCxx (std::string& cxx) const
   for (size_t p = 0; p < NPAR; p++)
   {
     out << "  par(" << p << ") = " << parInit[p] << ";\n";
-  } 
+  }
   out << "}\n"
          "\n"
          "void sys_p_stsol(KNArray2D<double>& out, const KNArray1D<double>& time)\n"
          "{\n"
          "  for (size_t idx = 0; idx < time.size(); idx++)\n"
          "  {\n";
-  for (size_t k = 0; k < varDotExpr.size(); k++)
+  for (size_t k = 0; k < NX; k++)
   {
     Node* nd = indicesToCxx(varInit[k], parlist, parsymlist, varlist, varsymlist);
     out << "    out(" << k << ",idx) = ";
@@ -973,17 +1304,17 @@ void KNExprSystem::toCxx (std::string& cxx) const
   for (size_t p = 0; p < NPAR; p++)
   {
     out << "  out[" << p << "] = \"" << parName[p] << "\";\n";
-  } 
+  }
   out << "}\n"
          "\n"
          "}  // extern \"C\"\n";
-  
-  
+
+
   cxx = out.str ();
   for (NodePar* nd: parlist) delete nd;
   for (NodeVar* nd: varlist) delete nd;
   for (NodeSymbol* nd: parsymlist) delete nd;
-  for (NodeSymbol* nd: varsymlist) delete nd;  
+  for (NodeSymbol* nd: varsymlist) delete nd;
 }
 
 #ifdef __APPLE__
@@ -1009,7 +1340,7 @@ static void getExecutableDir (std::string& executableDir)
   if(bundleURL)
   {
     CFStringRef cfPath = CFURLCopyFileSystemPath(bundleURL, kCFURLPOSIXPathStyle);
-    if(cfPath) 
+    if(cfPath)
     {
       CFIndex ssize = CFStringGetLength(cfPath)+1;
       char *buf = new char[ssize];
@@ -1047,11 +1378,11 @@ static void addArgList(std::list<std::string>& argv, const std::string& str)
   size_t start = 0;
   size_t i=0;
   while (i < str.size())
-  {    
+  {
     while (((str[i] == ' ')||(str[i] == '\t'))&&(i < str.size())) ++i;
     start = i;
     while (((str[i] != ' ')&&(str[i] != '\t'))&&(i < str.size())) ++i;
-    argv.push_back(str.substr(start, i-start)); 
+    argv.push_back(str.substr(start, i-start));
   }
 }
 
@@ -1066,9 +1397,9 @@ static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::st
   arglist.push_back(cxxcomp.substr(cxxcomp.find_last_of(DIRSEP)+1,std::string::npos));
 #endif
   // constructing the command line
-  addArgList(arglist, std::string( 
+  addArgList(arglist, std::string(
     CMAKE_CXX_FLAGS " "
-    CMAKE_SHARED_LIBRARY_C_FLAGS " " 
+    CMAKE_SHARED_LIBRARY_C_FLAGS " "
     CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS " "
     KNUT_NO_EXCEPTIONS));
   std::string includeArg("-I");
@@ -1119,7 +1450,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   std::list<std::string> arglist;
   std::string cmdline;
   mkArgListCommandLine(arglist, cmdline, shobj, executableDir);
-  
+
   HANDLE g_hChildStd_IN_Rd = NULL;
   HANDLE g_hChildStd_IN_Wr = NULL;
   HANDLE g_hChildStd_OUT_Rd = NULL;
@@ -1130,80 +1461,80 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   HANDLE g_hInputFile = NULL;
 
   SECURITY_ATTRIBUTES saAttr;
- 
-  // Set the bInheritHandle flag so pipe handles are inherited. 
+
+  // Set the bInheritHandle flag so pipe handles are inherited.
   saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
   saAttr.bInheritHandle = TRUE;
   saAttr.lpSecurityDescriptor = NULL;
 
-  // Create a pipe for the child process's STDOUT. 
-  if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0)) 
+  // Create a pipe for the child process's STDOUT.
+  if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0))
     P_MESSAGE2("StdoutRd CreatePipe", (int)GetLastError());
   // Ensure the read handle to the pipe for STDOUT is not inherited.
   if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0))
     P_MESSAGE2("Stdout SetHandleInformation", (int)GetLastError());
-  // Create a pipe for the child process's STDIN. 
+  // Create a pipe for the child process's STDIN.
   if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0))
     P_MESSAGE2("Stdin CreatePipe", (int)GetLastError());
   // Ensure the write handle to the pipe for STDIN is not inherited.
   if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
     P_MESSAGE2("Stdin SetHandleInformation", (int)GetLastError());
   // Create a pipe for the child process's STDERR.
-  if (!CreatePipe(&g_hChildStd_ERR_Rd, &g_hChildStd_ERR_Wr, &saAttr, 0)) 
+  if (!CreatePipe(&g_hChildStd_ERR_Rd, &g_hChildStd_ERR_Wr, &saAttr, 0))
     P_MESSAGE2("Stdin CreatePipe", (int)GetLastError());
   // Ensure the read handle to the pipe for STDERR is not inherited.
   if (!SetHandleInformation(g_hChildStd_ERR_Rd, HANDLE_FLAG_INHERIT, 0))
     P_MESSAGE2("Stdin SetHandleInformation", (int)GetLastError());
- 
-   // Create the child process. 
+
+   // Create the child process.
   CHAR *szCmdline = new CHAR[cmdline.size()+1];
   strcpy(szCmdline, cmdline.c_str());
-  
-  PROCESS_INFORMATION piProcInfo; 
+
+  PROCESS_INFORMATION piProcInfo;
   STARTUPINFO siStartInfo;
   BOOL bSuccess = FALSE;
- 
-  // Set up members of the PROCESS_INFORMATION structure. 
+
+  // Set up members of the PROCESS_INFORMATION structure.
   ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
- 
-  // Set up members of the STARTUPINFO structure. 
+
+  // Set up members of the STARTUPINFO structure.
   // This structure specifies the STDIN and STDOUT handles for redirection.
   ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
-  siStartInfo.cb = sizeof(STARTUPINFO); 
+  siStartInfo.cb = sizeof(STARTUPINFO);
   siStartInfo.hStdError = g_hChildStd_ERR_Wr;
   siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
   siStartInfo.hStdInput = g_hChildStd_IN_Rd;
   siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
- 
-  // Create the child process. 
-  bSuccess = CreateProcess(NULL, 
-    szCmdline,     // command line 
-    NULL,          // process security attributes 
-    NULL,          // primary thread security attributes 
-    TRUE,          // handles are inherited 
-    0,             // creation flags 
-    NULL,          // use parent's environment 
-    NULL,          // use parent's current directory 
-    &siStartInfo,  // STARTUPINFO pointer 
-    &piProcInfo);  // receives PROCESS_INFORMATION 
-   
-  // If an error occurs, exit the application. 
+
+  // Create the child process.
+  bSuccess = CreateProcess(NULL,
+    szCmdline,     // command line
+    NULL,          // process security attributes
+    NULL,          // primary thread security attributes
+    TRUE,          // handles are inherited
+    0,             // creation flags
+    NULL,          // use parent's environment
+    NULL,          // use parent's current directory
+    &siStartInfo,  // STARTUPINFO pointer
+    &piProcInfo);  // receives PROCESS_INFORMATION
+
+  // If an error occurs, exit the application.
   if ( ! bSuccess )
     P_MESSAGE2("CreateProcess", (int)GetLastError());
- 
-  // Write to the pipe that is the standard input for a child process. 
+
+  // Write to the pipe that is the standard input for a child process.
   // Data is written to the pipe's buffers, so it is not necessary to wait
   // until the child process is running before writing data.
   DWORD dwRead = cxxstring.size(), dwWritten;
   bSuccess = WriteFile(g_hChildStd_IN_Wr, cxxstring.c_str(), dwRead, &dwWritten, NULL);
-  if ( ! bSuccess ) 
+  if ( ! bSuccess )
     P_MESSAGE2("WriteFile", (int)GetLastError());
 
-  if (!CloseHandle(g_hChildStd_IN_Wr)) 
+  if (!CloseHandle(g_hChildStd_IN_Wr))
     P_MESSAGE2("StdInWr CloseHandle", (int)GetLastError());
-  if (!CloseHandle(g_hChildStd_IN_Rd)) 
+  if (!CloseHandle(g_hChildStd_IN_Rd))
     P_MESSAGE2("StdInRd CloseHandle", (int)GetLastError());
- 
+
   // Read from pipe that is the standard output for child process.
   const size_t bufsize = 2048;
   CHAR *out_buf = new char[bufsize];
@@ -1213,49 +1544,49 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   bSuccess = FALSE;
   HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-  // Close the write end of the pipe before reading from the 
+  // Close the write end of the pipe before reading from the
   // read end of the pipe, to control child process execution.
   // The pipe is assumed to have enough buffer space to hold the
   // data the child process has already written to it.
-  if (!CloseHandle(g_hChildStd_OUT_Wr)) 
+  if (!CloseHandle(g_hChildStd_OUT_Wr))
     P_MESSAGE2("StdOutWr CloseHandle", (int)GetLastError());
-   
+
   std::string outstr;
   std::string errstr;
-  for (;;) 
+  for (;;)
   {
     bSuccess = ReadFile( g_hChildStd_OUT_Rd, out_buf, bufsize-1, &dwRead, NULL);
     err_buf[dwRead] = '\0';
     if( ! bSuccess || dwRead == 0 ) break;
     outstr.append(out_buf);
   }
-  
-  if (!CloseHandle(g_hChildStd_OUT_Rd)) 
+
+  if (!CloseHandle(g_hChildStd_OUT_Rd))
     P_MESSAGE2("StdOutRd CloseHandle", (int)GetLastError());
-  
-  if (!CloseHandle(g_hChildStd_ERR_Wr)) 
+
+  if (!CloseHandle(g_hChildStd_ERR_Wr))
     P_MESSAGE2("StdErrWr CloseHandle", (int)GetLastError());
-   
-  for (;;) 
+
+  for (;;)
   {
     bSuccess = ReadFile( g_hChildStd_ERR_Rd, err_buf, bufsize-1, &dwRead, NULL);
     err_buf[dwRead] = '\0';
     if( ! bSuccess || dwRead == 0 ) break;
     errstr.append(err_buf);
-  }   
-  
-  if (!CloseHandle(g_hChildStd_ERR_Rd)) 
+  }
+
+  if (!CloseHandle(g_hChildStd_ERR_Rd))
     P_MESSAGE2("StdErrRd CloseHandle", (int)GetLastError());
-  
+
   WaitForSingleObject(piProcInfo.hProcess, INFINITE);
   DWORD exitStatus;
-  GetExitCodeProcess(piProcInfo.hProcess, &exitStatus); 
+  GetExitCodeProcess(piProcInfo.hProcess, &exitStatus);
   CloseHandle(piProcInfo.hProcess);
   CloseHandle(piProcInfo.hThread);
 
   if (exitStatus != 0) P_MESSAGE6("The error output of the compile command '",
       cmdline, "' is ", errstr.c_str(), " and the standard output is ", outstr.c_str());
-  
+
   delete[] out_buf; out_buf = 0;
   delete[] err_buf; err_buf = 0;
   delete[] szCmdline; szCmdline = 0;
@@ -1289,7 +1620,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
   if (error)  if (pipe (fds_error) == -1) P_MESSAGE2("pipe: ", strerror(errno));
   for (int i=0; i<2; ++i)
   {
-    fdc_output[i] = fds_output[i]; 
+    fdc_output[i] = fds_output[i];
     fdc_input[i] = fds_input[i];
     fdc_error[i] = fds_error[i];
   }
@@ -1328,7 +1659,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
       iflags |= O_NONBLOCK;
       fcntl(fdc_input[1], F_SETFL, iflags);
       *input = fdc_input[1];
-    }       
+    }
     if (output)
     {
       if (close (fdc_output[1]) == -1) P_MESSAGE2("close ", strerror(errno));
@@ -1359,7 +1690,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   std::list<std::string> arglist;
   std::string cmdline;
   mkArgListCommandLine(arglist, cmdline, shobj, executableDir);
-  
+
   //   std::cout << cmdline << std::endl;
   // running the command
   int input, output, error;
@@ -1379,13 +1710,13 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   size_t iin = 0, iout = 1, ierr = 2, nfds = 3;
   do {
     int pact = poll(fds, nfds, 1000);
-//     std::cerr << "Pipes ready: " << pact 
-//      << " EV0 " <<  fds[iin].revents 
+//     std::cerr << "Pipes ready: " << pact
+//      << " EV0 " <<  fds[iin].revents
 //      << " EV1 " <<  fds[iout].revents
-//      << " EV2 " <<  fds[ierr].revents 
-//      << " POLLOUT=" << POLLOUT << " POLLIN=" << POLLIN << " POLLPRI=" << POLLPRI 
-//      << " POLLHUP=" << POLLHUP << " POLLERR=" << POLLERR 
-//      << " POLLWRNORM=" << POLLWRNORM << " POLLWRBAND=" << POLLWRBAND 
+//      << " EV2 " <<  fds[ierr].revents
+//      << " POLLOUT=" << POLLOUT << " POLLIN=" << POLLIN << " POLLPRI=" << POLLPRI
+//      << " POLLHUP=" << POLLHUP << " POLLERR=" << POLLERR
+//      << " POLLWRNORM=" << POLLWRNORM << " POLLWRBAND=" << POLLWRBAND
 //      << " POLLRDNORM=" << POLLRDNORM << " POLLRDBAND=" << POLLRDBAND << " POLLNVAL=" << POLLNVAL << "\n";
     P_ERROR_X2(pact != -1, "Error polling pipe status: ", strerror(errno));
     if (!infin)
@@ -1418,9 +1749,9 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
         if (bytes > 0)
         {
 //          std::cerr << "runCompiler: stdout bytes " << bytes << "\n";
-          out_buf[bytes] = '\0'; 
+          out_buf[bytes] = '\0';
           out_str.append(out_buf);
-        } 
+        }
         else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard output: ", strerror(errno));
       }
       if ((fds[iout].revents & POLLHUP) != 0)
@@ -1441,9 +1772,9 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
         if (bytes > 0)
         {
 //          std::cerr << "runCompiler: stderr bytes " << bytes << "\n";
-          out_buf[bytes] = '\0'; 
+          out_buf[bytes] = '\0';
           err_str.append(out_buf);
-        } 
+        }
         else if ((bytes == -1) && (errno != EAGAIN)) P_MESSAGE2("Error reading standard error: ", strerror(errno));
       }
       if ((fds[ierr].revents & POLLHUP) != 0)
@@ -1455,7 +1786,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
     }
   } while (!outfin || !infin || !errfin);
   delete[] out_buf; out_buf = 0;
-//  std::cerr << "Waited for read " << rct << " and error " << ect << " cycles."; 
+//  std::cerr << "Waited for read " << rct << " and error " << ect << " cycles.";
   // checking status of compiler
   int status = 0;
   pid_t retval = waitpid(-1, &status, 0);
@@ -1535,36 +1866,36 @@ void KNExprSystem::setupFunctions (const std::string& shobj)
   std::cout << "SETTING UP FUNCTIONS FROM '" << nsh << "'.\n";
   handle = tdlopen(nsh.c_str());
   P_ERROR_X5(handle != nullptr, "Cannot open system definition file `", shobj, "'. Error code `", tdlerror(), "'.");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_ndim = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_ndim"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_npar = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_npar"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_ntau = reinterpret_cast<tp_sys_ntau>(tdlsym(handle, "sys_ntau"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
-  
+
   /* Vectorized versions */
   tdlerror();    /* Clear any existing error */
   fp_p_tau = reinterpret_cast<tp_sys_p_tau>(tdlsym(handle, "sys_p_tau"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_tau(): ", error, ".");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_p_dtau = reinterpret_cast<tp_sys_p_dtau>(tdlsym(handle, "sys_p_dtau"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_dtau(): ", error, ".");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_p_rhs = reinterpret_cast<tp_sys_p_rhs>(tdlsym(handle, "sys_p_rhs"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_rhs(): ", error, ".");
-  
+
   tdlerror();    /* Clear any existing error */
   fp_p_deri = reinterpret_cast<tp_sys_p_deri>(tdlsym(handle, "sys_p_deri"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_deri(): ", error, ".");
-    
+
   tdlerror();    /* Clear any existing error */
   fp_stpar = reinterpret_cast<tp_sys_stpar>(tdlsym(handle, "sys_stpar"));
   P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");

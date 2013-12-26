@@ -11,6 +11,7 @@
 #define EXPRSYSTEM_H
 
 #include "expr.h"
+#include <list>
 
 #ifndef _WIN32
 extern "C"
@@ -59,17 +60,59 @@ protected:
   // sysName : the file where vfexpr comes from (to track changes)
   // trycompile : whether to attempt to compile
   void constructor (const std::string& vfexpr, const std::string& sysName, bool trycompile = true);
-    
+
 private:
   ExpTree::Expression expr;
   std::vector<std::string> varName;
   std::vector<ExpTree::Expression> varDotExpr;
+  std::vector<std::string> exprName;
+  std::vector<ExpTree::Expression> exprFormula;
   std::vector<ExpTree::Expression> varInit;
   std::vector<double> varMass;
   std::vector<ExpTree::Expression> delayExpr;
   std::vector<std::string> parName;
   std::vector<double> parInit;
-  
+
+  // expression W.R.T. parameters
+  std::vector<ExpTree::Expression> exprFormula_p;
+  // Jacobian
+  std::vector<ExpTree::Expression> exprFormula_x;
+  // mixed
+  std::vector<ExpTree::Expression> exprFormula_x_p;
+  // Hessian
+  std::vector<ExpTree::Expression> exprFormula_hess;
+
+  bool checkExpression (const ExpTree::NodeExpr* expr) const;
+  const void knsys_fun_expr (size_t sp, const ExpTree::Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par);
+  void printExpr (std::ostream& out, size_t spaces,
+                  const std::vector<ExpTree::NodePar*>& parlist,
+                  const std::vector<ExpTree::NodeSymbol*>& parsymlist,
+                  const std::vector<ExpTree::NodeVar*>& varlist,
+                  const std::vector<ExpTree::NodeSymbol*>& varsymlist) const;
+  void printExpr_x (std::ostream& out, size_t k, size_t spaces,
+                    const std::vector<ExpTree::NodePar*>& parlist,
+                    const std::vector<ExpTree::NodeSymbol*>& parsymlist,
+                    const std::vector<ExpTree::NodeVar*>& varlist,
+                    const std::vector<ExpTree::NodeSymbol*>& varsymlist) const;
+  void printExpr_p (std::ostream& out, size_t p, size_t spaces,
+                    const std::vector<ExpTree::NodePar*>& parlist,
+                    const std::vector<ExpTree::NodeSymbol*>& parsymlist,
+                    const std::vector<ExpTree::NodeVar*>& varlist,
+                    const std::vector<ExpTree::NodeSymbol*>& varsymlist) const;
+  void printExpr_x_p (std::ostream& out, size_t k, size_t p, size_t spaces,
+                      const std::vector<ExpTree::NodePar*>& parlist,
+                      const std::vector<ExpTree::NodeSymbol*>& parsymlist,
+                      const std::vector<ExpTree::NodeVar*>& varlist,
+                      const std::vector<ExpTree::NodeSymbol*>& varsymlist) const;
+  void printExpr_hess (std::ostream& out, size_t k1, size_t k2, size_t spaces,
+                       const std::vector<ExpTree::NodePar*>& parlist,
+                       const std::vector<ExpTree::NodeSymbol*>& parsymlist,
+                       const std::vector<ExpTree::NodeVar*>& varlist,
+                       const std::vector<ExpTree::NodeSymbol*>& varsymlist) const;
+  // Not yet useful
+//   void dependsOnP1 (std::list<const ExpTree::NodeExpr*>& deps, const ExpTree::Node* node, size_t idx);
+//   void dependsOn (std::vector<size_t>& deps, const ExpTree::Node* node, size_t idx);
+
   // Delay W.R.T. parameters
   std::vector<ExpTree::Expression> delayExprDeri;
   // RHS W.R.T. parameters
@@ -79,15 +122,15 @@ private:
   // mixed
   std::vector<ExpTree::Expression> varDot_x_p;
   // Hessian
-  std::vector<ExpTree::Expression> varDot_xx;
-  // Hessian (ORIG)
   std::vector<ExpTree::Expression> varDot_hess;
+  // dependencies list
+//   std::vector<std::vector<size_t>> varDot_deps;
 
   ExpTree::ValueStack stack;
   
   // loading compiled sysdef file
   void setupFunctions (const std::string& shobj);
-  
+
   // functions
   std::function<size_t ()> fp_ndim;
   std::function<size_t ()> fp_npar;
@@ -102,7 +145,7 @@ private:
   std::function<void (KNArray2D<double>& , const KNArray1D<double>&)> fp_p_stsol;
   std::function<void (const char *[])> fp_parnames;
   static bool workingCompiler;
-  
+
 #ifndef _WIN32
   typedef void*   tdlhand;
 #else

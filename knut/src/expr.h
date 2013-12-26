@@ -10,6 +10,8 @@
 #ifndef EXPR_H
 #define EXPR_H
 
+#include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 #include <functional>
@@ -21,27 +23,28 @@
 namespace ExpTree
 {
 
-enum class TokenType : int 
-{ 
-  Invalid=0, 
-  Function, 
-  UnaryPlus, 
-  UnaryMinus, 
-  Plus, 
-  Minus, 
-  Times, 
-  Divide, 
-  Power, 
-  LeftParen, 
-  RightParen, 
-  Comma, 
-  Equals, 
-  Semicolon, 
-  Symbol, 
-  Number, 
+enum class TokenType : int
+{
+  Invalid=0,
+  Function,
+  UnaryPlus,
+  UnaryMinus,
+  Plus,
+  Minus,
+  Times,
+  Divide,
+  Power,
+  LeftParen,
+  RightParen,
+  Comma,
+  Equals,
+  Define,
+  Semicolon,
+  Symbol,
+  Number,
   Var,
   Par,
-  Expr 
+  Expr
 };
 
 // the pointer is owned somewhere else
@@ -148,7 +151,8 @@ public:
   virtual Node* copy () const = 0;
   virtual size_t children () const = 0;
   virtual const Node* getChild (size_t n) const = 0;
-  virtual size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const = 0;
+  virtual Node* getChild (size_t n) = 0;
+  virtual size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const = 0;
 //  virtual void addArgument (size_t pos, Node* arg) = 0;
   virtual void print (std::ostream& out) const = 0;
   virtual bool operator != (const Node& node) const = 0;
@@ -157,10 +161,12 @@ public:
   virtual void replaceSymbol(const Node& sym, const Node& node, Node** parent) = 0;
   virtual void replaceSymbol(const Node& node, Node** parent) = 0;
   virtual void findFunction(std::vector<const NodeFunction*>& lst, const std::string& name) const = 0;
-  virtual Node* derivative (const Node* var) const = 0;
-  virtual void optimize (Node** parent) = 0;
+  virtual Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const = 0;
+  virtual void optimize (Node** parent, const std::function<bool(const Node*)>& zero) = 0;
+  virtual void find (TokenType tp, const std::function<void(const Node*)>& found) const;
   void evaluateWithPar (double *res, const std::vector<double>& parInit);
   const TokenType type;
+  static const std::function<bool(const Node*)> alwaysFalse;
 };
 
 class NodeNumber : public Node
@@ -170,16 +176,17 @@ public:
   Node* copy () const { return new NodeNumber(value); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return 0; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return 0; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const { out << value; }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent) {}
   void replaceSymbol(const Node& node, Node** parent) {}
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent) {}
-  double getValue() { return value; }
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero) {}
+  double getValue() const { return value; }
 private:
   double value;
 };
@@ -190,8 +197,9 @@ public:
   NodeSymbol (const std::string& nm) : Node(TokenType::Symbol), name(nm) {}
   Node* copy () const { return new NodeSymbol(name); }
   size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return 0; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  const Node* getChild (size_t n) const { return nullptr; }
+  Node* getChild (size_t n) { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const { out << name; }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
@@ -200,8 +208,8 @@ public:
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol (const Node& node, Node** parent);
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent) {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero) {}
   const std::string& getName () const { return name; }
 private:
   std::string name;
@@ -216,15 +224,16 @@ public:
   Node* copy () const { return new NodeVar(idx); }
   size_t children () const {return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const { out << "V["<<idx<<"]"; }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol (const Node& sym, const Node& node, Node** parent);
   void replaceSymbol (const Node& node, Node** parent) {}
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent) {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero) {}
   size_t getIdx () const { return idx; }
 private:
   size_t idx;
@@ -239,15 +248,16 @@ public:
   Node* copy () const { return new NodePar(idx); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const { out << "P["<<idx<<"]"; }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol(const Node& node, Node** parent) {}
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent) {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero) {}
   size_t getIdx () const { return idx; }
 private:
   size_t idx;
@@ -256,28 +266,53 @@ private:
 class NodeExpr : public Node
 {
 public:
-  NodeExpr (size_t id) : Node(TokenType::Expr), idx(id) { }
+  NodeExpr (size_t id) : Node(TokenType::Expr), idx(id), np(0), nv(0) { }
+  NodeExpr (size_t idx_, size_t np_, size_t nv_, size_t dp_, size_t dv0_, size_t dv1_)
+    : Node(TokenType::Expr), idx(idx_), np(np_), nv(nv_), dp(dp_) { dv[0] = dv0_; dv[1] = dv1_; }
+
   ~NodeExpr() { }
   void deleteTree () {}
-  Node* copy () const { return new NodeExpr(idx); }
+  NodeExpr* copy () const
+  {
+    NodeExpr *ne = new NodeExpr(idx);
+    ne->np = np;
+    ne->nv = nv;
+    ne->dp = dp;
+    ne->dv[0] = dv[0];
+    ne->dv[1] = dv[1];
+    return ne;
+  }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
-  void print (std::ostream& out) const 
-  { 
-    out << "EX[" << idx; 
-    if (np > 0) out << ",P" << dp;
-    if (nv > 0) out << ",V" << dv[0];
-    if (nv > 1) out << ",V" << dv[1];
-    out <<"]";
+  Node* getChild (size_t n) { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
+  void print (std::ostream& out) const
+  {
+    out << "ex" << idx;
+    if (np > 0) out << "_p" << dp;
+    if (nv == 1) out << "_v" << dv[0];
+    if (nv == 2)
+    {
+      if (dv[0] < dv[1]) out << "_v" << dv[0] << "_v" << dv[1];
+      else out << "_v" << dv[1] << "_v" << dv[0];
+    }
   }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol(const Node& node, Node** parent) {}
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent) {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+  {
+    if (zero (this))
+    {
+      Node* tmp = new NodeNumber (0.0);
+      delete *parent;
+      *parent = tmp;
+      return;
+    }
+  }
   size_t getIdx () const { return idx; }
   size_t getNp () const { return np; }
   size_t getNv () const { return nv; }
@@ -303,7 +338,8 @@ public:
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const;
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
@@ -312,8 +348,8 @@ public:
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol(const Node& node, Node** parent);
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent);
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
   // specific
   void specialize (NodeFunction** parent);
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
@@ -334,17 +370,18 @@ public:
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const;
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol(const Node& node, Node** parent);
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var) const;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
   // specific
   void addArgument (size_t pos, Node* arg, double m) { args[pos] = arg; mul[pos] = m; }
-  void optimize (Node** parent);
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
   void sort ();
 private:
   std::vector<Node*> args;
@@ -362,7 +399,8 @@ public:
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const;
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
@@ -370,9 +408,9 @@ public:
   void replaceSymbol(const Node& node, Node** parent);
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
   // needs to handle the divisions
-  Node* derivative (const Node* var) const ;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
   // specific
-  void optimize (Node** parent);
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
   void sort ();
   void setMul (double mul) { smul = mul; }
   double getMul () { return smul; }
@@ -391,15 +429,16 @@ public:
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, std::function<const ConstValue(const Node* var)> fun, size_t len) const;
+  Node* getChild (size_t n) { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const;
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent);
   void replaceSymbol(const Node& node, Node** parent);
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var) const;
-  void optimize (Node** parent);
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
   // specific
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
 private:
@@ -442,31 +481,49 @@ public:
     }
     root = rt;
   }
-  void derivative (Expression& ex, const Node* nd) const
+  const Node* node () const { return root; }
+  void derivative (Expression& ex, const Node* nd,
+                   const std::function<bool(const Node*)>& zero = Node::alwaysFalse) const
   {
     if(root != nullptr)
     {
-      Node* deri = root->derivative (nd);
-//      Node* deri = root->copy ();
-      deri -> optimize (&deri);
+      Node* deri = root->derivative (nd, zero);
+      deri -> optimize (&deri, zero);
       ex.fromNode (deri);
     }
   }
-  void optimize () { if (root != nullptr) root -> optimize (&root); }
+  void optimize (const std::function<bool(const Node*)>& zero = Node::alwaysFalse)
+  {
+    if (root != nullptr) root -> optimize (&root, zero);
+  }
   void print (std::ostream& out) const { if (root != nullptr) root -> print (out); }
   Node* copy () const { if(root != nullptr) return root -> copy (); else return nullptr; }
-  void evaluate (ValueStack& stack, std::function<const ConstValue(const Node*)> fun, size_t len) const
+  void evaluate (ValueStack& stack, std::function<void(size_t, const Node*)> fun, size_t sp, size_t len) const
   {
-    if (root != nullptr) root -> evaluate (stack, 0, fun, len);
+    if (root != nullptr) root -> evaluate (stack, sp, fun, len);
+  }
+  bool isZero() const
+  {
+    if (root != nullptr)
+    {
+      const NodeNumber* num = dynamic_cast<NodeNumber*>(root);
+      if (num != nullptr)
+      {
+        if (std::fabs(num -> getValue()) < 2*std::numeric_limits<double>::epsilon())
+        {
+          return true;
+        } else return false;
+      } else return false;
+    } else return true;
   }
   size_t test ()
   {
-    if (root != nullptr) 
+    if (root != nullptr)
     {
       double zero = 0.0;
-      auto fun = [&zero] (const Node*) { ConstValue val; val.data = &zero; val.skip = 1; return val; };
       double res;
       ValueStack stk (&res, 1);
+      auto fun = [&zero, &stk] (size_t sp, const Node*) { stk[sp].data[0] = 0.0; stk[sp].skip = 1; };
       root -> evaluate (stk, 0, fun, 1);
       return stk.size();
     }
@@ -476,6 +533,8 @@ public:
     std::string& sysName,
     std::vector<std::string>& varName,
     std::vector<Expression>& varDotExpr,
+    std::vector<std::string>& exprName,
+    std::vector<Expression>& exprFormula,
     std::vector<Expression>& varInit,
     std::vector<double>& mass,
     std::vector<Expression>& delayExpr,
