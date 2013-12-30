@@ -124,7 +124,7 @@ mxmlIndexFind(mxml_index_t *ind,	/* I - Index to search */
   {
 #ifdef DEBUG
     puts("    returning NULL...");
-    if (ind) printf("    ind->attr=\"%s\"\n", ind->attr ? ind->attr : "(null)");
+    printf("    ind->attr=\"%s\"\n", ind->attr ? ind->attr : "(null)");
 #endif /* DEBUG */
 
     return (NULL);
