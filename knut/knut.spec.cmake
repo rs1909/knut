@@ -5,10 +5,17 @@ Release: 1%{?dist}
 License: GPL v2
 Group: Application/Scientific
 Source: Knut-@PACKAGE_VERSION@.tar.bz2
-URL: N/A
+URL: https://gitorious.org/knut
 Vendor: Unknown
-Packager: Robert Szalai <s z a l a i _at_ m m . b m e . h u>
+Packager: Robert Szalai <robicjedi _at_ gmail.com>
 Buildroot: %{_tmppath}/%{name}-%{version}-buildroot
+Buildrequires: cmake >= 2.8.11
+Buildrequires: qt5-qtbase-devel >= 5.1
+Buildrequires: qt5-qtbase-gui >= 5.1
+Buildrequires: qt5-qtsvg-devel >= 5.1
+Buildrequires: openblas-devel
+Buildrequires: suitesparse-devel
+Buildrequires: mxml-devel >= 2.7
 
 %description
 Numerical continuation software for delay-differential equations
@@ -17,11 +24,11 @@ Numerical continuation software for delay-differential equations
 %setup
 
 %build
-cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX=/usr/ -D CMAKE_BUILD_TYPE=RELWITHDEBINFO .
+%cmake
+make %{?_smp_mflags}
 
 %install
 cd $RPM_BUILD_DIR/%{name}-%{version}
-make
 make DESTDIR=$RPM_BUILD_ROOT install
 
 %files
@@ -31,3 +38,7 @@ make DESTDIR=$RPM_BUILD_ROOT install
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+%changelog
+* Tue Dec 31 2013 Robert Szalai <robicjedi@gmail.com> 9-1
+- The first rpm release

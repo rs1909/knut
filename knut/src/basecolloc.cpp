@@ -17,7 +17,7 @@
 #include <fstream>
 #endif /*DEBUG*/
 
-static const double legendre_roots[25][25] = 
+static const double legendre_roots[25][25] =
 {{0.5000000000000000000000000000000000000000},
  {0.5000000000000000000000000000000000000000},
  {0.2113248654051871177454256097490212721762, 0.7886751345948128822545743902509787278238},
@@ -218,7 +218,7 @@ static void poly_int(KNMatrix& out, const KNVector& t)
 //   KNVector poly1(t.size());
 //   KNVector poly1_d(t.size());
 //   KNVector poly2(t.size());
-// 
+//
 //   for (i = 0; i < t.size(); i++)
 //   {
 //     for (j = 0; j < t.size(); j++)
@@ -265,7 +265,7 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNExprSystem& _sys, const siz
     timeMSH(ndeg*nint + 1),
     metric(ndeg + 1, ndeg + 1),
     metricPhase(ndeg + 1, ndeg + 1),
-    mesh(nint + 1), 
+    mesh(nint + 1),
     meshINT(ndeg + 1),
     col(ndeg),
     lgr(ndeg+1, ndeg+1),
@@ -275,15 +275,15 @@ KNAbstractBvpCollocation::KNAbstractBvpCollocation(KNExprSystem& _sys, const siz
   sys->mass(mass); // the derivatives will be multiplied by this
   for (size_t i = 0; i < nint + 1; i++) mesh(i) = i * 1.0 / nint;
   repr_mesh(meshINT);
-  
+
   // find out if there are algebraic equations
   bool alg = false;
   for (size_t i = 0; i < mass.size(); i++) if (mass(i) == 0.0) alg = true;
-  
+
   if (alg) poly_radau(col);
   else poly_gau(col);
-  col.print();
-  
+//   col.print();
+
   for (size_t i = 0; i < NINT; i++)   // i: interval; j: which collocation point
   {
     for (size_t j = 0; j < NDEG; j++)
@@ -369,7 +369,7 @@ static void meshAssess(KNVector& eqf, const KNVector& mesh, const KNVector& prof
   size_t nint_ = mesh.size() - 1;
   P_ERROR_X1( profile.size() % (ndeg_*nint_ + 1) == 0, "Wrong profile size.");
   size_t ndim_ = profile.size() / (ndeg_*nint_ + 1);
-  
+
   // compute the coeff of the highest degree term in each interval
   bool small_deri = true;
   const double hmach = 1e-6;

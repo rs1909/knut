@@ -8,7 +8,7 @@ PROJECT( KNUT )
 SET( PACKAGE_NAME "Knut" )
 SET( PACKAGE_VERSION "9" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
-SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2013, Robert Szalai")
+SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2014, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
@@ -156,6 +156,65 @@ ELSE( EXISTS ${OPENBLAS64} )
 ENDIF( EXISTS ${OPENBLAS64} )
 
 #------------------------------------------------------------------------------
+# Finding system libraries
+#------------------------------------------------------------------------------
+
+# only works if normal BLAS is used
+IF( EXISTS ${OPENBLAS} )
+  FIND_LIBRARY( UMFPACK NAMES umfpack )
+  IF( EXISTS ${UMFPACK} )
+    FIND_LIBRARY( AMD NAMES amd )
+    IF( EXISTS ${AMD} )
+      FIND_PATH(UMF_INCLUDE NAMES umfpack.h
+        PATHS CMAKE_INCLUDE_PATH
+          /usr/include
+          /usr/include/suitesparse/
+          ${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include)
+      FIND_PATH(AMD_INCLUDE NAMES amd.h
+        PATHS CMAKE_INCLUDE_PATH
+          /usr/include
+          /usr/include/suitesparse/
+          ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include)
+    ENDIF( EXISTS ${AMD} )
+    MESSAGE( STATUS "Using system UMFPACK and AMD: ${UMFPACK} and ${AMD}." )
+    MESSAGE( STATUS "The includes are at ${UMF_INCLUDE} and ${AMD_INCLUDE}." )
+  ENDIF( EXISTS ${UMFPACK} )
+  FIND_LIBRARY( LAPACK NAMES lapack )
+  FIND_LIBRARY( ARPACK NAMES arpack )
+  IF((EXISTS ${LAPACK}) AND (EXISTS ${ARPACK}))
+    SET(LAARPACK ${LAPACK} ${ARPACK})
+    MESSAGE( STATUS "Using system LAPACK and ARPACK ${LAARPACK}." )
+  ENDIF((EXISTS ${LAPACK}) AND (EXISTS ${ARPACK}))
+ENDIF( EXISTS ${OPENBLAS} )
+
+IF( NOT EXISTS ${AMD} )
+  SET( UMF_INCLUDE ${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include UMF_INCLUDE ${KNUT_SOURCE_DIR}/UMFPACK/UFconfig )
+  SET( AMD_INCLUDE ${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include )
+  SET( UMFPACK ${KNUT_BINARY_DIR}/UMFPACK/UMFPACK/Source/libumfpack.a )
+  SET( AMD ${KNUT_BINARY_DIR}/UMFPACK/AMD/Source/libamd.a )
+ENDIF( NOT EXISTS ${AMD} )
+
+IF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
+  SET( LAARPACK ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a )
+ENDIF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
+
+FIND_LIBRARY( MXML_LIB NAMES mxml )
+IF( EXISTS ${MXML_LIB} )
+  FIND_PATH( MXML_INC NAMES mxml.h CMAKE_INCLUDE_PATH /usr/include )
+  IF( EXISTS ${MXML_INC} )
+    SET( KNUT_MXML_LIB ${MXML_LIB} )
+    SET( KNUT_MXML_INC ${MXML_INC} )
+  ENDIF( EXISTS ${MXML_INC} )
+ENDIF( EXISTS ${MXML_LIB} )
+IF( NOT EXISTS ${MXML_INC} )
+  SET( KNUT_MXML_LIB mxml )
+  SET( KNUT_MXML_INC ${KNUT_SOURCE_DIR}/mxml )
+ENDIF( NOT EXISTS ${MXML_INC} )
+
+MESSAGE( STATUS "The mxml library is ${KNUT_MXML_LIB}." )
+MESSAGE( STATUS "The mxml include directory is ${KNUT_MXML_INC}." )
+
+#------------------------------------------------------------------------------
 # Finding Qt
 #------------------------------------------------------------------------------
 
@@ -253,13 +312,19 @@ ENDIF(APPLE)
 
 # LAPACK and ARPACK
 # this produces a library "liblaarpack.a"
-ADD_SUBDIRECTORY(laarpack)
+IF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
+  ADD_SUBDIRECTORY(laarpack)
+ENDIF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
 
 # these are the UMFPACK routines
-ADD_SUBDIRECTORY(UMFPACK)
+IF(NOT EXISTS ${AMD})
+  ADD_SUBDIRECTORY(UMFPACK)
+ENDIF(NOT EXISTS ${AMD})
 
 # The Mini-Xml library
-ADD_SUBDIRECTORY(mxml)
+IF( NOT EXISTS ${MXML_INC} )
+  ADD_SUBDIRECTORY(mxml)
+ENDIF( NOT EXISTS ${MXML_INC} )
 
 # This is where the whole computation is
 # this produces a library "libknut.a"
@@ -278,5 +343,5 @@ ADD_SUBDIRECTORY(demo)
 
 # MATLAB scripts
 IF( EXISTS ${MEX_EXECUTABLE} )
-ADD_SUBDIRECTORY(matlab)
+  ADD_SUBDIRECTORY(matlab)
 ENDIF( EXISTS ${MEX_EXECUTABLE} )

@@ -2841,7 +2841,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   node = mxmlFindElement(tree, tree, "VectorField", NULL, NULL, MXML_DESCEND);
   if (node == NULL)
   {
-    mxmlDelete(tree);
+    mxmlDelete (tree);
 //     P_MESSAGE1("Error: No VectorField element found in XML defintion.\n");
     return false;
   }
@@ -2852,21 +2852,21 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "IndependentVariable" && attr != "Description")
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE2("Error: The VectorField element has an unknown attribute: ", attr);
       }
     }
     const char *attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      mxmlDelete(tree);
+      mxmlDelete (tree);
       P_MESSAGE1("Error: The VectorField element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The VectorField Name \"", attr, "\" is not valid.");
       }
       out << "vfname()=" << attr << ";\n";
@@ -2884,7 +2884,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The VectorField IndependentVariable \"", attr, "\" is not valid.");
       }
       out << "time()=" << attr << ";\n";
@@ -2903,7 +2903,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Value" && attr != "Description" && attr != "Latex")
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: A Constant element has an unknown attribute: ", attr, "Valid Constant attributes are: Name, Value, Description, Latex.");
       }
     }
@@ -2911,14 +2911,14 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      mxmlDelete(tree);
+      mxmlDelete (tree);
       P_MESSAGE1("Error: A Constant element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The Constant Name \"", attr, "\" is not valid.");
       }
       std::string name(attr);
@@ -2926,7 +2926,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       attr = mxmlElementGetAttr(node, "Value");
       if (attr == NULL)
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The Constant element with Name=\"", name, "\" has no Value attribute.");
       }
       else
@@ -2948,7 +2948,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "DefaultValue" && attr != "Description" && attr != "Latex")
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: A Parameter element has an unknown attribute: ", attr, "Valid Parameter attributes are: Name, DefaultValue, Description, Latex.");
 //         bad_attr = true;
       }
@@ -2964,7 +2964,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The Parameter Name \"", attr, "\" is not valid.\n");
       }
       std::string name(attr);
@@ -3001,7 +3001,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Formula" && attr != "Description" && attr != "Latex")
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: An Expression element has an unknown attribute: ", attr, "Valid Expression attributes are: Name, Formula, Description, Latex");
       }
     }
@@ -3016,7 +3016,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The Expression Name \"", attr, "\" is not valid.");
       }
       std::string name(attr);
@@ -3024,7 +3024,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       attr = mxmlElementGetAttr(node, "Formula");
       if (attr == NULL)
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The Expression with Name=\"", name, "\" has no Formula attribute.");
       }
       else
@@ -3056,14 +3056,14 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     attr = mxmlElementGetAttr(node, "Name");
     if (attr == NULL)
     {
-      mxmlDelete(tree);
+      mxmlDelete (tree);
       P_MESSAGE1("Error: A StateVariable element has no Name attribute.");
     }
     else
     {
       if (!isValidName(attr))
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The StateVariable Name \"", attr, "\" is not valid.");
       }
       std::string name(attr);
@@ -3071,7 +3071,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       attr = mxmlElementGetAttr(node, "Formula");
       if (attr == NULL)
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: The StateVariable with Name=\"", name, "\" has no Formula attribute.");
       }
       else
@@ -3103,7 +3103,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string attr = node->value.element.attrs[i].name;
       if (attr != "Name" && attr != "Formula" && attr != "Description")
       {
-        mxmlDelete(tree);
+        mxmlDelete (tree);
         P_MESSAGE3("Error: A Function element has an unknown attribute: ", attr, "Valid Function attributes are: Name, Formula, Description.");
       }
     }

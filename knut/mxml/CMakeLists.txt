@@ -12,16 +12,16 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
-ADD_LIBRARY( mxml 
+ADD_LIBRARY( mxml STATIC
   mxml-entity.c
-  mxml-index.c 
+  mxml-index.c
   mxml-private.c mxml-private.h
   mxml-get.c
   mxml-set.c
   mxml-attr.c
   mxml-file.c
-  mxml-node.c	
-  mxml-search.c	
+  mxml-node.c
+  mxml-search.c
   mxml-string.c
   mxml.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h )

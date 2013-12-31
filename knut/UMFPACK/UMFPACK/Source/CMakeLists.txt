@@ -55,18 +55,18 @@ SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 # include files:
 #-------------------------------------------------------------------------------
 
-INCLUDE_DIRECTORIES( 
+INCLUDE_DIRECTORIES(
 	${KNUT_SOURCE_DIR}/UMFPACK/AMD/Include
 	${KNUT_SOURCE_DIR}/UMFPACK/AMD/Source
 	${KNUT_SOURCE_DIR}/UMFPACK/UMFPACK/Include
-	${KNUT_SOURCE_DIR}/UMFPACK/UFconfig 
+	${KNUT_SOURCE_DIR}/UMFPACK/UFconfig
 	${KNUT_BINARY_DIR}/src/ )
 
-SET( FLT DINT ) # form DINT DLONG ZINT ZLONG 
+SET( FLT DINT ) # form DINT DLONG ZINT ZLONG
 
 ADD_DEFINITIONS( -DNO_TIMER -DNCHOLMOD )
 
-ADD_LIBRARY( umfpack
+ADD_LIBRARY( umfpack STATIC
 	${UMFINT_C} ${UMFINT_H}
 	${UMF_C} ${UMF_H} ${UMFPACK_C}
 	${GENERIC_C} ${UMF_GENERATED_C} )
