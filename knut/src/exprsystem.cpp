@@ -401,7 +401,7 @@ void KNExprSystem::toString (std::string& vfexpr)
 
 // should use the same stack
 // otherwise it only works with a single expression
-const void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
+void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
 {
   const size_t ND = var.dim1 ();
   const size_t NT = delayExpr.size () + 1;
