@@ -83,7 +83,7 @@ private:
   std::vector<ExpTree::Expression> exprFormula_hess;
 
   bool checkExpression (const ExpTree::NodeExpr* expr) const;
-  const void knsys_fun_expr (size_t sp, const ExpTree::Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par);
+  void knsys_fun_expr (size_t sp, const ExpTree::Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par);
   void printExpr (std::ostream& out, size_t spaces,
                   const std::vector<ExpTree::NodePar*>& parlist,
                   const std::vector<ExpTree::NodeSymbol*>& parsymlist,
