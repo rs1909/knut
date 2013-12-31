@@ -1407,6 +1407,7 @@ mxml_load_data(
 		  "MXML_TEXT",		/* Text fragment */
 		  "MXML_CUSTOM"		/* Custom data */
 		};
+  int started = 0;
 
 
  /*
@@ -1442,47 +1443,54 @@ mxml_load_data(
       */
 
       *bufptr = '\0';
-
-      switch (type)
+      if (started > 0)
       {
-	case MXML_INTEGER :
-            node = mxmlNewInteger(parent, strtol(buffer, &bufptr, 0));
-	    break;
+        switch (type)
+        {
+          case MXML_INTEGER :
+              node = mxmlNewInteger(parent, strtol(buffer, &bufptr, 0));
+              break;
 
-	case MXML_OPAQUE :
-            node = mxmlNewOpaque(parent, buffer);
-	    break;
+          case MXML_OPAQUE :
+              node = mxmlNewOpaque(parent, buffer);
+              break;
 
-	case MXML_REAL :
-            node = mxmlNewReal(parent, strtod(buffer, &bufptr));
-	    break;
+          case MXML_REAL :
+              node = mxmlNewReal(parent, strtod(buffer, &bufptr));
+              break;
 
-	case MXML_TEXT :
-            node = mxmlNewText(parent, whitespace, buffer);
-	    break;
+          case MXML_TEXT :
+              node = mxmlNewText(parent, whitespace, buffer);
+              break;
 
-	case MXML_CUSTOM :
-	    if (global->custom_load_cb)
-	    {
-	     /*
-	      * Use the callback to fill in the custom data...
-	      */
+          case MXML_CUSTOM :
+              if (global->custom_load_cb)
+              {
+              /*
+                * Use the callback to fill in the custom data...
+                */
 
-              node = mxmlNewCustom(parent, NULL, NULL);
+                node = mxmlNewCustom(parent, NULL, NULL);
 
-	      if ((*global->custom_load_cb)(node, buffer))
-	      {
-	        mxml_error("Bad custom value '%s' in parent <%s>!",
-		           buffer, parent ? parent->value.element.name : "null");
-		mxmlDelete(node);
-		node = NULL;
-	      }
-	      break;
-	    }
+                if ((*global->custom_load_cb)(node, buffer))
+                {
+                  mxml_error("Bad custom value '%s' in parent <%s>!",
+                            buffer, parent ? parent->value.element.name : "null");
+                  mxmlDelete(node);
+                  node = NULL;
+                }
+                break;
+              }
 
-        default : /* Ignore... */
-	    node = NULL;
-	    break;
+          default : /* Ignore... */
+              node = NULL;
+              break;
+        }
+      }
+      else
+      {
+        node = NULL;
+        type = MXML_IGNORE;
       }
 
       if (*bufptr)
@@ -1557,6 +1565,7 @@ mxml_load_data(
       * Start of open/close tag...
       */
 
+      started = 1;
       bufptr = buffer;
 
       while ((ch = (*getc_cb)(p, &encoding)) != EOF)
