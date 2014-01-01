@@ -131,18 +131,11 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 //   std::cout << vfexpr << "\n";
 //   std::cout << "MID EX\n";
 //   std::cout.flush ();
-  expr.fromString (vfexpr);
 //   expr.print (std::cout);
 //   std::cout << "END EX\n";
 //   std::cout.flush ();
-  try
-  {
-    expr.knutSplit (vfName, varName, varDotExpr, exprName, exprFormula, varInit, varMass, delayExpr, parName, parInit );
-  }
-  catch (KNException& ex)
-  {
-    std::cout << ex.str();
-  }
+  expr.fromString (vfexpr);
+  expr.knutSplit (vfName, varName, varDotExpr, exprName, exprFormula, varInit, varMass, delayExpr, parName, parInit );
 
 #ifdef DEBUG
   // print everything to see if there's an error
@@ -1035,10 +1028,10 @@ void KNExprSystem::toCxx (std::string& cxx) const
   const size_t NP = parName.size();
 
   std::ostringstream out;
-  std::vector<NodePar*> parlist (NP);
-  std::vector<NodeSymbol*> parsymlist (NP);
-  std::vector<NodeVar*> varlist (1+2*NT*NX);
-  std::vector<NodeSymbol*> varsymlist (1+2*NT*NX);
+  std::vector<NodePar*> parlist (NP, nullptr);
+  std::vector<NodeSymbol*> parsymlist (NP, nullptr);
+  std::vector<NodeVar*> varlist (1+2*NT*NX, nullptr);
+  std::vector<NodeSymbol*> varsymlist (1+2*NT*NX, nullptr);
 
   out.precision (std::numeric_limits<double>::digits10 + 1);
   out.setf (std::ios::scientific);
@@ -1084,6 +1077,12 @@ void KNExprSystem::toCxx (std::string& cxx) const
          "{\n"
          "  if (x > 0) return 1.0;\n"
          "  else return 0.0;\n"
+         "}\n"
+         "\n"
+         "static inline double sign(double x)\n"
+         "{\n"
+         "  if (x > 0) return 1.0;\n"
+         "  else return -1.0;\n"
          "}\n"
          "\n"
          "extern \"C\" {\n"

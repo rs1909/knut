@@ -46,7 +46,7 @@ int main(int argc, const char** argv)
               std::string  cwd(cwd_ptr);
               delete[] cwd_ptr;
               cwd += '/';
-              
+
               size_t found = cfdir.rfind('/');
               if (found != std::string::npos) cfdir.erase(found);
               else cfdir = cwd;
@@ -59,10 +59,10 @@ int main(int argc, const char** argv)
               if (params->getSystem ().empty ())
               {
                 sys = new KNSystem (params->getSysName ());
-                std::string tmp;
-                sys -> toString (tmp);
-                params->setSystemText (tmp);
-                params->setSysName ("");
+//                 std::string tmp;
+//                 sys -> toString (tmp);
+//                 params->setSystemText (tmp);
+//                 params->setSysName ("");
               } else
               {
           //      std::cout << params->getSystem () << "\n";
@@ -87,13 +87,13 @@ int main(int argc, const char** argv)
         P_MESSAGE1("Unexpected command line argument.");
       }
     }
-  
+
     if (params == 0)
     {
       P_MESSAGE1("Missing constants file.");
       exit(-1);
     }
-  
+
     KNCliContinuation comp;
     KNDataFile *inputData = nullptr;
     if (params->getLabel() != 0)

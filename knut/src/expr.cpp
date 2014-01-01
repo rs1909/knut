@@ -535,7 +535,10 @@ Node* NodeFunction::copy () const
 
 void NodeFunction::print (std::ostream& out) const
 {
-  out << name << "(";
+  if (name == "abs") out << "std::fabs(";
+  else if (name == "sign") out << "sign(";
+  else if (name == "heaviside") out << "heaviside(";
+  else out << "std::" << name << "(";
   for(size_t k=0; k<args.size(); k++)
   {
     P_ERROR_X1( args[k] != nullptr, "Incerdibly wrong!");
@@ -634,6 +637,8 @@ class NodeFunctionA1 : public NodeFunction
 {
   public:
     NodeFunctionA1 (const std::string& nm);
+    NodeFunctionA1 ();
+    const NodeFunctionA1& operator = (const NodeFunctionA1&);
     Node* copy () const;
     size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   private:
@@ -657,8 +662,9 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
   else if (nm == "asinh") function = asinh;
   else if (nm == "acosh") function = acosh;
   else if (nm == "atanh") function = atanh;
-  else if (nm == "sign") function = localSign;
-  else if (nm == "heaviside") function = localHeaviside;
+  else if (nm == "sign") function = &localSign;
+  else if (nm == "heaviside") function = &localHeaviside;
+  else function = [](double x) -> double { return 0.0; };
 }
 
 Node* NodeFunctionA1::copy () const
@@ -1221,6 +1227,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   double newsmul = smul;
   for (size_t k = 0; k < args.size(); k++)
   {
+//     args[k]->print (std::cout); std::cout << "\t";
     args[k]->optimize (&args[k], zero);
     NodeNumber* num = dynamic_cast<NodeNumber*>(args[k]);
     if (num)
@@ -1429,7 +1436,9 @@ Node* NodeTimes::derivative (const Node* var, const std::function<bool(const Nod
     }
     else
     {
-      cp->args.push_back (args[k]->derivative (var, zero));
+      P_ASSERT_X1(args[k] != nullptr, "Nullptr\n");
+      Node* d = args[k]->derivative (var, zero);
+      cp->args.push_back (d);
       cp->divide.push_back (false);
     }
     for (size_t l=0; l<args.size(); l++)
@@ -1699,6 +1708,7 @@ size_t NodeFunctionA1::evaluate (ValueStack& stack, size_t sp, const std::functi
   args[0] -> evaluate(stack, sp, fun, len);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
+  if (!(this->function)) { std::cout << "|" << name << "|"; P_MESSAGE3 ("Not a function '", name, "'.");}
   for (size_t k = 0; k < len; k++)
   {
     data[skip*k] = this->function(data[skip*k]);
@@ -1880,8 +1890,13 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         case ':':
           k++;
           if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=") );
-          else P_MESSAGE4("Unknown operator ", tn, str[k], "\n");
+          else
+          {
+            std::string tn1(str, k), tn2(&str[k]);
+            std::cout << tn1 << "|HERE|" << tn2 << "\n";
+            P_MESSAGE4("Unknown operator ", tn, str[k], "\n");
 //           std::cout << "DEFINE FOUND\n";
+          }
           break;
         case ';':
           stream.push_back (Token (TokenType::Semicolon, tn) );
@@ -2121,138 +2136,153 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
   std::list<Token> ops;
   std::list<size_t> funargs;
   std::list<Node*> treestack;
-  size_t k = 0;
-  while (k < token_stream.size())
+  try
   {
-    if (token_stream[k].type == TokenType::Symbol)
+    size_t k = 0;
+    while (k < token_stream.size())
     {
-      if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
-      // bind items on the stack ...
-      opToTree (treestack, token_stream[k], 0);
-    }
-    else if (token_stream[k].type == TokenType::Function)
-    {
-      if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
-      ops.push_back (token_stream[k]);
-    }
-    else if (token_stream[k].type == TokenType::Comma)
-    {
-      if (!funargs.empty()) if (funargs.back() == 0)
+      if (token_stream[k].type == TokenType::Symbol)
       {
-//        for (auto it : funargs) std::cout << "FA=" << it << ",";
-//        std::cout << "\n";
-        P_MESSAGE1("Empty argument\n");
+        if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
+        // bind items on the stack ...
+        opToTree (treestack, token_stream[k], 0);
       }
-      if (!funargs.empty()) funargs.back() += 1;
-      else P_MESSAGE1("Not a function\n");
-      while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
+      else if (token_stream[k].type == TokenType::Function)
+      {
+        if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
+        ops.push_back (token_stream[k]);
+      }
+      else if (token_stream[k].type == TokenType::Comma)
+      {
+        if (!funargs.empty()) if (funargs.back() == 0)
+        {
+  //        for (auto it : funargs) std::cout << "FA=" << it << ",";
+  //        std::cout << "\n";
+          P_MESSAGE1("Empty argument\n");
+        }
+        if (!funargs.empty()) funargs.back() += 1;
+        else P_MESSAGE1("Not a function\n");
+        while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
+        {
+          // bind items on the stack ...
+          P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (1).");
+          opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
+          ops.pop_back();
+        }
+        if (ops.empty()) P_MESSAGE1("Misplaced comma or missing \')\'\n");
+      }
+      else if (token_stream[k].isOp())
+      {
+        if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
+        while (!ops.empty())
+        {
+          if ( (ops.back().isOp())&&
+              (((token_table.at(token_stream[k].type).leftAssoc)&&
+                (token_table.at(token_stream[k].type).precedence >= token_table.at(ops.back().type).precedence))||
+                (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
+          {
+            // bind items on the stack ...
+            P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (2).");
+            opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
+            ops.pop_back();
+          } else break;
+        }
+  //      std::cout <<"op(" << token_stream[k].name << ")=" << funargs.back () << " ";
+        ops.push_back(token_stream[k]);
+      }
+      else if (token_stream[k].type == TokenType::LeftParen)
+      {
+  //      std::cout <<"Left : " << funargs.back () << " ";
+        funargs.push_back(0);
+        ops.push_back(token_stream[k]);
+      }
+      else if (token_stream[k].type == TokenType::RightParen)
+      {
+        size_t currentArgs = funargs.back ();
+  //      std::cout <<"Right : " << funargs.back () << " ";
+        size_t it = 0;
+        while (!ops.empty())
+        {
+          if (ops.back().type != TokenType::LeftParen)
+          {
+            // bind items on the stack ...
+            if (ops.back().type == TokenType::Function) opToTree (treestack, ops.back(), currentArgs);
+            else opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
+            ops.pop_back();
+            it++;
+          } else
+          {
+            funargs.pop_back();
+            ops.pop_back();
+            break;
+          }
+        }
+        if ((!funargs.empty()) && (it != 0)) if (funargs.back() == 0) funargs.back() = 1;
+        // the right paren is still on the stack
+        if (ops.empty())
+        {
+          // there was noting on the stack
+          std::ostringstream msg;
+          msg << "Mismatched prenthesis (2)\nBEGIN@ ";
+          for (size_t p=0; p<k+1; p++) msg << token_stream[p].name;
+          msg << " @ ";
+          for (size_t p=k+1; p<token_stream.size(); p++) msg << token_stream[p].name;
+          msg << " @END\n ";
+          P_MESSAGE1(msg.str().c_str());
+        }
+        if (!ops.empty()) if (ops.back().type == TokenType::Function)
+        {
+          // bind items on the stack ...
+          opToTree (treestack, ops.back(), currentArgs);
+          ops.pop_back();
+        }
+      } else
+      {
+        P_MESSAGE3("Not accounted for token: ", ops.back().name, "\n");
+      }
+      k++;
+    }
+    // no more tokens
+    while (!ops.empty())
+    {
+      if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis (3).");
+      else
       {
         // bind items on the stack ...
-        P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (1).");
         opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
         ops.pop_back();
       }
-      if (ops.empty()) P_MESSAGE1("Misplaced comma or missing \')\'\n");
     }
-    else if (token_stream[k].isOp())
+    // finished
+    if (treestack.size() != 1)
     {
-      if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
-      while (!ops.empty())
+      std::ostringstream msg;
+      msg << "Operations remaining " << treestack.size() << "\n";
+      for (auto k=treestack.begin(); k != treestack.end(); ++k)
       {
-        if ( (ops.back().isOp())&&
-             (((token_table.at(token_stream[k].type).leftAssoc)&&
-              (token_table.at(token_stream[k].type).precedence >= token_table.at(ops.back().type).precedence))||
-              (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
-        {
-          // bind items on the stack ...
-          P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (2).");
-          opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
-          ops.pop_back();
-        } else break;
+        msg << "@@OP =\n\t";
+        if (*k) (*k)->print (msg); msg << "\n";
       }
-//      std::cout <<"op(" << token_stream[k].name << ")=" << funargs.back () << " ";
-      ops.push_back(token_stream[k]);
+      for (auto k=token_stream.begin(); k != token_stream.end(); ++k)
+      {
+        msg << k->name << "{" << static_cast<int>(k->type) << "}";
+      }
+      P_MESSAGE1(msg.str().c_str());
     }
-    else if (token_stream[k].type == TokenType::LeftParen)
-    {
-//      std::cout <<"Left : " << funargs.back () << " ";
-      funargs.push_back(0);
-      ops.push_back(token_stream[k]);
-    }
-    else if (token_stream[k].type == TokenType::RightParen)
-    {
-      size_t currentArgs = funargs.back ();
-//      std::cout <<"Right : " << funargs.back () << " ";
-      size_t it = 0;
-      while (!ops.empty())
-      {
-        if (ops.back().type != TokenType::LeftParen)
-        {
-          // bind items on the stack ...
-          if (ops.back().type == TokenType::Function) opToTree (treestack, ops.back(), currentArgs);
-          else opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
-          ops.pop_back();
-          it++;
-        } else
-        {
-          funargs.pop_back();
-          ops.pop_back();
-          break;
-        }
-      }
-      if ((!funargs.empty()) && (it != 0)) if (funargs.back() == 0) funargs.back() = 1;
-      // the right paren is still on the stack
-      if (ops.empty())
-      {
-        // there was noting on the stack
-	std::ostringstream msg;
-	msg << "Mismatched prenthesis (2)\nBEGIN@ ";
-        for (size_t p=0; p<k+1; p++) msg << token_stream[p].name;
-        msg << " @ ";
-        for (size_t p=k+1; p<token_stream.size(); p++) msg << token_stream[p].name;
-        msg << " @END\n ";
-        P_MESSAGE1(msg.str().c_str());
-      }
-      if (!ops.empty()) if (ops.back().type == TokenType::Function)
-      {
-        // bind items on the stack ...
-        opToTree (treestack, ops.back(), currentArgs);
-        ops.pop_back();
-      }
-    } else
-    {
-      P_MESSAGE3("Not accounted for token: ", ops.back().name, "\n");
-    }
-    k++;
   }
-  // no more tokens
-  while (!ops.empty())
+  catch (KNException& ex)
   {
-    if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis (3).");
-    else
+    while (!treestack.empty())
     {
-      // bind items on the stack ...
-      opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
-      ops.pop_back();
+      Node* it = treestack.back ();
+      it->deleteTree();
+      delete it;
+      treestack.pop_back ();
     }
+    throw ex;
   }
-  // finished
-  if (treestack.size() != 1)
-  {
-    std::ostringstream msg;
-    msg << "Operations remaining " << treestack.size() << "\n";
-    for (auto k=treestack.begin(); k != treestack.end(); ++k)
-    {
-      msg << "@@OP =\n\t";
-      if (*k) (*k)->print (msg); msg << "\n";
-    }
-    for (auto k=token_stream.begin(); k != token_stream.end(); ++k)
-    {
-      msg << k->name << "{" << static_cast<int>(k->type) << "}";
-    }
-    P_MESSAGE1(msg.str().c_str());
-  }
-  return treestack.front ();
+  if (treestack.empty()) return nullptr;
+  else return treestack.front ();
 }
 
 // needs to handle period(), time(), PAR_PERIOD
@@ -2276,125 +2306,134 @@ void splitExpression (std::string& sysName,
     Node* cp = parent -> copy ();
     std::list<Node*> lst;
     static_cast<NodeSemicolon*>(cp)->toList(lst);
-    for (auto it : lst)
-    {
-      NodeEquals* child = dynamic_cast<NodeEquals*>(it);
-      if (child != nullptr)
+    try {
+      for (auto it : lst)
       {
-        const Node* left = child->getChild (0);
-        const Node* right = child->getChild (1);
-
-        if (left->type == TokenType::Function)
+        NodeEquals* child = dynamic_cast<NodeEquals*>(it);
+        if (child != nullptr)
         {
-          const NodeFunction* fun = static_cast<const NodeFunction*>(left);
-          if (fun->getName() == "dot")
+          const Node* left = child->getChild (0);
+          const Node* right = child->getChild (1);
+
+          if (left->type == TokenType::Function)
           {
-            // state variable
-            if (fun->children() == 1)
+            const NodeFunction* fun = static_cast<const NodeFunction*>(left);
+            if (fun->getName() == "dot")
             {
-              const Node* statevariable = fun->getChild(0);
-              if (statevariable->type == TokenType::Symbol)
+              // state variable
+              if (fun->children() == 1)
               {
-                var_name.push_back (static_cast<NodeSymbol*>(statevariable->copy()));
-                var_dot.push_back (right->copy());
-                var_init.push_back (nullptr);
-                var_mass.push_back (nullptr);
-              }
-            } else P_MESSAGE1("Dot: wrong number of arguments\n");
-          } else if (fun->getName() == "init")
-          {
-            // starting solution
-            if (fun->children() == 1)
-            {
-              const Node* init = fun->getChild(0);
-              if (init->type == TokenType::Symbol)
-              {
-                const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
-                bool found = false;
-                // find the corresponding state variable
-                for (size_t k=0; k<var_name.size(); k++)
+                const Node* statevariable = fun->getChild(0);
+                if (statevariable->type == TokenType::Symbol)
                 {
-                  if (var_name[k]->getName() == sym->getName())
-                  {
-                    var_init[k] = right->copy();
-                    found = true;
-                    break;
-                  }
+                  var_name.push_back (static_cast<NodeSymbol*>(statevariable->copy()));
+                  var_dot.push_back (right->copy());
+                  var_init.push_back (nullptr);
+                  var_mass.push_back (nullptr);
                 }
-                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-              } else P_MESSAGE1("Init: state variable is not a symbol.");
-            } else P_MESSAGE1("Init: wrong number of arguments\n");
-          } else if (fun->getName() == "mass")
-          {
-            // starting solution
-            if (fun->children() == 1)
+              } else P_MESSAGE1("Dot: wrong number of arguments\n");
+            } else if (fun->getName() == "init")
             {
-              const Node* init = fun->getChild(0);
-              if (init->type == TokenType::Symbol)
+              // starting solution
+              if (fun->children() == 1)
               {
-                const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
-                bool found = false;
-                // find the corresponding state variable
-                for (size_t k=0; k<var_name.size(); k++)
+                const Node* init = fun->getChild(0);
+                if (init->type == TokenType::Symbol)
                 {
-                  if (var_name[k]->getName() == sym->getName())
+                  const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                  bool found = false;
+                  // find the corresponding state variable
+                  for (size_t k=0; k<var_name.size(); k++)
                   {
-                    var_mass[k] = right->copy();
-                    found = true;
-                    break;
+                    if (var_name[k]->getName() == sym->getName())
+                    {
+                      var_init[k] = right->copy();
+                      found = true;
+                      break;
+                    }
                   }
-                }
-                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-              } else P_MESSAGE1("Mass: state variable is not a symbol.");
-            } else P_MESSAGE1("Mass: wrong number of arguments\n");
-          } else if (fun->getName() == "period")
-          {
-            if (par_name.size() > 0) P_ERROR_X1(par_name[0] == nullptr, "Period is already defined.");
-            P_ERROR_X1(fun->children() == 1, "Dot: wrong number of arguments");
-            P_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, "Not a symbol");
-            par_name[0] = static_cast<NodeSymbol*>(fun->getChild(0)->copy());
-            par_value[0] = right->copy();
-          } else if (fun->getName() == "par")
-          {
-            // parameter
-            if (fun->children() == 1)
+                  P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
+                } else P_MESSAGE1("Init: state variable is not a symbol.");
+              } else P_MESSAGE1("Init: wrong number of arguments\n");
+            } else if (fun->getName() == "mass")
             {
-              const Node* par = fun->getChild(0);
-              if (par->type == TokenType::Symbol)
+              // starting solution
+              if (fun->children() == 1)
               {
-                par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
-                par_value.push_back (right->copy());
-              }
-            } else P_MESSAGE1("Par: wrong number of arguments\n");
-          } else if (fun->getName() == "time")
+                const Node* init = fun->getChild(0);
+                if (init->type == TokenType::Symbol)
+                {
+                  const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                  bool found = false;
+                  // find the corresponding state variable
+                  for (size_t k=0; k<var_name.size(); k++)
+                  {
+                    if (var_name[k]->getName() == sym->getName())
+                    {
+                      var_mass[k] = right->copy();
+                      found = true;
+                      break;
+                    }
+                  }
+                  P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
+                } else P_MESSAGE1("Mass: state variable is not a symbol.");
+              } else P_MESSAGE1("Mass: wrong number of arguments\n");
+            } else if (fun->getName() == "period")
+            {
+              if (par_name.size() > 0) P_ERROR_X1(par_name[0] == nullptr, "Period is already defined.");
+              P_ERROR_X1(fun->children() == 1, "Dot: wrong number of arguments");
+              P_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, "Not a symbol");
+              par_name[0] = static_cast<NodeSymbol*>(fun->getChild(0)->copy());
+              par_value[0] = right->copy();
+            } else if (fun->getName() == "par")
+            {
+              // parameter
+              if (fun->children() == 1)
+              {
+                const Node* par = fun->getChild(0);
+                if (par->type == TokenType::Symbol)
+                {
+                  par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
+                  par_value.push_back (right->copy());
+                }
+              } else P_MESSAGE1("Par: wrong number of arguments\n");
+            } else if (fun->getName() == "time")
+            {
+              P_ERROR_X1(fun->children() == 0, "Too many arguments");
+              P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+              time.push_back (static_cast<NodeSymbol*>(right->copy()));
+            } else if (fun->getName() == "vfname")
+            {
+              P_ERROR_X1(fun->children() == 0, "Too many arguments");
+              P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+              sysName = static_cast<const NodeSymbol*>(right)->getName ();
+            } else
+            {
+              // a simple macro
+              macro.push_back(child->copy());
+            }
+          } else if (left->type == TokenType::Symbol)
           {
-            P_ERROR_X1(fun->children() == 0, "Too many arguments");
-            P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
-            time.push_back (static_cast<NodeSymbol*>(right->copy()));
-          } else if (fun->getName() == "vfname")
-          {
-            P_ERROR_X1(fun->children() == 0, "Too many arguments");
-            P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
-            sysName = static_cast<const NodeSymbol*>(right)->getName ();
+            macro.push_back(child->copy());
           } else
           {
-            // a simple macro
-            macro.push_back(child->copy());
+            left->print (std::cout); std::cout << " == "; right->print (std::cout); std::cout << "\n";
+            std::cout.flush();
+            P_MESSAGE1("Not a definition\n");
           }
-        } else if (left->type == TokenType::Symbol)
-        {
-          macro.push_back(child->copy());
         } else
         {
-          left->print (std::cout); std::cout << " == "; right->print (std::cout); std::cout << "\n";
-          std::cout.flush();
+          child->print (std::cout); std::cout << "\n";
           P_MESSAGE1("Not a definition\n");
         }
-      } else
-      {
-        child->print (std::cout); std::cout << "\n";
-        P_MESSAGE1("Not a definition\n");
       }
+    }
+    catch (KNException& ex)
+    {
+      for (auto it : lst) { it->deleteTree (); delete it; }
+      cp -> deleteTree ();
+      delete cp;
+      throw ex;
     }
     for (auto it : lst) { it->deleteTree (); delete it; }
     cp -> deleteTree ();
@@ -2480,8 +2519,6 @@ void Expression::knutSplit (
   std::vector<NodeSymbol*> time;
   std::vector<Node*> all_def;
   std::vector<Node*> macro;
-  std::vector<NodeSymbol*> expr_name;
-  std::vector<Node*> expr_formula;
 
   // Adding Pi
   NodeEquals* pi_eq = new NodeEquals;
@@ -2489,8 +2526,26 @@ void Expression::knutSplit (
   pi_eq -> addArgument (1, new NodeNumber(M_PI));
   macro.push_back (pi_eq);
 
-  splitExpression (sysName, var_name, var_dot, var_init, var_mass, par_name, par_value, time, all_def, root);
+  try {
+    splitExpression (sysName, var_name, var_dot, var_init, var_mass, par_name, par_value, time, all_def, root);
+  }
+  catch (KNException& ex)
+  {
+    // cleaning up the variables
+    for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : macro) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : all_def) { if (it != nullptr) { it->deleteTree(); delete it; } }
+//     std::cout << "From knutSplit - ";
+    throw ex;
+  }
   // need to further split macros into replacements and definitions
+  // transfers ownership from all_ref
+  std::vector<NodeSymbol*> expr_name;
+  std::vector<Node*> expr_formula;
   for (auto it : all_def)
   {
     if (it->type == TokenType::Define)
@@ -2500,13 +2555,14 @@ void Expression::knutSplit (
       {
         expr_name.push_back (sym);
         expr_formula.push_back (it->getChild(1));
-      } else ;
+      }
       delete it;
     } else
     {
       macro.push_back (it);
     }
   }
+  all_def.resize (0);
 
   // if no independent variable or period is set we set the default
   if (time.empty()) time.push_back (new NodeSymbol("t"));
@@ -2697,20 +2753,32 @@ void Expression::knutSplit (
   var_numval.resize (var_name.size()*(1+unique_delays.size()));
   // fill up the delays
   delayExpr.resize (unique_delays.size());
-  for (size_t r = 0; r < unique_delays.size(); r++)
+  Node* delay = nullptr;
+  try
   {
-    Node* delay = unique_delays[r]->getChild (1)->copy();
-    // replace parameters
-    for (size_t q = 0; q < par_name.size(); q++)
+    for (size_t r = 0; r < unique_delays.size(); r++)
     {
-      delay -> replaceSymbol (*par_name[q], *par_idx[q], &delay);
+      delay = unique_delays[r]->getChild (1)->copy();
+      // replace parameters
+      for (size_t q = 0; q < par_name.size(); q++)
+      {
+        delay -> replaceSymbol (*par_name[q], *par_idx[q], &delay);
+      }
+      // replace time
+      delay -> replaceSymbol (*time[0], *time_var, &delay);
+      // take over ownership
+      delayExpr[r].fromNode (delay);
+      delay = nullptr;
+      // evaluate to find undefined symbols
+      delayExpr[r].test ();
     }
-    // replace time
-    delay -> replaceSymbol (*time[0], *time_var, &delay);
-    // take over ownership
-    delayExpr[r].fromNode (delay);
-    // evaluate to find undefined symbols
-    delayExpr[r].test ();
+  }
+  catch (KNException& ex)
+  {
+    if (delay != nullptr) { delay->deleteTree(); delete delay; }
+    delayExpr.resize (0);
+//     std::cout << "From knutSplit(delays) - ";
+    throw ex;
   }
 
   // render delay into identity
@@ -2765,34 +2833,60 @@ void Expression::knutSplit (
   // END :: HANDLING THE DELAYS
 
   // fill up the RHS
-  varDotExpr.resize (var_dot.size());
-  for (size_t q = 0; q < var_dot.size(); q++)
+  try
   {
-    varDotExpr[q].fromNode (var_dot[q]);
-    // evaluate to find undefined symbols
-    varDotExpr[q].test ();
+    varDotExpr.resize (var_dot.size());
+    for (size_t q = 0; q < var_dot.size(); q++)
+    {
+      // transfer ownership
+      varDotExpr[q].fromNode (var_dot[q]);
+      var_dot[q] = nullptr;
+      // evaluate to find undefined symbols
+      varDotExpr[q].test ();
+    }
+    var_dot.resize (0);
+    // fill up the expressions
+    exprFormula.resize (expr_formula.size());
+    for (size_t q = 0; q < expr_formula.size(); q++)
+    {
+      // transfer ownership
+      exprFormula[q].fromNode (expr_formula[q]);
+      expr_formula[q] = nullptr;
+      // evaluate to find undefined symbols
+      exprFormula[q].test ();
+    }
+    expr_formula.resize (0);
   }
-  // fill up the expressions
-  exprFormula.resize (expr_formula.size());
-  for (size_t q = 0; q < expr_formula.size(); q++)
+  catch (KNException& ex)
   {
-    exprFormula[q].fromNode (expr_formula[q]);
-    // evaluate to find undefined symbols
-    exprFormula[q].test ();
-//     exprFormula[q].print (std::cout);
+    varDotExpr.resize (0);
+    exprFormula.resize (0);
+//     std::cout << "From knutSplit(varDotExpr, exprFormula) - ";
+    for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : macro) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : expr_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : expr_formula) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : expr_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    throw ex;
   }
-
   // cleaning up the variables
-  for (auto it : var_name) { it->deleteTree(); delete it; }
-  for (auto it : par_name) { it->deleteTree(); delete it; }
-  for (auto it : par_value) { it->deleteTree(); delete it; }
-  for (auto it : time) { it->deleteTree(); delete it; }
-  for (auto it : macro) { it->deleteTree(); delete it; }
-  for (auto it : expr_name) { it->deleteTree(); delete it; }
-//   for (auto it : expr_formula) { it->deleteTree(); delete it; }
-  for (auto it : var_idx) { it->deleteTree(); delete it; }
-  for (auto it : par_idx) { it->deleteTree(); delete it; }
-  for (auto it : expr_idx) { it->deleteTree(); delete it; }
+    for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+//     for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : macro) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : expr_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+//     for (auto it : expr_formula) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : par_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : expr_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
 }
 
 #include <mxml.h>

@@ -198,7 +198,8 @@ IF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
   SET( LAARPACK ${KNUT_BINARY_DIR}/laarpack/liblaarpack.a )
 ENDIF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
 
-FIND_LIBRARY( MXML_LIB NAMES mxml )
+# uncomment this once upstream fixes the MXML bug
+# FIND_LIBRARY( MXML_LIB NAMES mxml )
 IF( EXISTS ${MXML_LIB} )
   FIND_PATH( MXML_INC NAMES mxml.h CMAKE_INCLUDE_PATH /usr/include )
   IF( EXISTS ${MXML_INC} )
