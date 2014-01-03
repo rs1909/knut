@@ -677,7 +677,7 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
   else if (nm == "atanh") function = atanh;
   else if (nm == "sign") function = &localSign;
   else if (nm == "heaviside") function = &localHeaviside;
-  else function = [](double x) -> double { return 0.0; };
+  else function = nullptr;
 }
 
 Node* NodeFunctionA1::copy () const
@@ -1517,53 +1517,71 @@ Node* NodeTimes::derivative (const Node* var, const std::function<bool(const Nod
 
 Node* NodeFunction::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
-  NodeTimes* root = new NodeTimes(2);
   if (name == "abs")
   {
     // -> sign
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("sign");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "exp")
+  else if (name == "exp")
   {
     // -> exp
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("exp");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "log")
+  else if (name == "log")
   {
     // -> 1/x
+    NodeTimes* root = new NodeTimes(2);
     root -> addArgument (0, args[0] -> copy (), 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "sin")
+  else if (name == "sin")
   {
     // -> cos
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("cos");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "cos")
+  else if (name == "cos")
   {
     // -> -sin
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("sin");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, -1.0, false);
+  root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+  return root;
   }
-  if (name == "tan")
+  else if (name == "tan")
   {
     // -> cos^(-2)
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("cos");
     fun -> addArgument (0, args[0] -> copy ());
     NodePower* pow = new NodePower;
     pow -> addArgument (0, fun);
     pow -> addArgument (1, new NodeNumber(2.0));
     root -> addArgument (0, pow, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "asin")
+  else if (name == "asin")
   {
     // -> 1/{(1-x^2)^(1/2)}
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1574,10 +1592,13 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber(0.5));
     root -> addArgument (0, pow_sqrt, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "acos")
+  else if (name == "acos")
   {
     // -> -1/{(1-x^2)^(1/2)}
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1588,10 +1609,13 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber(0.5));
     root -> addArgument (0, pow_sqrt, -1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "atan")
+  else if (name == "atan")
   {
     // -> 1/(1-x^2)
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1599,34 +1623,46 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     add -> addArgument (0, new NodeNumber(1.0), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "sinh")
+  else if (name == "sinh")
   {
     // -> cosh
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("cosh");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "cosh")
+  else if (name == "cosh")
   {
     // -> sinh
+    NodeTimes* root = new NodeTimes(2);
     NodeFunctionA1* fun = new NodeFunctionA1("sinh");
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "tanh")
+  else if (name == "tanh")
   {
     // -> cosh^(-2)
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow = new NodePower;
     NodeFunctionA1* fun = new NodeFunctionA1("cosh");
     fun -> addArgument (0, args[0] -> copy ());
     pow -> addArgument (0, fun);
     pow -> addArgument (1, new NodeNumber(2.0));
     root -> addArgument (0, pow, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "asinh")
+  else if (name == "asinh")
   {
     // -> 1/(1+x^2)^(1/2)
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1637,10 +1673,13 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber(0.5));
     root -> addArgument (0, pow_sqrt, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "acosh")
+  else if (name == "acosh")
   {
     // -> 1/(x^2-1)^(1/2)
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1651,10 +1690,13 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber(0.5));
     root -> addArgument (0, pow_sqrt, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "atanh")
+  else if (name == "atanh")
   {
     // -> 1/(1-x^2)
+    NodeTimes* root = new NodeTimes(2);
     NodePower* pow_square = new NodePower;
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber(2.0));
@@ -1662,11 +1704,12 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     add -> addArgument (0, new NodeNumber(1.0), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
+    root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+    return root;
   }
-  if (name == "pow")
+  else if (name == "pow")
   {
     // promote to NodePower
-    delete root;
     NodePower* pw = new NodePower;
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
@@ -1674,18 +1717,35 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
     delete pw;
     return retval;
   }
-  if (name == "sign")
+  else if (name == "sign")
   {
-    delete root;
     return new NodeNumber(0.0);
   }
-  if (name == "heaviside")
+  else if (name == "heaviside")
   {
-    delete root;
     return new NodeNumber(0.0);
   }
-  root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
-  return root;
+  else
+  {
+    // this is when we don't know the function but do not want to leave the root hanging
+    // -> cos
+    NodeAdd* add = new NodeAdd(args.size());
+    for (size_t k=0; k<args.size(); ++k)
+    {
+      std::ostringstream str;
+      str << name << "_d" << k;
+      NodeFunction* fun = new NodeFunction(str.str (), args.size());
+      NodeTimes* times = new NodeTimes(2);
+      add->addArgument(k, times, 1.0);
+      times->addArgument(0, fun, 1.0, false);
+      times->addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
+      for (size_t p=0; p<args.size(); ++p)
+      {
+        fun -> addArgument (p, args[p] -> copy ());
+      }
+    }
+    return add;
+  }
 }
 
 // Evaluating the expression
@@ -1766,7 +1826,7 @@ size_t NodeFunctionA1::evaluate (ValueStack& stack, size_t sp, const std::functi
   args[0] -> evaluate(stack, sp, fun, len);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
-  if (!(this->function)) { std::cout << "|" << name << "|"; P_MESSAGE3 ("Not a function '", name, "'.");}
+  if (!(this->function)) { P_MESSAGE3 ("'", name, "' is not defined as a function."); }
   for (size_t k = 0; k < len; k++)
   {
     data[skip*k] = this->function(data[skip*k]);
@@ -1862,6 +1922,24 @@ size_t NodePower::evaluate (ValueStack& stack, size_t sp, const std::function<vo
 // operators inbetween are the delimiters and they are tokens separately
 //
 
+static void printErrorLine (const std::string& expression, size_t pos)
+{
+  const char* str = expression.c_str ();
+  size_t line = 1;
+  size_t last_line = 0;
+  for (size_t k = 0; (k < expression.size ()) && (k < pos); ++k)
+  {
+    if (str[k] == '\n') { ++line; last_line = k+1; }
+  }
+  size_t next_line = last_line;
+  while ((str[next_line] != '\n') && (next_line < expression.size ())) ++next_line;
+  std::string tn(&str[last_line], next_line - last_line);
+  std::string ep(next_line - last_line, ' ');
+  ep[pos-last_line] = '^';
+  std::cout << "Line " << line << ": " << tn << "\n";
+  std::cout << "Line " << line << ": " << ep << "\n";
+}
+
 enum class CharType : int { Op, Identifier, Space, Invalid };
 
 static inline CharType findCharType (char c)
@@ -1949,9 +2027,8 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
           if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=") );
           else
           {
-            std::string tn1(str, k), tn2(&str[k]);
-            std::cout << tn1 << "|HERE|" << tn2 << "\n";
-            P_MESSAGE4("Unknown operator ", tn, str[k], "\n");
+            printErrorLine (expression, k);
+            P_MESSAGE3("Unknown operator '", tn, "'.\n");
 //           std::cout << "DEFINE FOUND\n";
           }
           break;
@@ -1959,12 +2036,14 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
           stream.push_back (Token (TokenType::Semicolon, tn) );
           break;
         default:
-          P_MESSAGE3("Unknown operator ", tn, "\n");
+          printErrorLine (expression, k);
+          P_MESSAGE3("Unknown operator '", tn, "'.\n");
       }
       k++;
     } else
     {
-      P_MESSAGE3("Invalid character ", str[k], "\n");
+      printErrorLine (expression, k);
+      P_MESSAGE3("Invalid character '", std::string(1,str[k]), "'\n");
       k++;
     }
   }
@@ -2085,7 +2164,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.pop_back ();
           node->addArgument (0, ts.back(), 1.0);
           ts.pop_back ();
-        } else P_MESSAGE1("Wrong no. args\n");
+        } else P_MESSAGE1("Wrong number of arguments.");
         node->sort ();
         ts.push_back (node);
       }
@@ -2182,10 +2261,10 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       }
       break;
       default:
-        P_MESSAGE1("Unexpected operator\n");
+        P_MESSAGE1("Unexpected operator.");
         break;
     }
-  } else P_MESSAGE1("Too short stack\n");
+  } else P_MESSAGE1("Too short stack.");
 }
 
 Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table)

@@ -288,8 +288,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     {
       for (size_t q = 0; q < NX; q++)
       {
-        varDot_x[p + q*NX*NT].
-          derivative(varDot_x_p[r + (p + q*NX*NT)*NP], &pid, echeck);
+        varDot_x[p + q*NX*NT].derivative(varDot_x_p[r + (p + q*NX*NT)*NP], &pid, echeck);
       }
     }
   }
