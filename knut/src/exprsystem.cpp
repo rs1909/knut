@@ -140,8 +140,11 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 #ifdef DEBUG
   // print everything to see if there's an error
   std::cout << "NAME = "<< vfName << "\n";
-  for (std::string& it : exprName ) std::cout << "EXPR = " << it << "\n";
-  for (ExpTree::Expression& it : exprFormula ) { it.optimize (); std::cout << "EFORM = "; it.print (std::cout); std::cout << "\n"; }
+  for (size_t q = 0; q < exprFormula.size(); q++)
+  {
+    std::cout << "EXPR : " << exprName[q] << " = ";
+    exprFormula[q].print (std::cout); std::cout << "\n";
+  }
   for (std::string& it : varName ) std::cout << "VAR = " << it << "\n";
   for (ExpTree::Expression& it : varDotExpr )
   {
@@ -150,7 +153,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   }
   for (ExpTree::Expression& it : varInit ) { it.optimize (); std::cout << "INIT = "; it.print (std::cout); std::cout << "\n"; }
   for (double& it : varMass ) std::cout << "MASS = " << it << "\n";
-  for (ExpTree::Expression& it : delayExpr ) { it.optimize ();std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
+  for (ExpTree::Expression& it : delayExpr ) { it.optimize (); std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
   for (std::string& it : parName ) std::cout << "PAR = " << it << "\n";
   for (double& it : parInit ) std::cout << "PARINIT = " << it << "\n";
 #endif
@@ -201,6 +204,9 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
     {
       NodePar pid(p);
       exprFormula[q].derivative(exprFormula_p[p + q*NP], &pid, echeck);
+//       std::cout << "EXPR : "; exprFormula[q].print(std::cout);
+//       std::cout << "\nEXPR_P0 : "; exprFormula_p[p + q*NP].print(std::cout);
+//       std::cout << "\n";
     }
   }
 
@@ -308,15 +314,12 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
       }
       Node* opta = ta;
       ta = 0;
-//      opta -> optimize (&opta);
       for (size_t k = 0; k < NX*NT; k++)
       {
         NodeVar vid(1 + k);
         Node* deri = opta -> derivative (&vid, echeck);
-//        Node* deri = opta -> copy ();
         deri -> optimize (&deri, echeck);
-        size_t idx = k + l*NX*NT +
-           q*NX*NT*NT;
+        size_t idx = k + l*NX*NT + q*NX*NT*NT;
         varDot_hess[idx].fromNode (deri);
       }
       opta -> deleteTree ();
@@ -1619,9 +1622,9 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
   if (error)  if (pipe (fds_error) == -1) P_MESSAGE2("pipe: ", strerror(errno));
   for (int i=0; i<2; ++i)
   {
-    fdc_output[i] = fds_output[i];
-    fdc_input[i] = fds_input[i];
-    fdc_error[i] = fds_error[i];
+    if (output) fdc_output[i] = fds_output[i];
+    if (input)  fdc_input[i] = fds_input[i];
+    if (error)  fdc_error[i] = fds_error[i];
   }
   /* Fork a child process.  */
   pid_t pid = fork ();

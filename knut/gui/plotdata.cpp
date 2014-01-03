@@ -234,17 +234,28 @@ void PlotData::clearAll()
       {
         delete it->item;
       }
-      delete(*i).data.line;
+      delete (*i).data.line;
+      (*i).data.line = nullptr;
     }
     else if ((*i).type == PlotCircleType)
     {
-      for (size_t j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
-      delete(*i).data.circle;
+      for (size_t j = 0; j < (*i).data.circle->item.size(); ++j)
+      {
+        delete (*i).data.circle->item[j];
+        (*i).data.circle->item[j] = nullptr;
+      }
+      delete (*i).data.circle;
+      (*i).data.circle = nullptr;
     }
     else if ((*i).type == PlotPolygonType)
     {
-      for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
-      delete(*i).data.polygon;
+      for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j)
+      {
+        delete (*i).data.polygon->item[j];
+        (*i).data.polygon->item[j] = nullptr;
+      }
+      delete (*i).data.polygon;
+      (*i).data.polygon = nullptr;
     }
     else
     {
@@ -296,7 +307,7 @@ void PlotData::addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bo
   it->principal = principal;
 }
 
-void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen, 
+void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen,
                             PlotMarkerStyle type, bool principal, qreal radius, bool scale)
 {
   switch (type)
@@ -396,7 +407,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
   {
     rescaleData(Graph.begin(), Graph.end());
     PlotPaint(Graph.begin(), Graph.end(), true);
-  } else 
+  } else
   {
     rescaleData(begin, end);
     PlotPaint(begin, end, false);
@@ -414,7 +425,7 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
 // 1. x > XSeparator, y > YSeparator
 //    - We draw stability in this case with dashed lines
 // 2. everything else doesn't change.
-bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y, 
+bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   size_t pt, size_t dim)
 {
   size_t xadded = 0;
@@ -459,7 +470,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
       Graph.rbegin()->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
       Graph.rbegin()->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
-      
+
       // X Coordinate
       if (x == XLabel)
       {
@@ -472,7 +483,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
           if (x != XParameter0)
             Graph.rbegin()->x(j) = data->getPar(i, x - XParameter0);
           else
-            Graph.rbegin()->x(j) = 
+            Graph.rbegin()->x(j) =
               data->getPar(i, x - XParameter0)/data->getPar(i, data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad X coord\n";
@@ -527,7 +538,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
           if (y != YParameter0)
             Graph.rbegin()->y(j) = data->getPar(i, y - YParameter0);
           else
-            Graph.rbegin()->y(j) = 
+            Graph.rbegin()->y(j) =
               data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad Y coord\n";
@@ -620,7 +631,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
       Graph.rbegin()->x.init(1);
       Graph.rbegin()->y.init(1);
-      
+
       if (y != YAbsMultiplier)
       {
         // find out in which stability region is our point
@@ -629,10 +640,10 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         const bool stbif = (bifidx[i] == stabidx[k]);
         if (k > 1) k2 = bifidx[i] - stabidx[k-1] + 1;
         else k2 = bifidx[i] - stabidx[k-1];
-        
+
         std::list<PlotItem>::const_iterator it = itc;
         for (size_t p = 0; p < k-1; ++p) ++it;
-                
+
         if (stbif)
         {
           Graph.rbegin()->x(0) = it->x(it->x.size()-1);
@@ -686,7 +697,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       if (y >= YParameter0) YCoordText.push_back(parNames.at(y-YParameter0).c_str());
       else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
       else YCoordText.push_back(YCoordMap[y]);
-      
+
       std::list<PlotItem>::const_iterator it = Graph.end();
       for (size_t i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
       dataToGraphics(it, Graph.end());
@@ -702,7 +713,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 
 struct rcStruc
 {
-  rcStruc(size_t n, PlotXVariable x, PlotYVariable y, size_t p, size_t d) : 
+  rcStruc(size_t n, PlotXVariable x, PlotYVariable y, size_t p, size_t d) :
     num(n), pt(p), dim(d), X(x), Y(y) {}
   const size_t num;
   const size_t pt;
@@ -715,9 +726,9 @@ void PlotData::updatePlot(const KNDataFile* mat)
 {
   size_t number = 0;
   bool dirty = false;
-  
+
   std::list<rcStruc> lst;
-  
+
   size_t ct_num = 0;
   size_t ct_it = 0;
   std::list<PlotItem>::iterator first = Graph.end();
@@ -738,7 +749,7 @@ void PlotData::updatePlot(const KNDataFile* mat)
       last = i;
     } else dirty = true;
   }
-  
+
   if (dirty)
   {
     size_t it = 0;
@@ -749,12 +760,12 @@ void PlotData::updatePlot(const KNDataFile* mat)
     }
   } else clearAll();
   for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
-  {  
+  {
     addPlot(mat, i->X, i->Y, i->pt, i->dim);
   }
 }
 
-// The intersection point is defined by 
+// The intersection point is defined by
 // A + alpha*(B-A) == C + beta*(D-C)
 // if 0 < alpha <= 1 AND 0 < beta <= 1 -> intersect in the middle
 static inline bool intersect(qreal& alpha, qreal& beta,
@@ -767,7 +778,7 @@ static inline bool intersect(qreal& alpha, qreal& beta,
   const qreal Wx = D.x() - C.x();
   const qreal Wy = D.y() - C.y();
   const qreal VpW = -Vy*Wx + Vx*Wy;
-  const qreal AmCx = A.x() - C.x(); 
+  const qreal AmCx = A.x() - C.x();
   const qreal AmCy = A.y() - C.y();
   if (VpW != 0.0)
   {
@@ -810,7 +821,7 @@ static inline vertPosition vertPoint(const QPointF& BottomRight, const QPointF& 
 // A is the orevoius point, B is the next point
 // returns the point to be plotted 'toPlot'
 static inline void pointOutside(PlotLine& ppath,
-                                const QPointF& BottomLeft, const QPointF& BottomRight, 
+                                const QPointF& BottomLeft, const QPointF& BottomRight,
                                 const QPointF& TopLeft,    const QPointF& TopRight,
                                 const QPointF& A,          const QPointF& B)
 {
@@ -819,7 +830,7 @@ static inline void pointOutside(PlotLine& ppath,
   const horizPosition Bhoriz = horizPoint (BottomRight, TopLeft, B);
   const vertPosition Avert = vertPoint (BottomRight, TopLeft, A);
   const vertPosition Bvert = vertPoint (BottomRight, TopLeft, B);
-    
+
   if (Ahoriz == HMiddle && Avert == VMiddle && Bhoriz == HMiddle && Bvert == VMiddle)
   {
     ppath.last().path.lineTo(B);
@@ -828,7 +839,7 @@ static inline void pointOutside(PlotLine& ppath,
   else if (Ahoriz == Bhoriz && Ahoriz != HMiddle) return;
   else if (Avert == Bvert && Avert != VMiddle) return;
   else if (Ahoriz == Bhoriz && Avert == Bvert) return;
-  
+
   // when it can intersect
   qreal alpha[4];
   qreal beta[4];
@@ -861,7 +872,7 @@ static inline void pointOutside(PlotLine& ppath,
   } else
   if (twoSideIt == 1)
   {
-    if (beta[oneSidePt[0]] > 1) 
+    if (beta[oneSidePt[0]] > 1)
     {
       ppath.append(PlotPolyLine(ppath.pen));
       ppath.last().path.moveTo(itPoint[twoSidePt[0]]);
@@ -870,7 +881,7 @@ static inline void pointOutside(PlotLine& ppath,
     } else
     {
       ppath.last().path.lineTo(itPoint[twoSidePt[0]]);
-//       std::cout << "-out-"; 
+//       std::cout << "-out-";
     }
   } else
   if (twoSideIt == 2)
@@ -890,11 +901,11 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
 
   if (cvb.xmax == cvb.xmin) return;
   if (cvb.ymax == cvb.ymin) return;
-  
+
   const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
   const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
 
-  const QPointF BottomLeft(0,0), BottomRight(plotXSize,0), 
+  const QPointF BottomLeft(0,0), BottomRight(plotXSize,0),
                 TopLeft(0,plotYSize), TopRight(plotXSize,plotYSize);
   // rescaling all the data
   std::list<PlotItem>::const_iterator i;
@@ -905,12 +916,12 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
     {
       PlotLine& ppath = *(*i).data.line;
       QPointF prevPoint(xscale*(xcoord(i->x(0)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(0))));
-      
+
       // initializing ppath
       ppath.clear();
       ppath.append(PlotPolyLine(ppath.pen));
       ppath.last().path.moveTo(prevPoint);
-      
+
       for (size_t k = 1; k < i->x.size(); k++)
       {
         QPointF currentPoint(xscale*(xcoord(i->x(k)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(k))));
@@ -1206,7 +1217,7 @@ void PlotData::labelColor()
     {
       QColor textColor;
       if ((*i).type == PlotLineType)
-      {      
+      {
         textColor = (*i).data.line->pen.color();
       }
       if ((*i).type == PlotCircleType)
@@ -1218,7 +1229,7 @@ void PlotData::labelColor()
         textColor = (*i).data.polygon->pen.color();
       }
       size_t num = it++;
-      if (num < XCoordTextItems.size() && num < YCoordTextItems.size() && 
+      if (num < XCoordTextItems.size() && num < YCoordTextItems.size() &&
           num < XCoordText.size() && num < YCoordText.size()) // safety measures
       {
         XCoordTextItems[num]->setDefaultTextColor(textColor);

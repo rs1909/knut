@@ -227,8 +227,8 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
   return tab.sw;
 }
 
-KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
- const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_, 
+KNAbstractPoint::KNAbstractPoint(KNAbstractContinuation* cnt, KNExprSystem& sys_,
+ const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_,
  const size_t solsize, const size_t nz_jac_) :
     var(var_), eqn(eqn_), varMap(var_.size()), varMapCont(var_.size() + 1), npar(sys_.npar()),
     sol(solsize), par(VarToIndex(VarEnd,sys_.npar())),
@@ -271,7 +271,7 @@ void KNAbstractPoint::printStream()
 void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& var_)
 
 {
-  KNBlockVector* xxDot_temp = 0;
+  KNBlockVector* xxDot_temp = nullptr;
   if (xxDot) xxDot_temp = new KNBlockVector(*xxDot);
   destruct();
   eqn.init(eqn_.size());
@@ -281,10 +281,13 @@ void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& va
   varMap.init(var_.size());
   varMapCont.init(var_.size() + 1);
   construct();
-  xxDot->getV1() = xxDot_temp->getV1();
-  for (size_t i = 0; i < std::min<size_t>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
-    xxDot->getV3()(i) = xxDot_temp->getV3()(i);
-  delete xxDot_temp;
+  if (xxDot_temp != nullptr)
+  {
+    xxDot->getV1() = xxDot_temp->getV1();
+    for (size_t i = 0; i < std::min<size_t>(xxDot_temp->getV3().size(), xxDot->getV3().size()); ++i)
+      xxDot->getV3()(i) = xxDot_temp->getV3()(i);
+    delete xxDot_temp;
+  }
 }
 
 void KNAbstractPoint::construct()
@@ -444,7 +447,7 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent 
     if (ds != 0.0) out << "Iteration: Tangent (T), updated tangent (U) and actual difference (A)\n";
     else out << "Refine (Cont): Tangent (T), updated tangent (U) and actual difference (A)\n";
     const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
-    
+
     out << "TX = " << T1norm;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " T" << varMapCont(i) << " = " << xxDot->getV3()(i - 1);
     out << " TC = " << xxDot->getV3()(dim3) << '\n';
@@ -469,7 +472,7 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent 
 
 #ifdef DEBUG
     const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
-    const double dsdiv = (ds == 0.0) ? 1.0 : ds; 
+    const double dsdiv = (ds == 0.0) ? 1.0 : ds;
     out << "AX = " << A1norm/dsdiv;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/dsdiv;
     out << '\n';
@@ -508,21 +511,21 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent 
     const double T1norm = sqrt(basecolloc->integrate(xxDot->getV1(), xxDot->getV1()));
     const double U1norm = sqrt(basecolloc->integrate(xxDotNu->getV1(), xxDotNu->getV1()));
     const double A1norm = sqrt(basecolloc->integrate(xx->getV1(), xx->getV1()));
-    
+
     out << "TX = " << T1norm;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " T" << varMapCont(i) << " = " << xxDot->getV3()(i - 1);
     out << '\n';
     out << "UX = " << U1norm;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " U" << varMapCont(i) << " = " << xxDotNu->getV3()(i - 1);
     out << '\n';
-    const double dsdiv = (ds == 0.0) ? 1.0 : ds; 
+    const double dsdiv = (ds == 0.0) ? 1.0 : ds;
     out << "AX = " << A1norm/dsdiv;
     for (size_t i = 1; i < varMapCont.size(); i++) out << " A" << varMapCont(i) << " = " << xx->getV3()(i - 1)/dsdiv;
     out << '\n';
     printStream();
     /// END OF CHECKING
 #endif
-    
+
     // find out how far was from the original solution
     xx->getV1() = solNu;
     xx->getV1() -= sol;
@@ -575,7 +578,7 @@ void KNAbstractPeriodicSolution::FillSol(KNExprSystem& sys_)
 void KNAbstractPeriodicSolution::findAngle()
 {
   std::ostream& out = outStream();
-  
+
   Stability(true); // re-initialize the collocation just in case when the period changes
   double dmin = 10.0;
   size_t imin = 0;
@@ -602,7 +605,7 @@ void KNAbstractPeriodicSolution::findAngle()
   {
     par(VarToIndex(VarAngle,NPAR)) = M_PI + atan(zIm/ zRe);
   }
-  out << "    Z = " << zRe << " + I*" << zIm << "\n" 
+  out << "    Z = " << zRe << " + I*" << zIm << "\n"
          "    Z = " << nrm << " * " << "EXP( " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * I*2Pi )\n";
   printStream();
 }

@@ -14,9 +14,11 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <list>
 #include <functional>
 #include <ostream>
 #include <iostream>
+#include "knerror.h"
 
 #define KNUT_STACK_INCREMENT 5
 
@@ -145,9 +147,20 @@ class NodeFunction;
 class Node
 {
 public:
-  Node (TokenType tp) : type(tp) { }
-  virtual ~Node() { }
-  virtual void deleteTree () { };
+  Node (TokenType tp) : type(tp)
+  {
+#ifdef DEBUG
+    instances.push_front(this);
+    ist = instances.begin();
+#endif
+  }
+  virtual ~Node()
+  {
+#ifdef DEBUG
+    instances.erase (ist);
+#endif
+  }
+  virtual void deleteTree () = 0;
   virtual Node* copy () const = 0;
   virtual size_t children () const = 0;
   virtual const Node* getChild (size_t n) const = 0;
@@ -167,12 +180,17 @@ public:
   void evaluateWithPar (double *res, const std::vector<double>& parInit);
   const TokenType type;
   static const std::function<bool(const Node*)> alwaysFalse;
+#ifdef DEBUG
+  static std::list<const Node *> instances;
+  std::list<const Node *>::iterator ist;
+#endif
 };
 
 class NodeNumber : public Node
 {
 public:
   NodeNumber (double val) : Node(TokenType::Number), value(val) {}
+  void deleteTree () {}
   Node* copy () const { return new NodeNumber(value); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return 0; }
@@ -195,6 +213,7 @@ class NodeSymbol : public Node
 {
 public:
   NodeSymbol (const std::string& nm) : Node(TokenType::Symbol), name(nm) {}
+  void deleteTree () {}
   Node* copy () const { return new NodeSymbol(name); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
@@ -218,8 +237,8 @@ private:
 class NodeVar : public Node
 {
 public:
-  NodeVar (size_t id) : Node(TokenType::Var), idx(id) { }
-  ~NodeVar() { }
+  NodeVar (size_t id) : Node(TokenType::Var), idx(id) {}
+  ~NodeVar() {}
   void deleteTree () {}
   Node* copy () const { return new NodeVar(idx); }
   size_t children () const {return 0; }
@@ -242,8 +261,8 @@ private:
 class NodePar : public Node
 {
 public:
-  NodePar (size_t id) : Node(TokenType::Par), idx(id) { }
-  ~NodePar() { }
+  NodePar (size_t id) : Node(TokenType::Par), idx(id) {}
+  ~NodePar() {}
   void deleteTree () {}
   Node* copy () const { return new NodePar(idx); }
   size_t children () const { return 0; }
@@ -308,6 +327,8 @@ public:
     if (zero (this))
     {
       Node* tmp = new NodeNumber (0.0);
+      P_ERROR_X1 ((*parent) == this, "Not the parent.");
+      (*parent)->deleteTree ();
       delete *parent;
       *parent = tmp;
       return;
@@ -334,7 +355,10 @@ public:
   {
     for (size_t k=1; k<nargs; k++) args[k] = 0;
   }
-  void deleteTree() { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree(); delete args[k]; } }
+  void deleteTree()
+  {
+    for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree(); delete args[k]; }
+  }
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
@@ -366,7 +390,12 @@ public:
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; mul[k] = 1.0; }
   }
-  void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
+  void deleteTree ()
+  {
+    for(size_t k=0; k<args.size(); k++)
+      if (args[k] != nullptr) { args[k]->deleteTree (); delete args[k]; }
+      else P_MESSAGE1("NULLPTR\n");
+  }
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
@@ -395,7 +424,12 @@ public:
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; divide[k] = false; }
   }
-  void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
+  void deleteTree ()
+  {
+    for(size_t k=0; k<args.size(); k++)
+      if (args[k] != nullptr) { args[k]->deleteTree (); delete args[k]; }
+      else P_MESSAGE1("NULLPTR\n");
+  }
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
@@ -425,7 +459,10 @@ class NodePower : public Node
 {
 public:
   NodePower () : Node(TokenType::Power), args(2) {}
-  void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
+  void deleteTree ()
+  {
+    for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; }
+  }
   Node* copy () const;
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
@@ -451,13 +488,7 @@ public:
   Expression () : root (nullptr) { }
   Expression (const Expression& ex) // copy constructor necessary for containers
   {
-    if (root != nullptr)
-    {
-      root -> deleteTree ();
-      delete root;
-      root = nullptr;
-    }
-    if (ex.root != nullptr) root = ex.root -> copy ();
+    root = ex.root -> copy ();
   }
   Expression (const std::string& str);
   ~Expression ()
@@ -543,7 +574,7 @@ public:
   static bool fromXML (std::string& oexpr, const std::string& xmlstring);
 private:
   // takes over ownership
-  Expression (Node* rt) : root(rt) { }
+//   Expression (Node* rt) : root(rt) { }
   Node* root;
 };
 

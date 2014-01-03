@@ -20,6 +20,10 @@
 namespace ExpTree
 {
 
+#ifdef DEBUG
+std::list<const Node *> Node::instances;
+#endif
+
 void Node::find (TokenType tp, const std::function<void(const Node*)>& found) const
 {
   if (tp == type) found (this);
@@ -106,6 +110,8 @@ public:
   {
     arg -> optimize (&arg, zero);
     Node* tmp = arg;
+    arg = nullptr;
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
     (*parent) = tmp;
     return;
@@ -138,7 +144,7 @@ public:
   }
   void print (std::ostream& out) const
   {
-    P_ERROR_X1( arg != nullptr, "Incerdibly wrong!");
+    P_ASSERT_X1( arg != nullptr, "Incerdibly wrong!");
     out << "(";
     out << "-";
     arg->print (out);
@@ -186,6 +192,7 @@ public:
     {
       double val = num->getValue ();
       (*parent)->deleteTree ();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete (*parent);
       (*parent) = new NodeNumber(-val);
       return;
@@ -223,7 +230,9 @@ public:
   {
     P_ERROR_X1( args[0] != nullptr, "Incerdibly wrong!");
     P_ERROR_X1( args[1] != nullptr, "Incerdibly wrong!");
-    args[0]->print (out); out << "=";
+    args[0]->print (out);
+    if (type == TokenType::Equals) out << "=";
+    else out << ":=";
     args[1]->print (out);
   }
   bool operator != (const Node& node) const
@@ -256,7 +265,10 @@ public:
     for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber(0.0); }
-  void optimize (Node** parent, const std::function<bool(const Node*)>& zero) { for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k], zero); }
+  void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+  {
+    for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k], zero);
+  }
   // specific
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
 private:
@@ -370,14 +382,14 @@ bool NodeSymbol::operator < (const Node& node) const
 
 void NodeSymbol::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
   const NodeSymbol* symref = dynamic_cast<const NodeSymbol*>(&sym);
-  if (symref)
+  if (symref != nullptr)
   {
     if (name == symref->name)
     {
       Node* cp = node.copy();
       (*parent)->deleteTree ();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete *parent;
       *parent = cp;
     }
@@ -389,9 +401,9 @@ void NodeSymbol::replaceSymbol (const Node& node, Node** parent)
   const NodeEquals* nd = dynamic_cast<const NodeEquals*>(&node);
   if (nd != nullptr)
   {
-    const Node* left = nd->getChild(0);
+    const NodeSymbol* left = dynamic_cast<const NodeSymbol*>(nd->getChild(0));
     const Node* right = nd->getChild(1);
-    if (left->type == TokenType::Symbol)
+    if (left != nullptr)
     {
       replaceSymbol (*left, *right, parent);
     }
@@ -420,7 +432,6 @@ bool NodeVar::operator < (const Node& node) const
 
 void NodeVar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
   const NodeVar* symref = dynamic_cast<const NodeVar*>(&sym);
   if (symref)
   {
@@ -428,6 +439,7 @@ void NodeVar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
     {
       Node* cp = node.copy ();
       (*parent)->deleteTree ();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete *parent;
       *parent = cp;
     }
@@ -453,7 +465,6 @@ bool NodePar::operator < (const Node& node) const
 
 void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
   const NodePar* symref = dynamic_cast<const NodePar*>(&sym);
   if (symref)
   {
@@ -461,6 +472,7 @@ void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
     {
       Node* cp = node.copy ();
       (*parent)->deleteTree ();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete *parent;
       *parent = cp;
     }
@@ -515,11 +527,11 @@ bool NodeExpr::operator < (const Node& node) const
 
 void NodeExpr::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
   if (this->operator==(sym))
   {
     Node* cp = node.copy ();
     (*parent)->deleteTree ();
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = cp;
   }
@@ -589,11 +601,10 @@ void NodeFunction::replaceSymbol(const Node& node, Node** parent)
   for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (node, &args[k]);
   if (node.type == TokenType::Equals)
   {
-    const Node* left = node.getChild(0);
+    const NodeFunction* macro = dynamic_cast<const NodeFunction*>(node.getChild(0));
     const Node* right = node.getChild(1);
-    if (left->type == TokenType::Function)
+    if (macro != nullptr)
     {
-      const NodeFunction* macro = static_cast<const NodeFunction* >(left);
       if ( (name == macro->name)&&(children() == macro->children()) )
       {
         Node* cp = right->copy ();
@@ -606,8 +617,10 @@ void NodeFunction::replaceSymbol(const Node& node, Node** parent)
           else P_MESSAGE1("Not a symbol");
         }
         (*parent)->deleteTree ();
+        P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
         delete *parent;
         *parent = cp;
+        return;
       }
     }
   }
@@ -670,7 +683,7 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
 Node* NodeFunctionA1::copy () const
 {
   NodeFunctionA1* cp = new NodeFunctionA1(NodeFunction::name);
-  for(size_t k=0; k<this->args.size(); k++) cp->args[k] = this->args[k]->copy();
+  for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   cp->function = function;
   return cp;
 }
@@ -1039,7 +1052,9 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
   if ((a0 != nullptr)&&(a1 != nullptr))
   {
     NodeNumber* res = new NodeNumber( pow (a0->getValue(), a1->getValue()) );
+    // should delete both arguments
     (*parent)->deleteTree ();
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
     (*parent) = res;
     return;
@@ -1050,6 +1065,7 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
     {
       Node* tmp = args[0];
       delete args[1];
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete (*parent);
       (*parent) = tmp;
       return;
@@ -1057,7 +1073,9 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
     if (a1 -> getValue () == 0.0)
     {
       NodeNumber* res = new NodeNumber (1.0);
+      // should delete both arguments
       (*parent)->deleteTree ();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete (*parent);
       (*parent) = res;
       return;
@@ -1071,6 +1089,7 @@ void NodeFunction::specialize (NodeFunction** parent)
   {
     NodeFunctionA1* fun = new NodeFunctionA1(name);
     fun -> addArgument (0, args[0]);
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
     (*parent) = fun;
     return;
@@ -1080,6 +1099,7 @@ void NodeFunction::specialize (NodeFunction** parent)
     NodeFunctionA2* fun = new NodeFunctionA2(name);
     fun -> addArgument (0, args[0]);
     fun -> addArgument (1, args[1]);
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
     (*parent) = fun;
     return;
@@ -1088,12 +1108,17 @@ void NodeFunction::specialize (NodeFunction** parent)
 
 void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
 {
+  for (size_t k=0; k<args.size(); k++)
+  {
+    args[k]->optimize (&args[k], zero);
+  }
   // replace power with NodePower
   if (name == "pow")
   {
     NodePower* pw = new NodePower;
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
     (*parent) = pw;
     return;
@@ -1101,7 +1126,6 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
   bool isnum = true;
   for (size_t k=0; k<args.size(); k++)
   {
-    args[k]->optimize (&args[k], zero);
     if (args[k]->type != TokenType::Number) isnum = false;
   }
   // if all are numbers -> evaluate
@@ -1111,16 +1135,17 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
     double res;
     this->evaluateWithPar (&res, par);
     NodeNumber* num = new NodeNumber (res);
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
+    (*parent)->deleteTree ();
     delete (*parent);
     (*parent) = num;
     return;
   }
-  if (*parent == this)
-  {
-    NodeFunction* tmp = this;
-    specialize (&tmp);
-    *parent = tmp;
-  }
+  // this is true all the time!
+  P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
+  NodeFunction* tmp = this;
+  specialize (&tmp);
+  *parent = tmp;
 }
 
 void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
@@ -1131,10 +1156,14 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
   for (size_t k = 0; k < args.size(); k++)
   {
     args[k]->optimize (&args[k], zero);
+  }
+  for (size_t k = 0; k < args.size(); k++)
+  {
     if (mul[k] == 0.0)
     {
       args[k]->deleteTree ();
       delete args[k];
+      args[k] = nullptr;
       continue;
     }
     NodeNumber* num = dynamic_cast<NodeNumber*>(args[k]);
@@ -1143,17 +1172,19 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
       sum += mul[k] * (num -> getValue());
       args[k]->deleteTree ();
       delete args[k];
+      args[k] = nullptr;
       continue;
     }
     NodeAdd* child = dynamic_cast<NodeAdd*>(args[k]);
     if (child)
     {
-      for (size_t p = 0; p < child->children(); p++)
+      for (size_t p = 0; p < child->args.size(); p++)
       {
         newargs.push_back (child->args[p]);
         newmul.push_back (mul[k]*child->mul[p]);
       }
       delete child;
+      args[k] = nullptr;
       continue;
     }
     NodeMinus* neg = dynamic_cast<NodeMinus*>(args[k]);
@@ -1162,6 +1193,7 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
       newargs.push_back (neg->getChild (0));
       newmul.push_back (-1.0*mul[k]);
       delete neg;
+      args[k] = nullptr;
       continue;
     }
     NodeTimes* times = dynamic_cast<NodeTimes*>(args[k]);
@@ -1170,9 +1202,11 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
       newargs.push_back (args[k]);
       newmul.push_back (mul[k]*(times->getMul()));
       times->setMul(1.0);
+      args[k] = nullptr;
       continue;
     }
     newargs.push_back (args[k]);
+    args[k] = nullptr;
     newmul.push_back (mul[k]);
   }
   args = newargs;
@@ -1185,6 +1219,7 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
   if (args.size() == 0)
   {
     Node* tmp = new NodeNumber (0.0);
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = tmp;
     return;
@@ -1195,7 +1230,8 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
     if (num)
     {
       Node* tmp = new NodeNumber (mul[0] * (num ->getValue()));
-      delete num;
+      (*parent)->deleteTree();
+      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete *parent;
       *parent = tmp;
       return;
@@ -1203,7 +1239,10 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
     {
       if (mul[0] == 1.0)
       {
+        // taking over ownership
         Node* tmp = args[0];
+        args[0] = nullptr;
+        P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
         delete *parent;
         *parent = tmp;
         return;
@@ -1212,6 +1251,8 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
         // convert into times
         NodeTimes* tmp = new NodeTimes (1);
         tmp -> addArgument (0, args[0], mul[0], false);
+        args[0] = nullptr;
+        P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
         delete *parent;
         *parent = tmp;
         return;
@@ -1227,30 +1268,38 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   double newsmul = smul;
   for (size_t k = 0; k < args.size(); k++)
   {
-//     args[k]->print (std::cout); std::cout << "\t";
+    P_ASSERT_X1 (args[k] != nullptr, "Optimizing null pointer.");
     args[k]->optimize (&args[k], zero);
+  }
+  for (size_t k = 0; k < args.size(); k++)
+  {
+//     args[k]->print (std::cout); std::cout << "\t";
     NodeNumber* num = dynamic_cast<NodeNumber*>(args[k]);
     if (num)
     {
       if (divide[k]) newsmul /= num -> getValue();
       else newsmul *= num -> getValue();
+      // deleting the the term
       args[k]->deleteTree ();
       delete args[k];
+      args[k] = nullptr;
       continue;
     }
     NodeTimes* child = dynamic_cast<NodeTimes*>(args[k]);
     if (child)
     {
-      args[k] = child->args[0];
       if (divide[k]) newsmul /= child->smul;
       else newsmul *= child->smul;
       for (size_t p = 0; p < child->children(); p++)
       {
+        // taking over ownership
         newargs.push_back (child->args[p]);
+        child->args[p] = nullptr;
         if (divide[k]) newdivide.push_back (!child->divide[p]);
         else newdivide.push_back (child->divide[p]);
       }
-      delete child;
+      delete args[k];
+      args[k] = nullptr;
       continue;
     }
     NodeMinus* neg = dynamic_cast<NodeMinus*>(args[k]);
@@ -1258,12 +1307,19 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
     {
       newsmul *= -1.0;
       newargs.push_back (neg->getChild (0));
+      neg->addArgument (0, nullptr);
       newdivide.push_back (false);
-      delete neg;
+      // no need to delete the tree, because it is transferred
+      delete args[k];
+      args[k] = nullptr;
       continue;
     }
-    newargs.push_back (args[k]);
-    newdivide.push_back (divide[k]);
+    if (args[k])
+    {
+      newargs.push_back (args[k]);
+      args[k] = nullptr;
+      newdivide.push_back (divide[k]);
+    }
   }
   args = newargs;
   divide = newdivide;
@@ -1271,6 +1327,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   if (smul == 0.0)
   {
     (*parent)->deleteTree ();
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = new NodeNumber(0.0);
     return;
@@ -1280,6 +1337,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   {
     // self destruct
     Node* tmp = args[0];
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = tmp;
     return;
@@ -1287,6 +1345,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   if (args.size() == 0)
   {
     const double smul_copy = smul;
+    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = new NodeNumber(smul_copy);
     return;
@@ -1368,10 +1427,10 @@ Node* NodePar::derivative (const Node* var, const std::function<bool(const Node*
 
 Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
+  P_ERROR_X1 (nv + np < 2, "Up to second order derivatives are allowed.");
   const NodeVar* nvp = dynamic_cast<const NodeVar* >(var);
   if (nvp != nullptr)
   {
-    P_ERROR_X1 (nv + np < 2, "Up to second order derivatives are allowed.");
     NodeExpr* ne = this->copy();
     ne->dv[nv] = nvp->getIdx();
     ne->nv += 1;
@@ -1387,7 +1446,6 @@ Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node
   const NodePar* npp = dynamic_cast<const NodePar* >(var);
   if (npp != nullptr)
   {
-    P_ERROR_X1 (nv + np < 2, "Up to second order derivatives are allowed.");
     P_ERROR_X1 (np < 1, "Was already differentiated w.r.t. a parameter.");
     NodeExpr* ne = this->copy();
     ne->dp = npp->getIdx();
@@ -1496,9 +1554,9 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   if (name == "tan")
   {
     // -> cos^(-2)
-    NodePower* pow = new NodePower;
     NodeFunctionA1* fun = new NodeFunctionA1("cos");
     fun -> addArgument (0, args[0] -> copy ());
+    NodePower* pow = new NodePower;
     pow -> addArgument (0, fun);
     pow -> addArgument (1, new NodeNumber(2.0));
     root -> addArgument (0, pow, 1.0, true);
@@ -1789,9 +1847,8 @@ size_t NodePower::evaluate (ValueStack& stack, size_t sp, const std::function<vo
   {
     stack.resizeDepth (sp + args.size() + KNUT_STACK_INCREMENT);
   }
-  size_t spi = sp;
-  spi = args[0] -> evaluate(stack, sp, fun, len);
-  spi = args[1] -> evaluate(stack, sp+1, fun, len);
+  args[0] -> evaluate(stack, sp, fun, len);
+  size_t spi = args[1] -> evaluate(stack, sp+1, fun, len);
   if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   for (size_t p = 0; p < len; p++)
   {
@@ -2423,7 +2480,6 @@ void splitExpression (std::string& sysName,
           }
         } else
         {
-          child->print (std::cout); std::cout << "\n";
           P_MESSAGE1("Not a definition\n");
         }
       }
@@ -2534,6 +2590,8 @@ void Expression::knutSplit (
     // cleaning up the variables
     for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_init) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_mass) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
@@ -2555,8 +2613,16 @@ void Expression::knutSplit (
       {
         expr_name.push_back (sym);
         expr_formula.push_back (it->getChild(1));
+        delete it;
       }
-      delete it;
+      else
+      {
+        std::cout << "Invalid expression: ";
+        it->print (std::cout);
+        std::cout << std::endl;
+        it->deleteTree ();
+        delete it;
+      }
     } else
     {
       macro.push_back (it);
@@ -2632,7 +2698,7 @@ void Expression::knutSplit (
   }
 
   // var
-  for (size_t p = 0; p < var_name.size(); p++)
+  for (size_t p = 0; p < var_dot.size(); p++)
   {
     for (size_t q = 0; q < macro.size(); q++)
     {
@@ -2641,7 +2707,7 @@ void Expression::knutSplit (
   }
 
   // expr
-  for (size_t p = 0; p < expr_name.size(); p++)
+  for (size_t p = 0; p < expr_formula.size(); p++)
   {
     for (size_t q = 0; q < macro.size(); q++)
     {
@@ -2690,7 +2756,9 @@ void Expression::knutSplit (
   for (size_t p = 0; p < var_init.size(); p++)
   {
     varInit[p].fromNode (var_init[p]);
+    var_init[p] = nullptr;
   }
+  var_init.resize (0);
 
   // fill up the mass
   varMass.resize (var_mass.size ());
@@ -2864,6 +2932,8 @@ void Expression::knutSplit (
 //     std::cout << "From knutSplit(varDotExpr, exprFormula) - ";
     for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_init) { if (it != nullptr) { it->deleteTree(); delete it; } }
+    for (auto it : var_mass) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
     for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
@@ -2876,17 +2946,19 @@ void Expression::knutSplit (
     throw ex;
   }
   // cleaning up the variables
-    for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
-//     for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : macro) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : expr_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
-//     for (auto it : expr_formula) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : var_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : par_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
-    for (auto it : expr_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : var_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : var_dot) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : var_init) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : var_mass) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : par_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : par_value) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : time) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : macro) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : expr_name) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : expr_formula) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : var_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : par_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
+  for (auto it : expr_idx) { if (it != nullptr) { it->deleteTree(); delete it; } }
 }
 
 #include <mxml.h>

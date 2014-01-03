@@ -1,4 +1,4 @@
-#define KNUTSYS_H 
+#define KNUTSYS_H
 
 #include "expr.h"
 #include "exprsystem.h"
@@ -27,22 +27,31 @@ int main(int argc, char **argv)
   }
   try
   {
-    KNSystem sys (argv[1], false);
+    KNExprSystem sys (contents, false);
 
     std::string cxx;
     sys.toCxx (cxx);
     std::cout << cxx << "\n";
-    cxx.clear ();
-    if (ExpTree::Expression::fromXML (cxx, contents))
-    {
-      std::cout << "/*\n";
-      std::cout << cxx;
-      std::cout << "\n*/\n";
-    }
+//     cxx.clear ();
+//     if (ExpTree::Expression::fromXML (cxx, contents))
+//     {
+//       std::cout << "/*\n";
+//       std::cout << cxx;
+//       std::cout << "\n*/\n";
+//     }
   }
   catch (KNException& ex)
   {
     std::cout << ex.str();
   }
+#ifdef DEBUG
+  for (auto it : ExpTree::Node::instances)
+  {
+    if (it != nullptr) { it->print(std::cout); std::cout << "\t"; }
+    else std::cout << "NULL\t";
+  }
+  std::cout << "\n";
+  std::cout << "Node::instances = " << ExpTree::Node::instances.size() << "\n";
+#endif
   return 0;
 }
