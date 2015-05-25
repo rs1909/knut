@@ -15,7 +15,12 @@ Buildrequires: qt5-qtbase-gui >= 5.1
 Buildrequires: qt5-qtsvg-devel >= 5.1
 Buildrequires: openblas-devel
 Buildrequires: suitesparse-devel
-Buildrequires: mxml-devel >= 2.7
+Buildrequires: mxml-devel >= 2.8
+Buildrequires: gcc-gfortran >= 4.7.2
+Buildrequires: libgfortran-static >= 4.7.2
+Buildrequires: gcc-c++ >= 4.7.2
+Buildrequires: libstdc++-devel >= 4.7.2
+Buildrequires: libgfortran >= 4.7.2
 
 %description
 Numerical continuation software for delay-differential equations
