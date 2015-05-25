@@ -725,6 +725,7 @@ void KNConstantsBase::setSystemText (const std::string& str)
     sys = 0;
     setNPar (0);
     setNDim (0);
+    ex.exprStr (getSystem ());
     throw (ex);
   }
 }

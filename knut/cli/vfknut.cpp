@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   }
   catch (KNException& ex)
   {
-    std::cout << ex.str();
+    std::cout << ex.exprStr (contents);
   }
 #ifdef DEBUG
   for (auto it : ExpTree::Node::instances)

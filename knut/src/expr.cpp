@@ -42,7 +42,7 @@ struct TokenPrecedence
 class Token
 {
   public:
-    Token (TokenType t, const std::string& n) : type(t), name(n) { }
+    Token (TokenType t, const std::string& n, const size_t loc) : type(t), name(n), vfloc(loc) { }
     bool isId() const { return type == TokenType::Symbol; }
     bool isOp() const { return (type != TokenType::Invalid)&&(type != TokenType::LeftParen)&&(type != TokenType::RightParen)&&(type != TokenType::Symbol)&&(type != TokenType::Number)&&(type != TokenType::Comma); }
     bool isSym() const { return type == TokenType::Symbol; }
@@ -51,16 +51,17 @@ class Token
 // variables
     TokenType type;
     std::string name;
+    const size_t vfloc;
 };
 
 class NodePlus : public Node
 {
 public:
-  NodePlus () : Node(TokenType::UnaryPlus), arg(nullptr) {}
+  NodePlus (const size_t loc) : Node(TokenType::UnaryPlus, loc), arg(nullptr) {}
   void deleteTree () { arg->deleteTree (); delete arg; }
   Node* copy () const
   {
-    NodePlus* cp = new NodePlus();
+    NodePlus* cp = new NodePlus (vfloc);
     cp->arg = arg->copy();
     return cp;
   }
@@ -68,10 +69,10 @@ public:
   const Node* getChild (size_t n) const { return arg; }
   Node* getChild (size_t n) { return arg; }
   size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const
   {
-    P_ERROR_X1( arg != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( arg != nullptr, vfloc, "Incerdibly wrong!");
     out << "(";
     out << "+";
     arg->print (out);
@@ -125,11 +126,11 @@ private:
 class NodeMinus : public Node
 {
 public:
-  NodeMinus () : Node(TokenType::UnaryMinus), arg(nullptr) {}
+  NodeMinus (const size_t loc) : Node(TokenType::UnaryMinus, loc), arg(nullptr) {}
   void deleteTree () { arg->deleteTree (); delete arg; }
   Node* copy () const
   {
-    NodeMinus* cp = new NodeMinus();
+    NodeMinus* cp = new NodeMinus (vfloc);
     cp->arg = arg->copy();
     return cp;
   }
@@ -180,7 +181,7 @@ public:
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
   {
-    NodeMinus* root = new NodeMinus();
+    NodeMinus* root = new NodeMinus (vfloc);
     root->arg = arg->derivative (var, zero);
     return root;
   }
@@ -194,7 +195,7 @@ public:
       (*parent)->deleteTree ();
       P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete (*parent);
-      (*parent) = new NodeNumber(-val);
+      (*parent) = new NodeNumber (-val, vfloc);
       return;
     }
   }
@@ -207,14 +208,14 @@ private:
 class NodeEquals : public Node
 {
 private:
-  NodeEquals (TokenType tp) : Node(tp), args(2) {}
+  NodeEquals (TokenType tp, const size_t loc) : Node(tp, loc), args(2) {}
 public:
-  NodeEquals () : Node(TokenType::Equals), args(2) {}
-  NodeEquals (bool) : Node(TokenType::Define), args(2) {}
+  NodeEquals (const size_t loc) : Node(TokenType::Equals, loc), args(2) {}
+  NodeEquals (bool, const size_t loc) : Node(TokenType::Define, loc), args(2) {}
   void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
   Node* copy () const
   {
-    NodeEquals* cp = new NodeEquals(type);
+    NodeEquals* cp = new NodeEquals (type, vfloc);
     for(size_t k=0; k<args.size(); k++)
     {
       cp->args[k] = args[k]->copy();
@@ -225,11 +226,11 @@ public:
   const Node* getChild (size_t n) const { return args[n]; }
   Node* getChild (size_t n) { return args[n]; }
   size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const
   {
-    P_ERROR_X1( args[0] != nullptr, "Incerdibly wrong!");
-    P_ERROR_X1( args[1] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[0] != nullptr, vfloc, "Incerdibly wrong!");
+    PE_ERROR_X1( args[1] != nullptr, vfloc, "Incerdibly wrong!");
     args[0]->print (out);
     if (type == TokenType::Equals) out << "=";
     else out << ":=";
@@ -247,7 +248,7 @@ public:
     return false;
   }
   bool operator < (const Node& node) const
-  { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
+  { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent)
   {
     for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
@@ -256,7 +257,7 @@ public:
   {
     for (size_t k=0; k<args.size(); k++)
     {
-      P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+      PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
       args[k]->replaceSymbol (node, &args[k]);
     }
   }
@@ -264,7 +265,7 @@ public:
   {
     for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber(0.0); }
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
   void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
   {
     for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k], zero);
@@ -278,11 +279,11 @@ private:
 class NodeSemicolon : public Node
 {
 public:
-  NodeSemicolon () : Node(TokenType::Semicolon) {}
+  NodeSemicolon (const size_t loc) : Node (TokenType::Semicolon, loc) {}
   void deleteTree () { for(auto k=args.begin(); k!=args.end(); k++) { (*k)->deleteTree (); delete *k; } }
   Node* copy () const
   {
-    NodeSemicolon* cp = new NodeSemicolon();
+    NodeSemicolon* cp = new NodeSemicolon (vfloc);
     for(auto k=args.begin(); k!=args.end(); k++)
     {
       cp->args.push_back((*k)->copy());
@@ -311,18 +312,18 @@ public:
     return nullptr;
   }
   size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const
   {
     for(auto k=args.begin(); k!=args.end(); k++)
     {
-      P_ERROR_X1( (*k) != nullptr, "Incerdibly wrong!");
+      PE_ERROR_X1( (*k) != nullptr, vfloc, "Incerdibly wrong!");
       (*k)->print (out);
       out << ";\n";
     }
   }
-  bool operator != (const Node& node) const { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
-  bool operator < (const Node& node) const { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
+  bool operator != (const Node& node) const { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
+  bool operator < (const Node& node) const { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent)
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (sym, node, &(*k));
@@ -335,7 +336,7 @@ public:
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber(0.0); }
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
   // specific
   void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
   void addArgumentBack (Node* arg) { args.push_back (arg); }
@@ -407,7 +408,7 @@ void NodeSymbol::replaceSymbol (const Node& node, Node** parent)
     {
       replaceSymbol (*left, *right, parent);
     }
-  } else P_MESSAGE1("Not a definition\n");
+  } else PE_MESSAGE1(vfloc, "Not a definition\n");
 }
 
 // NodeVar
@@ -540,7 +541,7 @@ void NodeExpr::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 // NodeFunction
 Node* NodeFunction::copy () const
 {
-  NodeFunction* cp = new NodeFunction(name, args.size());
+  NodeFunction* cp = new NodeFunction (name, args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   return cp;
 }
@@ -553,7 +554,7 @@ void NodeFunction::print (std::ostream& out) const
   else out << "std::" << name << "(";
   for(size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1( args[k] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[k] != nullptr, vfloc, "Incerdibly wrong!");
     args[k]->print (out);
     if (k<args.size()-1) out << ",";
   }
@@ -614,7 +615,7 @@ void NodeFunction::replaceSymbol(const Node& node, Node** parent)
           {
             cp->replaceSymbol (*macro->args[k], *args[k], &cp);
           }
-          else P_MESSAGE1("Not a symbol");
+          else PE_MESSAGE1(vfloc, "Not a symbol");
         }
         (*parent)->deleteTree ();
         P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -649,8 +650,8 @@ static double localHeaviside (double v)
 class NodeFunctionA1 : public NodeFunction
 {
   public:
-    NodeFunctionA1 (const std::string& nm);
-    NodeFunctionA1 ();
+    NodeFunctionA1 (const std::string& nm, const size_t loc);
+    NodeFunctionA1 (const size_t loc);
     const NodeFunctionA1& operator = (const NodeFunctionA1&);
     Node* copy () const;
     size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
@@ -658,7 +659,7 @@ class NodeFunctionA1 : public NodeFunction
     std::function<double(double)> function;
 };
 
-NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
+NodeFunctionA1::NodeFunctionA1 (const std::string& nm, const size_t loc) : NodeFunction (nm, 1, loc)
 {
   if (nm == "abs") function = fabs;
   else if (nm == "exp") function = exp;
@@ -682,7 +683,7 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
 
 Node* NodeFunctionA1::copy () const
 {
-  NodeFunctionA1* cp = new NodeFunctionA1(NodeFunction::name);
+  NodeFunctionA1* cp = new NodeFunctionA1 (NodeFunction::name, vfloc);
   for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   cp->function = function;
   return cp;
@@ -692,21 +693,21 @@ Node* NodeFunctionA1::copy () const
 class NodeFunctionA2 : public NodeFunction
 {
   public:
-    NodeFunctionA2 (const std::string& nm);
+    NodeFunctionA2 (const std::string& nm, const size_t loc);
     Node* copy () const;
     size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   private:
     std::function<double(double,double)> function;
 };
 
-NodeFunctionA2::NodeFunctionA2 (const std::string& nm) : NodeFunction (nm, 2)
+NodeFunctionA2::NodeFunctionA2 (const std::string& nm, const size_t loc) : NodeFunction (nm, 2, loc)
 {
   if (nm == "pow") function = pow;
 }
 
 Node* NodeFunctionA2::copy () const
 {
-  NodeFunctionA2* cp = new NodeFunctionA2(NodeFunction::name);
+  NodeFunctionA2* cp = new NodeFunctionA2 (NodeFunction::name, vfloc);
   for(size_t k=0; k<this->args.size(); k++) cp->args[k] = this->args[k]->copy();
   cp->function = function;
   return cp;
@@ -716,7 +717,7 @@ Node* NodeFunctionA2::copy () const
 
 Node* NodeAdd::copy () const
 {
-  NodeAdd* cp = new NodeAdd(args.size());
+  NodeAdd* cp = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -727,11 +728,11 @@ Node* NodeAdd::copy () const
 
 void NodeAdd::print (std::ostream& out) const
 {
-  P_ERROR_X1 (args.size() > 0, "terribly wrong");
+  PE_ERROR_X1 (args.size() > 0, vfloc, "terribly wrong");
   out << "(";
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1( args[k] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[k] != nullptr, vfloc, "Incerdibly wrong!");
     if (mul[k] < 0.0) out << "-";
     else if (k != 0) out << "+";
     if ((mul[k] != 1.0) && (mul[k] != -1.0)) out << fabs(mul[k]) << "*";
@@ -793,7 +794,7 @@ void NodeAdd::replaceSymbol(const Node& node, Node** parent)
 {
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
     args[k]->replaceSymbol (node, &args[k]);
   }
 }
@@ -825,11 +826,11 @@ void NodeAdd::sort ()
 
 Node* NodeTimes::copy () const
 {
-  NodeTimes* cp = new NodeTimes(args.size());
+  NodeTimes* cp = new NodeTimes (args.size(), vfloc);
   cp->smul = smul;
   for(size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
     cp->args[k] = args[k] -> copy ();
     cp->divide[k] = divide[k];
   }
@@ -838,7 +839,7 @@ Node* NodeTimes::copy () const
 
 void NodeTimes::print (std::ostream& out) const
 {
-  P_ERROR_X1 (args.size() > 0, "terribly wrong");
+  PE_ERROR_X1 (args.size() > 0, vfloc, "terribly wrong");
   out << "(";
   if (smul != 1.0)
   {
@@ -847,7 +848,7 @@ void NodeTimes::print (std::ostream& out) const
   }
   for(size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
     if (k != 0) { if (divide[k]) out << "/"; else out << "*"; }
     else if (divide[k]) out << "1/";
     args[k]->print (out);
@@ -903,7 +904,7 @@ void NodeTimes::replaceSymbol(const Node& node, Node** parent)
 {
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X4 (args[k] != nullptr, "terribly wrong: ", k, " of ", args.size() );
+    PE_ERROR_X4 (args[k] != nullptr, vfloc, "terribly wrong: ", k, " of ", args.size() );
     args[k]->replaceSymbol (node, &args[k]);
   }
 }
@@ -942,7 +943,7 @@ void NodeTimes::addArgument (size_t pos, Node* arg, double m, bool div)
 
 Node* NodePower::copy () const
 {
-  NodePower* cp = new NodePower();
+  NodePower* cp = new NodePower (vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -953,8 +954,8 @@ Node* NodePower::copy () const
 void NodePower::print (std::ostream& out) const
 {
   out << "pow(";
-  P_ERROR_X1( args[0] != nullptr, "Incerdibly wrong!");
-  P_ERROR_X1( args[1] != nullptr, "Incerdibly wrong!");
+  PE_ERROR_X1( args[0] != nullptr, vfloc, "Incerdibly wrong!");
+  PE_ERROR_X1( args[1] != nullptr, vfloc, "Incerdibly wrong!");
   args[0]->print (out); out << ",";
   args[1]->print (out);
   out << ")";
@@ -1016,16 +1017,16 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
   // root is t3
   const Node* a = args[0];
   const Node* b = args[1];
-  NodeTimes* t1 = new NodeTimes(2);
-  NodeTimes* t2 = new NodeTimes(3);
-  NodeTimes* t3 = new NodeTimes(2);
-  NodeAdd* s1 = new NodeAdd(2);
-  NodeAdd* s2 = new NodeAdd(2);
-  NodeFunctionA1* fun = new NodeFunctionA1("log");
-  NodePower* pw = new NodePower;
+  NodeTimes* t1 = new NodeTimes (2, vfloc);
+  NodeTimes* t2 = new NodeTimes (3, vfloc);
+  NodeTimes* t3 = new NodeTimes (2, vfloc);
+  NodeAdd* s1 = new NodeAdd (2, vfloc);
+  NodeAdd* s2 = new NodeAdd (2, vfloc);
+  NodeFunctionA1* fun = new NodeFunctionA1 ("log", vfloc);
+  NodePower* pw = new NodePower (vfloc);
 
   s1 -> addArgument (0, b -> copy (), 1.0);
-  s1 -> addArgument (1, new NodeNumber(1.0), -1.0);
+  s1 -> addArgument (1, new NodeNumber (1.0, vfloc), -1.0);
   pw -> args[0] = a -> copy();
   pw -> args[1] = s1;
   t1 -> addArgument (0, a -> derivative (var, zero), 1.0, false);
@@ -1051,7 +1052,7 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
   NodeNumber* a1 = dynamic_cast<NodeNumber*>(args[1]);
   if ((a0 != nullptr)&&(a1 != nullptr))
   {
-    NodeNumber* res = new NodeNumber( pow (a0->getValue(), a1->getValue()) );
+    NodeNumber* res = new NodeNumber (pow (a0->getValue(), a1->getValue()), vfloc);
     // should delete both arguments
     (*parent)->deleteTree ();
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -1072,7 +1073,7 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
     }
     if (a1 -> getValue () == 0.0)
     {
-      NodeNumber* res = new NodeNumber (1.0);
+      NodeNumber* res = new NodeNumber (1.0, vfloc);
       // should delete both arguments
       (*parent)->deleteTree ();
       P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -1087,7 +1088,7 @@ void NodeFunction::specialize (NodeFunction** parent)
 {
   if (args.size() == 1)
   {
-    NodeFunctionA1* fun = new NodeFunctionA1(name);
+    NodeFunctionA1* fun = new NodeFunctionA1 (name, vfloc);
     fun -> addArgument (0, args[0]);
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete (*parent);
@@ -1096,7 +1097,7 @@ void NodeFunction::specialize (NodeFunction** parent)
   }
   if (args.size() == 2)
   {
-    NodeFunctionA2* fun = new NodeFunctionA2(name);
+    NodeFunctionA2* fun = new NodeFunctionA2 (name, vfloc);
     fun -> addArgument (0, args[0]);
     fun -> addArgument (1, args[1]);
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -1115,7 +1116,7 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
   // replace power with NodePower
   if (name == "pow")
   {
-    NodePower* pw = new NodePower;
+    NodePower* pw = new NodePower (vfloc);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -1134,7 +1135,7 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
     std::vector<double> par;
     double res;
     this->evaluateWithPar (&res, par);
-    NodeNumber* num = new NodeNumber (res);
+    NodeNumber* num = new NodeNumber (res, vfloc);
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     (*parent)->deleteTree ();
     delete (*parent);
@@ -1213,12 +1214,12 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
   mul = newmul;
   if (sum != 0.0)
   {
-    args.push_back (new NodeNumber(sum));
+    args.push_back (new NodeNumber (sum, vfloc));
     mul.push_back (1.0);
   }
   if (args.size() == 0)
   {
-    Node* tmp = new NodeNumber (0.0);
+    Node* tmp = new NodeNumber (0.0, vfloc);
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
     *parent = tmp;
@@ -1229,7 +1230,7 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
     NodeNumber* num = dynamic_cast<NodeNumber*>(args[0]);
     if (num)
     {
-      Node* tmp = new NodeNumber (mul[0] * (num ->getValue()));
+      Node* tmp = new NodeNumber (mul[0] * (num ->getValue()), vfloc);
       (*parent)->deleteTree();
       P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
       delete *parent;
@@ -1249,7 +1250,7 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
       } else
       {
         // convert into times
-        NodeTimes* tmp = new NodeTimes (1);
+        NodeTimes* tmp = new NodeTimes (1, vfloc);
         tmp -> addArgument (0, args[0], mul[0], false);
         args[0] = nullptr;
         P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
@@ -1329,7 +1330,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
     (*parent)->deleteTree ();
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
-    *parent = new NodeNumber(0.0);
+    *parent = new NodeNumber (0.0, vfloc);
     return;
   }
   // single argument
@@ -1347,7 +1348,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
     const double smul_copy = smul;
     P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
     delete *parent;
-    *parent = new NodeNumber(smul_copy);
+    *parent = new NodeNumber (smul_copy, vfloc);
     return;
   }
 }
@@ -1377,7 +1378,7 @@ void NodeSemicolon::optimize (Node** parent, const std::function<bool(const Node
 
 Node* NodeNumber::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, vfloc);
 }
 
 Node* NodeSymbol::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
@@ -1388,11 +1389,11 @@ Node* NodeSymbol::derivative (const Node* var, const std::function<bool(const No
     {
       if (node->name == name)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, vfloc);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, vfloc);
 }
 
 Node* NodeVar::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
@@ -1403,11 +1404,11 @@ Node* NodeVar::derivative (const Node* var, const std::function<bool(const Node*
     {
       if (node->idx == idx)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, vfloc);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, vfloc);
 }
 
 Node* NodePar::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
@@ -1418,16 +1419,16 @@ Node* NodePar::derivative (const Node* var, const std::function<bool(const Node*
     {
       if (node->idx == idx)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, vfloc);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, vfloc);
 }
 
 Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
-  P_ERROR_X1 (nv + np < 2, "Up to second order derivatives are allowed.");
+  PE_ERROR_X1 (nv + np < 2, vfloc, "Up to second order derivatives are allowed.");
   const NodeVar* nvp = dynamic_cast<const NodeVar* >(var);
   if (nvp != nullptr)
   {
@@ -1437,7 +1438,7 @@ Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node
     if (zero (ne))
     {
       delete ne;
-      return new NodeNumber(0.0);
+      return new NodeNumber (0.0, vfloc);
     } else
     {
       return ne;
@@ -1446,25 +1447,25 @@ Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node
   const NodePar* npp = dynamic_cast<const NodePar* >(var);
   if (npp != nullptr)
   {
-    P_ERROR_X1 (np < 1, "Was already differentiated w.r.t. a parameter.");
+    PE_ERROR_X1 (np < 1, vfloc, "Was already differentiated w.r.t. a parameter.");
     NodeExpr* ne = this->copy();
     ne->dp = npp->getIdx();
     ne->np += 1;
     if (zero (ne))
     {
       delete ne;
-      return new NodeNumber(0.0);
+      return new NodeNumber (0.0, vfloc);
     } else
     {
       return ne;
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, vfloc);
 }
 
 Node* NodeAdd::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
-  NodeAdd* cp = new NodeAdd(args.size());
+  NodeAdd* cp = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->derivative (var, zero);
@@ -1476,10 +1477,10 @@ Node* NodeAdd::derivative (const Node* var, const std::function<bool(const Node*
 Node* NodeTimes::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
   // f = (f1 f2 f2 ..) / (g1 g2 g3 ..)
-  NodeAdd* root = new NodeAdd(args.size());
+  NodeAdd* root = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
-    NodeTimes* cp = new NodeTimes(0);
+    NodeTimes* cp = new NodeTimes (0, vfloc);
     cp->smul = smul;
     if (divide[k])
     {
@@ -1520,8 +1521,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   if (name == "abs")
   {
     // -> sign
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("sign");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sign", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1530,8 +1531,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "exp")
   {
     // -> exp
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("exp");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("exp", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1540,7 +1541,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "log")
   {
     // -> 1/x
-    NodeTimes* root = new NodeTimes(2);
+    NodeTimes* root = new NodeTimes (2, vfloc);
     root -> addArgument (0, args[0] -> copy (), 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1548,8 +1549,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "sin")
   {
     // -> cos
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("cos");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cos", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1558,8 +1559,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "cos")
   {
     // -> -sin
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("sin");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sin", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, -1.0, false);
   root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1568,12 +1569,12 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "tan")
   {
     // -> cos^(-2)
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("cos");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cos", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
-    NodePower* pow = new NodePower;
+    NodePower* pow = new NodePower (vfloc);
     pow -> addArgument (0, fun);
-    pow -> addArgument (1, new NodeNumber(2.0));
+    pow -> addArgument (1, new NodeNumber (2.0, vfloc));
     root -> addArgument (0, pow, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1581,16 +1582,16 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "asin")
   {
     // -> 1/{(1-x^2)^(1/2)}
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1598,16 +1599,16 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "acos")
   {
     // -> -1/{(1-x^2)^(1/2)}
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, -1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1615,12 +1616,12 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "atan")
   {
     // -> 1/(1-x^2)
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1629,8 +1630,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "sinh")
   {
     // -> cosh
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("cosh");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1639,8 +1640,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "cosh")
   {
     // -> sinh
-    NodeTimes* root = new NodeTimes(2);
-    NodeFunctionA1* fun = new NodeFunctionA1("sinh");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sinh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1649,12 +1650,12 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "tanh")
   {
     // -> cosh^(-2)
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow = new NodePower;
-    NodeFunctionA1* fun = new NodeFunctionA1("cosh");
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow = new NodePower (vfloc);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     pow -> addArgument (0, fun);
-    pow -> addArgument (1, new NodeNumber(2.0));
+    pow -> addArgument (1, new NodeNumber (2.0, vfloc));
     root -> addArgument (0, pow, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1662,16 +1663,16 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "asinh")
   {
     // -> 1/(1+x^2)^(1/2)
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, 1.0);
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1679,16 +1680,16 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "acosh")
   {
     // -> 1/(x^2-1)^(1/2)
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (1, new NodeNumber(1.0), -1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (1, new NodeNumber (1.0, vfloc), -1.0);
     add -> addArgument (0, pow_square, 1.0);
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1696,12 +1697,12 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "atanh")
   {
     // -> 1/(1-x^2)
-    NodeTimes* root = new NodeTimes(2);
-    NodePower* pow_square = new NodePower;
+    NodeTimes* root = new NodeTimes (2, vfloc);
+    NodePower* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
+    NodeAdd* add = new NodeAdd (2, vfloc);
+    add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1710,7 +1711,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "pow")
   {
     // promote to NodePower
-    NodePower* pw = new NodePower;
+    NodePower* pw = new NodePower (vfloc);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     Node* retval = pw -> derivative (var, zero);
@@ -1719,23 +1720,23 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   }
   else if (name == "sign")
   {
-    return new NodeNumber(0.0);
+    return new NodeNumber (0.0, vfloc);
   }
   else if (name == "heaviside")
   {
-    return new NodeNumber(0.0);
+    return new NodeNumber (0.0, vfloc);
   }
   else
   {
     // this is when we don't know the function but do not want to leave the root hanging
     // -> cos
-    NodeAdd* add = new NodeAdd(args.size());
+    NodeAdd* add = new NodeAdd (args.size(), vfloc);
     for (size_t k=0; k<args.size(); ++k)
     {
       std::ostringstream str;
       str << name << "_d" << k;
-      NodeFunction* fun = new NodeFunction(str.str (), args.size());
-      NodeTimes* times = new NodeTimes(2);
+      NodeFunction* fun = new NodeFunction (str.str (), args.size(), vfloc);
+      NodeTimes* times = new NodeTimes (2, vfloc);
       add->addArgument(k, times, 1.0);
       times->addArgument(0, fun, 1.0, false);
       times->addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1782,7 +1783,7 @@ size_t NodeNumber::evaluate (ValueStack& stack, size_t sp, const std::function<v
 size_t NodeSymbol::evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
 {
   // this is an unresolved symbol, should not be called
-  P_MESSAGE2("Undefined symbol : ", name);
+  PE_MESSAGE2(vfloc, "Undefined symbol : ", name);
   // stack should be pre-allocated
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
@@ -1816,7 +1817,7 @@ size_t NodeExpr::evaluate (ValueStack& stack, size_t sp, const std::function<voi
 
 size_t NodeFunction::evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
 {
-  P_MESSAGE3("NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
+  PE_MESSAGE3(vfloc, "NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
   return sp;
 }
 
@@ -1826,7 +1827,7 @@ size_t NodeFunctionA1::evaluate (ValueStack& stack, size_t sp, const std::functi
   args[0] -> evaluate(stack, sp, fun, len);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
-  if (!(this->function)) { P_MESSAGE3 ("'", name, "' is not defined as a function."); }
+  if (!(this->function)) { PE_MESSAGE3 (vfloc, "'", name, "' is not defined as a function."); }
   for (size_t k = 0; k < len; k++)
   {
     data[skip*k] = this->function(data[skip*k]);
@@ -1860,7 +1861,7 @@ size_t NodeAdd::evaluate (ValueStack& stack, size_t sp, const std::function<void
   }
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, fun, len); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(vfloc, "NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = 0;
@@ -1884,7 +1885,7 @@ size_t NodeTimes::evaluate (ValueStack& stack, size_t sp, const std::function<vo
   }
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, fun, len); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(vfloc, "NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = smul;
@@ -1909,7 +1910,7 @@ size_t NodePower::evaluate (ValueStack& stack, size_t sp, const std::function<vo
   }
   args[0] -> evaluate(stack, sp, fun, len);
   size_t spi = args[1] -> evaluate(stack, sp+1, fun, len);
-  if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
+  if (spi != sp + args.size() - 1) PE_MESSAGE7(vfloc, "NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = pow (stack[sp].data[p*stack[sp].skip], stack[sp+1].data[p*stack[sp+1].skip]);
@@ -1921,24 +1922,6 @@ size_t NodePower::evaluate (ValueStack& stack, size_t sp, const std::function<vo
 // alphanumeric is an identifier
 // operators inbetween are the delimiters and they are tokens separately
 //
-
-static void printErrorLine (const std::string& expression, size_t pos)
-{
-  const char* str = expression.c_str ();
-  size_t line = 1;
-  size_t last_line = 0;
-  for (size_t k = 0; (k < expression.size ()) && (k < pos); ++k)
-  {
-    if (str[k] == '\n') { ++line; last_line = k+1; }
-  }
-  size_t next_line = last_line;
-  while ((str[next_line] != '\n') && (next_line < expression.size ())) ++next_line;
-  std::string tn(&str[last_line], next_line - last_line);
-  std::string ep(next_line - last_line, ' ');
-  ep[pos-last_line] = '^';
-  std::cout << "Line " << line << ": " << tn << "\n";
-  std::cout << "Line " << line << ": " << ep << "\n";
-}
 
 enum class CharType : int { Op, Identifier, Space, Invalid };
 
@@ -1977,16 +1960,16 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         strtod (&str[k], &endptr);
         size_t p = (endptr - &str[k])/sizeof(char);
         std::string tn (&str[k], p);
+        stream.push_back (Token (TokenType::Symbol, tn, k) );
         k = k + p;
-        stream.push_back (Token (TokenType::Symbol, tn) );
         continue;
       } else
       {
         size_t p = 0;
         while (findCharType (str[k+p]) == CharType::Identifier) p++;
         std::string tn (&str[k], p);
+        stream.push_back (Token (TokenType::Symbol, tn, k) );
         k = k + p;
-        stream.push_back (Token (TokenType::Symbol, tn) );
         continue;
       }
     } else if (findCharType (str[k]) == CharType::Op)
@@ -1996,54 +1979,50 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
       switch (tn[0])
       {
         case '+':
-          stream.push_back (Token (TokenType::Plus, tn) );
+          stream.push_back (Token (TokenType::Plus, tn, k) );
           break;
         case '-':
-          stream.push_back (Token (TokenType::Minus, tn) );
+          stream.push_back (Token (TokenType::Minus, tn, k) );
           break;
         case '*':
-          stream.push_back (Token (TokenType::Times, tn) );
+          stream.push_back (Token (TokenType::Times, tn, k) );
           break;
         case '/':
-          stream.push_back (Token (TokenType::Divide, tn) );
+          stream.push_back (Token (TokenType::Divide, tn, k) );
           break;
         case '^':
-          stream.push_back (Token (TokenType::Power, tn) );
+          stream.push_back (Token (TokenType::Power, tn, k) );
           break;
         case '(':
-          stream.push_back (Token (TokenType::LeftParen, tn) );
+          stream.push_back (Token (TokenType::LeftParen, tn, k) );
           break;
         case ')':
-          stream.push_back (Token (TokenType::RightParen, tn) );
+          stream.push_back (Token (TokenType::RightParen, tn, k) );
           break;
         case ',':
-          stream.push_back (Token (TokenType::Comma, tn) );
+          stream.push_back (Token (TokenType::Comma, tn, k) );
           break;
         case '=':
-          stream.push_back (Token (TokenType::Equals, tn) );
+          stream.push_back (Token (TokenType::Equals, tn, k) );
           break;
         case ':':
           k++;
-          if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=") );
+          if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=", k-1) );
           else
           {
-            printErrorLine (expression, k);
-            P_MESSAGE3("Unknown operator '", tn, "'.\n");
-//           std::cout << "DEFINE FOUND\n";
+            PE_MESSAGE3(k, "Unknown operator '", tn, "'.\n");
           }
           break;
         case ';':
-          stream.push_back (Token (TokenType::Semicolon, tn) );
+          stream.push_back (Token (TokenType::Semicolon, tn, k) );
           break;
         default:
-          printErrorLine (expression, k);
-          P_MESSAGE3("Unknown operator '", tn, "'.\n");
+          PE_MESSAGE3(k, "Unknown operator '", tn, "'.\n");
       }
       k++;
     } else
     {
-      printErrorLine (expression, k);
-      P_MESSAGE3("Invalid character '", std::string(1,str[k]), "'\n");
+      PE_MESSAGE3(k, "Invalid character '", std::string(1,str[k]), "'\n");
       k++;
     }
   }
@@ -2069,7 +2048,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
   }
   // check if the last token is a semicolon
   if (stream.back().type == TokenType::Semicolon) stream.pop_back();
-  else P_MESSAGE1("Missing semicolon\n");
+  else PE_MESSAGE1(stream.back().vfloc, "Missing semicolon\n");
 }
 
 void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
@@ -2080,7 +2059,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
     {
       case TokenType::LeftParen:
       case TokenType::RightParen:
-        P_MESSAGE3("Unexpected Parenthesis ", tk.name, ".");
+        PE_MESSAGE3(tk.vfloc, "Unexpected Parenthesis ", tk.name, ".");
         break;
       case TokenType::Symbol:
       {
@@ -2088,11 +2067,11 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
         double res = strtod (tk.name.c_str(), &endptr);
         if (endptr != tk.name.c_str())
         {
-          NodeNumber* node = new NodeNumber (res);
+          NodeNumber* node = new NodeNumber (res, tk.vfloc);
           ts.push_back (node);
         } else
         {
-          NodeSymbol* node = new NodeSymbol (tk.name);
+          NodeSymbol* node = new NodeSymbol (tk.name, tk.vfloc);
           ts.push_back (node);
         }
       }
@@ -2101,14 +2080,14 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       {
         if (nargs == 1)
         {
-          NodeFunctionA1* node = new NodeFunctionA1 (tk.name);
+          NodeFunctionA1* node = new NodeFunctionA1 (tk.name, tk.vfloc);
           // put the argument from the stack
           node->addArgument (0, ts.back());
           ts.pop_back ();
           ts.push_back (node);
         } else if (nargs == 2)
         {
-          NodeFunctionA2* node = new NodeFunctionA2 (tk.name);
+          NodeFunctionA2* node = new NodeFunctionA2 (tk.name, tk.vfloc);
           // put the argument from the stack
           node->addArgument (1, ts.back());
           ts.pop_back ();
@@ -2117,7 +2096,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.push_back (node);
         } else
         {
-          NodeFunction* node = new NodeFunction (tk.name, nargs);
+          NodeFunction* node = new NodeFunction (tk.name, nargs, tk.vfloc);
           // put the argument from the stack
           for (size_t k=0; k<nargs; k++)
           {
@@ -2135,7 +2114,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::UnaryMinus:
       {
-        NodeMinus* node = new NodeMinus ();
+        NodeMinus* node = new NodeMinus (tk.vfloc);
         node->addArgument (0, ts.back());
         ts.pop_back ();
         ts.push_back (node);
@@ -2143,7 +2122,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Plus:
       {
-        NodeAdd* node = new NodeAdd (nargs);
+        NodeAdd* node = new NodeAdd (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2156,7 +2135,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Minus:
       {
-        NodeAdd* node = new NodeAdd (nargs);
+        NodeAdd* node = new NodeAdd (nargs, tk.vfloc);
         // put the argument from the stack
         if (nargs == 2)
         {
@@ -2164,14 +2143,14 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.pop_back ();
           node->addArgument (0, ts.back(), 1.0);
           ts.pop_back ();
-        } else P_MESSAGE1("Wrong number of arguments.");
+        } else PE_MESSAGE1(tk.vfloc, "Wrong number of arguments.");
         node->sort ();
         ts.push_back (node);
       }
       break;
       case TokenType::Times:
       {
-        NodeTimes* node = new NodeTimes (nargs);
+        NodeTimes* node = new NodeTimes (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2184,7 +2163,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Divide:
       {
-        NodeTimes* node = new NodeTimes (nargs);
+        NodeTimes* node = new NodeTimes (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2199,7 +2178,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       case TokenType::Power:
       {
         // nargs == 2 ??
-        NodePower* node = new NodePower ();
+        NodePower* node = new NodePower (tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2210,7 +2189,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Equals:
       {
-        NodeEquals* node = new NodeEquals ();
+        NodeEquals* node = new NodeEquals (tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2221,7 +2200,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Define:
       {
-        NodeEquals* node = new NodeEquals (true);
+        NodeEquals* node = new NodeEquals (true, tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2232,7 +2211,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Semicolon:
       {
-        NodeSemicolon* node = new NodeSemicolon ();
+        NodeSemicolon* node = new NodeSemicolon (tk.vfloc);
         // put the argument from the stack
         Node* nd2 = ts.back();
         ts.pop_back ();
@@ -2261,10 +2240,10 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       }
       break;
       default:
-        P_MESSAGE1("Unexpected operator.");
+        PE_MESSAGE1(tk.vfloc, "Unexpected operator.");
         break;
     }
-  } else P_MESSAGE1("Too short stack.");
+  } else PE_MESSAGE1(tk.vfloc, "Too short stack.");
 }
 
 Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table)
@@ -2294,18 +2273,18 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
         {
   //        for (auto it : funargs) std::cout << "FA=" << it << ",";
   //        std::cout << "\n";
-          P_MESSAGE1("Empty argument\n");
+          PE_MESSAGE1(token_stream[k].vfloc, "Empty argument\n");
         }
         if (!funargs.empty()) funargs.back() += 1;
-        else P_MESSAGE1("Not a function\n");
+        else PE_MESSAGE1(token_stream[k].vfloc, "Not a function\n");
         while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
         {
           // bind items on the stack ...
-          P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (1).");
+          PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Premature Function (1).");
           opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
           ops.pop_back();
         }
-        if (ops.empty()) P_MESSAGE1("Misplaced comma or missing \')\'\n");
+        if (ops.empty()) PE_MESSAGE1(token_stream[k].vfloc, "Misplaced comma or missing \')\'\n");
       }
       else if (token_stream[k].isOp())
       {
@@ -2318,7 +2297,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
                 (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
           {
             // bind items on the stack ...
-            P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (2).");
+            PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Premature Function (2).");
             opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
             ops.pop_back();
           } else break;
@@ -2364,7 +2343,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
           msg << " @ ";
           for (size_t p=k+1; p<token_stream.size(); p++) msg << token_stream[p].name;
           msg << " @END\n ";
-          P_MESSAGE1(msg.str().c_str());
+          PE_MESSAGE1(token_stream[k].vfloc, msg.str().c_str());
         }
         if (!ops.empty()) if (ops.back().type == TokenType::Function)
         {
@@ -2374,14 +2353,14 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
         }
       } else
       {
-        P_MESSAGE3("Not accounted for token: ", ops.back().name, "\n");
+        PE_MESSAGE3(ops.back().vfloc, "Not accounted for token: ", ops.back().name, "\n");
       }
       k++;
     }
     // no more tokens
     while (!ops.empty())
     {
-      if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis (3).");
+      if (ops.back().type == TokenType::LeftParen) PE_MESSAGE1(ops.back().vfloc, "Mismatched prenthesis (3).");
       else
       {
         // bind items on the stack ...
@@ -2467,7 +2446,7 @@ void splitExpression (std::string& sysName,
                   var_init.push_back (nullptr);
                   var_mass.push_back (nullptr);
                 }
-              } else P_MESSAGE1("Dot: wrong number of arguments\n");
+              } else PE_MESSAGE1(fun->vfloc, "Dot: wrong number of arguments\n");
             } else if (fun->getName() == "init")
             {
               // starting solution
@@ -2488,9 +2467,9 @@ void splitExpression (std::string& sysName,
                       break;
                     }
                   }
-                  P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-                } else P_MESSAGE1("Init: state variable is not a symbol.");
-              } else P_MESSAGE1("Init: wrong number of arguments\n");
+                  PE_ERROR_X3(found == true, sym->vfloc, "State variable '", sym->getName(), "' is not defined.");
+                } else PE_MESSAGE1(init->vfloc, "Init: state variable is not a symbol.");
+              } else PE_MESSAGE1(fun->vfloc, "Init: wrong number of arguments\n");
             } else if (fun->getName() == "mass")
             {
               // starting solution
@@ -2511,14 +2490,14 @@ void splitExpression (std::string& sysName,
                       break;
                     }
                   }
-                  P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-                } else P_MESSAGE1("Mass: state variable is not a symbol.");
-              } else P_MESSAGE1("Mass: wrong number of arguments\n");
+                  PE_ERROR_X3(found == true, sym->vfloc, "State variable '", sym->getName(), "' is not defined");
+                } else PE_MESSAGE1(init->vfloc, "Mass: state variable is not a symbol");
+              } else PE_MESSAGE1(fun->vfloc, "Mass: wrong number of arguments");
             } else if (fun->getName() == "period")
             {
-              if (par_name.size() > 0) P_ERROR_X1(par_name[0] == nullptr, "Period is already defined.");
-              P_ERROR_X1(fun->children() == 1, "Dot: wrong number of arguments");
-              P_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, "Not a symbol");
+              if (par_name.size() > 0) PE_ERROR_X1(par_name[0] == nullptr, fun->vfloc, "period is already defined");
+              PE_ERROR_X1(fun->children() == 1, fun->vfloc, "period: wrong number of arguments");
+              PE_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, fun->getChild(0)->vfloc, "Not a symbol");
               par_name[0] = static_cast<NodeSymbol*>(fun->getChild(0)->copy());
               par_value[0] = right->copy();
             } else if (fun->getName() == "par")
@@ -2532,16 +2511,16 @@ void splitExpression (std::string& sysName,
                   par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
                   par_value.push_back (right->copy());
                 }
-              } else P_MESSAGE1("Par: wrong number of arguments\n");
+              } else PE_MESSAGE1(fun->vfloc, "Par: wrong number of arguments\n");
             } else if (fun->getName() == "time")
             {
-              P_ERROR_X1(fun->children() == 0, "Too many arguments");
-              P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+              PE_ERROR_X1(fun->children() == 0, fun->vfloc, "Too many arguments");
+              PE_ERROR_X1(right->type == TokenType::Symbol, fun->vfloc, "Not a symbol");
               time.push_back (static_cast<NodeSymbol*>(right->copy()));
             } else if (fun->getName() == "vfname")
             {
-              P_ERROR_X1(fun->children() == 0, "Too many arguments");
-              P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+              PE_ERROR_X1(fun->children() == 0, fun->vfloc, "Too many arguments");
+              PE_ERROR_X1(right->type == TokenType::Symbol, fun->vfloc, "Not a symbol");
               sysName = static_cast<const NodeSymbol*>(right)->getName ();
             } else
             {
@@ -2555,11 +2534,11 @@ void splitExpression (std::string& sysName,
           {
             left->print (std::cout); std::cout << " == "; right->print (std::cout); std::cout << "\n";
             std::cout.flush();
-            P_MESSAGE1("Not a definition\n");
+            PE_MESSAGE1(child->vfloc, "Not a definition\n");
           }
         } else
         {
-          P_MESSAGE1("Not a definition\n");
+          PE_MESSAGE1(it->vfloc, "Not a definition\n");
         }
       }
     }
@@ -2575,12 +2554,12 @@ void splitExpression (std::string& sysName,
     delete cp;
   } else
   {
-    P_MESSAGE1("Cannot split expression\n");
+    PE_MESSAGE1(root->vfloc, "Not a semicolon, cannot split expression");
   }
   if (par_name[0] == nullptr)
   {
-    par_name[0] = new NodeSymbol("T");
-    par_value[0] = new NodeNumber(1.0);
+    par_name[0] = new NodeSymbol ("T", 0);
+    par_value[0] = new NodeNumber (1.0, 0);
   }
 }
 
@@ -2656,9 +2635,9 @@ void Expression::knutSplit (
   std::vector<Node*> macro;
 
   // Adding Pi
-  NodeEquals* pi_eq = new NodeEquals;
-  pi_eq -> addArgument (0, new NodeSymbol("Pi"));
-  pi_eq -> addArgument (1, new NodeNumber(M_PI));
+  NodeEquals* pi_eq = new NodeEquals (0);
+  pi_eq -> addArgument (0, new NodeSymbol("Pi", 0));
+  pi_eq -> addArgument (1, new NodeNumber(M_PI, 0));
   macro.push_back (pi_eq);
 
   try {
@@ -2710,16 +2689,16 @@ void Expression::knutSplit (
   all_def.resize (0);
 
   // if no independent variable or period is set we set the default
-  if (time.empty()) time.push_back (new NodeSymbol("t"));
-  NodeVar* time_var = new NodeVar(0);
+  if (time.empty()) time.push_back (new NodeSymbol ("t", 0));
+  NodeVar* time_var = new NodeVar (0, 0);
 
   // adding internal parameters
-  par_name.push_back (new NodeSymbol ("PAR_ANGLE"));
-  par_value.push_back (new NodeNumber (0.0));
-  par_name.push_back (new NodeSymbol ("PAR_PERIOD"));
-  par_value.push_back (new NodeNumber (1.0));
-  par_name.push_back (new NodeSymbol ("PAR_ROT_NUM"));
-  par_value.push_back (new NodeNumber (0.0));
+  par_name.push_back (new NodeSymbol ("PAR_ANGLE", 0));
+  par_value.push_back (new NodeNumber (0.0, 0));
+  par_name.push_back (new NodeSymbol ("PAR_PERIOD", 0));
+  par_value.push_back (new NodeNumber (1.0, 0));
+  par_name.push_back (new NodeSymbol ("PAR_ROT_NUM", 0));
+  par_value.push_back (new NodeNumber (0.0, 0));
 
   std::vector<NodeVar*> var_idx;
   std::vector<NodePar*> par_idx;
@@ -2731,21 +2710,21 @@ void Expression::knutSplit (
   varName.resize (var_name.size());
   for (size_t k = 0; k < var_name.size(); k++)
   {
-    var_idx.push_back (new NodeVar(1 + k)); // idx == 0 is the time
+    var_idx.push_back (new NodeVar (1 + k, 0)); // idx == 0 is the time
     varName[k] = var_name[k]->getName ();
   }
 
   parName.resize (par_name.size());
   for (size_t k = 0; k < par_name.size(); k++)
   {
-    par_idx.push_back (new NodePar(k)); // idx == 0 is the period
+    par_idx.push_back (new NodePar (k, 0)); // idx == 0 is the period
     parName[k] = par_name[k]->getName ();
   }
 
   exprName.resize (expr_name.size());
   for (size_t k = 0; k < expr_name.size(); k++)
   {
-    expr_idx.push_back (new NodeExpr(k));
+    expr_idx.push_back (new NodeExpr (k, 0));
     exprName[k] = expr_name[k]->getName ();
   }
 
@@ -2892,7 +2871,7 @@ void Expression::knutSplit (
     NodeFunction* fun = const_cast<NodeFunction*>(delays[p]);
     for (size_t q = 0; q < var_name.size(); q++)
     {
-      NodeVar var_del(1 + q + var_name.size()*(delay_id[p]+1));
+      NodeVar var_del(1 + q + var_name.size()*(delay_id[p]+1), 0);
       fun->replaceSymbol (*var_name[q], var_del, nullptr);
     }
   }
@@ -2929,12 +2908,12 @@ void Expression::knutSplit (
   }
 
   // render delay into identity
-  NodeEquals* del_rem = new NodeEquals;
-  NodeFunction* del_id = new NodeFunction("delay", 2);
-  del_id->addArgument (0, new NodeSymbol("a"));
-  del_id->addArgument (1, new NodeSymbol("b"));
+  NodeEquals* del_rem = new NodeEquals (0);
+  NodeFunction* del_id = new NodeFunction ("delay", 2, 0);
+  del_id->addArgument (0, new NodeSymbol ("a", 0));
+  del_id->addArgument (1, new NodeSymbol ("b", 0));
   del_rem->addArgument (0, del_id);
-  del_rem->addArgument (1, new NodeSymbol("a"));
+  del_rem->addArgument (1, new NodeSymbol ("a", 0));
 
   // replacing the variables
   // in dot

@@ -147,7 +147,7 @@ class NodeFunction;
 class Node
 {
 public:
-  Node (TokenType tp) : type(tp)
+  Node (TokenType tp, const size_t loc) : type(tp), vfloc(loc)
   {
 #ifdef DEBUG
     instances.push_front(this);
@@ -179,6 +179,7 @@ public:
   virtual void find (TokenType tp, const std::function<void(const Node*)>& found) const;
   void evaluateWithPar (double *res, const std::vector<double>& parInit);
   const TokenType type;
+  const size_t vfloc; // location in the .vf file
   static const std::function<bool(const Node*)> alwaysFalse;
 #ifdef DEBUG
   static std::list<const Node *> instances;
@@ -189,9 +190,9 @@ public:
 class NodeNumber : public Node
 {
 public:
-  NodeNumber (double val) : Node(TokenType::Number), value(val) {}
+  NodeNumber (double val, const size_t loc) : Node(TokenType::Number, loc), value(val) {}
   void deleteTree () {}
-  Node* copy () const { return new NodeNumber(value); }
+  Node* copy () const { return new NodeNumber (value, vfloc); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return 0; }
   Node* getChild (size_t n) { return 0; }
@@ -212,9 +213,9 @@ private:
 class NodeSymbol : public Node
 {
 public:
-  NodeSymbol (const std::string& nm) : Node(TokenType::Symbol), name(nm) {}
+  NodeSymbol (const std::string& nm, const size_t loc) : Node(TokenType::Symbol, loc), name(nm) {}
   void deleteTree () {}
-  Node* copy () const { return new NodeSymbol(name); }
+  Node* copy () const { return new NodeSymbol (name, vfloc); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
   Node* getChild (size_t n) { return nullptr; }
@@ -237,10 +238,10 @@ private:
 class NodeVar : public Node
 {
 public:
-  NodeVar (size_t id) : Node(TokenType::Var), idx(id) {}
+  NodeVar (size_t id, const size_t loc) : Node(TokenType::Var, loc), idx(id) {}
   ~NodeVar() {}
   void deleteTree () {}
-  Node* copy () const { return new NodeVar(idx); }
+  Node* copy () const { return new NodeVar (idx, vfloc); }
   size_t children () const {return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
   Node* getChild (size_t n) { return nullptr; }
@@ -261,10 +262,10 @@ private:
 class NodePar : public Node
 {
 public:
-  NodePar (size_t id) : Node(TokenType::Par), idx(id) {}
+  NodePar (size_t id, const size_t loc) : Node(TokenType::Par, loc), idx(id) {}
   ~NodePar() {}
   void deleteTree () {}
-  Node* copy () const { return new NodePar(idx); }
+  Node* copy () const { return new NodePar (idx, vfloc); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
   Node* getChild (size_t n) { return nullptr; }
@@ -285,15 +286,15 @@ private:
 class NodeExpr : public Node
 {
 public:
-  NodeExpr (size_t id) : Node(TokenType::Expr), idx(id), np(0), nv(0) { }
-  NodeExpr (size_t idx_, size_t np_, size_t nv_, size_t dp_, size_t dv0_, size_t dv1_)
-    : Node(TokenType::Expr), idx(idx_), np(np_), nv(nv_), dp(dp_) { dv[0] = dv0_; dv[1] = dv1_; }
+  NodeExpr (size_t id, const size_t loc) : Node(TokenType::Expr, loc), idx(id), np(0), nv(0) { }
+  NodeExpr (size_t idx_, size_t np_, size_t nv_, size_t dp_, size_t dv0_, size_t dv1_, const size_t loc)
+    : Node(TokenType::Expr, loc), idx(idx_), np(np_), nv(nv_), dp(dp_) { dv[0] = dv0_; dv[1] = dv1_; }
 
   ~NodeExpr() { }
   void deleteTree () {}
   NodeExpr* copy () const
   {
-    NodeExpr *ne = new NodeExpr(idx);
+    NodeExpr *ne = new NodeExpr (idx, vfloc);
     ne->np = np;
     ne->nv = nv;
     ne->dp = dp;
@@ -326,7 +327,7 @@ public:
   {
     if (zero (this))
     {
-      Node* tmp = new NodeNumber (0.0);
+      Node* tmp = new NodeNumber (0.0, vfloc);
       P_ERROR_X1 ((*parent) == this, "Not the parent.");
       (*parent)->deleteTree ();
       delete *parent;
@@ -351,7 +352,7 @@ private:
 class NodeFunction : public Node
 {
 public:
-  NodeFunction (const std::string& nm, size_t nargs) : Node(TokenType::Function), name(nm), args(nargs)
+  NodeFunction (const std::string& nm, size_t nargs, const size_t loc) : Node(TokenType::Function, loc), name(nm), args(nargs)
   {
     for (size_t k=1; k<nargs; k++) args[k] = 0;
   }
@@ -386,7 +387,7 @@ protected:
 class NodeAdd : public Node
 {
 public:
-  NodeAdd (size_t nargs) : Node(TokenType::Plus), args(nargs), mul(nargs)
+  NodeAdd (size_t nargs, const size_t loc) : Node(TokenType::Plus, loc), args(nargs), mul(nargs)
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; mul[k] = 1.0; }
   }
@@ -420,7 +421,7 @@ private:
 class NodeTimes : public Node
 {
 public:
-  NodeTimes (size_t nargs) : Node(TokenType::Times), args(nargs), smul(1.0), divide(nargs)
+  NodeTimes (size_t nargs, const size_t loc) : Node(TokenType::Times, loc), args(nargs), smul(1.0), divide(nargs)
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; divide[k] = false; }
   }
@@ -458,7 +459,7 @@ private:
 class NodePower : public Node
 {
 public:
-  NodePower () : Node(TokenType::Power), args(2) {}
+  NodePower (const size_t loc) : Node(TokenType::Power, loc), args(2) {}
   void deleteTree ()
   {
     for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; }
