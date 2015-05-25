@@ -75,8 +75,15 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 //   std::cout << contents << "\n";
 //   std::cout << "-END EX\n";
 //   std::cout.flush ();
- 
-  KNExprSystem::constructor (vfexpr, sysName, trycompile);
+  try
+  {
+    KNExprSystem::constructor (vfexpr, sysName, trycompile);
+  }
+  catch (KNException& ex)
+  {
+    ex.exprStr (vfexpr);
+    throw ex;
+  }
 }
 
 KNExprSystem::KNExprSystem () : handle(nullptr)
@@ -99,14 +106,14 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 //   expr.print (std::cout);
 //   std::cout << "END EX\n";
 //   std::cout.flush ();
-  try
-  {
+//  try
+//  {
     expr.knutSplit (vfName, varName, varDotExpr, varInit, varMass, delayExpr, parName, parInit );
-  }
-  catch (KNException& ex)
-  {
-    std::cout << ex.str();
-  }
+//  }
+//  catch (KNException& ex)
+//  {
+//    std::cout << ex.str();
+//  }
   
 #ifdef DEBUG
   // print everything to see if there's an error
@@ -127,7 +134,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   delayExprDeri.resize (delayExpr.size()*parName.size());
   for (size_t p = 0; p < parName.size(); p++)
   {
-    NodePar pid(p);
+    NodePar pid(p, 0);
     for (size_t q = 0; q < delayExpr.size(); q++)
     {
       delayExpr[q].derivative(delayExprDeri[p + q*parName.size()], &pid);
@@ -140,7 +147,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     for (size_t p = 0; p < parName.size(); p++)
     {
-      NodePar pid(p);
+      NodePar pid (p, 0);
       varDotExpr[q].derivative(varDot_p[p + q*parName.size()], &pid);
     }
   }
@@ -151,7 +158,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
     {
-      NodeVar vid(1 + p);
+      NodeVar vid (1 + p, 0);
       varDotExpr[q].derivative(varDot_x[p + q*varDotExpr.size()*(delayExpr.size() + 1)], &vid);
     }
   }
@@ -159,7 +166,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   varDot_x_p.resize (varDotExpr.size()*varDotExpr.size()*(delayExpr.size() + 1)*parName.size());
   for (size_t r = 0; r < parName.size(); r++)
   {
-    NodePar pid(r);
+    NodePar pid (r, 0);
     for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
     {
       for (size_t q = 0; q < varDotExpr.size(); q++)
@@ -217,16 +224,16 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   std::vector<NodeVar*> vvsub(varDotExpr.size()*(delayExpr.size() + 1));
   for (size_t p = 0; p < varDotExpr.size()*(delayExpr.size() + 1); p++)
   {
-    vvsub[p] = new NodeVar(1 + p + varDotExpr.size()*(delayExpr.size() + 1));
+    vvsub[p] = new NodeVar (1 + p + varDotExpr.size()*(delayExpr.size() + 1), 0);
   }
   for (size_t q = 0; q < varDotExpr.size(); q++)
   {
     for (size_t l = 0; l < (delayExpr.size() + 1); l++)
     {
-      NodeAdd* ta = new NodeAdd(varDotExpr.size());
+      NodeAdd* ta = new NodeAdd (varDotExpr.size(), 0);
       for (size_t p = 0; p < varDotExpr.size(); p++)
       {
-        NodeTimes* tm = new NodeTimes(2);
+        NodeTimes* tm = new NodeTimes (2, 0);
         tm -> addArgument (0, varDot_x[p + l*varDotExpr.size() + q*varDotExpr.size()*(delayExpr.size() + 1)].copy(), 1.0, false);
         tm -> addArgument (1, vvsub[p + l*varDotExpr.size()] -> copy(), 1.0, false);
         ta -> addArgument (p, tm, 1.0);
@@ -236,7 +243,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 //      opta -> optimize (&opta);
       for (size_t k = 0; k < varDotExpr.size()*(delayExpr.size() + 1); k++)
       {
-        NodeVar vid(1 + k);
+        NodeVar vid (1 + k, 0);
         Node* deri = opta -> derivative (&vid);
 //        Node* deri = opta -> copy ();
         deri -> optimize (&deri);
@@ -677,21 +684,21 @@ void KNExprSystem::toCxx (std::string& cxx) const
   std::ostringstream symtext;
   for (size_t q = 0; q < parName.size(); q++)
   {
-    parlist[q] = new NodePar (q);
+    parlist[q] = new NodePar (q, 0);
     symtext << "par(" << q << ")";
-    parsymlist[q] = new NodeSymbol (symtext.str ());
+    parsymlist[q] = new NodeSymbol (symtext.str (), 0);
     symtext.str (std::string());
   }
 
-  varlist[0] = new NodeVar (0);
-  varsymlist[0] = new NodeSymbol ("time(idx)");
+  varlist[0] = new NodeVar (0, 0);
+  varsymlist[0] = new NodeSymbol ("time(idx)", 0);
   for (size_t q = 0; q < (delayExpr.size() + 1); q++)
   {
     for (size_t p = 0; p < varDotExpr.size(); p++)
     {
-      varlist[1 + p + q*varDotExpr.size()] = new NodeVar (1 + p + q*varDotExpr.size());
+      varlist[1 + p + q*varDotExpr.size()] = new NodeVar (1 + p + q*varDotExpr.size(), 0);
       symtext << "x(" << p << "," << q << "," << "idx)";
-      varsymlist[1 + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str ());
+      varsymlist[1 + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str (), 0);
       symtext.str (std::string());
     }
   }
@@ -700,9 +707,9 @@ void KNExprSystem::toCxx (std::string& cxx) const
   {
     for (size_t p = 0; p < varDotExpr.size(); p++)
     {
-      varlist[skip + p + q*varDotExpr.size()] = new NodeVar (skip + p + q*varDotExpr.size());
+      varlist[skip + p + q*varDotExpr.size()] = new NodeVar (skip + p + q*varDotExpr.size(), 0);
       symtext << "v(" << p << "," << q << "," << "idx)";
-      varsymlist[skip + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str ());
+      varsymlist[skip + p + q*varDotExpr.size()] = new NodeSymbol (symtext.str (), 0);
       symtext.str (std::string());
     }
   }

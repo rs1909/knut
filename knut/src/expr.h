@@ -59,7 +59,7 @@ class NodeFunction;
 class Node
 {
 public:
-  Node (TokenType tp) : type(tp) { }
+  Node (TokenType tp, size_t pos) : type(tp), ipos(pos) { }
   virtual ~Node() { }
   virtual void deleteTree () { };
   virtual Node* copy () const = 0;
@@ -84,13 +84,14 @@ public:
   // this is for preallocating the stack
   virtual size_t stackCount(size_t sp, size_t& max_stack) = 0;
   const TokenType type;
+  const size_t ipos;
 };
 
 class NodeNumber : public Node
 {
 public:
-  NodeNumber (double val) : Node(TokenType::Number), value(val) {}
-  Node* copy () const { return new NodeNumber(value); }
+  NodeNumber (double val, size_t pos) : Node(TokenType::Number, pos), value(val) {}
+  Node* copy () const { return new NodeNumber(value, ipos); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return 0; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
@@ -112,8 +113,8 @@ private:
 class NodeSymbol : public Node
 {
 public:
-  NodeSymbol (const std::string& nm) : Node(TokenType::Symbol), name(nm) {}
-  Node* copy () const { return new NodeSymbol(name); }
+  NodeSymbol (const std::string& nm, size_t pos) : Node(TokenType::Symbol, pos), name(nm) {}
+  Node* copy () const { return new NodeSymbol(name, ipos); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return 0; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
@@ -137,10 +138,10 @@ private:
 class NodeVar : public Node
 {
 public:
-  NodeVar (size_t id) : Node(TokenType::Var), idx(id) { }
+  NodeVar (size_t id, size_t pos) : Node(TokenType::Var, pos), idx(id) { }
   ~NodeVar() { }
   void deleteTree () {}
-  Node* copy () const { return new NodeVar(idx); }
+  Node* copy () const { return new NodeVar(idx, ipos); }
   size_t children () const {return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
@@ -161,10 +162,10 @@ private:
 class NodePar : public Node
 {
 public:
-  NodePar (size_t id) : Node(TokenType::Par), idx(id) { }
+  NodePar (size_t id, size_t pos) : Node(TokenType::Par, pos), idx(id) { }
   ~NodePar() { }
   void deleteTree () {}
-  Node* copy () const { return new NodePar(idx); }
+  Node* copy () const { return new NodePar(idx, ipos); }
   size_t children () const { return 0; }
   const Node* getChild (size_t n) const { return nullptr; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
@@ -185,7 +186,7 @@ private:
 class NodeFunction : public Node
 {
 public:
-  NodeFunction (const std::string& nm, size_t nargs) : Node(TokenType::Function), name(nm), args(nargs)
+  NodeFunction (const std::string& nm, size_t nargs, size_t pos) : Node(TokenType::Function, pos), name(nm), args(nargs)
   {
     for (size_t k=1; k<nargs; k++) args[k] = 0;
   }
@@ -218,7 +219,7 @@ protected:
 class NodeAdd : public Node
 {
 public:
-  NodeAdd (size_t nargs) : Node(TokenType::Plus), args(nargs), mul(nargs)
+  NodeAdd (size_t nargs, size_t pos) : Node(TokenType::Plus, pos), args(nargs), mul(nargs)
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; mul[k] = 1.0; }
   }
@@ -248,7 +249,7 @@ private:
 class NodeTimes : public Node
 {
 public:
-  NodeTimes (size_t nargs) : Node(TokenType::Times), args(nargs), smul(1.0), divide(nargs)
+  NodeTimes (size_t nargs, size_t pos) : Node(TokenType::Times, pos), args(nargs), smul(1.0), divide(nargs)
   {
     for (size_t k=1; k<nargs; k++) { args[k] = 0; divide[k] = false; }
   }
@@ -282,7 +283,7 @@ private:
 class NodePower : public Node
 {
 public:
-  NodePower () : Node(TokenType::Power), args(2) {}
+  NodePower (size_t pos) : Node(TokenType::Power, pos), args(2) {}
   void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
   Node* copy () const;
   size_t children () const { return args.size(); }
@@ -362,6 +363,17 @@ public:
   {
     if (root != nullptr) root -> evaluate (stack, 0, var, par);
   }
+  void splitExpression (
+    std::string& sysName, 
+    std::vector<NodeSymbol*>& var_name,
+    std::vector<Node*>& var_dot,
+    std::vector<Node*>& var_init,
+    std::vector<Node*>& var_mass,
+    std::vector<NodeSymbol*>& par_name,
+    std::vector<Node*>& par_value,
+    std::vector<NodeSymbol*>& time,
+    std::vector<Node*>& macro,
+    Node* root);
   void knutSplit (
     std::string& sysName,
     std::vector<std::string>& varName,
@@ -374,7 +386,9 @@ public:
   static bool fromXML (std::string& oexpr, const std::string& xmlstring);
 private:
   // takes over ownership
-  Expression (Node* rt) : root(rt) { }
+  Expression (Node* rt) : root(rt) { exprString.erase (); }
+  const std::string& printErrorLinePos (std::string& msg, size_t pos);
+  std::string exprString;
   Node* root;
 };
 

@@ -30,7 +30,8 @@ struct TokenPrecedence
 class Token
 {
   public:
-    Token (TokenType t, const std::string& n) : type(t), name(n) { }
+    Token (TokenType t, const std::string& n, size_t pos, size_t line) : 
+      type(t), name(n), ipos(pos), iline(line) { }
     bool isId() const { return type == TokenType::Symbol; }
     bool isOp() const { return (type != TokenType::Invalid)&&(type != TokenType::LeftParen)&&(type != TokenType::RightParen)&&(type != TokenType::Symbol)&&(type != TokenType::Number)&&(type != TokenType::Comma); }
     bool isSym() const { return type == TokenType::Symbol; }
@@ -39,6 +40,9 @@ class Token
 // variables
     TokenType type;
     std::string name;
+    // position in the input
+    const size_t ipos;
+    const size_t iline;
 };
 
 // NodeNumber
@@ -75,7 +79,7 @@ bool NodeSymbol::operator < (const Node& node) const
 
 void NodeSymbol::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
+  if (*parent != this) PE_MESSAGE1(ipos, "Wrong parent!\n");
   const NodeSymbol* symref = dynamic_cast<const NodeSymbol*>(&sym);
   if (symref)
   {
@@ -99,7 +103,7 @@ void NodeSymbol::replaceSymbol (const Node& node, Node** parent)
     {
       replaceSymbol (*left, *right, parent);
     }
-  } else P_MESSAGE1("Not a definition\n");
+  } else PE_MESSAGE1(ipos, "Not a definition\n");
 }
 
 // NodeVar
@@ -124,7 +128,7 @@ bool NodeVar::operator < (const Node& node) const
 
 void NodeVar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
+  if (*parent != this) PE_MESSAGE1(ipos, "Wrong parent!\n");
   const NodeVar* symref = dynamic_cast<const NodeVar*>(&sym);
   if (symref)
   {
@@ -156,7 +160,7 @@ bool NodePar::operator < (const Node& node) const
 
 void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  if (*parent != this) P_MESSAGE1("Wrong parent!\n");
+  if (*parent != this) PE_MESSAGE1(ipos, "Wrong parent!\n");
   const NodePar* symref = dynamic_cast<const NodePar*>(&sym);
   if (symref)
   {
@@ -173,7 +177,7 @@ void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 //NodeFunction
 Node* NodeFunction::copy () const
 {
-  NodeFunction* cp = new NodeFunction(name, args.size());
+  NodeFunction* cp = new NodeFunction(name, args.size(), ipos);
   for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   return cp;
 }
@@ -183,7 +187,7 @@ void NodeFunction::print (std::ostream& out) const
   out << name << "(";
   for(size_t k=0; k<args.size(); k++) 
   {
-    P_ERROR_X1( args[k] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[k] != nullptr, ipos, "Incerdibly wrong!");
     args[k]->print (out); 
     if (k<args.size()-1) out << ","; 
   }
@@ -245,7 +249,7 @@ void NodeFunction::replaceSymbol(const Node& node, Node** parent)
           {
             cp->replaceSymbol (*macro->args[k], *args[k], &cp);
           }
-          else P_MESSAGE1("Not a symbol");
+          else PE_MESSAGE1(ipos, "Not a symbol");
         }
         (*parent)->deleteTree ();
         delete *parent;
@@ -286,7 +290,7 @@ static double localHeaviside (double v)
 class NodeFunctionA1 : public NodeFunction
 {
   public:
-    NodeFunctionA1 (const std::string& nm);
+    NodeFunctionA1 (const std::string& nm, size_t pos);
     Node* copy () const;
     size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
     size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const;
@@ -294,7 +298,7 @@ class NodeFunctionA1 : public NodeFunction
     std::function<double(double)> function;
 };
 
-NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
+NodeFunctionA1::NodeFunctionA1 (const std::string& nm, size_t pos) : NodeFunction (nm, 1, pos)
 {
   if (nm == "abs") function = fabs;
   else if (nm == "exp") function = exp;
@@ -313,11 +317,12 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm) : NodeFunction (nm, 1)
   else if (nm == "atanh") function = atanh;
   else if (nm == "sign") function = localSign;
   else if (nm == "heaviside") function = localHeaviside;
+  else function = 0;
 }
 
 Node* NodeFunctionA1::copy () const
 {
-  NodeFunctionA1* cp = new NodeFunctionA1(NodeFunction::name);
+  NodeFunctionA1* cp = new NodeFunctionA1(NodeFunction::name, ipos);
   for(size_t k=0; k<this->args.size(); k++) cp->args[k] = this->args[k]->copy();
   cp->function = function;
   return cp;
@@ -327,7 +332,7 @@ Node* NodeFunctionA1::copy () const
 class NodeFunctionA2 : public NodeFunction
 {
   public:
-    NodeFunctionA2 (const std::string& nm);
+    NodeFunctionA2 (const std::string& nm, size_t pos);
     Node* copy () const;
     size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const ;
     size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const;
@@ -335,14 +340,15 @@ class NodeFunctionA2 : public NodeFunction
     std::function<double(double,double)> function;
 };
 
-NodeFunctionA2::NodeFunctionA2 (const std::string& nm) : NodeFunction (nm, 2)
+NodeFunctionA2::NodeFunctionA2 (const std::string& nm, size_t pos) : NodeFunction (nm, 2, pos)
 {
   if (nm == "pow") function = pow;
+  else function = 0;
 }
 
 Node* NodeFunctionA2::copy () const
 {
-  NodeFunctionA2* cp = new NodeFunctionA2(NodeFunction::name);
+  NodeFunctionA2* cp = new NodeFunctionA2(NodeFunction::name, ipos);
   for(size_t k=0; k<this->args.size(); k++) cp->args[k] = this->args[k]->copy();
   cp->function = function;
   return cp;
@@ -352,7 +358,7 @@ Node* NodeFunctionA2::copy () const
 
 Node* NodeAdd::copy () const
 {
-  NodeAdd* cp = new NodeAdd(args.size());
+  NodeAdd* cp = new NodeAdd(args.size(), ipos);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -363,11 +369,11 @@ Node* NodeAdd::copy () const
 
 void NodeAdd::print (std::ostream& out) const 
 {
-  P_ERROR_X1 (args.size() > 0, "terribly wrong");
+  PE_ERROR_X1 (args.size() > 0, ipos, "terribly wrong");
   out << "(";
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1( args[k] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[k] != nullptr, ipos, "Incerdibly wrong!");
     if (mul[k] < 0.0) out << "-";
     else if (k != 0) out << "+";
     if ((mul[k] != 1.0) && (mul[k] != -1.0)) out << fabs(mul[k]) << "*";
@@ -429,7 +435,7 @@ void NodeAdd::replaceSymbol(const Node& node, Node** parent)
 {
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, ipos, "terribly wrong");
     args[k]->replaceSymbol (node, &args[k]);
   }
 }
@@ -469,11 +475,11 @@ void NodeAdd::sort ()
 
 Node* NodeTimes::copy () const
 {
-  NodeTimes* cp = new NodeTimes(args.size());
+  NodeTimes* cp = new NodeTimes(args.size(), ipos);
   cp->smul = smul;
   for(size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, ipos, "terribly wrong");
     cp->args[k] = args[k] -> copy ();
     cp->divide[k] = divide[k];
   }
@@ -482,7 +488,7 @@ Node* NodeTimes::copy () const
 
 void NodeTimes::print (std::ostream& out) const 
 {
-  P_ERROR_X1 (args.size() > 0, "terribly wrong");
+  PE_ERROR_X1 (args.size() > 0, ipos, "terribly wrong");
   out << "(";
   if (smul != 1.0)
   {
@@ -491,7 +497,7 @@ void NodeTimes::print (std::ostream& out) const
   }
   for(size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+    PE_ERROR_X1 (args[k] != nullptr, ipos, "terribly wrong");
     if (k != 0) { if (divide[k]) out << "/"; else out << "*"; }
     else if (divide[k]) out << "1/";
     args[k]->print (out);
@@ -547,7 +553,7 @@ void NodeTimes::replaceSymbol(const Node& node, Node** parent)
 {
   for (size_t k=0; k<args.size(); k++)
   {
-    P_ERROR_X4 (args[k] != nullptr, "terribly wrong: ", k, " of ", args.size() );
+    PE_ERROR_X4 (args[k] != nullptr, ipos, "terribly wrong: ", k, " of ", args.size() );
     args[k]->replaceSymbol (node, &args[k]);
   }
 }
@@ -594,7 +600,7 @@ void NodeTimes::addArgument (size_t pos, Node* arg, double m, bool div)
 
 Node* NodePower::copy () const
 {
-  NodePower* cp = new NodePower();
+  NodePower* cp = new NodePower (ipos);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -605,8 +611,8 @@ Node* NodePower::copy () const
 void NodePower::print (std::ostream& out) const 
 {
   out << "pow(";
-  P_ERROR_X1( args[0] != nullptr, "Incerdibly wrong!");
-  P_ERROR_X1( args[1] != nullptr, "Incerdibly wrong!");
+  PE_ERROR_X1( args[0] != nullptr, ipos, "Incerdibly wrong!");
+  PE_ERROR_X1( args[1] != nullptr, ipos, "Incerdibly wrong!");
   args[0]->print (out); out << ",";
   args[1]->print (out);
   out << ")";
@@ -668,16 +674,16 @@ Node* NodePower::derivative (const Node* var) const
   // root is t3
   const Node* a = args[0];
   const Node* b = args[1];
-  NodeTimes* t1 = new NodeTimes(2);
-  NodeTimes* t2 = new NodeTimes(3);
-  NodeTimes* t3 = new NodeTimes(2);
-  NodeAdd* s1 = new NodeAdd(2);
-  NodeAdd* s2 = new NodeAdd(2);
-  NodeFunctionA1* fun = new NodeFunctionA1("log");
-  NodePower* pw = new NodePower;
+  NodeTimes* t1 = new NodeTimes(2, ipos);
+  NodeTimes* t2 = new NodeTimes(3, ipos);
+  NodeTimes* t3 = new NodeTimes(2, ipos);
+  NodeAdd* s1 = new NodeAdd(2, ipos);
+  NodeAdd* s2 = new NodeAdd(2, ipos);
+  NodeFunctionA1* fun = new NodeFunctionA1("log", ipos);
+  NodePower* pw = new NodePower (ipos);
   
   s1 -> addArgument (0, b -> copy (), 1.0);
-  s1 -> addArgument (1, new NodeNumber(1.0), -1.0);
+  s1 -> addArgument (1, new NodeNumber(1.0, ipos), -1.0);
   pw -> args[0] = a -> copy();
   pw -> args[1] = s1;
   t1 -> addArgument (0, a -> derivative (var), 1.0, false);
@@ -703,7 +709,7 @@ void NodePower::optimize (Node** parent)
   NodeNumber* a1 = dynamic_cast<NodeNumber*>(args[1]);
   if ((a0 != nullptr)&&(a1 != nullptr))
   {
-    NodeNumber* res = new NodeNumber( pow (a0->getValue(), a1->getValue()) );
+    NodeNumber* res = new NodeNumber( pow (a0->getValue(), a1->getValue()), ipos);
     (*parent)->deleteTree ();
     delete (*parent);
     (*parent) = res;
@@ -721,7 +727,7 @@ void NodePower::optimize (Node** parent)
     }
     if (a1 -> getValue () == 0.0)
     {
-      NodeNumber* res = new NodeNumber (1.0);
+      NodeNumber* res = new NodeNumber (1.0, ipos);
       (*parent)->deleteTree ();
       delete (*parent);
       (*parent) = res;
@@ -741,23 +747,23 @@ size_t NodePower::stackCount(size_t sp, size_t& max_stack)
 class NodePlus : public Node
 {
 public:
-  NodePlus () : Node(TokenType::UnaryPlus), arg(nullptr) {}
+  NodePlus (size_t pos) : Node(TokenType::UnaryPlus, pos), arg(nullptr) {}
   void deleteTree () { arg->deleteTree (); delete arg; }
   Node* copy () const
   {
-    NodePlus* cp = new NodePlus();
+    NodePlus* cp = new NodePlus (ipos);
     cp->arg = arg->copy();
     return cp;
   }
   size_t children () const { return 1; }
   const Node* getChild (size_t n) const { return arg; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const 
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
-    P_ERROR_X1( arg != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( arg != nullptr, ipos, "Incerdibly wrong!");
     out << "(";
     out << "+";
     arg->print (out);
@@ -813,11 +819,11 @@ private:
 class NodeMinus : public Node
 {
 public:
-  NodeMinus () : Node(TokenType::UnaryMinus), arg(nullptr) {}
+  NodeMinus (size_t pos) : Node(TokenType::UnaryMinus, pos), arg(nullptr) {}
   void deleteTree () { arg->deleteTree (); delete arg; }
   Node* copy () const
   {
-    NodeMinus* cp = new NodeMinus();
+    NodeMinus* cp = new NodeMinus (ipos);
     cp->arg = arg->copy();
     return cp;
   }
@@ -834,7 +840,7 @@ public:
   }
   void print (std::ostream& out) const 
   {
-    P_ERROR_X1( arg != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( arg != nullptr, ipos, "Incerdibly wrong!");
     out << "(";
     out << "-";
     arg->print (out);
@@ -870,7 +876,7 @@ public:
   }
   Node* derivative (const Node* var) const 
   { 
-    NodeMinus* root = new NodeMinus();
+    NodeMinus* root = new NodeMinus (ipos);
     root->arg = arg->derivative (var);
     return root;     
   }
@@ -883,7 +889,7 @@ public:
       double val = num->getValue ();
       (*parent)->deleteTree ();
       delete (*parent);
-      (*parent) = new NodeNumber(-val);
+      (*parent) = new NodeNumber (-val, ipos);
       return;      
     }
   }
@@ -900,11 +906,11 @@ private:
 class NodeEquals : public Node
 {
 public:
-  NodeEquals () : Node(TokenType::Equals), args(2) {}
+  NodeEquals (size_t pos) : Node(TokenType::Equals, pos), args(2) {}
   void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
   Node* copy () const
   {
-    NodeEquals* cp = new NodeEquals();
+    NodeEquals* cp = new NodeEquals (ipos);
     for(size_t k=0; k<args.size(); k++)
     {
       cp->args[k] = args[k]->copy();
@@ -914,13 +920,13 @@ public:
   size_t children () const { return args.size(); }
   const Node* getChild (size_t n) const { return args[n]; }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
-    P_ERROR_X1( args[0] != nullptr, "Incerdibly wrong!");
-    P_ERROR_X1( args[1] != nullptr, "Incerdibly wrong!");
+    PE_ERROR_X1( args[0] != nullptr, ipos, "Incerdibly wrong!");
+    PE_ERROR_X1( args[1] != nullptr, ipos, "Incerdibly wrong!");
     args[0]->print (out); out << "=";
     args[1]->print (out);
   }
@@ -936,7 +942,7 @@ public:
     return false;
   }
   bool operator < (const Node& node) const 
-  { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent)
   {
     for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
@@ -945,7 +951,7 @@ public:
   {
     for (size_t k=0; k<args.size(); k++) 
     {
-      P_ERROR_X1 (args[k] != nullptr, "terribly wrong");
+      PE_ERROR_X1 (args[k] != nullptr, ipos, "terribly wrong");
       args[k]->replaceSymbol (node, &args[k]);
     }
   }
@@ -953,11 +959,11 @@ public:
   {
     for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var) const { return new NodeNumber(0.0); }
+  Node* derivative (const Node* var) const { return new NodeNumber (0.0, ipos); }
   void optimize (Node** parent) { for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k]); }  
   size_t stackCount(size_t sp, size_t& max_stack) 
   {
-    P_MESSAGE1("NOT IMPLEMENTED!\n"); 
+    PE_MESSAGE1(ipos, "NOT IMPLEMENTED!\n"); 
     return sp;
   }
   // specific
@@ -969,11 +975,11 @@ private:
 class NodeSemicolon : public Node
 {
 public:
-  NodeSemicolon () : Node(TokenType::Semicolon) {}
+  NodeSemicolon (size_t pos) : Node(TokenType::Semicolon, pos) {}
   void deleteTree () { for(auto k=args.begin(); k!=args.end(); k++) { (*k)->deleteTree (); delete *k; } }
   Node* copy () const
   {
-    NodeSemicolon* cp = new NodeSemicolon();
+    NodeSemicolon* cp = new NodeSemicolon (ipos);
     for(auto k=args.begin(); k!=args.end(); k++)
     {
       cp->args.push_back((*k)->copy());
@@ -992,20 +998,20 @@ public:
     return nullptr;
   }
   size_t evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   size_t evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
-  { P_MESSAGE1("NOT IMPLEMENTED\n"); return 0; }
+  { PE_MESSAGE1(ipos, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const 
   {
     for(auto k=args.begin(); k!=args.end(); k++)
     {
-      P_ERROR_X1( (*k) != nullptr, "Incerdibly wrong!");
+      PE_ERROR_X1( (*k) != nullptr, ipos, "Incerdibly wrong!");
       (*k)->print (out);
       out << ";\n";
     }
   }
-  bool operator != (const Node& node) const { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
-  bool operator < (const Node& node) const { P_MESSAGE1("NOT IMPLEMENTED!\n"); return true; }
+  bool operator != (const Node& node) const { PE_MESSAGE1(ipos, "NOT IMPLEMENTED!\n"); return true; }
+  bool operator < (const Node& node) const { PE_MESSAGE1(ipos, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent)
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (sym, node, &(*k));
@@ -1018,12 +1024,12 @@ public:
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var) const { return new NodeNumber(0.0); }
+  Node* derivative (const Node* var) const { return new NodeNumber (0.0, ipos); }
   // specific
   void optimize (Node** parent);
   size_t stackCount(size_t sp, size_t& max_stack) 
   {
-    P_MESSAGE1("NOT IMPLEMENTED!\n"); 
+    PE_MESSAGE1(ipos, "NOT IMPLEMENTED!\n"); 
     return sp;
   }
   void addArgumentBack (Node* arg) { args.push_back (arg); }
@@ -1040,7 +1046,7 @@ void NodeFunction::specialize (NodeFunction** parent)
 {
   if (args.size() == 1)
   {
-    NodeFunctionA1* fun = new NodeFunctionA1(name);
+    NodeFunctionA1* fun = new NodeFunctionA1 (name, ipos);
     fun -> addArgument (0, args[0]);
     delete (*parent);
     (*parent) = fun;
@@ -1048,7 +1054,7 @@ void NodeFunction::specialize (NodeFunction** parent)
   }  
   if (args.size() == 2)
   {
-    NodeFunctionA2* fun = new NodeFunctionA2(name);
+    NodeFunctionA2* fun = new NodeFunctionA2 (name, ipos);
     fun -> addArgument (0, args[0]);
     fun -> addArgument (1, args[1]);
     delete (*parent);
@@ -1062,7 +1068,7 @@ void NodeFunction::optimize (Node** parent)
   // replace power with NodePower
   if (name == "pow")
   {
-    NodePower* pw = new NodePower;
+    NodePower* pw = new NodePower (ipos);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     delete (*parent);
@@ -1082,7 +1088,7 @@ void NodeFunction::optimize (Node** parent)
     std::vector<double> var;
     std::vector<double> par;
     this->evaluate (stack, 0, var, par);
-    NodeNumber* num = new NodeNumber (stack[0]);
+    NodeNumber* num = new NodeNumber (stack[0], ipos);
     delete (*parent);
     (*parent) = num;
     return;
@@ -1151,12 +1157,12 @@ void NodeAdd::optimize (Node** parent)
   mul = newmul;
   if (sum != 0.0)
   {
-    args.push_back (new NodeNumber(sum));
+    args.push_back (new NodeNumber (sum, ipos));
     mul.push_back (1.0);
   }
   if (args.size() == 0)
   {
-    Node* tmp = new NodeNumber (0.0);
+    Node* tmp = new NodeNumber (0.0, ipos);
     delete *parent;
     *parent = tmp;
     return;
@@ -1166,7 +1172,7 @@ void NodeAdd::optimize (Node** parent)
     NodeNumber* num = dynamic_cast<NodeNumber*>(args[0]);
     if (num)
     {
-      Node* tmp = new NodeNumber (mul[0] * (num ->getValue()));
+      Node* tmp = new NodeNumber (mul[0] * (num ->getValue()), ipos);
       delete num;
       delete *parent;
       *parent = tmp;
@@ -1182,7 +1188,7 @@ void NodeAdd::optimize (Node** parent)
       } else
       {
         // convert into times
-        NodeTimes* tmp = new NodeTimes (1);
+        NodeTimes* tmp = new NodeTimes (1, ipos);
         tmp -> addArgument (0, args[0], mul[0], false); 
         delete *parent;
         *parent = tmp;
@@ -1243,7 +1249,7 @@ void NodeTimes::optimize (Node** parent)
   {
     (*parent)->deleteTree ();
     delete *parent;
-    *parent = new NodeNumber(0.0);
+    *parent = new NodeNumber (0.0, ipos);
     return;
   }
   // single argument
@@ -1259,7 +1265,7 @@ void NodeTimes::optimize (Node** parent)
   {
     const double smul_copy = smul;
     delete *parent;
-    *parent = new NodeNumber(smul_copy);
+    *parent = new NodeNumber (smul_copy, ipos);
     return;    
   }
 }
@@ -1289,7 +1295,7 @@ void NodeSemicolon::optimize (Node** parent)
 
 Node* NodeNumber::derivative (const Node* var) const 
 {
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, ipos);
 }
 
 Node* NodeSymbol::derivative (const Node* var) const
@@ -1300,11 +1306,11 @@ Node* NodeSymbol::derivative (const Node* var) const
     {
       if (node->name == name)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, ipos);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, ipos);
 }
 
 Node* NodeVar::derivative (const Node* var) const
@@ -1315,11 +1321,11 @@ Node* NodeVar::derivative (const Node* var) const
     {
       if (node->idx == idx)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, ipos);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, ipos);
 }
 
 Node* NodePar::derivative (const Node* var) const
@@ -1330,17 +1336,17 @@ Node* NodePar::derivative (const Node* var) const
     {
       if (node->idx == idx)
       {
-        return new NodeNumber(1.0);
+        return new NodeNumber (1.0, ipos);
       }
     }
   }
-  return new NodeNumber(0.0);
+  return new NodeNumber (0.0, ipos);
 }
 
 Node* NodeAdd::derivative (const Node* var) const
 {
-  NodeAdd* cp = new NodeAdd(args.size());
-  for(size_t k=0; k<args.size(); k++)
+  NodeAdd* cp = new NodeAdd (args.size(), ipos);
+  for (size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->derivative (var);
     cp->mul[k] = mul[k];
@@ -1351,10 +1357,10 @@ Node* NodeAdd::derivative (const Node* var) const
 Node* NodeTimes::derivative (const Node* var) const  
 {
   // f = (f1 f2 f2 ..) / (g1 g2 g3 ..)
-  NodeAdd* root = new NodeAdd(args.size());
-  for(size_t k=0; k<args.size(); k++)
+  NodeAdd* root = new NodeAdd (args.size(), ipos);
+  for (size_t k=0; k<args.size(); k++)
   {
-    NodeTimes* cp = new NodeTimes(0);
+    NodeTimes* cp = new NodeTimes (0, ipos);
     cp->smul = smul;
     if (divide[k])
     {
@@ -1390,18 +1396,18 @@ Node* NodeTimes::derivative (const Node* var) const
 
 Node* NodeFunction::derivative (const Node* var) const
 {
-  NodeTimes* root = new NodeTimes(2);
+  NodeTimes* root = new NodeTimes (2, ipos);
   if (name == "abs")
   {
     // -> sign
-    NodeFunctionA1* fun = new NodeFunctionA1("sign");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sign", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
   }
   if (name == "exp")
   {
     // -> exp
-    NodeFunctionA1* fun = new NodeFunctionA1("exp");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("exp", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);    
   }
@@ -1413,126 +1419,126 @@ Node* NodeFunction::derivative (const Node* var) const
   if (name == "sin")
   {
     // -> cos
-    NodeFunctionA1* fun = new NodeFunctionA1("cos");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cos", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);    
   }
   if (name == "cos")
   {
     // -> -sin
-    NodeFunctionA1* fun = new NodeFunctionA1("sin");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sin", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, -1.0, false);    
   }
   if (name == "tan")
   {
     // -> cos^(-2)
-    NodePower* pow = new NodePower;
-    NodeFunctionA1* fun = new NodeFunctionA1("cos");
+    NodePower* pow = new NodePower (ipos);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cos", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     pow -> addArgument (0, fun);
-    pow -> addArgument (1, new NodeNumber(2.0));
+    pow -> addArgument (1, new NodeNumber (2.0, ipos));
     root -> addArgument (0, pow, 1.0, true);    
   }
   if (name == "asin")
   {
     // -> 1/{(1-x^2)^(1/2)}
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber(2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (0, new NodeNumber (1.0, ipos), 1.0);
     add -> addArgument (1, pow_square, -1.0);   
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (ipos);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, ipos));
     root -> addArgument (0, pow_sqrt, 1.0, true);
   }
   if (name == "acos")
   {
     // -> -1/{(1-x^2)^(1/2)}
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (0, new NodeNumber (1.0, ipos), 1.0);
     add -> addArgument (1, pow_square, -1.0);   
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (ipos);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, ipos));
     root -> addArgument (0, pow_sqrt, -1.0, true);
   }
   if (name == "atan")
   {
     // -> 1/(1-x^2)
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (0, new NodeNumber (1.0, ipos), 1.0);
     add -> addArgument (1, pow_square, -1.0);   
     root -> addArgument (0, add, 1.0, true);
   }
   if (name == "sinh")
   {
     // -> cosh
-    NodeFunctionA1* fun = new NodeFunctionA1("cosh");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);    
   }
   if (name == "cosh")
   {
     // -> sinh
-    NodeFunctionA1* fun = new NodeFunctionA1("sinh");
+    NodeFunctionA1* fun = new NodeFunctionA1 ("sinh", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);    
   }
   if (name == "tanh")
   {
     // -> cosh^(-2)
-    NodePower* pow = new NodePower;
-    NodeFunctionA1* fun = new NodeFunctionA1("cosh");
+    NodePower* pow = new NodePower (ipos);
+    NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", ipos);
     fun -> addArgument (0, args[0] -> copy ());
     pow -> addArgument (0, fun);
-    pow -> addArgument (1, new NodeNumber(2.0));
+    pow -> addArgument (1, new NodeNumber (2.0, ipos));
     root -> addArgument (0, pow, 1.0, true);    
   }
   if (name == "asinh")
   {
     // -> 1/(1+x^2)^(1/2)
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (0, new NodeNumber (1.0, ipos), 1.0);
     add -> addArgument (1, pow_square, 1.0);   
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (ipos);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, ipos));
     root -> addArgument (0, pow_sqrt, 1.0, true);
   }
   if (name == "acosh")
   {
     // -> 1/(x^2-1)^(1/2)
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (1, new NodeNumber(1.0), -1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (1, new NodeNumber (1.0, ipos), -1.0);
     add -> addArgument (0, pow_square, 1.0);   
-    NodePower* pow_sqrt = new NodePower;
+    NodePower* pow_sqrt = new NodePower (ipos);
     pow_sqrt -> addArgument (0, add);
-    pow_sqrt -> addArgument (1, new NodeNumber(0.5));
+    pow_sqrt -> addArgument (1, new NodeNumber (0.5, ipos));
     root -> addArgument (0, pow_sqrt, 1.0, true);
   }
   if (name == "atanh")
   {
     // -> 1/(1-x^2)
-    NodePower* pow_square = new NodePower;
+    NodePower* pow_square = new NodePower (ipos);
     pow_square -> addArgument (0, args[0] -> copy ());
-    pow_square -> addArgument (1, new NodeNumber(2.0));
-    NodeAdd* add = new NodeAdd(2);
-    add -> addArgument (0, new NodeNumber(1.0), 1.0);
+    pow_square -> addArgument (1, new NodeNumber (2.0, ipos));
+    NodeAdd* add = new NodeAdd (2, ipos);
+    add -> addArgument (0, new NodeNumber (1.0, ipos), 1.0);
     add -> addArgument (1, pow_square, -1.0);   
     root -> addArgument (0, add, 1.0, true);
   }
@@ -1540,7 +1546,7 @@ Node* NodeFunction::derivative (const Node* var) const
   {
     // promote to NodePower
     delete root;
-    NodePower* pw = new NodePower;
+    NodePower* pw = new NodePower (ipos);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     Node* retval = pw -> derivative (var);
@@ -1550,12 +1556,12 @@ Node* NodeFunction::derivative (const Node* var) const
   if (name == "sign")
   {
     delete root;
-    return new NodeNumber(0.0);
+    return new NodeNumber (0.0, ipos);
   }
   if (name == "heaviside")
   {
     delete root;
-    return new NodeNumber(0.0);
+    return new NodeNumber (0.0, ipos);
   }
   root -> addArgument (1, args[0] -> derivative (var), 1.0, false);
   return root;
@@ -1571,7 +1577,7 @@ size_t NodeNumber::evaluate (std::vector<double>& stack, size_t sp, const std::v
 
 size_t NodeSymbol::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
 {
-  P_MESSAGE2("Undefined symbol : ", name);
+  PE_MESSAGE2(ipos, "Undefined symbol : ", name);
   stack[sp] = 0;
   return sp;
 }
@@ -1590,17 +1596,18 @@ size_t NodePar::evaluate (std::vector<double>& stack, size_t sp, const std::vect
 
 size_t NodeFunction::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
 {
-  P_MESSAGE3("NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
+  PE_MESSAGE3(ipos, "NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k, var, par); }
   if (spi != sp + args.size() - 1) 
-    P_MESSAGE7("NodeFunction::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
+    PE_MESSAGE7(ipos, "NodeFunction::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   stack[sp] = 1.0;
   return sp;
 }
 
 size_t NodeFunctionA1::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
 {
+  PE_ERROR_X1(function != 0, ipos, "Unknown function");
   size_t sp1 = args[0] -> evaluate(stack, sp, var, par);
   stack[sp1] = function(stack[sp1]);
   return sp1;
@@ -1608,6 +1615,7 @@ size_t NodeFunctionA1::evaluate (std::vector<double>& stack, size_t sp, const st
 
 size_t NodeFunctionA2::evaluate (std::vector<double>& stack, size_t sp, const std::vector<double>& var, const std::vector<double>& par) const
 {
+  PE_ERROR_X1(function != 0, ipos, "Unknown function");
   size_t sp1 = args[0] -> evaluate(stack, sp, var, par);
   size_t sp2 = args[1] -> evaluate(stack, sp+1, var, par);
   stack[sp1] = function(stack[sp1], stack[sp2]);
@@ -1618,7 +1626,7 @@ size_t NodeAdd::evaluate (std::vector<double>& stack, size_t sp, const std::vect
 {
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(ipos, "NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   stack[sp] = 0;
   for (size_t k=0; k<args.size(); k++)
   {
@@ -1631,7 +1639,7 @@ size_t NodeTimes::evaluate (std::vector<double>& stack, size_t sp, const std::ve
 {
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(ipos, "NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   stack[sp] = smul;
   for (size_t k=0; k<args.size(); k++)
   {
@@ -1645,7 +1653,7 @@ size_t NodePower::evaluate (std::vector<double>& stack, size_t sp, const std::ve
 {
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k, var, par); }
-  if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
+  if (spi != sp + args.size() - 1) PE_MESSAGE7(ipos, "NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   stack[sp] = pow (stack[sp], stack[sp+1]);
   return sp;
 }
@@ -1666,7 +1674,7 @@ size_t NodeNumber::evaluate (std::vector<Value>& stack, size_t sp, const std::ve
 
 size_t NodeSymbol::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
 {
-  P_MESSAGE2("Undefined symbol : ", name);
+  PE_MESSAGE2(ipos, "Undefined symbol : ", name);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
   for (size_t k = 0; k < len; k++)
@@ -1700,12 +1708,13 @@ size_t NodePar::evaluate (std::vector<Value>& stack, size_t sp, const std::vecto
 
 size_t NodeFunction::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
 {
-  P_MESSAGE3("NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
+  PE_MESSAGE3(ipos, "NodeFunction::evaluate : it is a base class, cannot be called ", name, "\n");
   return sp;
 }
 
 size_t NodeFunctionA1::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
 {
+  PE_ERROR_X1(function != 0, ipos, "Unknown function");
   args[0] -> evaluate(stack, sp, var, par, len);
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
@@ -1718,6 +1727,7 @@ size_t NodeFunctionA1::evaluate (std::vector<Value>& stack, size_t sp, const std
 
 size_t NodeFunctionA2::evaluate (std::vector<Value>& stack, size_t sp, const std::vector<Value>& var, const std::vector<double>& par, size_t len) const
 {
+  PE_ERROR_X1(function != 0, ipos, "Unknown function");
   args[0] -> evaluate(stack, sp, var, par, len);
   args[1] -> evaluate(stack, sp+1, var, par, len);
   double* data1 = stack[sp].data;
@@ -1735,7 +1745,7 @@ size_t NodeAdd::evaluate (std::vector<Value>& stack, size_t sp, const std::vecto
 {
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par, len); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(ipos, "NodeAdd::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = 0;
@@ -1754,7 +1764,7 @@ size_t NodeTimes::evaluate (std::vector<Value>& stack, size_t sp, const std::vec
 {
   size_t spi = sp;
   for (size_t k=0; k<args.size(); k++) { spi = args[k] -> evaluate(stack, sp+k+1, var, par, len); }
-  if (spi != sp + args.size()) P_MESSAGE7("NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
+  if (spi != sp + args.size()) PE_MESSAGE7(ipos, "NodeTimes::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size(), "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = smul;
@@ -1775,7 +1785,7 @@ size_t NodePower::evaluate (std::vector<Value>& stack, size_t sp, const std::vec
   size_t spi = sp;
   spi = args[0] -> evaluate(stack, sp, var, par, len);
   spi = args[1] -> evaluate(stack, sp+1, var, par, len);
-  if (spi != sp + args.size() - 1) P_MESSAGE7("NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
+  if (spi != sp + args.size() - 1) PE_MESSAGE7(ipos, "NodePower::evaluate : Stack error ", spi, " ? ", sp, " + ", args.size()-1, "\n");
   for (size_t p = 0; p < len; p++)
   {
     stack[sp].data[p*stack[sp].skip] = pow (stack[sp].data[p*stack[sp].skip], stack[sp+1].data[p*stack[sp+1].skip]);
@@ -1788,7 +1798,44 @@ size_t NodePower::evaluate (std::vector<Value>& stack, size_t sp, const std::vec
 // There are a number of limits to tokens
 // alphanumeric is an identifier
 // operators inbetween are the delimiters and they are tokens separately
-// 
+//
+
+class ExpressionParser
+{
+public:
+  ExpressionParser (const std::string& str) : expression(str)
+  {
+    token_table[TokenType::LeftParen] = { 1, true, 0 };
+    token_table[TokenType::RightParen] = { 1, true, 0 };
+    token_table[TokenType::Function] = { 2, true, 0 };
+    token_table[TokenType::UnaryPlus] = { 3, true, 1 };
+    token_table[TokenType::UnaryMinus] = { 3, true, 1 };
+    token_table[TokenType::Power] = { 4, false, 2 };
+    token_table[TokenType::Times] = { 5, true, 2 };
+    token_table[TokenType::Divide] = { 5, true, 2 };
+    token_table[TokenType::Plus] = { 7, true, 2 };
+    token_table[TokenType::Minus] = { 7, true, 2 };
+    token_table[TokenType::Comma] = { 9, true, 0 };
+    token_table[TokenType::Equals] = { 10, false, 2 };
+    token_table[TokenType::Semicolon] = { 11, true, 2 };
+  }
+  ~ExpressionParser () {}
+  Node* parse ()
+  {
+    std::vector<Token> token_stream;
+    tokenize (token_stream, token_table, expression);
+    return toPostfix (token_stream, token_table);
+  }
+private:
+  // member function
+  void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPrecedence>& token_table, const std::string& expression);
+  Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table);
+  void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs);
+  // variables
+  std::map<TokenType, TokenPrecedence> token_table;
+  // only to be used in the parser
+  const std::string& expression;
+};
 
 enum class CharType : int { Op, Identifier, Space, Invalid };
 
@@ -1800,11 +1847,13 @@ static inline CharType findCharType (char c)
   else return CharType::Invalid;
 }
 
-void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPrecedence>& token_table, const std::string& expression)
+void ExpressionParser::tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPrecedence>& token_table, const std::string& expression)
 {
   const char *str = expression.c_str ();
   const size_t len = expression.size ();
+  std::string msg;
   
+  size_t line = 1;
   size_t k = 0;
   while (k < len)
   {
@@ -1814,6 +1863,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
       while (str[k] != '\n') k++;
       continue;
     }
+    if (str[k] == '\n') line++;
     // ignore space
     if (findCharType (str[k]) == CharType::Space)
     {
@@ -1827,16 +1877,16 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         strtod (&str[k], &endptr);
         size_t p = (endptr - &str[k])/sizeof(char);
         std::string tn (&str[k], p);
+        stream.push_back (Token (TokenType::Symbol, tn, k, line) );
         k = k + p;
-        stream.push_back (Token (TokenType::Symbol, tn) );
         continue;
       } else
       {
         size_t p = 0;
         while (findCharType (str[k+p]) == CharType::Identifier) p++;
         std::string tn (&str[k], p);
+        stream.push_back (Token (TokenType::Symbol, tn, k, line) );
         k = k + p;
-        stream.push_back (Token (TokenType::Symbol, tn) );
         continue;
       }
     } else if (findCharType (str[k]) == CharType::Op)
@@ -1846,42 +1896,42 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
       switch (tn[0])
       {
         case '+':
-          stream.push_back (Token (TokenType::Plus, tn) );
+          stream.push_back (Token (TokenType::Plus, tn, k, line) );
           break;
         case '-':
-          stream.push_back (Token (TokenType::Minus, tn) );
+          stream.push_back (Token (TokenType::Minus, tn, k, line) );
           break;
         case '*':
-          stream.push_back (Token (TokenType::Times, tn) );
+          stream.push_back (Token (TokenType::Times, tn, k, line) );
           break;
         case '/':
-          stream.push_back (Token (TokenType::Divide, tn) );
+          stream.push_back (Token (TokenType::Divide, tn, k, line) );
           break;
         case '^':
-          stream.push_back (Token (TokenType::Power, tn) );
+          stream.push_back (Token (TokenType::Power, tn, k, line) );
           break;
         case '(':
-          stream.push_back (Token (TokenType::LeftParen, tn) );
+          stream.push_back (Token (TokenType::LeftParen, tn, k, line) );
           break;
         case ')':
-          stream.push_back (Token (TokenType::RightParen, tn) );
+          stream.push_back (Token (TokenType::RightParen, tn, k, line) );
           break;
         case ',':
-          stream.push_back (Token (TokenType::Comma, tn) );
+          stream.push_back (Token (TokenType::Comma, tn, k, line) );
           break;
         case '=':
-          stream.push_back (Token (TokenType::Equals, tn) );
+          stream.push_back (Token (TokenType::Equals, tn, k, line) );
           break;
         case ';':
-          stream.push_back (Token (TokenType::Semicolon, tn) );
+          stream.push_back (Token (TokenType::Semicolon, tn, k, line) );
           break;
         default:
-          P_MESSAGE3("unknown operator ", tn, "\n");
+          PE_MESSAGE2(k, "unknown operator ", tn);
       }
       k++;
     } else
     {
-      P_MESSAGE3("Invalid character ", str[k], "\n");
+      PE_MESSAGE2(k, "Invalid character ", std::string(1,str[k]));
       k++;
     }
   }
@@ -1907,10 +1957,10 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
   }
   // check if the last token is a semicolon
   if (stream.back().type == TokenType::Semicolon) stream.pop_back();
-  else P_MESSAGE1("Missing semicolon\n");
+  else PE_MESSAGE1(k, "Missing semicolon\n");
 }
 
-void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
+void ExpressionParser::opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
 {
   if (ts.size() >= nargs)
   {
@@ -1918,7 +1968,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
     {
       case TokenType::LeftParen:
       case TokenType::RightParen:
-        P_MESSAGE3("Unexpected Parenthesis ", tk.name, ".");
+        PE_MESSAGE2(tk.ipos, "Unexpected Parenthesis ", tk.name);
         break;
       case TokenType::Symbol:
       {
@@ -1926,11 +1976,11 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
         double res = strtod (tk.name.c_str(), &endptr);
         if (endptr != tk.name.c_str())
         {
-          NodeNumber* node = new NodeNumber (res);
-          ts.push_back (node);          
+          NodeNumber* node = new NodeNumber (res, tk.ipos);
+          ts.push_back (node); 
         } else
         {
-          NodeSymbol* node = new NodeSymbol (tk.name);
+          NodeSymbol* node = new NodeSymbol (tk.name, tk.ipos);
           ts.push_back (node);
         }
       }
@@ -1939,14 +1989,14 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       {
         if (nargs == 1)
         {
-          NodeFunctionA1* node = new NodeFunctionA1 (tk.name);
+          NodeFunctionA1* node = new NodeFunctionA1 (tk.name, tk.ipos);
           // put the argument from the stack
           node->addArgument (0, ts.back());
           ts.pop_back ();
           ts.push_back (node);
         } else if (nargs == 2)
         {
-          NodeFunctionA2* node = new NodeFunctionA2 (tk.name);
+          NodeFunctionA2* node = new NodeFunctionA2 (tk.name, tk.ipos);
           // put the argument from the stack
           node->addArgument (1, ts.back());
           ts.pop_back ();
@@ -1955,7 +2005,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.push_back (node);
         } else
         {
-          NodeFunction* node = new NodeFunction (tk.name, nargs);
+          NodeFunction* node = new NodeFunction (tk.name, nargs, tk.ipos);
           // put the argument from the stack
           for (size_t k=0; k<nargs; k++)
           {
@@ -1973,7 +2023,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::UnaryMinus:
       {
-        NodeMinus* node = new NodeMinus ();
+        NodeMinus* node = new NodeMinus (tk.ipos);
         node->addArgument (0, ts.back());
         ts.pop_back ();
         ts.push_back (node);
@@ -1981,7 +2031,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Plus:
       {
-        NodeAdd* node = new NodeAdd (nargs);
+        NodeAdd* node = new NodeAdd (nargs, tk.ipos);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -1994,7 +2044,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Minus:
       {
-        NodeAdd* node = new NodeAdd (nargs);
+        NodeAdd* node = new NodeAdd (nargs, tk.ipos);
         // put the argument from the stack
         if (nargs == 2)
         {
@@ -2002,14 +2052,14 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.pop_back ();
           node->addArgument (0, ts.back(), 1.0);
           ts.pop_back ();
-        } else P_MESSAGE1("Wrong no. args\n");
+        } else PE_MESSAGE1(tk.ipos, "Wrong no. args");
         node->sort ();
         ts.push_back (node);
       }
       break;
       case TokenType::Times:
       {
-        NodeTimes* node = new NodeTimes (nargs);
+        NodeTimes* node = new NodeTimes (nargs, tk.ipos);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2022,7 +2072,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Divide:
       {
-        NodeTimes* node = new NodeTimes (nargs);
+        NodeTimes* node = new NodeTimes (nargs, tk.ipos);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2037,7 +2087,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       case TokenType::Power:
       {
         // nargs == 2 ??
-        NodePower* node = new NodePower ();
+        NodePower* node = new NodePower (tk.ipos);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2048,7 +2098,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Equals:
       {
-        NodeEquals* node = new NodeEquals ();
+        NodeEquals* node = new NodeEquals (tk.ipos);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2059,7 +2109,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Semicolon:
       {
-        NodeSemicolon* node = new NodeSemicolon ();
+        NodeSemicolon* node = new NodeSemicolon (tk.ipos);
         // put the argument from the stack
         Node* nd2 = ts.back();
         ts.pop_back ();
@@ -2088,13 +2138,16 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       }
       break;
       default:
-        P_MESSAGE1("Unexpected operator\n");
+        PE_MESSAGE1(tk.ipos, "Unexpected operator");
         break;
     }
-  } else P_MESSAGE1("Too short stack\n");
+  } else
+  {
+    PE_MESSAGE1(ts.back()->ipos, "Too short stack");
+  }
 }
 
-Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table)
+Node* ExpressionParser::toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table)
 {
   std::list<Token> ops;
   std::list<size_t> funargs;
@@ -2119,18 +2172,18 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       {
 //        for (auto it : funargs) std::cout << "FA=" << it << ",";
 //        std::cout << "\n";
-        P_MESSAGE1("Empty argument\n");
+        PE_MESSAGE1(token_stream[k].ipos, "Empty argument");
       }
       if (!funargs.empty()) funargs.back() += 1;
-      else P_MESSAGE1("Not a function\n");
+      else PE_MESSAGE1(token_stream[k].ipos, "Not a function");
       while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
       {
         // bind items on the stack ...
-        P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (1).");
+        PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().ipos, "Premature Function (1).");
         opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
         ops.pop_back();
       }
-      if (ops.empty()) P_MESSAGE1("Misplaced comma or missing \')\'\n"); 
+      if (ops.empty()) PE_MESSAGE1(token_stream[k].ipos, "Misplaced comma or missing \')\'"); 
     }
     else if (token_stream[k].isOp())
     {
@@ -2143,7 +2196,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
               (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
         {
           // bind items on the stack ...
-          P_ERROR_X1(ops.back().type != TokenType::Function, "Premature Function (2).");
+          PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().ipos, "Premature Function (2).");
           opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
           ops.pop_back();
         } else break;
@@ -2183,13 +2236,13 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       if (ops.empty())
       {
         // there was noting on the stack
-	std::ostringstream msg;
-	msg << "Mismatched prenthesis (2)\nBEGIN@ ";
-        for (size_t p=0; p<k+1; p++) msg << token_stream[p].name;
-        msg << " @ ";
-        for (size_t p=k+1; p<token_stream.size(); p++) msg << token_stream[p].name;
-        msg << " @END\n ";
-        P_MESSAGE1(msg.str().c_str());
+	      std::ostringstream msg2;
+        msg2 << "Mismatched prenthesis (2)\nBEGIN@ ";
+        for (size_t p=0; p<k+1; p++) msg2 << token_stream[p].name;
+        msg2 << " @ ";
+        for (size_t p=k+1; p<token_stream.size(); p++) msg2 << token_stream[p].name;
+        msg2 << " @END\n ";
+        PE_MESSAGE1(token_stream[k].ipos, msg2.str().c_str());
       }
       if (!ops.empty()) if (ops.back().type == TokenType::Function)
       {
@@ -2199,14 +2252,14 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       }
     } else
     {
-      P_MESSAGE3("Not accounted for token: ", ops.back().name, "\n");
+      PE_MESSAGE3(ops.back().ipos, "Not accounted for token: ", ops.back().name, token_table.at(ops.back().type).nargs);
     }
     k++;
   }
   // no more tokens
   while (!ops.empty())
   {
-    if (ops.back().type == TokenType::LeftParen) P_MESSAGE1("Mismatched prenthesis (3).");
+    if (ops.back().type == TokenType::LeftParen) PE_MESSAGE2(ops.back().ipos, "Mismatched prenthesis (3).", token_table.at(ops.back().type).nargs);
     else
     {
       // bind items on the stack ...
@@ -2234,7 +2287,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
 }
 
 // needs to handle period(), time(), PAR_PERIOD
-void splitExpression (std::string& sysName, 
+void Expression::splitExpression (std::string& sysName, 
   std::vector<NodeSymbol*>& var_name,
   std::vector<Node*>& var_dot,
   std::vector<Node*>& var_init,
@@ -2276,7 +2329,7 @@ void splitExpression (std::string& sysName,
                 var_init.push_back (nullptr);
                 var_mass.push_back (nullptr);
               }
-            } else P_MESSAGE1("Dot: wrong number of arguments\n");
+            } else PE_MESSAGE1(fun->ipos, "Dot: wrong number of arguments\n");
           } else if (fun->getName() == "init")
           {
             // starting solution
@@ -2297,9 +2350,9 @@ void splitExpression (std::string& sysName,
                     break;
                   }
                 }
-                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-              } else P_MESSAGE1("Init: state variable is not a symbol.");
-            } else P_MESSAGE1("Init: wrong number of arguments\n");
+                PE_ERROR_X3(found == true, sym->ipos, "State variable '", sym->getName(), "' is not defined.");
+              } else PE_MESSAGE1(init->ipos, "Init: state variable is not a symbol.");
+            } else PE_MESSAGE1(fun->ipos, "Init: wrong number of arguments\n");
           } else if (fun->getName() == "mass")
           {
             // starting solution
@@ -2320,14 +2373,14 @@ void splitExpression (std::string& sysName,
                     break;
                   }
                 }
-                P_ERROR_X3(found == true, "State variable '", sym->getName(), "' is not defined.");
-              } else P_MESSAGE1("Mass: state variable is not a symbol.");
-            } else P_MESSAGE1("Mass: wrong number of arguments\n");
+                PE_ERROR_X3(found == true, sym->ipos, "State variable '", sym->getName(), "' is not defined.");
+              } else PE_MESSAGE1(init->ipos, "Mass: state variable is not a symbol.");
+            } else PE_MESSAGE1(fun->ipos, "Mass: wrong number of arguments\n");
           } else if (fun->getName() == "period")
           {
             if (par_name.size() > 0) P_ERROR_X1(par_name[0] == nullptr, "Period is already defined.");
-            P_ERROR_X1(fun->children() == 1, "Dot: wrong number of arguments");
-            P_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, "Not a symbol");
+            PE_ERROR_X1(fun->children() == 1, fun->ipos, "Dot: wrong number of arguments");
+            PE_ERROR_X1(fun->getChild(0)->type == TokenType::Symbol, fun->getChild(0)->ipos, "Not a symbol");
             par_name[0] = static_cast<NodeSymbol*>(fun->getChild(0)->copy());
             par_value[0] = right->copy();
           } else if (fun->getName() == "par")
@@ -2340,17 +2393,17 @@ void splitExpression (std::string& sysName,
               {
                 par_name.push_back (static_cast<NodeSymbol*>(par->copy()));
                 par_value.push_back (right->copy());
-              }
-            } else P_MESSAGE1("Par: wrong number of arguments\n");
+              } else PE_MESSAGE1(par->ipos, "Not a symbol");
+            } else PE_MESSAGE1(fun->ipos, "Par: wrong number of arguments\n");
           } else if (fun->getName() == "time")
           {
-            P_ERROR_X1(fun->children() == 0, "Too many arguments");
-            P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+            PE_ERROR_X1(fun->children() == 0, fun->ipos, "Too many arguments");
+            PE_ERROR_X1(right->type == TokenType::Symbol, right->ipos, "Not a symbol");
             time.push_back (static_cast<NodeSymbol*>(right->copy()));
           } else if (fun->getName() == "vfname")
           {
-            P_ERROR_X1(fun->children() == 0, "Too many arguments");
-            P_ERROR_X1(right->type == TokenType::Symbol, "Not a symbol");
+            PE_ERROR_X1(fun->children() == 0, fun->ipos, "Too many arguments");
+            PE_ERROR_X1(right->type == TokenType::Symbol, right->ipos, "Not a symbol");
             sysName = static_cast<const NodeSymbol*>(right)->getName ();
           } else
           {
@@ -2364,12 +2417,12 @@ void splitExpression (std::string& sysName,
         {
           left->print (std::cout); std::cout << " == "; right->print (std::cout); std::cout << "\n";
           std::cout.flush();
-          P_MESSAGE1("Not a definition\n");
+          PE_MESSAGE1(left->ipos, "Not a definition\n");
         }
       } else
       {
         it->print (std::cout); std::cout << "\n";
-        P_MESSAGE1("Not a definition\n");
+        PE_MESSAGE1(it->ipos, "Not a definition\n");
       }
     }
     for (auto it : lst) { it->deleteTree (); delete it; }
@@ -2377,61 +2430,32 @@ void splitExpression (std::string& sysName,
     delete cp;
   } else
   {
-    P_MESSAGE1("Cannot split expression\n");
+    PE_MESSAGE1(root->ipos, "Cannot split expression\n");
   }
   if (par_name[0] == nullptr)
   {
-    par_name[0] = new NodeSymbol("T");
-    par_value[0] = new NodeNumber(1.0);
+    par_name[0] = new NodeSymbol("T", 0);
+    par_value[0] = new NodeNumber(1.0, 0);
   }
 }
 
-class ExpressionParser
+Expression::Expression (const std::string& str) : exprString (str)
 {
-public:
-  ExpressionParser ()
-  {
-    token_table[TokenType::LeftParen] = { 1, true, 0 };
-    token_table[TokenType::RightParen] = { 1, true, 0 };
-    token_table[TokenType::Function] = { 2, true, 0 };
-    token_table[TokenType::UnaryPlus] = { 3, true, 1 };
-    token_table[TokenType::UnaryMinus] = { 3, true, 1 };
-    token_table[TokenType::Power] = { 4, false, 2 };
-    token_table[TokenType::Times] = { 5, true, 2 };
-    token_table[TokenType::Divide] = { 5, true, 2 };
-    token_table[TokenType::Plus] = { 7, true, 2 };
-    token_table[TokenType::Minus] = { 7, true, 2 };
-    token_table[TokenType::Comma] = { 9, true, 0 };
-    token_table[TokenType::Equals] = { 10, false, 2 };
-    token_table[TokenType::Semicolon] = { 11, true, 2 };
-  }
-  ~ExpressionParser () {}
-  Node* parse (const std::string& str)
-  {
-    std::vector<Token> token_stream;
-    tokenize (token_stream, token_table, str);
-    return toPostfix (token_stream, token_table);
-  }
-private:
-  std::map<TokenType, TokenPrecedence> token_table;
-};
-
-Expression::Expression (const std::string& str)
-{
-  ExpressionParser parser;
-  root = parser.parse (str);
+  ExpressionParser parser (str);
+  root = parser.parse ();
 }
 
 void Expression::fromString (const std::string& str)
 {
+  exprString = str;
   if (root != nullptr)
   {
     root -> deleteTree ();
     delete root;
     root = nullptr;
   }
-  ExpressionParser parser;
-  root = parser.parse (str);
+  ExpressionParser parser (str);
+  root = parser.parse ();
 }
 
 void Expression::knutSplit (
@@ -2454,24 +2478,24 @@ void Expression::knutSplit (
   std::vector<Node*> macro;
 
   // Adding Pi
-  NodeEquals* pi_eq = new NodeEquals;
-  pi_eq -> addArgument (0, new NodeSymbol("Pi"));
-  pi_eq -> addArgument (1, new NodeNumber(M_PI));
+  NodeEquals* pi_eq = new NodeEquals (0);
+  pi_eq -> addArgument (0, new NodeSymbol("Pi", 0));
+  pi_eq -> addArgument (1, new NodeNumber(M_PI, 0));
   macro.push_back (pi_eq);
 
   splitExpression (sysName, var_name, var_dot, var_init, var_mass, par_name, par_value, time, macro, root);
 
   // if no independent variable or period is set we set the default
-  if (time.empty()) time.push_back (new NodeSymbol("t"));
-  NodeVar* time_var = new NodeVar(0);
+  if (time.empty()) time.push_back (new NodeSymbol("t", 0));
+  NodeVar* time_var = new NodeVar(0, 0);
 
   // adding internal parameters
-  par_name.push_back (new NodeSymbol ("PAR_ANGLE"));
-  par_value.push_back (new NodeNumber (0.0));
-  par_name.push_back (new NodeSymbol ("PAR_PERIOD"));
-  par_value.push_back (new NodeNumber (1.0));
-  par_name.push_back (new NodeSymbol ("PAR_ROT_NUM"));
-  par_value.push_back (new NodeNumber (0.0));
+  par_name.push_back (new NodeSymbol ("PAR_ANGLE", 0));
+  par_value.push_back (new NodeNumber (0.0, 0));
+  par_name.push_back (new NodeSymbol ("PAR_PERIOD", 0));
+  par_value.push_back (new NodeNumber (1.0, 0));
+  par_name.push_back (new NodeSymbol ("PAR_ROT_NUM", 0));
+  par_value.push_back (new NodeNumber (0.0, 0));
     
   std::vector<NodeVar*> var_idx;
   std::vector<NodePar*> par_idx;
@@ -2482,14 +2506,14 @@ void Expression::knutSplit (
   varName.resize (var_name.size());
   for (size_t k = 0; k < var_name.size(); k++)
   {
-    var_idx.push_back (new NodeVar(1 + k)); // idx == 0 is the time
+    var_idx.push_back (new NodeVar (1 + k, 0)); // idx == 0 is the time
     varName[k] = var_name[k]->getName ();
   }
 
   parName.resize (par_name.size());
   for (size_t k = 0; k < par_name.size(); k++)
   {
-    par_idx.push_back (new NodePar(k)); // idx == 0 is the period
+    par_idx.push_back (new NodePar (k, 0)); // idx == 0 is the period
     parName[k] = par_name[k]->getName ();
   }
 
@@ -2628,7 +2652,7 @@ void Expression::knutSplit (
     NodeFunction* fun = const_cast<NodeFunction*>(delays[p]);
     for (size_t q = 0; q < var_name.size(); q++)
     {
-      NodeVar var_del(1 + q + var_name.size()*(delay_id[p]+1));
+      NodeVar var_del (1 + q + var_name.size()*(delay_id[p]+1), 0);
       fun->replaceSymbol (*var_name[q], var_del, nullptr);
     }
   }
@@ -2656,12 +2680,12 @@ void Expression::knutSplit (
   }
 
   // render delay into identity
-  NodeEquals* del_rem = new NodeEquals;
-  NodeFunction* del_id = new NodeFunction("delay", 2);
-  del_id->addArgument (0, new NodeSymbol("a"));
-  del_id->addArgument (1, new NodeSymbol("b"));
+  NodeEquals* del_rem = new NodeEquals (0);
+  NodeFunction* del_id = new NodeFunction ("delay", 2, 0);
+  del_id->addArgument (0, new NodeSymbol ("a", 0));
+  del_id->addArgument (1, new NodeSymbol ("b", 0));
   del_rem->addArgument (0, del_id);
-  del_rem->addArgument (1, new NodeSymbol("a"));
+  del_rem->addArgument (1, new NodeSymbol ("a", 0));
 
   //  replacing the variables
   for (size_t p = 0; p < var_name.size(); p++)
