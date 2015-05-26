@@ -31,13 +31,15 @@
 <a id="package-downloads" class="anchor" href="#package-downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Package downloads</h2>
 
 <ul>
-<li>Source code <a href="http://dl.dropbox.com/u/18039037/Knut-10.tar.bz2">Knut-10.tar.bz2</a>
+<li>Mac Application (Yosemite, Intel x86_64) <a href="http://dl.dropbox.com/u/18039037/Knut-10.dmg">Knut-10.dmg</a>
 </li>
-<li>Mac Application (Lion, Intel x86_64) <a href="http://dl.dropbox.com/u/18039037/Knut-10.dmg">Knut-10.dmg</a>
+<li>Windows Installer (Intel 64 bit) <a href="http://dl.dropbox.com/u/18039037/Knut-10-w64.exe">Knut-10-w64.exe</a>
+</li>
+<li>Windows Installer (Intel 32 bit) <a href="http://dl.dropbox.com/u/18039037/Knut-10-w32.exe">Knut-10-w32.exe</a>
 </li>
 <li>Mac Application (Snow Leopard, Intel x86_64) <a href="http://dl.dropbox.com/u/18039037/Knut-8-SL.dmg">Knut-8-SL.dmg</a>
 </li>
-<li>Windows Installer (Intel 32 bit) <a href="http://dl.dropbox.com/u/18039037/Knut-9.exe">Knut-9.exe</a>
+<li>Source code <a href="http://dl.dropbox.com/u/18039037/Knut-10.tar.bz2">Knut-10.tar.bz2</a>
 </li>
 </ul>
 
@@ -52,17 +54,18 @@
 <p>Dependencies are <a href="https://github.com/xianyi/OpenBLAS"><strong>OpenBLAS</strong></a>, <a href="http://www.cmake.org/"><strong>CMake</strong></a> and optionally <a href="http://www.qtsoftware.com/"><strong>Qt</strong></a></p>
 
 <p>To build the software use the following commands:
-    git clone <a href="https://github.com/rs1909/knut.git">https://github.com/rs1909/knut.git</a>
+    git clone <a href="https://github.com/rs1909/knut.git">https://github.com/rs1909/knut.git</a><br>
     cd knut/knut<br>
     mkdir build<br>
-    cd build
-    ../build-unix.sh
+    cd build<br>
+    ../build-unix.sh<br>
     make install</p>
 
 <p>On Mac OSX replace the penultimate command with <code>../build-mac.sh</code><br>
 To make an installable package use <code>make install</code> and <code>make dmg</code> which will produce a disk image</p>
 
-<p>On Fedora Linux with the MinGW cross-compiler installed the <code>../build-win-cross.sh</code> will compile the software for Windows. To make a package use <code>makensis wininstaller.nsi</code>.</p>
+<p>On Fedora Linux with the MinGW cross-compiler installed the <code>../build-win-cross.sh</code> will compile the software for Windows. 
+To make a package use <code>makensis wininstaller.nsi</code>.</p>
 
 <p>Please report any bugs and wishes on the issue tracker, I'll try to address them as my time allows it.</p>
       </section>
