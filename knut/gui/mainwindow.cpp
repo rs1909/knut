@@ -35,19 +35,19 @@ MainWindow::MainWindow(const QString& appDir) :
     terminalDialog(0), // compilerProcess(0),
     inputMatFile(0), outputMatFile(0), inThreadMatFile(0)
 {
-#if WIN32
+#ifdef WIN32
   executableDir.replace('/','\\');
 #endif
   // QTabWidget
   // a) files + equations b) numerics c) symmetry d) torus
   QTabWidget* tabWidget = new QTabWidget();
-  
+
   // the container widgets
   QWidget* systemWidget = new QWidget();
   QWidget* numericsWidget = new QWidget();
   QWidget* symmetryWidget = new QWidget();
   QWidget* torusWidget = new QWidget();
-  
+
   // the layout widgets
   QGridLayout* systemGrid = new QGridLayout();
   QGridLayout* numericsGrid = new QGridLayout();
@@ -114,7 +114,7 @@ MainWindow::MainWindow(const QString& appDir) :
   sysname = new QLineEdit();
   QAction* sysdefAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
 //   QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-compile.png"), tr("&Compile..."), this);
-//   QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);  
+//   QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);
   QToolButton* getSysdef = new QToolButton();
 //   QToolButton* compile = new QToolButton();
 //   QToolButton* generate = new QToolButton();
@@ -150,7 +150,7 @@ MainWindow::MainWindow(const QString& appDir) :
     fromType->insertItem(i, parameters.BifTypeTable.CIndexToTypeName(i).c_str());
   }
   parameters.registerCallback("BifType", "fromType", fromType, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
-  
+
   QLabel* pttypeLabel = new QLabel("POINT TYPE");
   pttypeLabel->setToolTip(QString("The type of a solution to be continued."));
   pttype = new QComboBox();
@@ -204,7 +204,7 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("vector<Var>", "vars", eqns, 0, "setValue");
   parameters.registerCallback("vector<Eqn>", "eqns", eqns, 0, "setValue");
   connect(pttype, SIGNAL(currentIndexChanged(int)), table, SLOT(dataUpdated(int)));
-  
+
   QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
 
   // setting NINT, NDEG, NMUL, STAB
@@ -237,7 +237,7 @@ MainWindow::MainWindow(const QString& appDir) :
   numericsGrid->addWidget(nmul, 1, 2);
   numericsGrid->addWidget(stab, 1, 3, Qt::AlignHCenter);
   numericsGrid->addWidget(curveAngle, 1, 4);
-  
+
   parameters.registerCallback("size_t",    "nInt",   nint,       SIGNAL(valueChanged(int)),           "setValue");
   parameters.registerCallback("size_t",    "nDeg",   ndeg,       SIGNAL(valueChanged(int)),           "setValue");
   parameters.registerCallback("size_t",    "nMul",   nmul,       SIGNAL(valueChanged(int)),           "setValue");
@@ -419,9 +419,9 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()), Qt::QueuedConnection);
   connect(workThread, SIGNAL(finished()), this, SLOT(stopped()), Qt::QueuedConnection);
   // opening the file
-  connect(&compThread, SIGNAL(createDataRequest (const std::string&, DataType, size_t, size_t, KNConstants*)), 
+  connect(&compThread, SIGNAL(createDataRequest (const std::string&, DataType, size_t, size_t, KNConstants*)),
           this,           SLOT(createThreadData (const std::string&, DataType, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
-//  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)), 
+//  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)),
 //          this,           SLOT(createThreadDataTR (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
   connect(this, SIGNAL(threadDataCreated(KNDataFile*)), &compThread, SLOT(dataCreated(KNDataFile*)), Qt::QueuedConnection);
   // closing the file
@@ -544,7 +544,7 @@ void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, con
     if (*matFile)
     {
       *window = new plotWindow(fileName);
-      connect (&compThread, SIGNAL(dataChanged(const KNDataFile*)), 
+      connect (&compThread, SIGNAL(dataChanged(const KNDataFile*)),
                 *window, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
       connect (*window, SIGNAL(updated()),
                 &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
@@ -584,7 +584,7 @@ void MainWindow::openMatFile (const KNDataFile** matFile, const QString& fileNam
   try {
     *matFile = new KNDataFile(fileName.toStdString());
   }
-  catch (KNException ex) 
+  catch (KNException ex)
   {
     delete *matFile;
     *matFile = 0;
@@ -620,7 +620,7 @@ void MainWindow::plotOpenFile (const QString& fileName)
 
 void MainWindow::plotReq (const QString& fileName)
 {
-  if (sender() == inputPlotWindow) 
+  if (sender() == inputPlotWindow)
   {
 //     std::cout << "MainWindow::plotReq inputPlotWindow\n";
     if (inputMatFile == 0)
@@ -644,7 +644,7 @@ void MainWindow::plotReq (const QString& fileName)
 
 void MainWindow::plotDestroyed ()
 {
-  if (sender() == inputPlotWindow) 
+  if (sender() == inputPlotWindow)
   {
 //     std::cout << "MainWindow::plotReq inputPlotWindow\n";
     if (inputMatFile != inThreadMatFile)
@@ -698,7 +698,7 @@ void MainWindow::terminalView()
 }
 
 void MainWindow::setSysNameParameter()
-{ 
+{
   parameters.setSysNameText(sysname->text().toStdString(), true);
 }
 
@@ -720,7 +720,7 @@ void MainWindow::setSysNameParameter()
 //     }
 //   }
 // }
-// 
+//
 // void MainWindow::generateSystem()
 // {
 //   QString fileName = QFileDialog::getOpenFileName(this, "Open system definition", QString(), "Vector field definition (*.vf)");

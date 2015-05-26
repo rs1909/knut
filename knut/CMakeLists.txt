@@ -258,6 +258,7 @@ CONFIGURE_FILE( doc/html/index.html.cmake doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 IF(WIN32)
   CONFIGURE_FILE( wininstaller.nsi.cmake wininstaller.nsi )
+  CONFIGURE_FILE( w64installer.nsi.cmake w64installer.nsi )
 ENDIF(WIN32)
 
 IF( NOT WIN32 )
