@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Knut by rs1909</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Knut</h1>
+        <p>A numerical continuation software</p>
+        <p class="view"><a href="https://github.com/rs1909/knut">View the Project on GitHub <small>rs1909/knut</small></a></p>
+        <ul>
+          <li><a href="https://github.com/rs1909/knut/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/rs1909/knut/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/rs1909/knut">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>
+<a id="package-downloads" class="anchor" href="#package-downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Package downloads</h2>
+
+<ul>
+<li>Source code <a href="http://dl.dropbox.com/u/18039037/Knut-10.tar.bz2">Knut-10.tar.bz2</a>
+</li>
+<li>Mac Application (Lion, Intel x86_64) <a href="http://dl.dropbox.com/u/18039037/Knut-10.dmg">Knut-10.dmg</a>
+</li>
+<li>Mac Application (Snow Leopard, Intel x86_64) <a href="http://dl.dropbox.com/u/18039037/Knut-8-SL.dmg">Knut-8-SL.dmg</a>
+</li>
+<li>Windows Installer (Intel 32 bit) <a href="http://dl.dropbox.com/u/18039037/Knut-9.exe">Knut-9.exe</a>
+</li>
+</ul>
+
+<h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
+
+<p>See the <a href="http://dl.dropbox.com/u/18039037/manual_v8.pdf"><strong>Users' manual</strong></a></p>
+
+<h2>
+<a id="compilation-instructions" class="anchor" href="#compilation-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Compilation instructions</h2>
+
+<p>Dependencies are <a href="https://github.com/xianyi/OpenBLAS"><strong>OpenBLAS</strong></a>, <a href="http://www.cmake.org/"><strong>CMake</strong></a> and optionally <a href="http://www.qtsoftware.com/"><strong>Qt</strong></a></p>
+
+<p>To build the software use the following commands:
+    git clone <a href="https://github.com/rs1909/knut.git">https://github.com/rs1909/knut.git</a>
+    cd knut/knut<br>
+    mkdir build<br>
+    cd build
+    ../build-unix.sh
+    make install</p>
+
+<p>On Mac OSX replace the penultimate command with <code>../build-mac.sh</code><br>
+To make an installable package use <code>make install</code> and <code>make dmg</code> which will produce a disk image</p>
+
+<p>On Fedora Linux with the MinGW cross-compiler installed the <code>../build-win-cross.sh</code> will compile the software for Windows. To make a package use <code>makensis wininstaller.nsi</code>.</p>
+
+<p>Please report any bugs and wishes on the issue tracker, I'll try to address them as my time allows it.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/rs1909">rs1909</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
