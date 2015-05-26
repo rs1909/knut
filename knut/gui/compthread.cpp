@@ -10,7 +10,7 @@
 #include "compthread.h"
 #include <QCoreApplication>
 
-MThread::MThread(QObject* parent) 
+MThread::MThread(QObject* parent)
   : QObject(parent), output(0), changeQueued(false)
 {
 }
@@ -22,7 +22,16 @@ MThread::~MThread()
 void MThread::setConstants (const KNConstants& prms)
 {
   params = new KNConstants(prms);
-  sys = new KNSystem (prms.getSysName ());
+  try {
+    sys = new KNSystem (prms.getSysName ());
+  }
+  catch (KNException& ex)
+  {
+    delete params;
+    params = nullptr;
+    sys = nullptr;
+    emit exceptionOccured (ex);
+  }
 }
 
 const QEventLoop::ProcessEventsFlags MThread::waitFlag = QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers;
@@ -36,7 +45,14 @@ void MThread::process()
     {
       inputData = new KNDataFile (params->getInputFile());
     }
-    KNAbstractContinuation::run(sys, params, inputData);
+    try {
+      KNAbstractContinuation::run(sys, params, inputData);
+    }
+    catch (KNException& ex)
+    {
+      emit exceptionOccured (ex);
+      delete inputData;
+    }
     delete inputData;
   }
   emit finished();

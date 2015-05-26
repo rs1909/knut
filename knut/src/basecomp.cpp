@@ -35,9 +35,10 @@
 //   run(sys, branchFile);
 // }
 
-void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params, 
+void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
                                  const KNAbstractData* inputData)
 {
+  P_ERROR_X1 (sys != nullptr, "Invalid system");
   if (sys->ndim() == 0) P_MESSAGE1("Number of dimensions are set to zero.");
   params->initDimensions(sys);
 
@@ -101,7 +102,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       else P_MESSAGE3("There is no such solution type: ", eqn_start(0), ".");
       if (pt_per_ptr) pt_ptr = pt_per_ptr;
       KNAbstractPoint& pt = *pt_ptr;
-  
+
       pt.setContIter(params->getNItC());
       pt.setRefIter(params->getNItR());
       pt.setKernIter(params->getNItK());
@@ -110,7 +111,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       pt.setKernEps(params->getEpsK());
       pt.setContCurvature(params->getCAngle());
       pt.setCont(params->getCp());
-  
+
       // setting the symmetric components
       KNArray1D<size_t> sre(params->getSymReSize());
       KNArray1D<size_t> sim(params->getSymReSize());
@@ -245,7 +246,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         }
         for (size_t j = 0; j < par.size(); j++) par(j) = pt.getPar()(j);
         norm = pt.norm();
-        
+
         // console output
         const bool endpoint = i == params->getSteps()-1;
         const bool stabchange = (i != 0) && (ustab != ustabprev);
