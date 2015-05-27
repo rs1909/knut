@@ -32,25 +32,25 @@
 <p>The software is designed to analyse explicitly time-dependent delay-differential equations with time dependent delays. 
 It can also handle algebraic equations and neutral delay-differential equations. State dependent delays are not yet supported, see DDE-BIFTOOL for that.</p>
 <p>The features include</p>
-<ul>
+<p><ul>
 <li>Continuation of periodic orbits along a parameter</li>
 <li>Calculation of Floquet multipliers of periodic orbits</li>
 <li>Automatic detection of bifurcations</li>
 <li>Continuation of torus, period doubling and fold bifurcations of periodic orbits along two parameters</li>
 <li>Continuation of invariant tori with quasi-periodic orbits along two parameters</li>
 <li>Continuation of steady states (as periodic orbits)</li>
-</ul>
-Significant differences from DDE-BIFTOOL
+</ul></p>
+<p>Significant differences from DDE-BIFTOOL
 <ul>
 <li>Equations are differentiated using an internal formula parser</li>
 <li>Stand-alone software, no need for MATLAB</li>
 <li>Graphical User Interface</li>
 <li>Written in C++, hence faster</li>
 <li>The only software that calculates quasi-periodic tori</li>
-</ul>
-The Graphical User Interface also includes a plotting tool that displays the calculation live. 
+</ul></p>
+<p>The Graphical User Interface also includes a plotting tool that displays the calculation live.</p>
 <h3>Sample equation specification</h3>
-<code>
+<p><code>
 vfname()=mackey_glass;<br>
 time()=t;<br>
 period(T)=2.0;<br>
@@ -59,7 +59,7 @@ par(b)=1.5;<br>
 par(tau)=2.0;<br>
 DX=delay(X,tau);<br>
 dot(X)=a*X + b*DX/(1+DX^10);<br>
-init(X)=((1.0-1.5)/(-1.0))^(1.0/10.0);</code>
+init(X)=((1.0-1.5)/(-1.0))^(1.0/10.0);</code></p>
 
 <h2>
 <a id="package-downloads" class="anchor" href="#package-downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Package downloads</h2>
