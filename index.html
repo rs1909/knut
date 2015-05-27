@@ -15,7 +15,7 @@
     <![endif]-->
 <title>MathJax TeX Test Page</title>
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [ ['$$','$$'], ["\\[","\\]"] ]}});
 </script>
 <script type="text/javascript"
   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
@@ -58,8 +58,9 @@ It can also handle algebraic equations and neutral delay-differential equations.
 <p>The Graphical User Interface also includes a plotting tool that displays the calculation live.</p>
 <h3>Sample equation specification</h3>
 
-<p>The Mackey-Glass equation</p>
-$\dot{x} ( t ) = ax ( t ) + b \frac{x ( t - \tau )}{1 + x^{10} ( t - \tau )}$
+<p>The Mackey-Glass equation
+\\[\dot{x} ( t ) = ax ( t ) + b \frac{x ( t - \tau )}{1 + x^{10} ( t - \tau )}\\]
+is represented by the following code</p>
 <p><ul><code>
 vfname()=mackey_glass;<br>
 time()=t;<br>
