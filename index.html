@@ -50,7 +50,8 @@ It can also handle algebraic equations and neutral delay-differential equations.
 </ul></p>
 <p>The Graphical User Interface also includes a plotting tool that displays the calculation live.</p>
 <h3>Sample equation specification</h3>
-<p><code>
+
+<p><ul><code>
 vfname()=mackey_glass;<br>
 time()=t;<br>
 period(T)=2.0;<br>
@@ -59,7 +60,7 @@ par(b)=1.5;<br>
 par(tau)=2.0;<br>
 DX=delay(X,tau);<br>
 dot(X)=a*X + b*DX/(1+DX^10);<br>
-init(X)=((1.0-1.5)/(-1.0))^(1.0/10.0);</code></p>
+init(X)=((1.0-1.5)/(-1.0))^(1.0/10.0);</code></ul></p>
 
 <h2>
 <a id="package-downloads" class="anchor" href="#package-downloads" aria-hidden="true"><span class="octicon octicon-link"></span></a>Package downloads</h2>
