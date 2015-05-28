@@ -38,9 +38,12 @@
 <h2>Capabilities</h2>
 <p>The software is designed to analyse explicitly time-dependent delay-differential equations with time dependent delays of the form
 \[
-M \dot{x}(t) = f (t, x(t-\tau_0(t)), x(t - \tau_1(t)), \dots , x(t - \tau_m(t)))
+\boldsymbol{M}\,\dot{\boldsymbol{x}}(t) = \boldsymbol{f} (t, \boldsymbol{x}(t-\tau_0(t)),
+\boldsymbol{x}(t - \tau_1(t)), \dots , \boldsymbol{x}(t - \tau_m(t)))
 \]
-The mass matrix $M$ can be singular, hence Knut can handle algebraic equations and neutral delay-differential equations. State dependent delays are not yet supported, see DDE-BIFTOOL for that.</p>
+The mass matrix $\boldsymbol{M}$ can be singular, hence Knut can handle algebraic equations and neutral delay-differential equations. State dependent delays are not yet supported, 
+see <a
+href="http://ddebiftool.sourceforge.net/"><strong>DDE-BIFTOOL</strong></a> for that.</p>
 <p>The features include</p>
 <p><ul>
 <li>Continuation of periodic orbits along a parameter</li>
