@@ -197,7 +197,7 @@ public:
   const Node* getChild (size_t n) const { return 0; }
   Node* getChild (size_t n) { return 0; }
   size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const { out << value; }
+  void print (std::ostream& out) const { if (value > 0) out << value; else out << '(' << value << ')'; }
   bool operator != (const Node& node) const;
   bool operator < (const Node& node) const;
   void replaceSymbol(const Node& sym, const Node& node, Node** parent) {}

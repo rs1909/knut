@@ -1033,8 +1033,22 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
   t1 -> addArgument (1, b -> copy (), 1.0, false);
   fun -> addArgument(0, a -> copy ());
   t2 -> addArgument (0, a -> copy (), 1.0, false);
-  t2 -> addArgument (1, b -> derivative (var, zero), 1.0, false);
-  t2 -> addArgument (2, fun, 1.0, false);
+  // Need to check if D[b] of t2 is zero -> log(negative) = NaN
+  Node* tmpDb = b -> derivative (var, zero);
+  Node* tmpLog = fun;
+  tmpDb -> optimize (&tmpDb, Node::alwaysFalse);
+  if (tmpDb->type == TokenType::Number)
+  {
+    const double v = static_cast<const NodeNumber*>(tmpDb)->getValue();
+    if (v == 0)
+    {
+      fun->deleteTree ();
+      delete fun;
+      tmpLog = new NodeNumber(0.0, vfloc);
+    }
+  }
+  t2 -> addArgument (1, tmpDb, 1.0, false);
+  t2 -> addArgument (2, tmpLog, 1.0, false);
   s2 -> addArgument (0, t1, 1.0);
   s2 -> addArgument (1, t2, 1.0);
   t3 -> addArgument (0, pw, 1.0, false);
