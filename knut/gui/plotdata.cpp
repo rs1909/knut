@@ -45,6 +45,7 @@ PlotData::PlotData(QObject *parent) :
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YNone,"None"));
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YL2Norm,"L2Norm"));
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YAmplitude,"max(x(.))-min(x(.))"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YPoincare,"Map"));
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YImagMultiplier,"Im(Floquet Multiplier)"));
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YAbsMultiplier,"Abs(Floquet Multiplier)"));
   YCoordMap.insert(std::pair<PlotYVariable,QString>(YProfile,"X_%1"));
@@ -529,6 +530,16 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 //          std::cout << "min " << min << " max " << max << " nrm " << nrm << " j=" << j <<"\n";
           if (nint == 0) Graph.rbegin()->y(j) = data->getProfile(i, p, 0);
           else Graph.rbegin()->y(j) = sqrt(nrm);
+        }
+      } else
+      if (y == YPoincare)
+      {
+	// displays the 0-th point, which is also the last point of the periodic orbit
+	// only works for forced systems
+	// TODO: take into account the period, so that each cross section is counted
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          Graph.rbegin()->y(j) = data->getProfile(i, dim, 0);
         }
       } else
       if (y >= YParameter0)

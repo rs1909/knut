@@ -220,6 +220,7 @@ void plotWindow::initPlot(const KNDataFile* mat)
   yvarMap.push_back(YTranslate(YNone, "None"));
   yvarMap.push_back(YTranslate(YL2Norm, "L2Norm"));
   yvarMap.push_back(YTranslate(YAmplitude, "Amplitude"));
+  yvarMap.push_back(YTranslate(YPoincare, "Map"));
   yvarMap.push_back(YTranslate(YImagMultiplier, "ImagMultiplier"));
   yvarMap.push_back(YTranslate(YAbsMultiplier, "AbsMultiplier"));
   yvarMap.push_back(YTranslate(YProfile, "Profile"));

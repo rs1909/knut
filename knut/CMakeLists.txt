@@ -347,7 +347,7 @@ endif(${Qt5Core_FOUND})
 # demo programs
 ADD_SUBDIRECTORY(demo)
 
-# MATLAB scripts
-IF( EXISTS ${MEX_EXECUTABLE} )
-  ADD_SUBDIRECTORY(matlab)
-ENDIF( EXISTS ${MEX_EXECUTABLE} )
+# MATLAB scripts (disable, it does not work)
+# IF( EXISTS ${MEX_EXECUTABLE} )
+#   ADD_SUBDIRECTORY(matlab)
+# ENDIF( EXISTS ${MEX_EXECUTABLE} )

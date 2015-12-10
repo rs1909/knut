@@ -52,6 +52,7 @@ enum PlotYVariable
   // can be combined with any of the Y > YSeparator
   YL2Norm,
   YAmplitude,
+  YPoincare,
   YParameter0
 };
 
