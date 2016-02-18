@@ -1,4 +1,6 @@
 ADD_LIBRARY( knutlib STATIC
+	base58.h base58.cpp
+	City.h City.cpp
 	basecolloc.h basecolloc.cpp
 	basepoint.h basepoint.cpp
 	basecomp.h basecomp.cpp

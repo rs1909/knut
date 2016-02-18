@@ -13,6 +13,8 @@
 #include "exprsystem.h"
 #include "knerror.h"
 #include "matrix.h"
+#include "City.h"
+#include "base58.h"
 
 #include <algorithm>
 #include <iostream>
@@ -342,7 +344,11 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   // try to compile
   if (workingCompiler && trycompile)
   {
-    std::string shobj(vfName);
+    // Hash the vfexpr and let that be the name
+    uint64 hash = CityHash64(vfexpr.c_str(), vfexpr.size());
+    const unsigned char* hash_ptr = (const unsigned char*) &hash;
+    std::string hash_str = EncodeBase58(hash_ptr, hash_ptr + 8);
+    std::string shobj(hash_str);
     shobj += ".so";
 
     struct stat sbuf_so;
@@ -1870,6 +1876,13 @@ extern "C" {
 
 void KNExprSystem::setupFunctions (const std::string& shobj)
 {
+  // Check if there is already an open file
+  if (handle != nullptr) 
+  {
+    tdlclose(handle);
+    handle = nullptr;
+  }
+  // open .so file from current path
   std::string nsh = "./" + shobj;
   std::cout << "SETTING UP FUNCTIONS FROM '" << nsh << "'.\n";
   handle = tdlopen(nsh.c_str());
