@@ -11,4 +11,4 @@ ADD_CUSTOM_TARGET( ${NAME}-test-2
 ADD_CUSTOM_TARGET( ${NAME}-test-3
 	COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-nssw.knut )
 
-ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-1 ${CLI_NAME} )

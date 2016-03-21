@@ -32,4 +32,4 @@ ADD_CUSTOM_TARGET( ${NAME}-test-8
 ADD_CUSTOM_TARGET( ${NAME}-test-9
     COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-tr.knut )
 
-ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-1 ${CLI_NAME} )

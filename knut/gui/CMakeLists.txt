@@ -24,6 +24,10 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
 file (GLOB Resources *.qrc)
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
 
+find_package(Qt5Widgets)
+find_package(Qt5PrintSupport)
+find_package(Qt5Svg)
+
 IF(APPLE)
   ADD_EXECUTABLE( ${GUI_NAME} MACOSX_BUNDLE 
     main.cpp
@@ -34,15 +38,10 @@ IF(APPLE)
     constqtgui.cpp constqtgui.h
     compthread.h compthread.cpp
     screendialog.h
-    macopenevent.h
     ${MOC_SRCS} ${ICONS} MacOS/knut.icns
     ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
     ${KNUT_SOURCE_DIR}/src/knerror.h
     ${ResourceSources})
-
-    qt5_use_modules(${GUI_NAME} Widgets)
-    qt5_use_modules(${GUI_NAME} PrintSupport)
-    qt5_use_modules(${GUI_NAME} Svg)
 
   SET_SOURCE_FILES_PROPERTIES(
     MacOS/knut.icns
@@ -53,7 +52,7 @@ IF(APPLE)
     PROPERTIES MACOSX_PACKAGE_LOCATION Headers)
 
   TARGET_LINK_LIBRARIES( ${GUI_NAME} 
-	${INTERNAL_LIBS} ${EXTERNAL_LIBS} ${COREFOUNDATION_LIBRARY})
+	${INTERNAL_LIBS} ${EXTERNAL_LIBS} ${COREFOUNDATION_LIBRARY} Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
 
   SET_TARGET_PROPERTIES( ${GUI_NAME}
     PROPERTIES
@@ -78,15 +77,11 @@ IF(NOT APPLE)
     screendialog.h knut.rc
     ${MOC_SRCS} ${ICONS} ${ResourceSources})
 
-    qt5_use_modules(${GUI_NAME} Widgets)
-    qt5_use_modules(${GUI_NAME} PrintSupport)
-    qt5_use_modules(${GUI_NAME} Svg)
-
   IF(WIN32)
     set_target_properties (${GUI_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     # need to add 
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain )
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
   ELSE(WIN32)
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
       ${INTERNAL_LIBS} ${EXTERNAL_LIBS} )

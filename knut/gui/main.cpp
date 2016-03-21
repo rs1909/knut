@@ -16,11 +16,40 @@
 #include <QDir>
 #include <QFileInfo>
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
 #include <cstdio>
 #include <mach-o/dyld.h>
-#include "macopenevent.h"
 #endif
+
+
+class KnutApplication : public QApplication
+{
+  public:
+    KnutApplication(int &argc, char **argv)
+        : QApplication(argc, argv)
+    {
+        mainWin = new MainWindow(this->applicationDirPath());
+        mainWin -> show();
+    }
+#ifdef Q_OS_OSX
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
+            mainWin->loadFile (openEvent->file());
+        }
+
+        return QApplication::event(event);
+    }
+    ~KnutApplication()
+    {
+      delete mainWin;
+    }
+  signals:
+    void open(const QString& file);
+#endif
+  MainWindow *mainWin;
+};
 
 // the command line can contain one xml file name.
 // if -r is given then it will run the continuation and exit afterwards
@@ -30,7 +59,7 @@ int main(int argc, char *argv[])
   QString constFile;
   // searching for the run option
   bool run = false;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
   bool printDyld = false;
 #endif
   for (int acnt = 1; acnt < argc;  acnt++)
@@ -53,7 +82,7 @@ int main(int argc, char *argv[])
           }
           break;
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
         case 'L':
           if (argv[acnt][2] == 0) printDyld = true;
           break;
@@ -65,7 +94,7 @@ int main(int argc, char *argv[])
     }
   }
   
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
   // gettig shared library names from 'Mac OS X interals' by A. Singh
   if (printDyld)
   {
@@ -121,20 +150,12 @@ int main(int argc, char *argv[])
     qRegisterMetaType<KNConstants*>("KNConstants*");
     qRegisterMetaType<KNConstants*>("DataType");
 
-    QApplication app(argc, argv);
+    KnutApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
 #ifdef Q_WS_WIN
     app.setFont(QFont("Helvetica", 9));
 #endif
-    MainWindow mainWin(app.applicationDirPath());
-    if (!constFile.isEmpty()) { mainWin.loadFile(constFile); /*mainWin.loadFile(constFile);*/ }
-#ifdef Q_WS_MAC
-    FileOpenEvent* openEvent = new FileOpenEvent(&app);
-    app.installEventFilter(openEvent);
-    QObject::connect(openEvent, SIGNAL(open(const QString&)), &mainWin, SLOT(loadFile(const QString&)));
-#endif
     
-    mainWin.show();
     return app.exec();
   }
 }

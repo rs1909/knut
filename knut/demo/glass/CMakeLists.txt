@@ -14,4 +14,4 @@ ADD_CUSTOM_TARGET( ${NAME}-test-3
 ADD_CUSTOM_TARGET( ${NAME}-test-4 
     COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-pd.knut )
 
-ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-1 ${CLI_NAME} )

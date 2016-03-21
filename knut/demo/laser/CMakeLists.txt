@@ -18,4 +18,4 @@ ADD_CUSTOM_TARGET( ${NAME}-test-5
 ADD_CUSTOM_TARGET( ${NAME}-test-6
     COMMAND exec ${CLI_NAME} -c ${CFILEDIR}/cfile-lp.knut )
 
-ADD_DEPENDENCIES( ${NAME}-test-1 ${NAME} )
+ADD_DEPENDENCIES( ${NAME}-test-1 ${CLI_NAME} )
