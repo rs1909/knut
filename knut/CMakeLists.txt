@@ -305,8 +305,7 @@ IF(APPLE)
   ADD_CUSTOM_TARGET( dmg
     COMMAND pushd ${CMAKE_INSTALL_PREFIX}\;
     rm -f "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg" \;
-    hdiutil create -volname "Knut" -srcfolder Knut.app/
-      -srcfolder matlab/
+    hdiutil create -volname "Knut" -srcfolder Knut.app
       -srcfolder demo/
       "${KNUT_BINARY_DIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}.dmg" \;
     popd\;)
