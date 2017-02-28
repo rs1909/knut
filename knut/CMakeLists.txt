@@ -5,13 +5,18 @@ PROJECT( KNUT )
 # SETTING UP THE VARIABLES
 #------------------------------------------------------------------------------
 
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+SET(BUILD_SHARED_LIBRARIES OFF)
+# SET(CMAKE_EXE_LINKER_FLAGS "-static")
+
+
 SET( PACKAGE_NAME "Knut" )
 SET( PACKAGE_VERSION "10" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
 SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2014, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 get_filename_component(CMAKE_FIND_ROOT_TMP ${CMAKE_CXX_COMPILER} PATH)
 string(REPLACE "/" "\\" CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_TMP} )
 
@@ -60,6 +65,12 @@ IF( MSVC )
   ADD_DEFINITIONS(-Dinline=_inline -D_USE_MATH_DEFINES)
 ENDIF( MSVC )
 
+IF(WIN32)
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+ELSE(WIN32)
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+ENDIF(WIN32)
+
 #------------------------------------------------------------------------------
 # setting up Mini Xml
 #------------------------------------------------------------------------------
@@ -107,13 +118,13 @@ ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
 MESSAGE( STATUS "The FORTRAN runtime library is ${RES}, ${RESGCC} and ${RESQUAD}" )
 SET( KNUT_FORTRAN_RUNTIME ${RES} ${RESGCC} ${RESQUAD} CACHE INTERNAL "The fortran runtime library" )
 
-IF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
-  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.so
-    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
-ELSE(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
-  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.so
-    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
-ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+# IF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+#   EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.so
+#    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+# ELSE(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
+#  EXECUTE_PROCESS( COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.so
+#    OUTPUT_VARIABLE RES OUTPUT_STRIP_TRAILING_WHITESPACE )
+# ENDIF(${CMAKE_Fortran_FLAGS} MATCHES ".*-m64.*")
 
 MESSAGE( STATUS "The DYNAMIC FORTRAN runtime library is ${RES}" )
 SET( KNUT_FORTRAN_DYN_RUNTIME ${RES} CACHE INTERNAL "The fortran runtime library" )
@@ -226,6 +237,8 @@ MESSAGE( STATUS "The mxml include directory is ${KNUT_MXML_INC}." )
 find_package(Qt5Core)
 if(${Qt5Core_FOUND})
   message(STATUS "--> Qt5Core found.")
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+  # Instruct CMake to run moc automatically when needed.
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5PrintSupport REQUIRED)
   find_package(Qt5Svg REQUIRED)

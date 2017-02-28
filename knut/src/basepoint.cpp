@@ -533,7 +533,9 @@ size_t KNAbstractPoint::nextStep(double ds, double& angle, const IterateTangent 
     double XnormSQ = basecolloc->integrate(xx->getV1(), xx->getV1());
     for (size_t i = 1; i < varMapCont.size(); i++)
       XnormSQ += pow(par(varMapCont(i)) + ds * xxDot->getV3()(i - 1) - parNu(varMapCont(i)),2);
-    angle = atan(sqrt(XnormSQ)/fabs(ds))/(M_PI/2.0);
+    // Sometimes ds == 0
+    if (fabs(ds) > 0.0) angle = atan(sqrt(XnormSQ)/fabs(ds))/(M_PI/2.0);
+    else angle = 0;
     if ((angle < ContCurvature) || (jacstep == IterateTangent::no)) // dont check curvature at the begining
     {
       // copying back the solution

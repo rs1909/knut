@@ -21,6 +21,7 @@
 #include <mach-o/dyld.h>
 #endif
 
+#include <fenv.h>
 
 class KnutApplication : public QApplication
 {
@@ -56,6 +57,10 @@ class KnutApplication : public QApplication
 
 int main(int argc, char *argv[])
 {
+#ifndef _WIN32
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
+
   QString constFile;
   // searching for the run option
   bool run = false;

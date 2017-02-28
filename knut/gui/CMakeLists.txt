@@ -20,13 +20,8 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
   ${UMF_INCLUDE} 
   ${AMD_INCLUDE})
 
-
 file (GLOB Resources *.qrc)
 QT5_ADD_RESOURCES (ResourceSources ${Resources})
-
-find_package(Qt5Widgets)
-find_package(Qt5PrintSupport)
-find_package(Qt5Svg)
 
 IF(APPLE)
   ADD_EXECUTABLE( ${GUI_NAME} MACOSX_BUNDLE 
@@ -84,7 +79,7 @@ IF(NOT APPLE)
       ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
   ELSE(WIN32)
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} )
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
   ENDIF(WIN32)
 
   INSTALL( TARGETS ${GUI_NAME} DESTINATION ${KNUT_BIN_DIR} )

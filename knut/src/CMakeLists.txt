@@ -20,8 +20,9 @@ ADD_LIBRARY( knutlib STATIC
 	stcolloc.cpp stcolloc.h
         stpoint.cpp stpoint.h )
 
-INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
+INCLUDE_DIRECTORIES( 
   ${KNUT_BINARY_DIR}/src
+  ${KNUT_SOURCE_DIR}/src
   ${KNUT_SOURCE_DIR}/laarpack
   ${KNUT_MXML_INC}
   ${UMF_INCLUDE}

@@ -7,9 +7,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <fenv.h>
 
 int main(int argc, char **argv)
 {
+#ifndef _WIN32
+  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
+
   if (argc != 2)
   {
     std::cerr << "Bad number of arguments.\n";

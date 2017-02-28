@@ -1908,7 +1908,12 @@ size_t NodeTimes::evaluate (ValueStack& stack, size_t sp, const std::function<vo
   {
     for (size_t p = 0; p < len; p++)
     {
-      if (divide[k]) stack[sp].data[p*stack[sp].skip] /= stack[sp+k+1].data[p*stack[sp+k+1].skip];
+      if (divide[k])
+      {
+        if ( stack[sp+k+1].data[p*stack[sp+k+1].skip] == 0 ) 
+          PE_MESSAGE7(vfloc, "NodeTimes::evaluate : Division by zero ", spi, " ? ", sp, " + ", args.size(), "\n");
+        stack[sp].data[p*stack[sp].skip] /= stack[sp+k+1].data[p*stack[sp+k+1].skip];
+      }
       else stack[sp].data[p*stack[sp].skip] *= stack[sp+k+1].data[p*stack[sp+k+1].skip];
     }
   }
@@ -2909,8 +2914,8 @@ void Expression::knutSplit (
       // take over ownership
       delayExpr[r].fromNode (delay);
       delay = nullptr;
-      // evaluate to find undefined symbols
-      delayExpr[r].test ();
+//      // evaluate to find undefined symbols
+//      delayExpr[r].test ();
     }
   }
   catch (KNException& ex)
@@ -2981,8 +2986,8 @@ void Expression::knutSplit (
       // transfer ownership
       varDotExpr[q].fromNode (var_dot[q]);
       var_dot[q] = nullptr;
-      // evaluate to find undefined symbols
-      varDotExpr[q].test ();
+//      // evaluate to find undefined symbols
+//      varDotExpr[q].test ();
     }
     var_dot.resize (0);
     // fill up the expressions
@@ -2992,8 +2997,8 @@ void Expression::knutSplit (
       // transfer ownership
       exprFormula[q].fromNode (expr_formula[q]);
       expr_formula[q] = nullptr;
-      // evaluate to find undefined symbols
-      exprFormula[q].test ();
+//      // evaluate to find undefined symbols
+//      exprFormula[q].test ();
     }
     expr_formula.resize (0);
   }

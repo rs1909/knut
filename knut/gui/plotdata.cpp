@@ -21,7 +21,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
-const ViewBox PlotData::defaultBox = {-DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, 1, 1 };
+const ViewBox PlotData::defaultBox = {-1e6, 1e6, -1e6, 1e6, 1, 1 };
 
 PlotData::PlotData(QObject *parent) :
     QGraphicsScene(parent),
