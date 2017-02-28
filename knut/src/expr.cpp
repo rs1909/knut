@@ -107,15 +107,10 @@ public:
     arg->findFunction (lst, nm);
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return arg->derivative (var, zero); }
-  void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+  Node* optimize (const std::function<bool(const Node*)>& zero)
   {
-    arg -> optimize (&arg, zero);
-    Node* tmp = arg;
-    arg = nullptr;
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete (*parent);
-    (*parent) = tmp;
-    return;
+    arg = node_optimize (arg, zero);
+    return arg;
   }
   // specific
   void addArgument (size_t pos, Node* arg_) { arg = arg_; }
@@ -185,19 +180,10 @@ public:
     root->arg = arg->derivative (var, zero);
     return root;
   }
-  void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+  Node* optimize (const std::function<bool(const Node*)>& zero)
   {
-    arg -> optimize (&arg, zero);
-    NodeNumber* num = dynamic_cast<NodeNumber*>(arg);
-    if (num)
-    {
-      double val = num->getValue ();
-      (*parent)->deleteTree ();
-      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-      delete (*parent);
-      (*parent) = new NodeNumber (-val, vfloc);
-      return;
-    }
+    arg = node_optimize (arg, zero);
+    return arg;
   }
   // specific
   void addArgument (size_t pos, Node* arg_) { arg = arg_; }
@@ -266,9 +252,13 @@ public:
     for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
-  void optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+  Node* optimize (const std::function<bool(const Node*)>& zero)
   {
-    for(size_t k=0; k<args.size(); k++) args[k] -> optimize (&args[k], zero);
+    for(size_t k=0; k<args.size(); k++)
+    {
+      args[k] = node_optimize (args[k], zero);
+    }
+    return this;
   }
   // specific
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
@@ -338,7 +328,7 @@ public:
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
   // specific
-  void optimize (Node** parent, const std::function<bool(const Node*)>& zero);
+  Node* optimize (const std::function<bool(const Node*)>& zero);
   void addArgumentBack (Node* arg) { args.push_back (arg); }
   void addArgumentFront (Node* arg) { args.push_front (arg); }
   void toList(std::list<Node*>& lst)
@@ -1036,7 +1026,9 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
   // Need to check if D[b] of t2 is zero -> log(negative) = NaN
   Node* tmpDb = b -> derivative (var, zero);
   Node* tmpLog = fun;
-  tmpDb -> optimize (&tmpDb, Node::alwaysFalse);
+
+  tmpDb = node_optimize (tmpDb, Node::alwaysFalse);
+
   if (tmpDb->type == TokenType::Number)
   {
     const double v = static_cast<const NodeNumber*>(tmpDb)->getValue();
@@ -1054,13 +1046,16 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
   t3 -> addArgument (0, pw, 1.0, false);
   t3 -> addArgument (1, s2, 1.0, false);
   Node* t4 = t3;
-  t4 -> optimize (&t4, Node::alwaysFalse);
+  t4 = node_optimize (t4, Node::alwaysFalse);
   return t4;
 }
 
-void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+Node* NodePower::optimize (const std::function<bool(const Node*)>& zero)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->optimize (&args[k], zero);
+  for (size_t k=0; k<args.size(); k++)
+  {
+    args[k] = node_optimize (args[k], zero);
+  }
   // if both of them are numbers ...
   NodeNumber* a0 = dynamic_cast<NodeNumber*>(args[0]);
   NodeNumber* a1 = dynamic_cast<NodeNumber*>(args[1]);
@@ -1068,11 +1063,8 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
   {
     NodeNumber* res = new NodeNumber (pow (a0->getValue(), a1->getValue()), vfloc);
     // should delete both arguments
-    (*parent)->deleteTree ();
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete (*parent);
-    (*parent) = res;
-    return;
+    deleteTree ();
+    return res;
   }
   if (a1 != nullptr)
   {
@@ -1080,52 +1072,42 @@ void NodePower::optimize (Node** parent, const std::function<bool(const Node*)>&
     {
       Node* tmp = args[0];
       delete args[1];
-      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-      delete (*parent);
-      (*parent) = tmp;
-      return;
+      return tmp;
     }
     if (a1 -> getValue () == 0.0)
     {
       NodeNumber* res = new NodeNumber (1.0, vfloc);
       // should delete both arguments
-      (*parent)->deleteTree ();
-      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-      delete (*parent);
-      (*parent) = res;
-      return;
+      deleteTree ();
+      return res;
     }
   }
+  return this;
 }
 
-void NodeFunction::specialize (NodeFunction** parent)
+NodeFunction* NodeFunction::specialize ()
 {
   if (args.size() == 1)
   {
     NodeFunctionA1* fun = new NodeFunctionA1 (name, vfloc);
     fun -> addArgument (0, args[0]);
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete (*parent);
-    (*parent) = fun;
-    return;
+    return fun;
   }
   if (args.size() == 2)
   {
     NodeFunctionA2* fun = new NodeFunctionA2 (name, vfloc);
     fun -> addArgument (0, args[0]);
     fun -> addArgument (1, args[1]);
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete (*parent);
-    (*parent) = fun;
-    return;
+    return fun;
   }
+  return this;
 }
 
-void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+Node* NodeFunction::optimize (const std::function<bool(const Node*)>& zero)
 {
   for (size_t k=0; k<args.size(); k++)
   {
-    args[k]->optimize (&args[k], zero);
+    args[k] = node_optimize (args[k], zero);
   }
   // replace power with NodePower
   if (name == "pow")
@@ -1133,10 +1115,7 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
     NodePower* pw = new NodePower (vfloc);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete (*parent);
-    (*parent) = pw;
-    return;
+    return pw;
   }
   bool isnum = true;
   for (size_t k=0; k<args.size(); k++)
@@ -1150,27 +1129,20 @@ void NodeFunction::optimize (Node** parent, const std::function<bool(const Node*
     double res;
     this->evaluateWithPar (&res, par);
     NodeNumber* num = new NodeNumber (res, vfloc);
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    (*parent)->deleteTree ();
-    delete (*parent);
-    (*parent) = num;
-    return;
+    return num;
   }
   // this is true all the time!
-  P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-  NodeFunction* tmp = this;
-  specialize (&tmp);
-  *parent = tmp;
+  return specialize ();
 }
 
-void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
 {
   double sum = 0;   // the constant part
   std::vector<Node*> newargs;
   std::vector<double> newmul;
   for (size_t k = 0; k < args.size(); k++)
   {
-    args[k]->optimize (&args[k], zero);
+    args[k] = node_optimize (args[k], zero);
   }
   for (size_t k = 0; k < args.size(); k++)
   {
@@ -1234,10 +1206,7 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
   if (args.size() == 0)
   {
     Node* tmp = new NodeNumber (0.0, vfloc);
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete *parent;
-    *parent = tmp;
-    return;
+    return tmp;
   }
   if (args.size() == 1)
   {
@@ -1245,11 +1214,8 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
     if (num)
     {
       Node* tmp = new NodeNumber (mul[0] * (num ->getValue()), vfloc);
-      (*parent)->deleteTree();
-      P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-      delete *parent;
-      *parent = tmp;
-      return;
+      deleteTree();
+      return tmp;
     } else
     {
       if (mul[0] == 1.0)
@@ -1257,26 +1223,21 @@ void NodeAdd::optimize (Node** parent, const std::function<bool(const Node*)>& z
         // taking over ownership
         Node* tmp = args[0];
         args[0] = nullptr;
-        P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-        delete *parent;
-        *parent = tmp;
-        return;
+        return tmp;
       } else
       {
         // convert into times
         NodeTimes* tmp = new NodeTimes (1, vfloc);
         tmp -> addArgument (0, args[0], mul[0], false);
         args[0] = nullptr;
-        P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-        delete *parent;
-        *parent = tmp;
-        return;
+        return tmp;
       }
     }
   }
+  return this;
 }
 
-void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+Node* NodeTimes::optimize (const std::function<bool(const Node*)>& zero)
 {
   std::vector<Node*> newargs;
   std::vector<bool> newdivide;
@@ -1284,7 +1245,7 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   for (size_t k = 0; k < args.size(); k++)
   {
     P_ASSERT_X1 (args[k] != nullptr, "Optimizing null pointer.");
-    args[k]->optimize (&args[k], zero);
+    args[k] = node_optimize (args[k], zero);
   }
   for (size_t k = 0; k < args.size(); k++)
   {
@@ -1341,44 +1302,36 @@ void NodeTimes::optimize (Node** parent, const std::function<bool(const Node*)>&
   smul = newsmul;
   if (smul == 0.0)
   {
-    (*parent)->deleteTree ();
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete *parent;
-    *parent = new NodeNumber (0.0, vfloc);
-    return;
+    deleteTree ();
+    return new NodeNumber (0.0, vfloc);
   }
   // single argument
   if ((smul == 1.0)&&(args.size() == 1)&&(!divide[0]))
   {
     // self destruct
     Node* tmp = args[0];
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete *parent;
-    *parent = tmp;
-    return;
+    return tmp;
   }
   if (args.size() == 0)
   {
     const double smul_copy = smul;
-    P_ASSERT_X1 ((*parent) == this, "Wrong parent node.");
-    delete *parent;
-    *parent = new NodeNumber (smul_copy, vfloc);
-    return;
+    return new NodeNumber (smul_copy, vfloc);
   }
+  return this;
 }
 
-void NodeSemicolon::optimize (Node** parent, const std::function<bool(const Node*)>& zero)
+Node* NodeSemicolon::optimize (const std::function<bool(const Node*)>& zero)
 {
   auto it=args.begin();
   while (it != args.end())
   {
-    (*it)->optimize (&(*it), zero);
+    (*it) = node_optimize (*it, zero);
     NodeSemicolon* child = dynamic_cast<NodeSemicolon*>(*it);
     if (child)
     {
       for (auto p=child->args.begin(); p != child->args.end(); p++)
       {
-        (*p)->optimize (&(*p), zero);
+        (*p) = node_optimize (*p, zero);
         args.insert (it, *p);
       }
       it = args.erase (it);
@@ -1386,6 +1339,7 @@ void NodeSemicolon::optimize (Node** parent, const std::function<bool(const Node
     } else
     it++;
   }
+  return this;
 }
 
 // DERIVATIVE IMPLEMENTATIONS
@@ -1526,7 +1480,7 @@ Node* NodeTimes::derivative (const Node* var, const std::function<bool(const Nod
     root -> addArgument (k, cp, 1.0);
   }
   Node* res = root;
-  res -> optimize (&res, Node::alwaysFalse);
+  res = node_optimize (res, Node::alwaysFalse);
   return res;
 }
 
@@ -2395,7 +2349,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       for (auto k=treestack.begin(); k != treestack.end(); ++k)
       {
         msg << "@@OP =\n\t";
-        if (*k) (*k)->print (msg); msg << "\n";
+        if (*k) { (*k)->print (msg); msg << "\n"; }
       }
       for (auto k=token_stream.begin(); k != token_stream.end(); ++k)
       {

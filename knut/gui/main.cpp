@@ -146,6 +146,7 @@ int main(int argc, char *argv[])
     }
     comp.run (sys, &params, inputData);
     delete inputData;
+    delete sys;
   } else
   {
     qRegisterMetaType<KNException>("KNException");

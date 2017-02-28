@@ -40,7 +40,7 @@ MainWindow::MainWindow(const QString& appDir) :
 #endif
   // QTabWidget
   // a) files + equations b) numerics c) symmetry d) torus
-  QTabWidget* tabWidget = new QTabWidget();
+  QTabWidget* tabWidget = new QTabWidget(this);
 
   // the container widgets
   QWidget* systemWidget = new QWidget();
@@ -91,8 +91,8 @@ MainWindow::MainWindow(const QString& appDir) :
   QLabel* outputFileLabel = new QLabel("OUTPUT");
   outputFileLabel->setToolTip(QString("Output file, which contains the result of computation"));
   outputFile = new QLineEdit();
-  QAction* outputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
-  QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"), this);
+  QAction* outputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."));
+  QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"));
   QToolButton* getOutputFile = new QToolButton();
   QToolButton* getOutputFilePlot = new QToolButton();
   getOutputFile->setDefaultAction(outputFileAct);
@@ -394,39 +394,43 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("vector<size_t>", "symRe", nsym, 0, "setValue");
   parameters.registerCallback("vector<size_t>", "symIm", nsym, 0, "setValue");
 
-  // connecting exceptions
-  connect(&compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
-  connect(&parameters, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
-  connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)), Qt::QueuedConnection);
-  // text output
-  connect(&compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)), Qt::QueuedConnection);
-  connect(&compThread, SIGNAL(printStoreCursor()), this, SLOT(terminalStoreCursor()), Qt::QueuedConnection);
-  connect(&compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()), Qt::QueuedConnection);
-
-  createActions();
-  createMenus();
-  createToolBars();
-  createStatusBar();
-
   readSettings();
   setCurrentFile("");
 
   // compThread is a permanent object
   // should it be dynamic?
+  compThread = new MThread;
   workThread = new QThread;
-  compThread.moveToThread(workThread);
-  connect(workThread, SIGNAL(started()), &compThread, SLOT(process()), Qt::QueuedConnection);
-  connect(&compThread, SIGNAL(finished()), workThread, SLOT(quit()), Qt::QueuedConnection);
+  compThread -> moveToThread(workThread);
+
+  // connecting exceptions
+  connect(compThread, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
+  connect(&parameters, SIGNAL(exceptionOccured(const KNException&)), this, SLOT(externalException(const KNException&)), Qt::QueuedConnection);
+  connect(&parameters, SIGNAL(sendMessage(const QString &)), statusBar(), SLOT(showMessage(const QString &)), Qt::QueuedConnection);
+
+  // text output
+  connect(compThread, SIGNAL(printToScreen(const std::string&)), this, SLOT(terminalTextAppend(const std::string&)), Qt::QueuedConnection);
+  connect(compThread, SIGNAL(printStoreCursor()), this, SLOT(terminalStoreCursor()), Qt::QueuedConnection);
+  connect(compThread, SIGNAL(printClearLastLine()), this, SLOT(terminalClearLastLine()), Qt::QueuedConnection);
+
+  connect(workThread, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+  connect(workThread, SIGNAL(started()), compThread, SLOT(process()), Qt::QueuedConnection);
+  connect(compThread, SIGNAL(finished()), workThread, SLOT(quit()), Qt::QueuedConnection);
   connect(workThread, SIGNAL(finished()), this, SLOT(stopped()), Qt::QueuedConnection);
   // opening the file
-  connect(&compThread, SIGNAL(createDataRequest (const std::string&, DataType, size_t, size_t, KNConstants*)),
+  connect(compThread, SIGNAL(createDataRequest (const std::string&, DataType, size_t, size_t, KNConstants*)),
           this,           SLOT(createThreadData (const std::string&, DataType, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
-//  connect(&compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)),
+//  connect(compThread, SIGNAL(createDataRequestTR (const std::string&, size_t, size_t, KNConstants*)),
 //          this,           SLOT(createThreadDataTR (const std::string&, size_t, size_t, KNConstants*)), Qt::QueuedConnection);
-  connect(this, SIGNAL(threadDataCreated(KNDataFile*)), &compThread, SLOT(dataCreated(KNDataFile*)), Qt::QueuedConnection);
+  connect(this, SIGNAL(threadDataCreated(KNDataFile*)), compThread, SLOT(dataCreated(KNDataFile*)), Qt::QueuedConnection);
   // closing the file
-  connect(&compThread, SIGNAL(dataDeleteReq()), this, SLOT(threadDataDelete()), Qt::QueuedConnection);
-  connect(this, SIGNAL(threadDataDeleteAck()), &compThread, SLOT(dataDeleteAck()), Qt::QueuedConnection);
+  connect(compThread, SIGNAL(dataDeleteReq()), this, SLOT(threadDataDelete()), Qt::QueuedConnection);
+  connect(this, SIGNAL(threadDataDeleteAck()), compThread, SLOT(dataDeleteAck()), Qt::QueuedConnection);
+  
+  createActions();
+  createMenus();
+  createToolBars();
+  createStatusBar();
 }
 
 void MainWindow::run()
@@ -435,10 +439,10 @@ void MainWindow::run()
   {
     terminalText.clear();
     setSysNameParameter(); // this is probably not updated by editingFinished()
-    compThread.setConstants(parameters);
-//    compThread.setStopFlag(false);
+    compThread->setConstants(parameters);
+//    compThread->setStopFlag(false);
     const bool fflag = false;
-    QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
+    QMetaObject::invokeMethod (compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
     workThread->start();
     stopAct->setEnabled(true);
   } else
@@ -483,8 +487,8 @@ void MainWindow::createThreadData (const std::string& fileName, DataType t, size
 void MainWindow::stop()
 {
   const bool fflag = true;
-  QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
-//  compThread.setStopFlag(true);
+  QMetaObject::invokeMethod (compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
+//  compThread->setStopFlag(true);
 }
 
 void MainWindow::setSysName()
@@ -544,16 +548,16 @@ void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, con
     if (*matFile)
     {
       *window = new plotWindow(fileName);
-      connect (&compThread, SIGNAL(dataChanged(const KNDataFile*)),
+      connect (compThread, SIGNAL(dataChanged(const KNDataFile*)),
                 *window, SLOT(updatePlot(const KNDataFile*)), Qt::QueuedConnection);
       connect (*window, SIGNAL(updated()),
-                &compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
+                compThread, SLOT(dataChangedAck()), Qt::QueuedConnection);
       connect (*window, SIGNAL(requestPlot(const QString&)), this, SLOT(plotReq(const QString&)));
       connect (*window, SIGNAL(openFile(const QString&)), this, SLOT(plotOpenFile(const QString&)));
       connect (*window, SIGNAL(windowClosed()), this, SLOT(plotDestroyed()));
 
       // calling the slot in a thread safe way (and not directly)
-      QMetaObject::invokeMethod (&compThread, "dataChangedAck", Qt::QueuedConnection);
+      QMetaObject::invokeMethod (compThread, "dataChangedAck", Qt::QueuedConnection);
       (*window)->init (parameters.getCp());
       (*window)->setWindowTitle("Plot data");
       (*window)->show();
@@ -683,9 +687,9 @@ void MainWindow::terminalView()
   {
     terminalDialog = new screenDialog(0);
     terminalDialog->setWindowTitle("terminal view");
-    connect(&compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)), Qt::QueuedConnection);
-    connect(&compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()), Qt::QueuedConnection);
-    connect(&compThread, SIGNAL(printStoreCursor()), terminalDialog, SLOT(storeCursor()), Qt::QueuedConnection);
+    connect(compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)), Qt::QueuedConnection);
+    connect(compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()), Qt::QueuedConnection);
+    connect(compThread, SIGNAL(printStoreCursor()), terminalDialog, SLOT(storeCursor()), Qt::QueuedConnection);
     connect(terminalDialog, SIGNAL(windowClosed()), this, SLOT(terminalViewDestroyed()));
     terminalDialog->show();
     terminalDialog->setText(terminalText);
@@ -743,8 +747,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (workThread->isRunning())
   {
   	const bool fflag = true;
-  	QMetaObject::invokeMethod (&compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
-//    compThread.setStopFlag(true);
+  	QMetaObject::invokeMethod (compThread, "stopReq", Qt::QueuedConnection, QGenericArgument("bool", &fflag));
+//    compThread->setStopFlag(true);
     workThread->wait();
   }
   delete workThread;
@@ -852,6 +856,9 @@ void MainWindow::createActions()
   exitAct->setShortcut(tr("Ctrl+Q"));
   exitAct->setStatusTip(tr("Exit the application"));
   connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+  // shutting down the thread
+  connect(exitAct, SIGNAL(triggered()), compThread, SLOT(deleteLater()));
+  connect(exitAct, SIGNAL(triggered()), workThread, SLOT(deleteLater()));
 
   aboutAct = new QAction(QIcon(":/res/images/icon-knut.png"), tr("&About"), this);
   aboutAct->setStatusTip(tr("Show the application's About box"));

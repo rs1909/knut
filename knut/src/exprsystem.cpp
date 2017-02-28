@@ -326,7 +326,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
       {
         NodeVar vid (1 + k, 0);
         Node* deri = opta -> derivative (&vid, echeck);
-        deri -> optimize (&deri, echeck);
+        deri = Node::node_optimize (deri, echeck);
         size_t idx = k + l*NX*NT + q*NX*NT*NT;
         varDot_hess[idx].fromNode (deri);
       }

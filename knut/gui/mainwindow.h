@@ -147,7 +147,7 @@ class MainWindow : public QMainWindow
 
     // all the parameters
     NConstantsQtGui parameters;
-    MThread      compThread;
+    MThread     *compThread;
     QThread     *workThread;
     QWidget     *paramsWidget;
     QGridLayout *paramsGrid;

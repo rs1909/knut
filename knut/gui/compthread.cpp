@@ -11,16 +11,23 @@
 #include <QCoreApplication>
 
 MThread::MThread(QObject* parent)
-  : QObject(parent), output(0), changeQueued(false)
+  : QObject(parent), params(nullptr), 
+  sys(nullptr), output(nullptr), changeQueued(false)
 {
 }
 
 MThread::~MThread()
 {
+  delete params;
+  delete sys;
 }
 
 void MThread::setConstants (const KNConstants& prms)
 {
+  // Need to delete previously allocated data
+  delete params;
+  delete sys;
+  // setting up new data
   params = new KNConstants(prms);
   try {
     sys = new KNSystem (prms.getSysName ());
@@ -28,6 +35,7 @@ void MThread::setConstants (const KNConstants& prms)
   catch (KNException& ex)
   {
     delete params;
+    delete sys;
     params = nullptr;
     sys = nullptr;
     emit exceptionOccured (ex);
