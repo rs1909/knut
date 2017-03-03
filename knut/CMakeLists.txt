@@ -242,6 +242,7 @@ if(${Qt5Core_FOUND})
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5PrintSupport REQUIRED)
   find_package(Qt5Svg REQUIRED)
+  find_package(Qt5Charts REQUIRED)
 
   if(WIN32)
     get_target_property(QtCore_location Qt5::Core LOCATION)

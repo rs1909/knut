@@ -1,0 +1,496 @@
+// ------------------------------------------------------------------------- //
+//
+// This is part of KNUT
+// Copyright (c) 2006 by Robert Szalai
+//
+// For license, see the file COPYING in the root directory of the package
+//
+// ------------------------------------------------------------------------- //
+
+#include <QtCharts/QChart>
+#include <QtCharts/QXYSeries>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QScatterSeries>
+#include <vector>
+#include <list>
+
+#include "datachart.h"
+#include "pointtype.h"
+#include "mat4data.h"
+#include "ncolloc.h"
+
+using namespace QtCharts;
+
+DataChart::DataChart(QObject *parent) : QObject(parent)
+{
+  chart = new QChart ();
+  chart -> setTheme (QChart::ChartThemeHighContrast);
+  chart -> setAnimationOptions (QChart::NoAnimation);
+  hAxis = new QValueAxis ();
+  vAxis = new QValueAxis ();
+  chart -> addAxis (vAxis, Qt::AlignLeft);
+  chart -> addAxis (hAxis, Qt::AlignBottom);
+    
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XNone,"None"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XLabel,"Label"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XMesh,"t/Period"));
+  XCoordMap.insert(std::pair<PlotXVariable,QString>(XRealMultiplier,"Re(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YNone,"None"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YL2Norm,"L2Norm"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YAmplitude,"max(x(.))-min(x(.))"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YPoincare,"Map"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YImagMultiplier,"Im(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YAbsMultiplier,"Abs(Floquet Multiplier)"));
+  YCoordMap.insert(std::pair<PlotYVariable,QString>(YProfile,"X_%1"));
+}
+
+DataChart::~DataChart()
+{
+  clearAll();
+}
+
+// Need to simplify this to less cases
+// Draw a line until stability changes
+// 1. find out if it is stable start with the solid line
+// 2. find out where is the next zero crossing point and draw line until
+// 3. repeat antuil the end
+// 4. put bifurcation points
+// Cases
+// 1. x > XSeparator, y > YSeparator
+//    - We draw stability in this case with dashed lines
+// 2. everything else doesn't change.
+bool DataChart::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
+  size_t pt, size_t dim)
+{
+  size_t xadded = 0;
+  size_t yadded = 0;
+//   std::list<PlotItem>::iterator start = --Graph.end();
+  size_t startnumber = Graph.size();
+//   if (!Graph.empty()) startnumber = Graph.rbegin()->number;
+  QColor plcolor, stabcolor(Qt::black);
+  plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
+  // get stability data
+  bool stab_ini = data->getUnstableMultipliers(0) == 0;
+  std::vector<size_t> stabidx;
+  std::vector<size_t> bifidx;
+  std::vector<BifType> biftype;
+  {
+    size_t k_p = 0, k;
+    bool stab = false;
+    stabidx.push_back(0);
+    do
+    {
+      k = data->getNextBifurcation(k_p, &stab);
+      if (k < data->getNCols())
+      {
+        bifidx.push_back(k);
+        biftype.push_back(data->getBifurcationType(k));
+        if (stab) stabidx.push_back(k);
+        k_p = k;
+      }
+    } while (k < data->getNCols());
+    stabidx.push_back(data->getNPoints()-1);
+  }
+  // Putting in the data
+  QList<QXYSeries * > *newGraph = new QList<QXYSeries*>;
+  
+  if (x > XSeparator && y > YSeparator)
+  {
+//       PlotItem(data, PlotBasicData, x, y, pt, dim));
+    // 
+    QPointF pEnd (0.0, 0.0); // end of previous line
+    for (size_t b = 1; b < stabidx.size(); ++b)
+    {
+//      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
+      int bskip = 0, eskip = 0;
+      if (b == 1) bskip = 0; else bskip = 1;
+      if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
+      // Creating a new line
+      QLineSeries* lineN = new QLineSeries();
+      lineN -> setName(QString("Name=%1 : dim=%2").arg(data->getFileName().c_str()).arg(dim));
+      // creating storage for the line
+      QVector<QPointF> newLine (stabidx[b] - stabidx[b-1] + bskip + eskip);
+      // X Coordinate
+      if (x == XLabel)
+      {
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) newLine[j].setX(i);
+      } else
+      if (x >= XParameter0)
+      {
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          if (x != XParameter0)
+            newLine[j].setX ( data->getPar(i, x - XParameter0) );
+          else
+            newLine[j].setX(
+              data->getPar(i, x - XParameter0)/data->getPar(i, data->getNPar()+VarPeriod-VarEnd) );
+        }
+      } else std::cout << "Bad X coord\n";
+      ++xadded;
+      // Y Coordinate
+      if (y == YL2Norm)
+      {
+        KNVector elem(false);
+        const_cast<KNDataFile*>(data)->getElemRef(0, elem);
+        KNMatrix metric(elem.size(), elem.size());
+        KNDdeBvpCollocation::getMetric(metric, elem);
+        KNVector prof(false), msh(false);
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          const_cast<KNDataFile*>(data)->getMeshRef(i, msh);
+          const_cast<KNDataFile*>(data)->getProfileRef(i, prof);
+          newLine[j].setY( sqrt(KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim())) );
+        }
+      } else
+      if (y == YAmplitude)
+      {
+        const size_t ndeg = data->getNDeg();
+        const size_t nint = data->getNInt();
+//        std::cout << "NINT " << nint << " NDEG " << ndeg << "\n";
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          double nrm = 0.0;
+          size_t p = dim;
+//          for (int p = 0; p < data->getNDim(); ++p)
+//          {
+            double min = data->getProfile(i, p, 0);
+            double max = data->getProfile(i, p, 0);
+            for (size_t l = 0; l < nint; ++l)
+            {
+              for (size_t k = 0; k < ndeg; ++k)
+              {
+                if (min > data->getProfile(i, p, k + ndeg*l)) min = data->getProfile(i, p, k + ndeg*l);
+                if (max < data->getProfile(i, p, k + ndeg*l)) max = data->getProfile(i, p, k + ndeg*l);
+              }
+            }
+            nrm += (max - min) * (max - min);
+//          }
+//          std::cout << "min " << min << " max " << max << " nrm " << nrm << " j=" << j <<"\n";
+          if (nint == 0) newLine[j].setY( data->getProfile(i, p, 0) );
+          else newLine[j].setY( sqrt(nrm) );
+        }
+      } else
+      if (y == YPoincare)
+      {
+	// displays the 0-th point, which is also the last point of the periodic orbit
+	// only works for forced systems
+	// TODO: take into account the period, so that each cross section is counted
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          newLine[j].setY( data->getProfile(i, dim, 0) );
+        }
+      } else
+      if (y >= YParameter0)
+      {
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
+        {
+          if (y != YParameter0)
+            newLine[j].setY( data->getPar(i, y - YParameter0) );
+          else
+            newLine[j].setY(
+              data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()+VarPeriod-VarEnd) );
+        }
+      } else std::cout << "Bad Y coord\n";
+      ++yadded;
+      // set the beginning and the end
+      const size_t end = newLine.size()-1;
+      if (bskip != 0)
+      {
+        newLine[0] = pEnd;
+      }
+      if (eskip != 0)
+      {
+        // The end is incorrectly set.
+        pEnd = (newLine[end] + newLine[end-1])/2;
+        newLine[end] = pEnd;
+      }
+      foreach (QPointF pt, newLine)
+      {
+        lineN -> append (pt);
+      }
+      QPen plpen(QBrush(), 1, stab_ini ? Qt::SolidLine : Qt::DashLine);
+      lineN -> setPen (plpen);
+      lineN -> setColor (plcolor);
+      newGraph -> push_back(lineN);
+
+//       addPlotLine(--Graph.end(), QPen(plcolor), true, stab_ini);
+      stab_ini = !stab_ini;
+    }
+  }
+  // Extra bits
+  // The profile
+  if (x == XMesh && y == YProfile)
+  {
+    const size_t ndeg = data->getNDeg();
+    const size_t nint = data->getNInt();
+    // Creating a new plot
+    QLineSeries* newLine = new QLineSeries();
+    newLine -> setName(QString("Name=%1 : dim=%2").arg(data->getFileName().c_str()).arg(dim));
+//     Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
+//     Graph.rbegin()->x.init(ndeg*nint + 1);
+//     Graph.rbegin()->y.init(ndeg*nint + 1);
+    for (size_t i = 0; i < nint; i++)
+    {
+      for (size_t j = 0; j < ndeg; j++)
+      {
+        newLine -> append (
+            data->getMesh(pt, i) + data->getElem(pt, j) * (data->getMesh(pt, i + 1) - data -> getMesh(pt, i)),
+            data->getProfile(pt, dim, j + ndeg * i) );
+      }
+    }
+    newLine -> append (data->getMesh(pt, nint), data->getProfile(pt, dim, ndeg * nint));
+    ++xadded;
+    ++yadded;
+    newLine -> setColor (plcolor);
+    QPen plpen(QBrush(), 1, stab_ini ? Qt::SolidLine : Qt::DashLine);
+    newLine -> setPen (plpen);
+    newGraph -> push_back (newLine);
+//     addPlotLine(--Graph.end(), QPen(plcolor), true);
+  }
+  // Unit circle
+  if (x == XRealMultiplier && y == YImagMultiplier)
+  {
+    QScatterSeries* newLine = new QScatterSeries();
+    newLine -> setName(QString("Name=%1 : dim=%2").arg(data->getFileName().c_str()).arg(dim));
+    // plotting the multipliers
+    for (size_t i = 0; i < data->getNMul(); i++)
+    {
+      newLine -> append (data->getMulRe(pt, i), data->getMulIm(pt, i) );
+    }
+    ++xadded;
+    ++yadded;
+    newLine -> setColor (plcolor);
+    newGraph -> push_back (newLine);
+//     addPlotPoint(--Graph.end(), QPen(plcolor), PlotMarkerCross, true);
+//     ++unitCircleCount;
+  }
+  // multipliers
+  if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
+  {
+    for (size_t r = 0; r < data->getNMul(); r++)
+    {
+      QLineSeries* newLine = new QLineSeries();
+      newLine -> setName(QString("Name=%1 : dim=%2").arg(data->getFileName().c_str()).arg(dim));
+      for (size_t i = 0; i < data->getNPoints(); i++)
+      {
+        qreal xpos;
+        if (x >= XParameter0) xpos = data->getPar(i, x - XParameter0);
+        else xpos = i;
+        
+        newLine -> append (xpos, sqrt(data->getMulRe(i, r) * data->getMulRe(i, r) + data->getMulIm(i, r) * data->getMulIm(i, r)));
+      }
+      ++xadded;
+      ++yadded;
+      newLine -> setColor (plcolor);
+      newGraph -> push_back (newLine);
+//       addPlotLine(--Graph.end(), QPen(plcolor), true);
+    }
+  }
+  // add stability
+  if ((x > XSeparator && y > YSeparator) || y == YAbsMultiplier)
+  {
+    // useless: these are all added anyway
+//     QList<QXYSeries*>::const_iterator itc = newGraph -> end();
+//     for (size_t i = 0; i < xadded; ++i) --itc;
+    for (size_t i = 0; i < bifidx.size(); ++i)
+    {
+      QScatterSeries* newLine = new QScatterSeries(this);
+      newLine -> setName(QString("Name=%1 : dim=%2").arg(data->getFileName().c_str()).arg(dim));
+
+      if (y != YAbsMultiplier)
+      {
+        // find out in which stability region is our point
+        size_t k = 1, k2;
+        while ((bifidx[i] > stabidx[k]) && k < stabidx.size()) ++k;
+        // true if bifurcation at the end of line
+        const bool stbif = (bifidx[i] == stabidx[k]);
+        // the index within part of the series
+        if (k > 1) k2 = bifidx[i] - stabidx[k-1] + 1;
+        else k2 = bifidx[i] - stabidx[k-1];
+
+//         QList<QXYSeries*>::const_iterator it = itc;
+//         for (size_t p = 0; p < k-1; ++p) ++it;
+
+        if (stbif)
+        {
+          int sz = newGraph->at(k-1)->count();
+          newLine -> append (newGraph->at(k-1)->at(sz-1));
+        } else
+        {
+          newLine -> append ((newGraph->at(k-1)->at(k2) + newGraph->at(k-1)->at(k2-1))/2.0);
+        }
+      } else
+      {
+        newLine -> append ((newGraph->at(0)->at(bifidx[i]).x() + newGraph->at(0)->at(bifidx[i]-1).x())/2.0, 1.0);
+      }
+      ++xadded;
+      ++yadded;
+      switch (biftype[i])
+      {
+        case BifLP:
+          newLine -> setMarkerShape (QScatterSeries::MarkerShapeCircle);
+          break;
+        case BifPD:
+          newLine -> setMarkerShape (QScatterSeries::MarkerShapeCircle);
+          break;
+        case BifNS:
+          newLine -> setMarkerShape (QScatterSeries::MarkerShapeRectangle);
+          break;
+        default:
+          newLine -> setMarkerShape (QScatterSeries::MarkerShapeRectangle);
+          break;
+      }
+      newLine -> setColor (plcolor);
+      newGraph -> push_back (newLine);
+    }
+  }
+//   for (std::list<PlotItem>::iterator it = ++start; it != Graph.end(); ++it)
+//   {
+//     it->number = startnumber + 1;
+//   }
+  OnePlot opl = OnePlot(newGraph, data->getFileName().c_str(), x, y, pt, dim);
+  Graph.push_back (opl);
+  addToChart (opl);
+  
+  if (xadded != yadded)
+  {
+    std::cout << "bad number of X and Y coordinates\n";
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+//   else
+//   {
+//     if (xadded != 0)
+//     {
+//       std::vector<std::string> parNames;
+//       data->getParNames(parNames);
+//       if (x >= XParameter0) XCoordText.push_back(parNames.at(x-XParameter0).c_str());
+//       else XCoordText.push_back(XCoordMap[x]);
+//       if (y >= YParameter0) YCoordText.push_back(parNames.at(y-YParameter0).c_str());
+//       else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
+//       else YCoordText.push_back(YCoordMap[y]);
+// 
+//       std::list<PlotItem>::const_iterator it = Graph.end();
+//       for (size_t i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
+//       dataToGraphics(it, Graph.end());
+//       labelColor();
+//       return true;
+//     }
+//     else
+//     {
+//       return false;
+//     }
+//   }
+}
+
+void DataChart::addToChart(OnePlot& plot)
+{
+  std::cout << "Adding " << plot.file.fileName().toStdString() << "\n";
+  foreach( QXYSeries* mem, *(plot.graph) )
+  {
+    std::cout << "addSeries (mem)\n";
+    chart->addSeries (mem);
+    std::cout << "attachAxis (hAxis)\n";
+    mem -> attachAxis (hAxis);
+    std::cout << "attachAxis (vAxis)\n";
+    mem -> attachAxis (vAxis);
+    std::cout << "show ()\n";
+    mem -> show();
+  }
+}
+
+void DataChart::clearAll()
+{
+//   QList<QList<QXYSeries*>*>::const_iterator itc = Graph -> begin();
+  foreach( OnePlot lst, Graph )
+  {
+    foreach( QXYSeries* mem, *(lst.graph) )
+    {
+      mem -> detachAxis(vAxis);
+      mem -> detachAxis(hAxis);
+      chart -> removeSeries (mem);
+//       delete mem;
+      mem = nullptr;
+    }
+    delete lst.graph;
+    lst.graph = nullptr;
+  }
+  Graph.clear();
+}
+
+void DataChart::clear(size_t n)
+{
+  std::cout << "n = " << n << " size = " << Graph.size() << "\n";
+  if (n < Graph.size() )
+  {
+    foreach( QXYSeries* mem, *(Graph.at(n).graph) )
+    {
+      mem -> detachAxis(vAxis);
+      mem -> detachAxis(hAxis);
+      chart -> removeSeries (mem);
+//       delete mem;
+      mem = nullptr;
+    }
+    delete Graph.at(n).graph;
+    Graph[n].graph = nullptr;
+    Graph.removeAt(n);
+  }
+}
+
+size_t DataChart::nplots()
+{
+ return Graph.size();
+}
+
+QColor DataChart::getColor(size_t n)
+{
+  if (n < Graph.size() )
+    return Graph.at(n).graph->front()->color();
+  else
+    return QColor();
+}
+
+void DataChart::setColor(size_t n, QColor& Color)
+{
+  foreach( QXYSeries* mem, *(Graph.at(n).graph) )
+  {
+    mem -> setColor (Color);
+  }
+}
+
+void DataChart::updatePlot(const KNDataFile* mat)
+{
+  QFileInfo finf(mat->getFileName().c_str());
+  // list of items to remove
+  QList<int> toRemove;
+  int gsize = Graph.size();
+  for (int k = 0; k < gsize; ++k)
+  {
+    if (Graph.at(k).file == finf)
+    {
+      foreach( QXYSeries* mem, *(Graph.at(k).graph) )
+      {
+        mem -> detachAxis(vAxis);
+        mem -> detachAxis(hAxis);
+        chart -> removeSeries (mem);
+//         delete mem;
+        mem = nullptr;
+      }
+      delete Graph.at(k).graph;
+      Graph[k].graph = nullptr;
+      toRemove.push_front (k);
+      // updates the plot
+      addPlot(mat, Graph.at(k).xvar, Graph.at(k).yvar, Graph.at(k).pt, Graph.at(k).dim);
+    }
+  }
+
+  // now we can remove the items
+  foreach( int id, toRemove )
+  {
+    Graph.removeAt (id);
+  }
+}
+

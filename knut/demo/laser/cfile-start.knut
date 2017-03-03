@@ -3,7 +3,7 @@
 sysname="laser.vf" fromtype="NX" label="0" pointtype="USER" cp="eta"
 switch="NX" eqns="DDE_LC,PHASE_ROT" vars="DDE_LC,bb" nint="20" ndeg="5"
 nmul="20" stab="1" curvature="0.25" nint1="12" nint2="12" ndeg1="4"
-ndeg2="4" steps="15" iad="0" npr="10" cpmin="-100" cpmax="100"
+ndeg2="4" steps="35" iad="0" npr="10" cpmin="-100" cpmax="100"
 ds="-0.002" dsmin="0.0002" dsmax="0.002" dsstart="0.02" epsc="1e-05"
 epsr="1e-05" epsk="1e-06" nitc="22" nitr="12" nitk="22" nderi="8"
 symre="0,3" symim="1,4" />

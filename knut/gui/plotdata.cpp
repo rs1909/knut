@@ -27,17 +27,17 @@ PlotData::PlotData(QObject *parent) :
     QGraphicsScene(parent),
     xlog(false), ylog(false),
     AspectRatio(4.0 / 3.0),
-    plotXSize(540), plotYSize(plotXSize / AspectRatio),
-    FontSize(12), unitCircleItem(0), unitCircleCount(0), Box(0)
+    plotXSize(480), plotYSize(plotXSize / AspectRatio),
+    FontSize(12), unitCircleItem(0), unitCircleCount(0), Box(nullptr)
 {
   const ViewBox cvb = defaultBox;
-  setSceneRect(-0.2*plotXSize, -0.2*plotYSize, 1.4*plotXSize, 1.4*plotYSize);
+  setSceneRect(-0.1*plotXSize, -0.1*plotYSize, 1.2*plotXSize, 1.2*plotYSize);
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
   addItem(&selection);
   selection.setVisible(false);
   clipBox.addRect(QRectF(0.0, 0.0, plotXSize, plotYSize));
-  makeBox();
+  Box = makeBox();
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XNone,"None"));
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XLabel,"Label"));
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XMesh,"t/Period"));
@@ -54,6 +54,14 @@ PlotData::PlotData(QObject *parent) :
 PlotData::~PlotData()
 {
   clearAll();
+}
+
+void PlotData::setXSize(int size)
+{
+  plotXSize = size;
+  plotYSize = plotXSize / AspectRatio;
+  dataToGraphics(Graph.begin(), Graph.end());
+  std::cout << "GRAPH RESCALE " << size << "\n";
 }
 
 size_t PlotData::nplots()
@@ -121,7 +129,7 @@ void PlotData::clear(size_t n)
   else std::cout<<"GB3\n";
   if (n-1 < YCoordText.size()) YCoordText.erase(YCoordText.begin()+n-1);
   else std::cout<<"GB4\n";
-  makeBox();
+//   Box = makeBox();
   labelColor();
 }
 
@@ -1067,12 +1075,12 @@ void PlotData::keyPressEvent(QKeyEvent * key)
   }
 }
 
-void PlotData::makeBox()
+QGraphicsRectItem* PlotData::makeBox()
 {
   ViewBox cvb = *currZoom;
   // drawing the box
-  if (Box == 0) Box = addRect(QRectF(0.0, 0.0, plotXSize, plotYSize), QPen(QBrush(Qt::SolidPattern), 2.0));
-  Box->setFlags(Box->flags() | QGraphicsItem::ItemClipsChildrenToShape);
+  QGraphicsRectItem * newBox = addRect(QRectF(0.0, 0.0, plotXSize, plotYSize), QPen(QBrush(Qt::SolidPattern), 2.0));
+  newBox->setFlags(newBox->flags() | QGraphicsItem::ItemClipsChildrenToShape);
   // drawing the ticks and tickmarks
   for (size_t i = 0; i < HText.size(); i++)
   {
@@ -1208,15 +1216,16 @@ void PlotData::makeBox()
   }
   if (unitCircleCount > 0)
   {
-    if ((cvb.xmax == cvb.xmin) || (cvb.ymax == cvb.ymin)) return;
+    if ((cvb.xmax == cvb.xmin) || (cvb.ymax == cvb.ymin)) return newBox;
     const double xscale = plotXSize / (cvb.xmax - cvb.xmin);
     const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
     const QPointF pos = QPointF(xscale * (xcoord(0.0) - cvb.xmin), yscale * (cvb.ymax - ycoord(0.0)));
     QRectF scaledRect(-xscale, -yscale, 2*xscale, 2*yscale);
-    unitCircleItem = new QGraphicsEllipseItem(scaledRect, Box);
+    unitCircleItem = new QGraphicsEllipseItem(scaledRect, newBox);
     unitCircleItem->setPos(pos);
     unitCircleItem->setPen(QPen(QBrush(Qt::SolidPattern), 1));
   }
+  return newBox;
 }
 
 void PlotData::labelColor()
@@ -1255,7 +1264,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
                          std::list<PlotItem>::const_iterator end, bool zoom)
 {
   // drawing the box
-  makeBox();
+  QGraphicsRectItem* newBox = makeBox();
   // drawing the lines
   for (std::list<PlotItem>::const_iterator i = begin; i != end; i++)
   {
@@ -1265,7 +1274,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
       {
         delete it->item;
-        it->item = new QGraphicsPathItem(it->path, Box);
+        it->item = new QGraphicsPathItem(it->path, newBox);
         it->item->setPen(it->pen);
       }
     }
@@ -1274,7 +1283,7 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j)
       {
         delete (*i).data.circle->item[j];
-        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, Box);
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, newBox);
         item->setPen((*i).data.circle->pen);
         item->setPos((*i).data.circle->pos[j]);
         (*i).data.circle->item[j] = item;
@@ -1285,12 +1294,14 @@ void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
       for (unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j)
       {
         delete (*i).data.polygon->item[j];
-        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, Box);
+        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, newBox);
         item->setPen((*i).data.polygon->pen);
         item->setPos((*i).data.polygon->pos[j]);
         (*i).data.polygon->item[j] = item;
       }
     }
   }
+  delete Box;
+  Box = newBox;
   labelColor();
 }

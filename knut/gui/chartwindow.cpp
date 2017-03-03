@@ -7,7 +7,7 @@
 //
 // ------------------------------------------------------------------------- //
 
-#include "plotwindow.h"
+#include "chartwindow.h"
 #include "mainwindow.h"
 #include <vector>
 #include <cmath>
@@ -30,6 +30,85 @@
 #include <QPrinter>
 #include <QSplitter>
 #include <QSvgGenerator>
+
+#include <QtCharts/QChartView>
+#include <QtGui/QMouseEvent>
+
+KnutChartView::KnutChartView(QChart *chart, QWidget *parent) :
+    QChartView(chart, parent),
+    m_isTouching(false)
+{
+    setRubberBand(QChartView::RectangleRubberBand);
+}
+
+bool KnutChartView::viewportEvent(QEvent *event)
+{
+    if (event->type() == QEvent::TouchBegin) {
+        // By default touch events are converted to mouse events. So
+        // after this event we will get a mouse event also but we want
+        // to handle touch events as gestures only. So we need this safeguard
+        // to block mouse events that are actually generated from touch.
+        m_isTouching = true;
+
+        // Turn off animations when handling gestures they
+        // will only slow us down.
+        chart()->setAnimationOptions(QChart::NoAnimation);
+    }
+    return QChartView::viewportEvent(event);
+}
+
+void KnutChartView::mousePressEvent(QMouseEvent *event)
+{
+    if (m_isTouching)
+        return;
+    QChartView::mousePressEvent(event);
+}
+
+void KnutChartView::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_isTouching)
+        return;
+    QChartView::mouseMoveEvent(event);
+}
+
+void KnutChartView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (m_isTouching)
+        m_isTouching = false;
+
+    // Because we disabled animations when touch event was detected
+    // we must put them back on.
+    chart()->setAnimationOptions(QChart::SeriesAnimations);
+
+    QChartView::mouseReleaseEvent(event);
+}
+
+void KnutChartView::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_Plus:
+        chart()->zoomIn();
+        break;
+    case Qt::Key_Minus:
+        chart()->zoomOut();
+        break;
+    case Qt::Key_Left:
+        chart()->scroll(-10, 0);
+        break;
+    case Qt::Key_Right:
+        chart()->scroll(10, 0);
+        break;
+    case Qt::Key_Up:
+        chart()->scroll(0, 10);
+        break;
+    case Qt::Key_Down:
+        chart()->scroll(0, -10);
+        break;
+    default:
+        QGraphicsView::keyPressEvent(event);
+        break;
+    }
+}
 
 plotWindow::plotWindow(QWidget *parent) :
     QSplitter(parent) //, data(0)
@@ -70,9 +149,9 @@ void plotWindow::init(Var cp)
 
 void plotWindow::setupPlotWindow()
 {
-  plot = new QGraphicsView(this);
+  plot = new KnutChartView(plotdata.getChart(), this);
   plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
-  plot->setScene(&plotdata);
+//   plot->setChart(plotdata.getChart());
   QWidget *centralWidget = new QWidget;
   QVBoxLayout *centralLayout = new QVBoxLayout;
   QHBoxLayout *topContainerLayout = new QHBoxLayout;
@@ -181,8 +260,8 @@ void plotWindow::setupPlotWindow()
   topLayout->addWidget(plotsize, 2, 5 );
   topLayout->addWidget(xyLog, 2, 0 );
 
-  plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
-                       QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
+//   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
+//                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));
 }
 
 void plotWindow::initPlot(const KNDataFile* mat)
@@ -329,10 +408,10 @@ void plotWindow::print()
   printer.setOrientation(QPrinter::Landscape);
   if (QPrintDialog(&printer).exec() == QDialog::Accepted)
   {
-    QRectF sourceRect = plotdata.sceneRect();
+    QRectF sourceRect = plot -> sceneRect();
     QPainter painter(&printer);
     painter.setRenderHint(QPainter::Antialiasing);
-    plotdata.render(&painter, QRectF(printer.pageRect()), sourceRect);
+    plot -> render(&painter, QRectF(printer.pageRect()), sourceRect.toRect());
   }
 }
 
@@ -341,14 +420,14 @@ void plotWindow::exportSvg()
   QString fileName = QFileDialog::getSaveFileName(plot, "Export to SVG", "plot.svg", "SVG files (*.svg);;All files (*)");
   if( !fileName.isEmpty() )
   {
-    QRectF sourceRect = plotdata.sceneRect();
+    QRectF sourceRect = plot -> sceneRect();
     QRectF targetRect = QRectF(0.0, 0.0, sourceRect.size().width(), sourceRect.size().height());
     QSvgGenerator printer;
     printer.setFileName(fileName);
     printer.setSize(sourceRect.size().toSize());
     printer.setViewBox(targetRect);
     QPainter painter(&printer);
-    plotdata.render(&painter, targetRect, sourceRect);
+    plot -> render(&painter, targetRect, sourceRect.toRect());
     painter.end();
   }
 }

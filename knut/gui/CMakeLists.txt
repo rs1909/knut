@@ -28,11 +28,13 @@ IF(APPLE)
     main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
-    plotdata.cpp plotdata.h 
-    plotwindow.cpp plotwindow.h
+#    plotdata.cpp plotdata.h 
+#    plotwindow.cpp plotwindow.h
+    chartwindow.cpp chartwindow.h
     constqtgui.cpp constqtgui.h
     compthread.h compthread.cpp
     screendialog.h
+    datachart.cpp datachart.h
     ${MOC_SRCS} ${ICONS} MacOS/knut.icns
     ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
     ${KNUT_SOURCE_DIR}/src/knerror.h
@@ -65,21 +67,23 @@ IF(NOT APPLE)
   ADD_EXECUTABLE( ${GUI_NAME} main.cpp
     mainwindow.cpp mainwindow.h 
     paramview.cpp paramview.h
-    plotdata.cpp plotdata.h 
-    plotwindow.cpp plotwindow.h
+#    plotdata.cpp plotdata.h 
+#    plotwindow.cpp plotwindow.h
+    chartwindow.cpp chartwindow.h
     constqtgui.cpp constqtgui.h
     compthread.h compthread.cpp
     screendialog.h knut.rc
+    datachart.cpp datachart.h
     ${MOC_SRCS} ${ICONS} ${ResourceSources})
 
   IF(WIN32)
     set_target_properties (${GUI_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     # need to add 
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::Charts)
   ELSE(WIN32)
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::Charts)
   ENDIF(WIN32)
 
   INSTALL( TARGETS ${GUI_NAME} DESTINATION ${KNUT_BIN_DIR} )

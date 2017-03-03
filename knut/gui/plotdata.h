@@ -81,7 +81,7 @@ enum PlotMarkerStyle
 class PlotPolyLine
 {
   public:
-    PlotPolyLine(const QPen& pen_) : pen(pen_), item(0) { }
+    PlotPolyLine(const QPen& pen_) : pen(pen_), item(nullptr) { }
     QPen               pen;
     QPainterPath       path;
     QGraphicsPathItem* item;
@@ -93,9 +93,11 @@ class PlotLine : public QLinkedList<PlotPolyLine>
     PlotLine(const QPen& p) : pen(p) { }
     void clear()
     {
+      std::cout << "PlotLine Size " << size() << "\n";
       for (PlotLine::iterator it = begin(); it != end(); ++it)
       {
         delete it->item;
+        it->item = nullptr;
       }
       QLinkedList<PlotPolyLine>::clear();
     }
@@ -191,6 +193,7 @@ class PlotData : public QGraphicsScene
        dataToGraphics(Graph.begin(), Graph.end());
       }
     }
+    void setXSize(int size);
        
   protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event);
@@ -210,10 +213,10 @@ class PlotData : public QGraphicsScene
     bool crossbox(QPointF p1, QPointF p2, QPointF& i1, QPointF& i2);
     void rescaleData(std::list<PlotItem>::const_iterator begin,
                      std::list<PlotItem>::const_iterator end);
-    void makeBox();
+    QGraphicsRectItem* makeBox();
     void PlotPaint(std::list<PlotItem>::const_iterator begin,
                    std::list<PlotItem>::const_iterator end, bool zoom);
-    void replot();
+//     void replot();
     void clearAxes();
     void labelColor();
     inline double xcoord(double x) { if (xlog) { if (x>0) return log10(fabs(x)); else return 0; } else return x; }
@@ -226,8 +229,8 @@ class PlotData : public QGraphicsScene
     bool ylog;
     static const ViewBox defaultBox;
     // relative geometry
-    const qreal AspectRatio;
-    const qreal plotXSize, plotYSize;
+    qreal AspectRatio;
+    qreal plotXSize, plotYSize;
     const int   FontSize;
     // mouse
     QPointF           mouseBegin;

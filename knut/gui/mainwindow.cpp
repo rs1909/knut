@@ -630,9 +630,15 @@ void MainWindow::plotReq (const QString& fileName)
     if (inputMatFile == 0)
     {
       openMatFile(&inputMatFile, fileName);
-      if (inputMatFile) inputPlotWindow->initPlot (inputMatFile);
+      if (inputMatFile)
+      {
+        inputPlotWindow->initPlot (inputMatFile);
+        inputPlotWindow->addPlot (inputMatFile);
+      }
+    } else
+    {
+      inputPlotWindow->addPlot (inputMatFile);
     }
-    inputPlotWindow->addPlot (inputMatFile);
   }
   if (sender() == outputPlotWindow)
   {
@@ -640,9 +646,15 @@ void MainWindow::plotReq (const QString& fileName)
     if (outputMatFile == 0)
     {
       openMatFile(&outputMatFile, fileName);
-      if (outputMatFile) outputPlotWindow->initPlot (outputMatFile);
+      if (outputMatFile)
+      {
+        outputPlotWindow->initPlot (outputMatFile);
+        outputPlotWindow->addPlot (outputMatFile);
+      }
+    }else
+    {
+      outputPlotWindow->addPlot (outputMatFile);
     }
-    outputPlotWindow->addPlot (outputMatFile);
   }
 }
 
