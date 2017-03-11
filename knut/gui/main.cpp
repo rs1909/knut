@@ -57,7 +57,7 @@ class KnutApplication : public QApplication
 
 int main(int argc, char *argv[])
 {
-#ifndef _WIN32
+#ifndef __APPLE__
   feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 #endif
-
+  try {    
   if (run)
   {
     // don't make it a gui application if we run it...
@@ -149,6 +149,7 @@ int main(int argc, char *argv[])
     delete sys;
   } else
   {
+//    qRegisterMetaType<interprocess_exception>("interprocess_exception");
     qRegisterMetaType<KNException>("KNException");
     qRegisterMetaType<std::string>("std::string");
     qRegisterMetaType<KNDataFile*>("KNDataFile*");
@@ -161,8 +162,13 @@ int main(int argc, char *argv[])
 #ifdef Q_WS_WIN
     app.setFont(QFont("Helvetica", 9));
 #endif
-    
     return app.exec();
+  }
+  } // try
+  // catching the possible uncaught exceptions. There should not be any.
+  catch (KNException& ex)
+  {
+    std::cerr << ex.exprStr ("");
   }
 }
 

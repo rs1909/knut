@@ -144,27 +144,43 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 //   std::cout << "END EX\n";
 //   std::cout.flush ();
   expr.fromString (vfexpr);
+#ifdef DEBUG
+  expr.print (std::cout);
+#endif  
   expr.knutSplit (vfName, varName, varDotExpr, exprName, exprFormula, varInit, varMass, delayExpr, parName, parInit );
 
 #ifdef DEBUG
   // print everything to see if there's an error
-  std::cout << "NAME = "<< vfName << "\n";
+  std::cout << "name() = "<< vfName << "\n";
+  if ( parName.size() != parInit.size() ) std::cout << "MISMATCH !!!\n";
+  for (size_t q = 0; q < parName.size(); q++)
+  {
+    std::cout << "par(" << parName[q] << ") = "; std::cout << parInit[q] << "\n";
+  }
   for (size_t q = 0; q < exprFormula.size(); q++)
   {
-    std::cout << "EXPR : " << exprName[q] << " = ";
+    exprFormula[q].optimize();
+    std::cout << exprName[q] << " = ";
     exprFormula[q].print (std::cout); std::cout << "\n";
   }
-  for (std::string& it : varName ) std::cout << "VAR = " << it << "\n";
-  for (ExpTree::Expression& it : varDotExpr )
+  if ( varName.size() != varDotExpr.size() ) std::cout << "MISMATCH !!!\n";
+  if ( varName.size() != varInit.size() ) std::cout << "MISMATCH !!!\n";
+  if ( varName.size() != varMass.size() ) std::cout << "MISMATCH !!!\n";
+  for (size_t q = 0; q < varName.size(); q++)
   {
-    it.optimize ();
-    std::cout << "DOT = "; it.print (std::cout); std::cout << "\n";
+    varDotExpr[q].optimize();
+    std::cout << "dot(" << varName[q] << ") = "; varDotExpr[q].print (std::cout); std::cout << "\n";
   }
-  for (ExpTree::Expression& it : varInit ) { it.optimize (); std::cout << "INIT = "; it.print (std::cout); std::cout << "\n"; }
-  for (double& it : varMass ) std::cout << "MASS = " << it << "\n";
+  for (size_t q = 0; q < varName.size(); q++)
+  {
+    varInit[q].optimize();
+    std::cout << "init(" << varName[q] << ") = "; varInit[q].print (std::cout); std::cout << "\n";
+  }
+  for (size_t q = 0; q < varName.size(); q++)
+  {
+    std::cout << "mass(" << varName[q] << ") = "; std::cout << varMass[q] << "\n";
+  }
   for (ExpTree::Expression& it : delayExpr ) { it.optimize (); std::cout << "DELAY = "; it.print (std::cout); std::cout << "\n"; }
-  for (std::string& it : parName ) std::cout << "PAR = " << it << "\n";
-  for (double& it : parInit ) std::cout << "PARINIT = " << it << "\n";
 #endif
 
   // no name was provided
@@ -407,8 +423,7 @@ void KNExprSystem::toString (std::string& vfexpr)
   vfexpr = ostr.str ();
 }
 
-// should use the same stack
-// otherwise it only works with a single expression
+// This puts the values of parameters, state variables onto the stack
 void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<double>& time, const KNArray3D<double>& var, const KNArray3D<double>& vv, const KNVector& par)
 {
   const size_t ND = var.dim1 ();
@@ -417,12 +432,16 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
   const size_t NP = parName.size ();
   const size_t len = time.size ();
 
+  // setting up the data output
+  double* data = stack[sp].data;
+  size_t skip = stack[sp].skip;
+
   const NodePar* par_node = dynamic_cast<const NodePar*>(node);
   if (par_node != nullptr)
   {
     for (size_t k = 0; k < len; k++)
     {
-      stack[sp].data[(stack[sp].skip)*k] = par (par_node->getIdx());
+      data[skip*k] = par (par_node->getIdx());
     }
     return;
   }
@@ -435,7 +454,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
     {
       for (size_t k = 0; k < len; k++)
       {
-        stack[sp].data[(stack[sp].skip)*k] = time (k);
+        data[skip*k] = time (k);
       }
       return;
     }
@@ -445,7 +464,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
       const size_t x = (idx - 1) % ND;
       for (size_t k = 0; k < len; k++)
       {
-        stack[sp].data[(stack[sp].skip)*k] = var (x,d,k);
+        data[skip*k] = var (x,d,k);
       }
       return;
     } else
@@ -455,7 +474,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
       const size_t x = id2 % ND;
       for (size_t k = 0; k < len; k++)
       {
-        stack[sp].data[(stack[sp].skip)*k] = vv (x,d,k);
+        data[skip*k] = vv (x,d,k);
       }
       return;
     }

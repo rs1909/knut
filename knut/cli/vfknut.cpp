@@ -11,7 +11,7 @@
 
 int main(int argc, char **argv)
 {
-#ifndef _WIN32
+#ifndef __APPLE__
   feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
@@ -36,7 +36,9 @@ int main(int argc, char **argv)
 
     std::string cxx;
     sys.toCxx (cxx);
+// #ifndef DEBUG
     std::cout << cxx << "\n";
+// #endif
 //     cxx.clear ();
 //     if (ExpTree::Expression::fromXML (cxx, contents))
 //     {

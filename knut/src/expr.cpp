@@ -118,79 +118,6 @@ private:
   Node* arg;
 };
 
-class NodeMinus : public Node
-{
-public:
-  NodeMinus (const size_t loc) : Node(TokenType::UnaryMinus, loc), arg(nullptr) {}
-  void deleteTree () { arg->deleteTree (); delete arg; }
-  Node* copy () const
-  {
-    NodeMinus* cp = new NodeMinus (vfloc);
-    cp->arg = arg->copy();
-    return cp;
-  }
-  size_t children () const { return 1; }
-  const Node* getChild (size_t n) const { return arg; }
-  Node* getChild (size_t n) { return arg; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
-  {
-    arg -> evaluate(stack, sp, fun, len);
-    for (size_t p = 0; p < len; p++) stack[sp].data[p*stack[sp].skip] *= -1.0;
-    return sp;
-  }
-  void print (std::ostream& out) const
-  {
-    P_ASSERT_X1( arg != nullptr, "Incerdibly wrong!");
-    out << "(";
-    out << "-";
-    arg->print (out);
-    out << ")";
-  }
-  bool operator != (const Node& node) const
-  {
-    const NodeMinus* nptr = dynamic_cast<const NodeMinus*>(&node);
-    if (nptr) return (*arg != *(nptr->arg));
-    else return true;
-  }
-  bool operator < (const Node& node) const
-  {
-    if (this->type < node.type) return true;
-    else if (this->type == node.type)
-    {
-      if (*arg < *(static_cast<const NodeMinus* >(&node)->arg)) return true;
-      else return false;
-    }
-    return false;
-  }
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent)
-  {
-    arg->replaceSymbol (sym, node, &arg);
-  }
-  void replaceSymbol (const Node& node, Node** parent)
-  {
-    arg->replaceSymbol (node, &arg);
-  }
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
-  {
-    arg->findFunction (lst, nm);
-  }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
-  {
-    NodeMinus* root = new NodeMinus (vfloc);
-    root->arg = arg->derivative (var, zero);
-    return root;
-  }
-  Node* optimize (const std::function<bool(const Node*)>& zero)
-  {
-    arg = node_optimize (arg, zero);
-    return arg;
-  }
-  // specific
-  void addArgument (size_t pos, Node* arg_) { arg = arg_; }
-private:
-  Node* arg;
-};
-
 class NodeEquals : public Node
 {
 private:
@@ -1174,15 +1101,6 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
       args[k] = nullptr;
       continue;
     }
-    NodeMinus* neg = dynamic_cast<NodeMinus*>(args[k]);
-    if (neg)
-    {
-      newargs.push_back (neg->getChild (0));
-      newmul.push_back (-1.0*mul[k]);
-      delete neg;
-      args[k] = nullptr;
-      continue;
-    }
     NodeTimes* times = dynamic_cast<NodeTimes*>(args[k]);
     if (times)
     {
@@ -1274,18 +1192,6 @@ Node* NodeTimes::optimize (const std::function<bool(const Node*)>& zero)
         if (divide[k]) newdivide.push_back (!child->divide[p]);
         else newdivide.push_back (child->divide[p]);
       }
-      delete args[k];
-      args[k] = nullptr;
-      continue;
-    }
-    NodeMinus* neg = dynamic_cast<NodeMinus*>(args[k]);
-    if (neg)
-    {
-      newsmul *= -1.0;
-      newargs.push_back (neg->getChild (0));
-      neg->addArgument (0, nullptr);
-      newdivide.push_back (false);
-      // no need to delete the tree, because it is transferred
       delete args[k];
       args[k] = nullptr;
       continue;
@@ -2082,15 +1988,28 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::UnaryPlus:
       {
-        // just ignore it
+        // Basically use ` + <value>'
+        if (nargs == 1)
+        {
+          NodeAdd* node = new NodeAdd (1, tk.vfloc);
+          node->addArgument (0, ts.back(), 1.0);
+          ts.pop_back ();
+          node->sort ();
+          ts.push_back (node);
+        } else PE_MESSAGE1(tk.vfloc, "Wrong number of arguments.");
       }
       break;
       case TokenType::UnaryMinus:
       {
-        NodeMinus* node = new NodeMinus (tk.vfloc);
-        node->addArgument (0, ts.back());
-        ts.pop_back ();
-        ts.push_back (node);
+        // Basically use ` - <value>'
+        if (nargs == 1)
+        {
+          NodeAdd* node = new NodeAdd (1, tk.vfloc);
+          node->addArgument (0, ts.back(), -1.0);
+          ts.pop_back ();
+          node->sort ();
+          ts.push_back (node);
+        } else PE_MESSAGE1(tk.vfloc, "Wrong number of arguments.");
       }
       break;
       case TokenType::Plus:

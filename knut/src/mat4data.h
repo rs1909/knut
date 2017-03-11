@@ -15,12 +15,13 @@
 #include <string>
 #include <vector>
 #include <cstddef>
-// HANDLE is defined here
-#ifdef _WIN32
-#  include <windows.h>
-#else
-#  include <fcntl.h>
-#endif
+
+// Implement a global lock: all file operations will block execution even if they access different files
+#include <mutex>
+
+// File mapping API
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 // for the correct integer size
 #ifndef _WIN32
@@ -31,6 +32,8 @@
 
 // TODO: make it possible to release data once it is not needed, e.g., after reading
 // TODO: or just delete the data in 'basecomp.cpp'
+
+using namespace boost::interprocess;
 
 class KNAbstractData
 {
@@ -302,15 +305,23 @@ class KNDataFile : public KNAbstractData
       return getHeader(offset)->ncols;
     }
 
-#ifdef _WIN32
-    HANDLE file;
-    OVERLAPPED fileOverlapped;
-    HANDLE mapHandle;
-    size_t filesize;
-#else
-    int    file;
-    struct flock fileLock;
-#endif
+    void mmapFileWrite(const std::string& fileName, size_t size);
+    void mmapFileRead(const std::string& fileName);
+//#ifdef _WIN32
+//    HANDLE file;
+//    OVERLAPPED fileOverlapped;
+//    HANDLE mapHandle;
+//    size_t filesize;
+//#else
+//    int    file;
+//    struct flock fileLock;
+//#endif
+
+    file_mapping matFileMapping;
+    mapped_region matFileMemory;
+    
+    static std::mutex fileLock;
+    
     const std::string matFileName;
     void  *address;
     size_t size;

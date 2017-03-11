@@ -80,11 +80,13 @@ Section "Dummy Section" SecDummy
   File "@CMAKE_PREFIX_PATH@\bin\libwinpthread-1.dll"
 ;  File "@CMAKE_PREFIX_PATH@\bin\libquadmath-0.dll"
   File "@CMAKE_PREFIX_PATH@\bin\libstdc++-6.dll"
+  File "@CMAKE_PREFIX_PATH@\bin\libpcre-1.dll"
   File "@QtCoreLoc@"
   File "@QtGuiLoc@"
   File "@QtWidgetsLoc@"
   File "@QtPrintSupportLoc@"
   File "@QtSvgLoc@"
+  File "@QtChartsLoc@"
 ;  File "@QtCorePath@\icudt51.dll"
 ;  File "@QtCorePath@\icuin51.dll"
 ;  File "@QtCorePath@\icuuc51.dll"
@@ -94,7 +96,7 @@ Section "Dummy Section" SecDummy
   SetOutPath "$INSTDIR"
   File /r "@CMAKE_INSTALL_PREFIX@\include"
   File /r "@CMAKE_INSTALL_PREFIX@\demo"
-  File /nonfatal /r "@CMAKE_INSTALL_PREFIX@\matlab"
+;  File /nonfatal /r "@CMAKE_INSTALL_PREFIX@\matlab"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\${PACKAGE_NAME}" "" $INSTDIR

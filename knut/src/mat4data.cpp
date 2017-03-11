@@ -11,6 +11,7 @@
 #include <cmath>
 #include <cfloat>
 #include <cstring>
+#include <fstream>
 
 #ifndef _WIN32
 #  include <sys/types.h>
@@ -40,64 +41,23 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
-#ifndef _WIN32
-
-void static __filelock (int fid, struct flock* fl, short type)
-{
-  fl->l_type = type;
-  fl->l_whence = SEEK_SET;
-  fl->l_start = 0;
-  fl->l_len = 0;
-  if (fcntl(fid, F_SETLKW, fl) != 0) std::cerr<<"Error locking " << strerror(errno) << "\n";
-}
+std::mutex KNDataFile::fileLock;
 
 void KNDataFile::lockRead() const
 {
-//  std::cout<<"L " << matFileName << "\n";
-  __filelock (file, const_cast<struct flock*>(&fileLock), F_RDLCK);
+  fileLock.lock();
 }
 
 void KNDataFile::lockWrite() const
 {
-//  std::cout<<"L " << matFileName << "\n";
-  __filelock (file, const_cast<struct flock*>(&fileLock), F_WRLCK);
+  fileLock.lock();
 }
 
 void KNDataFile::unlock() const
 {
-//  std::cout<<"U " << matFileName << "\n";
-  struct flock* fl = const_cast<struct flock*>(&fileLock);
-  fl->l_type = F_UNLCK;
-  if (fcntl(file, F_SETLK, &fileLock) != 0) std::cerr<<"Error unlocking "<< strerror(errno) << "\n";
+  fileLock.unlock();
 }
 
-#else
-
-void KNDataFile::lockRead () const
-{
-  // it is opened synchronous, so LockFileEx will wait until the lock is acquired
-//   std::cout << "Trying to Lock " << matFileName <<"\n"; std::cout.flush();
-  const_cast<OVERLAPPED*>(&fileOverlapped)->Offset = 0;
-  const_cast<OVERLAPPED*>(&fileOverlapped)->OffsetHigh = 0;
-  const_cast<OVERLAPPED*>(&fileOverlapped)->hEvent = 0;
-  BOOL res = LockFileEx(file, LOCKFILE_EXCLUSIVE_LOCK, 0, filesize & 0xffffffff, filesize >> 32, const_cast<OVERLAPPED*>(&fileOverlapped));
-  if( res != TRUE ) 
-    P_MESSAGE3("MAT file '", matFileName, "' cannot be locked.");
-}
-
-void KNDataFile::lockWrite () const
-{
-  lockRead ();
-}
-
-void KNDataFile::unlock() const
-{
-//   std::cout << "UNLock " << matFileName <<"\n"; std::cout.flush();
-  if( UnlockFileEx(file, 0,  filesize & 0xffffffff, filesize >> 32, const_cast<OVERLAPPED*>(&fileOverlapped)) != TRUE ) 
-    P_MESSAGE3("MAT file '", matFileName, "' cannot be unlocked.");
-}
-
-#endif
 size_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool test, size_t r, size_t c, uint32_t imag, const char* fileName, int32_t type)
 {
   struct header hd;
@@ -129,110 +89,58 @@ size_t KNDataFile::findMatrix(const char* name, KNDataFile::header* found, bool 
   return size;
 }
 
-#ifndef _WIN32
-
-static inline void *mmapFileWrite(int& file, const std::string& fileName, size_t size)
+void KNDataFile::mmapFileWrite(const std::string& fileName, size_t size)
 {
-  if ((file = open(fileName.c_str(), O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR)) == -1)
-  {
-    P_MESSAGE5("Unable to create the MAT file '", fileName, "'. ", (const char *)strerror(errno), ".");
+  // Remove the existing file
+  file_mapping::remove(fileName.c_str());
+  std::filebuf fbuf;
+  fbuf.open(fileName, std::ios_base::in | std::ios_base::out
+                      | std::ios_base::trunc | std::ios_base::binary);
+  // Set the size
+  fbuf.pubseekoff(size-1, std::ios_base::beg);
+  fbuf.sputc(0);
+  fbuf.close();
+//   std::cout << " made a file " << fileName << " of size " << size << "\n";
+  try {
+    // Create a file mapping
+    file_mapping m_file(fileName.c_str(), read_write);
+    matFileMapping.swap(m_file);
+  
+    //Map the whole file with read-write permissions in this process
+    mapped_region region(matFileMapping, read_write);
+    matFileMemory.swap(region);
+  
+    //Get the address of the mapped region
+    address = matFileMemory.get_address();
+  //  std::size_t size  = matFileMemory.get_size();
   }
-
-  if (ftruncate(file, static_cast<off_t>(size)) != 0)
+  catch (interprocess_exception& exc)
   {
-    P_MESSAGE5("Unable to resize the MAT file '", fileName, "'. ", (const char *)strerror(errno), ".");
+    P_MESSAGE4("Boost::interprocess_exception. MAT=", fileName, " Problem: ", exc.what());
   }
-
-//  std::cout << "MMAP - WRITE\n";
-  void *address;
-  if ((address = mmap(0, static_cast<size_t>(size), PROT_WRITE | PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
-  {
-    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
-  }
-  return address;
 }
 
-static inline void *mmapFileRead(int& file, const std::string& fileName, size_t& size)
+void KNDataFile::mmapFileRead(const std::string& fileName)
 {
-  if ((file = open(fileName.c_str(), O_RDONLY)) == -1)
-  {
-    P_MESSAGE5("Unable to open the MAT file '", fileName, "' for reading. ", (const char *)strerror(errno), ".");
+  try {
+    // Create a file mapping
+    file_mapping m_file(fileName.c_str(), read_only);
+    matFileMapping.swap(m_file);
+  
+    //Map the whole file with read-write permissions in this process
+    mapped_region region(matFileMapping, read_only);
+    matFileMemory.swap(region);
+  
+    //Get the address of the mapped region
+    address = matFileMemory.get_address();
+    size = matFileMemory.get_size();
+//     std::cout << " read a file " << fileName << " of size " << size << "\n";
   }
-
-  struct stat filestat;
-  if (fstat(file, &filestat) != 0)
+  catch (interprocess_exception& exc)
   {
-    P_MESSAGE5("Unable to stat the MAT file '", fileName, "'. ", (const char *)strerror(errno), ".");
-  }
-  size = static_cast<size_t>(filestat.st_size);
-
-//  std::cout << "MMAP - READ\n";
-  void *address;
-  if ((address = mmap(0, static_cast<size_t>(size), PROT_READ, MAP_SHARED, file, 0)) == MAP_FAILED)
-  {
-    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. ", (const char *)strerror(errno), ".");
-  }
-  return address;
+    P_MESSAGE4("Boost::interprocess_exception. MAT=", fileName, " Problem: ", exc.what());
+  }  
 }
-
-#else
-
-static inline void *mmapFileWrite(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, size_t size)
-{
-  if ((file = CreateFile(fileName.c_str(),
-                         FILE_WRITE_DATA | FILE_READ_DATA,
-                         FILE_SHARE_READ,
-                         NULL,
-                         CREATE_ALWAYS,
-                         FILE_ATTRIBUTE_NORMAL,
-                         NULL)) == NULL)
-  {
-    P_MESSAGE5("Unable to create the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-  }
-
-  if (SetFilePointer(file, size, NULL, FILE_BEGIN) == 0)
-  {
-    P_MESSAGE5("Unable to seek in the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-  }
-  P_ERROR_X5(SetEndOfFile(file), "Unable to truncate the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-
-  if ((mapHandle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, size, fileName.c_str())) == 0)
-  {
-    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
-  }
-
-  void *address = MapViewOfFile(mapHandle, FILE_MAP_WRITE, 0, 0, 0);
-  if (address != NULL) return address;
-  else P_MESSAGE5("Unable to view the file map of '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-  return 0;
-}
-
-static inline void *mmapFileRead(HANDLE& file, HANDLE& mapHandle, const std::string& fileName, size_t& size)
-{
-  if ((file = CreateFile(fileName.c_str(),
-                         FILE_READ_DATA,
-                         FILE_SHARE_READ,
-                         NULL,
-                         OPEN_EXISTING,
-                         FILE_ATTRIBUTE_NORMAL,
-                         NULL)) == NULL)
-  {
-    P_MESSAGE5("Unable to create the MAT file '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-  }
-
-  size = GetFileSize(file, NULL);
-  if ((mapHandle = CreateFileMapping(file, NULL, PAGE_READONLY, 0, 0, fileName.c_str())) == 0)
-  {
-    P_MESSAGE5("Unable to map the MAT file '", fileName, "' to a memory location. Error code ", static_cast<int>(GetLastError()), ".");
-  }
-
-  void *address = MapViewOfFile(mapHandle, FILE_MAP_READ, 0, 0, 0);
-  if (address != NULL) return address;
-  else P_MESSAGE5("Unable to view the file map of '", fileName, "'. Error code ", static_cast<int>(GetLastError()), ".");
-  return 0;
-}
-
-#endif
 
 // returns the size of the whole data
 inline size_t KNDataFile::createMatrixHeader(KNDataFile::header* hd, const char* name, size_t rows, size_t cols, int32_t type)
@@ -322,11 +230,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size = prof_offset + prof_size;
 
 //  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
-#ifndef _WIN32
-  address = mmapFileWrite(file, fileName, size);
-#else
-  address = mmapFileWrite(file, mapHandle, fileName, size);
-#endif
+  mmapFileWrite(fileName, size);
 
   lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
@@ -439,11 +343,8 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size_t blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
 
-#ifndef _WIN32
-  address = mmapFileWrite(file, fileName, size);
-#else
-  address = mmapFileWrite(file, mapHandle, fileName, size);
-#endif
+  mmapFileWrite(fileName, size);
+
   lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
@@ -568,57 +469,34 @@ void KNDataFile::initHeaders()
 
 void KNDataFile::openReadOnly(const std::string& fileName)
 {
-#ifndef _WIN32
-  address = mmapFileRead(file, fileName, size);
-#else
-  address = mmapFileRead(file, mapHandle, fileName, size);
-#endif
+  mmapFileRead(fileName);
   lockRead();
   initHeaders();
 //   std::cout << "mat4data address RD " << address << "\n";
   unlock();
 }
 
-// WARNING This creates a large file and then shrinks it
-// Use mmremap instead so that only the smaller file is written.
 KNDataFile::~KNDataFile()
 {
-#ifndef _WIN32
-  size_t oldsize = size;
-  condenseData();
-//  std::cout << "MUNMAP\n";
-  if (munmap(address, oldsize) != 0)
-  {
-    P_MESSAGE3("Unable to munmap the MAT file. ", strerror(errno), ".");
-  }
   // at the moment we try to truncate the file
   if( wperm )
   {
-    if( ftruncate(file, static_cast<off_t>(size)) != 0 )
+    const size_t mapsz = matFileMemory.get_size();
+    if ( mapsz < size )
     {
-      P_MESSAGE3("Unable to truncate the MAT file. ", strerror(errno), ".");
+      try
+      {
+        matFileMemory.shrink_by( mapsz - size );
+        // internal Boost 
+        ipcdetail::truncate_file ( matFileMapping.get_mapping_handle().handle, size );
+      }
+      catch (interprocess_exception& exc)
+      {
+        std::cerr << "Boost::interprocess_exception. MAT=" << matFileName << " Problem: " << exc.what() << " THIS WILL ABORT THE PROGRAM\n";
+        abort();
+      }  
     }
   }
-  if (close(file) != 0)
-  {
-    P_MESSAGE3("Unable to close the MAT file. ", strerror(errno), ".");
-  }
-#else
-  if (address != 0)
-  {
-    UnmapViewOfFile(address);
-    CloseHandle(mapHandle);
-    // at the moment it won't be truncated
-    //   if( wperm )
-    //   {
-    //    if( SetFilePointer( file, size, NULL, FILE_BEGIN ) == 0 )
-    //    { P_ERROR_X2( false, "Unable to seek in the MAT file.", static_cast<int>(GetLastError()) ); }
-    //    P_ERROR_X2( SetEndOfFile( file ), "Unable to truncate the MAT file.", static_cast<int>(GetLastError()) );
-    //   }
-    CloseHandle(file);
-  }
-#endif
-//   std::cout << "mat4data address CLOSE " << address << "\n";
   address = 0;
 }
 
