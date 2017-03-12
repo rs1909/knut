@@ -57,7 +57,7 @@ class KnutApplication : public QApplication
 
 int main(int argc, char *argv[])
 {
-#ifndef __APPLE__
+#ifdef __linux__
   feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 

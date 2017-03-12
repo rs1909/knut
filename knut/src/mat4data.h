@@ -24,11 +24,11 @@
 #include <boost/interprocess/mapped_region.hpp>
 
 // for the correct integer size
-#ifndef _WIN32
+// #ifndef _WIN32
 # include <stdint.h>
-#else
-# define int32_t INT32
-#endif
+// #else
+// # define int32_t INT32
+// #endif
 
 // TODO: make it possible to release data once it is not needed, e.g., after reading
 // TODO: or just delete the data in 'basecomp.cpp'
