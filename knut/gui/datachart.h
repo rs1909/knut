@@ -78,7 +78,7 @@ class DataChart : public QObject
                     QString filename_,
                     PlotXVariable xvar_,
                     PlotYVariable yvar_, size_t pt_, size_t dim_ ) :
-            graph(graph_), file(filename_), xvar(xvar_), yvar(yvar_) { }
+            graph(graph_), file(filename_), xvar(xvar_), yvar(yvar_), pt(pt_), dim(dim_) { }
         QList<QXYSeries*>* graph;
         QFileInfo file;
         PlotXVariable xvar;

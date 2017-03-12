@@ -62,6 +62,17 @@ DataChart::~DataChart()
 bool DataChart::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   size_t pt, size_t dim)
 {
+  // sanity check
+  if ( data->getNDim() <= dim )
+  {
+    std::cout << "DataChart::addPlot: wrong requested dimension. NDIM=" << data->getNDim() << " d=" << dim << "\n";
+    return true;
+  }
+  if ( data->getNPoints() <= pt )
+  {
+    std::cout << "DataChart::addPlot: wrong requested point.\n";
+    return true;
+  }
   size_t xadded = 0;
   size_t yadded = 0;
 //   std::list<PlotItem>::iterator start = --Graph.end();
