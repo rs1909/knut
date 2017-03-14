@@ -226,18 +226,21 @@ void plotWindow::setupPlotWindow()
   exportSvgButton->setDefaultAction( exportSvgAct );
   connect( exportSvgAct, SIGNAL(triggered()), this, SLOT(exportSvg()) );
   
-  QComboBox* xyLog = new QComboBox;
-  xyLog->insertItem(0, "Linear");
-  xyLog->insertItem(1, "SemiLogX");
-  xyLog->insertItem(2, "SemiLogY");
-  xyLog->insertItem(3, "LogLog");
-  xyLog->setCurrentIndex(0);
-  connect( xyLog, SIGNAL(currentIndexChanged(int)), &plotdata, SLOT(setAxes(int)) );
 
-  QSpinBox* plotsize = new QSpinBox;
-  plotsize->setMinimum(100);
-  plotsize->setMaximum(1280);
-  connect(plotsize, SIGNAL(valueChanged(int)), &plotdata, SLOT(setXSize(int)));
+  // There is no easy way to change axes in QCharts
+//   QComboBox* xyLog = new QComboBox;
+//   xyLog->insertItem(0, "Linear");
+//   xyLog->insertItem(1, "SemiLogX");
+//   xyLog->insertItem(2, "SemiLogY");
+//   xyLog->insertItem(3, "LogLog");
+//   xyLog->setCurrentIndex(0);
+//   connect( xyLog, SIGNAL(currentIndexChanged(int)), &plotdata, SLOT(setAxes(int)) );
+
+  // Qcharts is automatically resizable
+//   QSpinBox* plotsize = new QSpinBox;
+//   plotsize->setMinimum(100);
+//   plotsize->setMaximum(1280);
+//   connect(plotsize, SIGNAL(valueChanged(int)), &plotdata, SLOT(setXSize(int)));
   
   this->addWidget(dockWidget);
   this->addWidget(centralWidget);
@@ -257,8 +260,8 @@ void plotWindow::setupPlotWindow()
   topLayout->addWidget(clearAllPlotButton, 2, 2);
   topLayout->addWidget(printButton, 2, 3);
   topLayout->addWidget(exportSvgButton, 2, 4 );
-  topLayout->addWidget(plotsize, 2, 5 );
-  topLayout->addWidget(xyLog, 2, 0 );
+//   topLayout->addWidget(plotsize, 2, 5 );
+//   topLayout->addWidget(xyLog, 2, 0 );
 
 //   plot->setMinimumSize(plot->mapFromScene(plotdata.sceneRect()).boundingRect().size()*1.1 +
 //                        QSize(2*plot->frameWidth(), 2*plot->frameWidth()));

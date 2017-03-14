@@ -20,6 +20,7 @@ class KNDataFile;
 #include <QColor>
 #include <QtCharts/QChart>
 #include <QtCharts/QXYSeries>
+#include <QtCharts/QScatterSeries>
 #include <QtCharts/QValueAxis>
 
 using namespace QtCharts;
@@ -74,12 +75,15 @@ class DataChart : public QObject
     class OnePlot
     {
       public:
-        OnePlot ( QList<QXYSeries*>* graph_,
+        OnePlot ();
+        OnePlot (OnePlot& opl);
+        OnePlot ( QList<QXYSeries*>* graph_, QScatterSeries* bifpoints_,
                     QString filename_,
                     PlotXVariable xvar_,
                     PlotYVariable yvar_, size_t pt_, size_t dim_ ) :
-            graph(graph_), file(filename_), xvar(xvar_), yvar(yvar_), pt(pt_), dim(dim_) { }
+            graph(graph_), bifpoints(bifpoints_), file(filename_), xvar(xvar_), yvar(yvar_), pt(pt_), dim(dim_) { }
         QList<QXYSeries*>* graph;
+        QScatterSeries* bifpoints;
         QFileInfo file;
         PlotXVariable xvar;
         PlotYVariable yvar;
@@ -87,12 +91,14 @@ class DataChart : public QObject
         size_t dim;
     };
 
-    void addToChart(OnePlot& lst);
+    DataChart::OnePlot* addPartPlot(const KNDataFile* mat, DataChart::OnePlot* opl, 
+      PlotXVariable x, PlotYVariable y, size_t pt, size_t dim);
+    void addToChart(OnePlot* lst);
 
     QChart* chart;
     QValueAxis *hAxis;
     QValueAxis *vAxis;
-    QList< OnePlot > Graph;
+    QList< OnePlot* > Graph;
     std::map<PlotXVariable,QString> XCoordMap;
     std::map<PlotYVariable,QString> YCoordMap;
 
