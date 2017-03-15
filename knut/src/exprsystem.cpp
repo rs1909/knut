@@ -56,7 +56,7 @@ static bool to_compile(const struct stat *sbuf_so, const struct stat *sbuf_src);
 KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 {
   std::string contents;
-  std::ifstream in (sysName);
+  std::ifstream in (sysName, std::ios::in | std::ios::binary);
   if (in)
   {
     in.seekg (0, std::ios::end);

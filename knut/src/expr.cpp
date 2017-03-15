@@ -1823,7 +1823,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
     // ignore comments
     if (str[k] == '#')
     {
-      while (str[k] != '\n') k++;
+      while ((str[k] != '\n')&&(str[k] != '\r')&&(str[k] != '\v')&&(str[k] != '\f')) k++;
       continue;
     }
     // ignore space
