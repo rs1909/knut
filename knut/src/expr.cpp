@@ -2913,7 +2913,7 @@ void Expression::knutSplit (
 
 #include <mxml.h>
 
-bool isValidName(const std::string s)
+bool isValidName(const std::string& s)
 {
   const std::string lower("abcdefghijklmnopqrstuvwxyz");
   const std::string upper("ABCDEFGHIJKLMNOPQRSTUVWXYZ");

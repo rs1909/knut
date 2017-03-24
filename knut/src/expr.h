@@ -552,7 +552,7 @@ public:
   }
   void print (std::ostream& out) const { if (root != nullptr) root -> print (out); }
   Node* copy () const { if(root != nullptr) return root -> copy (); else return nullptr; }
-  void evaluate (ValueStack& stack, std::function<void(size_t, const Node*)> fun, size_t sp, size_t len) const
+  void evaluate (ValueStack& stack, const std::function<void(size_t, const Node*)>& fun, size_t sp, size_t len) const
   {
     if (root != nullptr) root -> evaluate (stack, sp, fun, len);
   }
