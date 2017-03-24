@@ -55,9 +55,9 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h>
 #endif // !defined(_MSC_VER)
 
-typedef uint8_t uint8;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
+using uint8 = uint8_t;
+using uint32 = uint32_t;
+using uint64 = uint64_t;
 typedef std::pair<uint64, uint64> uint128;
 
 inline uint64 Uint128Low64(const uint128& x) { return x.first; }

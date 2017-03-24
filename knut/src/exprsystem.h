@@ -147,7 +147,7 @@ private:
   static bool workingCompiler;
 
 #ifndef _WIN32
-  typedef void*   tdlhand;
+  using tdlhand = void *;
 #else
   typedef HMODULE tdlhand;
 #endif

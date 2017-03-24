@@ -1881,16 +1881,16 @@ const char* KNExprSystem::tdlerror()
 }
 
 extern "C" {
-  typedef size_t(*tp_sys_ndim)();
-  typedef size_t(*tp_sys_npar)();
-  typedef size_t(*tp_sys_ntau)();
-  typedef void(*tp_sys_p_tau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par );
-  typedef void(*tp_sys_p_dtau)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray1D<double>& par, size_t vp );
-  typedef void(*tp_sys_p_rhs)( KNArray2D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNVector& par, size_t sel );
-  typedef void(*tp_sys_p_deri)( KNArray3D<double>& out, const KNArray1D<double>& time, const KNArray3D<double>& x, const KNArray1D<double>& par, size_t sel, size_t nx, const size_t* vx, size_t np, const size_t* vp, const KNArray3D<double>& vv );
-  typedef void(*tp_sys_stpar)(KNVector& par);
-  typedef void(*tp_sys_p_stsol)(KNArray2D<double>& out, const KNArray1D<double>& time);
-  typedef void(*tp_sys_parnames)(const char *names[]);
+  using tp_sys_ndim = size_t (*)();
+  using tp_sys_npar = size_t (*)();
+  using tp_sys_ntau = size_t (*)();
+  using tp_sys_p_tau = void (*)(KNArray2D<double> &, const KNArray1D<double> &, const KNArray1D<double> &);
+  using tp_sys_p_dtau = void (*)(KNArray2D<double> &, const KNArray1D<double> &, const KNArray1D<double> &, size_t);
+  using tp_sys_p_rhs = void (*)(KNArray2D<double> &, const KNArray1D<double> &, const KNArray3D<double> &, const KNVector &, size_t);
+  using tp_sys_p_deri = void (*)(KNArray3D<double> &, const KNArray1D<double> &, const KNArray3D<double> &, const KNArray1D<double> &, size_t, size_t, const size_t *, size_t, const size_t *, const KNArray3D<double> &);
+  using tp_sys_stpar = void (*)(KNVector &);
+  using tp_sys_p_stsol = void (*)(KNArray2D<double> &, const KNArray1D<double> &);
+  using tp_sys_parnames = void (*)(const char **);
 }
 
 void KNExprSystem::setupFunctions (const std::string& shobj)

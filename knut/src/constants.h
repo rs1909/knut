@@ -112,7 +112,7 @@ class KNAbstractConstantsWriter
 class KNConstantNames
 {
   public:
-    typedef void(*FPTR)();
+    using FPTR = void (*)();
   private:
     class tuple_t {
       public:

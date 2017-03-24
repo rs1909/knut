@@ -179,7 +179,7 @@ template< class FACT > class KNBlockMatrix
     KNVector         bem_f1_2;
 };
 
-typedef KNBlockMatrix<KNLuSparseMatrix> KNSparseBlockMatrix;
+using KNSparseBlockMatrix = KNBlockMatrix<KNLuSparseMatrix>;
 
 ///--------------------------------
 ///

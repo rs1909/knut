@@ -57,8 +57,8 @@ template <class T> class Translate
   QString name;
 };
 
-typedef Translate<PlotXVariable> XTranslate;
-typedef Translate<PlotYVariable> YTranslate;
+using XTranslate = Translate<PlotXVariable>;
+using YTranslate = Translate<PlotYVariable>;
 
 class plotWindow : public QSplitter
 {

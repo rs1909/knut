@@ -219,11 +219,11 @@ class KNArray1D
         iterator& operator--(int) { --pt; return *this; }
         bool      operator< (const iterator& it) const { return pt < it.pt; }
         friend class KNArray1D<T>;
-        typedef std::bidirectional_iterator_tag iterator_category;
-        typedef T                        value_type;
-        typedef std::ptrdiff_t           difference_type;
-        typedef T*                       pointer;
-        typedef T&                       reference;
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T *;
+        using reference = T &;
     };
     iterator begin() { iterator it; it.pt = v; return it; }
     iterator end() { iterator it; it.pt = v+n; return it; }
@@ -888,8 +888,8 @@ class KNLuMatrix : public KNMatrix
     void solve(KNMatrix& X, const KNMatrix& B, bool TRANS = false);
 };
 
-typedef KNArray1D< KNMatrix > JagMatrix3D;
-typedef KNArray1D< KNVector > JagVector2D;
+using JagMatrix3D = KNArray1D<KNMatrix>;
+using JagVector2D = KNArray1D<KNVector>;
 
 /// specialized versions of the Clear function
 template< > inline void KNArray1D< KNArray1D<int> >::clear()
