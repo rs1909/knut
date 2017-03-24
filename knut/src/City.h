@@ -43,7 +43,7 @@
 #ifndef CITY_HASH_H_
 #define CITY_HASH_H_
 
-#include <stdlib.h>  // for size_t.
+#include <cstdlib>  // for size_t.
 #include <utility>
 
 // Microsoft Visual Studio may not have stdint.h.
@@ -52,7 +52,7 @@ typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 typedef unsigned __int64 uint64_t;
 #else  // defined(_MSC_VER)
-#include <stdint.h>
+#include <cstdint>
 #endif // !defined(_MSC_VER)
 
 using uint8 = uint8_t;

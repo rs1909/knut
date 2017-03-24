@@ -13,9 +13,9 @@ static
 inline void SpMulR(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                    double* out, const double* in, const double alpha, const ptrdiff_t incIN)
 {
-  register ptrdiff_t j;
-  register int k;
-  register double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
+  ptrdiff_t j;
+  int k;
+  double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
 
   for (j = 0; j < n; j += 1)
   {
@@ -47,9 +47,9 @@ inline void SpMulRpY(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const 
                      double* out, const double* in, const double alpha,
                      const double* Y, double beta, const ptrdiff_t incIN, const ptrdiff_t incY)
 {
-  register ptrdiff_t j;
-  register int k;
-  register double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
+  ptrdiff_t j;
+  int k;
+  double r0, r1, r2, r3, r4, r5, r6, r7, t0, t1;
 
   for (j = 0; j < n; j += 1)
   {
@@ -80,9 +80,9 @@ static
 inline void SpMulC(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const int* Ai, const double* Ax,
                    double* out, const double* in, const double alpha, const ptrdiff_t incIN)
 {
-  register ptrdiff_t i, j;
-  register int k;
-  register double t0;
+  ptrdiff_t i, j;
+  int k;
+  double t0;
 
   for (i = 0; i + 7 < m; i += 8)
   {
@@ -125,9 +125,9 @@ inline void SpMulCpY(const ptrdiff_t n, const ptrdiff_t m, const int* Ap, const 
                      double* out, const double* in, const double alpha,
                      const double* Y, const double beta, const ptrdiff_t incIN, const ptrdiff_t incY)
 {
-  register ptrdiff_t i, j;
-  register int k;
-  register double t0;
+  ptrdiff_t i, j;
+  int k;
+  double t0;
 
   for (i = 0; i + 7 < m; i += 8)
   {

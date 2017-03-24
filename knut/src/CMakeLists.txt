@@ -4,7 +4,7 @@ ADD_LIBRARY( knutlib STATIC
 	basecolloc.h basecolloc.cpp
 	basepoint.h basepoint.cpp
 	basecomp.h basecomp.cpp
-	constants.cpp constants_compat.cpp constants.h cspblas.c cspblas.h
+	constants.cpp constants_compat.cpp constants.h cspblas.cpp cspblas.h
 	hypermatrix.h mat4data.cpp mat4data.h matrix.cpp matrix.h
 	ncolloc.cpp ncolloc.h knutsys.h knerror.h knerror.cpp
 	plot.cpp plot.h point.cpp point.h pointtype.h pointtype.cpp

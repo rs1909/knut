@@ -8,8 +8,8 @@
 //#include "uint256.h"
 
 #include "knerror.h"
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <vector>
 #include <string>
 

@@ -25,7 +25,7 @@
 
 // for the correct integer size
 // #ifndef _WIN32
-# include <stdint.h>
+# include <cstdint>
 // #else
 // # define int32_t INT32
 // #endif

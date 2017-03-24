@@ -35,7 +35,7 @@ extern "C"{
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/wait.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>

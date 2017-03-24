@@ -21,7 +21,7 @@
 #include <mach-o/dyld.h>
 #endif
 
-#include <fenv.h>
+#include <cfenv>
 
 class KnutApplication : public QApplication
 {

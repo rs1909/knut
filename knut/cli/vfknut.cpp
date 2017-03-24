@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <fenv.h>
+#include <cfenv>
 
 int main(int argc, char **argv)
 {

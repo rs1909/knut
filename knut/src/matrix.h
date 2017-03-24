@@ -21,11 +21,11 @@
 
 #include "plot.h"
 #include "knerror.h"
+#include "cspblas.h"
 
 extern "C"
 {
 
-#include "cspblas.h"
 #include "blas.h"
 #include "laarpack.h"
 

@@ -10,8 +10,8 @@
 #ifndef CSPBLAS_H
 #define CSPBLAS_H
 
-#include <stdlib.h>
-#include <stddef.h>
+#include <cstdlib>
+#include <cstddef>
 
 enum cspblas_Trans{ NoTrans = 0, Trans = 1 };
 

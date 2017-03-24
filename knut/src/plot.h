@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 
 class GnuPlot
 {
