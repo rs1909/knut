@@ -22,20 +22,20 @@ class KNDdeTorusCollocation : public KNAbstractCollocation
     KNDdeTorusCollocation(KNExprSystem& sys_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
     // this provides the jacobian, the right hand side and the derivatives w.r.t. var
     // the difficulty is with the derivative w.r.t. the frequencies
-    void init(const KNVector& sol, const KNVector& par);
+    void init(const KNVector& sol, const KNVector& par) override;
     void jacobian(KNSparseMatrix& A, KNArray1D< KNVector* > Avar, KNVector& rhs, KNVector& par, KNVector& sol, KNArray1D<size_t>& var);
     // not yet implemented
     // these are easy
     void PhaseONE(KNVector& ph, KNVector& presol);                                       // implemented
     void PhaseBOTH(KNVector& ph0, KNVector& ph1, KNVector& presol);                        // implemented
-    double integrate(const KNVector& ph1, const KNVector& ph2);
+    double integrate(const KNVector& ph1, const KNVector& ph2) override;
     double IntegrateDIFF(KNVector& ph1, KNVector& ph2, KNVector& ph3);
-    void star(KNVector& ph1, const KNVector& ph2);
+    void star(KNVector& ph1, const KNVector& ph2) override;
 
     void importSolution(KNVector& out, KNVector& in);
     void importTangent(KNVector& out, KNVector& Re, KNVector& Im, double alpha);
     void Save(const char* dat, const char* idx, const KNVector& in);
-    void meshAdapt(KNVector& newsol, const KNVector& sol, KNVector& newtan, const KNVector& tan) { newsol = sol; newtan = tan; }
+    void meshAdapt(KNVector& newsol, const KNVector& sol, KNVector& newtan, const KNVector& tan) override { newsol = sol; newtan = tan; }
 
     inline const KNVector& getMesh1() const
     {

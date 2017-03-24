@@ -41,10 +41,10 @@ class plotWindow : public QSplitter
   public:
     plotWindow(const QString& filename, QWidget *parent = nullptr);
     plotWindow(QWidget *parent = nullptr);
-    ~plotWindow();
+    ~plotWindow() override;
     void init(Var cp);
   protected:
-    void closeEvent(QCloseEvent *event)
+    void closeEvent(QCloseEvent *event) override
     {
       emit windowClosed();
       event->accept();

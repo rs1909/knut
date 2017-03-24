@@ -37,10 +37,10 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
 
     KNAbstractBvpCollocation(KNExprSystem& sys, const size_t nint, const size_t ndeg);
 
-    virtual ~KNAbstractBvpCollocation() {}
+    ~KNAbstractBvpCollocation() override {}
 
-    virtual void init(const KNVector& sol, const KNVector& par) = 0;
-    void meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent);
+    void init(const KNVector& sol, const KNVector& par) override = 0;
+    void meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent) override;
 
     virtual void interpolate(KNArray3D<double>& out, const KNVector& sol) = 0;
     virtual void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol) = 0;
@@ -53,8 +53,8 @@ class KNAbstractBvpCollocation : public KNAbstractCollocation
     static size_t meshlookup_left(const KNVector& mesh, double t);
     static size_t meshlookup_right(const KNVector& mesh, double t);
 
-    void   star(KNVector& out, const KNVector& sol);
-    double integrate(const KNVector& v1, const KNVector& v2);
+    void   star(KNVector& out, const KNVector& sol) override;
+    double integrate(const KNVector& v1, const KNVector& v2) override;
     double integrateWithDerivative(const KNVector& v1, const KNVector& v2);
     double integrateWithCp(const KNVector& v1, const KNVector& v2, const KNVector& v3);
 

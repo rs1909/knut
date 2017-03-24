@@ -25,21 +25,21 @@ class KNOdePeriodicSolution : public KNAbstractPeriodicSolution
 
     KNOdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg);
-    ~KNOdePeriodicSolution();
+    ~KNOdePeriodicSolution() override;
     
-    virtual void Stability(bool init);
-    virtual void SwitchTFLP(BranchSW , double ) { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
-    virtual void SwitchTFPD(double ) { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
-    virtual void SwitchTFHB(double ) { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
+    void Stability(bool init) override;
+    void SwitchTFLP(BranchSW , double ) override { P_MESSAGE1("Not implemented"); }     // switches branch with testFunct
+    void SwitchTFPD(double ) override { P_MESSAGE1("Not implemented"); }                    // switches branch with testFunct
+    void SwitchTFHB(double ) override { P_MESSAGE1("Not implemented"); } // switches branch with testFunct
   private:
-    virtual void jacobian(
+    void jacobian(
       KNSparseBlockMatrix& AA, KNBlockVector& RHS, // output
       KNVector& parPrev, KNVector& par,      // parameters
       KNVector& solPrev, KNVector& sol,      // solution
       KNArray1D<size_t>& varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
-    );
-    virtual void postProcess() {}
+    ) override;
+    void postProcess() override {}
     
     KNOdeBvpCollocation* colloc;
     KNLuSparseMatrix     jacStab;

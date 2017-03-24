@@ -60,7 +60,7 @@ class DataChart : public QObject
 
   public:
     DataChart(QObject *parent = nullptr);
-    ~DataChart();
+    ~DataChart() override;
     bool addPlot(const KNDataFile* mat, 
       PlotXVariable x, PlotYVariable y, size_t pt, size_t dim);
     void clearAll();

@@ -24,7 +24,7 @@ class KNDdeTorusSolution : public KNAbstractPoint
   public:
     KNDdeTorusSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t ndeg1_, size_t ndeg2_, size_t nint1_, size_t nint2_);
-    ~KNDdeTorusSolution();
+    ~KNDdeTorusSolution() override;
 
     inline void    setRho(double rho)
     {
@@ -54,8 +54,8 @@ class KNDdeTorusSolution : public KNAbstractPoint
 //     }
     void           loadPoint(const KNAbstractData& data, size_t n);
     void           savePoint(KNAbstractData& data, size_t n);
-    void           BinaryRead(const KNAbstractData& data, size_t n) { loadPoint(data, n); }
-    void           BinaryWrite(KNAbstractData& data, BifType bif, size_t n) { savePoint(data, n); }
+    void           BinaryRead(const KNAbstractData& data, size_t n) override { loadPoint(data, n); }
+    void           BinaryWrite(KNAbstractData& data, BifType bif, size_t n) override { savePoint(data, n); }
 
 
   private:
@@ -70,8 +70,8 @@ class KNDdeTorusSolution : public KNAbstractPoint
       KNVector& solPrev, KNVector& sol,      // solution
       KNArray1D<size_t>& varMap,           // contains the variables. If cont => contains the P0 too.
       double ds, bool cont               // ds stepsize, cont: true if continuation
-    );
-    virtual void postProcess() {}
+    ) override;
+    void postProcess() override {}
 
     inline const   KNVector& getMesh1() const
     {

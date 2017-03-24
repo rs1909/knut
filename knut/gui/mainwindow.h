@@ -80,7 +80,7 @@ class MainWindow : public QMainWindow
     void threadDataDeleteAck();
 
   protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
   // We need to be able to run from the outside
   public slots:

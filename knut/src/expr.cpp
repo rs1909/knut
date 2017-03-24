@@ -58,19 +58,19 @@ class NodePlus : public Node
 {
 public:
   NodePlus (const size_t loc) : Node(TokenType::UnaryPlus, loc), arg(nullptr) {}
-  void deleteTree () { arg->deleteTree (); delete arg; }
-  Node* copy () const
+  void deleteTree () override { arg->deleteTree (); delete arg; }
+  Node* copy () const override
   {
     NodePlus* cp = new NodePlus (vfloc);
     cp->arg = arg->copy();
     return cp;
   }
-  size_t children () const { return 1; }
-  const Node* getChild (size_t n) const { return arg; }
-  Node* getChild (size_t n) { return arg; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
+  size_t children () const override { return 1; }
+  const Node* getChild (size_t n) const override { return arg; }
+  Node* getChild (size_t n) override { return arg; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
-  void print (std::ostream& out) const
+  void print (std::ostream& out) const override
   {
     PE_ERROR_X1( arg != nullptr, vfloc, "Incerdibly wrong!");
     out << "(";
@@ -78,13 +78,13 @@ public:
     arg->print (out);
     out << ")";
   }
-  bool operator != (const Node& node) const
+  bool operator != (const Node& node) const override
   {
     const NodePlus* nptr = dynamic_cast<const NodePlus*>(&node);
     if (nptr) return (*arg != *(nptr->arg));
     else return true;
   }
-  bool operator < (const Node& node) const
+  bool operator < (const Node& node) const override
   {
     if (this->type < node.type) return true;
     else if (this->type == node.type)
@@ -94,20 +94,20 @@ public:
     }
     return false;
   }
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent)
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override
   {
     arg->replaceSymbol (sym, node, &arg);
   }
-  void replaceSymbol (const Node& node, Node** parent)
+  void replaceSymbol (const Node& node, Node** parent) override
   {
     arg->replaceSymbol (node, &arg);
   }
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override
   {
     arg->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return arg->derivative (var, zero); }
-  Node* optimize (const std::function<bool(const Node*)>& zero)
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override { return arg->derivative (var, zero); }
+  Node* optimize (const std::function<bool(const Node*)>& zero) override
   {
     arg = node_optimize (arg, zero);
     return arg;
@@ -125,8 +125,8 @@ private:
 public:
   NodeEquals (const size_t loc) : Node(TokenType::Equals, loc), args(2) {}
   NodeEquals (bool, const size_t loc) : Node(TokenType::Define, loc), args(2) {}
-  void deleteTree () { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
-  Node* copy () const
+  void deleteTree () override { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
+  Node* copy () const override
   {
     NodeEquals* cp = new NodeEquals (type, vfloc);
     for(size_t k=0; k<args.size(); k++)
@@ -135,12 +135,12 @@ public:
     }
     return cp;
   }
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const { return args[n]; }
-  Node* getChild (size_t n) { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override { return args[n]; }
+  Node* getChild (size_t n) override { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
-  void print (std::ostream& out) const
+  void print (std::ostream& out) const override
   {
     PE_ERROR_X1( args[0] != nullptr, vfloc, "Incerdibly wrong!");
     PE_ERROR_X1( args[1] != nullptr, vfloc, "Incerdibly wrong!");
@@ -149,7 +149,7 @@ public:
     else out << ":=";
     args[1]->print (out);
   }
-  bool operator != (const Node& node) const
+  bool operator != (const Node& node) const override
   {
     const NodeEquals* nptr = dynamic_cast<const NodeEquals*>(&node);
     if (nptr)
@@ -160,13 +160,13 @@ public:
     else return true;
     return false;
   }
-  bool operator < (const Node& node) const
+  bool operator < (const Node& node) const override
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent)
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override
   {
     for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
   }
-  void replaceSymbol (const Node& node, Node** parent)
+  void replaceSymbol (const Node& node, Node** parent) override
   {
     for (size_t k=0; k<args.size(); k++)
     {
@@ -174,12 +174,12 @@ public:
       args[k]->replaceSymbol (node, &args[k]);
     }
   }
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override
   {
     for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
-  Node* optimize (const std::function<bool(const Node*)>& zero)
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override { return new NodeNumber (0.0, vfloc); }
+  Node* optimize (const std::function<bool(const Node*)>& zero) override
   {
     for(size_t k=0; k<args.size(); k++)
     {
@@ -197,8 +197,8 @@ class NodeSemicolon : public Node
 {
 public:
   NodeSemicolon (const size_t loc) : Node (TokenType::Semicolon, loc) {}
-  void deleteTree () { for(auto k=args.begin(); k!=args.end(); k++) { (*k)->deleteTree (); delete *k; } }
-  Node* copy () const
+  void deleteTree () override { for(auto k=args.begin(); k!=args.end(); k++) { (*k)->deleteTree (); delete *k; } }
+  Node* copy () const override
   {
     NodeSemicolon* cp = new NodeSemicolon (vfloc);
     for(auto k=args.begin(); k!=args.end(); k++)
@@ -207,8 +207,8 @@ public:
     }
     return cp;
   }
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override
   {
     size_t j=0;
     for(auto k=args.begin(); k!=args.end(); k++)
@@ -218,7 +218,7 @@ public:
     }
     return nullptr;
   }
-  Node* getChild (size_t n)
+  Node* getChild (size_t n) override
   {
     size_t j=0;
     for(auto k=args.begin(); k!=args.end(); k++)
@@ -228,9 +228,9 @@ public:
     }
     return nullptr;
   }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
-  void print (std::ostream& out) const
+  void print (std::ostream& out) const override
   {
     for(auto k=args.begin(); k!=args.end(); k++)
     {
@@ -239,23 +239,23 @@ public:
       out << ";\n";
     }
   }
-  bool operator != (const Node& node) const { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
-  bool operator < (const Node& node) const { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent)
+  bool operator != (const Node& node) const override { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
+  bool operator < (const Node& node) const override { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (sym, node, &(*k));
   }
-  void replaceSymbol (const Node& node, Node** parent)
+  void replaceSymbol (const Node& node, Node** parent) override
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (node, &(*k));
   }
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override
   {
     for(auto k=args.begin(); k!=args.end(); k++) (*k)->findFunction (lst, nm);
   }
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const { return new NodeNumber (0.0, vfloc); }
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override { return new NodeNumber (0.0, vfloc); }
   // specific
-  Node* optimize (const std::function<bool(const Node*)>& zero);
+  Node* optimize (const std::function<bool(const Node*)>& zero) override;
   void addArgumentBack (Node* arg) { args.push_back (arg); }
   void addArgumentFront (Node* arg) { args.push_front (arg); }
   void toList(std::list<Node*>& lst)
@@ -570,8 +570,8 @@ class NodeFunctionA1 : public NodeFunction
     NodeFunctionA1 (const std::string& nm, const size_t loc);
     NodeFunctionA1 (const size_t loc);
     const NodeFunctionA1& operator = (const NodeFunctionA1&);
-    Node* copy () const;
-    size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
+    Node* copy () const override;
+    size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
   private:
     std::function<double(double)> function;
 };
@@ -611,8 +611,8 @@ class NodeFunctionA2 : public NodeFunction
 {
   public:
     NodeFunctionA2 (const std::string& nm, const size_t loc);
-    Node* copy () const;
-    size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
+    Node* copy () const override;
+    size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
   private:
     std::function<double(double,double)> function;
 };

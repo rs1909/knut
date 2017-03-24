@@ -19,14 +19,14 @@ class KNSteadyStateJacobian : public KNAbstractCollocation
 {
   public:
     KNSteadyStateJacobian(KNExprSystem& sys_);
-    virtual ~KNSteadyStateJacobian() {}
+    ~KNSteadyStateJacobian() override {}
     
     // init(...) is called before any attempt to solve to calculate the jacobians
-    void   init(const KNVector& sol, const KNVector& par);
+    void   init(const KNVector& sol, const KNVector& par) override;
     // this provides adjoint vectors
-    void   star(KNVector& out, const KNVector& sol) { out = sol; }
+    void   star(KNVector& out, const KNVector& sol) override { out = sol; }
     // this defines the inner product on the space
-    double integrate(const KNVector& v1, const KNVector& v2) { return v1*v2; }
+    double integrate(const KNVector& v1, const KNVector& v2) override { return v1*v2; }
     double integrateWithCp(const KNVector& v1, const KNVector& v2, const KNVector& v3)
     {
       double res = 0.0;
@@ -34,7 +34,7 @@ class KNSteadyStateJacobian : public KNAbstractCollocation
       return res;
     }
     // this adapts the mesh of the numerical scheme
-    void   meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent) { }
+    void   meshAdapt(KNVector& newprofile, const KNVector& profile, KNVector& newtangent, const KNVector& tangent) override { }
     
     void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
     void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p);

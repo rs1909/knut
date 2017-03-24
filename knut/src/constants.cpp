@@ -23,12 +23,12 @@ class KNXmlConstantsReader : public KNAbstractConstantsReader
     KNXmlConstantsReader();
     KNXmlConstantsReader(mxml_node_t * tree);
     ~KNXmlConstantsReader();
-    virtual bool getSystem(std::string& strout);
-    virtual bool getTextField(const char* field, std::string& strout);
-    virtual bool getIndexField(const char* field, size_t& out);
-    virtual bool getDoubleField(const char* field, double& out);
-    virtual bool getStringListField(const char* field, std::vector<std::string>& out);
-    virtual bool getIndexListField(const char* field, std::vector<size_t>& out);
+    bool getSystem(std::string& strout) override;
+    bool getTextField(const char* field, std::string& strout) override;
+    bool getIndexField(const char* field, size_t& out) override;
+    bool getDoubleField(const char* field, double& out) override;
+    bool getStringListField(const char* field, std::vector<std::string>& out) override;
+    bool getIndexListField(const char* field, std::vector<size_t>& out) override;
   private:
     const std::string filename;
     mxml_node_t* tree;
@@ -79,12 +79,12 @@ class KNXmlConstantsWriter : public KNAbstractConstantsWriter
     KNXmlConstantsWriter();
     KNXmlConstantsWriter(const std::string& filename);
     ~KNXmlConstantsWriter();
-    virtual void setSystem(const std::string& str);
-    virtual void setTextField(const char* fieldname, const std::string& str);
-    virtual void setDoubleField(const char* fieldname, double val);
-    virtual void setIndexField(const char* fieldname, size_t val);
-    virtual void setStringListField(const char* field, const std::vector<std::string>& vec);
-    virtual void setIndexListField(const char* field, const std::vector<size_t>& vec);
+    void setSystem(const std::string& str) override;
+    void setTextField(const char* fieldname, const std::string& str) override;
+    void setDoubleField(const char* fieldname, double val) override;
+    void setIndexField(const char* fieldname, size_t val) override;
+    void setStringListField(const char* field, const std::vector<std::string>& vec) override;
+    void setIndexListField(const char* field, const std::vector<size_t>& vec) override;
   private:
     const std::string filename;
     mxml_node_t *xml;

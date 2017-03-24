@@ -52,24 +52,24 @@ class KNTestFunctional : public KNAbstractTestFunctional
 {
   public:
     KNTestFunctional(KNDdeBvpCollocation& col, double Z);
-    ~KNTestFunctional();
-    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep(KNDdeBvpCollocation&);
-    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
-    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+    ~KNTestFunctional() override;
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double initStep(KNDdeBvpCollocation&) override;
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
 
-    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t)
+    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t) override
     {}
-    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void kernel(KNVector& phi);
+    void kernel(KNVector& phi) override;
 
   private:
     bool        first;
@@ -89,33 +89,33 @@ class KNComplexTestFunctional : public KNAbstractTestFunctional
 {
   public:
     KNComplexTestFunctional(KNDdeBvpCollocation& col);
-    ~KNComplexTestFunctional();
-    void   init(KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    ~KNComplexTestFunctional() override;
+    void   init(KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    double funct(KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    double funct(KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {
       return 0.0;
     }
-    double funct_p(KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t)
+    double funct_p(KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t) override
     {
       return 0.0;
     }
-    void   funct_x(KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void   funct_x(KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
 
     void init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol,
-              double Re, double Im);
-    double initStep(KNDdeBvpCollocation&);
+              double Re, double Im) override;
+    double initStep(KNDdeBvpCollocation&) override;
     void funct(double& f1, double& f2,
-               KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, double Re, double Im);
+               KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, double Re, double Im) override;
     void funct_p(double& f1, double& f2,
                  KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol,
-                 size_t alpha);
+                 size_t alpha) override;
     void funct_z(double& f1, double& f2,
-                 KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+                 KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
     void funct_x(KNVector& func1, KNVector& func2,
-                 KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    inline void kernel(KNVector&)
+                 KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    inline void kernel(KNVector&) override
     {}
     void   kernel(KNVector& Re, KNVector& Im, double& alpha);
     double kernelComplex(double& newperiod, KNVector& Re, KNVector& Im, KNDdeBvpCollocation& col, const KNVector& par);
@@ -144,24 +144,24 @@ class KNLpAutTestFunctional : public KNAbstractTestFunctional
 {
   public:
     KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z);
-    ~KNLpAutTestFunctional();
-    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep(KNDdeBvpCollocation&);
-    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
-    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par);
+    ~KNLpAutTestFunctional() override;
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double initStep(KNDdeBvpCollocation&) override;
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par) override;
 
-    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t)
+    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t) override
     {}
-    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void kernel(KNVector& phi);
+    void kernel(KNVector& phi) override;
 
   private:
     bool        first;
@@ -191,24 +191,24 @@ class KNLpAutRotTestFunctional : public KNAbstractTestFunctional
 {
   public:
     KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNArray1D<size_t> CRe, KNArray1D<size_t> CIm, double Z);
-    ~KNLpAutRotTestFunctional();
-    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double initStep(KNDdeBvpCollocation&);
-    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
-    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+    ~KNLpAutRotTestFunctional() override;
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double initStep(KNDdeBvpCollocation&) override;
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
 
-    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t)
+    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t) override
     {}
-    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void kernel(KNVector& phi);
+    void kernel(KNVector& phi) override;
 
   private:
     bool         first;
@@ -243,25 +243,25 @@ class KNLpAutRotTestFunctional2 : public KNAbstractTestFunctional
 {
   public:
     KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, KNArray1D<size_t> CRe, KNArray1D<size_t> CIm, double Z);
-    ~KNLpAutRotTestFunctional2();
-    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
-    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+    ~KNLpAutRotTestFunctional2() override;
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
 
-    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void init(KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    double initStep(KNDdeBvpCollocation&)
+    double initStep(KNDdeBvpCollocation&) override
     { return 0.0; }
-    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double)
+    void funct(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, double, double) override
     {}
-    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t)
+    void funct_p(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&, size_t) override
     {}
-    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_z(double&, double&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&)
+    void funct_x(KNVector&, KNVector&, KNDdeBvpCollocation&, const KNVector&, const KNVector&) override
     {}
-    void kernel(KNVector& phi);
+    void kernel(KNVector& phi) override;
 
   private:
     bool         first;
@@ -305,62 +305,62 @@ class TestFunctIntersect : public KNAbstractTestFunctional
 {
   public:
     TestFunctIntersect() { }
-    virtual        ~TestFunctIntersect()
+           ~TestFunctIntersect() override
     {}
     // only first derivatives
-    virtual void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    virtual double initStep(KNDdeBvpCollocation&);
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double initStep(KNDdeBvpCollocation&) override;
     // return value
-    virtual double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
     // derivative w.r.t. alpha
-    virtual double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
     // derivative w.r.t. state variables
-    virtual void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par);
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par) override;
 
     // these are not implemented
-    virtual void init(KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
-                      double , double ) { }
-    virtual void funct(double& , double& ,
-                       KNDdeBvpCollocation& , const KNVector& , const KNVector& , double , double ) { }
-    virtual void funct_p(double& , double& ,
+    void init(KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
+                      double , double ) override { }
+    void funct(double& , double& ,
+                       KNDdeBvpCollocation& , const KNVector& , const KNVector& , double , double ) override { }
+    void funct_p(double& , double& ,
                          KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
-                         size_t ) { }
-    virtual void funct_z(double& , double& ,
-                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) { }
-    virtual void funct_x(KNVector& , KNVector& ,
-                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) { }
-    virtual void kernel(KNVector& ) { }
+                         size_t ) override { }
+    void funct_z(double& , double& ,
+                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) override { }
+    void funct_x(KNVector& , KNVector& ,
+                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) override { }
+    void kernel(KNVector& ) override { }
 };
 
 class TestFunctGrazing : public KNAbstractTestFunctional
 {
   public:
     TestFunctGrazing() { }
-    virtual        ~TestFunctGrazing()
+           ~TestFunctGrazing() override
     {}
     // set up second derivatives
-    virtual void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
-    virtual double initStep(KNDdeBvpCollocation&);
+    void   init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
+    double initStep(KNDdeBvpCollocation&) override;
     // return value
-    virtual double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol);
+    double funct(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol) override;
     // derivative w.r.t. alpha
-    virtual double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha);
+    double funct_p(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& sol, size_t alpha) override;
     // derivative w.r.t. state variables
-    virtual void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par);
+    void   funct_x(KNVector& func, KNDdeBvpCollocation& col, const KNVector& sol, const KNVector& par) override;
 
     // these are not implemented
-    virtual void init(KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
-                      double , double ) { }
-    virtual void funct(double& , double& ,
-                       KNDdeBvpCollocation& , const KNVector& , const KNVector& , double , double ) { }
-    virtual void funct_p(double& , double& ,
+    void init(KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
+                      double , double ) override { }
+    void funct(double& , double& ,
+                       KNDdeBvpCollocation& , const KNVector& , const KNVector& , double , double ) override { }
+    void funct_p(double& , double& ,
                          KNDdeBvpCollocation& , const KNVector& , const KNVector& ,
-                         size_t ) { }
-    virtual void funct_z(double& , double& ,
-                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) { }
-    virtual void funct_x(KNVector& , KNVector& ,
-                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) { }
-    virtual void kernel(KNVector& ) { }
+                         size_t ) override { }
+    void funct_z(double& , double& ,
+                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) override { }
+    void funct_x(KNVector& , KNVector& ,
+                         KNDdeBvpCollocation& , const KNVector& , const KNVector& ) override { }
+    void kernel(KNVector& ) override { }
 };
 
 #endif

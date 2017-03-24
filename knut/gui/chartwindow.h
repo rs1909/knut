@@ -37,11 +37,11 @@ public:
     KnutChartView(QChart *chart, QWidget *parent = nullptr);
 
 protected:
-    bool viewportEvent(QEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+    bool viewportEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     bool m_isTouching;
@@ -66,10 +66,10 @@ class plotWindow : public QSplitter
   public:
     plotWindow(const QString& filename, QWidget *parent = nullptr);
     plotWindow(QWidget *parent = nullptr);
-    ~plotWindow();
+    ~plotWindow() override;
     void init(Var cp);
   protected:
-    void closeEvent(QCloseEvent *event)
+    void closeEvent(QCloseEvent *event) override
     {
       emit windowClosed();
       event->accept();

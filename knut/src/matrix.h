@@ -636,7 +636,7 @@ class KNVector : public KNArray1D<double>
     inline KNVector(const KNArray2D<double>& m, size_t i) : KNArray1D<double>(m,i)
     { }
 
-    inline virtual ~KNVector()
+    inline ~KNVector() override
     { }
 
 #ifndef KNUTSYS_H
@@ -722,7 +722,7 @@ class KNMatrix : public KNArray2D<double>
     inline KNMatrix(const KNArray3D<double>& m, size_t i) : KNArray2D<double>(m,i)
     { }
 
-    inline virtual ~KNMatrix()
+    inline ~KNMatrix() override
     { }
 
     inline size_t row() const
@@ -854,7 +854,7 @@ class KNLuMatrix : public KNMatrix
       iwork = new blasint[this->r];
     }
 
-    inline virtual ~KNLuMatrix()
+    inline ~KNLuMatrix() override
     {
       delete[] iwork;
       delete[] work;

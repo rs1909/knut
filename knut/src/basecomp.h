@@ -85,10 +85,10 @@ class KNCliContinuation : public KNAbstractContinuation
   public:
 //     KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0), charsPrinted(0) { }
     KNCliContinuation () : output(nullptr), charsPrinted(0) { }
-    ~KNCliContinuation() { }
-    void printStream() { std::cout << screenout.str(); charsPrinted += screenout.str().size(); screenout.str(""); std::cout.flush();  }
-    virtual void storeCursor() { charsPrinted = 0; }
-    virtual void clearLastLine()
+    ~KNCliContinuation() override { }
+    void printStream() override { std::cout << screenout.str(); charsPrinted += screenout.str().size(); screenout.str(""); std::cout.flush();  }
+    void storeCursor() override { charsPrinted = 0; }
+    void clearLastLine() override
     {
       for (size_t k=0; k<charsPrinted; ++k) std::cout << "\b";
     }
@@ -96,18 +96,18 @@ class KNCliContinuation : public KNAbstractContinuation
     {
       KNAbstractContinuation::printException(std::cerr, ex);
     }
-    void raiseException(const KNException& ex)
+    void raiseException(const KNException& ex) override
     {
       printException(ex);
       exit(-1);
     }
-    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms) override
     {
       output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
     }
-    KNAbstractData& data() { return *output; }
-    void deleteData() { delete output; output = nullptr; }
-    void dataUpdated() { }
+    KNAbstractData& data() override { return *output; }
+    void deleteData() override { delete output; output = nullptr; }
+    void dataUpdated() override { }
   private:
     KNDataFile* output;
     size_t charsPrinted;

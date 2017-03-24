@@ -327,7 +327,7 @@ class KNConstants : public KNConstantsBase
       BifTypeTable.update(this);
       VarTable.update(this);
     }
-    virtual ~KNConstants() { }
+    ~KNConstants() override { }
 };
 
 template<typename TP> void TypeTupleTab<TP>::update()

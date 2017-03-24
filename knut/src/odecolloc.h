@@ -21,20 +21,20 @@ class KNOdeBvpCollocation : public KNAbstractBvpCollocation
 
     KNOdeBvpCollocation(KNExprSystem& _sys, const size_t nint, const size_t ndeg);        // computes mesh, metric, metricD
 
-    ~KNOdeBvpCollocation()
+    ~KNOdeBvpCollocation() override
     {}
 
-    void init(const KNVector& sol, const KNVector& par);   // computes time, kk, ee, dd, rr ...
+    void init(const KNVector& sol, const KNVector& par) override;   // computes time, kk, ee, dd, rr ...
 
-    void interpolate(KNArray3D<double>& out, const KNVector& sol);
-    void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol);
-    void interpolateOnMesh(KNArray3D<double>& out, const KNVector& sol);
+    void interpolate(KNArray3D<double>& out, const KNVector& sol) override;
+    void interpolateComplex(KNArray3D<double>& outRe, KNArray3D<double>& outIm, const KNVector& sol) override;
+    void interpolateOnMesh(KNArray3D<double>& out, const KNVector& sol) override;
 
     // continuation of solution
 
-    void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol);
-    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p);   // sol is currently not needed
-    void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol);          // sol is currently not needed
+    void rightHandSide(KNVector& rhs, const KNVector& par, const KNVector& sol) override;
+    void rightHandSide_p(KNVector& rhs, const KNVector& par, const KNVector& sol, size_t p) override;   // sol is currently not needed
+    void rightHandSide_x(KNSparseMatrix& A, const KNVector& par, const KNVector& sol) override;          // sol is currently not needed
     void jacobianOfStability(KNSparseMatrix& A, const KNVector& par);
 
   private:

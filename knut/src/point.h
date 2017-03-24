@@ -36,14 +36,14 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
     // constructor
     KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys, 
       KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul = MULTIPLIERS);
-    virtual ~KNDdePeriodicSolution();
+    ~KNDdePeriodicSolution() override;
 
-    void    Stability(bool init);
+    void    Stability(bool init) override;
 
     // algorithms
-    void    SwitchTFLP(BranchSW type, double ds);   // switches branch with testFunct
-    void    SwitchTFPD(double ds);   // switches branch with testFunct
-    void    SwitchTFHB(double ds);   // switches branch with testFunct
+    void    SwitchTFLP(BranchSW type, double ds) override;   // switches branch with testFunct
+    void    SwitchTFPD(double ds) override;   // switches branch with testFunct
+    void    SwitchTFHB(double ds) override;   // switches branch with testFunct
     void    SwitchTRSol(KNVector& Sol, const KNVector& mshint, const KNVector& mshdeg)
     {
       colloc->exportProfile(Sol, mshint, mshdeg, sol);
@@ -66,8 +66,8 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
 
   private:
 
-    void    construct();
-    void    destruct();
+    void    construct() override;
+    void    destruct() override;
 
     // internal member-functions
 //   inline double SolNorm( KNVector& sol, KNVector& par );
@@ -79,8 +79,8 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
       KNVector& solPrev, KNVector& sol,                           // solution
       KNArray1D<size_t>& varMap,                                // contains the variables. If cont => contains the P0 too.
       double ds, bool cont                                    // ds stepsize, cont: true if continuation
-    );
-    void postProcess();
+    ) override;
+    void postProcess() override;
 
     // multipliers
 //    KNVector       mRe;

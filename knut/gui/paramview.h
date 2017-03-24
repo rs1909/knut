@@ -27,23 +27,23 @@ class ParamsModel : public QAbstractTableModel
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
       if (parameters->getPointType() == SolUser) return 2;
       else return 1;
     }
-    int columnCount(const QModelIndex &parent = QModelIndex()) const
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override
     {
       if (parameters->getPointType() == SolUser) return static_cast<int>(parameters->getEqnsSize());
       else return static_cast<int>(parameters->getParxSize());
     };
 
-    QVariant data(const QModelIndex &index, int role) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    QVariant data(const QModelIndex &index, int role) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const
+    Qt::ItemFlags flags(const QModelIndex &index) const override
     {
       if (!index.isValid()) return Qt::NoItemFlags;
       else return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
@@ -69,8 +69,8 @@ class BoxDelegate : public QItemDelegate
         : QItemDelegate(parent), parameters(params)
     { }
 
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
   private:
 
@@ -83,7 +83,7 @@ class EqnVarTableView : public QTableView
 
   public:
     EqnVarTableView(NConstantsQtGui* params, QWidget* parent_ = nullptr);
-    ~EqnVarTableView();
+    ~EqnVarTableView() override;
 
   public slots:
     void dataUpdated(const std::vector<Var>& val)
@@ -105,7 +105,7 @@ class EqnVarTableView : public QTableView
     }
     // set size of the widget
     void resetSize();
-    QSize minimumSizeHint() const;
+    QSize minimumSizeHint() const override;
     
   signals:
     void sizeChanged(int);
@@ -131,20 +131,20 @@ class SYMModel : public QAbstractTableModel
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
       return 2;
     }
-    int columnCount(const QModelIndex &parent = QModelIndex()) const
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override
     {
       return static_cast<int>(parameters->getSymReSize());
     };
 
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
   public slots:
 
@@ -167,12 +167,12 @@ class SYMDelegate : public QItemDelegate
         : QItemDelegate(parent_), parameters(params)
     { }
 
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-    void setEditorData(QWidget *editor, const QModelIndex &index) const;
-    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
-    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
   private:
 
@@ -187,7 +187,7 @@ class SYMTableView : public QTableView
 
   public:
     SYMTableView(NConstantsQtGui* params, QWidget* parent_ = nullptr);
-    ~SYMTableView();
+    ~SYMTableView() override;
 
   public slots:
 

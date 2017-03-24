@@ -171,7 +171,7 @@ class PlotData : public QGraphicsScene
 
   public:
     PlotData(QObject *parent = nullptr);
-    ~PlotData();
+    ~PlotData() override;
     bool addPlot(const KNDataFile* mat, 
       PlotXVariable x, PlotYVariable y, size_t pt, size_t dim);
     void clearAll();
@@ -196,10 +196,10 @@ class PlotData : public QGraphicsScene
     void setXSize(int size);
        
   protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
-    void keyPressEvent(QKeyEvent * event);
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event) override;
+    void keyPressEvent(QKeyEvent * event) override;
 
   private:
     void addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool p, bool s = true);

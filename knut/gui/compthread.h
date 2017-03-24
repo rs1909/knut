@@ -25,18 +25,18 @@ class MThread : public QObject, public KNAbstractContinuation
     Q_OBJECT
   public:
     MThread(QObject* parent = nullptr);
-    ~MThread();
-    void printStream();
-    void clearLastLine() { emit printClearLastLine(); }
-    void storeCursor() { emit printStoreCursor(); }
-    void raiseException(const KNException& ex);
-    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms);
+    ~MThread() override;
+    void printStream() override;
+    void clearLastLine() override { emit printClearLastLine(); }
+    void storeCursor() override { emit printStoreCursor(); }
+    void raiseException(const KNException& ex) override;
+    void createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms) override;
 //    void createDataLC (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
 //    void createDataTR (const std::string& fileName, size_t ndim, size_t npar, KNConstants* prms);
-    KNDataFile& data();
+    KNDataFile& data() override;
     const KNDataFile* dataPointer();
-    void deleteData();
-    void dataUpdated();
+    void deleteData() override;
+    void dataUpdated() override;
     void setConstants (const KNConstants& params);
   public slots:
     void stopReq(bool flag);

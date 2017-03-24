@@ -190,7 +190,7 @@ class KNLuSparseMatrix : public KNSparseMatrix
     {
       std::cout << "KNLuSparseMatrix::KNLuSparseMatrix(SpFact&): not implemented\n";
     }
-    ~KNLuSparseMatrix();
+    ~KNLuSparseMatrix() override;
 
     inline void modified()
     {
@@ -201,8 +201,8 @@ class KNLuSparseMatrix : public KNSparseMatrix
     {
       Control[UMFPACK_IRSTEP] = N;
     }
-    void clear();
-    void clear(char F);
+    void clear() override;
+    void clear(char F) override;
 
     void solve(double* x, double* b, bool trans = false);
     void solve(KNVector& x, const KNVector& b, bool trans = false);

@@ -208,7 +208,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       const size_t solsize, const size_t nz_jac_, const size_t nmul) 
       : KNAbstractPoint(cnt, sys, eqn_, var_, solsize, nz_jac_), mRe(nmul), mIm(nmul), mRePrev(nmul), mImPrev(nmul),
         nTrivMulLP(0), nTrivMulPD(0), nTrivMulNS(0) { }
-    virtual ~KNAbstractPeriodicSolution() {}
+    ~KNAbstractPeriodicSolution() override {}
     
     virtual void Stability(bool init) = 0;
     virtual void SwitchTFLP(BranchSW type, double ds) = 0;   // switches branch with testFunct
@@ -266,7 +266,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       return nrm;
     }
     // redefinition of the abstract version
-    inline double normMX()
+    inline double normMX() override
     {
       const size_t ndeg = persolcolloc->nInt();
       const size_t nint = persolcolloc->nInt();
@@ -274,8 +274,8 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       return Amplitude(sol, ndim, ndeg, nint);
     }
     
-    void BinaryRead(const KNAbstractData& data, size_t n);
-    void BinaryWrite(KNAbstractData& data, BifType bif, size_t n);
+    void BinaryRead(const KNAbstractData& data, size_t n) override;
+    void BinaryWrite(KNAbstractData& data, BifType bif, size_t n) override;
 
   protected:
 //    virtual void construct();

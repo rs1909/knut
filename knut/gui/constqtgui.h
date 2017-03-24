@@ -29,7 +29,7 @@ class NConstantsQtGui : public QObject, public KNConstants
     std::vector<tuple_t> connectionList;
   
   public:
-    virtual void setSysNameText(const std::string& str, bool testing = false)
+    void setSysNameText(const std::string& str, bool testing = false) override
     {
       try
       {
@@ -44,7 +44,7 @@ class NConstantsQtGui : public QObject, public KNConstants
     }
     // connecting to signals and slots
     void registerCallback(const char * type, const char * name, QObject* object, const char * signal, const char * slot);
-    virtual void constantChanged(const char* name);
+    void constantChanged(const char* name) override;
     
   private:
     template<typename A> class callbackPtr

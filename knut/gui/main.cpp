@@ -33,7 +33,7 @@ class KnutApplication : public QApplication
         mainWin -> show();
     }
 #ifdef Q_OS_OSX
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::FileOpen) {
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
@@ -42,7 +42,7 @@ class KnutApplication : public QApplication
 
         return QApplication::event(event);
     }
-    ~KnutApplication()
+    ~KnutApplication() override
     {
       delete mainWin;
     }

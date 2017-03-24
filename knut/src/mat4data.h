@@ -80,44 +80,44 @@ class KNDataFile : public KNAbstractData
     // unmaps the memory, truncates the file if necessary, closes the file
     virtual ~KNDataFile();
     
-    virtual void lockRead() const;
-    virtual void lockWrite() const;
-    virtual void unlock() const;
+    void lockRead() const override;
+    void lockWrite() const override;
+    void unlock() const override;
 
     const std::string& getFileName() const { return matFileName; }
     // resets the tables (no locking)
     void   initHeaders();
-    void   setPar(size_t n, const KNVector& par);
+    void   setPar(size_t n, const KNVector& par) override;
     void   setParNames(const std::vector<std::string>& parNames);
     void   getParNames(std::vector<std::string>& parNames) const;
-    void   setMul(size_t n, const KNVector& real, const KNVector& imag);
-    void   setElem(size_t n, const KNVector& el);
-    void   setMesh(size_t n, const KNVector& mesh);
-    void   setProfile(size_t n, const KNVector& profile);
-    void   setMesh1(size_t n, size_t j, double d)
+    void   setMul(size_t n, const KNVector& real, const KNVector& imag) override;
+    void   setElem(size_t n, const KNVector& el) override;
+    void   setMesh(size_t n, const KNVector& mesh) override;
+    void   setProfile(size_t n, const KNVector& profile) override;
+    void   setMesh1(size_t n, size_t j, double d) override
     {
       elem(mesh1_offset, j, n) = d;
     }
-    void   setMesh2(size_t n, size_t j, double d)
+    void   setMesh2(size_t n, size_t j, double d) override
     {
       elem(mesh2_offset, j, n) = d;
     }
-    void   getBlanket(size_t n, KNVector& blanket) const;
-    void   setBlanket(size_t n, const KNVector& blanket);
-    void   setMagic(size_t n, int32_t magic)
+    void   getBlanket(size_t n, KNVector& blanket) const override;
+    void   setBlanket(size_t n, const KNVector& blanket) override;
+    void   setMagic(size_t n, int32_t magic) override
     {
       elem(magic_offset, 0, n) = static_cast<double>(magic);
     }
-    int32_t getMagic(size_t n) const
+    int32_t getMagic(size_t n) const override
     {
       return static_cast<int32_t>(elem(magic_offset, 0, n));
     }
-    void   getPar(size_t n, KNVector& par) const;
+    void   getPar(size_t n, KNVector& par) const override;
     double getPar(size_t n, size_t j) const
     {
       return elem(par_offset, j, n);
     }
-    void   getMul(size_t n, KNVector& real, KNVector& imag) const;
+    void   getMul(size_t n, KNVector& real, KNVector& imag) const override;
     double getMulRe(size_t n, size_t j) const
     {
       return elem(mul_offset, j, n);
@@ -139,7 +139,7 @@ class KNDataFile : public KNAbstractData
     {
       return static_cast<size_t>(((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j]);
     }
-    void   setNTrivMul(const size_t j, size_t i)
+    void   setNTrivMul(const size_t j, size_t i) override
     {
       ((double*)((char*)address + ntrivmul_offset + ntrivmul_header.col_off(0)))[j] = i;
     }
@@ -152,7 +152,7 @@ class KNDataFile : public KNAbstractData
     {
       el.init(&elem(elem_offset, 0, n), ndeg + 1);
     }
-    void   getMesh(size_t n, KNVector& mesh) const;
+    void   getMesh(size_t n, KNVector& mesh) const override;
     double getMesh(size_t n, size_t j) const
     {
       return elem(mesh_offset, j, n);
@@ -161,7 +161,7 @@ class KNDataFile : public KNAbstractData
     {
       mesh.init(&elem(mesh_offset, 0, n), nint + 1);
     }
-    void   getProfile(size_t n, KNVector& profile) const;
+    void   getProfile(size_t n, KNVector& profile) const override;
     double getProfile(size_t n, size_t d, size_t j) const
     {
       return elem(prof_offset, d + ndim*j, n);
@@ -171,19 +171,19 @@ class KNDataFile : public KNAbstractData
       profile.init(&elem(prof_offset, 0, n), ndim*(ndeg*nint + 1));
     }
 
-    size_t  getNDim() const
+    size_t  getNDim() const override
     {
       return ndim;
     }
-    size_t  getNInt() const
+    size_t  getNInt() const override
     {
       return nint;
     }
-    size_t  getNDeg() const
+    size_t  getNDeg() const override
     {
       return ndeg;
     }
-    size_t  getNPar() const
+    size_t  getNPar() const override
     {
       return npar;
     }
@@ -199,7 +199,7 @@ class KNDataFile : public KNAbstractData
     {
       return ndeg + 1;
     }
-    size_t  getNCols() const
+    size_t  getNCols() const override
     {
       return ncols;
     }

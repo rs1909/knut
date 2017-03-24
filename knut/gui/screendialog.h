@@ -28,7 +28,7 @@ class screenDialog : public QTextEdit
       move(pos);
       savedPosition = textCursor().position();
     }
-    ~screenDialog()
+    ~screenDialog() override
     {
       QSettings settings("Knut", "text window");
       settings.setValue("pos", pos());
@@ -37,7 +37,7 @@ class screenDialog : public QTextEdit
   signals:
     void windowClosed();
   protected:
-  	void closeEvent(QCloseEvent *event)
+  	void closeEvent(QCloseEvent *event) override
  	{
  	  emit windowClosed();
       event->accept();

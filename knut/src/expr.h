@@ -215,20 +215,20 @@ class NodeNumber : public Node
 {
 public:
   NodeNumber (double val, const size_t loc) : Node(TokenType::Number, loc), value(val) {}
-  void deleteTree () {}
-  Node* copy () const { return new NodeNumber (value, vfloc); }
-  size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return nullptr; }
-  Node* getChild (size_t n) { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const { if (value > 0) out << value; else out << '(' << value << ')'; }
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent) {}
-  void replaceSymbol(const Node& node, Node** parent) {}
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero) { return this; }
+  void deleteTree () override {}
+  Node* copy () const override { return new NodeNumber (value, vfloc); }
+  size_t children () const override { return 0; }
+  const Node* getChild (size_t n) const override { return nullptr; }
+  Node* getChild (size_t n) override { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override { if (value > 0) out << value; else out << '(' << value << ')'; }
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override {}
+  void replaceSymbol(const Node& node, Node** parent) override {}
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const override {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override { return this; }
   double getValue() const { return value; }
 private:
   double value;
@@ -238,22 +238,22 @@ class NodeSymbol : public Node
 {
 public:
   NodeSymbol (const std::string& nm, const size_t loc) : Node(TokenType::Symbol, loc), name(nm) {}
-  void deleteTree () {}
-  Node* copy () const { return new NodeSymbol (name, vfloc); }
-  size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return nullptr; }
-  Node* getChild (size_t n) { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const { out << name; }
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
+  void deleteTree () override {}
+  Node* copy () const override { return new NodeSymbol (name, vfloc); }
+  size_t children () const override { return 0; }
+  const Node* getChild (size_t n) const override { return nullptr; }
+  Node* getChild (size_t n) override { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override { out << name; }
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
   // replaces the symbol with the node
   // parent points to the pointer of the current class
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol (const Node& node, Node** parent);
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero) { return this; }
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol (const Node& node, Node** parent) override;
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const override {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override { return this; }
   const std::string& getName () const { return name; }
 private:
   std::string name;
@@ -263,21 +263,21 @@ class NodeVar : public Node
 {
 public:
   NodeVar (size_t id, const size_t loc) : Node(TokenType::Var, loc), idx(id) {}
-  ~NodeVar() {}
-  void deleteTree () {}
-  Node* copy () const { return new NodeVar (idx, vfloc); }
-  size_t children () const {return 0; }
-  const Node* getChild (size_t n) const { return nullptr; }
-  Node* getChild (size_t n) { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const { out << "V["<<idx<<"]"; }
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol (const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol (const Node& node, Node** parent) {}
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero) { return this; }
+  ~NodeVar() override {}
+  void deleteTree () override {}
+  Node* copy () const override { return new NodeVar (idx, vfloc); }
+  size_t children () const override {return 0; }
+  const Node* getChild (size_t n) const override { return nullptr; }
+  Node* getChild (size_t n) override { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override { out << "V["<<idx<<"]"; }
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol (const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol (const Node& node, Node** parent) override {}
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const override {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override { return this; }
   size_t getIdx () const { return idx; }
 private:
   size_t idx;
@@ -287,21 +287,21 @@ class NodePar : public Node
 {
 public:
   NodePar (size_t id, const size_t loc) : Node(TokenType::Par, loc), idx(id) {}
-  ~NodePar() {}
-  void deleteTree () {}
-  Node* copy () const { return new NodePar (idx, vfloc); }
-  size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return nullptr; }
-  Node* getChild (size_t n) { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const { out << "P["<<idx<<"]"; }
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent) {}
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero) { return this; }
+  ~NodePar() override {}
+  void deleteTree () override {}
+  Node* copy () const override { return new NodePar (idx, vfloc); }
+  size_t children () const override { return 0; }
+  const Node* getChild (size_t n) const override { return nullptr; }
+  Node* getChild (size_t n) override { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override { out << "P["<<idx<<"]"; }
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override {}
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const override {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override { return this; }
   size_t getIdx () const { return idx; }
 private:
   size_t idx;
@@ -314,9 +314,9 @@ public:
   NodeExpr (size_t idx_, size_t np_, size_t nv_, size_t dp_, size_t dv0_, size_t dv1_, const size_t loc)
     : Node(TokenType::Expr, loc), idx(idx_), np(np_), nv(nv_), dp(dp_) { dv[0] = dv0_; dv[1] = dv1_; }
 
-  ~NodeExpr() { }
-  void deleteTree () {}
-  NodeExpr* copy () const
+  ~NodeExpr() override { }
+  void deleteTree () override {}
+  NodeExpr* copy () const override
   {
     NodeExpr *ne = new NodeExpr (idx, vfloc);
     ne->np = np;
@@ -326,11 +326,11 @@ public:
     ne->dv[1] = dv[1];
     return ne;
   }
-  size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return nullptr; }
-  Node* getChild (size_t n) { return nullptr; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const
+  size_t children () const override { return 0; }
+  const Node* getChild (size_t n) const override { return nullptr; }
+  Node* getChild (size_t n) override { return nullptr; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override
   {
     out << "ex" << idx;
     if (np > 0) out << "_p" << dp;
@@ -341,13 +341,13 @@ public:
       else out << "_v" << dv[1] << "_v" << dv[0];
     }
   }
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent) {}
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const {}
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero)
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override {}
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& name) const override {}
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override
   {
     if (zero (this))
     {
@@ -378,25 +378,25 @@ public:
   {
     for (size_t k=1; k<nargs; k++) args[k] = nullptr;
   }
-  void deleteTree()
+  void deleteTree() override
   {
     for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree(); delete args[k]; }
   }
-  Node* copy () const;
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const { return args[n]; }
-  Node* getChild (size_t n) { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const;
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
+  Node* copy () const override;
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override { return args[n]; }
+  Node* getChild (size_t n) override { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override;
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
   // replaces the symbol with the node
   // parent points to the pointer of the current class
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent);
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero);
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override;
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override;
   // specific
   NodeFunction* specialize ();
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
@@ -413,27 +413,27 @@ public:
   {
     for (size_t k=1; k<nargs; k++) { args[k] = nullptr; mul[k] = 1.0; }
   }
-  void deleteTree ()
+  void deleteTree () override
   {
     for(size_t k=0; k<args.size(); k++)
       if (args[k] != nullptr) { args[k]->deleteTree (); delete args[k]; }
       else P_MESSAGE1("NULLPTR\n");
   }
-  Node* copy () const;
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const { return args[n]; }
-  Node* getChild (size_t n) { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const;
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent);
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  Node* copy () const override;
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override { return args[n]; }
+  Node* getChild (size_t n) override { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override;
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override;
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
   // specific
   void addArgument (size_t pos, Node* arg, double m) { args[pos] = arg; mul[pos] = m; }
-  Node* optimize (const std::function<bool(const Node*)>& zero);
+  Node* optimize (const std::function<bool(const Node*)>& zero) override;
   void sort ();
 private:
   std::vector<Node*> args;
@@ -447,27 +447,27 @@ public:
   {
     for (size_t k=1; k<nargs; k++) { args[k] = nullptr; divide[k] = false; }
   }
-  void deleteTree ()
+  void deleteTree () override
   {
     for(size_t k=0; k<args.size(); k++)
       if (args[k] != nullptr) { args[k]->deleteTree (); delete args[k]; }
       else P_MESSAGE1("NULLPTR\n");
   }
-  Node* copy () const;
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const { return args[n]; }
-  Node* getChild (size_t n) { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const;
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent);
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
+  Node* copy () const override;
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override { return args[n]; }
+  Node* getChild (size_t n) override { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override;
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override;
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override;
   // needs to handle the divisions
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
   // specific
-  Node* optimize (const std::function<bool(const Node*)>& zero);
+  Node* optimize (const std::function<bool(const Node*)>& zero) override;
   void sort ();
   void setMul (double mul) { smul = mul; }
   double getMul () { return smul; }
@@ -482,23 +482,23 @@ class NodePower : public Node
 {
 public:
   NodePower (const size_t loc) : Node(TokenType::Power, loc), args(2) {}
-  void deleteTree ()
+  void deleteTree () override
   {
     for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; }
   }
-  Node* copy () const;
-  size_t children () const { return args.size(); }
-  const Node* getChild (size_t n) const { return args[n]; }
-  Node* getChild (size_t n) { return args[n]; }
-  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
-  void print (std::ostream& out) const;
-  bool operator != (const Node& node) const;
-  bool operator < (const Node& node) const;
-  void replaceSymbol(const Node& sym, const Node& node, Node** parent);
-  void replaceSymbol(const Node& node, Node** parent);
-  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const;
-  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const;
-  Node* optimize (const std::function<bool(const Node*)>& zero);
+  Node* copy () const override;
+  size_t children () const override { return args.size(); }
+  const Node* getChild (size_t n) const override { return args[n]; }
+  Node* getChild (size_t n) override { return args[n]; }
+  size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const override;
+  void print (std::ostream& out) const override;
+  bool operator != (const Node& node) const override;
+  bool operator < (const Node& node) const override;
+  void replaceSymbol(const Node& sym, const Node& node, Node** parent) override;
+  void replaceSymbol(const Node& node, Node** parent) override;
+  void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override;
+  Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override;
+  Node* optimize (const std::function<bool(const Node*)>& zero) override;
   // specific
   void addArgument (size_t pos, Node* arg) { args[pos] = arg; }
 private:
