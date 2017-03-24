@@ -1835,8 +1835,9 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
     {
       if (std::isdigit(str[k]) || str[k] == '.')
       {
-        char* endptr;
+        char* endptr = nullptr;
         strtod (&str[k], &endptr);
+        PE_ERROR_X1(endptr != &str[k], k, "Cannot convert number.");
         size_t p = (endptr - &str[k])/sizeof(char);
         std::string tn (&str[k], p);
         stream.push_back (Token (TokenType::Symbol, tn, k) );
