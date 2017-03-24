@@ -13,7 +13,7 @@ class screenDialog : public QTextEdit
 {
     Q_OBJECT
   public:
-    screenDialog(QWidget *parent = 0) : QTextEdit(parent)
+    screenDialog(QWidget *parent = nullptr) : QTextEdit(parent)
     {
       setLineWrapMode(QTextEdit::NoWrap);
       setReadOnly(true);

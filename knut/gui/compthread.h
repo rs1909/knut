@@ -24,7 +24,7 @@ class MThread : public QObject, public KNAbstractContinuation
 {
     Q_OBJECT
   public:
-    MThread(QObject* parent = 0);
+    MThread(QObject* parent = nullptr);
     ~MThread();
     void printStream();
     void clearLastLine() { emit printClearLastLine(); }

@@ -23,7 +23,7 @@ class ParamsModel : public QAbstractTableModel
     Q_OBJECT
 
   public:
-    ParamsModel(NConstantsQtGui* params, QObject *parent_ = 0)
+    ParamsModel(NConstantsQtGui* params, QObject *parent_ = nullptr)
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
@@ -65,7 +65,7 @@ class BoxDelegate : public QItemDelegate
     Q_OBJECT
 
   public:
-    BoxDelegate(NConstantsQtGui* params, QObject *parent = 0)
+    BoxDelegate(NConstantsQtGui* params, QObject *parent = nullptr)
         : QItemDelegate(parent), parameters(params)
     { }
 
@@ -82,7 +82,7 @@ class EqnVarTableView : public QTableView
     Q_OBJECT
 
   public:
-    EqnVarTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
+    EqnVarTableView(NConstantsQtGui* params, QWidget* parent_ = nullptr);
     ~EqnVarTableView();
 
   public slots:
@@ -127,7 +127,7 @@ class SYMModel : public QAbstractTableModel
     Q_OBJECT
 
   public:
-    SYMModel(NConstantsQtGui* params, QObject *parent_ = 0)
+    SYMModel(NConstantsQtGui* params, QObject *parent_ = nullptr)
         : QAbstractTableModel(parent_), parameters(params)
     { }
 
@@ -163,7 +163,7 @@ class SYMDelegate : public QItemDelegate
     Q_OBJECT
 
   public:
-    SYMDelegate(NConstantsQtGui* params, QObject *parent_ = 0)
+    SYMDelegate(NConstantsQtGui* params, QObject *parent_ = nullptr)
         : QItemDelegate(parent_), parameters(params)
     { }
 
@@ -186,7 +186,7 @@ class SYMTableView : public QTableView
     Q_OBJECT
 
   public:
-    SYMTableView(NConstantsQtGui* params, QWidget* parent_ = 0);
+    SYMTableView(NConstantsQtGui* params, QWidget* parent_ = nullptr);
     ~SYMTableView();
 
   public slots:

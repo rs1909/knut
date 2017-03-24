@@ -73,10 +73,10 @@ class KNArray1D
     const bool destructable;
   public:
 
-    inline KNArray1D() : n(0), v(0), destructable(true)
+    inline KNArray1D() : n(0), v(nullptr), destructable(true)
     { }
 
-    inline KNArray1D(bool /*b*/) : n(0), v(0), destructable(false)
+    inline KNArray1D(bool /*b*/) : n(0), v(nullptr), destructable(false)
     { }
 
     inline KNArray1D(size_t i) : n(i), v(new T[i]), destructable(true)
@@ -246,7 +246,7 @@ class KNArray2D
     {
       r = 0;
       c = 0;
-      m = 0;
+      m = nullptr;
     }
 
     inline KNArray2D(size_t _r, size_t _c) : r(_r), c(_c), destructable(true)

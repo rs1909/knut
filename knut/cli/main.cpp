@@ -42,7 +42,7 @@ int main(int argc, const char** argv)
               std::string cfdir(constFile);
               char* cwd_ptr = new char[512];
               getcwd(cwd_ptr, 511);
-              P_ERROR_X1(cwd_ptr != 0, "Cannot obtain CWD.");
+              P_ERROR_X1(cwd_ptr != nullptr, "Cannot obtain CWD.");
               std::string  cwd(cwd_ptr);
               delete[] cwd_ptr;
               cwd += '/';
@@ -88,7 +88,7 @@ int main(int argc, const char** argv)
       }
     }
 
-    if (params == 0)
+    if (params == nullptr)
     {
       P_MESSAGE1("Missing constants file.");
       exit(-1);

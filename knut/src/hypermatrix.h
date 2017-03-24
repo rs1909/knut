@@ -200,9 +200,9 @@ template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(size_t i, size_t j, si
 {
   // constructing the data members
   if (i != 0) A11 = new FACT('R', i, nz);
-  else A11 = 0;
+  else A11 = nullptr;
   if (k != 0) A33 = new KNMatrix(k, k);
-  else A33 = 0;
+  else A33 = nullptr;
 
   if ((i != 0) && (k != 0))
   {
@@ -228,17 +228,17 @@ template<class FACT> KNBlockMatrix<FACT> :: KNBlockMatrix(size_t i, size_t j, si
   }
   else
   {
-    A31 = 0;
-    A13 = 0;
+    A31 = nullptr;
+    A13 = nullptr;
 
-    VV1 = 0;
-    VV1Star = 0;
-    FF1 = 0;
-    GG1 = 0;
-    XX1 = 0;
-    YY1 = 0;
-    delta1 = 0;
-    delta1Star = 0;
+    VV1 = nullptr;
+    VV1Star = nullptr;
+    FF1 = nullptr;
+    GG1 = nullptr;
+    XX1 = nullptr;
+    YY1 = nullptr;
+    delta1 = nullptr;
+    delta1Star = nullptr;
   }
 }
 
@@ -601,8 +601,8 @@ void KNBlockMatrix<FACT>::solveTr(size_t bord, KNVector& X1, KNVector& X3, const
 template<class FACT>
 void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F)
 {
-  P_ASSERT_X(A11 != 0, "KNBlockMatrix::Solve Error");
-  if (A33 != 0)
+  P_ASSERT_X(A11 != nullptr, "KNBlockMatrix::Solve Error");
+  if (A33 != nullptr)
   {
     // MBEW v BEM
     if (A33->col() == 1)
@@ -624,8 +624,8 @@ void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F)
 template<class FACT>
 void KNBlockMatrix<FACT>::solve(KNBlockVector& X, const KNBlockVector& F, size_t bord)
 {
-  P_ASSERT_X(A11 != 0, "KNBlockMatrix::Solve Error");
-  if (A33 != 0)
+  P_ASSERT_X(A11 != nullptr, "KNBlockMatrix::Solve Error");
+  if (A33 != nullptr)
   {
     // MBEW v BEM
     if (bord == 1)

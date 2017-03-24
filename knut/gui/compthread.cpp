@@ -100,13 +100,13 @@ void MThread::deleteData()
     else QCoreApplication::processEvents(waitFlag, 100);
     ++it;
 //    std::cout << "MThread::deleteData loop " << output << " " << it << "\n";
-  } while (output != 0);
+  } while (output != nullptr);
 //  std::cout << "MThread::deleteData out\n";
 }
 
 void MThread::dataDeleteAck()
 {
-  output = 0;
+  output = nullptr;
 }
 
 void MThread::dataUpdated()
@@ -151,7 +151,7 @@ void MThread::dataCreated(KNDataFile* dataFile)
 void MThread::createData (const std::string& fileName, DataType t, size_t ndim, size_t npar, KNConstants* prms)
 {
 //  std::cout << "MThread::createDataLC in\n";
-  output = 0;
+  output = nullptr;
   emit createDataRequest (fileName, t, ndim, npar, prms);
   // wait for the slot to be activated, output turns nonzero
   int it = 0;
@@ -160,6 +160,6 @@ void MThread::createData (const std::string& fileName, DataType t, size_t ndim, 
     else QCoreApplication::processEvents(waitFlag, 100);
     ++it;
 //    std::cout << "MThread::createDataLC loop " << output << " " << it << "\n";
-  } while (output == 0);
+  } while (output == nullptr);
 //  std::cout << "MThread::createDataLC out\n";
 }

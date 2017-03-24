@@ -66,8 +66,8 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
   //
   //-----------------------------------------------------------------------------------------------------------
 
-  KNAbstractPoint* pt_ptr = 0;
-  KNAbstractPeriodicSolution* pt_per_ptr = 0;
+  KNAbstractPoint* pt_ptr = nullptr;
+  KNAbstractPeriodicSolution* pt_per_ptr = nullptr;
   try
   {
     const bool needFN = params->toEqnVar(*sys, eqn, var, eqn_refine, var_refine, eqn_start, var_start, findangle);
@@ -156,7 +156,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
     if (eqn(0) != EqnTORSol)
     {
       KNAbstractPoint& pt = *pt_ptr;
-      createData (params->getOutputFile(), pt_per_ptr != 0 ? DataType::LC : DataType::ST, sys->ndim(), sys->npar(), params);
+      createData (params->getOutputFile(), pt_per_ptr != nullptr ? DataType::LC : DataType::ST, sys->ndim(), sys->npar(), params);
 
       screenout   << "\n---     Starting the continuation      ---\n";
 
@@ -232,7 +232,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         if (stopFlag)
         {
           deleteData();
-          delete pt_ptr; pt_ptr = 0;
+          delete pt_ptr; pt_ptr = nullptr;
 //          delete sys; sys = 0;
           return;
         }
@@ -254,7 +254,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         // stability output
         BifType bif = BifNone;
         if (endpoint) bif = BifEndPoint;
-        if (stabchange && pt_per_ptr != 0) bif =  pt_per_ptr->testBif(); // !!
+        if (stabchange && pt_per_ptr != nullptr) bif =  pt_per_ptr->testBif(); // !!
 
         if (toprint || stabchange || endpoint)
         {
@@ -332,7 +332,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       KNVector TRe, TIm;
       if (params->getBranchSW() == TFTRSwitch)
       {
-        if (dynamic_cast<KNDdePeriodicSolution*>(pt_ptr) == 0) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
+        if (dynamic_cast<KNDdePeriodicSolution*>(pt_ptr) == nullptr) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
         KNDdePeriodicSolution& pt = *dynamic_cast<KNDdePeriodicSolution*>(pt_ptr);
         Sol.init(pt.getSol().size());
         TRe.init(pt.getSol().size());
@@ -354,7 +354,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
 
         // destroy point, construct KNDdeTorusSolution
         delete pt_ptr;
-        pt_ptr = 0;
+        pt_ptr = nullptr;
       }
       KNDdeTorusSolution pttr(this, *sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
       // construct the solution tangent from the eigenvectors
@@ -417,12 +417,12 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       deleteData();
     }
     // **********************************************************************************************************
-    delete pt_ptr; pt_ptr = 0;
+    delete pt_ptr; pt_ptr = nullptr;
 //     delete sys; sys = 0;
   }
   catch (KNException ex)
   {
-    delete pt_ptr; pt_ptr = 0;
+    delete pt_ptr; pt_ptr = nullptr;
 //     delete sys; sys = 0;
     deleteData();
     raiseException(ex);

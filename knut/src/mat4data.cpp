@@ -497,7 +497,7 @@ KNDataFile::~KNDataFile()
       }  
     }
   }
-  address = 0;
+  address = nullptr;
 }
 
 void KNDataFile::setPar(size_t n, const KNVector& par)
@@ -788,7 +788,7 @@ size_t KNDataFile::getNextBifurcation(size_t n, bool* stab) const
     size_t ustab = unstableMultipliers(mulRe, mulIm, lp, pd, ns, i);
     if (ustab != p_ustab) 
     {
-      if (stab != 0)
+      if (stab != nullptr)
       {
         if (ustab == 0 || p_ustab == 0) *stab = true;
         else *stab = false;

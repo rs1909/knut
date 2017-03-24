@@ -96,7 +96,7 @@ void NConstantsQtGui::registerCallback(const char * type, const char * name, QOb
 {
   const tuple_t tp = {type, name, object, signal, slot};
   connectionList.push_back(tp);
-  if (signal == 0) return;
+  if (signal == nullptr) return;
   if (!strncmp(type,"int",12))
   {
     connect(object, signal, this, SLOT(slotToInt(int)));
@@ -135,7 +135,7 @@ void NConstantsQtGui::registerCallback(const char * type, const char * name, QOb
 template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConnection(QObject *object)
 {
   int found = 0;
-  const char *name = 0;
+  const char *name = nullptr;
   for (unsigned int k=0; k<connectionList.size(); k++)
   {
     if (connectionList [k].object == object)
@@ -145,7 +145,7 @@ template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConn
     } 
   }
   if (found == 1) return callbackPtr<TP>(cnames.findFun(name));
-  return 0;
+  return nullptr;
 }
 
 void NConstantsQtGui::slotToInt(int val)

@@ -132,8 +132,8 @@ void KNLuMatrix::luFactorize()
   ptrdiff_t nrhs = 0;
 
   knut_dgesvx(FACT, trans, n, nrhs, this->m, n, this->mf, n,
-              ipiv, equed, NULL, NULL, NULL, n, NULL, n,
-              &rcond, NULL, NULL, work, iwork, &info);
+              ipiv, equed, nullptr, nullptr, nullptr, n, nullptr, n,
+              &rcond, nullptr, nullptr, work, iwork, &info);
 
   // cout<<"work(1): "<<work[0]<<" rcond< "<<rcond<<"\n";
   if (info != 0) cout << "KNLuMatrix::Fact: Error code" << info << '\n';
@@ -176,7 +176,7 @@ void KNLuMatrix::solve(KNVector& x, const KNVector& b, bool trans)
       size_t nrhs = 1;
 
       knut_dgesvx(FACT, TRANS, n, nrhs, this->m, n, this->mf, n,
-                  ipiv, equed, NULL, NULL, b.v, n, x.pointer(), n,
+                  ipiv, equed, nullptr, nullptr, b.v, n, x.pointer(), n,
                   &rcond, &ferr, &berr, work, iwork, &info);
       if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';
       break;
@@ -232,7 +232,7 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
       size_t nrhs = b.col();
 
       knut_dgesvx(FACT, TRANS, n, nrhs, this->m, n, this->mf, n,
-                  ipiv, equed, NULL, NULL, b.m, n, x.m, n,
+                  ipiv, equed, nullptr, nullptr, b.m, n, x.m, n,
                   &rcond, fberr, fberr + b.col(), work, iwork, &info);
 
       if (info != 0) cout << "KNLuMatrix::Solve: Error code" << info << '\n';

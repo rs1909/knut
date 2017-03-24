@@ -208,7 +208,7 @@ class KNDataFile : public KNAbstractData
       return static_cast<size_t>(((double*)((char*)address + npoints_offset + npoints_header.col_off(0)))[0]);
     }
     size_t  getUnstableMultipliers(size_t n) const;
-    size_t  getNextBifurcation(size_t n, bool* stab = 0) const;
+    size_t  getNextBifurcation(size_t n, bool* stab = nullptr) const;
     BifType getBifurcationType(size_t n) const;
     // moved to Abstract subclass
 //     size_t  findType(int32_t type, size_t n) const; // to find the n-th point of type; returns index

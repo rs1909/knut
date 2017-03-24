@@ -269,7 +269,7 @@ void plotWindow::setupPlotWindow()
 
 void plotWindow::initPlot(const KNDataFile* mat)
 {
-  if (mat == 0) { std::cout << "Can't set data\n"; return; }
+  if (mat == nullptr) { std::cout << "Can't set data\n"; return; }
 //  data = mat;
   mat->lockRead();
   QFileInfo fi(QString::fromStdString(mat->getFileName()));

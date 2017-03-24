@@ -39,8 +39,8 @@ class plotWindow : public QSplitter
 {
     Q_OBJECT
   public:
-    plotWindow(const QString& filename, QWidget *parent = 0);
-    plotWindow(QWidget *parent = 0);
+    plotWindow(const QString& filename, QWidget *parent = nullptr);
+    plotWindow(QWidget *parent = nullptr);
     ~plotWindow();
     void init(Var cp);
   protected:

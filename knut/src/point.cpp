@@ -32,7 +32,7 @@
 KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExprSystem& sys_, 
   KNArray1D<Eqn>& eqn_, KNArray1D<Var>& var_, size_t nint, size_t ndeg, size_t nmul) 
   : KNAbstractPeriodicSolution(cnt, sys_, eqn_, var_, sys_.ndim()*(ndeg*nint + 1), sys_.ndim()*(ndeg*nint + 1)*sys_.ntau()*sys_.ndim()*(ndeg+1), nmul),
-    jacStab(0)
+    jacStab(nullptr)
 {
   colloc = new KNDdeBvpCollocation(sys_, nint, ndeg);
   basecolloc = colloc;
@@ -71,29 +71,29 @@ void KNDdePeriodicSolution::construct()
     switch (eqn(i))
     {
       case EqnTFLP:
-        P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
+        P_ERROR_X1(testFunct(i) == nullptr, "The test functional already exist.");
         testFunct(i) = new KNTestFunctional(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFPD:
-        P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
+        P_ERROR_X1(testFunct(i) == nullptr, "The test functional already exist.");
         testFunct(i) = new KNTestFunctional(*colloc, -1.0);
         ++nTrivMulPD;
         break;
       case EqnTFLPAUT:
-        P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
+        P_ERROR_X1(testFunct(i) == nullptr, "The test functional already exist.");
         testFunct(i) = new KNLpAutTestFunctional(*colloc, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFLPAUTROT:
-        P_ERROR_X1(testFunct(i) == 0, "The test functional already exist.");
+        P_ERROR_X1(testFunct(i) == nullptr, "The test functional already exist.");
         testFunct(i) = new KNLpAutRotTestFunctional(*colloc, rotRe, rotIm, 1.0);
         ++nTrivMulLP;
         break;
       case EqnTFCPLX_RE:
         P_ERROR_X1(eqn(i + 1) == EqnTFCPLX_IM,
                    "The real and imaginary parts of the complex test functional are not paired.");
-        P_ERROR(testFunct(i) == 0);
+        P_ERROR(testFunct(i) == nullptr);
         testFunct(i) = new KNComplexTestFunctional(*colloc);
         nTrivMulNS += 2;
         break;
@@ -367,7 +367,7 @@ void KNDdePeriodicSolution::SwitchTFLP(BranchSW type, double ds)
   xxDot->getV1().clear();
   xxDot->getV3().clear();
 
-  KNAbstractTestFunctional* tf = 0;
+  KNAbstractTestFunctional* tf = nullptr;
   switch (type)
   {
     case TFBRSwitch:

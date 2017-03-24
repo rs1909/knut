@@ -33,9 +33,9 @@ static inline mxml_node_t *setNodeIndex(mxml_node_t *parent, size_t idx)
 
 static inline const char *getNodeText(mxml_node_t* nd)
 {
-  if (nd != 0)
+  if (nd != nullptr)
   {
-    if (nd->child != 0)
+    if (nd->child != nullptr)
     {
       if (nd->child == nd->last_child)
       {
@@ -44,8 +44,8 @@ static inline const char *getNodeText(mxml_node_t* nd)
           return nd->child->value.opaque; //text.string;
         } else P_MESSAGE1("MXML: wrong element type.");
       } else P_MESSAGE1("MXML: node has too many children.");
-    } else return 0;
-  } else return 0;
+    } else return nullptr;
+  } else return nullptr;
 }
 
 static inline const char *getNodeText(mxml_node_t* nd, const char* def_value)
@@ -61,15 +61,15 @@ static inline const char *getNodeText(mxml_node_t* nd, const char* def_value)
 static inline char getNodeChar(mxml_node_t* nd, const char *line = "")
 {
   const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
+  P_ERROR_X3(str != nullptr, "MXML: node could not be found at line ", line, ".");
   return str[0];
 }
 
 static inline int getNodeInteger(mxml_node_t* nd, const char *line = "")
 {
   const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  return toInt(strtol(str, 0, 10));
+  P_ERROR_X3(str != nullptr, "MXML: node could not be found at line ", line, ".");
+  return toInt(strtol(str, nullptr, 10));
 }
 
 static inline int getNodeInteger(mxml_node_t* nd, int def_value)
@@ -78,15 +78,15 @@ static inline int getNodeInteger(mxml_node_t* nd, int def_value)
 //#ifdef DEBUG
 //  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
 //#endif
-  if (str != 0) return toInt(strtol(str, 0, 10));
+  if (str != nullptr) return toInt(strtol(str, nullptr, 10));
   else return def_value;
 }
 
 static inline size_t getNodeIndex(mxml_node_t* nd, const char *line = "")
 {
   const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
-  return toSizeT(strtol(str, 0, 10));
+  P_ERROR_X3(str != nullptr, "MXML: node could not be found at line ", line, ".");
+  return toSizeT(strtol(str, nullptr, 10));
 }
 
 static inline size_t getNodeIndex(mxml_node_t* nd, size_t def_value)
@@ -95,14 +95,14 @@ static inline size_t getNodeIndex(mxml_node_t* nd, size_t def_value)
 //#ifdef DEBUG
 //  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
 //#endif
-  if (str != 0) return toSizeT(strtol(str, 0, 10));
+  if (str != nullptr) return toSizeT(strtol(str, nullptr, 10));
   else return def_value;
 }
 
 static inline double getNodeReal(mxml_node_t* nd, const char *line = "")
 {
   const char* str = getNodeText(nd);
-  P_ERROR_X3(str != 0, "MXML: node could not be found at line ", line, ".");
+  P_ERROR_X3(str != nullptr, "MXML: node could not be found at line ", line, ".");
   std::istringstream strstr(str);
   double val;
   strstr >> val;
@@ -115,7 +115,7 @@ static inline double getNodeReal(mxml_node_t* nd, double def_value)
 //#ifdef DEBUG
 //  P_ERROR_X1(str != 0, "MXML: node could not be found at line.");
 //#endif
-  if (str != 0)
+  if (str != nullptr)
   {
     std::istringstream strstr(str);
     double val;
@@ -137,56 +137,56 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
   mxml_node_t *tree;
 
   fp = fopen(fileName.c_str(), "r");
-  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
+  P_ERROR_X3(fp != nullptr, "Cannot open file '", fileName, "'." );
+  tree = mxmlLoadFile(nullptr, fp, MXML_OPAQUE_CALLBACK);
   fclose(fp);
 
-  mxml_node_t* nd = 0;
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* nd = nullptr;
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", nullptr, nullptr, MXML_DESCEND_FIRST);
   if (!root_nd)
   {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+    root_nd = mxmlFindElement(tree, tree, "pdde", nullptr, nullptr, MXML_DESCEND_FIRST);
   }
   
-  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "input", nullptr, nullptr, MXML_DESCEND_FIRST);
   setInputFile(getNodeText(nd, ""));
   
-  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "output", nullptr, nullptr, MXML_DESCEND_FIRST);
   setOutputFile(getNodeText(nd, ""));
   
-  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "sysname", nullptr, nullptr, MXML_DESCEND_FIRST);
   // This has to load the system definition
   const char *s_type = mxmlElementGetAttr(nd, "type");
   if (s_type) setSysType(s_type);
   setSysNameText(getNodeText(nd, ""));
 
-  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "fromtype", nullptr, nullptr, MXML_DESCEND_FIRST);
   setFromType(BifTypeTable.CodeToType(getNodeText(nd))); // -> default
 
-  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "label", nullptr, nullptr, MXML_DESCEND_FIRST);
   setLabel(getNodeIndexM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "pointtype", nullptr, nullptr, MXML_DESCEND_FIRST);
   setPointType(PtTypeTable.CodeToType(getNodeText(nd)));
     
-  nd = mxmlFindElement(root_nd, root_nd, "cp", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "cp", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCp(VarTable.CodeToType(getNodeText(nd)));
   
-  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "switch", nullptr, nullptr, MXML_DESCEND_FIRST);
   setBranchSW(BranchSWTable.CodeToType(getNodeText(nd))); // -> default
 
   if (getPointType() != SolUser)
   {
-    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
+    nd = mxmlFindElement(root_nd, root_nd, "nparx", nullptr, nullptr, MXML_DESCEND_FIRST);
     setParxSize(getNodeIndexM(nd));
     if (getParxSize() != 0)
     {
-      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", nullptr, nullptr, MXML_DESCEND_FIRST);
       
       size_t it = 0;
-      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, parx_nd->child, "par", nullptr, nullptr, MXML_NO_DESCEND) )
       {
         setParx(it, VarTable.CodeToType(getNodeText(nd)));
         ++it;
@@ -194,119 +194,119 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
     }
   } else
   {
-    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
+    nd = mxmlFindElement(root_nd, root_nd, "neqns", nullptr, nullptr, MXML_DESCEND_FIRST);
     setEqnsSize(getNodeIndexM(nd));
     setVarsSize(getNodeIndexM(nd));
     if (getEqnsSize() != 0)
     {
-      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", nullptr, nullptr, MXML_DESCEND_FIRST);
       size_t it = 0;
-      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", nullptr, nullptr, MXML_NO_DESCEND) )
       {
         setEqns(it, EqnTable.CodeToType(getNodeText(nd)));
         ++it;
       }
-      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", nullptr, nullptr, MXML_DESCEND_FIRST);
       it = 0;
-      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, vars_nd->child, "var", nullptr, nullptr, MXML_NO_DESCEND) )
       {
         setVars(it, VarTable.CodeToType(getNodeText(nd)));
         ++it;
       }
     }
   }
-  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt(getNodeIndex(nd, 20));
 
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg(getNodeIndex(nd, 5));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nmul", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNMul(getNodeIndex(nd, 5));
 
-  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "stab", nullptr, nullptr, MXML_DESCEND_FIRST);
   setStab(getNodeIndex(nd, (size_t)0) != 0);
   
-  nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "curvature", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCAngle(getNodeReal(nd, getCAngle()));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint1", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt1(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint2", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt2(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg1(getNodeIndex(nd, 4));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg2(getNodeIndex(nd, 4));
   
-  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "steps", nullptr, nullptr, MXML_DESCEND_FIRST);
   setSteps(getNodeIndex(nd, 100));
   
-  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "iad", nullptr, nullptr, MXML_DESCEND_FIRST);
   setIad(getNodeIndex(nd, 3));
   
-  nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "npr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNPr(getNodeIndex(nd, 10));
   P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
   
-  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "cpmin", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCpMin(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "cpmax", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCpMax(getNodeReal(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ds", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDs(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsmin", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsMin(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsmax", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsMax(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsstart", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsStart(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsc", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsC(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsR(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsk", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsK(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitc", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItC(getNodeIndex(nd, 5));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItR(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitk", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItK(getNodeIndex(nd, 12));
 
-  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nderi", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
 
-  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nsym", nullptr, nullptr, MXML_DESCEND_FIRST);
   setSymReSize(getNodeIndex(nd, (size_t)0));
   setSymImSize(getNodeIndex(nd, (size_t)0));
 
-  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", nullptr, nullptr, MXML_DESCEND_FIRST);
   size_t it = 0;
-  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
-       nd != 0;
-       nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
+  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", nullptr, nullptr, MXML_DESCEND_FIRST);
+       nd != nullptr;
+       nd = mxmlFindElement(nd, sym_nd->child, "dim", nullptr, nullptr, MXML_NO_DESCEND))
   {
-    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
-    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
+    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", nullptr, nullptr, MXML_DESCEND_FIRST);
+    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", nullptr, nullptr, MXML_DESCEND_FIRST);
     setSymRe(it, getNodeIndexM(nd_real));
     setSymIm(it, getNodeIndexM(nd_imag));
     ++it; 
@@ -316,7 +316,7 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
 
 void KNConstantsBase::printXmlFileV4(std::ostream& file)
 {
-  mxml_node_t *node = 0;
+  mxml_node_t *node = nullptr;
   
   mxml_node_t *xml = mxmlNewXML("cfile 1.0");
   mxml_node_t *data = mxmlNewElement(xml, "knut");
@@ -498,63 +498,63 @@ void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
   mxml_node_t *tree;
 
   fp = fopen(fileName.c_str(), "r");
-  P_ERROR_X3(fp != 0, "Cannot open file '", fileName, "'." );
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
+  P_ERROR_X3(fp != nullptr, "Cannot open file '", fileName, "'." );
+  tree = mxmlLoadFile(nullptr, fp, MXML_OPAQUE_CALLBACK);
   fclose(fp);
 
-  mxml_node_t* nd = 0, *nd_a = 0, *nd_b = 0;
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* nd = nullptr, *nd_a = nullptr, *nd_b = nullptr;
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", nullptr, nullptr, MXML_DESCEND_FIRST);
   if (!root_nd)
   {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+    root_nd = mxmlFindElement(tree, tree, "pdde", nullptr, nullptr, MXML_DESCEND_FIRST);
   }
   
-  nd = mxmlFindElement(root_nd, root_nd, "input", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "input", nullptr, nullptr, MXML_DESCEND_FIRST);
   setInputFile(getNodeText(nd, ""));
   
-  nd = mxmlFindElement(root_nd, root_nd, "output", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "output", nullptr, nullptr, MXML_DESCEND_FIRST);
   setOutputFile(getNodeText(nd, ""));
   
-  nd = mxmlFindElement(root_nd, root_nd, "sysname", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "sysname", nullptr, nullptr, MXML_DESCEND_FIRST);
   // This has to load the system definition
   setSysNameText(getNodeText(nd, ""));
 
-  nd = mxmlFindElement(root_nd, root_nd, "fromtype", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "fromtype", nullptr, nullptr, MXML_DESCEND_FIRST);
   setFromType(static_cast<BifType>(getNodeIndex(nd, BifNone)));
 
-  nd = mxmlFindElement(root_nd, root_nd, "label", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "label", nullptr, nullptr, MXML_DESCEND_FIRST);
   setLabel(getNodeIndexM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "pointtype", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "pointtype", nullptr, nullptr, MXML_DESCEND_FIRST);
   setPointType(static_cast<PtType>(getNodeIndexM(nd)));
     
-  nd_a = mxmlFindElement(root_nd, root_nd, "cptype", 0, 0, MXML_DESCEND_FIRST);
+  nd_a = mxmlFindElement(root_nd, root_nd, "cptype", nullptr, nullptr, MXML_DESCEND_FIRST);
   const char cp_type = getNodeCharM(nd_a); 
   
-  nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", 0, 0, MXML_DESCEND_FIRST);
+  nd_b = mxmlFindElement(root_nd, root_nd, "cpnum", nullptr, nullptr, MXML_DESCEND_FIRST);
   const size_t cp_num = getNodeIndexM(nd_b);
   
   setCp(varFromTypeNum(cp_type,cp_num));
   
-  nd = mxmlFindElement(root_nd, root_nd, "switch", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "switch", nullptr, nullptr, MXML_DESCEND_FIRST);
   setBranchSW(static_cast<BranchSW>(getNodeIndex(nd, NOSwitch)));
 
   if (getPointType() != SolUser)
   {
-    nd = mxmlFindElement(root_nd, root_nd, "nparx", 0, 0, MXML_DESCEND_FIRST);
+    nd = mxmlFindElement(root_nd, root_nd, "nparx", nullptr, nullptr, MXML_DESCEND_FIRST);
     setParxSize(getNodeIndexM(nd));
     if (getParxSize() != 0)
     {
-      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* parx_nd = mxmlFindElement(root_nd, root_nd, "parx", nullptr, nullptr, MXML_DESCEND_FIRST);
       
       size_t it = 0;
-      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, parx_nd->child, "par", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(parx_nd, parx_nd, "par", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, parx_nd->child, "par", nullptr, nullptr, MXML_NO_DESCEND) )
       {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", nullptr, nullptr, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", nullptr, nullptr, MXML_DESCEND_FIRST);
         const size_t num = getNodeIndexM(nd_num);
         setParx(it, varFromTypeNum(type,num));
         ++it;
@@ -562,33 +562,33 @@ void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
     } 
   } else
   {
-    nd = mxmlFindElement(root_nd, root_nd, "neqns", 0, 0, MXML_DESCEND_FIRST);
+    nd = mxmlFindElement(root_nd, root_nd, "neqns", nullptr, nullptr, MXML_DESCEND_FIRST);
     setEqnsSize(getNodeIndexM(nd));
     setVarsSize(getNodeIndexM(nd));
     if (getEqnsSize() != 0)
     {
-      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* eqns_nd = mxmlFindElement(root_nd, root_nd, "eqns", nullptr, nullptr, MXML_DESCEND_FIRST);
       size_t it = 0;
-      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(eqns_nd, eqns_nd, "eqn", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, eqns_nd->child, "eqn", nullptr, nullptr, MXML_NO_DESCEND) )
       {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", nullptr, nullptr, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", nullptr, nullptr, MXML_DESCEND_FIRST);
         const size_t num = getNodeIndexM(nd_num);
         setEqns(it, eqnFromTypeNum(type,num));
         ++it;
       }
-      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", 0, 0, MXML_DESCEND_FIRST);
+      mxml_node_t* vars_nd = mxmlFindElement(root_nd, root_nd, "vars", nullptr, nullptr, MXML_DESCEND_FIRST);
       it = 0;
-      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", 0, 0, MXML_DESCEND_FIRST);
-           nd != 0;
-           nd = mxmlFindElement(nd, vars_nd->child, "var", 0, 0, MXML_NO_DESCEND) )
+      for (nd = mxmlFindElement(vars_nd, vars_nd, "var", nullptr, nullptr, MXML_DESCEND_FIRST);
+           nd != nullptr;
+           nd = mxmlFindElement(nd, vars_nd->child, "var", nullptr, nullptr, MXML_NO_DESCEND) )
       {
-        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_type = mxmlFindElement(nd, nd, "type", nullptr, nullptr, MXML_DESCEND_FIRST);
         const char type = getNodeCharM(nd_type);
-        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", 0, 0, MXML_DESCEND_FIRST);
+        mxml_node_t* nd_num = mxmlFindElement(nd, nd, "num", nullptr, nullptr, MXML_DESCEND_FIRST);
         const size_t num = getNodeIndexM(nd_num);
         setVars(it, varFromTypeNum(type,num));
         ++it;
@@ -596,94 +596,94 @@ void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
     }
   }
   
-  nd = mxmlFindElement(root_nd, root_nd, "nint", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt(getNodeIndex(nd, 20));
 
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg(getNodeIndex(nd, 5));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nmul", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nmul", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNMul(getNodeIndex(nd, 5));
 
-  nd = mxmlFindElement(root_nd, root_nd, "stab", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "stab", nullptr, nullptr, MXML_DESCEND_FIRST);
   setStab(getNodeIndex(nd, (size_t)0) != 0);
   
-  nd = mxmlFindElement(root_nd, root_nd, "curvature", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "curvature", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCAngle(getNodeReal(nd, getCAngle()));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nint1", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint1", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt1(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nint2", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nint2", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNInt2(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg1", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg1(getNodeIndex(nd, 4));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ndeg2", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeg2(getNodeIndex(nd, 4));
   
-  nd = mxmlFindElement(root_nd, root_nd, "steps", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "steps", nullptr, nullptr, MXML_DESCEND_FIRST);
   setSteps(getNodeIndex(nd, 100));
   
-  nd = mxmlFindElement(root_nd, root_nd, "iad", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "iad", nullptr, nullptr, MXML_DESCEND_FIRST);
   setIad(getNodeIndex(nd, 3));
   
-  nd = mxmlFindElement(root_nd, root_nd, "npr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "npr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNPr(getNodeIndex(nd, 10));
   P_ERROR_X1(getNPr() > 0, "NPR must be greater than zero." );
   
-  nd = mxmlFindElement(root_nd, root_nd, "cpmin", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "cpmin", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCpMin(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "cpmax", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "cpmax", nullptr, nullptr, MXML_DESCEND_FIRST);
   setCpMax(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "ds", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "ds", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDs(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsmin", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsmin", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsMin(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsmax", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsmax", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsMax(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "dsstart", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "dsstart", nullptr, nullptr, MXML_DESCEND_FIRST);
   setDsStart(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "epsc", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsc", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsC(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "epsr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsR(getNodeRealM(nd));
   
-  nd = mxmlFindElement(root_nd, root_nd, "epsk", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "epsk", nullptr, nullptr, MXML_DESCEND_FIRST);
   setEpsK(getNodeRealM(nd));
 
-  nd = mxmlFindElement(root_nd, root_nd, "nitc", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitc", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItC(getNodeIndex(nd, 5));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nitr", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitr", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItR(getNodeIndex(nd, 12));
   
-  nd = mxmlFindElement(root_nd, root_nd, "nitk", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nitk", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNItK(getNodeIndex(nd, 12));
 
-  nd = mxmlFindElement(root_nd, root_nd, "nderi", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nderi", nullptr, nullptr, MXML_DESCEND_FIRST);
   setNDeri(getNodeIndex(nd, 8)); // this is just a number, higher then sys_nderi() provides
 
-  nd = mxmlFindElement(root_nd, root_nd, "nsym", 0, 0, MXML_DESCEND_FIRST);
+  nd = mxmlFindElement(root_nd, root_nd, "nsym", nullptr, nullptr, MXML_DESCEND_FIRST);
   setSymReSize(getNodeIndex(nd, (size_t)0));
   setSymImSize(getNodeIndex(nd, (size_t)0));
 
-  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* sym_nd = mxmlFindElement(root_nd, root_nd, "sym", nullptr, nullptr, MXML_DESCEND_FIRST);
   size_t it = 0;
-  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", 0, 0, MXML_DESCEND_FIRST);
-       nd != 0;
-       nd = mxmlFindElement(nd, sym_nd->child, "dim", 0, 0, MXML_NO_DESCEND))
+  for (nd = mxmlFindElement(sym_nd, sym_nd, "dim", nullptr, nullptr, MXML_DESCEND_FIRST);
+       nd != nullptr;
+       nd = mxmlFindElement(nd, sym_nd->child, "dim", nullptr, nullptr, MXML_NO_DESCEND))
   {
-    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", 0, 0, MXML_DESCEND_FIRST);
-    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", 0, 0, MXML_DESCEND_FIRST);
+    mxml_node_t* nd_real = mxmlFindElement(nd, nd, "real", nullptr, nullptr, MXML_DESCEND_FIRST);
+    mxml_node_t* nd_imag = mxmlFindElement(nd, nd, "imag", nullptr, nullptr, MXML_DESCEND_FIRST);
     setSymRe(it, getNodeIndexM(nd_real));
     setSymIm(it, getNodeIndexM(nd_imag));
     ++it; 

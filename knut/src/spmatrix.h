@@ -44,7 +44,7 @@ class KNSparseMatrix
 
   public:
 
-    inline KNSparseMatrix() : format('R'), n(0), m(0), size(0), Ap(0), Ai(0), Ax(0)
+    inline KNSparseMatrix() : format('R'), n(0), m(0), size(0), Ap(nullptr), Ai(nullptr), Ax(nullptr)
     { }
     inline KNSparseMatrix(char F, size_t n_, size_t m_, size_t nz)
     {
@@ -211,7 +211,7 @@ class KNLuSparseMatrix : public KNSparseMatrix
     int GetDX(KNVector& V)
     {
       if (!fact) luFactorize();
-      return umfpack_di_get_numeric(0, 0, 0, 0, 0, 0, 0, 0, V.v, 0, 0, Numeric);
+      return umfpack_di_get_numeric(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, V.v, nullptr, nullptr, Numeric);
     }
   private:
     void luFactorize();

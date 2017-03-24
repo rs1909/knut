@@ -337,7 +337,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
         ta -> addArgument (p, tm, 1.0);
       }
       Node* opta = ta;
-      ta = 0;
+      ta = nullptr;
       for (size_t k = 0; k < NX*NT; k++)
       {
         NodeVar vid (1 + k, 0);
@@ -413,7 +413,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
 
 KNExprSystem::~KNExprSystem()
 {
-  if (handle != 0) tdlclose(handle);
+  if (handle != nullptr) tdlclose(handle);
 }
 
 void KNExprSystem::toString (std::string& vfexpr)
@@ -1379,7 +1379,7 @@ static void getExecutableDir (std::string& executableDir)
       char *buf = new char[ssize];
       CFStringGetCString(cfPath, buf, ssize, kCFStringEncodingMacRoman);
       executableFile = buf;
-      delete[] buf; buf = 0;
+      delete[] buf; buf = nullptr;
       CFRelease(cfPath);
     }
     CFRelease(bundleURL);
@@ -1632,7 +1632,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
 // the int* - s are the file numbers for the three pipes.
 static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, int* error)
 {
-  if ( (input==0)&&(output==0)&&(error==0) ) return -1;
+  if ( (input==nullptr)&&(output==nullptr)&&(error==nullptr) ) return -1;
   char *argv[arglist.size()+1];
   int i = 0;
   for (std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
@@ -1641,7 +1641,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
     strcpy(argv[i],it->c_str());
     ++i;
   }
-  argv[i] = 0;
+  argv[i] = nullptr;
 
   int fds_output[2], fds_input[2], fds_error[2];
   int fdc_output[2], fdc_input[2], fdc_error[2];
@@ -1711,7 +1711,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
     }
 //    std::cout << "Somehow returned - other!!\n"; std::cout.flush();
   }
-  for (size_t k=0; k<arglist.size(); ++k) { delete[] argv[k]; argv[k] = 0; }
+  for (size_t k=0; k<arglist.size(); ++k) { delete[] argv[k]; argv[k] = nullptr; }
   return pid;
 }
 
@@ -1818,7 +1818,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
       }
     }
   } while (!outfin || !infin || !errfin);
-  delete[] out_buf; out_buf = 0;
+  delete[] out_buf; out_buf = nullptr;
 //  std::cerr << "Waited for read " << rct << " and error " << ect << " cycles.";
   // checking status of compiler
   int status = 0;
@@ -1909,42 +1909,42 @@ void KNExprSystem::setupFunctions (const std::string& shobj)
 
   tdlerror();    /* Clear any existing error */
   fp_ndim = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_ndim"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ndim(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_ndim(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_npar = reinterpret_cast<tp_sys_npar>(tdlsym(handle, "sys_npar"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_npar(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_npar(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_ntau = reinterpret_cast<tp_sys_ntau>(tdlsym(handle, "sys_ntau"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_ntau(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_ntau(): ", error, ".");
 
   /* Vectorized versions */
   tdlerror();    /* Clear any existing error */
   fp_p_tau = reinterpret_cast<tp_sys_p_tau>(tdlsym(handle, "sys_p_tau"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_tau(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_p_tau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_p_dtau = reinterpret_cast<tp_sys_p_dtau>(tdlsym(handle, "sys_p_dtau"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_dtau(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_p_dtau(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_p_rhs = reinterpret_cast<tp_sys_p_rhs>(tdlsym(handle, "sys_p_rhs"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_rhs(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_p_rhs(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_p_deri = reinterpret_cast<tp_sys_p_deri>(tdlsym(handle, "sys_p_deri"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_deri(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_p_deri(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_stpar = reinterpret_cast<tp_sys_stpar>(tdlsym(handle, "sys_stpar"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_stpar(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_stpar(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_p_stsol = reinterpret_cast<tp_sys_p_stsol>(tdlsym(handle, "sys_p_stsol"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_p_stsol(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_p_stsol(): ", error, ".");
 
   tdlerror();    /* Clear any existing error */
   fp_parnames = reinterpret_cast<tp_sys_parnames>(tdlsym(handle, "sys_parnames"));
-  P_ERROR_X3((error = tdlerror()) == 0, "Cannot find sys_parnames(): ", error, ".");
+  P_ERROR_X3((error = tdlerror()) == nullptr, "Cannot find sys_parnames(): ", error, ".");
 }

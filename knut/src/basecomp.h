@@ -84,7 +84,7 @@ class KNCliContinuation : public KNAbstractContinuation
 {
   public:
 //     KNCliContinuation(const KNConstants& constants) : KNAbstractContinuation(constants), output(0), charsPrinted(0) { }
-    KNCliContinuation () : output(0), charsPrinted(0) { }
+    KNCliContinuation () : output(nullptr), charsPrinted(0) { }
     ~KNCliContinuation() { }
     void printStream() { std::cout << screenout.str(); charsPrinted += screenout.str().size(); screenout.str(""); std::cout.flush();  }
     virtual void storeCursor() { charsPrinted = 0; }
@@ -106,7 +106,7 @@ class KNCliContinuation : public KNAbstractContinuation
       output = KNAbstractContinuation::createDataStatic (fileName, t, ndim, npar, prms);
     }
     KNAbstractData& data() { return *output; }
-    void deleteData() { delete output; output = 0; }
+    void deleteData() { delete output; output = nullptr; }
     void dataUpdated() { }
   private:
     KNDataFile* output;

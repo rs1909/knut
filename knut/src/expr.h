@@ -218,8 +218,8 @@ public:
   void deleteTree () {}
   Node* copy () const { return new NodeNumber (value, vfloc); }
   size_t children () const { return 0; }
-  const Node* getChild (size_t n) const { return 0; }
-  Node* getChild (size_t n) { return 0; }
+  const Node* getChild (size_t n) const { return nullptr; }
+  Node* getChild (size_t n) { return nullptr; }
   size_t evaluate (ValueStack& stack, size_t sp, const std::function<void(size_t, const Node*)>& fun, size_t len) const;
   void print (std::ostream& out) const { if (value > 0) out << value; else out << '(' << value << ')'; }
   bool operator != (const Node& node) const;
@@ -376,7 +376,7 @@ class NodeFunction : public Node
 public:
   NodeFunction (const std::string& nm, size_t nargs, const size_t loc) : Node(TokenType::Function, loc), name(nm), args(nargs)
   {
-    for (size_t k=1; k<nargs; k++) args[k] = 0;
+    for (size_t k=1; k<nargs; k++) args[k] = nullptr;
   }
   void deleteTree()
   {
@@ -411,7 +411,7 @@ class NodeAdd : public Node
 public:
   NodeAdd (size_t nargs, const size_t loc) : Node(TokenType::Plus, loc), args(nargs), mul(nargs)
   {
-    for (size_t k=1; k<nargs; k++) { args[k] = 0; mul[k] = 1.0; }
+    for (size_t k=1; k<nargs; k++) { args[k] = nullptr; mul[k] = 1.0; }
   }
   void deleteTree ()
   {
@@ -445,7 +445,7 @@ class NodeTimes : public Node
 public:
   NodeTimes (size_t nargs, const size_t loc) : Node(TokenType::Times, loc), args(nargs), smul(1.0), divide(nargs)
   {
-    for (size_t k=1; k<nargs; k++) { args[k] = 0; divide[k] = false; }
+    for (size_t k=1; k<nargs; k++) { args[k] = nullptr; divide[k] = false; }
   }
   void deleteTree ()
   {

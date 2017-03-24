@@ -42,30 +42,30 @@ static int getXmlTree(const std::string& filename, mxml_node_t ** ptree)
   mxml_node_t *tree;
 
   fp = fopen(filename.c_str(), "r");
-  if (fp == 0) return -1;
-  tree = mxmlLoadFile(0, fp, MXML_OPAQUE_CALLBACK);
+  if (fp == nullptr) return -1;
+  tree = mxmlLoadFile(nullptr, fp, MXML_OPAQUE_CALLBACK);
   fclose(fp);
 
-  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* root_nd = mxmlFindElement(tree, tree, "knut", nullptr, nullptr, MXML_DESCEND_FIRST);
   if (!root_nd)
   {
-    root_nd = mxmlFindElement(tree, tree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+    root_nd = mxmlFindElement(tree, tree, "pdde", nullptr, nullptr, MXML_DESCEND_FIRST);
   }
   int ver = -1;
   const char *attr = mxmlElementGetAttr(root_nd, "version");
-  if (attr) ver = strtol(attr, 0, 10);
+  if (attr) ver = strtol(attr, nullptr, 10);
   *ptree = tree;
   return ver;  
 }
 
 KNXmlConstantsReader::KNXmlConstantsReader(mxml_node_t * xtree) : tree(xtree), knut_node(nullptr), branch_node(nullptr)
 {
-  knut_node = mxmlFindElement(xtree, xtree, "knut", 0, 0, MXML_DESCEND_FIRST);
+  knut_node = mxmlFindElement(xtree, xtree, "knut", nullptr, nullptr, MXML_DESCEND_FIRST);
   if (knut_node == nullptr)
   {
-    knut_node = mxmlFindElement(xtree, xtree, "pdde", 0, 0, MXML_DESCEND_FIRST);
+    knut_node = mxmlFindElement(xtree, xtree, "pdde", nullptr, nullptr, MXML_DESCEND_FIRST);
   }
-  branch_node = mxmlFindElement(knut_node, knut_node, "branch", 0, 0, MXML_DESCEND_FIRST);
+  branch_node = mxmlFindElement(knut_node, knut_node, "branch", nullptr, nullptr, MXML_DESCEND_FIRST);
 }
 
 KNXmlConstantsReader::~KNXmlConstantsReader()
@@ -118,7 +118,7 @@ KNConstantNames::FPTR KNConstantNames::findFun(const char * name)
   if (it != nlist.end())
   {
     return nlist[name].nsetFun;
-  } else return 0;
+  } else return nullptr;
 }
 
 const char *knut_whitespace_cb(mxml_node_t *node, int where)
@@ -133,7 +133,7 @@ const char *knut_whitespace_cb(mxml_node_t *node, int where)
   if (strncmp(name,"?xml",4) == 0)
   {
     if (where == MXML_WS_AFTER_OPEN) return "\n";
-    else return 0;
+    else return nullptr;
   }
   if ((where == MXML_WS_BEFORE_OPEN)||(chc&&(where == MXML_WS_BEFORE_CLOSE)))
   {
@@ -150,11 +150,11 @@ const char *knut_whitespace_cb(mxml_node_t *node, int where)
   else if ((where == MXML_WS_AFTER_CLOSE)||(chc&&(where == MXML_WS_AFTER_OPEN)))
   {
     return "\n";
-  } else if ((node->child == 0)&&(where == MXML_WS_AFTER_OPEN))
+  } else if ((node->child == nullptr)&&(where == MXML_WS_AFTER_OPEN))
   {
     return "\n";
   }
-  return (0);
+  return (nullptr);
 }
 
 static inline bool inputAssert(std::istream& is)
@@ -216,7 +216,7 @@ static void commaToVector(const std::string& str, std::vector<size_t>& list)
     if (npos == std::string::npos) npos = str.size();
     if (!str.substr(pos,npos-pos).empty())
     { 
-      list.push_back(toSizeT(strtol(str.substr(pos,npos-pos).c_str(), 0, 10)));
+      list.push_back(toSizeT(strtol(str.substr(pos,npos-pos).c_str(), nullptr, 10)));
 //      std::cout << list[list.size()-1] << "\n";
     }
     pos = npos+1;
@@ -372,7 +372,7 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
 
 bool KNXmlConstantsReader::getSystem(std::string& strout)
 {
-  mxml_node_t* system_node = mxmlFindElement(knut_node, knut_node, "system", 0, 0, MXML_DESCEND_FIRST);
+  mxml_node_t* system_node = mxmlFindElement(knut_node, knut_node, "system", nullptr, nullptr, MXML_DESCEND_FIRST);
   if (system_node != nullptr)
   {
     const char* str = mxmlGetOpaque (system_node);
@@ -401,7 +401,7 @@ bool KNXmlConstantsReader::getIndexField(const char* field, size_t& out)
   const char* str = mxmlElementGetAttr(branch_node, field);
   if (str)
   {
-    out = toSizeT(strtol(str, 0, 10));
+    out = toSizeT(strtol(str, nullptr, 10));
     return true;
   }
   return false;
@@ -695,11 +695,11 @@ void KNConstantsBase::initDimensions(const KNExprSystem* sys)
 {
   initParNames(sys->npar());
   const char **names = new const char *[sys->npar()+1];
-  for (size_t i=0; i<sys->npar()+1; ++i) names[i] = 0;
+  for (size_t i=0; i<sys->npar()+1; ++i) names[i] = nullptr;
   sys->parnames(names);
-  for (size_t i=0; i<sys->npar(); ++i) if (names[i] != 0) parNames[i] = names[i];
+  for (size_t i=0; i<sys->npar(); ++i) if (names[i] != nullptr) parNames[i] = names[i];
   delete[] names;
-  names = 0;
+  names = nullptr;
   // this will send a signal so parNames must be ready
   setNPar(sys->npar());
   setNDim(sys->ndim());
@@ -711,18 +711,18 @@ void KNConstantsBase::initDimensions(const KNExprSystem* sys)
 void KNConstantsBase::setSystemText (const std::string& str)
 {
   setSystem (str);
-  KNExprSystem* sys = 0;
+  KNExprSystem* sys = nullptr;
   try
   {
     sys = new KNExprSystem (getSystem (), false);
     initDimensions (sys);
     delete sys;
-    sys = 0;
+    sys = nullptr;
   }
   catch (KNException& ex)
   {
     delete sys;
-    sys = 0;
+    sys = nullptr;
     setNPar (0);
     setNDim (0);
     ex.exprStr (getSystem ());
@@ -733,18 +733,18 @@ void KNConstantsBase::setSystemText (const std::string& str)
 void KNConstantsBase::setSysNameText(const std::string& str, bool /*testing*/)
 {
   setSysName(str);
-  KNSystem* sys = 0;
+  KNSystem* sys = nullptr;
   try
   {
     sys = new KNSystem(getSysName(), false);
     initDimensions(sys);
     delete sys;
-    sys = 0;
+    sys = nullptr;
   }
   catch (KNException& ex)
   {
     delete sys;
-    sys = 0;
+    sys = nullptr;
     setNPar(0);
     setNDim(0);
     throw(ex);

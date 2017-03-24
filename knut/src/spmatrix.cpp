@@ -57,7 +57,7 @@ void KNSparseMatrix::swap()
   int *Ri = new int[size];
   double *Rx = new double[size];
 
-  umfpack_di_transpose((int)n, (int)m, Ap, Ai, Ax, 0, 0, Rp, Ri, Rx);
+  umfpack_di_transpose((int)n, (int)m, Ap, Ai, Ax, nullptr, nullptr, Rp, Ri, Rx);
 
   delete []Ap;
   delete []Ai;
@@ -111,7 +111,7 @@ void KNSparseMatrix::print()
 void KNLuSparseMatrix::init(size_t nn_)
 {
   fact = false;
-  Numeric = 0;
+  Numeric = nullptr;
   Wi = new int[5*nn_+1];
   W  = new double[10*nn_+1];
 
@@ -138,8 +138,8 @@ KNLuSparseMatrix::KNLuSparseMatrix(KNSparseMatrix& M) : KNSparseMatrix(M)
 
 KNLuSparseMatrix::~KNLuSparseMatrix()
 {
-  if (Numeric != 0) umfpack_di_free_numeric(&Numeric);
-  Numeric = 0;
+  if (Numeric != nullptr) umfpack_di_free_numeric(&Numeric);
+  Numeric = nullptr;
 
   delete[] W;
   delete[] Wi;
@@ -148,11 +148,11 @@ KNLuSparseMatrix::~KNLuSparseMatrix()
 void KNLuSparseMatrix::clear()
 {
   KNSparseMatrix::clear();
-  if (Numeric != 0)
+  if (Numeric != nullptr)
   {
     P_ASSERT_X(fact, "KNMatrix was not factorized.");
     umfpack_di_free_numeric(&Numeric);
-    Numeric = 0;
+    Numeric = nullptr;
   }
   fact = false;
 }
@@ -160,11 +160,11 @@ void KNLuSparseMatrix::clear()
 void KNLuSparseMatrix::clear(char F)
 {
   KNSparseMatrix::clear(F);
-  if (Numeric != 0)
+  if (Numeric != nullptr)
   {
     P_ASSERT_X(fact, "KNMatrix was not factorized.");
     umfpack_di_free_numeric(&Numeric);
-    Numeric = 0;
+    Numeric = nullptr;
   }
   fact = false;
 }
@@ -221,12 +221,12 @@ void KNLuSparseMatrix::luFactorize()
 {
   if (!fact)
   {
-    void  *Symbolic = 0;
-    P_ASSERT_X(Numeric == 0, "This is a bug. The sparse matrix was already factorized.");
+    void  *Symbolic = nullptr;
+    P_ASSERT_X(Numeric == nullptr, "This is a bug. The sparse matrix was already factorized.");
 
-    int   status = umfpack_di_symbolic((int)n, (int)n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, 0);
+    int   status = umfpack_di_symbolic((int)n, (int)n, this->Ap, this->Ai, this->Ax, &Symbolic, Control, nullptr);
     P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_symbolic()': (", status, ") ", sp_umf_error(status));
-    status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, 0);
+    status = umfpack_di_numeric(this->Ap, this->Ai, this->Ax, Symbolic, &Numeric, Control, nullptr);
     fact = true;
     if (status != UMFPACK_OK)
     {
@@ -240,7 +240,7 @@ void KNLuSparseMatrix::luFactorize()
       P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': (", status, ") ", sp_umf_error(status));
     }
     umfpack_di_free_symbolic(&Symbolic);
-    Symbolic = 0;
+    Symbolic = nullptr;
   }
 }
 
@@ -260,7 +260,7 @@ void KNLuSparseMatrix::solve(double* x, double* b, bool trans)
     else sys = UMFPACK_At;
     P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
   }
-  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x, b, Numeric, Control, 0, Wi, W);
+  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x, b, Numeric, Control, nullptr, Wi, W);
   P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_wsolve()': ", sp_umf_error(status));
 }
 
@@ -281,7 +281,7 @@ void KNLuSparseMatrix::solve(KNVector& x, const KNVector& b, bool trans)
     P_ERROR_X1(format == 'R', "Unknown sparse matrix format.");
   }
 
-  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(), b.v, Numeric, Control, 0, Wi, W);
+  status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(), b.v, Numeric, Control, nullptr, Wi, W);
   P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_wsolve()': ", sp_umf_error(status));
 }
 
@@ -303,7 +303,7 @@ void KNLuSparseMatrix::solve(KNMatrix& x, const KNMatrix &b, bool trans)
 
   for (size_t i = 0; i < b.c; i++)
   {
-    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(0, i), b.pointer(0, i), Numeric, Control, 0, Wi, W);
+    status = umfpack_di_wsolve(sys, Ap, Ai, Ax, x.pointer(0, i), b.pointer(0, i), Numeric, Control, nullptr, Wi, W);
     P_ERROR_X2(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': ", sp_umf_error(status));
   }
 }

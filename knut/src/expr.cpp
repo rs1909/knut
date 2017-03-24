@@ -2947,15 +2947,15 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   mxml_node_t *node;
 //   bool bad_attr;
 
-  tree = mxmlLoadString (NULL, xmlstring.c_str (), MXML_NO_CALLBACK);
-  if (tree == NULL)
+  tree = mxmlLoadString (nullptr, xmlstring.c_str (), MXML_NO_CALLBACK);
+  if (tree == nullptr)
   {
     // Not an XML string
     return false;
   }
 
-  node = mxmlFindElement(tree, tree, "VectorField", NULL, NULL, MXML_DESCEND);
-  if (node == NULL)
+  node = mxmlFindElement(tree, tree, "VectorField", nullptr, nullptr, MXML_DESCEND);
+  if (node == nullptr)
   {
     mxmlDelete (tree);
 //     P_MESSAGE1("Error: No VectorField element found in XML defintion.\n");
@@ -2973,7 +2973,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       }
     }
     const char *attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete (tree);
       P_MESSAGE1("Error: The VectorField element has no Name attribute.");
@@ -2988,12 +2988,12 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       out << "vfname()=" << attr << ";\n";
     }
     attr = mxmlElementGetAttr(node, "Description");
-    if (attr != NULL)
+    if (attr != nullptr)
     {
       out << "vfdescription()=" << attr << ";\n";
     }
     attr = mxmlElementGetAttr(node, "IndependentVariable");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       out << "time()=t;\n";
     } else
@@ -3010,9 +3010,9 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   //
   // Get the constants
   //
-  for (node = mxmlFindElement(tree, tree, "Constant", NULL, NULL, MXML_DESCEND);
-       node != NULL;
-       node = mxmlFindElement(node, tree, "Constant", NULL, NULL, MXML_DESCEND))
+  for (node = mxmlFindElement(tree, tree, "Constant", nullptr, nullptr, MXML_DESCEND);
+       node != nullptr;
+       node = mxmlFindElement(node, tree, "Constant", nullptr, nullptr, MXML_DESCEND))
   {
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
@@ -3025,7 +3025,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete (tree);
       P_MESSAGE1("Error: A Constant element has no Name attribute.");
@@ -3040,7 +3040,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string name(attr);
       out << name << "=";
       attr = mxmlElementGetAttr(node, "Value");
-      if (attr == NULL)
+      if (attr == nullptr)
       {
         mxmlDelete (tree);
         P_MESSAGE3("Error: The Constant element with Name=\"", name, "\" has no Value attribute.");
@@ -3055,9 +3055,9 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   //
   // Get the parameters
   //
-  for (node = mxmlFindElement(tree, tree, "Parameter", NULL, NULL, MXML_DESCEND);
-       node != NULL;
-       node = mxmlFindElement(node, tree, "Parameter", NULL, NULL, MXML_DESCEND))
+  for (node = mxmlFindElement(tree, tree, "Parameter", nullptr, nullptr, MXML_DESCEND);
+       node != nullptr;
+       node = mxmlFindElement(node, tree, "Parameter", nullptr, nullptr, MXML_DESCEND))
   {
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
@@ -3071,7 +3071,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete(tree);
       P_MESSAGE1("Error: A Parameter element has no Name attribute.");
@@ -3087,7 +3087,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string descr;
 //       Parameter *p = new Parameter(name);
       attr = mxmlElementGetAttr(node, "Description");
-      if (attr != NULL)
+      if (attr != nullptr)
       {
         descr = attr;
         std::transform(descr.begin(), descr.end(), descr.begin(), ::tolower);
@@ -3098,7 +3098,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
         out << "par(" << name << ")=";
 
       attr = mxmlElementGetAttr(node, "DefaultValue");
-      if (attr != NULL)
+      if (attr != nullptr)
       {
         out << attr << ";\n";
       }
@@ -3108,9 +3108,9 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   //
   // Get the auxiliary expressions
   //
-  for (node = mxmlFindElement(tree, tree, "Expression", NULL, NULL, MXML_DESCEND);
-       node != NULL;
-       node = mxmlFindElement(node, tree, "Expression", NULL, NULL, MXML_DESCEND))
+  for (node = mxmlFindElement(tree, tree, "Expression", nullptr, nullptr, MXML_DESCEND);
+       node != nullptr;
+       node = mxmlFindElement(node, tree, "Expression", nullptr, nullptr, MXML_DESCEND))
   {
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
@@ -3123,7 +3123,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete(tree);
       P_MESSAGE1("Error: An Expression element has no Name attribute.");
@@ -3138,7 +3138,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string name(attr);
       out << name << "=";
       attr = mxmlElementGetAttr(node, "Formula");
-      if (attr == NULL)
+      if (attr == nullptr)
       {
         mxmlDelete (tree);
         P_MESSAGE3("Error: The Expression with Name=\"", name, "\" has no Formula attribute.");
@@ -3153,9 +3153,9 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   //
   // Get the state variables
   //
-  for (node = mxmlFindElement(tree, tree, "StateVariable", NULL, NULL, MXML_DESCEND);
-       node != NULL;
-       node = mxmlFindElement(node, tree, "StateVariable", NULL, NULL, MXML_DESCEND))
+  for (node = mxmlFindElement(tree, tree, "StateVariable", nullptr, nullptr, MXML_DESCEND);
+       node != nullptr;
+       node = mxmlFindElement(node, tree, "StateVariable", nullptr, nullptr, MXML_DESCEND))
   {
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
@@ -3170,7 +3170,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete (tree);
       P_MESSAGE1("Error: A StateVariable element has no Name attribute.");
@@ -3185,7 +3185,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string name(attr);
       out << "dot(" << name << ")=";
       attr = mxmlElementGetAttr(node, "Formula");
-      if (attr == NULL)
+      if (attr == nullptr)
       {
         mxmlDelete (tree);
         P_MESSAGE3("Error: The StateVariable with Name=\"", name, "\" has no Formula attribute.");
@@ -3195,12 +3195,12 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
         out << attr << ";\n";
       }
       attr = mxmlElementGetAttr(node, "DefaultInitialCondition");
-      if (attr != NULL)
+      if (attr != nullptr)
       {
         out << "init(" << name << ")=" << attr << ";\n";
       }
       attr = mxmlElementGetAttr(node, "Mass");
-      if (attr != NULL)
+      if (attr != nullptr)
       {
         out << "mass(" << name << ")=" << attr << ";\n";
       }
@@ -3210,9 +3210,9 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
   //
   // Get the functions
   //
-  for (node = mxmlFindElement(tree, tree, "Function", NULL, NULL, MXML_DESCEND);
-       node != NULL;
-       node = mxmlFindElement(node, tree, "Function", NULL, NULL, MXML_DESCEND))
+  for (node = mxmlFindElement(tree, tree, "Function", nullptr, nullptr, MXML_DESCEND);
+       node != nullptr;
+       node = mxmlFindElement(node, tree, "Function", nullptr, nullptr, MXML_DESCEND))
   {
     for (int i = 0; i < node->value.element.num_attrs; ++i)
     {
@@ -3225,7 +3225,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
     }
     const char *attr;
     attr = mxmlElementGetAttr(node, "Name");
-    if (attr == NULL)
+    if (attr == nullptr)
     {
       mxmlDelete(tree);
       P_MESSAGE1("Error: A Function element has no Name attribute.");
@@ -3240,7 +3240,7 @@ bool Expression::fromXML (std::string& oexpr, const std::string& xmlstring)
       std::string name(attr);
       out << "fun(" << name << ")=";
       attr = mxmlElementGetAttr(node, "Formula");
-      if (attr == NULL)
+      if (attr == nullptr)
       {
         mxmlDelete(tree);
         P_MESSAGE3("Error: The Function element with Name=\"", name, "\" has no Formula attibute.\n");

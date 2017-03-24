@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   // gettig shared library names from 'Mac OS X interals' by A. Singh
   if (printDyld)
   {
-    const char *s = 0;
+    const char *s = nullptr;
     uint32_t i, image_max;
     image_max = _dyld_image_count();
     // start from 1 so that the program itself is not included

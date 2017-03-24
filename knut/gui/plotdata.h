@@ -170,7 +170,7 @@ class PlotData : public QGraphicsScene
     Q_OBJECT
 
   public:
-    PlotData(QObject *parent = 0);
+    PlotData(QObject *parent = nullptr);
     ~PlotData();
     bool addPlot(const KNDataFile* mat, 
       PlotXVariable x, PlotYVariable y, size_t pt, size_t dim);

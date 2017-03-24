@@ -31,9 +31,9 @@
 MainWindow::MainWindow(const QString& appDir) :
     executableDir(appDir),
     terminalTextSize(0),
-    inputPlotWindow(0), outputPlotWindow(0),
-    terminalDialog(0), // compilerProcess(0),
-    inputMatFile(0), outputMatFile(0), inThreadMatFile(0)
+    inputPlotWindow(nullptr), outputPlotWindow(nullptr),
+    terminalDialog(nullptr), // compilerProcess(0),
+    inputMatFile(nullptr), outputMatFile(nullptr), inThreadMatFile(nullptr)
 {
 #ifdef WIN32
   executableDir.replace('/','\\');
@@ -134,7 +134,7 @@ MainWindow::MainWindow(const QString& appDir) :
   // sets up a bidirectional connection
   connect(sysname, SIGNAL(editingFinished()), this, SLOT(setSysNameParameter()));
   parameters.registerCallback("std::string", "sysname", sysname, SIGNAL(textEdited(const QString &)), "setText");
-  parameters.registerCallback("size_t","nPar", this, 0, "nParChanged");
+  parameters.registerCallback("size_t","nPar", this, nullptr, "nParChanged");
 
   // setting LABEL
   QLabel* labelLabel = new QLabel("LABEL");
@@ -197,12 +197,12 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(eqns, SIGNAL(valueChanged(int)), this, SLOT(setNEqnsParameter(int)));
   connect(table, SIGNAL(sizeChanged(int)), eqns, SLOT(setValue(int)));
   parameters.registerCallback("Var", "cp", cp, SIGNAL(currentIndexChanged(int)), "setCurrentIndex");
-  parameters.registerCallback("vector<Var>", "parx", table, 0, "dataUpdated");
-  parameters.registerCallback("vector<Var>", "vars", table, 0, "dataUpdated");
-  parameters.registerCallback("vector<Eqn>", "eqns", table, 0, "dataUpdated");
-  parameters.registerCallback("vector<Var>", "parx", eqns, 0, "setValue");
-  parameters.registerCallback("vector<Var>", "vars", eqns, 0, "setValue");
-  parameters.registerCallback("vector<Eqn>", "eqns", eqns, 0, "setValue");
+  parameters.registerCallback("vector<Var>", "parx", table, nullptr, "dataUpdated");
+  parameters.registerCallback("vector<Var>", "vars", table, nullptr, "dataUpdated");
+  parameters.registerCallback("vector<Eqn>", "eqns", table, nullptr, "dataUpdated");
+  parameters.registerCallback("vector<Var>", "parx", eqns, nullptr, "setValue");
+  parameters.registerCallback("vector<Var>", "vars", eqns, nullptr, "setValue");
+  parameters.registerCallback("vector<Eqn>", "eqns", eqns, nullptr, "setValue");
   connect(pttype, SIGNAL(currentIndexChanged(int)), table, SLOT(dataUpdated(int)));
 
   QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
@@ -389,10 +389,10 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("size_t", "nItK", nitK,   SIGNAL(valueChanged(int)), "setValue");
   parameters.registerCallback("size_t", "iad", iad,   SIGNAL(valueChanged(int)), "setValue");
   parameters.registerCallback("size_t", "nPr", nPr,   SIGNAL(valueChanged(int)), "setValue");
-  parameters.registerCallback("vector<size_t>", "symRe", sym, 0, "dataUpdated");
-  parameters.registerCallback("vector<size_t>", "symIm", sym, 0, "dataUpdated");
-  parameters.registerCallback("vector<size_t>", "symRe", nsym, 0, "setValue");
-  parameters.registerCallback("vector<size_t>", "symIm", nsym, 0, "setValue");
+  parameters.registerCallback("vector<size_t>", "symRe", sym, nullptr, "dataUpdated");
+  parameters.registerCallback("vector<size_t>", "symIm", sym, nullptr, "dataUpdated");
+  parameters.registerCallback("vector<size_t>", "symRe", nsym, nullptr, "setValue");
+  parameters.registerCallback("vector<size_t>", "symIm", nsym, nullptr, "setValue");
 
   readSettings();
   setCurrentFile("");
@@ -459,10 +459,10 @@ void MainWindow::stopped()
 
 void MainWindow::threadDataDelete()
 {
-  if (inThreadMatFile == inputMatFile) inputMatFile = 0;
-  if (inThreadMatFile == outputMatFile) outputMatFile = 0;
+  if (inThreadMatFile == inputMatFile) inputMatFile = nullptr;
+  if (inThreadMatFile == outputMatFile) outputMatFile = nullptr;
   delete inThreadMatFile;
-  inThreadMatFile = 0;
+  inThreadMatFile = nullptr;
   emit threadDataDeleteAck();
 }
 
@@ -540,7 +540,7 @@ void MainWindow::setPointType()
 void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, const QString& fileName)
 {
 //   std::cout << "raiseplot 0\n";
-  if (*window == 0)
+  if (*window == nullptr)
   {
 //     std::cout << "raiseplot 1\n";
     // opening the data file
@@ -573,7 +573,7 @@ void MainWindow::openMatFile (const KNDataFile** matFile, const QString& fileNam
   {
     return;
   }
-  if (*matFile != 0)
+  if (*matFile != nullptr)
   {
     if (QFileInfo(fileName) == QFileInfo(QString::fromStdString((*matFile)->getFileName())))
     {
@@ -582,7 +582,7 @@ void MainWindow::openMatFile (const KNDataFile** matFile, const QString& fileNam
     if (*matFile != inThreadMatFile)
     {
       delete *matFile;
-      *matFile = 0;
+      *matFile = nullptr;
     }
   }
   try {
@@ -591,7 +591,7 @@ void MainWindow::openMatFile (const KNDataFile** matFile, const QString& fileNam
   catch (KNException ex)
   {
     delete *matFile;
-    *matFile = 0;
+    *matFile = nullptr;
     externalException(ex);
   }
 }
@@ -627,7 +627,7 @@ void MainWindow::plotReq (const QString& fileName)
   if (sender() == inputPlotWindow)
   {
 //     std::cout << "MainWindow::plotReq inputPlotWindow\n";
-    if (inputMatFile == 0)
+    if (inputMatFile == nullptr)
     {
       openMatFile(&inputMatFile, fileName);
       if (inputMatFile)
@@ -643,7 +643,7 @@ void MainWindow::plotReq (const QString& fileName)
   if (sender() == outputPlotWindow)
   {
 //     std::cout << "MainWindow::plotReq outputPlotWindow\n";
-    if (outputMatFile == 0)
+    if (outputMatFile == nullptr)
     {
       openMatFile(&outputMatFile, fileName);
       if (outputMatFile)
@@ -668,8 +668,8 @@ void MainWindow::plotDestroyed ()
       delete inputMatFile;
     }
     delete inputPlotWindow;
-    inputPlotWindow = 0;
-    inputMatFile = 0;
+    inputPlotWindow = nullptr;
+    inputMatFile = nullptr;
   }
   if (sender() == outputPlotWindow)
   {
@@ -679,8 +679,8 @@ void MainWindow::plotDestroyed ()
       delete outputMatFile;
     }
     delete outputPlotWindow;
-    outputPlotWindow = 0;
-    outputMatFile = 0;
+    outputPlotWindow = nullptr;
+    outputMatFile = nullptr;
   }
 }
 
@@ -690,14 +690,14 @@ void MainWindow::terminalViewDestroyed()
 {
 //  std::cout<<"TERM DESTROYED\n";
   delete terminalDialog;
-  terminalDialog = 0;
+  terminalDialog = nullptr;
 }
 
 void MainWindow::terminalView()
 {
-  if (terminalDialog == 0)
+  if (terminalDialog == nullptr)
   {
-    terminalDialog = new screenDialog(0);
+    terminalDialog = new screenDialog(nullptr);
     terminalDialog->setWindowTitle("terminal view");
     connect(compThread, SIGNAL(printToScreen(const std::string&)), terminalDialog, SLOT(append(const std::string&)), Qt::QueuedConnection);
     connect(compThread, SIGNAL(printClearLastLine()), terminalDialog, SLOT(clearLastLine()), Qt::QueuedConnection);
@@ -709,7 +709,7 @@ void MainWindow::terminalView()
   } else
   {
     delete terminalDialog;
-    terminalDialog = 0;
+    terminalDialog = nullptr;
   }
 }
 
@@ -764,7 +764,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     workThread->wait();
   }
   delete workThread;
-  workThread = 0;
+  workThread = nullptr;
   writeSettings();
   qApp->quit();
   event->accept();

@@ -34,7 +34,7 @@ QT_CHARTS_USE_NAMESPACE
 class KnutChartView : public QChartView
 {
 public:
-    KnutChartView(QChart *chart, QWidget *parent = 0);
+    KnutChartView(QChart *chart, QWidget *parent = nullptr);
 
 protected:
     bool viewportEvent(QEvent *event);
@@ -64,8 +64,8 @@ class plotWindow : public QSplitter
 {
     Q_OBJECT
   public:
-    plotWindow(const QString& filename, QWidget *parent = 0);
-    plotWindow(QWidget *parent = 0);
+    plotWindow(const QString& filename, QWidget *parent = nullptr);
+    plotWindow(QWidget *parent = nullptr);
     ~plotWindow();
     void init(Var cp);
   protected:
