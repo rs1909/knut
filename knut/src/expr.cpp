@@ -2293,6 +2293,8 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
   else return treestack.front ();
 }
 
+// should use a map for par_name and par_value
+
 // needs to handle period(), time(), PAR_PERIOD
 void splitExpression (std::string& sysName,
   std::vector<NodeSymbol*>& var_name,

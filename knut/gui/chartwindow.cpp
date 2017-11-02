@@ -52,7 +52,7 @@ bool KnutChartView::viewportEvent(QEvent *event)
 
         // Turn off animations when handling gestures they
         // will only slow us down.
-        chart()->setAnimationOptions(QChart::NoAnimation);
+//         chart()->setAnimationOptions(QChart::NoAnimation);
     }
     return QChartView::viewportEvent(event);
 }
@@ -78,7 +78,7 @@ void KnutChartView::mouseReleaseEvent(QMouseEvent *event)
 
     // Because we disabled animations when touch event was detected
     // we must put them back on.
-    chart()->setAnimationOptions(QChart::SeriesAnimations);
+//     chart()->setAnimationOptions(QChart::SeriesAnimations);
 
     QChartView::mouseReleaseEvent(event);
 }
