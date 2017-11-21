@@ -1,22 +1,23 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.9.6)
 PROJECT( KNUT )
 
 #------------------------------------------------------------------------------
 # SETTING UP THE VARIABLES
 #------------------------------------------------------------------------------
 
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-SET(BUILD_SHARED_LIBRARIES OFF)
-# SET(CMAKE_EXE_LINKER_FLAGS "-static")
-
+IF(WIN32)
+    SET(BUILD_SHARED_LIBRARIES OFF)
+    SET(CMAKE_EXE_LINKER_FLAGS "-static-libgcc")
+    SET(CMAKE_LINK_SEARCH_START_STATIC TRUE)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 SET( PACKAGE_NAME "Knut" )
-SET( PACKAGE_VERSION "10" )
+SET( PACKAGE_VERSION "11" )
 FILE( READ ${KNUT_SOURCE_DIR}/REVISION PACKAGE_REVISION )
-SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2014, Robert Szalai")
+SET( PACKAGE_COPYRIGHT "Copyright (c) 2002-2017, Robert Szalai")
 SET( PACKAGE_URL "http://seis.bris.ac.uk/~rs1909/knut")
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 get_filename_component(CMAKE_FIND_ROOT_TMP ${CMAKE_CXX_COMPILER} PATH)
 string(REPLACE "/" "\\" CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_TMP} )
 
@@ -66,16 +67,16 @@ IF( MSVC )
 ENDIF( MSVC )
 
 IF(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ELSE(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ENDIF(WIN32)
+    SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+# ELSE(WIN32)
+#     SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+ENDIF()
 
 #------------------------------------------------------------------------------
 # setting up Mini Xml
 #------------------------------------------------------------------------------
 
-SET( MXML_INCLUDE_DIRS ${KNUT_SOURCE_DIR}/mxml )
+# SET( MXML_INCLUDE_DIRS ${KNUT_SOURCE_DIR}/mxml )
 
 #------------------------------------------------------------------------------
 # finding libstdc++
@@ -214,7 +215,7 @@ IF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
 ENDIF((NOT EXISTS ${LAPACK}) OR (NOT EXISTS ${ARPACK}))
 
 # uncomment this once upstream fixes the MXML bug
-FIND_LIBRARY( MXML_LIB NAMES mxml )
+# FIND_LIBRARY( MXML_LIB NAMES mxml )
 IF( EXISTS ${MXML_LIB} )
   FIND_PATH( MXML_INC NAMES mxml.h CMAKE_INCLUDE_PATH /usr/include )
   IF( EXISTS ${MXML_INC} )
@@ -242,7 +243,7 @@ if(${Qt5Core_FOUND})
   find_package(Qt5Widgets REQUIRED)
   find_package(Qt5PrintSupport REQUIRED)
   find_package(Qt5Svg REQUIRED)
-  find_package(Qt5Charts REQUIRED)
+#  find_package(Qt5Charts REQUIRED)
 
   if(WIN32)
     get_target_property(QtCore_location Qt5::Core LOCATION)
@@ -250,13 +251,13 @@ if(${Qt5Core_FOUND})
     get_target_property(QtWidgets_location Qt5::Widgets LOCATION)
     get_target_property(QtPrintSupport_location Qt5::PrintSupport LOCATION)
     get_target_property(QtSvg_location Qt5::Svg LOCATION)
-    get_target_property(QtCharts_location Qt5::Charts LOCATION)
+#    get_target_property(QtCharts_location Qt5::Charts LOCATION)
     string(REPLACE "/" "\\" QtCoreLoc ${QtCore_location} )
     string(REPLACE "/" "\\" QtGuiLoc ${QtGui_location} )
     string(REPLACE "/" "\\" QtWidgetsLoc ${QtWidgets_location} )
     string(REPLACE "/" "\\" QtPrintSupportLoc ${QtPrintSupport_location} )
     string(REPLACE "/" "\\" QtSvgLoc ${QtSvg_location} )
-    string(REPLACE "/" "\\" QtChartsLoc ${QtCharts_location} )
+#    string(REPLACE "/" "\\" QtChartsLoc ${QtCharts_location} )
     get_filename_component(QtCorePath_TMP ${QtCore_location} PATH)
     string(REPLACE "/" "\\" QtCorePath ${QtCorePath_TMP} )
   endif(WIN32)
@@ -274,7 +275,7 @@ CONFIGURE_FILE( doc/html/index.html.cmake doc/html/index.html )
 CONFIGURE_FILE( bin/pcompile.cmake bin/pcompile )
 IF(WIN32)
   CONFIGURE_FILE( wininstaller.nsi.cmake wininstaller.nsi )
-  CONFIGURE_FILE( w64installer.nsi.cmake w64installer.nsi )
+#  CONFIGURE_FILE( w64installer.nsi.cmake w64installer.nsi )
 ENDIF(WIN32)
 
 IF( NOT WIN32 )

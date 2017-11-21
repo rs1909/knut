@@ -12,6 +12,17 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 SET(INTERNAL_LIBS knutlib ${LAARPACK} ${UMFPACK} ${AMD} ${VFGEN_LIBS} ${KNUT_MXML_LIB})
 SET(EXTERNAL_LIBS ${BLAS_LIBS} ${CMAKE_DL_LIBS} ${KNUT_FORTRAN_RUNTIME})
+set(GUI_SOURCE_FILES main.cpp
+    mainwindow.cpp mainwindow.h 
+    paramview.cpp paramview.h
+    plotdata.cpp plotdata.h 
+    plotwindow.cpp plotwindow.h
+#    chartwindow.cpp chartwindow.h
+    constqtgui.cpp constqtgui.h
+    compthread.h compthread.cpp
+    screendialog.h
+#    datachart.cpp datachart.h 
+)
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
   ${KNUT_BINARY_DIR}/src
@@ -25,16 +36,7 @@ QT5_ADD_RESOURCES (ResourceSources ${Resources})
 
 IF(APPLE)
   ADD_EXECUTABLE( ${GUI_NAME} MACOSX_BUNDLE 
-    main.cpp
-    mainwindow.cpp mainwindow.h 
-    paramview.cpp paramview.h
-#    plotdata.cpp plotdata.h 
-#    plotwindow.cpp plotwindow.h
-    chartwindow.cpp chartwindow.h
-    constqtgui.cpp constqtgui.h
-    compthread.h compthread.cpp
-    screendialog.h
-    datachart.cpp datachart.h
+    ${GUI_SOURCE_FILES}
     ${MOC_SRCS} ${ICONS} MacOS/knut.icns
     ${KNUT_SOURCE_DIR}/src/matrix.h ${KNUT_SOURCE_DIR}/src/knutsys.h
     ${KNUT_SOURCE_DIR}/src/knerror.h
@@ -49,7 +51,7 @@ IF(APPLE)
     PROPERTIES MACOSX_PACKAGE_LOCATION Headers)
 
   TARGET_LINK_LIBRARIES( ${GUI_NAME} 
-	${INTERNAL_LIBS} ${EXTERNAL_LIBS} ${COREFOUNDATION_LIBRARY} Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::Charts)
+	${INTERNAL_LIBS} ${EXTERNAL_LIBS} ${COREFOUNDATION_LIBRARY} Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
 
   SET_TARGET_PROPERTIES( ${GUI_NAME}
     PROPERTIES
@@ -64,28 +66,25 @@ IF(APPLE)
 ENDIF(APPLE)
 
 IF(NOT APPLE)
-  ADD_EXECUTABLE( ${GUI_NAME} main.cpp
-    mainwindow.cpp mainwindow.h 
-    paramview.cpp paramview.h
-#    plotdata.cpp plotdata.h 
-#    plotwindow.cpp plotwindow.h
-    chartwindow.cpp chartwindow.h
-    constqtgui.cpp constqtgui.h
-    compthread.h compthread.cpp
-    screendialog.h knut.rc
-    datachart.cpp datachart.h
-    ${MOC_SRCS} ${ICONS} ${ResourceSources})
 
   IF(WIN32)
+    ADD_EXECUTABLE( ${GUI_NAME} WIN32
+        ${GUI_SOURCE_FILES}
+        ${MOC_SRCS} ${ICONS} ${ResourceSources})
     set_target_properties (${GUI_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     # need to add 
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::Charts)
-  ELSE(WIN32)
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::WinMain Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
+  ELSE()
+    ADD_EXECUTABLE( ${GUI_NAME}
+        ${GUI_SOURCE_FILES}
+        ${MOC_SRCS} ${ICONS} ${ResourceSources})
     TARGET_LINK_LIBRARIES( ${GUI_NAME} ${QT_LIBS}
-      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::Widgets Qt5::PrintSupport Qt5::Svg Qt5::Charts)
-  ENDIF(WIN32)
+      ${INTERNAL_LIBS} ${EXTERNAL_LIBS} Qt5::Widgets Qt5::PrintSupport Qt5::Svg)
+  ENDIF()
 
   INSTALL( TARGETS ${GUI_NAME} DESTINATION ${KNUT_BIN_DIR} )
 	
 ENDIF(NOT APPLE)
+
+set_target_properties(${GUI_NAME} PROPERTIES CXX_STANDARD 17)

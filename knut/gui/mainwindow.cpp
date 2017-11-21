@@ -560,6 +560,7 @@ void MainWindow::raisePlot (plotWindow **window, const KNDataFile** matFile, con
       QMetaObject::invokeMethod (compThread, "dataChangedAck", Qt::QueuedConnection);
       (*window)->init (parameters.getCp());
       (*window)->setWindowTitle("Plot data");
+      (*window)->move(this->pos());
       (*window)->show();
     }
   }

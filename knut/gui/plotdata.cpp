@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <cfloat>
+#include <memory>
 
 #include <QPen>
 #include <QPolygon>
@@ -28,16 +29,17 @@ PlotData::PlotData(QObject *parent) :
     xlog(false), ylog(false),
     AspectRatio(4.0 / 3.0),
     plotXSize(480), plotYSize(plotXSize / AspectRatio),
-    FontSize(12), unitCircleItem(0), unitCircleCount(0), Box(nullptr)
+    FontSize(12), unitCircleCount(0)
 {
   const ViewBox cvb = defaultBox;
   setSceneRect(-0.1*plotXSize, -0.1*plotYSize, 1.2*plotXSize, 1.2*plotYSize);
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
   addItem(&selection);
+//  std::cout << "addItem " << __LINE__ << "\n";
   selection.setVisible(false);
   clipBox.addRect(QRectF(0.0, 0.0, plotXSize, plotYSize));
-  Box = makeBox();
+  Box.reset(makeBox());
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XNone,"None"));
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XLabel,"Label"));
   XCoordMap.insert(std::pair<PlotXVariable,QString>(XMesh,"t/Period"));
@@ -61,17 +63,17 @@ void PlotData::setXSize(int size)
   plotXSize = size;
   plotYSize = plotXSize / AspectRatio;
   dataToGraphics(Graph.begin(), Graph.end());
-  std::cout << "GRAPH RESCALE " << size << "\n";
+//   std::cout << "GRAPH RESCALE " << size << "\n";
 }
 
 size_t PlotData::nplots()
 {
   size_t number = 0, it = 0;
-  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
+  for (const auto& ii : Graph)
   {
-    if (i->number != number)
+    if (ii->number != number)
     {
-      number = i->number;
+      number = ii->number;
       ++it;
     }
   }
@@ -81,39 +83,39 @@ size_t PlotData::nplots()
 void PlotData::clear(size_t n)
 {
   size_t number = 0, it = 0;
-  std::list<PlotItem>::iterator i = Graph.begin();
+  std::list<std::unique_ptr<PlotItem>>::iterator i = Graph.begin();
   while (i != Graph.end())
   {
-    if (i->number != number)
+    if ((*i)->number != number)
     {
-      number = i->number;
+      number = (*i)->number;
       ++it;
     }
     if (it == n)
     {
-      if ((*i).isUnitCircle()) --unitCircleCount;
-      if ((*i).type == PlotLineType)
-      {
-        for (PlotLine::const_iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
-        {
-          delete it->item;
-        }
-        delete (*i).data.line;
-      }
-      else if ((*i).type == PlotCircleType)
-      {
-        for (unsigned int j = 0; j < (*i).data.circle->item.size(); ++j) delete(*i).data.circle->item[j];
-        delete(*i).data.circle;
-      }
-      else if ((*i).type == PlotPolygonType)
-      {
-        for (unsigned int j = 0; j < (*i).data.polygon->item.size(); ++j) delete(*i).data.polygon->item[j];
-        delete(*i).data.polygon;
-      }
-      else
-      {
-        std::cout << "Something wrong\n";
-      }
+//       if ((*i)->isUnitCircle()) --unitCircleCount;
+//       if ((*i)->type == PlotLineType)
+//       {
+//         for (auto& it : std::get<PlotLine>((*i)->data))
+//         {
+//           it.item.reset(nullptr);
+//         }
+// //        std::get<PlotLine>((*i)->data).reset();
+//       }
+//       else if ((*i)->type == PlotCircleType)
+//       {
+//         for (auto& it : std::get<PlotCircle>((*i)->data).item) it.reset(nullptr);
+// //        (*i)->data.circle.reset();
+//       }
+//       else if ((*i)->type == PlotPolygonType)
+//       {
+//         for (auto& it : std::get<PlotPolygon>((*i)->data).item) it.reset(nullptr);
+// //        (*i)->data.polygon.reset();
+//       }
+//       else
+//       {
+//         std::cout << "Something wrong\n";
+//       }
       i = Graph.erase(i);
     }
     else
@@ -121,9 +123,9 @@ void PlotData::clear(size_t n)
       ++i;
     }
   }
-  if (n-1 < XCoordTextItems.size()) { delete XCoordTextItems[n-1]; XCoordTextItems.erase(XCoordTextItems.begin()+n-1); }
+  if (n-1 < XCoordTextItems.size()) { XCoordTextItems[n-1].reset(nullptr); XCoordTextItems.erase(XCoordTextItems.begin()+n-1); }
   else std::cout<<"GB1\n";
-  if (n-1 < YCoordTextItems.size()) { delete YCoordTextItems[n-1]; YCoordTextItems.erase(YCoordTextItems.begin()+n-1); }
+  if (n-1 < YCoordTextItems.size()) { YCoordTextItems[n-1].reset(nullptr); YCoordTextItems.erase(YCoordTextItems.begin()+n-1); }
   else std::cout<<"GB2\n";
   if (n-1 < XCoordText.size()) XCoordText.erase(XCoordText.begin()+n-1);
   else std::cout<<"GB3\n";
@@ -136,26 +138,26 @@ void PlotData::clear(size_t n)
 QColor PlotData::getColor(size_t n)
 {
   size_t number = 0, it = 0;
-  for (std::list<PlotItem>::const_iterator i = Graph.begin(); i != Graph.end(); ++i)
+  for (const auto& ii : Graph)
   {
-    if (i->number != number)
+    if (ii->number != number)
     {
-      number = i->number;
+      number = ii->number;
       ++it;
     }
     if (it == n)
     {
-      if ((*i).type == PlotLineType)
+      if (ii->type == PlotLineType)
       {
-        return (*i).data.line->pen.color();
+        return std::get<PlotLine>(ii->data).pen.color();
       }
-      else if ((*i).type == PlotCircleType)
+      else if (ii->type == PlotCircleType)
       {
-        return (*i).data.circle->item[0]->pen().color();
+        return std::get<PlotCircle>(ii->data).item.front()->pen().color();
       }
-      else if ((*i).type == PlotPolygonType)
+      else if (ii->type == PlotPolygonType)
       {
-        return (*i).data.polygon->item[0]->pen().color();
+        return std::get<PlotPolygon>(ii->data).item.front()->pen().color();
       }
       else
       {
@@ -169,42 +171,42 @@ QColor PlotData::getColor(size_t n)
 void PlotData::setColor(size_t n, QColor& color)
 {
   size_t number = 0, it = 0;
-  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); ++i)
+  for (auto& ii : Graph)
   {
-    if (i->number != number)
+    if (ii->number != number)
     {
-      number = i->number;
+      number = ii->number;
       ++it;
     }
     if (it == n)
     {
-      if ((*i).type == PlotLineType)
+      if (ii->type == PlotLineType)
       {
-        (*i).data.line->pen.setColor(color);
-        for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+        std::get<PlotLine>(ii->data).pen.setColor(color);
+        for (PlotLine::iterator it = std::get<PlotLine>(ii->data).begin(); it != std::get<PlotLine>(ii->data).end(); ++it)
         {
           it->pen.setColor(color);
           it->item->setPen(it->pen);
         }
       }
-      else if ((*i).type == PlotCircleType)
+      else if (ii->type == PlotCircleType)
       {
-        for (size_t j = 0; j < (*i).data.circle->item.size(); ++j)
+        for (auto& it : std::get<PlotCircle>(ii->data).item)
         {
-          QPen pen = (*i).data.circle->item[j]->pen();
+          QPen pen = it->pen();
           pen.setColor(color);
-          (*i).data.circle->pen = pen;
-          (*i).data.circle->item[j]->setPen(pen);
+          std::get<PlotCircle>(ii->data).pen = pen;
+          it->setPen(pen);
         }
       }
-      else if ((*i).type == PlotPolygonType)
+      else if (ii->type == PlotPolygonType)
       {
-        for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j)
+        for (auto& it : std::get<PlotPolygon>(ii->data).item)
         {
-          QPen pen = (*i).data.polygon->item[j]->pen();
+          QPen pen = it->pen();
           pen.setColor(color);
-          (*i).data.polygon->pen = pen;
-          (*i).data.polygon->item[j]->setPen(pen);
+          std::get<PlotPolygon>(ii->data).pen = pen;
+          it->setPen(pen);
         }
       }
       else
@@ -220,57 +222,50 @@ void PlotData::clearAxes()
 {
   for (size_t i = 0; i < XCoordTextItems.size(); ++i)
   {
-    removeItem(XCoordTextItems[i]);
-    delete XCoordTextItems[i];
+    removeItem(XCoordTextItems[i].get());
+    XCoordTextItems[i].reset(nullptr);
   }
   XCoordTextItems.clear();
   for (size_t i = 0; i < YCoordTextItems.size(); ++i)
   {
-    removeItem(YCoordTextItems[i]);
-    delete YCoordTextItems[i];
+    removeItem(YCoordTextItems[i].get());
+    YCoordTextItems[i].reset(nullptr);
   }
   YCoordTextItems.clear();
 }
 
 void PlotData::clearAll()
 {
-  std::list<PlotItem>::iterator i;
-  for (i = Graph.begin(); i != Graph.end(); i++)
-  {
-    if ((*i).type == PlotLineType)
-    {
-      for (PlotLine::const_iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
-      {
-        delete it->item;
-      }
-      delete (*i).data.line;
-      (*i).data.line = nullptr;
-    }
-    else if ((*i).type == PlotCircleType)
-    {
-      for (size_t j = 0; j < (*i).data.circle->item.size(); ++j)
-      {
-        delete (*i).data.circle->item[j];
-        (*i).data.circle->item[j] = nullptr;
-      }
-      delete (*i).data.circle;
-      (*i).data.circle = nullptr;
-    }
-    else if ((*i).type == PlotPolygonType)
-    {
-      for (size_t j = 0; j < (*i).data.polygon->item.size(); ++j)
-      {
-        delete (*i).data.polygon->item[j];
-        (*i).data.polygon->item[j] = nullptr;
-      }
-      delete (*i).data.polygon;
-      (*i).data.polygon = nullptr;
-    }
-    else
-    {
-      std::cout << "Something wrong\n";
-    }
-  }
+//   for (auto& ii : Graph)
+//   {
+//     if (ii->type == PlotLineType)
+//     {
+//       for (PlotLine::iterator it = std::get<PlotLine>(ii->data).begin(); it != std::get<PlotLine>(ii->data).end(); ++it)
+//       {
+//         it->item.reset(nullptr);
+//       }
+// //       ii->data.line.reset();
+// //       (*i).data.line = nullptr;
+//     }
+//     else if (ii->type == PlotCircleType)
+//     {
+//       for (auto& it : std::get<PlotCircle>(ii->data).item)
+//       {
+//         it.reset(nullptr);
+//       }
+//     }
+//     else if (ii->type == PlotPolygonType)
+//     {
+//       for (auto& it : std::get<PlotPolygon>(ii->data).item)
+//       {
+//         it.reset(nullptr);
+//       }
+//     }
+//     else
+//     {
+//       std::cout << "Something wrong\n";
+//     }
+//   }
   Graph.clear();
   clearAxes();
   XCoordText.clear();
@@ -282,9 +277,9 @@ void PlotData::clearAll()
   unitCircleCount = 0;
   if (unitCircleItem != 0)
   {
-    removeItem(unitCircleItem);
-    delete unitCircleItem;
-    unitCircleItem = 0;
+    removeItem(unitCircleItem.get());
+    unitCircleItem.reset(nullptr);
+//     unitCircleItem = 0;
   }
 }
 
@@ -306,54 +301,54 @@ static inline void adjustAxis(qreal& min, qreal& max, size_t& numTicks)
   max = ceil(max / step) * step;
 }
 
-void PlotData::addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool principal, bool stab)
+void PlotData::addPlotLine(std::list<std::unique_ptr<PlotItem>>::iterator it, const QPen& pen, bool principal, bool stab)
 {
-  it->type = PlotLineType;
-  it->data.line = new PlotLine(pen);
-  it->data.line->pen.setWidthF(1);
-  if (stab) it->data.line->pen.setStyle(Qt::SolidLine);
-  else it->data.line->pen.setStyle(Qt::DashLine);
-  it->principal = principal;
+  (*it)->type = PlotLineType;
+  (*it)->data = PlotLine(pen);
+  std::get<PlotLine>((*it)->data).pen.setWidthF(1);
+  if (stab) std::get<PlotLine>((*it)->data).pen.setStyle(Qt::SolidLine);
+  else std::get<PlotLine>((*it)->data).pen.setStyle(Qt::DashLine);
+  (*it)->principal = principal;
 }
 
-void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen,
+void PlotData::addPlotPoint(std::list<std::unique_ptr<PlotItem>>::iterator it, const QPen& pen,
                             PlotMarkerStyle type, bool principal, qreal radius, bool scale)
 {
   switch (type)
   {
     case PlotMarkerCircle:  // CIRCLE
       {
-        it->type = PlotCircleType;
-        it->data.circle = new PlotCircle(pen, QRectF(-radius, -radius, 2*radius, 2*radius), scale);
-        it->data.circle->pen.setWidthF(1);
+        (*it)->type = PlotCircleType;
+        (*it)->data = PlotCircle(pen, QRectF(-radius, -radius, 2*radius, 2*radius), scale);
+        std::get<PlotCircle>((*it)->data).pen.setWidthF(1);
       }
       break;
     case PlotMarkerSquare:  // SQUARE
       {
-        it->type = PlotPolygonType;
+        (*it)->type = PlotPolygonType;
         QPolygonF pl(4);
         pl[0] = QPointF(-radius, -radius);
         pl[1] = QPointF(-radius, radius);
         pl[2] = QPointF(radius, radius);
         pl[3] = QPointF(radius, -radius);
-        it->data.polygon = new PlotPolygon(pen, pl);
-        it->data.polygon->pen.setWidthF(1);
+        (*it)->data = PlotPolygon(pen, pl);
+        std::get<PlotPolygon>((*it)->data).pen.setWidthF(1);
       }
       break;
     case PlotMarkerTriangle: // TRIANGLE
       {
-        it->type = PlotPolygonType;
+        (*it)->type = PlotPolygonType;
         QPolygonF pl(3);
         pl[0] = QPointF(-radius, radius/sqrt(3));
         pl[1] = QPointF(0.0, -radius*2/sqrt(3));
         pl[2] = QPointF(radius, radius/sqrt(3));
-        it->data.polygon = new PlotPolygon(pen, pl);
-        it->data.polygon->pen.setWidthF(1);
+        (*it)->data = PlotPolygon(pen, pl);
+        std::get<PlotPolygon>((*it)->data).pen.setWidthF(1);
       }
       break;
     case PlotMarkerCross: // CROSS
       {
-        it->type = PlotPolygonType;
+        (*it)->type = PlotPolygonType;
         QPolygonF pl(6);
         pl[0] = QPointF(-radius, radius);
         pl[1] = QPointF(radius, -radius);
@@ -361,8 +356,8 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen,
         pl[3] = QPointF(-radius, -radius);
         pl[4] = QPointF(radius, radius);
         pl[5] = QPointF(0.0, 0.0);
-        it->data.polygon = new PlotPolygon(pen, pl);
-        it->data.polygon->pen.setWidthF(1);
+        (*it)->data = PlotPolygon(pen, pl);
+        std::get<PlotPolygon>((*it)->data).pen.setWidthF(1);
       }
       break;
     default:
@@ -370,13 +365,13 @@ void PlotData::addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen,
       abort();
       break;
   }
-  it->principal = principal;
+  (*it)->principal = principal;
 }
 
 // this only called by addPlot...
 // begin and end refers to what was added to the graphics
-void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
-                              std::list<PlotItem>::const_iterator end)
+void PlotData::dataToGraphics(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                              std::list<std::unique_ptr<PlotItem>>::const_iterator end)
 {
   bool toZoom = false;
   // if current is the top of zoom levels
@@ -384,16 +379,16 @@ void PlotData::dataToGraphics(std::list<PlotItem>::const_iterator begin,
   {
     ViewBox cvb = *currZoom;
     bool touched = false;
-    std::list<PlotItem>::const_iterator it;
+    std::list<std::unique_ptr<PlotItem>>::const_iterator it;
 //    std::cout << "ENTER ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
     for (it = begin; it != end; it++)
     {
-      for (size_t k = 0; k < it->x.size(); k++)
+      for (size_t k = 0; k < (*it)->x.size(); k++)
       {
-        if (xcoord(it->x(k)) > cvb.xmax) { cvb.xmax = xcoord(it->x(k)); toZoom = true; }
-        if (xcoord(it->x(k)) < cvb.xmin) { cvb.xmin = xcoord(it->x(k)); toZoom = true; }
-        if (ycoord(it->y(k)) > cvb.ymax) { cvb.ymax = ycoord(it->y(k)); toZoom = true; }
-        if (ycoord(it->y(k)) < cvb.ymin) { cvb.ymin = ycoord(it->y(k)); toZoom = true; }
+        if (xcoord((*it)->x(k)) > cvb.xmax) { cvb.xmax = xcoord((*it)->x(k)); toZoom = true; }
+        if (xcoord((*it)->x(k)) < cvb.xmin) { cvb.xmin = xcoord((*it)->x(k)); toZoom = true; }
+        if (ycoord((*it)->y(k)) > cvb.ymax) { cvb.ymax = ycoord((*it)->y(k)); toZoom = true; }
+        if (ycoord((*it)->y(k)) < cvb.ymin) { cvb.ymin = ycoord((*it)->y(k)); toZoom = true; }
 //        std::cout << "y=" << ycoord(it->y(k)) << "\n";
         touched = true;
       }
@@ -439,9 +434,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 {
   size_t xadded = 0;
   size_t yadded = 0;
-  std::list<PlotItem>::iterator start = --Graph.end();
+  std::list<std::unique_ptr<PlotItem>>::iterator start = --Graph.end();
   size_t startnumber = 0;
-  if (!Graph.empty()) startnumber = Graph.rbegin()->number;
+  if (!Graph.empty()) startnumber = (*Graph.rbegin())->number;
   QColor plcolor, stabcolor(Qt::black);
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
   // get stability data
@@ -473,26 +468,26 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     for (size_t b = 1; b < stabidx.size(); ++b)
     {
 //      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
-      Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
+      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
       int bskip = 0, eskip = 0;
       if (b == 1) bskip = 0; else bskip = 1;
       if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
-      Graph.rbegin()->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
-      Graph.rbegin()->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      (*Graph.rbegin())->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
+      (*Graph.rbegin())->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
 
       // X Coordinate
       if (x == XLabel)
       {
-        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) Graph.rbegin()->x(j) = i;
+        for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j) (*Graph.rbegin())->x(j) = i;
       } else
       if (x >= XParameter0)
       {
         for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           if (x != XParameter0)
-            Graph.rbegin()->x(j) = data->getPar(i, x - XParameter0);
+            (*Graph.rbegin())->x(j) = data->getPar(i, x - XParameter0);
           else
-            Graph.rbegin()->x(j) =
+            (*Graph.rbegin())->x(j) =
               data->getPar(i, x - XParameter0)/data->getPar(i, data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad X coord\n";
@@ -509,7 +504,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         {
           const_cast<KNDataFile*>(data)->getMeshRef(i, msh);
           const_cast<KNDataFile*>(data)->getProfileRef(i, prof);
-          Graph.rbegin()->y(j) = sqrt(KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim()));
+          (*Graph.rbegin())->y(j) = sqrt(KNDdeBvpCollocation::integrate(prof, prof, metric, msh, data->getNDim()));
         }
       } else
       if (y == YAmplitude)
@@ -536,8 +531,8 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
             nrm += (max - min) * (max - min);
 //          }
 //          std::cout << "min " << min << " max " << max << " nrm " << nrm << " j=" << j <<"\n";
-          if (nint == 0) Graph.rbegin()->y(j) = data->getProfile(i, p, 0);
-          else Graph.rbegin()->y(j) = sqrt(nrm);
+          if (nint == 0) (*Graph.rbegin())->y(j) = data->getProfile(i, p, 0);
+          else (*Graph.rbegin())->y(j) = sqrt(nrm);
         }
       } else
       if (y == YPoincare)
@@ -547,7 +542,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 	// TODO: take into account the period, so that each cross section is counted
         for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
-          Graph.rbegin()->y(j) = data->getProfile(i, dim, 0);
+          (*Graph.rbegin())->y(j) = data->getProfile(i, dim, 0);
         }
       } else
       if (y >= YParameter0)
@@ -555,27 +550,27 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         for (size_t i = stabidx[b-1], j = bskip; i < stabidx[b]+eskip; ++i, ++j)
         {
           if (y != YParameter0)
-            Graph.rbegin()->y(j) = data->getPar(i, y - YParameter0);
+            (*Graph.rbegin())->y(j) = data->getPar(i, y - YParameter0);
           else
-            Graph.rbegin()->y(j) =
+            (*Graph.rbegin())->y(j) =
               data->getPar(i, y - YParameter0)/data->getPar(i,data->getNPar()+VarPeriod-VarEnd);
         }
       } else std::cout << "Bad Y coord\n";
       ++yadded;
       // set the beginning and the end
-      const size_t end = Graph.rbegin()->x.size()-1;
+      const size_t end = (*Graph.rbegin())->x.size()-1;
       if (bskip != 0)
       {
-        Graph.rbegin()->x(0) = pxend;
-        Graph.rbegin()->y(0) = pyend;
+        (*Graph.rbegin())->x(0) = pxend;
+        (*Graph.rbegin())->y(0) = pyend;
       }
       if (eskip != 0)
       {
         // The end is incorrectly set.
-        pxend = (Graph.rbegin()->x(end) + Graph.rbegin()->x(end-1))/2;
-        pyend = (Graph.rbegin()->y(end) + Graph.rbegin()->y(end-1))/2;
-        Graph.rbegin()->x(end) = pxend;
-        Graph.rbegin()->y(end) = pyend;
+        pxend = ((*Graph.rbegin())->x(end) + (*Graph.rbegin())->x(end-1))/2;
+        pyend = ((*Graph.rbegin())->y(end) + (*Graph.rbegin())->y(end-1))/2;
+        (*Graph.rbegin())->x(end) = pxend;
+        (*Graph.rbegin())->y(end) = pyend;
       }
       addPlotLine(--Graph.end(), QPen(plcolor), true, stab_ini);
       stab_ini = !stab_ini;
@@ -587,19 +582,19 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   {
     const size_t ndeg = data->getNDeg();
     const size_t nint = data->getNInt();
-    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.init(ndeg*nint + 1);
-    Graph.rbegin()->y.init(ndeg*nint + 1);
+    Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+    (*Graph.rbegin())->x.init(ndeg*nint + 1);
+    (*Graph.rbegin())->y.init(ndeg*nint + 1);
     for (size_t i = 0; i < nint; i++)
     {
       for (size_t j = 0; j < ndeg; j++)
       {
-        Graph.rbegin()->x(j + ndeg*i) = data->getMesh(pt, i) + data->getElem(pt, j) * (data->getMesh(pt, i + 1) - data->getMesh(pt, i));
-        Graph.rbegin()->y(j + ndeg*i) = data->getProfile(pt, dim, j + ndeg * i);
+        (*Graph.rbegin())->x(j + ndeg*i) = data->getMesh(pt, i) + data->getElem(pt, j) * (data->getMesh(pt, i + 1) - data->getMesh(pt, i));
+        (*Graph.rbegin())->y(j + ndeg*i) = data->getProfile(pt, dim, j + ndeg * i);
       }
     }
-    Graph.rbegin()->x(ndeg*nint) = data->getMesh(pt, nint);
-    Graph.rbegin()->y(ndeg*nint) = data->getProfile(pt, dim, ndeg * nint);
+    (*Graph.rbegin())->x(ndeg*nint) = data->getMesh(pt, nint);
+    (*Graph.rbegin())->y(ndeg*nint) = data->getProfile(pt, dim, ndeg * nint);
     ++xadded;
     ++yadded;
     addPlotLine(--Graph.end(), QPen(plcolor), true);
@@ -608,13 +603,13 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
     // plotting the multipliers
-    Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-    Graph.rbegin()->x.init(data->getNMul());
-    Graph.rbegin()->y.init(data->getNMul());
+    Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+    (*Graph.rbegin())->x.init(data->getNMul());
+    (*Graph.rbegin())->y.init(data->getNMul());
     for (size_t i = 0; i < data->getNMul(); i++)
     {
-      Graph.rbegin()->x(i) = data->getMulRe(pt, i);
-      Graph.rbegin()->y(i) = data->getMulIm(pt, i);
+      (*Graph.rbegin())->x(i) = data->getMulRe(pt, i);
+      (*Graph.rbegin())->y(i) = data->getMulIm(pt, i);
     }
     ++xadded;
     ++yadded;
@@ -626,14 +621,14 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   {
     for (size_t r = 0; r < data->getNMul(); r++)
     {
-      Graph.push_back(PlotItem(data, PlotBasicData, x, y, pt, dim));
-      Graph.rbegin()->x.init(data->getNPoints());
-      Graph.rbegin()->y.init(data->getNPoints());
+      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+      (*Graph.rbegin())->x.init(data->getNPoints());
+      (*Graph.rbegin())->y.init(data->getNPoints());
       for (size_t i = 0; i < data->getNPoints(); i++)
       {
-        if (x >= XParameter0) Graph.rbegin()->x(i) = data->getPar(i, x - XParameter0);
-        else Graph.rbegin()->x(i) = i;
-        Graph.rbegin()->y(i) = sqrt(data->getMulRe(i, r) * data->getMulRe(i, r) + data->getMulIm(i, r) * data->getMulIm(i, r));
+        if (x >= XParameter0) (*Graph.rbegin())->x(i) = data->getPar(i, x - XParameter0);
+        else (*Graph.rbegin())->x(i) = i;
+        (*Graph.rbegin())->y(i) = sqrt(data->getMulRe(i, r) * data->getMulRe(i, r) + data->getMulIm(i, r) * data->getMulIm(i, r));
       }
       ++xadded;
       ++yadded;
@@ -643,13 +638,13 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   // add stability
   if ((x > XSeparator && y > YSeparator) || y == YAbsMultiplier)
   {
-    std::list<PlotItem>::const_iterator itc = Graph.end();
+    auto itc = Graph.end();
     for (size_t i = 0; i < xadded; ++i) --itc;
     for (size_t i = 0; i < bifidx.size(); ++i)
     {
-      Graph.push_back(PlotItem(data, PlotStability, x, y, pt, dim));
-      Graph.rbegin()->x.init(1);
-      Graph.rbegin()->y.init(1);
+      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotStability, x, y, pt, dim)));
+      (*Graph.rbegin())->x.init(1);
+      (*Graph.rbegin())->y.init(1);
 
       if (y != YAbsMultiplier)
       {
@@ -660,22 +655,22 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
         if (k > 1) k2 = bifidx[i] - stabidx[k-1] + 1;
         else k2 = bifidx[i] - stabidx[k-1];
 
-        std::list<PlotItem>::const_iterator it = itc;
+        auto it = itc;
         for (size_t p = 0; p < k-1; ++p) ++it;
 
         if (stbif)
         {
-          Graph.rbegin()->x(0) = it->x(it->x.size()-1);
-          Graph.rbegin()->y(0) = it->y(it->y.size()-1);
+          (*Graph.rbegin())->x(0) = (*it)->x((*it)->x.size()-1);
+          (*Graph.rbegin())->y(0) = (*it)->y((*it)->y.size()-1);
         } else
         {
-          Graph.rbegin()->x(0) = (it->x(k2 - 1) + xcoord(it->x(k2))) / 2.0;
-          Graph.rbegin()->y(0) = (it->y(k2 - 1) + it->y(k2)) / 2.0;
+          (*Graph.rbegin())->x(0) = ((*it)->x(k2 - 1) + xcoord((*it)->x(k2))) / 2.0;
+          (*Graph.rbegin())->y(0) = ((*it)->y(k2 - 1) + (*it)->y(k2)) / 2.0;
         }
       } else
       {
-        Graph.rbegin()->x(0) = (itc->x(bifidx[i] - 1) + itc->x(bifidx[i])) / 2.0;
-        Graph.rbegin()->y(0) = 1.0;
+        (*Graph.rbegin())->x(0) = ((*itc)->x(bifidx[i] - 1) + (*itc)->x(bifidx[i])) / 2.0;
+        (*Graph.rbegin())->y(0) = 1.0;
       }
       ++xadded;
       ++yadded;
@@ -696,9 +691,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       }
     }
   }
-  for (std::list<PlotItem>::iterator it = ++start; it != Graph.end(); ++it)
+  for (auto it = ++start; it != Graph.end(); ++it)
   {
-    it->number = startnumber + 1;
+    (*it)->number = startnumber + 1;
   }
   if (xadded != yadded)
   {
@@ -717,8 +712,8 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
       else YCoordText.push_back(YCoordMap[y]);
 
-      std::list<PlotItem>::const_iterator it = Graph.end();
-      for (size_t i = 0; i < xadded; ++i){ --it; if (it->x.size() != it->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
+      auto it = Graph.end();
+      for (size_t i = 0; i < xadded; ++i){ --it; if ((*it)->x.size() != (*it)->y.size()) std::cout << "bad number of X and Y coordinates\n"; }
       dataToGraphics(it, Graph.end());
       labelColor();
       return true;
@@ -750,19 +745,19 @@ void PlotData::updatePlot(const KNDataFile* mat)
 
   size_t ct_num = 0;
   size_t ct_it = 0;
-  std::list<PlotItem>::iterator first = Graph.end();
-  std::list<PlotItem>::iterator last = Graph.end();
-  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
+  auto first = Graph.end();
+  auto last = Graph.end();
+  for (auto i = Graph.begin(); i != Graph.end(); i++)
   {
-    if (ct_num != i->number) { ct_num = i->number; ++ct_it; }
+    if (ct_num != (*i)->number) { ct_num = (*i)->number; ++ct_it; }
     // only update if all the data is necessary
-    if (i->isFrom(mat) && i->varX > XSeparator && i->varY > YSeparator)
+    if ((*i)->isFrom(mat) && (*i)->varX > XSeparator && (*i)->varY > YSeparator)
     {
       // only select one of the, but recreate all of them
-      if (number != i->number)
+      if (number != (*i)->number)
       {
-        number = i->number;
-        lst.push_back(rcStruc(ct_it, i->varX, i->varY, i->point, i->dimension));
+        number = (*i)->number;
+        lst.push_back(rcStruc(ct_it, (*i)->varX, (*i)->varY, (*i)->point, (*i)->dimension));
       } else dirty = true;
       if (first == Graph.end()) first = i;
       last = i;
@@ -852,7 +847,7 @@ static inline void pointOutside(PlotLine& ppath,
 
   if (Ahoriz == HMiddle && Avert == VMiddle && Bhoriz == HMiddle && Bvert == VMiddle)
   {
-    ppath.last().path.lineTo(B);
+    ppath.back().path.lineTo(B);
     return;
   }
   else if (Ahoriz == Bhoriz && Ahoriz != HMiddle) return;
@@ -885,7 +880,7 @@ static inline void pointOutside(PlotLine& ppath,
   {
     if (beta[oneSidePt[0]]*beta[oneSidePt[1]] < 0)
     {
-      ppath.last().path.lineTo(B);
+      ppath.back().path.lineTo(B);
 //       std::cout << "Should have been handled already";
     }
   } else
@@ -893,28 +888,28 @@ static inline void pointOutside(PlotLine& ppath,
   {
     if (beta[oneSidePt[0]] > 1)
     {
-      ppath.append(PlotPolyLine(ppath.pen));
-      ppath.last().path.moveTo(itPoint[twoSidePt[0]]);
-      ppath.last().path.lineTo(B);
+      ppath.push_back(PlotPolyLine(ppath.pen));
+      ppath.back().path.moveTo(itPoint[twoSidePt[0]]);
+      ppath.back().path.lineTo(B);
 //       std::cout << "-in-";
     } else
     {
-      ppath.last().path.lineTo(itPoint[twoSidePt[0]]);
+      ppath.back().path.lineTo(itPoint[twoSidePt[0]]);
 //       std::cout << "-out-";
     }
   } else
   if (twoSideIt == 2)
   {
-    ppath.append(PlotPolyLine(ppath.pen));
-    ppath.last().path.moveTo(itPoint[twoSidePt[0]]);
-    ppath.last().path.lineTo(itPoint[twoSidePt[1]]);
+    ppath.push_back(PlotPolyLine(ppath.pen));
+    ppath.back().path.moveTo(itPoint[twoSidePt[0]]);
+    ppath.back().path.lineTo(itPoint[twoSidePt[1]]);
 //     std::cout << "-cross-";
   }
 //   std::cout.flush();
 }
 
-void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
-                           std::list<PlotItem>::const_iterator end)
+void PlotData::rescaleData(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                           std::list<std::unique_ptr<PlotItem>>::const_iterator end)
 {
   ViewBox cvb = *currZoom;
 
@@ -927,61 +922,61 @@ void PlotData::rescaleData(std::list<PlotItem>::const_iterator begin,
   const QPointF BottomLeft(0,0), BottomRight(plotXSize,0),
                 TopLeft(0,plotYSize), TopRight(plotXSize,plotYSize);
   // rescaling all the data
-  std::list<PlotItem>::const_iterator i;
-  for (i = begin; i != end; i++)
+  for (auto i = begin; i != end; i++)
   {
-    if (i->x.size() == 0) continue;
-    if ((*i).type == PlotLineType)
+    if ((*i)->x.size() == 0) continue;
+    if ((*i)->type == PlotLineType)
     {
-      PlotLine& ppath = *(*i).data.line;
-      QPointF prevPoint(xscale*(xcoord(i->x(0)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(0))));
+      auto& ppath = std::get<PlotLine>((*i)->data);
+      QPointF prevPoint(xscale*(xcoord((*i)->x(0)) - cvb.xmin), yscale*(cvb.ymax - ycoord((*i)->y(0))));
 
       // initializing ppath
       ppath.clear();
-      ppath.append(PlotPolyLine(ppath.pen));
-      ppath.last().path.moveTo(prevPoint);
+      ppath.push_back(PlotPolyLine(ppath.pen));
+      ppath.back().path.moveTo(prevPoint);
 
-      for (size_t k = 1; k < i->x.size(); k++)
+      for (size_t k = 1; k < (*i)->x.size(); k++)
       {
-        QPointF currentPoint(xscale*(xcoord(i->x(k)) - cvb.xmin), yscale*(cvb.ymax - ycoord(i->y(k))));
+        QPointF currentPoint(xscale*(xcoord((*i)->x(k)) - cvb.xmin), yscale*(cvb.ymax - ycoord((*i)->y(k))));
         pointOutside(ppath, BottomLeft, BottomRight, TopLeft, TopRight, prevPoint, currentPoint);
         prevPoint = currentPoint;
       }
     }
-    if ((*i).type == PlotCircleType)
+    if ((*i)->type == PlotCircleType)
     {
-      (*i).data.circle->pos.clear();
-      for (size_t k = 0; k < i->x.size(); k++)
+      std::cout << "Scaling PlotCircle\n";
+      std::get<PlotCircle>((*i)->data).pos.clear();
+      for (size_t k = 0; k < (*i)->x.size(); k++)
       {
-        const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
-        QRectF& rect = (*i).data.circle->point;
-        QRectF& scaledRect = (*i).data.circle->scaledPoint;
-        if ((*i).data.circle->scale)
+        const QPointF pt = QPointF(xscale * (xcoord((*i)->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord((*i)->y(k))));
+        QRectF& rect = std::get<PlotCircle>((*i)->data).point;
+        QRectF& scaledRect = std::get<PlotCircle>((*i)->data).scaledPoint;
+        if (std::get<PlotCircle>((*i)->data).scale)
         {
           scaledRect.setLeft(xscale*rect.left());
           scaledRect.setRight(xscale*rect.right());
           scaledRect.setBottom(yscale*rect.bottom());
           scaledRect.setTop(yscale*rect.top());
-          if (Box->rect().intersects(scaledRect)) (*i).data.circle->pos.push_back(pt);
+          if (Box->rect().intersects(scaledRect)) std::get<PlotCircle>((*i)->data).pos.push_back(pt);
         } else
         {
           scaledRect = rect;
-          if (Box->rect().contains(pt.x(), pt.y())) (*i).data.circle->pos.push_back(pt);
+          if (Box->rect().contains(pt.x(), pt.y())) std::get<PlotCircle>((*i)->data).pos.push_back(pt);
         }
       }
-      for (size_t p = (*i).data.circle->pos.size(); p < (*i).data.circle->item.size(); ++p) delete(*i).data.circle->item[p];
-      (*i).data.circle->item.resize((*i).data.circle->pos.size(), 0);
+//      for (auto& it : std::get<PlotCircle>((*i)->data).item) it.reset(nullptr);
+      std::get<PlotCircle>((*i)->data).item.resize(std::get<PlotCircle>((*i)->data).pos.size());
     }
-    if ((*i).type == PlotPolygonType)
+    if ((*i)->type == PlotPolygonType)
     {
-      (*i).data.polygon->pos.clear();
-      for (size_t k = 0; k < i->x.size(); k++)
+      std::get<PlotPolygon>((*i)->data).pos.clear();
+      for (size_t k = 0; k < (*i)->x.size(); k++)
       {
-        const QPointF pt = QPointF(xscale * (xcoord(i->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord(i->y(k))));
-        if (Box->rect().contains(pt.x(), pt.y())) (*i).data.polygon->pos.push_back(pt);
+        const QPointF pt = QPointF(xscale * (xcoord((*i)->x(k)) - cvb.xmin), yscale * (cvb.ymax - ycoord((*i)->y(k))));
+        if (Box->rect().contains(pt.x(), pt.y())) std::get<PlotPolygon>((*i)->data).pos.push_back(pt);
       }
-      for (size_t p = (*i).data.polygon->pos.size(); p < (*i).data.polygon->item.size(); ++p) delete(*i).data.polygon->item[p];
-      (*i).data.polygon->item.resize((*i).data.polygon->pos.size(), 0);
+//      for (auto& it : std::get<PlotPolygon>((*i)->data).item) it.reset(nullptr);
+      std::get<PlotPolygon>((*i)->data).item.resize(std::get<PlotPolygon>((*i)->data).pos.size());
     }
   }
 }
@@ -1084,66 +1079,68 @@ QGraphicsRectItem* PlotData::makeBox()
   // drawing the ticks and tickmarks
   for (size_t i = 0; i < HText.size(); i++)
   {
-    removeItem(BottomTicks[i]);
-    removeItem(TopTicks[i]);
-    removeItem(HText[i]);
-    delete BottomTicks[i];
-    delete TopTicks[i];
-    delete HText[i];
+    removeItem(BottomTicks[i].get());
+    removeItem(TopTicks[i].get());
+    removeItem(HText[i].get());
+//     BottomTicks[i].reset(nullptr);
+//     TopTicks[i].reset(nullptr);
+//     HText[i].reset(nullptr);
   }
-  BottomTicks.clear();
-  TopTicks.clear();
-  HText.clear();
+  BottomTicks.resize(cvb.xticks + 1);
+  TopTicks.resize(cvb.xticks + 1);
+  HText.resize(cvb.xticks + 1);
   qreal highest = 0;
 //  std::cout << "xmin " << cvb.xmin << ", xmax" << cvb.xmax << " ticks " << cvb.xticks << "\n";
   for (size_t i = 0; i < cvb.xticks + 1; i++)
   {
-    BottomTicks.push_back(new QGraphicsLineItem);
+    BottomTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
     BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
     BottomTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    TopTicks.push_back(new QGraphicsLineItem);
+    TopTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
     TopTicks[i]->setLine(plotXSize * i / cvb.xticks, plotYSize, plotXSize * i / cvb.xticks, plotYSize - 5.0);
     TopTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    HText.push_back(new QGraphicsTextItem);
+    HText[i] = std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem());
     HText[i]->setPlainText(QString::number(cvb.xmin + (cvb.xmax - cvb.xmin)*i / cvb.xticks));
     HText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = HText[i]->boundingRect().normalized();
     HText[i]->setPos(plotXSize * i / cvb.xticks - b.width() / 2.0, plotYSize /*- b.height()*/);
-    addItem(TopTicks[i]);
-    addItem(BottomTicks[i]);
-    addItem(HText[i]);
+    addItem(TopTicks[i].get());
+    addItem(BottomTicks[i].get());
+    addItem(HText[i].get());
+//     std::cout << "addItem " << i << " " << __LINE__ << "" << TopTicks[i].get() << " " << BottomTicks[i].get() << " " << HText[i].get() << "\n";
     if (highest < b.height()) highest = b.height();
   }
   for (size_t i = 0; i < VText.size(); i++)
   {
-    removeItem(LeftTicks[i]);
-    removeItem(RightTicks[i]);
-    removeItem(VText[i]);
-    delete LeftTicks[i];
-    delete RightTicks[i];
-    delete VText[i];
+    removeItem(LeftTicks[i].get());
+    removeItem(RightTicks[i].get());
+    removeItem(VText[i].get());
+//     LeftTicks[i].reset(nullptr);
+//     RightTicks[i].reset(nullptr);
+//     VText[i].reset(nullptr);
   }
-  LeftTicks.clear();
-  RightTicks.clear();
-  VText.clear();
+  LeftTicks.resize(cvb.yticks + 1);
+  RightTicks.resize(cvb.yticks + 1);
+  VText.resize(cvb.yticks + 1);
   qreal widest = 0;
 //  std::cout << "ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
   for (size_t i = 0; i < cvb.yticks + 1; i++)
   {
-    LeftTicks.push_back(new QGraphicsLineItem);
+    LeftTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
     LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);
     LeftTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    RightTicks.push_back(new QGraphicsLineItem);
+    RightTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
     RightTicks[i]->setLine(plotXSize, plotYSize * i / cvb.yticks, plotXSize - 5.0, plotYSize * i / cvb.yticks);
     RightTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    VText.push_back(new QGraphicsTextItem);
+    VText[i] = std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem());
     VText[i]->setPlainText(QString::number(cvb.ymin + (cvb.ymax - cvb.ymin)*i / cvb.yticks));
     VText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = VText[i]->boundingRect().normalized();
     VText[i]->setPos(-b.width(), plotYSize - plotYSize*i / cvb.yticks - b.height() / 2.0);
-    addItem(LeftTicks[i]);
-    addItem(RightTicks[i]);
-    addItem(VText[i]);
+    addItem(LeftTicks[i].get());
+    addItem(RightTicks[i].get());
+    addItem(VText[i].get());
+//     std::cout << "addItem " << __LINE__ << "\n";
     if (widest < b.width()) widest = b.width();
   }
   // remove previous texts
@@ -1154,7 +1151,7 @@ QGraphicsRectItem* PlotData::makeBox()
   size_t startmove = 0;
   for (size_t i = 0; i < YCoordText.size(); ++i)
   {
-    YCoordTextItems.push_back(new QGraphicsTextItem);
+    YCoordTextItems.push_back(std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem()));
     YCoordTextItems[i]->setPlainText(YCoordText[i]);
     YCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = YCoordTextItems[i]->boundingRect().normalized();
@@ -1166,7 +1163,8 @@ QGraphicsRectItem* PlotData::makeBox()
       for (size_t i = startmove; i < YCoordTextItems.size(); ++i)
       {
         YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
-        addItem(YCoordTextItems[i]);
+        addItem(YCoordTextItems[i].get());
+//         std::cout << "addItem " << __LINE__ << "\n";
       }
       sumheight += highest;
       startmove = YCoordTextItems.size();
@@ -1176,14 +1174,15 @@ QGraphicsRectItem* PlotData::makeBox()
   for (size_t i = startmove; i < YCoordTextItems.size(); ++i)
   {
     YCoordTextItems[i]->moveBy(0.0, -sumwidth/2.0);
-    addItem(YCoordTextItems[i]);
+    addItem(YCoordTextItems[i].get());
+//     std::cout << "addItem " << __LINE__ << "\n";
   }
   sumwidth = 0;
   sumheight = 0;
   startmove = 0;
   for (size_t i = 0; i < XCoordText.size(); ++i)
   {
-    XCoordTextItems.push_back(new QGraphicsTextItem);
+    XCoordTextItems.push_back(std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem()));
     XCoordTextItems[i]->setPlainText(XCoordText[i]);
     XCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = XCoordTextItems[i]->boundingRect().normalized();
@@ -1194,7 +1193,8 @@ QGraphicsRectItem* PlotData::makeBox()
       for (size_t i = startmove; i < XCoordTextItems.size(); ++i)
       {
         XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
-        addItem(XCoordTextItems[i]);
+        addItem(XCoordTextItems[i].get());
+//         std::cout << "addItem " << __LINE__ << "\n";
       }
       sumheight += highest;
       startmove = XCoordTextItems.size();
@@ -1204,14 +1204,15 @@ QGraphicsRectItem* PlotData::makeBox()
   for (size_t i = startmove; i < XCoordText.size(); ++i)
   {
     XCoordTextItems[i]->moveBy(-sumwidth/2.0, 0.0);
-    addItem(XCoordTextItems[i]);
+    addItem(XCoordTextItems[i].get());
+//     std::cout << "addItem " << __LINE__ << "\n";
   }
 
   // add unit circle if necessary
   if (unitCircleItem != 0)
   {
-    removeItem(unitCircleItem);
-    delete unitCircleItem;
+    removeItem(unitCircleItem.get());
+    unitCircleItem.reset(nullptr);
     unitCircleItem = 0;
   }
   if (unitCircleCount > 0)
@@ -1221,7 +1222,7 @@ QGraphicsRectItem* PlotData::makeBox()
     const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
     const QPointF pos = QPointF(xscale * (xcoord(0.0) - cvb.xmin), yscale * (cvb.ymax - ycoord(0.0)));
     QRectF scaledRect(-xscale, -yscale, 2*xscale, 2*yscale);
-    unitCircleItem = new QGraphicsEllipseItem(scaledRect, newBox);
+    unitCircleItem = std::unique_ptr<QGraphicsEllipseItem>(new QGraphicsEllipseItem(scaledRect, newBox));
     unitCircleItem->setPos(pos);
     unitCircleItem->setPen(QPen(QBrush(Qt::SolidPattern), 1));
   }
@@ -1231,22 +1232,22 @@ QGraphicsRectItem* PlotData::makeBox()
 void PlotData::labelColor()
 {
   size_t prenumber = 0, it = 0;
-  for (std::list<PlotItem>::iterator i = Graph.begin(); i != Graph.end(); i++)
+  for (auto i = Graph.begin(); i != Graph.end(); i++)
   {
-    if ((*i).principal && prenumber != (*i).number)
+    if ((*i)->principal && prenumber != (*i)->number)
     {
       QColor textColor;
-      if ((*i).type == PlotLineType)
+      if ((*i)->type == PlotLineType)
       {
-        textColor = (*i).data.line->pen.color();
+        textColor = std::get<PlotLine>((*i)->data).pen.color();
       }
-      if ((*i).type == PlotCircleType)
+      if ((*i)->type == PlotCircleType)
       {
-        textColor = (*i).data.circle->pen.color();
+        textColor = std::get<PlotCircle>((*i)->data).pen.color();
       }
-      if ((*i).type == PlotPolygonType)
+      if ((*i)->type == PlotPolygonType)
       {
-        textColor = (*i).data.polygon->pen.color();
+        textColor = std::get<PlotPolygon>((*i)->data).pen.color();
       }
       size_t num = it++;
       if (num < XCoordTextItems.size() && num < YCoordTextItems.size() &&
@@ -1256,52 +1257,79 @@ void PlotData::labelColor()
         YCoordTextItems[num]->setDefaultTextColor(textColor);
       }
     }
-    prenumber = (*i).number;
+    prenumber = (*i)->number;
   }
 }
 
-void PlotData::PlotPaint(std::list<PlotItem>::const_iterator begin,
-                         std::list<PlotItem>::const_iterator end, bool zoom)
+void PlotData::PlotPaint(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                         std::list<std::unique_ptr<PlotItem>>::const_iterator end, bool zoom)
 {
   // drawing the box
   QGraphicsRectItem* newBox = makeBox();
   // drawing the lines
-  for (std::list<PlotItem>::const_iterator i = begin; i != end; i++)
+  for (auto i = begin; i != end; i++)
   {
     QColor textColor;
-    if ((*i).type == PlotLineType)
+    if ((*i)->type == PlotLineType)
     {
-      for (PlotLine::iterator it = (*i).data.line->begin(); it != (*i).data.line->end(); ++it)
+      for (auto& it : std::get<PlotLine>((*i)->data))
       {
-        delete it->item;
-        it->item = new QGraphicsPathItem(it->path, newBox);
-        it->item->setPen(it->pen);
+//         delete it->item;
+//         it.item = std::unique_ptr<QGraphicsPathItem>(new QGraphicsPathItem(it.path, newBox));
+        // this is managed by unique_ptr, hence no need for parent
+        if(it.item) 
+        {
+//          std::cout << "remove a line " << it.item.get() << " scene " << it.item->scene() << "\n";
+          removeItem(it.item.get());
+        }
+        it.item = std::unique_ptr<QGraphicsPathItem>(new QGraphicsPathItem(it.path));
+        it.item->setPen(it.pen);
+//        std::cout << "<adding a line " << it.item.get() << " scene " << it.item.get()->scene() << "\n";
+        addItem(it.item.get());
+//        std::cout << "<adding a line " << it.item.get() << " scene " << it.item->scene() << ">\n";
       }
     }
-    if ((*i).type == PlotCircleType)
-    {
-      for (unsigned int j = 0; j < (*i).data.circle->pos.size(); ++j)
+    if ((*i)->type == PlotCircleType)
+   {
+//      std::cout << "adding a circle ";
+      // need to iterate through both pos and item at the same time
       {
-        delete (*i).data.circle->item[j];
-        QGraphicsEllipseItem* item = new QGraphicsEllipseItem((*i).data.circle->scaledPoint, newBox);
-        item->setPen((*i).data.circle->pen);
-        item->setPos((*i).data.circle->pos[j]);
-        (*i).data.circle->item[j] = item;
+        auto itp = std::get<PlotCircle>((*i)->data).pos.begin();
+        auto iti = std::get<PlotCircle>((*i)->data).item.begin();
+        for ( ; itp != std::get<PlotCircle>((*i)->data).pos.end(); itp++, iti++)
+        {
+          // this is managed by unique_ptr, hence no need for parent
+          auto item = std::unique_ptr<QGraphicsEllipseItem>(new QGraphicsEllipseItem(std::get<PlotCircle>((*i)->data).scaledPoint));
+          item->setPen(std::get<PlotCircle>((*i)->data).pen);
+          item->setPos(*itp);
+          if (*iti) removeItem(iti->get());
+//          std::cout << "adding a circle " << item.get() << "\n";
+          addItem(item.get());
+          *iti = std::move(item);
+        }
       }
     }
-    if ((*i).type == PlotPolygonType)
+    if ((*i)->type == PlotPolygonType)
     {
-      for (unsigned int j = 0; j < (*i).data.polygon->pos.size(); ++j)
+//      std::cout << "adding a polygon ";
+      // need to iterate through both pos and item at the same time
       {
-        delete (*i).data.polygon->item[j];
-        QGraphicsPolygonItem* item = new QGraphicsPolygonItem((*i).data.polygon->point, newBox);
-        item->setPen((*i).data.polygon->pen);
-        item->setPos((*i).data.polygon->pos[j]);
-        (*i).data.polygon->item[j] = item;
+        auto itp = std::get<PlotPolygon>((*i)->data).pos.begin();
+        auto iti = std::get<PlotPolygon>((*i)->data).item.begin();
+        for ( ; itp != std::get<PlotPolygon>((*i)->data).pos.end(); itp++, iti++)
+        {
+          // this is managed by unique_ptr, hence no need for parent
+          auto item = std::unique_ptr<QGraphicsPolygonItem>(new QGraphicsPolygonItem(std::get<PlotPolygon>((*i)->data).point));
+          item->setPen(std::get<PlotPolygon>((*i)->data).pen);
+          item->setPos(*itp);
+          if (*iti) removeItem(iti->get());
+//          std::cout << "adding a polygon " << item.get() << "\n";
+          addItem(item.get());
+          *iti = std::move(item);
+        }
       }
     }
   }
-  delete Box;
-  Box = newBox;
+  Box.reset(newBox);
   labelColor();
 }

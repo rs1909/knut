@@ -1840,6 +1840,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         PE_ERROR_X1(endptr != &str[k], k, "Cannot convert number.");
         size_t p = (endptr - &str[k])/sizeof(char);
         std::string tn (&str[k], p);
+        // TODO add to a symbol table and only use symbol ID later on
         stream.push_back (Token (TokenType::Symbol, tn, k) );
         k = k + p;
         continue;
@@ -1848,6 +1849,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         size_t p = 0;
         while (findCharType (str[k+p]) == CharType::Identifier) p++;
         std::string tn (&str[k], p);
+        // TODO add to a symbol table and only use symbol ID later on
         stream.push_back (Token (TokenType::Symbol, tn, k) );
         k = k + p;
         continue;

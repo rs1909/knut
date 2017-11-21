@@ -14,6 +14,8 @@
 #include <QPolygon>
 #include <QPainterPath>
 #include <QGraphicsScene>
+#include <QGraphicsItem>
+#include <QPainter>
 #include <QGraphicsRectItem>
 #include <QLinkedList>
 #include <QFileInfo>
@@ -23,6 +25,8 @@ class QGraphicsSceneMouseEvent;
 #include <list>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
+#include <variant>
 
 #include "matrix.h"
 #include "mat4data.h"
@@ -81,25 +85,24 @@ enum PlotMarkerStyle
 class PlotPolyLine
 {
   public:
+    PlotPolyLine() { }
+    // need to avoid at all costs
+//    PlotPolyLine(const PlotPolyLine& pl)
     PlotPolyLine(const QPen& pen_) : pen(pen_), item(nullptr) { }
+    
     QPen               pen;
     QPainterPath       path;
-    QGraphicsPathItem* item;
+    std::unique_ptr<QGraphicsPathItem> item;
 };
 
-class PlotLine : public QLinkedList<PlotPolyLine>
+class PlotLine : public std::list<PlotPolyLine>
 {
   public:
+    PlotLine() { }
     PlotLine(const QPen& p) : pen(p) { }
     void clear()
     {
-      std::cout << "PlotLine Size " << size() << "\n";
-      for (PlotLine::iterator it = begin(); it != end(); ++it)
-      {
-        delete it->item;
-        it->item = nullptr;
-      }
-      QLinkedList<PlotPolyLine>::clear();
+      std::list<PlotPolyLine>::clear();
     }
     QPen pen;
 };
@@ -112,11 +115,12 @@ class PlotCircle
     QPen                 pen;
     QRectF               point;
     QRectF               scaledPoint;
-    std::vector<QPointF> pos;
-    std::vector<QGraphicsEllipseItem*> item;
+    std::list<QPointF> pos;
+    std::list<std::unique_ptr<QGraphicsEllipseItem> > item;
     bool scale;
 };
 
+// use std::variant instead
 class PlotPolygon
 {
   public:
@@ -124,16 +128,18 @@ class PlotPolygon
     { }
     QPen                   pen;
     QPolygonF              point;
-    std::vector<QPointF>   pos;
-    std::vector<QGraphicsPolygonItem*> item;
+    std::list<QPointF>   pos;
+    std::list<std::unique_ptr<QGraphicsPolygonItem> > item;
 };
 
-union PlotItemUnion
-{
-  PlotLine*    line;
-  PlotCircle*  circle;
-  PlotPolygon* polygon;
-};
+// union PlotItemUnion
+// {
+//   std::shared_ptr<PlotLine>    line;
+//   std::shared_ptr<PlotCircle>  circle;
+//   std::shared_ptr<PlotPolygon> polygon;
+//   PlotItemUnion() : line(nullptr) {}
+//   ~PlotItemUnion() {}
+// };
 
 class PlotItem
 {
@@ -145,7 +151,7 @@ class PlotItem
      varX(xv), varY(yv), point(pt), dimension(dim) {}
     bool isFrom(const KNDataFile* mat) { return sourcePath == QFileInfo(QString::fromStdString(mat->getFileName())).canonicalFilePath(); }
     bool isUnitCircle() { return (varX == XRealMultiplier) && (varY == YImagMultiplier); } 
-    PlotItemUnion data;
+    std::variant<PlotLine, PlotCircle, PlotPolygon> data;
     PlotType      type;
     PlotDataType  dataType;
     KNVector      x;
@@ -202,20 +208,20 @@ class PlotData : public QGraphicsScene
     void keyPressEvent(QKeyEvent * event) override;
 
   private:
-    void addPlotLine(std::list<PlotItem>::iterator it, const QPen& pen, bool p, bool s = true);
-    void addPlotPoint(std::list<PlotItem>::iterator it, const QPen& pen, 
+    void addPlotLine(std::list<std::unique_ptr<PlotItem>>::iterator it, const QPen& pen, bool p, bool s = true);
+    void addPlotPoint(std::list<std::unique_ptr<PlotItem>>::iterator it, const QPen& pen, 
                       PlotMarkerStyle type, bool p, qreal radius = 3.0, bool scale = false);
-    void dataToGraphics(std::list<PlotItem>::const_iterator begin,
-                        std::list<PlotItem>::const_iterator end);
+    void dataToGraphics(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                        std::list<std::unique_ptr<PlotItem>>::const_iterator end);
     void getScale(qreal& transx, qreal& transy, qreal& scale);
     QPointF intersect(QPointF p1, QPointF p2);
     inline bool contains(double x, double y);
     bool crossbox(QPointF p1, QPointF p2, QPointF& i1, QPointF& i2);
-    void rescaleData(std::list<PlotItem>::const_iterator begin,
-                     std::list<PlotItem>::const_iterator end);
+    void rescaleData(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                     std::list<std::unique_ptr<PlotItem>>::const_iterator end);
     QGraphicsRectItem* makeBox();
-    void PlotPaint(std::list<PlotItem>::const_iterator begin,
-                   std::list<PlotItem>::const_iterator end, bool zoom);
+    void PlotPaint(std::list<std::unique_ptr<PlotItem>>::const_iterator begin,
+                   std::list<std::unique_ptr<PlotItem>>::const_iterator end, bool zoom);
 //     void replot();
     void clearAxes();
     void labelColor();
@@ -238,26 +244,26 @@ class PlotData : public QGraphicsScene
     QPointF           mouseMove;
     QGraphicsRectItem selection;
     // data
-    std::list<PlotItem> Graph;
+    std::list<std::unique_ptr<PlotItem>> Graph;
     // unitcircle
-    QGraphicsEllipseItem* unitCircleItem;
+    std::unique_ptr<QGraphicsEllipseItem> unitCircleItem;
     int unitCircleCount;
 
     // the plot box
-    QGraphicsRectItem               *Box;
+    std::unique_ptr<QGraphicsRectItem>              Box;
     QPainterPath                     clipBox;
-    std::vector<QGraphicsTextItem*>  HText;
-    std::vector<QGraphicsTextItem*>  VText;
-    std::vector<QGraphicsLineItem*>  TopTicks;
-    std::vector<QGraphicsLineItem*>  BottomTicks;
-    std::vector<QGraphicsLineItem*>  LeftTicks;
-    std::vector<QGraphicsLineItem*>  RightTicks;
+    std::vector<std::unique_ptr<QGraphicsTextItem> >  HText;
+    std::vector<std::unique_ptr<QGraphicsTextItem> >  VText;
+    std::vector<std::unique_ptr<QGraphicsLineItem> >  TopTicks;
+    std::vector<std::unique_ptr<QGraphicsLineItem> >  BottomTicks;
+    std::vector<std::unique_ptr<QGraphicsLineItem> >  LeftTicks;
+    std::vector<std::unique_ptr<QGraphicsLineItem> >  RightTicks;
     
     // for the axes
     std::vector<QString> XCoordText;
     std::vector<QString> YCoordText;
-    std::vector<QGraphicsTextItem*> XCoordTextItems;
-    std::vector<QGraphicsTextItem*> YCoordTextItems;
+    std::vector<std::unique_ptr<QGraphicsTextItem> > XCoordTextItems;
+    std::vector<std::unique_ptr<QGraphicsTextItem> > YCoordTextItems;
     std::map<PlotXVariable,QString> XCoordMap;
     std::map<PlotYVariable,QString> YCoordMap;
 };

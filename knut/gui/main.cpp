@@ -26,11 +26,12 @@
 class KnutApplication : public QApplication
 {
   public:
-    KnutApplication(int &argc, char **argv)
+    KnutApplication(int &argc, char **argv, const QString& file)
         : QApplication(argc, argv)
     {
         mainWin = new MainWindow(this->applicationDirPath());
         mainWin -> show();
+        if (!file.isEmpty()) mainWin->loadFile(file);
     }
 #ifdef Q_OS_OSX
     bool event(QEvent *event) override
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
     } else
     {
       constFile = argv[acnt];
+      std::cout << constFile.toStdString() << "\n";
     }
   }
   
@@ -157,7 +159,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<KNConstants*>("KNConstants*");
     qRegisterMetaType<KNConstants*>("DataType");
 
-    KnutApplication app(argc, argv);
+    KnutApplication app(argc, argv, constFile);
     app.setWindowIcon(QIcon(":/res/images/icon-knut.png"));
 #ifdef Q_WS_WIN
     app.setFont(QFont("Helvetica", 9));
