@@ -27,10 +27,11 @@ template<> const TypeTuple<PtType> TypeTupleTabBase<PtType>::tabStatic[] = {
   {14, SolTFAUTBRSW, "DDE_AUT_BP_SW",    "Branch switch (aut)"},
   {15, SolTFAUTPDSW, "DDE_AUT_PD_SW",    "Period doubling switch (aut)"},
   {16, SolTFAUTHBSW, "DDE_AUT_HOPF_SW",  "Hopf switch (aut)"},
-  {17, SolTor,       "DDE_TORUS",        "Torus"},
-  {18, SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
-  {19, SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
-  {20, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
+  {17, SolTFAUTSSMSW,"DDE_AUT_SSM_SW",  "Subcenter manifold switch (aut)"},
+  {18, SolTor,       "DDE_TORUS",        "Torus"},
+  {19, SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
+  {20, SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
+  {21, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
   {~(size_t)0, SolUser, "", ""}};
 
 template<> const TypeTuple<Eqn> TypeTupleTabBase<Eqn>::tabStatic[] = {

@@ -1641,6 +1641,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
     strcpy(argv[i],it->c_str());
     ++i;
   }
+  if(i == 0) P_MESSAGE1("pipe: missing executable name.");
   argv[i] = nullptr;
 
   int fds_output[2], fds_input[2], fds_error[2];

@@ -15,10 +15,10 @@
 #include "hypermatrix.h"
 #include "ncolloc.h"
 #include "pointtype.h"
+#include <fstream>
 
 #ifdef DEBUG
 #include <iomanip>
-#include <fstream>
 #endif
 
 #define NDIM (col.nDim())
@@ -191,6 +191,11 @@ void   KNTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, const
 void   KNTestFunctional::kernel(KNVector& phi)
 {
   phi = vv;
+//   std::cout << "Printing: eigenvec\n";
+//   std::ofstream file("eigenvec");
+//   file << std::scientific;
+//   file.precision(12);
+//   vv.print(file);
 }
 
 /// ---------------------------------------------------------
@@ -573,9 +578,16 @@ void   KNLpAutTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& col, 
   func += hh2(0) * temp;
 }
 
-void   KNLpAutTestFunctional::kernel(KNVector& phi)
+void   KNLpAutTestFunctional::kernel(KNVector& phiout)
 {
-  phi = vv2;
+  phiout = vv2;
+//   std::cout << "Printing: eigenvec_LpAut\n";
+//   std::ofstream file("eigenvec_LpAut");
+//   file << std::scientific;
+//   file.precision(12);
+//   
+//   vv2.print(file);
+//   phi.print(file);
 }
 
 /// -----------------------------------------------------------------------
@@ -792,6 +804,11 @@ void   KNLpAutRotTestFunctional::funct_x(KNVector& func, KNDdeBvpCollocation& co
 void   KNLpAutRotTestFunctional::kernel(KNVector& phi)
 {
   phi = vv3;
+//   std::cout << "Printing: eigenvec_LpAutRot\n";
+//   std::ofstream file("eigenvec_LpAutRot");
+//   file << std::scientific;
+//   file.precision(12);
+//   vv3.print(file);
 }
 
 /// -----------------------------------------------------------------------
@@ -998,4 +1015,9 @@ void   KNLpAutRotTestFunctional2::funct_x(KNVector& func, KNDdeBvpCollocation& c
 void   KNLpAutRotTestFunctional2::kernel(KNVector& phi)
 {
   phi = vv3;
+//   std::cout << "Printing: eigenvec_LpAutRot\n";
+//   std::ofstream file("eigenvec_LpAutRot");
+//   file << std::scientific;
+//   file.precision(12);
+//   vv3.print(file);
 }

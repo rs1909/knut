@@ -14,6 +14,7 @@
 #include "exprsystem.h"
 #include "mat4data.h"
 #include <sstream>
+#include <algorithm>
 
 // specified in the constants file
 #define REFEPS    (1E-5)
@@ -127,7 +128,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     break;
     case SolTFAUTBRSW:
     {
-      PtTab tmp = { SolTFAUTBRSW, TFBRSwitch, 2, 1,
+      PtTab tmp = { SolTFAUTBRSW, TFBRAUTSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
@@ -141,9 +142,19 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
       tab = tmp;
     }
     break;
+    // Hopf bifurcation switch
     case SolTFAUTHBSW:
     {
       PtTab tmp = { SolTFAUTHBSW, TFHBSwitch, 2, 1,
+                    { EqnSol, EqnPhase },
+                    { VarSol, VarNone } };
+      tab = tmp;
+    }
+    break;
+    // Spectral submanifold switch: Same as Hopf bifurcation
+    case SolTFAUTSSMSW:
+    {
+      PtTab tmp = { SolTFAUTHBSW, TFSSMSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
@@ -577,27 +588,36 @@ void KNAbstractPeriodicSolution::FillSol(KNExprSystem& sys_)
 
 /// It only computes the critical characteristic multiplier and refines the solution
 
-void KNAbstractPeriodicSolution::findAngle()
+// id : the index of the characteristic multiplier
+void KNAbstractPeriodicSolution::findAngle(const size_t id)
 {
   std::ostream& out = outStream();
 
   Stability(true); // re-initialize the collocation just in case when the period changes
-  double dmin = 10.0;
-  size_t imin = 0;
+  std::vector<std::pair<double,size_t>> aind;
+  aind.resize(mRe.size());
   for (size_t i = 0; i < mRe.size(); i++)
   {
-    if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
-    {
-      if (fabs(mIm(i)) > MIN_NSIMAG)
-      {
-        dmin = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
-        imin = i;
-      }
-    }
+     aind[i] = std::pair<double,size_t>(fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0), i);
   }
-  double zRe = mRe(imin);
-  double zIm = fabs(mIm(imin));
-  double nrm = sqrt(zRe * zRe + zIm * zIm);
+  std::sort(aind.begin(), aind.end(), 
+     [](std::pair<double,size_t> a, std::pair<double,size_t> b) { return a.first < b.first; });
+//  double dmin = 10.0;
+//  size_t imin = 0;
+//  for (size_t i = 0; i < mRe.size(); i++)
+//  {
+//    if (dmin > fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0))
+//    {
+//      if (fabs(mIm(i)) > MIN_NSIMAG)
+//      {
+//        dmin = fabs(sqrt(mRe(i) * mRe(i) + mIm(i) * mIm(i)) - 1.0);
+//        imin = i;
+//      }
+//    }
+//  }
+  auto zRe = mRe(aind[id].second);
+  auto zIm = fabs(mIm(aind[id].second));
+  auto nrm = sqrt(zRe * zRe + zIm * zIm);
 
   if (zRe > 0)
   {

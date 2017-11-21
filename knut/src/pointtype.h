@@ -39,7 +39,8 @@ enum PtType {
   BifTFAUTNS   = 53,
   SolTFAUTBRSW = 54,
   SolTFAUTPDSW = 55,
-  SolTFAUTHBSW = 56
+  SolTFAUTHBSW = 56,
+  SolTFAUTSSMSW = 57
 };
 
 enum Eqn {
@@ -80,9 +81,10 @@ enum BranchSW
   TFBRSwitch = 1,
   TFPDSwitch = 2,
   TFHBSwitch = 3,
-  TFTRSwitch = 4,
-  TFBRAUTSwitch = 5,
-  TFBRAUTROTSwitch = 6
+  TFSSMSwitch = 4,
+  TFTRSwitch = 5,
+  TFBRAUTSwitch = 6,
+  TFBRAUTROTSwitch = 7
 };
 
 enum BifType
@@ -140,5 +142,11 @@ template<typename TP> class TypeTupleTabBase
   public:
     static const TypeTuple<TP> tabStatic[];
 };
+
+template<> const TypeTuple<PtType> TypeTupleTabBase<PtType>::tabStatic[];
+template<> const TypeTuple<Eqn> TypeTupleTabBase<Eqn>::tabStatic[];
+template<> const TypeTuple<BranchSW> TypeTupleTabBase<BranchSW>::tabStatic[];
+template<> const TypeTuple<Var> TypeTupleTabBase<Var>::tabStatic[];
+template<> const TypeTuple<BifType> TypeTupleTabBase<BifType>::tabStatic[];
 
 #endif

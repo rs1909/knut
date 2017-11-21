@@ -140,15 +140,17 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         } else P_MESSAGE1("Missing input data.");
       }
 
-      screenout   << "\n---      Refine supplied solution      ---\n";
-      printStream();
-      pt.refine();
       if (needFN)
       {
         screenout << "\n--- Finding the bifurcation point (TF) ---\n";
         pt.reset(eqn_start, var_start);
         pt.setCont(params->getCp());
-        if (findangle && pt_per_ptr) pt_per_ptr->findAngle();   // it only computes the angle from the test functional // !!
+        if (findangle && pt_per_ptr) pt_per_ptr->findAngle(params->getSSM());   // it only computes the angle from the test functional // !!
+        pt.refine();
+      } else
+      {
+        screenout   << "\n---      Refine supplied solution      ---\n";
+        printStream();
         pt.refine();
       }
     }
@@ -176,6 +178,9 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
           printStream();
           if (pt_per_ptr) pt_per_ptr->SwitchTFPD(params->getDsStart()); // !!
           break;
+        case TFSSMSwitch:
+            pt_per_ptr->setSSM();
+             screenout << "\nIt is a subcentre manifold (TF).\n";
         case TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
           printStream();
@@ -184,7 +189,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         case TFBRSwitch:
         case TFBRAUTSwitch:
         case TFBRAUTROTSwitch:
-          screenout << "\nSwitching to the other branch (TF).\n";
+          screenout << "\nSwitching to the other branch (TF). " << params->getBranchSW() << "\n";
           printStream();
           if (pt_per_ptr) pt_per_ptr->SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart()); // !!
           break;
@@ -209,6 +214,8 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
 //       const size_t ithist = ITSTEPS;
       size_t printedln = 0;
       double ds = params->getDs();
+      // setting trivial multipliers
+      if( params->getBranchSW() == TFSSMSwitch )  pt_per_ptr->setSSM();
       for (size_t i = 0; i < params->getSteps(); i++)  // 35
       {
         //
@@ -294,7 +301,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         }
         // file output
         pt.BinaryWrite(data(), bif, i);
-        dataUpdated();
+        if (toprint || endpoint) dataUpdated();
 
         if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
         else if ((itc >= params->getNItC()) && (fabs(ds)*dsmul < params->getDsMin()))

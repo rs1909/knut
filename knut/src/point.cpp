@@ -384,7 +384,8 @@ void KNDdePeriodicSolution::SwitchTFLP(BranchSW type, double ds)
       break;
   }
   tf->setKernelTolerance(KernEps, KernIter);
-  tf->funct(*colloc, par, sol);
+  auto val = tf->funct(*colloc, par, sol);
+  std::cout << "Test functional value at switch is " << val << "\n";
   tf->kernel(xxDot->getV1());
   delete tf;
   double norm = sqrt(colloc->integrate(xxDot->getV1(), xxDot->getV1()));

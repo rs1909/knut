@@ -284,6 +284,7 @@ void KNConstantsBase::write(KNAbstractConstantsWriter& writer)
   writer.setIndexField ("steps", getSteps());
   writer.setIndexField ("iad", getIad());
   writer.setIndexField ("npr", getNPr());
+  writer.setIndexField ("ssm", getSSM());
   writer.setDoubleField ("cpmin", getCpMin());
   writer.setDoubleField ("cpmax", getCpMax());
   writer.setDoubleField ("ds", getDs());
@@ -349,6 +350,7 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
   if (reader.getIndexField("steps", idx)) setSteps(idx);
   if (reader.getIndexField("iad", idx)) setIad(idx);
   if (reader.getIndexField("npr", idx)) setNPr(idx);
+  if (reader.getIndexField("ssm", idx)) setSSM(idx);
   if (reader.getDoubleField("cpmin", dbl)) setCpMin(dbl);
   if (reader.getDoubleField("cpmax", dbl)) setCpMax(dbl);
   if (reader.getDoubleField("ds", dbl)) setDs(dbl);
@@ -614,7 +616,7 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
     }
   }
 
-  if (getBranchSW() == TFHBSwitch)
+  if ((getBranchSW() == TFHBSwitch) || (getBranchSW() == TFSSMSwitch))
   {
       KNArray1D<Eqn> ee(eqn_refine);
       KNArray1D<Var> vv(var_refine);
@@ -643,6 +645,7 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
   {
 /// with TEST FUNCTIONALS
     case TFBRSwitch:
+    case TFBRAUTSwitch:
       if (aut) eqn_temp = EqnTFLPAUT;
       else eqn_temp = EqnTFLP;
       goto tfskip;
@@ -665,6 +668,7 @@ tfskip:
       break;
     case TFTRSwitch:
     case TFHBSwitch:
+    case TFSSMSwitch:
       eqn_start.init(eqn_refine.size() + 2);
       var_start.init(var_refine.size() + 2);
       eqn_start(0) = eqn_refine(0);

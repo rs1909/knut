@@ -215,7 +215,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
     virtual void SwitchTFPD(double ds) = 0;   // switches branch with testFunct
     virtual void SwitchTFHB(double ds) = 0;   // switches branch with testFunct
     
-    virtual void findAngle();
+    virtual void findAngle(const size_t id);
     inline  void setSym(size_t n, size_t* sRe, size_t* sIm)
     {
       rotRe.init(n);
@@ -239,6 +239,7 @@ class KNAbstractPeriodicSolution : public KNAbstractPoint
       }
     }
 
+    void setSSM() { nTrivMulLP = 2; }
     size_t  UStab(size_t pt = 0) { return unstableMultipliers(mRe, mIm, nTrivMulLP, nTrivMulPD, nTrivMulNS, pt); }
     BifType testBif(size_t pt = 0)
     {

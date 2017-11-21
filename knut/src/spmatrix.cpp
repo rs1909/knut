@@ -89,16 +89,16 @@ void KNSparseMatrix::sparsityPlot(GnuPlot& pl)
   pl.Show();
 }
 
-void KNSparseMatrix::print()
+void KNSparseMatrix::print(std::ostream& os)
 {
   for (size_t i = 0; i < n; i++)
   {
     for (int j = Ap[i]; j < Ap[i+1]; j++)
     {
-      cout << "(" << i << "," << Ai[j] << ")=" << Ax[j] << '\t';
-      cout.flush();
+      os << "(" << i << "," << Ai[j] << ")=" << Ax[j] << '\t';
+      os.flush();
     }
-    cout << "\n";
+    os << "\n";
   }
 }
 
@@ -235,7 +235,7 @@ void KNLuSparseMatrix::luFactorize()
         std::cerr << "The diagonal of the factorized matrix is being dumped:\n";
         KNVector DX(n);
         GetDX(DX);
-        DX.print();
+        DX.print(std::cout);
       }
       P_ERROR_X4(status == UMFPACK_OK, "Error report from 'umfpack_di_numeric()': (", status, ") ", sp_umf_error(status));
     }

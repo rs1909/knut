@@ -578,21 +578,21 @@ class NodeFunctionA1 : public NodeFunction
 
 NodeFunctionA1::NodeFunctionA1 (const std::string& nm, const size_t loc) : NodeFunction (nm, 1, loc)
 {
-  if (nm == "abs") function = fabs;
-  else if (nm == "exp") function = exp;
-  else if (nm == "log") function = log;
-  else if (nm == "sin") function = sin;
-  else if (nm == "cos") function = cos;
-  else if (nm == "tan") function = tan;
-  else if (nm == "asin") function = asin;
-  else if (nm == "acos") function = acos;
-  else if (nm == "atan") function = atan;
-  else if (nm == "sinh") function = sinh;
-  else if (nm == "cosh") function = cosh;
-  else if (nm == "tanh") function = tanh;
-  else if (nm == "asinh") function = asinh;
-  else if (nm == "acosh") function = acosh;
-  else if (nm == "atanh") function = atanh;
+  if (nm == "abs") function = [](double a) { return fabs(a); };
+  else if (nm == "exp") function = [](double a) { return exp(a); };
+  else if (nm == "log") function = [](double a) { return log(a); };
+  else if (nm == "sin") function = [](double a) { return sin(a); };
+  else if (nm == "cos") function = [](double a) { return cos(a); };
+  else if (nm == "tan") function = [](double a) { return tan(a); };
+  else if (nm == "asin") function = [](double a) { return asin(a); };
+  else if (nm == "acos") function = [](double a) { return acos(a); };
+  else if (nm == "atan") function = [](double a) { return atan(a); };
+  else if (nm == "sinh") function = [](double a) { return sinh(a); };
+  else if (nm == "cosh") function = [](double a) { return cosh(a); };
+  else if (nm == "tanh") function = [](double a) { return tanh(a); };
+  else if (nm == "asinh") function = [](double a) { return asinh(a); };
+  else if (nm == "acosh") function = [](double a) { return acosh(a); };
+  else if (nm == "atanh") function = [](double a) { return atanh(a); };
   else if (nm == "sign") function = &localSign;
   else if (nm == "heaviside") function = &localHeaviside;
   else function = nullptr;
@@ -619,7 +619,7 @@ class NodeFunctionA2 : public NodeFunction
 
 NodeFunctionA2::NodeFunctionA2 (const std::string& nm, const size_t loc) : NodeFunction (nm, 2, loc)
 {
-  if (nm == "pow") function = pow;
+  if (nm == "pow") function = [](double a, double b) { return pow(a, b); };
 }
 
 Node* NodeFunctionA2::copy () const

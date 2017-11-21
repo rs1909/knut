@@ -79,7 +79,7 @@ DataChart::OnePlot* DataChart::addPartPlot(const KNDataFile* data, DataChart::On
   size_t yadded = 0;
 
   // if there is a new plot set colour by number
-  QColor plcolor, stabcolor(Qt::black);
+  QColor plcolor; // stabcolor(Qt::black);
   const size_t startnumber = Graph.size();
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
 
@@ -348,7 +348,7 @@ DataChart::OnePlot* DataChart::addPartPlot(const KNDataFile* data, DataChart::On
   // multipliers
   if ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier)
   {
-    QList<QXYSeries * > *newGraph = new QList<QXYSeries*>;
+    QList<QXYSeries * > *newGraph = nullptr;
     int stpoint = 0;
     bool grNew = true;
     if (opl != nullptr)
@@ -404,7 +404,7 @@ DataChart::OnePlot* DataChart::addPartPlot(const KNDataFile* data, DataChart::On
   // add stability
   // This assumes that theGraph is set up
   QScatterSeries* stabLine = nullptr;
-  if ((x > XSeparator && y > YSeparator) || y == YAbsMultiplier)
+  if ((x > XSeparator && y > YSeparator) || ((x == XLabel || x >= XParameter0) && y == YAbsMultiplier))
   {
     if (opl != nullptr)
     {
@@ -644,21 +644,24 @@ void DataChart::updatePlot(const KNDataFile* mat)
 //       std::cout << "addPartPlot\n";
       auto gr = addPartPlot(mat, Graph[k], Graph[k]->xvar, Graph[k]->yvar, Graph[k]->pt, Graph[k]->dim);
       // only removes after the new is added
-      if ( (gr->graph != Graph[k]->graph) && (gr->graph != nullptr) )
+      if (gr->graph != nullptr)
       {
-        Graph.push_back (gr);
-        addToChart (gr);
-        clear (k);
-      } else
-      {
-        for (int k = szgraph; k < gr->graph->size(); ++k)
+        if (gr->graph != Graph[k]->graph)
         {
-          chart->addSeries (gr->graph->at(k)); 
-          gr->graph->at(k) -> attachAxis (hAxis);
-          gr->graph->at(k) -> attachAxis (vAxis);
-          gr->graph->at(k) -> show();          
+            Graph.push_back (gr);
+            addToChart (gr);
+            clear (k);
+        } else
+        {
+            for (int k = szgraph; k < gr->graph->size(); ++k)
+            {
+            chart->addSeries (gr->graph->at(k)); 
+            gr->graph->at(k) -> attachAxis (hAxis);
+            gr->graph->at(k) -> attachAxis (vAxis);
+            gr->graph->at(k) -> show();          
+            }
+            // the stability must be the same, so no updating is necessary. (It migh be empty)
         }
-        // the stability must be the same, so no updating is necessary. (It migh be empty)
       }
       // No need to delete these
     }

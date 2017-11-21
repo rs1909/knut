@@ -33,6 +33,7 @@ QT_CHARTS_USE_NAMESPACE
 
 class KnutChartView : public QChartView
 {
+    Q_OBJECT
 public:
     KnutChartView(QChart *chart, QWidget *parent = nullptr);
 

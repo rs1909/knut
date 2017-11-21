@@ -641,10 +641,10 @@ class KNVector : public KNArray1D<double>
 
 #ifndef KNUTSYS_H
 
-    inline void print() const
+    inline void print(std::ostream& os) const
     {
-      for (size_t j = 0; j < n; j++) std::cout << v[j] << '\t';
-      std::cout << '\n';
+      for (size_t j = 0; j < n; j++) os << v[j] << '\t';
+      os << '\n';
     }
 
     inline void random()
@@ -794,19 +794,19 @@ class KNMatrix : public KNArray2D<double>
       return __scal_vec_trans_rng<KNMatrix>(*this, r_);
     }
 
-    inline void print()
+    inline void print(std::ostream& os)
     {
       double sum = 0.0;
       for (size_t i = 0; i < r; i++)
       {
         for (size_t j = 0; j < c; j++)
         {
-          std::cout << (*this)(i, j) << '\t';
+          os << (*this)(i, j) << '\t';
           sum += (*this)(i, j);
         }
-        std::cout << '\n';
+        os << '\n';
       }
-      std::cout << "SUM: " << sum << '\n';
+      os << "SUM: " << sum << '\n';
     }
 
 #endif // KNUTSYS_H

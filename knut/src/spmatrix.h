@@ -154,13 +154,13 @@ class KNSparseMatrix
     /// plots the structure of the matrix
     void sparsityPlot(GnuPlot& pl);
     /// prints out Ap
-    void printAp()
+    void printAp(std::ostream& os)
     {
-      for (size_t i = 0; i < n + 1; i++) std::cout << Ap[i] << '\t';
-      std::cout << '\n';
+      for (size_t i = 0; i < n + 1; i++) os << Ap[i] << '\t';
+      os << '\n';
     }
     /// prints the whole matrix onto the screen
-    void print();
+    void print(std::ostream& os);
 };
 
 // **************************************************************************//

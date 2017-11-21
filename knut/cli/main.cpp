@@ -102,6 +102,8 @@ int main(int argc, const char** argv)
     }
     comp.run(sys, params, inputData);
     delete inputData;
+    delete params;
+    delete sys;
   }
   catch (KNException ex)
   {
@@ -117,7 +119,5 @@ int main(int argc, const char** argv)
   {
     std::cerr << "bad_alloc caught: " << ba.what() << '\n';
   }
-  delete params;
-  delete sys;
   return 0;
 }
