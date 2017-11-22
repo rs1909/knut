@@ -41,6 +41,7 @@ static int32_t byte_order()
   else P_MESSAGE1( "Fatal error. Unrecognized byte order." );
 }
 
+// this is one big global mutex.
 std::mutex KNDataFile::fileLock;
 
 void KNDataFile::lockRead() const
@@ -116,6 +117,7 @@ void KNDataFile::mmapFileWrite(const std::string& fileName, size_t size)
   }
   catch (interprocess_exception& exc)
   {
+    unlock();
     P_MESSAGE4("Boost::interprocess_exception. MAT=", fileName, " Problem: ", exc.what());
   }
 }
@@ -230,9 +232,9 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size = prof_offset + prof_size;
 
 //  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
+  lockWrite();
   mmapFileWrite(fileName, size);
 
-  lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -343,9 +345,9 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size_t blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
 
+  lockWrite();
   mmapFileWrite(fileName, size);
 
-  lockWrite();
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
   writeMatrixHeader(address, par_offset, &par_header, par_string);
   writeMatrixHeader(address, parnames_offset, &parnames_header, parnames_string);
@@ -797,7 +799,7 @@ size_t KNDataFile::getNextBifurcation(size_t n, bool* stab) const
     }
     p_ustab = ustab;
   }
-  return ncols;
+  return getNPoints();
 }
 
 BifType  KNDataFile::getBifurcationType(size_t n) const

@@ -441,9 +441,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   plcolor.setHsv((240 + startnumber*40)%360, 255, 255);
   // get stability data
   bool stab_ini = data->getUnstableMultipliers(0) == 0;
-  std::vector<size_t> stabidx;
-  std::vector<size_t> bifidx;
-  std::vector<BifType> biftype;
+  std::vector<size_t> stabidx; // stability change + 2: the beginning and the end are also included
+  std::vector<size_t> bifidx;  // bifurcation points
+  std::vector<BifType> biftype; // the type of bifurcation points
   {
     size_t k_p = 0, k;
     bool stab = false;
@@ -451,15 +451,16 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     do
     {
       k = data->getNextBifurcation(k_p, &stab);
-      if (k < data->getNCols())
+      if (k < data->getNPoints())
       {
         bifidx.push_back(k);
         biftype.push_back(data->getBifurcationType(k));
         if (stab) stabidx.push_back(k);
         k_p = k;
       }
-    } while (k < data->getNCols());
-    stabidx.push_back(data->getNPoints()-1);
+    } while (k < data->getNPoints());
+    if (data->getNPoints() > 0) stabidx.push_back(data->getNPoints()-1);
+    else stabidx.push_back(0);
   }
   // Putting in the data
   if (x > XSeparator && y > YSeparator)
@@ -467,11 +468,12 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     double pxend = 0.0, pyend = 0.0;
     for (size_t b = 1; b < stabidx.size(); ++b)
     {
-//      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
+      std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
       Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
       int bskip = 0, eskip = 0;
       if (b == 1) bskip = 0; else bskip = 1;
       if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
+      std::cout << "Allocating size " << stabidx[b] - stabidx[b-1] + bskip + eskip << "\n";
       (*Graph.rbegin())->x.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
       (*Graph.rbegin())->y.init(stabidx[b] - stabidx[b-1] + bskip + eskip);
 
@@ -944,7 +946,7 @@ void PlotData::rescaleData(std::list<std::unique_ptr<PlotItem>>::const_iterator 
     }
     if ((*i)->type == PlotCircleType)
     {
-      std::cout << "Scaling PlotCircle\n";
+//       std::cout << "Scaling PlotCircle\n";
       std::get<PlotCircle>((*i)->data).pos.clear();
       for (size_t k = 0; k < (*i)->x.size(); k++)
       {

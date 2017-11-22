@@ -49,11 +49,11 @@ void MThread::process()
   if ((sys != nullptr) && (params != nullptr))
   {
     KNDataFile *inputData = nullptr;
-    if (params->getLabel() != 0)
-    {
-      inputData = new KNDataFile (params->getInputFile());
-    }
     try {
+      if (params->getLabel() != 0)
+      {
+        inputData = new KNDataFile (params->getInputFile());
+      }
       KNAbstractContinuation::run(sys, params, inputData);
     }
     catch (KNException& ex)
