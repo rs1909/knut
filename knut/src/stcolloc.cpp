@@ -50,7 +50,7 @@ void KNSteadyStateJacobian::rightHandSide_p(KNVector& rhs, const KNVector& par, 
 //    for (size_t q=0; q < ndim; q++) rhs(q) = p_fx(q,0);
   } else
   {
-    size_t nx=0, vx, np=1, vp = alpha;
+    size_t nx=0, vx = 0, np=1, vp = alpha;
     sys->p_deri(p_dfp, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (size_t q=0; q < ndim; q++) rhs(q) = -p_dfp(q,0,0);
   }
@@ -62,7 +62,7 @@ void KNSteadyStateJacobian::rightHandSide_x(KNSparseMatrix& A, const KNVector& p
   for (size_t r = 0; r < ndim; r++) A.newLine(NDIM);
   for (size_t k = 0; k < NTAU; k++)
   {
-    size_t nx = 1, vx = k, np = 0, vp;
+    size_t nx = 1, vx = k, np = 0, vp = 0;
     sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (size_t p=0; p < ndim; p++)
     {

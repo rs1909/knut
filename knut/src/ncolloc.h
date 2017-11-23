@@ -247,7 +247,7 @@ template<bool trans> void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_x(KNVect
 
   for (size_t k = 0; k < NTAU; k++)
   {
-    size_t nx = 1, vx = k, np = 0, vp;
+    size_t nx = 1, vx = k, np = 0, vp = 0;
     sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (size_t idx = 0; idx < NINT*NDEG + 1; idx++) // i: interval; j: which collocation point
     {

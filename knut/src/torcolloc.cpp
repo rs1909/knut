@@ -133,8 +133,8 @@ KNDdeTorusCollocation::KNDdeTorusCollocation(KNExprSystem& sys_, size_t ndeg1_, 
 
 void KNDdeTorusCollocation::init(const KNVector& sol, const KNVector& par)
 {
-  double* t1 = new double[NTAU+1];
-  double* t2 = new double[NTAU+1];
+  std::vector<double> t1(NTAU+1), t2(NTAU+1);
+  
   for (size_t i2 = 0; i2 < nint2; i2++)
   {
     for (size_t i1 = 0; i1 < nint1; i1++)
@@ -239,8 +239,6 @@ void KNDdeTorusCollocation::init(const KNVector& sol, const KNVector& par)
   }
 //   for (int idx = 0; idx < time1.size(); ++idx) std::cout<<p_xx(0, NTAU, idx)<<"\t";
 //   std::cout<<"\np_xx(0,...) was\n";
-  delete[] t2;
-  delete[] t1;
 }
 
 //***************************************************************************

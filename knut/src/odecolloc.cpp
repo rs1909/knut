@@ -264,7 +264,7 @@ void KNOdeBvpCollocation::RHS_jacobian(KNSparseMatrix& A, const KNVector& par )
     }
   }
 
-  size_t nx = 1, vx = 0, np = 0, vp;
+  size_t nx = 1, vx = 0, np = 0, vp = 0;
   sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
   for (size_t i = 0; i < NINT; ++i)
   {

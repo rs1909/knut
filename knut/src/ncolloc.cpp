@@ -487,7 +487,7 @@ void KNDdeBvpCollocation::rightHandSide_p(KNVector& rhs, const KNVector& par, co
 
     for (size_t r = 0; r < NTAU; r++)
     {
-      size_t nx=1, vx=r, np=0, vp;
+      size_t nx=1, vx=r, np=0, vp=0;
 
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
       for (size_t p = 0; p < NDIM; p++)
@@ -506,9 +506,7 @@ void KNDdeBvpCollocation::rightHandSide_p(KNVector& rhs, const KNVector& par, co
   else
   {
     sys->p_dtau(p_dtau, time, par, alpha);
-    size_t nx, vx, np, vp;
-    nx = 0, np = 1;
-    vp = alpha;
+    size_t nx = 0, vx = 0, np = 1, vp = alpha;
 
     sys->p_deri(p_dfp, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
@@ -568,7 +566,7 @@ void KNDdeBvpCollocation::rightHandSide_x(KNSparseMatrix& A, const KNVector& par
 
   for (size_t k = 0; k < NTAU + 1; k++)
   {
-    size_t nx = 1, vx, np = 0, vp;
+    size_t nx = 1, vx = 0, np = 0, vp = 0;
     if (k != 0)
     {
       vx = k - 1;
@@ -648,7 +646,7 @@ void KNDdeBvpCollocation::jacobianOfStability(KNSparseMatrixPolynomial& AB, cons
 
   for (size_t k = 0; k < NTAU + 1; k++)
   {
-    size_t nx = 1, vx, np = 0, vp;
+    size_t nx = 1, vx, np = 0, vp = 0;
     if (k != 0)
     {
       vx = k - 1;
@@ -725,7 +723,7 @@ void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double 
   {
     if (k != 0)
     {
-      size_t nx = 1, vx, np = 0, vp;
+      size_t nx = 1, vx, np = 0, vp = 0;
       vx = k - 1;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
@@ -820,7 +818,7 @@ void KNDdeBvpCollocation::jotf_x(KNSparseMatrix& A, const KNVector& par, double 
   {
     if (k != 0)
     {
-      size_t nx = 1, vx, np = 0, vp;
+      size_t nx = 1, vx, np = 0, vp = 0;
       vx = k - 1;
       sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     }
@@ -887,7 +885,7 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par, const KNArr
     sys->p_dtau(p_dtau, time, par, alpha);
     for (size_t k = 0; k < NTAU; k++)
     {
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       
       nx = 1;
       np = 1;
@@ -963,7 +961,7 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par, const KNArr
     sys->p_dtau(p_dtau, time, par, alpha);
     for (size_t k = 0; k < NTAU; k++)
     {
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       nx = 1;
       np = 1;
       vx[0] = k;
@@ -1069,7 +1067,7 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
     sys->p_dtau(p_dtau, time, par, alpha);
     for (size_t k = 0; k < NTAU; k++)
     {
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       
       nx = 1;
       np = 1;
@@ -1151,7 +1149,7 @@ void KNDdeBvpCollocation::jotf_x_p(KNVector& V, const KNVector& par,
     sys->p_dtau(p_dtau, time, par, alpha);
     for (size_t k = 0; k < NTAU; k++)
     {
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       nx = 1;
       np = 1;
       vx[0] = k;
@@ -1255,7 +1253,7 @@ void KNDdeBvpCollocation::jotf_x_x(KNSparseMatrix& A, const KNVector& par, const
 
   for (size_t k = 1; k < NTAU + 1; k++)
   {
-    size_t nx = 2, vx[2], np = 0, vp;
+    size_t nx = 2, vx[2]{0,0}, np = 0, vp;
     vx[1] = k - 1;  // CHANGE THIS to 1
 
     p_dfx.clear();
@@ -1351,7 +1349,7 @@ void KNDdeBvpCollocation::jotf_x_x(KNSparseMatrix& A, const KNVector& par,
 
   for (size_t k = 0; k < NTAU + 1; k++)
   {
-    size_t nx = 2, vx[2], np = 0, vp;
+    size_t nx = 2, vx[2]{0,0}, np = 0, vp;
     if (k != 0)
     {
       vx[1] = k - 1;  // CHANGE THIS to 1
@@ -1450,8 +1448,8 @@ void KNDdeBvpCollocation::jotf_x_z(KNVector& V, const KNVector& par, const KNVec
 
   for (size_t k = 0; k < NTAU; k++)
   {
-    size_t nx = 1, vx, np = 0, vp;
-    vx = k;
+    size_t nx = 1, vx = k, np = 0, vp = 0;
+
     sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
 
     for (size_t idx = 0; idx < NDEG*NINT; ++idx)
@@ -1511,8 +1509,8 @@ void KNDdeBvpCollocation::jotf_mB(KNSparseMatrix& B, const KNVector& par, double
 
   for (size_t k = 1; k < NTAU + 1; k++)
   {
-    size_t nx = 1, vx, np = 0, vp;
-    vx = k - 1;
+    size_t nx = 1, vx = k - 1, np = 0, vp = 0;
+
     sys->p_deri(p_dfx, time, solData, par, 0, nx, &vx, np, &vp, p_dummy);
     for (size_t idx = 0; idx < NDEG*NINT; ++idx)
     {
@@ -1566,7 +1564,7 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
     for (size_t k = 0; k < NTAU; k++)
     {
       // START verbatim from CharJac_x_p
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       nx = 1;
       np = 1;
       vx[0] = k;
@@ -1638,7 +1636,7 @@ void KNDdeBvpCollocation::jotf_mB_p(KNVector& V, const KNVector& par, const KNAr
     for (size_t k = 0; k < NTAU; k++)
     {
       // START verbatim from CharJac_x_p
-      size_t nx = 1, vx[2], np = 1, vp = alpha;
+      size_t nx = 1, vx[2]{0,0}, np = 1, vp = alpha;
       nx = 1;
       np = 1;
       vx[0] = k;
@@ -1741,7 +1739,7 @@ void KNDdeBvpCollocation::jotf_mB_x(KNSparseMatrix& B, const KNVector& par, cons
   for (size_t k = 1; k < NTAU + 1; k++)
   {
     // START verbatim from CharJac_x_x
-    size_t nx = 2, vx[2], np = 0, vp;
+    size_t nx = 2, vx[2]{0,0}, np = 0, vp;
     vx[1] = k - 1;  // CHANGE THIS to 1
 
     p_dfx.clear();
@@ -1819,9 +1817,8 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
     sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
     for (size_t r = 0; r < NTAU; r++)
     {
-      size_t nx, vx, np, vp;
-      nx = 0, np = 1;
-      vp = alpha;
+      size_t nx = 0, vx = 0, np = 1, vp = alpha;
+      
       sys->p_deri(p_dfpMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       nx = 1;
@@ -1847,14 +1844,12 @@ void KNDdeBvpCollocation::jotf_trivialKernelOnMesh_p(KNVector& V, const KNVector
     sys->p_dtau(p_dtauMSH, timeMSH, par, alpha);
     for (size_t r = 0; r < NTAU; r++)
     {
-      size_t nx, vx, np, vp;
-      nx = 0, np = 1;
-      vp = alpha;
+      size_t nx = 0, vx = 0, np = 1, vp = alpha;
 
       sys->p_deri(p_dfpMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
-      nx = 1, np = 0;
-      vx = r;
+      nx = 1, np = 0; vx = r;
+      
       sys->p_deri(p_dfxMSH, timeMSH, solMSHData, par, 0, nx, &vx, np, &vp, p_dummy);
 
       for (size_t k = 0; k < NDIM; k++)

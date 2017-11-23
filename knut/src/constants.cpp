@@ -698,12 +698,11 @@ tfskip:
 void KNConstantsBase::initDimensions(const KNExprSystem* sys)
 {
   initParNames(sys->npar());
-  const char **names = new const char *[sys->npar()+1];
-  for (size_t i=0; i<sys->npar()+1; ++i) names[i] = nullptr;
-  sys->parnames(names);
+  std::vector<const char*> names(sys->npar()+1, nullptr);
+
+  sys->parnames(names.data());
   for (size_t i=0; i<sys->npar(); ++i) if (names[i] != nullptr) parNames[i] = names[i];
-  delete[] names;
-  names = nullptr;
+
   // this will send a signal so parNames must be ready
   setNPar(sys->npar());
   setNDim(sys->ndim());

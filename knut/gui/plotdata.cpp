@@ -83,7 +83,7 @@ size_t PlotData::nplots()
 void PlotData::clear(size_t n)
 {
   size_t number = 0, it = 0;
-  std::list<std::unique_ptr<PlotItem>>::iterator i = Graph.begin();
+  auto i = Graph.begin();
   while (i != Graph.end())
   {
     if ((*i)->number != number)
@@ -93,29 +93,6 @@ void PlotData::clear(size_t n)
     }
     if (it == n)
     {
-//       if ((*i)->isUnitCircle()) --unitCircleCount;
-//       if ((*i)->type == PlotLineType)
-//       {
-//         for (auto& it : std::get<PlotLine>((*i)->data))
-//         {
-//           it.item.reset(nullptr);
-//         }
-// //        std::get<PlotLine>((*i)->data).reset();
-//       }
-//       else if ((*i)->type == PlotCircleType)
-//       {
-//         for (auto& it : std::get<PlotCircle>((*i)->data).item) it.reset(nullptr);
-// //        (*i)->data.circle.reset();
-//       }
-//       else if ((*i)->type == PlotPolygonType)
-//       {
-//         for (auto& it : std::get<PlotPolygon>((*i)->data).item) it.reset(nullptr);
-// //        (*i)->data.polygon.reset();
-//       }
-//       else
-//       {
-//         std::cout << "Something wrong\n";
-//       }
       i = Graph.erase(i);
     }
     else
@@ -860,15 +837,15 @@ static inline void pointOutside(PlotLine& ppath,
   qreal alpha[4];
   qreal beta[4];
   QPointF itPoint[4];
-  bool it[4];
+  bool it[4]{false,false,false,false};
   it[0] = intersect (alpha[0], beta[0], itPoint[0], BottomLeft,  BottomRight, A, B);
   it[1] = intersect (alpha[1], beta[1], itPoint[1], BottomRight, TopRight, A, B);
   it[2] = intersect (alpha[2], beta[2], itPoint[2], TopRight,    TopLeft, A, B);
   it[3] = intersect (alpha[3], beta[3], itPoint[3], TopLeft,     BottomLeft, A, B);
   int oneSideIt = 0;
   int twoSideIt = 0;
-  int oneSidePt[4];
-  int twoSidePt[4];
+  int oneSidePt[4]{0,0,0,0};
+  int twoSidePt[4]{0,0,0,0};
 //   int otherSidePt[4];
   for (int i = 0; i < 4; ++i)
   {

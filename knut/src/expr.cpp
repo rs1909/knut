@@ -1812,6 +1812,9 @@ static inline CharType findCharType (char c)
   else return CharType::Invalid;
 }
 
+// This decomposes the program file into tokens
+// TODO we need better error handling here
+// need to seperate function recognition from identifier
 void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPrecedence>& token_table, const std::string& expression)
 {
   const char *str = expression.c_str ();
@@ -1892,6 +1895,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
           if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=", k-1) );
           else
           {
+            k--;
             PE_MESSAGE3(k, "Unknown operator '", tn, "'.\n");
           }
           break;
@@ -1905,9 +1909,10 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
     } else
     {
       PE_MESSAGE3(k, "Invalid character '", std::string(1,str[k]), "'\n");
-      k++;
+      k++; // it is never reached, so this is dead code
     }
   }
+  // this is now detecting token types : this should be moved
   if (stream[0].type == TokenType::Minus) stream[0].type = TokenType::UnaryMinus;
   if (stream[0].type == TokenType::Plus) stream[0].type = TokenType::UnaryPlus;
   for (size_t k=1; k < stream.size(); ++k)
@@ -1933,6 +1938,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
   else PE_MESSAGE1(stream.back().vfloc, "Missing semicolon\n");
 }
 
+// this converts tokens into nodes
 void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
 {
   if (ts.size() >= nargs)
@@ -2143,8 +2149,17 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
 
 Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenType, TokenPrecedence>& token_table)
 {
+  // this is the current stack of operations
+  // what can get onto this stack
+  // - functions
+  // - operators, until a higher presedence comes along
+  // - opening parenthesis
+  // everyting else goes straight onto the list for the tree
   std::list<Token> ops;
+  // the size of this is the depth of function calls
+  // the value at the given level is the number of function arguments
   std::list<size_t> funargs;
+  // the tree consists sequence of [list of arguments followed by the {operator or function}]
   std::list<Node*> treestack;
   try
   {
@@ -2153,46 +2168,69 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
     {
       if (token_stream[k].type == TokenType::Symbol)
       {
+        // if there is a funtion call and if there is no argument yet, 
+        // then this will be the first argument
         if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
         // bind items on the stack ...
         opToTree (treestack, token_stream[k], 0);
       }
       else if (token_stream[k].type == TokenType::Function)
       {
+        // if there is a funtion call and if there is no argument yet, 
+        // then this will be the first argument
         if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
         ops.push_back (token_stream[k]);
       }
       else if (token_stream[k].type == TokenType::Comma)
       {
-        if (!funargs.empty()) if (funargs.back() == 0)
+        if (!funargs.empty()) 
         {
-  //        for (auto it : funargs) std::cout << "FA=" << it << ",";
-  //        std::cout << "\n";
-          PE_MESSAGE1(token_stream[k].vfloc, "Empty argument\n");
+          if (funargs.back() == 0)
+          {
+            // if there is a funtion call and if there is no argument yet, 
+            // then it means we have an empty argument
+            PE_MESSAGE1(token_stream[k].vfloc, "Inappropriate use of comma: first function argument is missing.\n");
+          }
+          else 
+          {
+            // we add an argument, if we already had one
+            funargs.back() += 1;
+          }
+        } 
+        else
+        {
+          // if this is not a function
+          PE_MESSAGE1(token_stream[k].vfloc, "Inappropriate use of comma: it is not a function.\n");
         }
-        if (!funargs.empty()) funargs.back() += 1;
-        else PE_MESSAGE1(token_stream[k].vfloc, "Not a function\n");
+        // the comma seperates expression, so things can be moved into the tree
+        // -> until there is a paranthesis (cannot be another comma, because we have emptied that before
         while ( (!ops.empty())&&(ops.back().type != TokenType::LeftParen) )
         {
-          // bind items on the stack ...
-          PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Premature Function (1).");
+          // there cannot be a function, but everyting else is allowed
+          // if there is a function then we should have detected it???
+          PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Internal parser error: unexpected function.");
           opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
           ops.pop_back();
         }
+        // it is wrong to have nothing left
         if (ops.empty()) PE_MESSAGE1(token_stream[k].vfloc, "Misplaced comma or missing \')\'\n");
       }
+      // what happens with an operator
       else if (token_stream[k].isOp())
       {
         if (!funargs.empty()) if (funargs.back() == 0) funargs.back() = 1;
         while (!ops.empty())
         {
+          // - it must be an operator
+          // - if left associative, it must have lower or equal precedence then the current operator
+          // - if not left associative it must have strictly lower then the current operator 
           if ( (ops.back().isOp())&&
               (((token_table.at(token_stream[k].type).leftAssoc)&&
                 (token_table.at(token_stream[k].type).precedence >= token_table.at(ops.back().type).precedence))||
                 (token_table.at(token_stream[k].type).precedence > token_table.at(ops.back().type).precedence)) )
           {
             // bind items on the stack ...
-            PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Premature Function (2).");
+            PE_ERROR_X1(ops.back().type != TokenType::Function, ops.back().vfloc, "Internal parser error: unexpected function.");
             opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
             ops.pop_back();
           } else break;
@@ -2203,11 +2241,15 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
       else if (token_stream[k].type == TokenType::LeftParen)
       {
   //      std::cout <<"Left : " << funargs.back () << " ";
+        // any left paren starts to count the function arguments
         funargs.push_back(0);
         ops.push_back(token_stream[k]);
       }
+      // new sub expression is opened
       else if (token_stream[k].type == TokenType::RightParen)
       {
+        // this assumes that we are in a function context
+        PE_ERROR_X1(!funargs.empty(), token_stream[k].vfloc, "Internal parser error: not in a function context");
         size_t currentArgs = funargs.back ();
   //      std::cout <<"Right : " << funargs.back () << " ";
         size_t it = 0;
@@ -2215,20 +2257,21 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
         {
           if (ops.back().type != TokenType::LeftParen)
           {
-            // bind items on the stack ...
+            // push all operations (ops) until a left parenthesis comes
             if (ops.back().type == TokenType::Function) opToTree (treestack, ops.back(), currentArgs);
             else opToTree (treestack, ops.back(), token_table.at(ops.back().type).nargs);
             ops.pop_back();
             it++;
           } else
           {
+            // just discard the left parenthesis
             funargs.pop_back();
             ops.pop_back();
             break;
           }
         }
+        // if nothing was put onto the tree stack and we are in function context then there is one argument
         if ((!funargs.empty()) && (it != 0)) if (funargs.back() == 0) funargs.back() = 1;
-        // the right paren is still on the stack
         if (ops.empty())
         {
           // there was noting on the stack
@@ -2248,7 +2291,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
         }
       } else
       {
-        PE_MESSAGE3(ops.back().vfloc, "Not accounted for token: ", ops.back().name, "\n");
+        PE_MESSAGE3(ops.back().vfloc, "Syntax error: unexpected token.", ops.back().name, "\n");
       }
       k++;
     }
@@ -2267,7 +2310,7 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
     if (treestack.size() != 1)
     {
       std::ostringstream msg;
-      msg << "Operations remaining " << treestack.size() << "\n";
+      msg << "Syntax error: could not parse " << treestack.size() << "\n";
       for (auto k=treestack.begin(); k != treestack.end(); ++k)
       {
         msg << "@@OP =\n\t";

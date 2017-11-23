@@ -201,18 +201,18 @@ class KNArray1D
     class iterator
     {
       private:
-        T *pt;
+        size_t pt;
       public:
         iterator() : pt(0) {}
         iterator( const KNArray1D<T>::iterator& it ) : pt(it.pt) {}
         iterator& operator= (const iterator& it) { pt = it.pt; return *this; }
-        iterator  operator+ ( int i ) const { iterator it; it.pt = pt+i; return it; }
-        iterator  operator- ( int i ) const { iterator it; it.pt = pt-i; return it; }
-        int       operator- (const iterator& it) const { return pt - it.pt; }
+        iterator operator+ ( int i ) const { iterator it(*this); it.pt += i; return it; }
+        iterator operator- ( int i ) const { iterator it(*this); it.pt -= i; return it; }
+        size_t    operator- (const iterator& it) const { return pt - it.pt; }
         bool      operator!= (const iterator& it) const { return pt != it.pt; }
         bool      operator== (const iterator& it) const { return pt == it.pt; }
-        const T&  operator*() const { return *pt; }
-        T&  operator*() { return *pt; }
+        const T&  operator*() const { return v[pt]; }
+        T&  operator*() { return v[pt]; }
         iterator& operator++() { ++pt; return *this; }
         iterator& operator--() { --pt; return *this; }
         iterator& operator++(int) { ++pt; return *this; }
@@ -225,8 +225,8 @@ class KNArray1D
         using pointer = T *;
         using reference = T &;
     };
-    iterator begin() { iterator it; it.pt = v; return it; }
-    iterator end() { iterator it; it.pt = v+n; return it; }
+    iterator begin() { iterator it; it.pt = 0; return it; }
+    iterator end() { iterator it; it.pt = n; return it; }
 #endif
 };
 

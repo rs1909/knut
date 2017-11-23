@@ -1376,10 +1376,9 @@ static void getExecutableDir (std::string& executableDir)
     if(cfPath)
     {
       CFIndex ssize = CFStringGetLength(cfPath)+1;
-      char *buf = new char[ssize];
-      CFStringGetCString(cfPath, buf, ssize, kCFStringEncodingMacRoman);
-      executableFile = buf;
-      delete[] buf; buf = nullptr;
+      std::vector<char> buf(ssize);
+      CFStringGetCString(cfPath, buf.data(), ssize, kCFStringEncodingMacRoman);
+      executableFile = buf.data();
       CFRelease(cfPath);
     }
     CFRelease(bundleURL);
@@ -1388,15 +1387,13 @@ static void getExecutableDir (std::string& executableDir)
   std::string workingDir;
   std::ostringstream procf;
   procf << "/proc/" << getpid() << "/exe";
-  char *buf = new char[512];
-  const ssize_t bsfn = readlink(procf.str().c_str(), buf, 511);
-  if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf; }
-  delete[] buf; buf = 0;
+  std::vector<char> buf(512);
+  const ssize_t bsfn = readlink(procf.str().c_str(), buf.data(), 511);
+  if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf.data(); }
 #elif _WIN32
-  char *buf = new char[MAX_PATH]; //always use MAX_PATH for filepaths
-  GetModuleFileName(NULL, buf, MAX_PATH*sizeof(char));
-  executableFile = buf;
-  delete[] buf; buf = 0;
+  std::vector<char> buf(MAX_PATH); //always use MAX_PATH for filepaths
+  GetModuleFileName(NULL, buf.data, MAX_PATH*sizeof(char));
+  executableFile = buf.data();
 #endif
   // remove the filename from the end
   std::string::size_type sidx = executableFile.find_last_of(DIRSEP);
@@ -1582,7 +1579,11 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   // The pipe is assumed to have enough buffer space to hold the
   // data the child process has already written to it.
   if (!CloseHandle(g_hChildStd_OUT_Wr))
+  {
+    delete[] out_buf; out_buf = 0;
+    delete[] err_buf; err_buf = 0;
     P_MESSAGE2("StdOutWr CloseHandle", (int)GetLastError());
+  }
 
   std::string outstr;
   std::string errstr;
@@ -1644,8 +1645,8 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
   if(i == 0) P_MESSAGE1("pipe: missing executable name.");
   argv[i] = nullptr;
 
-  int fds_output[2], fds_input[2], fds_error[2];
-  int fdc_output[2], fdc_input[2], fdc_error[2];
+  int fds_output[2]{0,0}, fds_input[2]{0,0}, fds_error[2]{0,0};
+  int fdc_output[2]{0,0}, fdc_input[2]{0,0}, fdc_error[2]{0,0};
 
   /* Create a pipe.  File descriptors for the two ends of the pipe are
      placed in fds.  */
