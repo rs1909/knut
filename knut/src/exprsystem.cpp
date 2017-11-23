@@ -1392,7 +1392,7 @@ static void getExecutableDir (std::string& executableDir)
   if ( bsfn != -1) { buf[bsfn] = '\0'; executableFile = buf.data(); }
 #elif _WIN32
   std::vector<char> buf(MAX_PATH); //always use MAX_PATH for filepaths
-  GetModuleFileName(NULL, buf.data, MAX_PATH*sizeof(char));
+  GetModuleFileName(NULL, buf.data(), MAX_PATH*sizeof(char));
   executableFile = buf.data();
 #endif
   // remove the filename from the end
