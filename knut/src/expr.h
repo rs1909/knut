@@ -574,10 +574,10 @@ public:
   {
     if (root != nullptr)
     {
-      double zero = 0.0;
+//       double zero = 0.0;
       double res;
       ValueStack stk (&res, 1);
-      auto fun = [&zero, &stk] (size_t sp, const Node*) { stk[sp].data[0] = 0.0; stk[sp].skip = 1; };
+      auto fun = [&stk] (size_t sp, const Node*) { stk[sp].data[0] = 0.0; stk[sp].skip = 1; };
       root -> evaluate (stk, 0, fun, 1);
       return stk.size();
     }

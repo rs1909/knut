@@ -201,9 +201,9 @@ class KNArray1D
     class iterator
     {
       private:
-        size_t pt;
+        T* pt;
       public:
-        iterator() : pt(0) {}
+        iterator() : pt(nullptr) {}
         iterator( const KNArray1D<T>::iterator& it ) : pt(it.pt) {}
         iterator& operator= (const iterator& it) { pt = it.pt; return *this; }
         iterator operator+ ( int i ) const { iterator it(*this); it.pt += i; return it; }
@@ -211,8 +211,8 @@ class KNArray1D
         size_t    operator- (const iterator& it) const { return pt - it.pt; }
         bool      operator!= (const iterator& it) const { return pt != it.pt; }
         bool      operator== (const iterator& it) const { return pt == it.pt; }
-        const T&  operator*() const { return v[pt]; }
-        T&  operator*() { return v[pt]; }
+        const T&  operator*() const { return *pt; }
+        T&  operator*() { return *pt; }
         iterator& operator++() { ++pt; return *this; }
         iterator& operator--() { --pt; return *this; }
         iterator& operator++(int) { ++pt; return *this; }

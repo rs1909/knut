@@ -598,10 +598,15 @@ void KNAbstractPeriodicSolution::findAngle(const size_t id)
   aind.resize(mRe.size());
   for (size_t i = 0; i < mRe.size(); i++)
   {
-     aind[i] = std::pair<double,size_t>(fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0), i);
+    if (fabs(mIm(i)) > MIN_NSIMAG) aind[i] = std::pair<double,size_t>(fabs(sqrt(mRe(i)*mRe(i) + mIm(i)*mIm(i)) - 1.0), i);
+    else aind[i] = std::pair<double,size_t>(DBL_MAX, i);
   }
-  std::sort(aind.begin(), aind.end(), 
+  std::sort(aind.begin(), aind.end(),
      [](std::pair<double,size_t> a, std::pair<double,size_t> b) { return a.first < b.first; });
+//   for(auto& it : aind)
+//   {
+//     std::cout << it.first << ", " << it.second << "\n";
+//   }
 //  double dmin = 10.0;
 //  size_t imin = 0;
 //  for (size_t i = 0; i < mRe.size(); i++)
@@ -627,8 +632,8 @@ void KNAbstractPeriodicSolution::findAngle(const size_t id)
   {
     par(VarToIndex(VarAngle,NPAR)) = M_PI + atan(zIm/ zRe);
   }
-  out << "    Z = " << zRe << " + I*" << zIm << "\n"
-         "    Z = " << nrm << " * " << "EXP( " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * I*2Pi )\n";
+  out << id << "-th closest root " << "Z = " << zRe << " + I*" << zIm << "\n"
+         "Z = " << nrm << " * " << "EXP( " << par(VarToIndex(VarAngle,NPAR)) / (2*M_PI) << " * I*2Pi )\n";
   printStream();
 }
 

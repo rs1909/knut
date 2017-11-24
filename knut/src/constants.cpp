@@ -157,39 +157,39 @@ const char *knut_whitespace_cb(mxml_node_t *node, int where)
   return (nullptr);
 }
 
-static inline bool inputAssert(std::istream& is)
-{
-  if (is.rdstate() & (std::istream::eofbit | std::istream::failbit | std::istream::badbit))
-  {
-    switch (is.rdstate())
-    {
-      case std::istream::eofbit:
-        P_MESSAGE1("std::istream: unexpected end of file.");
-        return true;
-        break;
-      case std::istream::failbit:
-        P_MESSAGE1("std::istream: Input failed.");
-        return true;
-        break;
-      case std::istream::badbit:
-        P_MESSAGE1("std::istream: bad input.");
-        return true;
-        break;
-      default:
-        P_MESSAGE1("std::istream: unexpected error.");
-        return true;
-        break;
-    }
-  }
-  return false;
-}
-
-static inline const char* c2s(char *buf, char c)
-{
-  buf[0] = c;
-  buf[1] = '\0';
-  return buf;
-}
+// static inline bool inputAssert(std::istream& is)
+// {
+//   if (is.rdstate() & (std::istream::eofbit | std::istream::failbit | std::istream::badbit))
+//   {
+//     switch (is.rdstate())
+//     {
+//       case std::istream::eofbit:
+//         P_MESSAGE1("std::istream: unexpected end of file.");
+//         return true;
+//         break;
+//       case std::istream::failbit:
+//         P_MESSAGE1("std::istream: Input failed.");
+//         return true;
+//         break;
+//       case std::istream::badbit:
+//         P_MESSAGE1("std::istream: bad input.");
+//         return true;
+//         break;
+//       default:
+//         P_MESSAGE1("std::istream: unexpected error.");
+//         return true;
+//         break;
+//     }
+//   }
+//   return false;
+// }
+// 
+// static inline const char* c2s(char *buf, char c)
+// {
+//   buf[0] = c;
+//   buf[1] = '\0';
+//   return buf;
+// }
 
 static void commaToVector(const std::string& str, std::vector<std::string>& list)
 {
