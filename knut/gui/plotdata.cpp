@@ -446,7 +446,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     for (size_t b = 1; b < stabidx.size(); ++b)
     {
       std::cout << "npoints " << data->getNPoints() << " b " << stabidx[b] << " b-1 " << stabidx[b-1] << "\n";
-      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+      Graph.push_back(std::make_unique<PlotItem>(data, PlotBasicData, x, y, pt, dim));
       int bskip = 0, eskip = 0;
       if (b == 1) bskip = 0; else bskip = 1;
       if (b == stabidx.size()-1) eskip = 0; else eskip = 1;
@@ -561,7 +561,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   {
     const size_t ndeg = data->getNDeg();
     const size_t nint = data->getNInt();
-    Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+    Graph.push_back(std::make_unique<PlotItem>(data, PlotBasicData, x, y, pt, dim));
     (*Graph.rbegin())->x.init(ndeg*nint + 1);
     (*Graph.rbegin())->y.init(ndeg*nint + 1);
     for (size_t i = 0; i < nint; i++)
@@ -582,7 +582,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   if (x == XRealMultiplier && y == YImagMultiplier)
   {
     // plotting the multipliers
-    Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+    Graph.push_back(std::make_unique<PlotItem>(data, PlotBasicData, x, y, pt, dim));
     (*Graph.rbegin())->x.init(data->getNMul());
     (*Graph.rbegin())->y.init(data->getNMul());
     for (size_t i = 0; i < data->getNMul(); i++)
@@ -600,7 +600,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
   {
     for (size_t r = 0; r < data->getNMul(); r++)
     {
-      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotBasicData, x, y, pt, dim)));
+      Graph.push_back(std::make_unique<PlotItem>(data, PlotBasicData, x, y, pt, dim));
       (*Graph.rbegin())->x.init(data->getNPoints());
       (*Graph.rbegin())->y.init(data->getNPoints());
       for (size_t i = 0; i < data->getNPoints(); i++)
@@ -621,7 +621,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     for (size_t i = 0; i < xadded; ++i) --itc;
     for (size_t i = 0; i < bifidx.size(); ++i)
     {
-      Graph.push_back(std::unique_ptr<PlotItem>(new PlotItem(data, PlotStability, x, y, pt, dim)));
+      Graph.push_back(std::make_unique<PlotItem>(data, PlotStability, x, y, pt, dim));
       (*Graph.rbegin())->x.init(1);
       (*Graph.rbegin())->y.init(1);
 
@@ -1072,13 +1072,13 @@ QGraphicsRectItem* PlotData::makeBox()
 //  std::cout << "xmin " << cvb.xmin << ", xmax" << cvb.xmax << " ticks " << cvb.xticks << "\n";
   for (size_t i = 0; i < cvb.xticks + 1; i++)
   {
-    BottomTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
+    BottomTicks[i] = std::make_unique<QGraphicsLineItem>();
     BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
     BottomTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    TopTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
+    TopTicks[i] = std::make_unique<QGraphicsLineItem>();
     TopTicks[i]->setLine(plotXSize * i / cvb.xticks, plotYSize, plotXSize * i / cvb.xticks, plotYSize - 5.0);
     TopTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    HText[i] = std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem());
+    HText[i] = std::make_unique<QGraphicsTextItem>();
     HText[i]->setPlainText(QString::number(cvb.xmin + (cvb.xmax - cvb.xmin)*i / cvb.xticks));
     HText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = HText[i]->boundingRect().normalized();
@@ -1105,13 +1105,13 @@ QGraphicsRectItem* PlotData::makeBox()
 //  std::cout << "ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
   for (size_t i = 0; i < cvb.yticks + 1; i++)
   {
-    LeftTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
+    LeftTicks[i] = std::make_unique<QGraphicsLineItem>();
     LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);
     LeftTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    RightTicks[i] = std::unique_ptr<QGraphicsLineItem>(new QGraphicsLineItem());
+    RightTicks[i] = std::make_unique<QGraphicsLineItem>();
     RightTicks[i]->setLine(plotXSize, plotYSize * i / cvb.yticks, plotXSize - 5.0, plotYSize * i / cvb.yticks);
     RightTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    VText[i] = std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem());
+    VText[i] = std::make_unique<QGraphicsTextItem>();
     VText[i]->setPlainText(QString::number(cvb.ymin + (cvb.ymax - cvb.ymin)*i / cvb.yticks));
     VText[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = VText[i]->boundingRect().normalized();
@@ -1130,7 +1130,7 @@ QGraphicsRectItem* PlotData::makeBox()
   size_t startmove = 0;
   for (size_t i = 0; i < YCoordText.size(); ++i)
   {
-    YCoordTextItems.push_back(std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem()));
+    YCoordTextItems.push_back(std::make_unique<QGraphicsTextItem>());
     YCoordTextItems[i]->setPlainText(YCoordText[i]);
     YCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = YCoordTextItems[i]->boundingRect().normalized();
@@ -1161,7 +1161,7 @@ QGraphicsRectItem* PlotData::makeBox()
   startmove = 0;
   for (size_t i = 0; i < XCoordText.size(); ++i)
   {
-    XCoordTextItems.push_back(std::unique_ptr<QGraphicsTextItem>(new QGraphicsTextItem()));
+    XCoordTextItems.push_back(std::make_unique<QGraphicsTextItem>());
     XCoordTextItems[i]->setPlainText(XCoordText[i]);
     XCoordTextItems[i]->setFont(QFont("Helvetica", FontSize));
     QRectF b = XCoordTextItems[i]->boundingRect().normalized();
@@ -1201,7 +1201,7 @@ QGraphicsRectItem* PlotData::makeBox()
     const double yscale = plotYSize / (cvb.ymax - cvb.ymin);
     const QPointF pos = QPointF(xscale * (xcoord(0.0) - cvb.xmin), yscale * (cvb.ymax - ycoord(0.0)));
     QRectF scaledRect(-xscale, -yscale, 2*xscale, 2*yscale);
-    unitCircleItem = std::unique_ptr<QGraphicsEllipseItem>(new QGraphicsEllipseItem(scaledRect, newBox));
+    unitCircleItem = std::make_unique<QGraphicsEllipseItem>(scaledRect, newBox);
     unitCircleItem->setPos(pos);
     unitCircleItem->setPen(QPen(QBrush(Qt::SolidPattern), 1));
   }
@@ -1254,14 +1254,14 @@ void PlotData::PlotPaint(std::list<std::unique_ptr<PlotItem>>::const_iterator be
       for (auto& it : std::get<PlotLine>((*i)->data))
       {
 //         delete it->item;
-//         it.item = std::unique_ptr<QGraphicsPathItem>(new QGraphicsPathItem(it.path, newBox));
+//         it.item = std::make_unique<QGraphicsPathItem>(it.path, newBox);
         // this is managed by unique_ptr, hence no need for parent
         if(it.item) 
         {
 //          std::cout << "remove a line " << it.item.get() << " scene " << it.item->scene() << "\n";
           removeItem(it.item.get());
         }
-        it.item = std::unique_ptr<QGraphicsPathItem>(new QGraphicsPathItem(it.path));
+        it.item = std::make_unique<QGraphicsPathItem>(it.path);
         it.item->setPen(it.pen);
 //        std::cout << "<adding a line " << it.item.get() << " scene " << it.item.get()->scene() << "\n";
         addItem(it.item.get());
@@ -1278,7 +1278,7 @@ void PlotData::PlotPaint(std::list<std::unique_ptr<PlotItem>>::const_iterator be
         for ( ; itp != std::get<PlotCircle>((*i)->data).pos.end(); itp++, iti++)
         {
           // this is managed by unique_ptr, hence no need for parent
-          auto item = std::unique_ptr<QGraphicsEllipseItem>(new QGraphicsEllipseItem(std::get<PlotCircle>((*i)->data).scaledPoint));
+          auto item = std::make_unique<QGraphicsEllipseItem>(std::get<PlotCircle>((*i)->data).scaledPoint);
           item->setPen(std::get<PlotCircle>((*i)->data).pen);
           item->setPos(*itp);
           if (*iti) removeItem(iti->get());
@@ -1298,7 +1298,7 @@ void PlotData::PlotPaint(std::list<std::unique_ptr<PlotItem>>::const_iterator be
         for ( ; itp != std::get<PlotPolygon>((*i)->data).pos.end(); itp++, iti++)
         {
           // this is managed by unique_ptr, hence no need for parent
-          auto item = std::unique_ptr<QGraphicsPolygonItem>(new QGraphicsPolygonItem(std::get<PlotPolygon>((*i)->data).point));
+          auto item = std::make_unique<QGraphicsPolygonItem>(std::get<PlotPolygon>((*i)->data).point);
           item->setPen(std::get<PlotPolygon>((*i)->data).pen);
           item->setPos(*itp);
           if (*iti) removeItem(iti->get());
