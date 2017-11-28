@@ -127,7 +127,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       {
         if (inputData != nullptr)
         {
-          if (params->getFromType() != BifNone)
+          if (params->getFromType() != BifType::BifNone)
           {
             size_t pos = inputData->findType(params->getFromType(), params->getLabel() );
 //             std::cout << " getfrom Type " << params->getFromType() << " lab " << params->getLabel() << " pos " << pos << "\n";
@@ -166,29 +166,29 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       //
       parNamePrint(screenout, npar, params->getCp(), var, parNames);
       screenout << "\n";
-      parValuePrint(screenout, par, params->getCp(), var, 0, BifNone, pt.norm(), 0, 0);
+      parValuePrint(screenout, par, params->getCp(), var, 0, BifType::BifNone, pt.norm(), 0, 0);
       screenout << "\n";
       printStream();
 
       // making tangents
       switch (params->getBranchSW())
       {
-        case TFPDSwitch:
+        case BranchSW::TFPDSwitch:
           screenout << "\nSwitching to the period two branch (TF).\n";
           printStream();
           if (pt_per_ptr) pt_per_ptr->SwitchTFPD(params->getDsStart()); // !!
           break;
-        case TFSSMSwitch:
+        case BranchSW::TFSSMSwitch:
             pt_per_ptr->setSSM();
              screenout << "\nIt is a subcentre manifold (TF).\n";
-        case TFHBSwitch:
+        case BranchSW::TFHBSwitch:
           screenout << "\nSwitching to the periodic solution branch at the HOPF point (TF).\n";
           printStream();
           if (pt_per_ptr) pt_per_ptr->SwitchTFHB(params->getDsStart()); // !!
           break;
-        case TFBRSwitch:
-        case TFBRAUTSwitch:
-        case TFBRAUTROTSwitch:
+        case BranchSW::TFBRSwitch:
+        case BranchSW::TFBRAUTSwitch:
+        case BranchSW::TFBRAUTROTSwitch:
           screenout << "\nSwitching to the other branch (TF). " << params->getBranchSW() << "\n";
           printStream();
           if (pt_per_ptr) pt_per_ptr->SwitchTFLP(static_cast<BranchSW>(params->getBranchSW()), params->getDsStart()); // !!
@@ -215,12 +215,12 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       size_t printedln = 0;
       double ds = params->getDs();
       // setting trivial multipliers
-      if( params->getBranchSW() == TFSSMSwitch )  pt_per_ptr->setSSM();
+      if( params->getBranchSW() == BranchSW::TFSSMSwitch )  pt_per_ptr->setSSM();
       for (size_t i = 0; i < params->getSteps(); i++)  // 35
       {
         //
         double angle;
-        const size_t itc = pt.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
+        const size_t itc = pt.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != BranchSW::NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
         // step size adaptation
         double dsmul1 = 1.0, dsmul2 = 1.0;
         if      (itc < 2) dsmul1 = 2.0;         // 2
@@ -259,8 +259,8 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         const bool stabchange = (i != 0) && (ustab != ustabprev);
         const bool toprint = (((i+1) % params->getNPr()) == 0)||(i == 0);
         // stability output
-        BifType bif = BifNone;
-        if (endpoint) bif = BifEndPoint;
+        BifType bif = BifType::BifNone;
+        if (endpoint) bif = BifType::BifEndPoint;
         if (stabchange && pt_per_ptr != nullptr) bif =  pt_per_ptr->testBif(); // !!
 
         if (toprint || stabchange || endpoint)
@@ -306,7 +306,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         if ( (fabs(ds)*dsmul >= params->getDsMin()) && (fabs(ds)*dsmul <= params->getDsMax()) ) ds *= dsmul;
         else if ((itc >= params->getNItC()) && (fabs(ds)*dsmul < params->getDsMin()))
         {
-          parValuePrint(screenout, par, params->getCp(), var, i, BifNoConvergence, norm, ustab, itc);
+          parValuePrint(screenout, par, params->getCp(), var, i, BifType::BifNoConvergence, norm, ustab, itc);
           screenout << '\n';
           printStream();
           break;
@@ -315,7 +315,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         if ((par(VarToIndex(params->getCp(),sys->npar())) < params->getCpMin())||
             (par(VarToIndex(params->getCp(),sys->npar())) > params->getCpMax()))
         {
-          parValuePrint(screenout, par, params->getCp(), var, i, BifMax, norm, ustab, itc);
+          parValuePrint(screenout, par, params->getCp(), var, i, BifType::BifMax, norm, ustab, itc);
           screenout << '\n';
           printStream();
           break;
@@ -337,7 +337,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       double alpha;
       KNVector Sol;
       KNVector TRe, TIm;
-      if (params->getBranchSW() == TFTRSwitch)
+      if (params->getBranchSW() == BranchSW::TFTRSwitch)
       {
         if (dynamic_cast<KNDdePeriodicSolution*>(pt_ptr) == nullptr) P_MESSAGE1("Cannot switch to torus because it is not a delay equation.");
         KNDdePeriodicSolution& pt = *dynamic_cast<KNDdePeriodicSolution*>(pt_ptr);
@@ -366,7 +366,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
       KNDdeTorusSolution pttr(this, *sys, eqn, var, params->getNDeg1(), params->getNDeg2(), params->getNInt1(), params->getNInt2());
       // construct the solution tangent from the eigenvectors
       // these next three functions could be only one
-      if (params->getBranchSW() == TFTRSwitch)
+      if (params->getBranchSW() == BranchSW::TFTRSwitch)
       {
         pttr.importSolution(Sol);
         pttr.importTangent(TRe, TIm, alpha);
@@ -375,7 +375,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         pttr.setRho(alpha / (2.0*M_PI));
         pttr.setCont(params->getCp());
       }
-      else if (params->getBranchSW() == NOSwitch)
+      else if (params->getBranchSW() == BranchSW::NOSwitch)
       {
         if (params->getLabel() != 0)
         {
@@ -405,7 +405,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         }
         // same as for periodic orbits
         double angle;
-        size_t it = pttr.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
+        size_t it = pttr.nextStep(ds, angle, ((i == 0) && (params->getBranchSW() != BranchSW::NOSwitch)) ? IterateTangent::no : IterateTangent::yes);
         for (size_t j = 0; j < par.size(); j++) par(j) = pttr.getPar()(j);
         double norm = pttr.norm();
         if (i % 24 == 0)
@@ -415,7 +415,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
         }
         printStream();
         // console output
-        parValuePrint(screenout, par, params->getCp(), var, i, BifNone, norm, 0, it);
+        parValuePrint(screenout, par, params->getCp(), var, i, BifType::BifNone, norm, 0, it);
         screenout << "\n";
         printStream();
         pttr.savePoint(data(), i);

@@ -655,13 +655,13 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
       ++yadded;
       switch (biftype[i])
       {
-        case BifLP:
+        case BifType::BifLP:
           addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerSquare, false);
           break;
-        case BifPD:
+        case BifType::BifPD:
           addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerTriangle, false);
           break;
-        case BifNS:
+        case BifType::BifNS:
           addPlotPoint(--Graph.end(), QPen(stabcolor), PlotMarkerCircle, false);
           break;
         default:

@@ -22,7 +22,7 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
   {
     if (index.row() == 0)
     {
-      if (parameters->getPointType() == SolUser)
+      if (parameters->getPointType() == PtType::SolUser)
       {
         // Find the equation NAME based on its index in the list
         return QVariant(parameters->EqnTable.CIndexToTypeName(parameters->EqnTable.TypeToCIndex(parameters->getEqns(index.column()))).c_str());
@@ -35,7 +35,7 @@ QVariant ParamsModel::data(const QModelIndex &index, int role) const
     }
     if (index.row() == 1)
     {
-      if (parameters->getPointType() == SolUser)
+      if (parameters->getPointType() == PtType::SolUser)
       {
         // Find the variable NAME based on its index in the list
         return QVariant(parameters->VarTable.CIndexToTypeName(parameters->VarTable.TypeToCIndex(parameters->getVars(index.column()))).c_str());
@@ -51,7 +51,7 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
   {
     if (index.row() == 0)
     {
-      if (parameters->getPointType() == SolUser)
+      if (parameters->getPointType() == PtType::SolUser)
       {
         // set the equation at position index.column() by its index
         parameters->setEqns(index.column(), parameters->EqnTable.CIndexToType(value.toUInt()));
@@ -61,7 +61,7 @@ bool ParamsModel::setData(const QModelIndex &index, const QVariant &value, int r
         parameters->setParx(index.column(), parameters->VarTable.CIndexToType(value.toUInt()));
       }
     }
-    if ((index.row() == 1) && (parameters->getPointType() == SolUser))
+    if ((index.row() == 1) && (parameters->getPointType() == PtType::SolUser))
     {
       // set the variable at position index.column() by its index
       parameters->setVars(index.column(), parameters->VarTable.CIndexToType(value.toUInt()));
@@ -76,7 +76,7 @@ QVariant ParamsModel::headerData(int section, Qt::Orientation orientation, int r
 {
   if (role == Qt::DisplayRole)
   {
-    if (parameters->getPointType() == SolUser)
+    if (parameters->getPointType() == PtType::SolUser)
     {
       if (section == 0 && orientation == Qt::Vertical) return QVariant("Eqn");
       if (section == 1 && orientation == Qt::Vertical) return QVariant("Var");
@@ -101,7 +101,7 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
 {
   QComboBox *editor = new QComboBox(parent);
 
-  if (parameters->getPointType() == SolUser)
+  if (parameters->getPointType() == PtType::SolUser)
   {
     if (index.row() == 0)
     {
@@ -132,7 +132,7 @@ void BoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
 {
   QComboBox *cbox = static_cast<QComboBox*>(editor);
 
-  if (parameters->getPointType() == SolUser)
+  if (parameters->getPointType() == PtType::SolUser)
   {
     if (index.row() == 0)  model->setData(index, cbox->currentIndex());
     if (index.row() == 1)  model->setData(index, cbox->currentIndex());

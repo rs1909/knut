@@ -29,12 +29,12 @@ class ParamsModel : public QAbstractTableModel
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override
     {
-      if (parameters->getPointType() == SolUser) return 2;
+      if (parameters->getPointType() == PtType::SolUser) return 2;
       else return 1;
     }
     int columnCount(const QModelIndex &parent = QModelIndex()) const override
     {
-      if (parameters->getPointType() == SolUser) return static_cast<int>(parameters->getEqnsSize());
+      if (parameters->getPointType() == PtType::SolUser) return static_cast<int>(parameters->getEqnsSize());
       else return static_cast<int>(parameters->getParxSize());
     };
 

@@ -370,13 +370,13 @@ void KNDdePeriodicSolution::SwitchTFLP(BranchSW type, double ds)
   KNAbstractTestFunctional* tf = nullptr;
   switch (type)
   {
-    case TFBRSwitch:
+    case BranchSW::TFBRSwitch:
       tf = static_cast<KNAbstractTestFunctional*>(new KNTestFunctional(*colloc, 1.0));
       break;
-    case TFBRAUTSwitch:
+    case BranchSW::TFBRAUTSwitch:
       tf = static_cast<KNAbstractTestFunctional*>(new KNLpAutTestFunctional(*colloc, 1.0));
       break;
-    case TFBRAUTROTSwitch:
+    case BranchSW::TFBRAUTROTSwitch:
       tf = static_cast<KNAbstractTestFunctional*>(new KNLpAutRotTestFunctional(*colloc, rotRe, rotIm, 1.0));
       break;
     default:

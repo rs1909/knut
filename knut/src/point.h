@@ -135,13 +135,13 @@ inline void parValuePrint(std::ostream& out, const KNVector& par, Var cp, const 
   out.setf(std::ios::uppercase | std::ios::scientific | std::ios::right);
 
   out << std::right << std::setfill(' ') << std::setw(5) << lb+1 << " "; // 2 at the end
-  if (tp == BifLP) out << std::left << std::setfill(' ') << std::setw(2) << "LP" << ' '; // 2 at the end
-  else if (tp == BifPD) out << std::left << std::setfill(' ') << std::setw(2) << "PD" << ' '; // 2 at the end
-  else if (tp == BifNS) out << std::left << std::setfill(' ') << std::setw(2) << "NS" << ' '; // 2 at the end
-  else if (tp == BifUN) out << std::left << std::setfill(' ') << std::setw(2) << "UN" << ' '; // 2 at the end
-  else if (tp == BifMax) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
-  else if (tp == BifEndPoint) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
-  else if (tp == BifNoConvergence) out << std::left << std::setfill(' ') << std::setw(2) << "MX" << ' '; // 2 at the end
+  if (tp == BifType::BifLP) out << std::left << std::setfill(' ') << std::setw(2) << "LP" << ' '; // 2 at the end
+  else if (tp == BifType::BifPD) out << std::left << std::setfill(' ') << std::setw(2) << "PD" << ' '; // 2 at the end
+  else if (tp == BifType::BifNS) out << std::left << std::setfill(' ') << std::setw(2) << "NS" << ' '; // 2 at the end
+  else if (tp == BifType::BifUN) out << std::left << std::setfill(' ') << std::setw(2) << "UN" << ' '; // 2 at the end
+  else if (tp == BifType::BifMax) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
+  else if (tp == BifType::BifEndPoint) out << std::left << std::setfill(' ') << std::setw(2) << "EP" << ' '; // 2 at the end
+  else if (tp == BifType::BifNoConvergence) out << std::left << std::setfill(' ') << std::setw(2) << "MX" << ' '; // 2 at the end
   else out << std::left << std::setfill(' ') << std::setw(2) << "  " << ' '; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << norm << "  "; // 2 at the end
   out << std::right << std::setfill(' ') << std::setw(13) << par(VarToIndex(cp,npar)) << "  "; // 2 at the end

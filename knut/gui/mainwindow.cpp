@@ -524,7 +524,7 @@ void MainWindow::setOutputFile()
 
 void MainWindow::setPointType()
 {
-  if (parameters.getPointType() == SolUser)
+  if (parameters.getPointType() == PtType::SolUser)
   {
     eqnsLabel->setText(QString("NEQNS"));
     branchsw->setEnabled(true);

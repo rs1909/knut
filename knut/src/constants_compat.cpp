@@ -175,7 +175,7 @@ void KNConstantsBase::loadXmlFileV4(const std::string &fileName)
   nd = mxmlFindElement(root_nd, root_nd, "switch", nullptr, nullptr, MXML_DESCEND_FIRST);
   setBranchSW(BranchSWTable.CodeToType(getNodeText(nd))); // -> default
 
-  if (getPointType() != SolUser)
+  if (getPointType() != PtType::SolUser)
   {
     nd = mxmlFindElement(root_nd, root_nd, "nparx", nullptr, nullptr, MXML_DESCEND_FIRST);
     setParxSize(getNodeIndexM(nd));
@@ -347,7 +347,7 @@ void KNConstantsBase::printXmlFileV4(std::ostream& file)
   node = mxmlNewElement(data, "switch");
   mxmlNewText(node, 0, BranchSWTable.TypeToCode(getBranchSW()).c_str());
  
-  if (getPointType() != SolUser)
+  if (getPointType() != PtType::SolUser)
   {
     node = mxmlNewElement(data, "nparx");
     setNodeIndex(node, getParxSize());
@@ -520,7 +520,7 @@ void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
   setSysNameText(getNodeText(nd, ""));
 
   nd = mxmlFindElement(root_nd, root_nd, "fromtype", nullptr, nullptr, MXML_DESCEND_FIRST);
-  setFromType(static_cast<BifType>(getNodeIndex(nd, BifNone)));
+  setFromType(static_cast<BifType>(getNodeIndex(nd, BifType::BifNone)));
 
   nd = mxmlFindElement(root_nd, root_nd, "label", nullptr, nullptr, MXML_DESCEND_FIRST);
   setLabel(getNodeIndexM(nd));
@@ -537,9 +537,9 @@ void KNConstantsBase::loadXmlFileV2(const std::string &fileName)
   setCp(varFromTypeNum(cp_type,cp_num));
   
   nd = mxmlFindElement(root_nd, root_nd, "switch", nullptr, nullptr, MXML_DESCEND_FIRST);
-  setBranchSW(static_cast<BranchSW>(getNodeIndex(nd, NOSwitch)));
+  setBranchSW(static_cast<BranchSW>(getNodeIndex(nd, BranchSW::NOSwitch)));
 
-  if (getPointType() != SolUser)
+  if (getPointType() != PtType::SolUser)
   {
     nd = mxmlFindElement(root_nd, root_nd, "nparx", nullptr, nullptr, MXML_DESCEND_FIRST);
     setParxSize(getNodeIndexM(nd));

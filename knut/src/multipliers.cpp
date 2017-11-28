@@ -221,8 +221,8 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
     if (((*mulRe0)(imax[0]) == (*mulRe0)(imax[1]))&&((*mulIm0)(imax[0]) == -(*mulIm0)(imax[1])))
     {
       imaxa = imax[0];
-    } else return BifUN;
-  } else return BifUN;
+    } else return BifType::BifUN;
+  } else return BifType::BifUN;
   
   const double mrea = (*mulRe0)(imaxa);
   const double mima = (*mulIm0)(imaxa);
@@ -252,19 +252,19 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
   //  std :: cerr << "From = (" << mreb << "," << mimb << ")\n";
     if ( (mimb != 0.0)&&(mima != 0.0) )
     {
-      return BifNS;
+      return BifType::BifNS;
     } else if ((mimb == 0.0)&&(mima == 0.0))
     {
-      if (LPabs < PDabs) return BifLP;
-      else return BifPD;
-    } else return BifUN;
+      if (LPabs < PDabs) return BifType::BifLP;
+      else return BifType::BifPD;
+    } else return BifType::BifUN;
   } else
   {
-    if (mima != 0.0) return BifNS;
+    if (mima != 0.0) return BifType::BifNS;
     else
     {
-      if (LPabs < PDabs) return BifLP;
-      else return BifPD;
+      if (LPabs < PDabs) return BifType::BifLP;
+      else return BifType::BifPD;
     }
   }
 #undef NCRIT

@@ -227,17 +227,17 @@ void KNConstantsBase::loadXmlFileV5(const std::string &fileName)
 {
   mxml_node_t *tree;
   int ver = getXmlTree(fileName, &tree);
-
-  // compatibility options
-  if ((ver < 5) && (ver > 2))
-  {
-    loadXmlFileV4(fileName);
-    return;
-  } else if (ver < 3)
-  { 
-    loadXmlFileV2(fileName);
-    return;
-  }
+// 
+//   // compatibility options
+//   if ((ver < 5) && (ver > 2))
+//   {
+//     loadXmlFileV4(fileName);
+//     return;
+//   } else if (ver < 3)
+//   { 
+//     loadXmlFileV2(fileName);
+//     return;
+//   }
   // continuing normal
   KNXmlConstantsReader reader(tree);
   read(reader);
@@ -529,7 +529,7 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
                           KNArray1D<Eqn>& eqn_start, KNArray1D<Var>& var_start, bool& findangle)
 {
   // initializing the equations and variables
-  if (getPointType() == SolUser)
+  if (getPointType() == PtType::SolUser)
   {
     eqn.init(getEqnsSize());
     var.init(getVarsSize());
@@ -616,7 +616,7 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
     }
   }
 
-  if ((getBranchSW() == TFHBSwitch) || (getBranchSW() == TFSSMSwitch))
+  if ((getBranchSW() == BranchSW::TFHBSwitch) || (getBranchSW() == BranchSW::TFSSMSwitch))
   {
       KNArray1D<Eqn> ee(eqn_refine);
       KNArray1D<Var> vv(var_refine);
@@ -629,7 +629,7 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
   }
   
   // Swithing from a Neimark-Sacker to a Torus (Delay Equation)
-  if (getBranchSW() == TFTRSwitch)
+  if (getBranchSW() == BranchSW::TFTRSwitch)
   {
     eqn_refine(0) = EqnSol;
     var_refine(0) = VarSol;
@@ -644,12 +644,12 @@ bool KNConstantsBase::toEqnVar(KNExprSystem& sys,
   switch (getBranchSW())
   {
 /// with TEST FUNCTIONALS
-    case TFBRSwitch:
-    case TFBRAUTSwitch:
+    case BranchSW::TFBRSwitch:
+    case BranchSW::TFBRAUTSwitch:
       if (aut) eqn_temp = EqnTFLPAUT;
       else eqn_temp = EqnTFLP;
       goto tfskip;
-    case TFPDSwitch:
+    case BranchSW::TFPDSwitch:
       eqn_temp = EqnTFPD;
       goto tfskip;
 tfskip:
@@ -666,9 +666,9 @@ tfskip:
       }
       needTF = true;
       break;
-    case TFTRSwitch:
-    case TFHBSwitch:
-    case TFSSMSwitch:
+    case BranchSW::TFTRSwitch:
+    case BranchSW::TFHBSwitch:
+    case BranchSW::TFSSMSwitch:
       eqn_start.init(eqn_refine.size() + 2);
       var_start.init(var_refine.size() + 2);
       eqn_start(0) = eqn_refine(0);

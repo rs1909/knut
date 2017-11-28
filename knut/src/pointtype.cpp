@@ -10,29 +10,29 @@
 #include "pointtype.h"
 
 template<> const TypeTuple<PtType> TypeTupleTabBase<PtType>::tabStatic[] = {
-  {0,  SolUser,      "USER",             "User defined"}, // User
-  {1,  SolODE,       "ODE",              "ODE limit cycle"}, // ODE limit cycle
-  {2,  SolAUTODE,    "ODE_AUT",          "ODE limit cycle (aut)" }, // ODE limit cycle (aut)
-  {3,  SolSteady,    "DDE_STEADY",       "Steady State"},
-  {4,  SolTF,        "DDE_LC",           "Limit cycle"}, // "Limit cycle
-  {5,  BifTFLP,      "DDE_LP",           "Limit point"}, // Limit point
-  {6,  BifTFPD,      "DDE_PD",           "Period doubling"}, // Period doubling
-  {7,  BifTFNS,      "DDE_NS",           "Neimark-Sacker"}, // Neimark-Sacker
-  {8,  SolTFBRSW,    "DDE_BP_SW",        "Branch switch"}, // Branch switch
-  {9,  SolTFPDSW,    "DDE_PD_SW",        "Period doubling switch"}, // Period doubling switch
-  {10, SolTFAUT,     "DDE_AUT",          "Limit cycle (aut)"}, // Limit cycle (aut)
-  {11, BifTFAUTLP,   "DDE_AUT_LP",       "Limit point (aut)"}, //
-  {12, BifTFAUTPD,   "DDE_AUT_PD",       "Period doubling (aut)"},
-  {13, BifTFAUTNS,   "DDE_AUT_NS",       "Neimark-Sacker (aut)"},
-  {14, SolTFAUTBRSW, "DDE_AUT_BP_SW",    "Branch switch (aut)"},
-  {15, SolTFAUTPDSW, "DDE_AUT_PD_SW",    "Period doubling switch (aut)"},
-  {16, SolTFAUTHBSW, "DDE_AUT_HOPF_SW",  "Hopf switch (aut)"},
-  {17, SolTFAUTSSMSW,"DDE_AUT_SSM_SW",  "Subcenter manifold switch (aut)"},
-  {18, SolTor,       "DDE_TORUS",        "Torus"},
-  {19, SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
-  {20, SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
-  {21, SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
-  {~(size_t)0, SolUser, "", ""}};
+  {0,  PtType::SolUser,      "USER",             "User defined"}, // User
+  {1,  PtType::SolODE,       "ODE",              "ODE limit cycle"}, // ODE limit cycle
+  {2,  PtType::SolAUTODE,    "ODE_AUT",          "ODE limit cycle (aut)" }, // ODE limit cycle (aut)
+  {3,  PtType::SolSteady,    "DDE_STEADY",       "Steady State"},
+  {4,  PtType::SolTF,        "DDE_LC",           "Limit cycle"}, // "Limit cycle
+  {5,  PtType::BifTFLP,      "DDE_LP",           "Limit point"}, // Limit point
+  {6,  PtType::BifTFPD,      "DDE_PD",           "Period doubling"}, // Period doubling
+  {7,  PtType::BifTFNS,      "DDE_NS",           "Neimark-Sacker"}, // Neimark-Sacker
+  {8,  PtType::SolTFBRSW,    "DDE_BP_SW",        "Branch switch"}, // Branch switch
+  {9,  PtType::SolTFPDSW,    "DDE_PD_SW",        "Period doubling switch"}, // Period doubling switch
+  {10, PtType::SolTFAUT,     "DDE_AUT",          "Limit cycle (aut)"}, // Limit cycle (aut)
+  {11, PtType::BifTFAUTLP,   "DDE_AUT_LP",       "Limit point (aut)"}, //
+  {12, PtType::BifTFAUTPD,   "DDE_AUT_PD",       "Period doubling (aut)"},
+  {13, PtType::BifTFAUTNS,   "DDE_AUT_NS",       "Neimark-Sacker (aut)"},
+  {14, PtType::SolTFAUTBRSW, "DDE_AUT_BP_SW",    "Branch switch (aut)"},
+  {15, PtType::SolTFAUTPDSW, "DDE_AUT_PD_SW",    "Period doubling switch (aut)"},
+  {16, PtType::SolTFAUTHBSW, "DDE_AUT_HOPF_SW",  "Hopf switch (aut)"},
+  {17, PtType::SolTFAUTSSMSW,"DDE_AUT_SSM_SW",  "Subcenter manifold switch (aut)"},
+  {18, PtType::SolTor,       "DDE_TORUS",        "Torus"},
+  {19, PtType::SolTorNS,     "DDE_TORUS_SW",     "Torus from NS"},
+  {20, PtType::SolAUTTor,    "DDE_AUT_TORUS",    "Torus (aut)"},
+  {21, PtType::SolAUTTorNS,  "DDE_AUT_TORUS_SW", "Torus from NS (aut)"},
+  {~(size_t)0, PtType::SolUser, "", ""}};
 
 template<> const TypeTuple<Eqn> TypeTupleTabBase<Eqn>::tabStatic[] = {
   {0,  EqnNone,       "NX",                "None" },
@@ -53,14 +53,14 @@ template<> const TypeTuple<Eqn> TypeTupleTabBase<Eqn>::tabStatic[] = {
   {~(size_t)0, EqnNone, "", ""}};
   
 template<> const TypeTuple<BranchSW> TypeTupleTabBase<BranchSW>::tabStatic[] = {
-  {0, NOSwitch,         "NX",         "No switch"},
-  {1, TFBRSwitch,       "BP",         "Branch"},
-  {2, TFPDSwitch,       "PD",         "Period doubling"},
-  {3, TFHBSwitch,       "HOPF",       "Hopf (aut)"},
-  {4, TFTRSwitch,       "TORUS",      "Torus"},
-  {5, TFBRAUTSwitch,    "AUT_BP",     "Branch (aut)"},
-  {6, TFBRAUTROTSwitch, "AUT_ROT_BP", "Branch (sym)"},
-  {~(size_t)0, NOSwitch, "", ""}};
+  {0, BranchSW::NOSwitch,         "NX",         "No switch"},
+  {1, BranchSW::TFBRSwitch,       "BP",         "Branch"},
+  {2, BranchSW::TFPDSwitch,       "PD",         "Period doubling"},
+  {3, BranchSW::TFHBSwitch,       "HOPF",       "Hopf (aut)"},
+  {4, BranchSW::TFTRSwitch,       "TORUS",      "Torus"},
+  {5, BranchSW::TFBRAUTSwitch,    "AUT_BP",     "Branch (aut)"},
+  {6, BranchSW::TFBRAUTROTSwitch, "AUT_ROT_BP", "Branch (sym)"},
+  {~(size_t)0, BranchSW::NOSwitch, "", ""}};
 
 template<> const TypeTuple<Var> TypeTupleTabBase<Var>::tabStatic[] = {
   {0, VarNone,   "NX",          "None"},
@@ -75,12 +75,12 @@ template<> const TypeTuple<Var> TypeTupleTabBase<Var>::tabStatic[] = {
   {~(size_t)0, VarEnd, "", ""}};
 
 template<> const TypeTuple<BifType> TypeTupleTabBase<BifType>::tabStatic[] = {
-  {0, BifNone,          "NX", "None"},
-  {1, BifLP,            "LP", "LP"},
-  {2, BifPD,            "PD", "PD"},
-  {3, BifNS,            "NS", "NS"},
-  {4, BifNS,            "UN", "UN"},
-  {5, BifMax,           "MX", "MX"},
-  {6, BifEndPoint,      "EP", "EP"},
-  {7, BifNoConvergence, "NC", "NC"},
-  {~(size_t)0, BifNone, "", ""}};
+  {0, BifType::BifNone,          "NX", "None"},
+  {1, BifType::BifLP,            "LP", "LP"},
+  {2, BifType::BifPD,            "PD", "PD"},
+  {3, BifType::BifNS,            "NS", "NS"},
+  {4, BifType::BifNS,            "UN", "UN"},
+  {5, BifType::BifMax,           "MX", "MX"},
+  {6, BifType::BifEndPoint,      "EP", "EP"},
+  {7, BifType::BifNoConvergence, "NC", "NC"},
+  {~(size_t)0, BifType::BifNone, "", ""}};

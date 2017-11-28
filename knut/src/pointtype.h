@@ -12,8 +12,9 @@
 
 #include <cstring>
 #include <string>
+#include <iostream>
 
-enum PtType {
+enum class PtType {
   SolUser      = 64,
   /// ODE
   SolODE       = 0,
@@ -75,7 +76,7 @@ enum Var {
   VarEnd
 };
 
-enum BranchSW
+enum class BranchSW
 {
   NOSwitch = 0,
   TFBRSwitch = 1,
@@ -87,7 +88,13 @@ enum BranchSW
   TFBRAUTROTSwitch = 7
 };
 
-enum BifType
+inline std::ostream& operator<<(std::ostream& os, BranchSW sw)
+{  
+  os << static_cast<int>(sw);  
+  return os;  
+}
+
+enum class BifType
 {
   BifNone,
   BifLP,

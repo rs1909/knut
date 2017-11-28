@@ -44,174 +44,174 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
   const Var PANGLE = VarAngle; // IndexToVar(VarAngle,npar_);
   switch (Pt)
   {
-    case SolODE:
+    case PtType::SolODE:
     {
-      PtTab tmp = { SolODE, NOSwitch,   1, 0,
+      PtTab tmp = { PtType::SolODE, BranchSW::NOSwitch,   1, 0,
                     { EqnODESol },
                     { VarODESol } };
       tab = tmp;
     }
     break;
-    case SolAUTODE:
+    case PtType::SolAUTODE:
     {
-      PtTab tmp = { SolAUTODE, NOSwitch,   2, 1,
+      PtTab tmp = { PtType::SolAUTODE, BranchSW::NOSwitch,   2, 1,
                     { EqnODESol, EqnPhase },
                     { VarODESol, VarNone } };
       tab = tmp;
     }
     break;
-    case SolSteady:
+    case PtType::SolSteady:
     {
-      PtTab tmp = { SolSteady, NOSwitch,   1, 0,
+      PtTab tmp = { PtType::SolSteady, BranchSW::NOSwitch,   1, 0,
                     { EqnSteady },
                     { VarSteady } };
       tab = tmp;
     }
     break;
     /// TIME-PERIODIC TEST-FUNCTIONAL
-    case SolTF:
+    case PtType::SolTF:
     {
-      PtTab tmp = { SolTF, NOSwitch,   1, 0,
+      PtTab tmp = { PtType::SolTF, BranchSW::NOSwitch,   1, 0,
                     { EqnSol },
                     { VarSol } };
       tab = tmp;
     }
     break;
-    case SolTFBRSW:
+    case PtType::SolTFBRSW:
     {
-      PtTab tmp = { SolTFBRSW, TFBRSwitch, 1, 0,
+      PtTab tmp = { PtType::SolTFBRSW, BranchSW::TFBRSwitch, 1, 0,
                     { EqnSol },
                     { VarSol } };
       tab = tmp;
     }
     break;
-    case SolTFPDSW:
+    case PtType::SolTFPDSW:
     {
-      PtTab tmp = { SolTFPDSW, TFPDSwitch, 1, 0,
+      PtTab tmp = { PtType::SolTFPDSW, BranchSW::TFPDSwitch, 1, 0,
                     { EqnSol },
                     { VarSol } };
       tab = tmp;
     }
     break;
-    case BifTFLP:
+    case PtType::BifTFLP:
     {
-      PtTab tmp = { BifTFLP, NOSwitch,   2, 1,
+      PtTab tmp = { PtType::BifTFLP, BranchSW::NOSwitch,   2, 1,
                     { EqnSol, EqnTFLP },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
-    case BifTFPD:
+    case PtType::BifTFPD:
     {
-      PtTab tmp = { BifTFPD, NOSwitch,   2, 1,
+      PtTab tmp = { PtType::BifTFPD, BranchSW::NOSwitch,   2, 1,
                     { EqnSol, EqnTFPD },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
-    case BifTFNS:
+    case PtType::BifTFNS:
     {
-      PtTab tmp = { BifTFNS, NOSwitch,   3, 1,
+      PtTab tmp = { PtType::BifTFNS, BranchSW::NOSwitch,   3, 1,
                     { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM },
                     { VarSol, PANGLE,        VarNone } };
       tab = tmp;
     }
     break;
     /// AUTONOMOUS TEST-FUNCTIONAL
-    case SolTFAUT:
+    case PtType::SolTFAUT:
     {
-      PtTab tmp = { SolTFAUT, NOSwitch,   2, 1,
+      PtTab tmp = { PtType::SolTFAUT, BranchSW::NOSwitch,   2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
-    case SolTFAUTBRSW:
+    case PtType::SolTFAUTBRSW:
     {
-      PtTab tmp = { SolTFAUTBRSW, TFBRAUTSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTFAUTBRSW, BranchSW::TFBRAUTSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
-    case SolTFAUTPDSW:
+    case PtType::SolTFAUTPDSW:
     {
-      PtTab tmp = { SolTFAUTPDSW, TFPDSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTFAUTPDSW, BranchSW::TFPDSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
     // Hopf bifurcation switch
-    case SolTFAUTHBSW:
+    case PtType::SolTFAUTHBSW:
     {
-      PtTab tmp = { SolTFAUTHBSW, TFHBSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTFAUTHBSW, BranchSW::TFHBSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
     // Spectral submanifold switch: Same as Hopf bifurcation
-    case SolTFAUTSSMSW:
+    case PtType::SolTFAUTSSMSW:
     {
-      PtTab tmp = { SolTFAUTHBSW, TFSSMSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTFAUTHBSW, BranchSW::TFSSMSwitch, 2, 1,
                     { EqnSol, EqnPhase },
                     { VarSol, VarNone } };
       tab = tmp;
     }
     break;
-    case BifTFAUTLP:
+    case PtType::BifTFAUTLP:
     {
-      PtTab tmp = { BifTFAUTLP, NOSwitch,   3, 2,
+      PtTab tmp = { PtType::BifTFAUTLP, BranchSW::NOSwitch,   3, 2,
                     { EqnSol, EqnTFLPAUT, EqnPhase },
                     { VarSol, VarNone,    VarNone } };
       tab = tmp;
     }
     break;
-    case BifTFAUTPD:
+    case PtType::BifTFAUTPD:
     {
-      PtTab tmp = { BifTFAUTPD, NOSwitch,   3, 2,
+      PtTab tmp = { PtType::BifTFAUTPD, BranchSW::NOSwitch,   3, 2,
                     { EqnSol, EqnTFPD, EqnPhase },
                     { VarSol, VarNone, VarNone } };
       tab = tmp;
     }
     break;
-    case BifTFAUTNS:
+    case PtType::BifTFAUTNS:
     {
-      PtTab tmp = { BifTFAUTNS, NOSwitch,   4, 2,
+      PtTab tmp = { PtType::BifTFAUTNS, BranchSW::NOSwitch,   4, 2,
                     { EqnSol, EqnTFCPLX_RE,  EqnTFCPLX_IM, EqnPhase },
                     { VarSol, PANGLE,        VarNone,      VarNone } };
       tab = tmp;
     }
     break;
     /// TORUS
-    case SolTor:
+    case PtType::SolTor:
     {
-      PtTab tmp = { SolTor, NOSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTor, BranchSW::NOSwitch, 2, 1,
                     { EqnTORSol, EqnTORPhase1 },
                     { VarTORSol, VarNone } };
       tab = tmp;
     }
     break;
-    case SolTorNS:
+    case PtType::SolTorNS:
     {
-      PtTab tmp = { SolTor, TFTRSwitch, 2, 1,
+      PtTab tmp = { PtType::SolTor, BranchSW::TFTRSwitch, 2, 1,
                     { EqnTORSol, EqnTORPhase1 },
                     { VarTORSol, VarNone } };
       tab = tmp;
     }
     break;
-    case SolAUTTor:
+    case PtType::SolAUTTor:
     {
-      PtTab tmp = { SolAUTTor, NOSwitch, 3, 2,
+      PtTab tmp = { PtType::SolAUTTor, BranchSW::NOSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
                     { VarTORSol, VarNone,      VarNone } };
       tab = tmp;
     }
     break;
-    case SolAUTTorNS:
+    case PtType::SolAUTTorNS:
     {
-      PtTab tmp = { SolAUTTor, TFTRSwitch, 3, 2,
+      PtTab tmp = { PtType::SolAUTTor, BranchSW::TFTRSwitch, 3, 2,
                     { EqnTORSol, EqnTORPhase0, EqnTORPhase1 },
                     { VarTORSol, VarNone,      VarNone } };
       tab = tmp;
@@ -219,7 +219,7 @@ BranchSW PtToEqnVar(KNArray1D<Eqn>& eqnr, KNArray1D<Var>& varr, PtType Pt, KNArr
     break;
     default:
     {
-      PtTab tmp = { SolUser, NOSwitch,  0, 0, { EqnNone }, { VarNone } };
+      PtTab tmp = { PtType::SolUser, BranchSW::NOSwitch,  0, 0, { EqnNone }, { VarNone } };
       tab = tmp;
     }
     P_MESSAGE3("Invalid point type ", (int)Pt, ".");

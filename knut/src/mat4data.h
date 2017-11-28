@@ -42,7 +42,7 @@ class KNAbstractData
     virtual void lockWrite() const = 0;
     virtual void unlock() const = 0;
     virtual void   setNTrivMul(const size_t j, size_t i) = 0;
-    virtual void   setMagic(size_t n, int32_t magic) = 0;
+    virtual void   setMagic(size_t n, BifType magic) = 0;
     virtual void   setPar(size_t n, const KNVector& par) = 0;
     virtual void   setMul(size_t n, const KNVector& real, const KNVector& imag) = 0;
     virtual void   setElem(size_t n, const KNVector& el) = 0;
@@ -56,9 +56,9 @@ class KNAbstractData
     virtual size_t  getNInt() const = 0;
     virtual size_t  getNDeg() const = 0;
     virtual size_t  getNCols() const = 0;
-    virtual int32_t getMagic(size_t n) const = 0;
+    virtual BifType getMagic(size_t n) const = 0;
     virtual void   getProfile(size_t n, KNVector& profile) const = 0;
-    size_t findType(int32_t type, size_t n) const;
+    size_t findType(BifType type, size_t n) const;
     // the extra bit for tori
     virtual void   setMesh1(size_t n, size_t j, double d) = 0;
     virtual void   setMesh2(size_t n, size_t j, double d) = 0;
@@ -104,13 +104,13 @@ class KNDataFile : public KNAbstractData
     }
     void   getBlanket(size_t n, KNVector& blanket) const override;
     void   setBlanket(size_t n, const KNVector& blanket) override;
-    void   setMagic(size_t n, int32_t magic) override
+    void   setMagic(size_t n, BifType magic) override
     {
       elem(magic_offset, 0, n) = static_cast<double>(magic);
     }
-    int32_t getMagic(size_t n) const override
+    BifType getMagic(size_t n) const override
     {
-      return static_cast<int32_t>(elem(magic_offset, 0, n));
+      return static_cast<BifType>(elem(magic_offset, 0, n));
     }
     void   getPar(size_t n, KNVector& par) const override;
     double getPar(size_t n, size_t j) const

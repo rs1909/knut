@@ -819,10 +819,10 @@ BifType  KNDataFile::getBifurcationType(size_t n) const
 
     return bifurcationType(mulReA, mulImA, mulReB, mulImB, lp, pd, ns, n-1, n);
   }
-  return BifNone;
+  return BifType::BifNone;
 }
 
-size_t KNAbstractData::findType(int32_t type, size_t n) const
+size_t KNAbstractData::findType(BifType type, size_t n) const
 {
   size_t found = 0;
   for (size_t i=0; i<getNCols(); ++i)
