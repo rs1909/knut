@@ -232,7 +232,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size = prof_offset + prof_size;
 
 //  const size_t approxSize = 8 * (sizeof(header) + 20) + sizeof(double) * (1 + ncols * (npar + 2 * nmul + 1 + (ndeg + 1) + (ndim + 1) * (ndeg * nint + 1)));
-  lockWrite();
+  KNDataFile::lockWrite();
   mmapFileWrite(fileName, size);
 
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
@@ -247,7 +247,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   writeMatrixHeader(address, prof_offset, &prof_header, prof_string);
   setParNames(parNames);
 //   std::cout << "mat4data address WR1 " << address << "\n";
-  unlock();  
+  KNDataFile::unlock();  
 }
 
 void KNDataFile::setParNames(const std::vector<std::string>& parNames)
@@ -345,7 +345,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   size_t blanket_size = createMatrixHeader(&blanket_header, blanket_string, ndim * nint1 * ndeg1 * nint2 * ndeg2, ncols);
   size = blanket_offset + blanket_size;
 
-  lockWrite();
+  KNDataFile::lockWrite();
   mmapFileWrite(fileName, size);
 
   writeMatrixHeader(address, npoints_offset, &npoints_header, npoints_string);
@@ -361,7 +361,7 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   writeMatrixHeader(address, blanket_offset, &blanket_header, blanket_string);
   setParNames(parNames);
 //   std::cout << "mat4data address WR2 " << address << "\n";
-  unlock();
+  KNDataFile::unlock();
 }
 
 KNDataFile::KNDataFile(const std::string& fileName)
@@ -472,10 +472,10 @@ void KNDataFile::initHeaders()
 void KNDataFile::openReadOnly(const std::string& fileName)
 {
   mmapFileRead(fileName);
-  lockRead();
+  KNDataFile::lockRead();
   initHeaders();
 //   std::cout << "mat4data address RD " << address << "\n";
-  unlock();
+  KNDataFile::unlock();
 }
 
 KNDataFile::~KNDataFile()

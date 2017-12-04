@@ -261,7 +261,7 @@ void EqnVarTableView::resetSize()
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   
-  QSize minSize = minimumSizeHint();
+  QSize minSize = QTableView::minimumSizeHint();
   setMinimumSize(minSize);
   setMaximumSize(minSize);
 }

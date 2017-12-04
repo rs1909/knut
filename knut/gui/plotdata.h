@@ -167,8 +167,8 @@ class PlotItem
 
 struct ViewBox
 {
-  qreal xmax, xmin, ymax, ymin;
-  size_t xticks, yticks;
+  qreal xmax {1e6}, xmin {-1e-6}, ymax {1e6}, ymin {1e-6};
+  size_t xticks {1}, yticks {1};
 };
 
 class PlotData : public QGraphicsScene

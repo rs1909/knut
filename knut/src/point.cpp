@@ -38,7 +38,8 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExpr
   basecolloc = colloc;
   persolcolloc = colloc;
 
-  construct();
+  // this calls the present construct as the virtual table is not set
+  KNDdePeriodicSolution::construct();
   FillSol(sys_);
   par(VarToIndex(VarAngle,NPAR)) = 0.0;
   par(VarToIndex(VarRot,NPAR)) = 0.0;
@@ -46,7 +47,7 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExpr
 
 KNDdePeriodicSolution::~KNDdePeriodicSolution()
 {
-  destruct();
+  KNDdePeriodicSolution::destruct();
   delete jacStab;
   delete colloc;
 }
