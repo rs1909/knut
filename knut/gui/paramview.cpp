@@ -99,7 +99,7 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
                                    const QStyleOptionViewItem &/* option */,
                                    const QModelIndex& index) const
 {
-  QComboBox *editor = new QComboBox(parent);
+  auto *editor = new QComboBox(parent);
 
   if (parameters->getPointType() == SolUser)
   {
@@ -130,7 +130,7 @@ QWidget *BoxDelegate::createEditor(QWidget *parent,
 
 void BoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-  QComboBox *cbox = static_cast<QComboBox*>(editor);
+  auto *cbox = static_cast<QComboBox*>(editor);
 
   if (parameters->getPointType() == SolUser)
   {
@@ -203,7 +203,7 @@ QWidget *SYMDelegate::createEditor(QWidget *parent,
                                    const QStyleOptionViewItem & /*option*/,
                                    const QModelIndex& /*index*/) const
 {
-  QSpinBox *editor = new QSpinBox(parent);
+  auto *editor = new QSpinBox(parent);
   editor -> setRange(0, parameters->getNDim() - 1);
   editor -> installEventFilter(const_cast<SYMDelegate*>(this));
 
@@ -214,13 +214,13 @@ void SYMDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
   int value = index.model()->data(index, Qt::DisplayRole).toInt();
 
-  QSpinBox *sbox = static_cast<QSpinBox*>(editor);
+  auto *sbox = static_cast<QSpinBox*>(editor);
   sbox->setValue(value);
 }
 
 void SYMDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-  QSpinBox *sbox = static_cast<QSpinBox*>(editor);
+  auto *sbox = static_cast<QSpinBox*>(editor);
 
   if (index.row() < 2)
   {

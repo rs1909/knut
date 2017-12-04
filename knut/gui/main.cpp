@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     
     params.loadXmlFileV5(cfInfo.fileName().toStdString());
     KNCliContinuation comp;
-    KNSystem *sys = new KNSystem (params.getSysName ());
+    auto *sys = new KNSystem (params.getSysName ());
 //    params.printXmlFileV5(std::cout);
     KNDataFile *inputData = nullptr;
     if (params.getLabel() != 0)

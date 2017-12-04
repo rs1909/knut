@@ -64,7 +64,7 @@ int main(int argc, const char** argv)
           {
             std::string constFile(argv[acnt]);
             std::string cfdir(constFile);
-            char* cwd_ptr = new char[512];
+            auto* cwd_ptr = new char[512];
             getcwd(cwd_ptr, 511);
             P_ERROR_X1(cwd_ptr != nullptr, "Cannot obtain CWD.");
             std::string  cwd(cwd_ptr);

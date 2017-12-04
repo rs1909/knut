@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 // For loading XML constant files
 #include "mxml.h"
@@ -77,7 +78,7 @@ class KNXmlConstantsWriter : public KNAbstractConstantsWriter
 {
   public:
     KNXmlConstantsWriter();
-    KNXmlConstantsWriter(const std::string& filename);
+    KNXmlConstantsWriter(std::string  filename);
     ~KNXmlConstantsWriter();
     void setSystem(const std::string& str) override;
     void setTextField(const char* fieldname, const std::string& str) override;
@@ -114,7 +115,7 @@ const void* KNConstantNames::findValue(const char * name)
 
 KNConstantNames::FPTR KNConstantNames::findFun(const char * name)
 {
-  std::map<std::string, tuple_t>::iterator it = nlist.find (name);
+  auto it = nlist.find (name);
   if (it != nlist.end())
   {
     return nlist[name].nsetFun;
@@ -443,7 +444,7 @@ bool KNXmlConstantsReader::getIndexListField(const char* field, std::vector<size
   return false;
 }
 
-KNXmlConstantsWriter::KNXmlConstantsWriter(const std::string& fname) : filename(fname)
+KNXmlConstantsWriter::KNXmlConstantsWriter(std::string  fname) : filename(std::move(fname))
 {
   xml = mxmlNewXML ("cfile 1.0");
   knut_node = mxmlNewElement (xml, "knut");

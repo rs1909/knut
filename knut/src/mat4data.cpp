@@ -185,8 +185,8 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   nmul = nmul_;
   
   size_t max_namesize = 0;
-  for (size_t i=0; i<parNames.size(); ++i)
-    if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
+  for (const auto & parName : parNames)
+    if (parName.size() > max_namesize) max_namesize = parName.size();
 
   // creating the matrices
   char npoints_string[] = "knut_npoints";
@@ -268,7 +268,7 @@ void KNDataFile::setParNames(const std::vector<std::string>& parNames)
 void KNDataFile::getParNames(std::vector<std::string>& parNames) const
 {
   parNames.resize(getRows(parnames_offset));
-  char* buf = new char[getCols(parnames_offset)+1];
+  auto* buf = new char[getCols(parnames_offset)+1];
   for (size_t i = 0; i < getRows(parnames_offset); ++i)
   {
     for (size_t j = 0; j < getCols(parnames_offset); ++j)
@@ -295,8 +295,8 @@ KNDataFile::KNDataFile(const std::string& fileName, const std::vector<std::strin
   ndeg2 = ndeg2_;
 
   size_t max_namesize = 0;
-  for (size_t i=0; i<parNames.size(); ++i)
-    if (parNames[i].size() > max_namesize) max_namesize = parNames[i].size();
+  for (const auto & parName : parNames)
+    if (parName.size() > max_namesize) max_namesize = parName.size();
   
   // creating the matrices
   char npoints_string[] = "knut_npoints";
@@ -598,7 +598,7 @@ void KNDataFile::setProfile(size_t n, const KNVector& prof)
   {
     if (prof.size() == ndim*(ndeg*nint + 1))
     {
-      const size_t curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
+      const auto curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
       if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
       elem(ndim_offset, 0, n) = ndim;
       for (size_t i = 0; i < ndim*(ndeg*nint + 1); ++i) elem(prof_offset, i, n) = prof(i);
@@ -616,7 +616,7 @@ void KNDataFile::setProfile(size_t n, const KNVector& prof)
 
 void KNDataFile::getBlanket(size_t n, KNVector& blanket) const
 {
-  const size_t curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
+  const auto curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
   if ((blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))&&(n < curr_npoints))
   {
     for (size_t i = 0; i < ndim*(ndeg1*nint1*ndeg2*nint2); ++i) blanket(i) = elem(blanket_offset, i, n);
@@ -634,7 +634,7 @@ void KNDataFile::setBlanket(size_t n, const KNVector& blanket)
   {
     if (blanket.size() == ndim*(ndeg1*nint1*ndeg2*nint2))
     {
-      const size_t curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
+      const auto curr_npoints = static_cast<size_t>(elem(npoints_offset, 0, 0));
       if (n+1 > curr_npoints) elem(npoints_offset, 0, 0) = n+1;
       elem(ndim_offset, 0, n) = ndim;
       elem(nint1_offset, 0, n) = nint1;

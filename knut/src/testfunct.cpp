@@ -71,7 +71,7 @@ KNTestFunctional::KNTestFunctional(KNDdeBvpCollocation& col, double Z) :
 }
 
 KNTestFunctional::~KNTestFunctional()
-{}
+= default;
 
 double KNTestFunctional::initStep(KNDdeBvpCollocation&)
 {
@@ -222,7 +222,7 @@ KNComplexTestFunctional::KNComplexTestFunctional(KNDdeBvpCollocation& col) :
 {}
 
 KNComplexTestFunctional::~KNComplexTestFunctional()
-{}
+= default;
 
 double KNComplexTestFunctional::initStep(KNDdeBvpCollocation& col)
 {
@@ -445,7 +445,7 @@ KNLpAutTestFunctional::KNLpAutTestFunctional(KNDdeBvpCollocation& col, double Z)
 }
 
 KNLpAutTestFunctional::~KNLpAutTestFunctional()
-{}
+= default;
 
 double KNLpAutTestFunctional::initStep(KNDdeBvpCollocation&)
 {
@@ -624,7 +624,7 @@ KNLpAutRotTestFunctional::KNLpAutRotTestFunctional(KNDdeBvpCollocation& col, KNA
 }
 
 KNLpAutRotTestFunctional::~KNLpAutRotTestFunctional()
-{}
+= default;
 
 double KNLpAutRotTestFunctional::initStep(KNDdeBvpCollocation&)
 {
@@ -856,7 +856,7 @@ KNLpAutRotTestFunctional2::KNLpAutRotTestFunctional2(KNDdeBvpCollocation& col, K
 }
 
 KNLpAutRotTestFunctional2::~KNLpAutRotTestFunctional2()
-{}
+= default;
 
 void KNLpAutRotTestFunctional2::init(KNDdeBvpCollocation& col, const KNVector& par, const KNVector& /*sol*/)
 {

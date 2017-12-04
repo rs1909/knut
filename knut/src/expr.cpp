@@ -42,7 +42,7 @@ struct TokenPrecedence
 class Token
 {
   public:
-    Token (TokenType t, const std::string& n, const size_t loc) : type(t), name(n), vfloc(loc) { }
+    Token (TokenType t, std::string  n, const size_t loc) : type(t), name(std::move(n)), vfloc(loc) { }
     bool isId() const { return type == TokenType::Symbol; }
     bool isOp() const { return (type != TokenType::Invalid)&&(type != TokenType::LeftParen)&&(type != TokenType::RightParen)&&(type != TokenType::Symbol)&&(type != TokenType::Number)&&(type != TokenType::Comma); }
     bool isSym() const { return type == TokenType::Symbol; }
@@ -61,7 +61,7 @@ public:
   void deleteTree () override { arg->deleteTree (); delete arg; }
   Node* copy () const override
   {
-    NodePlus* cp = new NodePlus (vfloc);
+    auto* cp = new NodePlus (vfloc);
     cp->arg = arg->copy();
     return cp;
   }
@@ -80,7 +80,7 @@ public:
   }
   bool operator != (const Node& node) const override
   {
-    const NodePlus* nptr = dynamic_cast<const NodePlus*>(&node);
+    const auto* nptr = dynamic_cast<const NodePlus*>(&node);
     if (nptr) return (*arg != *(nptr->arg));
     else return true;
   }
@@ -125,10 +125,10 @@ private:
 public:
   NodeEquals (const size_t loc) : Node(TokenType::Equals, loc), args(2) {}
   NodeEquals (bool, const size_t loc) : Node(TokenType::Define, loc), args(2) {}
-  void deleteTree () override { for(size_t k=0; k<args.size(); k++) { args[k]->deleteTree (); delete args[k]; } }
+  void deleteTree () override { for(auto & arg : args) { arg->deleteTree (); delete arg; } }
   Node* copy () const override
   {
-    NodeEquals* cp = new NodeEquals (type, vfloc);
+    auto* cp = new NodeEquals (type, vfloc);
     for(size_t k=0; k<args.size(); k++)
     {
       cp->args[k] = args[k]->copy();
@@ -151,7 +151,7 @@ public:
   }
   bool operator != (const Node& node) const override
   {
-    const NodeEquals* nptr = dynamic_cast<const NodeEquals*>(&node);
+    const auto* nptr = dynamic_cast<const NodeEquals*>(&node);
     if (nptr)
     {
       if (args.size() != nptr->args.size()) return true;
@@ -164,26 +164,26 @@ public:
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent) override
   {
-    for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
+    for (auto & arg : args) arg->replaceSymbol (sym, node, &arg);
   }
   void replaceSymbol (const Node& node, Node** parent) override
   {
-    for (size_t k=0; k<args.size(); k++)
+    for (auto & arg : args)
     {
-      PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
-      args[k]->replaceSymbol (node, &args[k]);
+      PE_ERROR_X1 (arg != nullptr, vfloc, "terribly wrong");
+      arg->replaceSymbol (node, &arg);
     }
   }
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override
   {
-    for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
+    for (auto arg : args) arg->findFunction (lst, nm);
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override { return new NodeNumber (0.0, vfloc); }
   Node* optimize (const std::function<bool(const Node*)>& zero) override
   {
-    for(size_t k=0; k<args.size(); k++)
+    for(auto & arg : args)
     {
-      args[k] = node_optimize (args[k], zero);
+      arg = node_optimize (arg, zero);
     }
     return this;
   }
@@ -197,13 +197,13 @@ class NodeSemicolon : public Node
 {
 public:
   NodeSemicolon (const size_t loc) : Node (TokenType::Semicolon, loc) {}
-  void deleteTree () override { for(auto k=args.begin(); k!=args.end(); k++) { (*k)->deleteTree (); delete *k; } }
+  void deleteTree () override { for(auto & arg : args) { arg->deleteTree (); delete arg; } }
   Node* copy () const override
   {
-    NodeSemicolon* cp = new NodeSemicolon (vfloc);
-    for(auto k=args.begin(); k!=args.end(); k++)
+    auto* cp = new NodeSemicolon (vfloc);
+    for(auto arg : args)
     {
-      cp->args.push_back((*k)->copy());
+      cp->args.push_back(arg->copy());
     }
     return cp;
   }
@@ -211,9 +211,9 @@ public:
   const Node* getChild (size_t n) const override
   {
     size_t j=0;
-    for(auto k=args.begin(); k!=args.end(); k++)
+    for(auto arg : args)
     {
-      if (j == n) return *k;
+      if (j == n) return arg;
       j++;
     }
     return nullptr;
@@ -221,9 +221,9 @@ public:
   Node* getChild (size_t n) override
   {
     size_t j=0;
-    for(auto k=args.begin(); k!=args.end(); k++)
+    for(auto & arg : args)
     {
-      if (j == n) return *k;
+      if (j == n) return arg;
       j++;
     }
     return nullptr;
@@ -232,10 +232,10 @@ public:
   { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED\n"); return 0; }
   void print (std::ostream& out) const override
   {
-    for(auto k=args.begin(); k!=args.end(); k++)
+    for(auto arg : args)
     {
-      PE_ERROR_X1( (*k) != nullptr, vfloc, "Incerdibly wrong!");
-      (*k)->print (out);
+      PE_ERROR_X1( arg != nullptr, vfloc, "Incerdibly wrong!");
+      arg->print (out);
       out << ";\n";
     }
   }
@@ -243,15 +243,15 @@ public:
   bool operator < (const Node& node) const override { PE_MESSAGE1(vfloc, "NOT IMPLEMENTED!\n"); return true; }
   void replaceSymbol(const Node& sym, const Node& node, Node** parent) override
   {
-    for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (sym, node, &(*k));
+    for(auto & arg : args) arg->replaceSymbol (sym, node, &arg);
   }
   void replaceSymbol (const Node& node, Node** parent) override
   {
-    for(auto k=args.begin(); k!=args.end(); k++) (*k)->replaceSymbol (node, &(*k));
+    for(auto & arg : args) arg->replaceSymbol (node, &arg);
   }
   void findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const override
   {
-    for(auto k=args.begin(); k!=args.end(); k++) (*k)->findFunction (lst, nm);
+    for(auto arg : args) arg->findFunction (lst, nm);
   }
   Node* derivative (const Node* var, const std::function<bool(const Node*)>& zero) const override { return new NodeNumber (0.0, vfloc); }
   // specific
@@ -269,7 +269,7 @@ private:
 // NodeNumber
 bool NodeNumber::operator != (const Node& node) const
 {
-  const NodeNumber* nptr = dynamic_cast<const NodeNumber*>(&node);
+  const auto* nptr = dynamic_cast<const NodeNumber*>(&node);
   if (nptr) return (value != nptr->value);
   else return true;
 }
@@ -285,7 +285,7 @@ bool NodeNumber::operator < (const Node& node) const
 // NodeSymbol
 bool NodeSymbol::operator != (const Node& node) const
 {
-  const NodeSymbol* nptr = dynamic_cast<const NodeSymbol*>(&node);
+  const auto* nptr = dynamic_cast<const NodeSymbol*>(&node);
   if (nptr) return (name != nptr->name);
   else return true;
 }
@@ -300,7 +300,7 @@ bool NodeSymbol::operator < (const Node& node) const
 
 void NodeSymbol::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  const NodeSymbol* symref = dynamic_cast<const NodeSymbol*>(&sym);
+  const auto* symref = dynamic_cast<const NodeSymbol*>(&sym);
   if (symref != nullptr)
   {
     if (name == symref->name)
@@ -316,10 +316,10 @@ void NodeSymbol::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 
 void NodeSymbol::replaceSymbol (const Node& node, Node** parent)
 {
-  const NodeEquals* nd = dynamic_cast<const NodeEquals*>(&node);
+  const auto* nd = dynamic_cast<const NodeEquals*>(&node);
   if (nd != nullptr)
   {
-    const NodeSymbol* left = dynamic_cast<const NodeSymbol*>(nd->getChild(0));
+    const auto* left = dynamic_cast<const NodeSymbol*>(nd->getChild(0));
     const Node* right = nd->getChild(1);
     if (left != nullptr)
     {
@@ -332,7 +332,7 @@ void NodeSymbol::replaceSymbol (const Node& node, Node** parent)
 
 bool NodeVar::operator != (const Node& node) const
 {
-  const NodeVar* nptr = dynamic_cast<const NodeVar*>(&node);
+  const auto* nptr = dynamic_cast<const NodeVar*>(&node);
   if (nptr) return (idx != nptr->idx);
   else return true;
 }
@@ -350,7 +350,7 @@ bool NodeVar::operator < (const Node& node) const
 
 void NodeVar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  const NodeVar* symref = dynamic_cast<const NodeVar*>(&sym);
+  const auto* symref = dynamic_cast<const NodeVar*>(&sym);
   if (symref)
   {
     if (idx == symref->idx)
@@ -368,7 +368,7 @@ void NodeVar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 
 bool NodePar::operator != (const Node& node) const
 {
-  const NodePar* nptr = dynamic_cast<const NodePar*>(&node);
+  const auto* nptr = dynamic_cast<const NodePar*>(&node);
   if (nptr) return (idx != nptr->idx);
   else return true;
 }
@@ -383,7 +383,7 @@ bool NodePar::operator < (const Node& node) const
 
 void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 {
-  const NodePar* symref = dynamic_cast<const NodePar*>(&sym);
+  const auto* symref = dynamic_cast<const NodePar*>(&sym);
   if (symref)
   {
     if (idx == symref->idx)
@@ -400,7 +400,7 @@ void NodePar::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 // NodeExpr
 bool NodeExpr::operator != (const Node& node) const
 {
-  const NodeExpr* nptr = dynamic_cast<const NodeExpr*>(&node);
+  const auto* nptr = dynamic_cast<const NodeExpr*>(&node);
   if (nptr ==  nullptr) return true;
   else if (idx != nptr->idx) return true;
   else if (np != nptr->np) return true;
@@ -416,7 +416,7 @@ bool NodeExpr::operator < (const Node& node) const
   if (type < node.type) return true;
   else if (type == node.type)
   {
-    const NodeExpr* ne = static_cast<const NodeExpr* >(&node);
+    const auto* ne = static_cast<const NodeExpr* >(&node);
     if (idx < ne->idx) return true;
     else if (idx == ne->idx)
     {
@@ -458,7 +458,7 @@ void NodeExpr::replaceSymbol (const Node& sym, const Node& node, Node** parent)
 // NodeFunction
 Node* NodeFunction::copy () const
 {
-  NodeFunction* cp = new NodeFunction (name, args.size(), vfloc);
+  auto* cp = new NodeFunction (name, args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   return cp;
 }
@@ -480,7 +480,7 @@ void NodeFunction::print (std::ostream& out) const
 
 bool NodeFunction::operator != (const Node& node) const
 {
-  const NodeFunction* nptr = dynamic_cast<const NodeFunction*>(&node);
+  const auto* nptr = dynamic_cast<const NodeFunction*>(&node);
   if (nptr)
   {
     if (args.size() != nptr->args.size()) return true;
@@ -511,15 +511,15 @@ bool NodeFunction::operator < (const Node& node) const
 
 void NodeFunction::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (sym, node, &arg);
 }
 
 void NodeFunction::replaceSymbol(const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (node, &arg);
   if (node.type == TokenType::Equals)
   {
-    const NodeFunction* macro = dynamic_cast<const NodeFunction*>(node.getChild(0));
+    const auto* macro = dynamic_cast<const NodeFunction*>(node.getChild(0));
     const Node* right = node.getChild(1);
     if (macro != nullptr)
     {
@@ -546,7 +546,7 @@ void NodeFunction::replaceSymbol(const Node& node, Node** parent)
 
 void NodeFunction::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
+  for (auto arg : args) arg->findFunction (lst, nm);
   if (name == nm) lst.push_back (this);
 }
 
@@ -600,7 +600,7 @@ NodeFunctionA1::NodeFunctionA1 (const std::string& nm, const size_t loc) : NodeF
 
 Node* NodeFunctionA1::copy () const
 {
-  NodeFunctionA1* cp = new NodeFunctionA1 (NodeFunction::name, vfloc);
+  auto* cp = new NodeFunctionA1 (NodeFunction::name, vfloc);
   for(size_t k=0; k<args.size(); k++) cp->args[k] = args[k]->copy();
   cp->function = function;
   return cp;
@@ -624,7 +624,7 @@ NodeFunctionA2::NodeFunctionA2 (const std::string& nm, const size_t loc) : NodeF
 
 Node* NodeFunctionA2::copy () const
 {
-  NodeFunctionA2* cp = new NodeFunctionA2 (NodeFunction::name, vfloc);
+  auto* cp = new NodeFunctionA2 (NodeFunction::name, vfloc);
   for(size_t k=0; k<this->args.size(); k++) cp->args[k] = this->args[k]->copy();
   cp->function = function;
   return cp;
@@ -634,7 +634,7 @@ Node* NodeFunctionA2::copy () const
 
 Node* NodeAdd::copy () const
 {
-  NodeAdd* cp = new NodeAdd (args.size(), vfloc);
+  auto* cp = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -660,7 +660,7 @@ void NodeAdd::print (std::ostream& out) const
 
 bool NodeAdd::operator != (const Node& node) const
 {
-  const NodeAdd* nptr = dynamic_cast<const NodeAdd*>(&node);
+  const auto* nptr = dynamic_cast<const NodeAdd*>(&node);
   if (nptr)
   {
     if (args.size() != nptr->args.size()) return true;
@@ -704,21 +704,21 @@ bool NodeAdd::operator < (const Node& node) const
 
 void NodeAdd::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (sym, node, &arg);
 }
 
 void NodeAdd::replaceSymbol(const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++)
+  for (auto & arg : args)
   {
-    PE_ERROR_X1 (args[k] != nullptr, vfloc, "terribly wrong");
-    args[k]->replaceSymbol (node, &args[k]);
+    PE_ERROR_X1 (arg != nullptr, vfloc, "terribly wrong");
+    arg->replaceSymbol (node, &arg);
   }
 }
 
 void NodeAdd::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
+  for (auto arg : args) arg->findFunction (lst, nm);
 }
 
 void NodeAdd::sort ()
@@ -743,7 +743,7 @@ void NodeAdd::sort ()
 
 Node* NodeTimes::copy () const
 {
-  NodeTimes* cp = new NodeTimes (args.size(), vfloc);
+  auto* cp = new NodeTimes (args.size(), vfloc);
   cp->smul = smul;
   for(size_t k=0; k<args.size(); k++)
   {
@@ -775,7 +775,7 @@ void NodeTimes::print (std::ostream& out) const
 
 bool NodeTimes::operator != (const Node& node) const
 {
-  const NodeTimes* nptr = dynamic_cast<const NodeTimes*>(&node);
+  const auto* nptr = dynamic_cast<const NodeTimes*>(&node);
   if (nptr)
   {
     if (args.size() != nptr->args.size()) return true;
@@ -814,7 +814,7 @@ bool NodeTimes::operator < (const Node& node) const
 
 void NodeTimes::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (sym, node, &arg);
 }
 
 void NodeTimes::replaceSymbol(const Node& node, Node** parent)
@@ -828,7 +828,7 @@ void NodeTimes::replaceSymbol(const Node& node, Node** parent)
 
 void NodeTimes::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
+  for (auto arg : args) arg->findFunction (lst, nm);
 }
 
 void NodeTimes::sort ()
@@ -860,7 +860,7 @@ void NodeTimes::addArgument (size_t pos, Node* arg, double m, bool div)
 
 Node* NodePower::copy () const
 {
-  NodePower* cp = new NodePower (vfloc);
+  auto* cp = new NodePower (vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->copy();
@@ -880,7 +880,7 @@ void NodePower::print (std::ostream& out) const
 
 bool NodePower::operator != (const Node& node) const
 {
-  const NodePower* nptr = dynamic_cast<const NodePower*>(&node);
+  const auto* nptr = dynamic_cast<const NodePower*>(&node);
   if (nptr)
   {
     if (args.size() != nptr->args.size()) return true;
@@ -907,17 +907,17 @@ bool NodePower::operator < (const Node& node) const
 
 void NodePower::replaceSymbol(const Node& sym, const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (sym, node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (sym, node, &arg);
 }
 
 void NodePower::replaceSymbol(const Node& node, Node** parent)
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->replaceSymbol (node, &args[k]);
+  for (auto & arg : args) arg->replaceSymbol (node, &arg);
 }
 
 void NodePower::findFunction (std::vector<const NodeFunction*>& lst, const std::string& nm) const
 {
-  for (size_t k=0; k<args.size(); k++) args[k]->findFunction (lst, nm);
+  for (auto arg : args) arg->findFunction (lst, nm);
 }
 
 Node* NodePower::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
@@ -934,13 +934,13 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
   // root is t3
   const Node* a = args[0];
   const Node* b = args[1];
-  NodeTimes* t1 = new NodeTimes (2, vfloc);
-  NodeTimes* t2 = new NodeTimes (3, vfloc);
-  NodeTimes* t3 = new NodeTimes (2, vfloc);
-  NodeAdd* s1 = new NodeAdd (2, vfloc);
-  NodeAdd* s2 = new NodeAdd (2, vfloc);
+  auto* t1 = new NodeTimes (2, vfloc);
+  auto* t2 = new NodeTimes (3, vfloc);
+  auto* t3 = new NodeTimes (2, vfloc);
+  auto* s1 = new NodeAdd (2, vfloc);
+  auto* s2 = new NodeAdd (2, vfloc);
   NodeFunctionA1* fun = new NodeFunctionA1 ("log", vfloc);
-  NodePower* pw = new NodePower (vfloc);
+  auto* pw = new NodePower (vfloc);
 
   s1 -> addArgument (0, b -> copy (), 1.0);
   s1 -> addArgument (1, new NodeNumber (1.0, vfloc), -1.0);
@@ -979,16 +979,16 @@ Node* NodePower::derivative (const Node* var, const std::function<bool(const Nod
 
 Node* NodePower::optimize (const std::function<bool(const Node*)>& zero)
 {
-  for (size_t k=0; k<args.size(); k++)
+  for (auto & arg : args)
   {
-    args[k] = node_optimize (args[k], zero);
+    arg = node_optimize (arg, zero);
   }
   // if both of them are numbers ...
-  NodeNumber* a0 = dynamic_cast<NodeNumber*>(args[0]);
-  NodeNumber* a1 = dynamic_cast<NodeNumber*>(args[1]);
+  auto* a0 = dynamic_cast<NodeNumber*>(args[0]);
+  auto* a1 = dynamic_cast<NodeNumber*>(args[1]);
   if ((a0 != nullptr)&&(a1 != nullptr))
   {
-    NodeNumber* res = new NodeNumber (pow (a0->getValue(), a1->getValue()), vfloc);
+    auto* res = new NodeNumber (pow (a0->getValue(), a1->getValue()), vfloc);
     // should delete both arguments
     deleteTree ();
     return res;
@@ -1003,7 +1003,7 @@ Node* NodePower::optimize (const std::function<bool(const Node*)>& zero)
     }
     if (a1 -> getValue () == 0.0)
     {
-      NodeNumber* res = new NodeNumber (1.0, vfloc);
+      auto* res = new NodeNumber (1.0, vfloc);
       // should delete both arguments
       deleteTree ();
       return res;
@@ -1016,13 +1016,13 @@ NodeFunction* NodeFunction::specialize ()
 {
   if (args.size() == 1)
   {
-    NodeFunctionA1* fun = new NodeFunctionA1 (name, vfloc);
+    auto* fun = new NodeFunctionA1 (name, vfloc);
     fun -> addArgument (0, args[0]);
     return fun;
   }
   if (args.size() == 2)
   {
-    NodeFunctionA2* fun = new NodeFunctionA2 (name, vfloc);
+    auto* fun = new NodeFunctionA2 (name, vfloc);
     fun -> addArgument (0, args[0]);
     fun -> addArgument (1, args[1]);
     return fun;
@@ -1032,22 +1032,22 @@ NodeFunction* NodeFunction::specialize ()
 
 Node* NodeFunction::optimize (const std::function<bool(const Node*)>& zero)
 {
-  for (size_t k=0; k<args.size(); k++)
+  for (auto & arg : args)
   {
-    args[k] = node_optimize (args[k], zero);
+    arg = node_optimize (arg, zero);
   }
   // replace power with NodePower
   if (name == "pow")
   {
-    NodePower* pw = new NodePower (vfloc);
+    auto* pw = new NodePower (vfloc);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     return pw;
   }
   bool isnum = true;
-  for (size_t k=0; k<args.size(); k++)
+  for (auto & arg : args)
   {
-    if (args[k]->type != TokenType::Number) isnum = false;
+    if (arg->type != TokenType::Number) isnum = false;
   }
   // if all are numbers -> evaluate
   if (isnum)
@@ -1055,7 +1055,7 @@ Node* NodeFunction::optimize (const std::function<bool(const Node*)>& zero)
     std::vector<double> par;
     double res{0.0};
     this->evaluateWithPar (&res, par);
-    NodeNumber* num = new NodeNumber (res, vfloc);
+    auto* num = new NodeNumber (res, vfloc);
     return num;
   }
   // this is true all the time!
@@ -1067,9 +1067,9 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
   double sum = 0;   // the constant part
   std::vector<Node*> newargs;
   std::vector<double> newmul;
-  for (size_t k = 0; k < args.size(); k++)
+  for (auto & arg : args)
   {
-    args[k] = node_optimize (args[k], zero);
+    arg = node_optimize (arg, zero);
   }
   for (size_t k = 0; k < args.size(); k++)
   {
@@ -1080,7 +1080,7 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
       args[k] = nullptr;
       continue;
     }
-    NodeNumber* num = dynamic_cast<NodeNumber*>(args[k]);
+    auto* num = dynamic_cast<NodeNumber*>(args[k]);
     if (num)
     {
       sum += mul[k] * (num -> getValue());
@@ -1089,7 +1089,7 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
       args[k] = nullptr;
       continue;
     }
-    NodeAdd* child = dynamic_cast<NodeAdd*>(args[k]);
+    auto* child = dynamic_cast<NodeAdd*>(args[k]);
     if (child)
     {
       for (size_t p = 0; p < child->args.size(); p++)
@@ -1101,7 +1101,7 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
       args[k] = nullptr;
       continue;
     }
-    NodeTimes* times = dynamic_cast<NodeTimes*>(args[k]);
+    auto* times = dynamic_cast<NodeTimes*>(args[k]);
     if (times)
     {
       newargs.push_back (args[k]);
@@ -1128,7 +1128,7 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
   }
   if (args.size() == 1)
   {
-    NodeNumber* num = dynamic_cast<NodeNumber*>(args[0]);
+    auto* num = dynamic_cast<NodeNumber*>(args[0]);
     if (num)
     {
       Node* tmp = new NodeNumber (mul[0] * (num ->getValue()), vfloc);
@@ -1145,7 +1145,7 @@ Node* NodeAdd::optimize (const std::function<bool(const Node*)>& zero)
       } else
       {
         // convert into times
-        NodeTimes* tmp = new NodeTimes (1, vfloc);
+        auto* tmp = new NodeTimes (1, vfloc);
         tmp -> addArgument (0, args[0], mul[0], false);
         args[0] = nullptr;
         return tmp;
@@ -1160,15 +1160,15 @@ Node* NodeTimes::optimize (const std::function<bool(const Node*)>& zero)
   std::vector<Node*> newargs;
   std::vector<bool> newdivide;
   double newsmul = smul;
-  for (size_t k = 0; k < args.size(); k++)
+  for (auto & arg : args)
   {
     P_ASSERT_X1 (args[k] != nullptr, "Optimizing null pointer.");
-    args[k] = node_optimize (args[k], zero);
+    arg = node_optimize (arg, zero);
   }
   for (size_t k = 0; k < args.size(); k++)
   {
 //     args[k]->print (std::cout); std::cout << "\t";
-    NodeNumber* num = dynamic_cast<NodeNumber*>(args[k]);
+    auto* num = dynamic_cast<NodeNumber*>(args[k]);
     if (num)
     {
       if (divide[k]) newsmul /= num -> getValue();
@@ -1179,7 +1179,7 @@ Node* NodeTimes::optimize (const std::function<bool(const Node*)>& zero)
       args[k] = nullptr;
       continue;
     }
-    NodeTimes* child = dynamic_cast<NodeTimes*>(args[k]);
+    auto* child = dynamic_cast<NodeTimes*>(args[k]);
     if (child)
     {
       if (divide[k]) newsmul /= child->smul;
@@ -1232,13 +1232,13 @@ Node* NodeSemicolon::optimize (const std::function<bool(const Node*)>& zero)
   while (it != args.end())
   {
     (*it) = node_optimize (*it, zero);
-    NodeSemicolon* child = dynamic_cast<NodeSemicolon*>(*it);
+    auto* child = dynamic_cast<NodeSemicolon*>(*it);
     if (child)
     {
-      for (auto p=child->args.begin(); p != child->args.end(); p++)
+      for (auto & arg : child->args)
       {
-        (*p) = node_optimize (*p, zero);
-        args.insert (it, *p);
+        arg = node_optimize (arg, zero);
+        args.insert (it, arg);
       }
       it = args.erase (it);
       delete child;
@@ -1259,7 +1259,7 @@ Node* NodeSymbol::derivative (const Node* var, const std::function<bool(const No
 {
   if (var->type == TokenType::Symbol)
   {
-    const NodeSymbol* node = static_cast<const NodeSymbol* >(var);
+    const auto* node = static_cast<const NodeSymbol* >(var);
     {
       if (node->name == name)
       {
@@ -1274,7 +1274,7 @@ Node* NodeVar::derivative (const Node* var, const std::function<bool(const Node*
 {
   if (var->type == TokenType::Var)
   {
-    const NodeVar* node = static_cast<const NodeVar* >(var);
+    const auto* node = static_cast<const NodeVar* >(var);
     {
       if (node->idx == idx)
       {
@@ -1289,7 +1289,7 @@ Node* NodePar::derivative (const Node* var, const std::function<bool(const Node*
 {
   if (var->type == TokenType::Par)
   {
-    const NodePar* node = static_cast<const NodePar* >(var);
+    const auto* node = static_cast<const NodePar* >(var);
     {
       if (node->idx == idx)
       {
@@ -1303,7 +1303,7 @@ Node* NodePar::derivative (const Node* var, const std::function<bool(const Node*
 Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
   PE_ERROR_X1 (nv + np < 2, vfloc, "Up to second order derivatives are allowed.");
-  const NodeVar* nvp = dynamic_cast<const NodeVar* >(var);
+  const auto* nvp = dynamic_cast<const NodeVar* >(var);
   if (nvp != nullptr)
   {
     NodeExpr* ne = this->copy();
@@ -1318,7 +1318,7 @@ Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node
       return ne;
     }
   }
-  const NodePar* npp = dynamic_cast<const NodePar* >(var);
+  const auto* npp = dynamic_cast<const NodePar* >(var);
   if (npp != nullptr)
   {
     PE_ERROR_X1 (np < 1, vfloc, "Was already differentiated w.r.t. a parameter.");
@@ -1339,7 +1339,7 @@ Node* NodeExpr::derivative (const Node* var, const std::function<bool(const Node
 
 Node* NodeAdd::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
-  NodeAdd* cp = new NodeAdd (args.size(), vfloc);
+  auto* cp = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
     cp->args[k] = args[k]->derivative (var, zero);
@@ -1351,10 +1351,10 @@ Node* NodeAdd::derivative (const Node* var, const std::function<bool(const Node*
 Node* NodeTimes::derivative (const Node* var, const std::function<bool(const Node*)>& zero) const
 {
   // f = (f1 f2 f2 ..) / (g1 g2 g3 ..)
-  NodeAdd* root = new NodeAdd (args.size(), vfloc);
+  auto* root = new NodeAdd (args.size(), vfloc);
   for(size_t k=0; k<args.size(); k++)
   {
-    NodeTimes* cp = new NodeTimes (0, vfloc);
+    auto* cp = new NodeTimes (0, vfloc);
     cp->smul = smul;
     if (divide[k])
     {
@@ -1395,7 +1395,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   if (name == "abs")
   {
     // -> sign
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("sign", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
@@ -1405,7 +1405,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "exp")
   {
     // -> exp
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("exp", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
@@ -1415,7 +1415,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "log")
   {
     // -> 1/x
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     root -> addArgument (0, args[0] -> copy (), 1.0, true);
     root -> addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
     return root;
@@ -1423,7 +1423,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "sin")
   {
     // -> cos
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("cos", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
@@ -1433,7 +1433,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "cos")
   {
     // -> -sin
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("sin", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, -1.0, false);
@@ -1443,10 +1443,10 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "tan")
   {
     // -> cos^(-2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("cos", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
-    NodePower* pow = new NodePower (vfloc);
+    auto* pow = new NodePower (vfloc);
     pow -> addArgument (0, fun);
     pow -> addArgument (1, new NodeNumber (2.0, vfloc));
     root -> addArgument (0, pow, 1.0, true);
@@ -1456,14 +1456,14 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "asin")
   {
     // -> 1/{(1-x^2)^(1/2)}
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
-    NodePower* pow_sqrt = new NodePower (vfloc);
+    auto* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
@@ -1473,14 +1473,14 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "acos")
   {
     // -> -1/{(1-x^2)^(1/2)}
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
-    NodePower* pow_sqrt = new NodePower (vfloc);
+    auto* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, -1.0, true);
@@ -1490,11 +1490,11 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "atan")
   {
     // -> 1/(1-x^2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
@@ -1504,7 +1504,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "sinh")
   {
     // -> cosh
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
@@ -1514,7 +1514,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "cosh")
   {
     // -> sinh
-    NodeTimes* root = new NodeTimes (2, vfloc);
+    auto* root = new NodeTimes (2, vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("sinh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     root -> addArgument (0, fun, 1.0, false);
@@ -1524,8 +1524,8 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "tanh")
   {
     // -> cosh^(-2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow = new NodePower (vfloc);
     NodeFunctionA1* fun = new NodeFunctionA1 ("cosh", vfloc);
     fun -> addArgument (0, args[0] -> copy ());
     pow -> addArgument (0, fun);
@@ -1537,14 +1537,14 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "asinh")
   {
     // -> 1/(1+x^2)^(1/2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, 1.0);
-    NodePower* pow_sqrt = new NodePower (vfloc);
+    auto* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
@@ -1554,14 +1554,14 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "acosh")
   {
     // -> 1/(x^2-1)^(1/2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (1, new NodeNumber (1.0, vfloc), -1.0);
     add -> addArgument (0, pow_square, 1.0);
-    NodePower* pow_sqrt = new NodePower (vfloc);
+    auto* pow_sqrt = new NodePower (vfloc);
     pow_sqrt -> addArgument (0, add);
     pow_sqrt -> addArgument (1, new NodeNumber (0.5, vfloc));
     root -> addArgument (0, pow_sqrt, 1.0, true);
@@ -1571,11 +1571,11 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "atanh")
   {
     // -> 1/(1-x^2)
-    NodeTimes* root = new NodeTimes (2, vfloc);
-    NodePower* pow_square = new NodePower (vfloc);
+    auto* root = new NodeTimes (2, vfloc);
+    auto* pow_square = new NodePower (vfloc);
     pow_square -> addArgument (0, args[0] -> copy ());
     pow_square -> addArgument (1, new NodeNumber (2.0, vfloc));
-    NodeAdd* add = new NodeAdd (2, vfloc);
+    auto* add = new NodeAdd (2, vfloc);
     add -> addArgument (0, new NodeNumber (1.0, vfloc), 1.0);
     add -> addArgument (1, pow_square, -1.0);
     root -> addArgument (0, add, 1.0, true);
@@ -1585,7 +1585,7 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   else if (name == "pow")
   {
     // promote to NodePower
-    NodePower* pw = new NodePower (vfloc);
+    auto* pw = new NodePower (vfloc);
     pw -> addArgument (0, args[0]);
     pw -> addArgument (1, args[1]);
     Node* retval = pw -> derivative (var, zero);
@@ -1604,13 +1604,13 @@ Node* NodeFunction::derivative (const Node* var, const std::function<bool(const 
   {
     // this is when we don't know the function but do not want to leave the root hanging
     // -> cos
-    NodeAdd* add = new NodeAdd (args.size(), vfloc);
+    auto* add = new NodeAdd (args.size(), vfloc);
     for (size_t k=0; k<args.size(); ++k)
     {
       std::ostringstream str;
       str << name << "_d" << k;
       NodeFunction* fun = new NodeFunction (str.str (), args.size(), vfloc);
-      NodeTimes* times = new NodeTimes (2, vfloc);
+      auto* times = new NodeTimes (2, vfloc);
       add->addArgument(k, times, 1.0);
       times->addArgument(0, fun, 1.0, false);
       times->addArgument (1, args[0] -> derivative (var, zero), 1.0, false);
@@ -1630,7 +1630,7 @@ void Node::evaluateWithPar (double *res, const std::vector<double>& parInit)
   ValueStack stk (res, 1);
   auto fun = [&stk, parInit] (size_t sp, const Node* node)
   {
-    const NodePar* par_node = dynamic_cast<const NodePar*>(node);
+    const auto* par_node = dynamic_cast<const NodePar*>(node);
     if (par_node != nullptr)
     {
       stk[sp].data[0] = parInit [par_node->getIdx()];
@@ -1844,7 +1844,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         size_t p = (endptr - &str[k])/sizeof(char);
         std::string tn (&str[k], p);
         // TODO add to a symbol table and only use symbol ID later on
-        stream.push_back (Token (TokenType::Symbol, tn, k) );
+        stream.emplace_back(TokenType::Symbol, tn, k );
         k = k + p;
         continue;
       } else
@@ -1853,7 +1853,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
         while (findCharType (str[k+p]) == CharType::Identifier) p++;
         std::string tn (&str[k], p);
         // TODO add to a symbol table and only use symbol ID later on
-        stream.push_back (Token (TokenType::Symbol, tn, k) );
+        stream.emplace_back(TokenType::Symbol, tn, k );
         k = k + p;
         continue;
       }
@@ -1864,35 +1864,35 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
       switch (tn[0])
       {
         case '+':
-          stream.push_back (Token (TokenType::Plus, tn, k) );
+          stream.emplace_back(TokenType::Plus, tn, k );
           break;
         case '-':
-          stream.push_back (Token (TokenType::Minus, tn, k) );
+          stream.emplace_back(TokenType::Minus, tn, k );
           break;
         case '*':
-          stream.push_back (Token (TokenType::Times, tn, k) );
+          stream.emplace_back(TokenType::Times, tn, k );
           break;
         case '/':
-          stream.push_back (Token (TokenType::Divide, tn, k) );
+          stream.emplace_back(TokenType::Divide, tn, k );
           break;
         case '^':
-          stream.push_back (Token (TokenType::Power, tn, k) );
+          stream.emplace_back(TokenType::Power, tn, k );
           break;
         case '(':
-          stream.push_back (Token (TokenType::LeftParen, tn, k) );
+          stream.emplace_back(TokenType::LeftParen, tn, k );
           break;
         case ')':
-          stream.push_back (Token (TokenType::RightParen, tn, k) );
+          stream.emplace_back(TokenType::RightParen, tn, k );
           break;
         case ',':
-          stream.push_back (Token (TokenType::Comma, tn, k) );
+          stream.emplace_back(TokenType::Comma, tn, k );
           break;
         case '=':
-          stream.push_back (Token (TokenType::Equals, tn, k) );
+          stream.emplace_back(TokenType::Equals, tn, k );
           break;
         case ':':
           k++;
-          if (str[k] == '=') stream.push_back (Token (TokenType::Define, ":=", k-1) );
+          if (str[k] == '=') stream.emplace_back(TokenType::Define, ":=", k-1 );
           else
           {
             k--;
@@ -1900,7 +1900,7 @@ void tokenize (std::vector<Token>& stream, const std::map<TokenType, TokenPreced
           }
           break;
         case ';':
-          stream.push_back (Token (TokenType::Semicolon, tn, k) );
+          stream.emplace_back(TokenType::Semicolon, tn, k );
           break;
         default:
           PE_MESSAGE3(k, "Unknown operator '", tn, "'.\n");
@@ -1955,11 +1955,11 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
         double res = strtod (tk.name.c_str(), &endptr);
         if (endptr != tk.name.c_str())
         {
-          NodeNumber* node = new NodeNumber (res, tk.vfloc);
+          auto* node = new NodeNumber (res, tk.vfloc);
           ts.push_back (node);
         } else
         {
-          NodeSymbol* node = new NodeSymbol (tk.name, tk.vfloc);
+          auto* node = new NodeSymbol (tk.name, tk.vfloc);
           ts.push_back (node);
         }
       }
@@ -1968,14 +1968,14 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       {
         if (nargs == 1)
         {
-          NodeFunctionA1* node = new NodeFunctionA1 (tk.name, tk.vfloc);
+          auto* node = new NodeFunctionA1 (tk.name, tk.vfloc);
           // put the argument from the stack
           node->addArgument (0, ts.back());
           ts.pop_back ();
           ts.push_back (node);
         } else if (nargs == 2)
         {
-          NodeFunctionA2* node = new NodeFunctionA2 (tk.name, tk.vfloc);
+          auto* node = new NodeFunctionA2 (tk.name, tk.vfloc);
           // put the argument from the stack
           node->addArgument (1, ts.back());
           ts.pop_back ();
@@ -1984,7 +1984,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
           ts.push_back (node);
         } else
         {
-          NodeFunction* node = new NodeFunction (tk.name, nargs, tk.vfloc);
+          auto* node = new NodeFunction (tk.name, nargs, tk.vfloc);
           // put the argument from the stack
           for (size_t k=0; k<nargs; k++)
           {
@@ -2000,7 +2000,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
         // Basically use ` + <value>'
         if (nargs == 1)
         {
-          NodeAdd* node = new NodeAdd (1, tk.vfloc);
+          auto* node = new NodeAdd (1, tk.vfloc);
           node->addArgument (0, ts.back(), 1.0);
           ts.pop_back ();
           node->sort ();
@@ -2013,7 +2013,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
         // Basically use ` - <value>'
         if (nargs == 1)
         {
-          NodeAdd* node = new NodeAdd (1, tk.vfloc);
+          auto* node = new NodeAdd (1, tk.vfloc);
           node->addArgument (0, ts.back(), -1.0);
           ts.pop_back ();
           node->sort ();
@@ -2023,7 +2023,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Plus:
       {
-        NodeAdd* node = new NodeAdd (nargs, tk.vfloc);
+        auto* node = new NodeAdd (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2036,7 +2036,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Minus:
       {
-        NodeAdd* node = new NodeAdd (nargs, tk.vfloc);
+        auto* node = new NodeAdd (nargs, tk.vfloc);
         // put the argument from the stack
         if (nargs == 2)
         {
@@ -2051,7 +2051,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Times:
       {
-        NodeTimes* node = new NodeTimes (nargs, tk.vfloc);
+        auto* node = new NodeTimes (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2064,7 +2064,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Divide:
       {
-        NodeTimes* node = new NodeTimes (nargs, tk.vfloc);
+        auto* node = new NodeTimes (nargs, tk.vfloc);
         // put the argument from the stack
         for (size_t k=0; k<nargs; k++)
         {
@@ -2079,7 +2079,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       case TokenType::Power:
       {
         // nargs == 2 ??
-        NodePower* node = new NodePower (tk.vfloc);
+        auto* node = new NodePower (tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2090,7 +2090,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Equals:
       {
-        NodeEquals* node = new NodeEquals (tk.vfloc);
+        auto* node = new NodeEquals (tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2101,7 +2101,7 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Define:
       {
-        NodeEquals* node = new NodeEquals (true, tk.vfloc);
+        auto* node = new NodeEquals (true, tk.vfloc);
         // put the argument from the stack
         node->addArgument (1, ts.back());
         ts.pop_back ();
@@ -2112,13 +2112,13 @@ void opToTree (std::list<Node*>& ts, const Token& tk, size_t nargs)
       break;
       case TokenType::Semicolon:
       {
-        NodeSemicolon* node = new NodeSemicolon (tk.vfloc);
+        auto* node = new NodeSemicolon (tk.vfloc);
         // put the argument from the stack
         Node* nd2 = ts.back();
         ts.pop_back ();
         Node* nd1 = ts.back();
         ts.pop_back ();
-        NodeSemicolon* semi = dynamic_cast<NodeSemicolon*>(nd1);
+        auto* semi = dynamic_cast<NodeSemicolon*>(nd1);
         if (semi != nullptr)
         {
           for (size_t k = 0; k < semi -> children(); k++)
@@ -2311,14 +2311,14 @@ Node* toPostfix (const std::vector<Token>& token_stream, const std::map<TokenTyp
     {
       std::ostringstream msg;
       msg << "Syntax error: could not parse " << treestack.size() << "\n";
-      for (auto k=treestack.begin(); k != treestack.end(); ++k)
+      for (auto & k : treestack)
       {
         msg << "@@OP =\n\t";
-        if (*k) { (*k)->print (msg); msg << "\n"; }
+        if (k) { k->print (msg); msg << "\n"; }
       }
-      for (auto k=token_stream.begin(); k != token_stream.end(); ++k)
+      for (const auto & k : token_stream)
       {
-        msg << k->name << "{" << static_cast<int>(k->type) << "}";
+        msg << k.name << "{" << static_cast<int>(k.type) << "}";
       }
       P_MESSAGE1(msg.str().c_str());
     }
@@ -2355,7 +2355,7 @@ void splitExpression (std::string& sysName,
   // set this up for the period
   par_name.push_back(nullptr);
   par_value.push_back(nullptr);
-  NodeSemicolon* parent = dynamic_cast<NodeSemicolon*>(root);
+  auto* parent = dynamic_cast<NodeSemicolon*>(root);
   if (parent != nullptr)
   {
     Node* cp = parent -> copy ();
@@ -2364,7 +2364,7 @@ void splitExpression (std::string& sysName,
     try {
       for (auto it : lst)
       {
-        NodeEquals* child = dynamic_cast<NodeEquals*>(it);
+        auto* child = dynamic_cast<NodeEquals*>(it);
         if (child != nullptr)
         {
           const Node* left = child->getChild (0);
@@ -2372,7 +2372,7 @@ void splitExpression (std::string& sysName,
 
           if (left->type == TokenType::Function)
           {
-            const NodeFunction* fun = static_cast<const NodeFunction*>(left);
+            const auto* fun = static_cast<const NodeFunction*>(left);
             if (fun->getName() == "dot")
             {
               // state variable
@@ -2395,7 +2395,7 @@ void splitExpression (std::string& sysName,
                 const Node* init = fun->getChild(0);
                 if (init->type == TokenType::Symbol)
                 {
-                  const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                  const auto* sym = static_cast<const NodeSymbol*>(init);
                   bool found = false;
                   // find the corresponding state variable
                   for (size_t k=0; k<var_name.size(); k++)
@@ -2418,7 +2418,7 @@ void splitExpression (std::string& sysName,
                 const Node* init = fun->getChild(0);
                 if (init->type == TokenType::Symbol)
                 {
-                  const NodeSymbol* sym = static_cast<const NodeSymbol*>(init);
+                  const auto* sym = static_cast<const NodeSymbol*>(init);
                   bool found = false;
                   // find the corresponding state variable
                   for (size_t k=0; k<var_name.size(); k++)
@@ -2523,7 +2523,7 @@ public:
     token_table[TokenType::Define] = { 10, false, 2 };
     token_table[TokenType::Semicolon] = { 11, true, 2 };
   }
-  ~ExpressionParser () {}
+  ~ExpressionParser () = default;
   Node* parse (const std::string& str)
   {
     std::vector<Token> token_stream;
@@ -2575,7 +2575,7 @@ void Expression::knutSplit (
   std::vector<Node*> macro;
 
   // Adding Pi
-  NodeEquals* pi_eq = new NodeEquals (0);
+  auto* pi_eq = new NodeEquals (0);
   pi_eq -> addArgument (0, new NodeSymbol("Pi", 0));
   pi_eq -> addArgument (1, new NodeNumber(M_PI, 0));
   macro.push_back (pi_eq);
@@ -2606,7 +2606,7 @@ void Expression::knutSplit (
   {
     if (it->type == TokenType::Define)
     {
-      NodeSymbol* sym = dynamic_cast<NodeSymbol*>(it->getChild(0));
+      auto* sym = dynamic_cast<NodeSymbol*>(it->getChild(0));
       if (sym != nullptr)
       {
         expr_name.push_back (sym);
@@ -2630,7 +2630,7 @@ void Expression::knutSplit (
 
   // if no independent variable or period is set we set the default
   if (time.empty()) time.push_back (new NodeSymbol ("t", 0));
-  NodeVar* time_var = new NodeVar (0, 0);
+  auto* time_var = new NodeVar (0, 0);
 
   // adding internal parameters
   par_name.push_back (new NodeSymbol ("PAR_ANGLE", 0));
@@ -2681,9 +2681,9 @@ void Expression::knutSplit (
     {
       if (p != q) par_value[p] -> replaceSymbol (*par_name[q], *par_value[q], &par_value[p]);
     }
-    for (size_t q = 0; q < macro.size (); q++)
+    for (auto & q : macro)
     {
-      par_value[p] -> replaceSymbol (*macro[q], &par_value[p]);
+      par_value[p] -> replaceSymbol (*q, &par_value[p]);
     }
   }
 
@@ -2696,49 +2696,49 @@ void Expression::knutSplit (
   }
 
   // var
-  for (size_t p = 0; p < var_dot.size(); p++)
+  for (auto & p : var_dot)
   {
-    for (size_t q = 0; q < macro.size(); q++)
+    for (auto & q : macro)
     {
-      var_dot[p] -> replaceSymbol (*macro[q], &var_dot[p]);
+      p -> replaceSymbol (*q, &p);
     }
   }
 
   // expr
-  for (size_t p = 0; p < expr_formula.size(); p++)
+  for (auto & p : expr_formula)
   {
-    for (size_t q = 0; q < macro.size(); q++)
+    for (auto & q : macro)
     {
-      expr_formula[p] -> replaceSymbol (*macro[q], &expr_formula[p]);
+      p -> replaceSymbol (*q, &p);
     }
   }
 
-  for (size_t p = 0; p < var_init.size(); p++)
+  for (auto & p : var_init)
   {
-    for (size_t q = 0; q < macro.size(); q++)
+    for (auto & q : macro)
     {
-      var_init[p] -> replaceSymbol (*macro[q], &var_init[p]);
+      p -> replaceSymbol (*q, &p);
     }
     for (size_t q = 0; q < par_name.size(); q++)
     {
-      var_init[p] -> replaceSymbol (*par_name[q], *par_value[q], &var_init[p]);
+      p -> replaceSymbol (*par_name[q], *par_value[q], &p);
     }
-    var_init[p] -> replaceSymbol (*time[0], *time_var, &var_init[p]);
+    p -> replaceSymbol (*time[0], *time_var, &p);
   }
 
-  for (size_t p = 0; p < var_mass.size(); p++)
+  for (auto & var_mas : var_mass)
   {
-    if (var_mass[p] != nullptr)
+    if (var_mas != nullptr)
     {
-      for (size_t q = 0; q < macro.size(); q++)
+      for (auto & q : macro)
       {
-        var_mass[p] -> replaceSymbol (*macro[q], &var_mass[p]);
+        var_mas -> replaceSymbol (*q, &var_mas);
       }
       for (size_t q = 0; q < par_name.size(); q++)
       {
-        var_mass[p] -> replaceSymbol (*par_name[q], *par_value[q], &var_mass[p]);
+        var_mas -> replaceSymbol (*par_name[q], *par_value[q], &var_mas);
       }
-      var_mass[p] -> replaceSymbol (*time[0], *time_var, &var_mass[p]);
+      var_mas -> replaceSymbol (*time[0], *time_var, &var_mas);
     }
   }
 
@@ -2771,13 +2771,13 @@ void Expression::knutSplit (
   // START :: HANDLING THE DELAYS
   // do not delete any of these since they are owned by the tree!
   std::vector<const NodeFunction*> delays;
-  for (size_t p = 0; p < var_dot.size(); p++)
+  for (auto & p : var_dot)
   {
-    var_dot[p] -> findFunction (delays, "delay");
+    p -> findFunction (delays, "delay");
   }
-  for (size_t p = 0; p < expr_formula.size(); p++)
+  for (auto & p : expr_formula)
   {
-    expr_formula[p] -> findFunction (delays, "delay");
+    p -> findFunction (delays, "delay");
   }
   // sort the delays
   std::sort (delays.begin(), delays.end(),
@@ -2808,7 +2808,7 @@ void Expression::knutSplit (
   for (size_t p = 0; p < delays.size(); p++)
   {
     std::vector<NodeVar*> var_del(var_name.size());
-    NodeFunction* fun = const_cast<NodeFunction*>(delays[p]);
+    auto* fun = const_cast<NodeFunction*>(delays[p]);
     for (size_t q = 0; q < var_name.size(); q++)
     {
       NodeVar var_del(1 + q + var_name.size()*(delay_id[p]+1), 0);
@@ -2848,7 +2848,7 @@ void Expression::knutSplit (
   }
 
   // render delay into identity
-  NodeEquals* del_rem = new NodeEquals (0);
+  auto* del_rem = new NodeEquals (0);
   NodeFunction* del_id = new NodeFunction ("delay", 2, 0);
   del_id->addArgument (0, new NodeSymbol ("a", 0));
   del_id->addArgument (1, new NodeSymbol ("b", 0));
@@ -2857,21 +2857,21 @@ void Expression::knutSplit (
 
   // replacing the variables
   // in dot
-  for (size_t p = 0; p < var_dot.size(); p++)
+  for (auto & p : var_dot)
   {
-    var_dot[p] -> replaceSymbol (*del_rem, &var_dot[p]);
-    var_dot[p] -> replaceSymbol (*time[0], *time_var, &var_dot[p]);
+    p -> replaceSymbol (*del_rem, &p);
+    p -> replaceSymbol (*time[0], *time_var, &p);
     for (size_t q = 0; q < var_name.size(); q++)
     {
-      var_dot[p] -> replaceSymbol (*var_name[q], *var_idx[q], &var_dot[p]);
+      p -> replaceSymbol (*var_name[q], *var_idx[q], &p);
     }
     for (size_t q = 0; q < par_name.size(); q++)
     {
-      var_dot[p] -> replaceSymbol (*par_name[q], *par_idx[q], &var_dot[p]);
+      p -> replaceSymbol (*par_name[q], *par_idx[q], &p);
     }
     for (size_t q = 0; q < expr_name.size(); q++)
     {
-      var_dot[p] -> replaceSymbol (*expr_name[q], *expr_idx[q], &var_dot[p]);
+      p -> replaceSymbol (*expr_name[q], *expr_idx[q], &p);
     }
   }
   // in expr

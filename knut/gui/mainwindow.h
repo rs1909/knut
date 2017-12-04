@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    MainWindow(const QString& appDir);
+    MainWindow(QString  appDir);
         
     static void showException(QWidget* parent, const KNException& ex)
     {

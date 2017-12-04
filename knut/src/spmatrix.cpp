@@ -53,9 +53,9 @@ void KNSparseMatrix::check()
 
 void KNSparseMatrix::swap()
 {
-  int *Rp = new int[n+1];
-  int *Ri = new int[size];
-  double *Rx = new double[size];
+  auto *Rp = new int[n+1];
+  auto *Ri = new int[size];
+  auto *Rx = new double[size];
 
   umfpack_di_transpose((int)n, (int)m, Ap, Ai, Ax, nullptr, nullptr, Rp, Ri, Rx);
 
@@ -332,7 +332,7 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   double  TOL      = knut_dlamch("EPS", 3);
 //  RESID is defined in the class
   size_t  NCV      = 2 * NEV + 1;
-  double* V        = new double[(N+1)*(NCV+1)];
+  auto* V        = new double[(N+1)*(NCV+1)];
   size_t  LDV      = N;
   blasint IPARAM[] = {1,     // ISHIFT
                   0,     // n.a.ff
@@ -347,16 +347,16 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
                   0,     // NUMREO
                   0 };   // padding
   blasint IPNTR[14];
-  double* WORKD     = new double[4*N+1]; //3*N
+  auto* WORKD     = new double[4*N+1]; //3*N
   size_t  LWORKL    = 3 * NCV * NCV + 6 * NCV;
-  double* WORKL     = new double[LWORKL+1];
+  auto* WORKL     = new double[LWORKL+1];
   blasint INFO;
   // whether we need to create a new RESID or we can use it from a previous run
   if (isINIT) INFO = 1;
   else INFO = 0;
 
-  double* tvec = new double[A0.col()+1];
-  double* tvec2 = new double[A0.col()+1];
+  auto* tvec = new double[A0.col()+1];
+  auto* tvec2 = new double[A0.col()+1];
 
   // int it=0;
   do
@@ -399,14 +399,14 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   const size_t NCONV = NEV; // IPARAM[4];
 //   blasint  RVEC     = 0;
   char     HOWMNY   = 'A';
-  bool*    SELECT   = new bool[NCV+1];
-  double*  DR       = new double[NCONV+2];
-  double*  DI       = new double[NCONV+2];
-  double*  Z        = new double[N*(NCONV+2)];
+  auto*    SELECT   = new bool[NCV+1];
+  auto*  DR       = new double[NCONV+2];
+  auto*  DI       = new double[NCONV+2];
+  auto*  Z        = new double[N*(NCONV+2)];
   size_t   LDZ      = N;
   double   SIGMAR   = 0.0;
   double   SIGMAI   = 0.0;
-  double*  WORKEV   = new double[4*NCV]; // 3*NCV
+  auto*  WORKEV   = new double[4*NCV]; // 3*NCV
 
 //   std::cout<<"INFO1:"<<INFO<<" N: "<<N<<" NEV: "<<NEV<<'\n';
 //   std::cout<<"converged: "<<IPARAM[4]<<"\n"; std::cout.flush();
@@ -422,8 +422,8 @@ void KNSparseMatrixPolynomial::eigenvalues(KNVector& wr, KNVector& wi)
   wr.clear();
   wi.clear();
   // sorting eigenvalues;
-  const size_t evals = static_cast<size_t>(IPARAM[4]);
-  size_t* sortindex = new size_t[evals];
+  const auto evals = static_cast<size_t>(IPARAM[4]);
+  auto* sortindex = new size_t[evals];
   for (size_t i = 0; i < evals; i++) sortindex[i] = i;
   eigvalcomp aa(DR, DI);
   std::sort(sortindex, sortindex + evals, aa);
