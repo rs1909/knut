@@ -1053,7 +1053,7 @@ Node* NodeFunction::optimize (const std::function<bool(const Node*)>& zero)
   if (isnum)
   {
     std::vector<double> par;
-    double res;
+    double res{0.0};
     this->evaluateWithPar (&res, par);
     NodeNumber* num = new NodeNumber (res, vfloc);
     return num;

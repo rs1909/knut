@@ -22,6 +22,7 @@ get_filename_component(CMAKE_FIND_ROOT_TMP ${CMAKE_CXX_COMPILER} PATH)
 string(REPLACE "/" "\\" CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_TMP} )
 
 enable_language (Fortran)
+set(CMAKE_CXX_STANDARD 17)
 
 STRING(TOLOWER "${PACKAGE_NAME}-cli" CLI_NAME)
 IF(APPLE)
