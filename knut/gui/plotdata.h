@@ -24,6 +24,7 @@ class QGraphicsSceneMouseEvent;
 #include <vector>
 #include <list>
 #include <cmath>
+#include <cfloat>
 #include <cstdlib>
 #include <memory>
 #include <variant>
@@ -167,7 +168,7 @@ class PlotItem
 
 struct ViewBox
 {
-  qreal xmax {1e6}, xmin {-1e-6}, ymax {1e6}, ymin {1e-6};
+  qreal xmax {-DBL_MAX}, xmin {DBL_MAX}, ymax {-DBL_MAX}, ymin {DBL_MAX};
   size_t xticks {1}, yticks {1};
 };
 

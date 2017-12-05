@@ -996,6 +996,11 @@ void PlotData::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
       newvb.xmax = qMax(mouseBegin.x(), mouseEnd.x()) / xscale + cvb.xmin;
       newvb.ymin = cvb.ymax - qMax(mouseBegin.y(), mouseEnd.y()) / yscale;
       newvb.ymax = cvb.ymax - qMin(mouseBegin.y(), mouseEnd.y()) / yscale;
+
+      // make them valid axes ...
+      newvb.xticks = std::max(cvb.xticks, (size_t)2u);
+      newvb.yticks = std::max(cvb.yticks, (size_t)2u);
+      
       adjustAxis(newvb.xmin, newvb.xmax, newvb.xticks);
       adjustAxis(newvb.ymin, newvb.ymax, newvb.yticks);
       // remove the next zoom levels
