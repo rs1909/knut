@@ -227,7 +227,7 @@ void KNLuMatrix::solve(KNMatrix& x, const KNMatrix& b, bool trans)
       char FACT = 'F', equed = 'N', TRANS;
       if (trans) TRANS = 'T';
       else TRANS = 'N';
-      double *fberr = new double[2*b.col()+1];
+      auto *fberr = new double[2*b.col()+1];
       size_t n = this->r;
       size_t nrhs = b.col();
 

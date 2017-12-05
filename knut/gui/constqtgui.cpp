@@ -13,14 +13,14 @@
 
 void NConstantsQtGui::constantChanged(const char* name)
 {
-  for (unsigned int k=0; k<connectionList.size(); k++)
+  for (auto & k : connectionList)
   {
-    if (!strcmp(connectionList [k].name, name))
+    if (!strcmp(k.name, name))
     {
       std::string type = cnames.findType(name);
       const void * value = cnames.findValue(name);
-      QObject* object = connectionList [k].object;
-      const char * slotName = connectionList [k].slotName;
+      QObject* object = k.object;
+      const char * slotName = k.slotName;
       object->blockSignals(true);
       if (type == "int")
       {
@@ -136,11 +136,11 @@ template<typename TP> NConstantsQtGui::callbackPtr<TP> NConstantsQtGui::findConn
 {
   int found = 0;
   const char *name = nullptr;
-  for (unsigned int k=0; k<connectionList.size(); k++)
+  for (auto & k : connectionList)
   {
-    if (connectionList [k].object == object)
+    if (k.object == object)
     {
-      name = connectionList [k].name; 
+      name = k.name; 
       found++;
     } 
   }

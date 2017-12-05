@@ -118,6 +118,7 @@ class KNAbstractPoint
 
 /// END BASE CLASS
   protected:
+    // these actually have implementations
     virtual void construct();
     virtual void destruct();
 

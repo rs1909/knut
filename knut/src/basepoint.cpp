@@ -291,6 +291,7 @@ void KNAbstractPoint::reset(const KNArray1D<Eqn>& eqn_, const KNArray1D<Var>& va
   var = var_;
   varMap.init(var_.size());
   varMapCont.init(var_.size() + 1);
+  // this calls the virtual construct
   construct();
   if (xxDot_temp != nullptr)
   {

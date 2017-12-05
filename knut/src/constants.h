@@ -67,7 +67,7 @@ class KNAbstractConstantsWriter
 
 #define KN_CONSTANT(type, name, capsName, defaultValue) private: \
     class var_##name { public: type value; KNConstantsBase* base; \
-      var_##name (); \
+      var_##name () = default; \
       var_##name (KNConstantsBase* b) : value(defaultValue), base(b) \
       { \
         b->cnames.addConstantName(#type, #name, &value, \
@@ -78,7 +78,7 @@ class KNAbstractConstantsWriter
         base->cnames.addConstantName(#type, #name, &value, \
           reinterpret_cast<KNConstantNames::FPTR>(&KNConstantsBase::snset##capsName)); \
       } \
-    } name; \
+    } name{this}; \
   public: \
     const type & get##capsName() const { return name.value; } \
     void set##capsName(const type & d) { name.value = d; constantChanged(#name); } \
@@ -87,12 +87,12 @@ class KNAbstractConstantsWriter
 
 #define KN_ARRAY_CONSTANT( type, name, capsName, zero) private: \
     class var_##name { public: std::vector<type> value; KNConstantsBase* base; \
-      var_##name (); \
+      var_##name () = default; \
       var_##name (KNConstantsBase* b) : base(b) \
         { b->cnames.addConstantName("vector<" #type ">", #name, &value, (void(*)())&KNConstantsBase::snset##capsName); } \
       var_##name (KNConstantsBase* b, const KNConstantsBase* src) : value(src->get##capsName##Vector()), base(b) \
         { b->cnames.addConstantName("vector<" #type ">", #name, &value, (void(*)())&KNConstantsBase::snset##capsName); } \
-    } name; \
+    } name{this}; \
   public: \
     const std::vector<type> & get##capsName##Vector() const { return name.value; } \
     void set##capsName##Vector(const std::vector<type> &v) { name.value = v; constantChanged(#name); } \
@@ -139,7 +139,7 @@ template<typename TP> class TypeTupleTab  : public TypeTupleTabBase<TP>
     size_t sz;
     const KNConstantsBase *parent;
   public:
-    TypeTupleTab();
+    TypeTupleTab() = delete;
     TypeTupleTab(const KNConstantsBase *p) : tab(0), parent(p) { update(); }
     void         update(void); // needs to update 'tab'
     void         update(const KNConstantsBase *p) { parent = p; update(); }
@@ -211,26 +211,26 @@ class KNConstantsBase
     void addConstantName(const char* /*name*/) {}
  
   public:
-    KNConstantsBase() : 
-      system(this), 
-      inputFile(this), outputFile(this), sysname(this), sysType(this), fromType(this), label(this), pointType(this),
-      cp(this), branchSW(this), parx(this), eqns(this), vars(this), nInt(this), nDeg(this),
-      nMul(this), stab(this), nInt1(this), nInt2(this), nDeg1(this), nDeg2(this), 
-      steps(this), iad(this), nPr(this), SSM(this), cpMin(this), cpMax(this),
-      ds(this), dsMin(this), dsMax(this), dsStart(this), epsC(this), epsR(this), epsK(this),
-      nItC(this), nItR(this), nItK(this), symRe(this), symIm(this), nDeri(this), cAngle(this),
-      nPar(this), nDim(this),
-      PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
-    KNConstantsBase(const KNConstantsBase* src) : 
-      system(this, src), 
-      inputFile(this,src), outputFile(this,src), sysname(this,src), sysType(this,src), fromType(this,src), label(this,src), pointType(this,src),
-      cp(this,src), branchSW(this,src), parx(this,src), eqns(this,src), vars(this,src), nInt(this,src), nDeg(this,src),
-      nMul(this,src), stab(this,src), nInt1(this,src), nInt2(this,src), nDeg1(this,src), nDeg2(this,src), 
-      steps(this,src), iad(this,src), nPr(this,src), SSM(this,src), cpMin(this,src), cpMax(this,src),
-      ds(this,src), dsMin(this,src), dsMax(this,src), dsStart(this,src), epsC(this,src), epsR(this,src), epsK(this,src),
-      nItC(this,src), nItR(this,src), nItK(this,src), symRe(this,src), symIm(this,src), nDeri(this,src), cAngle(this,src),
-      nPar(this,src), nDim(this,src),
-      PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
+//     KNConstantsBase() : 
+//       system(this), 
+//       inputFile(this), outputFile(this), sysname(this), sysType(this), fromType(this), label(this), pointType(this),
+//       cp(this), branchSW(this), parx(this), eqns(this), vars(this), nInt(this), nDeg(this),
+//       nMul(this), stab(this), nInt1(this), nInt2(this), nDeg1(this), nDeg2(this), 
+//       steps(this), iad(this), nPr(this), SSM(this), cpMin(this), cpMax(this),
+//       ds(this), dsMin(this), dsMax(this), dsStart(this), epsC(this), epsR(this), epsK(this),
+//       nItC(this), nItR(this), nItK(this), symRe(this), symIm(this), nDeri(this), cAngle(this),
+//       nPar(this), nDim(this),
+//       PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
+//     KNConstantsBase(const KNConstantsBase* src) : 
+//       system(this, src), 
+//       inputFile(this,src), outputFile(this,src), sysname(this,src), sysType(this,src), fromType(this,src), label(this,src), pointType(this,src),
+//       cp(this,src), branchSW(this,src), parx(this,src), eqns(this,src), vars(this,src), nInt(this,src), nDeg(this,src),
+//       nMul(this,src), stab(this,src), nInt1(this,src), nInt2(this,src), nDeg1(this,src), nDeg2(this,src), 
+//       steps(this,src), iad(this,src), nPr(this,src), SSM(this,src), cpMin(this,src), cpMax(this,src),
+//       ds(this,src), dsMin(this,src), dsMax(this,src), dsStart(this,src), epsC(this,src), epsR(this,src), epsK(this,src),
+//       nItC(this,src), nItR(this,src), nItK(this,src), symRe(this,src), symIm(this,src), nDeri(this,src), cAngle(this,src),
+//       nPar(this,src), nDim(this,src),
+//       PtTypeTable(this), EqnTable(this), BranchSWTable(this), BifTypeTable(this), VarTable(this) {}
     virtual ~KNConstantsBase() { }
     // for setting up the continuation
     bool toEqnVar(KNExprSystem& sys,
@@ -309,11 +309,11 @@ class KNConstantsBase
     // this is to notify the system of changes
     virtual void constantChanged(const char* /*name*/) { }
     
-    TypeTupleTab<PtType> PtTypeTable;
-    TypeTupleTab<Eqn> EqnTable;
-    TypeTupleTab<BranchSW> BranchSWTable;
-    TypeTupleTab<BifType> BifTypeTable;
-    TypeTupleTab<Var> VarTable;
+    TypeTupleTab<PtType> PtTypeTable{this};
+    TypeTupleTab<Eqn> EqnTable{this};
+    TypeTupleTab<BranchSW> BranchSWTable{this};
+    TypeTupleTab<BifType> BifTypeTable{this};
+    TypeTupleTab<Var> VarTable{this};
 };
 
 class KNConstants : public KNConstantsBase

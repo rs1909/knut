@@ -167,8 +167,8 @@ void KNDdeTorusCollocation::init(const KNVector& sol, const KNVector& par)
 
     for (size_t k = 0; k < NTAU + 1; k++)
     {
-      size_t i1 = static_cast<size_t>(floor(nint1 * t1[k]));
-      size_t i2 = static_cast<size_t>(floor(nint2 * t2[k]));
+      auto i1 = static_cast<size_t>(floor(nint1 * t1[k]));
+      auto i2 = static_cast<size_t>(floor(nint2 * t2[k]));
       // some error checking
       if ((t1[k] > 1.0) || (t2[k] > 1.0) ||
           (t1[k] < 0.0) || (t2[k] < 0.0)) std::cout << "Er ";

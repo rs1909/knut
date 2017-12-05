@@ -73,10 +73,10 @@ void plotWindow::setupPlotWindow()
   plot = new QGraphicsView(this);
   plot->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
   plot->setScene(&plotdata);
-  QWidget *centralWidget = new QWidget;
-  QVBoxLayout *centralLayout = new QVBoxLayout;
-  QHBoxLayout *topContainerLayout = new QHBoxLayout;
-  QGridLayout *topLayout = new QGridLayout;
+  auto *centralWidget = new QWidget;
+  auto *centralLayout = new QVBoxLayout;
+  auto *topContainerLayout = new QHBoxLayout;
+  auto *topLayout = new QGridLayout;
   centralWidget->setLayout(centralLayout);
   const int margin = centralLayout->margin();
   centralLayout->setMargin(0);
@@ -95,7 +95,7 @@ void plotWindow::setupPlotWindow()
   matfile = new QLineEdit;
   matfile->setReadOnly(true);
   QAction *matfileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Open"), this);
-  QToolButton *matfileButton = new QToolButton();
+  auto *matfileButton = new QToolButton();
   matfileButton->setDefaultAction(matfileAct);
   connect(matfileAct, SIGNAL(triggered()), this, SLOT(open()));
 
@@ -106,16 +106,16 @@ void plotWindow::setupPlotWindow()
 
   plotSelect = new QListWidget;
   plotSelect->setSelectionMode(QAbstractItemView::SingleSelection);
-  QVBoxLayout *dockLayout = new QVBoxLayout;
-  QHBoxLayout *buttonsLayout = new QHBoxLayout;
-  QWidget     *dockWidget = new QWidget;
+  auto *dockLayout = new QVBoxLayout;
+  auto *buttonsLayout = new QHBoxLayout;
+  auto     *dockWidget = new QWidget;
   QAction     *removePlotAct = new QAction(QIcon(":/res/images/cr16-action-eraser.png"), "Remove Selected", this);
-  QToolButton *removePlotButton = new QToolButton;
+  auto *removePlotButton = new QToolButton;
   removePlotButton->setDefaultAction(removePlotAct);
   connect(removePlotAct, SIGNAL(triggered()), this, SLOT(removePlot()));
 
   QAction     *colorizePlotAct = new QAction(QIcon(":/res/images/cr16-action-colorize.png"), "Change Color", this);
-  QToolButton *colorizePlotButton = new QToolButton;
+  auto *colorizePlotButton = new QToolButton;
   colorizePlotButton->setDefaultAction(colorizePlotAct);
   connect(colorizePlotAct, SIGNAL(triggered()), this, SLOT(colorizePlot()));
 
@@ -128,26 +128,26 @@ void plotWindow::setupPlotWindow()
   buttonsLayout->addWidget(colorizePlotButton);
 
   QAction *addPlotAct = new QAction(QIcon(":/res/images/cr16-action-add.png"), tr("Add Plot"), this);
-  QToolButton *addPlotButton = new QToolButton();
+  auto *addPlotButton = new QToolButton();
   addPlotButton->setDefaultAction(addPlotAct);
   connect(addPlotAct, SIGNAL(triggered()), this, SLOT(addPlot()));
 
   QAction *clearAllPlotAct = new QAction(QIcon(":/res/images/cr16-action-remove.png"), tr("Clear All"), this);
-  QToolButton *clearAllPlotButton = new QToolButton();
+  auto *clearAllPlotButton = new QToolButton();
   clearAllPlotButton->setDefaultAction(clearAllPlotAct);
   connect(clearAllPlotAct, SIGNAL(triggered()), this, SLOT(clearPlot()));
 
   QAction *printAct = new QAction(QIcon(":/res/images/cr16-action-fileprint.png"), tr("Print"), this);
-  QToolButton *printButton = new QToolButton();
+  auto *printButton = new QToolButton();
   printButton->setDefaultAction(printAct);
   connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
 
   QAction *exportSvgAct = new QAction(QIcon(":/res/images/cr16-action-svg-export.png"), tr("Export to SVG"), this);
-  QToolButton *exportSvgButton = new QToolButton();
+  auto *exportSvgButton = new QToolButton();
   exportSvgButton->setDefaultAction( exportSvgAct );
   connect( exportSvgAct, SIGNAL(triggered()), this, SLOT(exportSvg()) );
   
-  QComboBox* xyLog = new QComboBox;
+  auto* xyLog = new QComboBox;
   xyLog->insertItem(0, "Linear");
   xyLog->insertItem(1, "SemiLogX");
   xyLog->insertItem(2, "SemiLogY");
@@ -155,7 +155,7 @@ void plotWindow::setupPlotWindow()
   xyLog->setCurrentIndex(0);
   connect( xyLog, SIGNAL(currentIndexChanged(int)), &plotdata, SLOT(setAxes(int)) );
 
-  QSpinBox* plotsize = new QSpinBox;
+  auto* plotsize = new QSpinBox;
   plotsize->setMinimum(100);
   plotsize->setMaximum(1280);
   connect(plotsize, SIGNAL(valueChanged(int)), &plotdata, SLOT(setXSize(int)));
@@ -187,7 +187,7 @@ void plotWindow::setupPlotWindow()
 
 void plotWindow::initPlot(const KNDataFile* mat)
 {
-  if (mat == 0) { std::cout << "Can't set data\n"; return; }
+  if (mat == nullptr) { std::cout << "Can't set data\n"; return; }
 //  data = mat;
   mat->lockRead();
   QFileInfo fi(QString::fromStdString(mat->getFileName()));
@@ -203,15 +203,15 @@ void plotWindow::initPlot(const KNDataFile* mat)
   std::vector<std::string> parNames;
   mat->getParNames(parNames);
   xvarMap.clear();
-  xvarMap.push_back(XTranslate(XNone, "None"));
-  xvarMap.push_back(XTranslate(XLabel, "Label"));
-  xvarMap.push_back(XTranslate(XMesh, "Mesh"));
-  xvarMap.push_back(XTranslate(XRealMultiplier, "RealMultiplier"));
+  xvarMap.emplace_back(XNone, "None");
+  xvarMap.emplace_back(XLabel, "Label");
+  xvarMap.emplace_back(XMesh, "Mesh");
+  xvarMap.emplace_back(XRealMultiplier, "RealMultiplier");
   for (size_t i = 0; i < mat->getNPar(); ++i)
   {
     if (i < parNames.size())
     {
-      xvarMap.push_back(XTranslate((PlotXVariable)(XParameter0 + i), QString::fromStdString(parNames[i])));
+      xvarMap.emplace_back((PlotXVariable)(XParameter0 + i), QString::fromStdString(parNames[i]));
     }
   }
   xvar->clear();
@@ -223,18 +223,18 @@ void plotWindow::initPlot(const KNDataFile* mat)
 
   const int yidx = yvar->currentIndex();  
   yvarMap.clear();
-  yvarMap.push_back(YTranslate(YNone, "None"));
-  yvarMap.push_back(YTranslate(YL2Norm, "L2Norm"));
-  yvarMap.push_back(YTranslate(YAmplitude, "Amplitude"));
-  yvarMap.push_back(YTranslate(YPoincare, "Map"));
-  yvarMap.push_back(YTranslate(YImagMultiplier, "ImagMultiplier"));
-  yvarMap.push_back(YTranslate(YAbsMultiplier, "AbsMultiplier"));
-  yvarMap.push_back(YTranslate(YProfile, "Profile"));
+  yvarMap.emplace_back(YNone, "None");
+  yvarMap.emplace_back(YL2Norm, "L2Norm");
+  yvarMap.emplace_back(YAmplitude, "Amplitude");
+  yvarMap.emplace_back(YPoincare, "Map");
+  yvarMap.emplace_back(YImagMultiplier, "ImagMultiplier");
+  yvarMap.emplace_back(YAbsMultiplier, "AbsMultiplier");
+  yvarMap.emplace_back(YProfile, "Profile");
   for (size_t i = 0; i < mat->getNPar(); ++i)
   {
     if (i < parNames.size())
     {
-      yvarMap.push_back(YTranslate((PlotYVariable)(YParameter0 + i), QString::fromStdString(parNames[i])));
+      yvarMap.emplace_back((PlotYVariable)(YParameter0 + i), QString::fromStdString(parNames[i]));
     }
   }
   yvar->clear();

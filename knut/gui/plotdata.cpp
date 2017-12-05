@@ -22,7 +22,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
-const ViewBox PlotData::defaultBox = {-1e6, 1e6, -1e6, 1e6, 1, 1 };
+const ViewBox PlotData::defaultBox;
 
 PlotData::PlotData(QObject *parent) :
     QGraphicsScene(parent),
@@ -160,10 +160,10 @@ void PlotData::setColor(size_t n, QColor& color)
       if (ii->type == PlotLineType)
       {
         std::get<PlotLine>(ii->data).pen.setColor(color);
-        for (PlotLine::iterator it = std::get<PlotLine>(ii->data).begin(); it != std::get<PlotLine>(ii->data).end(); ++it)
+        for (auto & it : std::get<PlotLine>(ii->data))
         {
-          it->pen.setColor(color);
-          it->item->setPen(it->pen);
+          it.pen.setColor(color);
+          it.item->setPen(it.pen);
         }
       }
       else if (ii->type == PlotCircleType)
@@ -197,16 +197,16 @@ void PlotData::setColor(size_t n, QColor& color)
 
 void PlotData::clearAxes()
 {
-  for (size_t i = 0; i < XCoordTextItems.size(); ++i)
+  for (auto & XCoordTextItem : XCoordTextItems)
   {
-    removeItem(XCoordTextItems[i].get());
-    XCoordTextItems[i].reset(nullptr);
+    removeItem(XCoordTextItem.get());
+    XCoordTextItem.reset(nullptr);
   }
   XCoordTextItems.clear();
-  for (size_t i = 0; i < YCoordTextItems.size(); ++i)
+  for (auto & YCoordTextItem : YCoordTextItems)
   {
-    removeItem(YCoordTextItems[i].get());
-    YCoordTextItems[i].reset(nullptr);
+    removeItem(YCoordTextItem.get());
+    YCoordTextItem.reset(nullptr);
   }
   YCoordTextItems.clear();
 }
@@ -252,7 +252,7 @@ void PlotData::clearAll()
   ZoomHistory.push_back(cvb);
   currZoom = ZoomHistory.begin();
   unitCircleCount = 0;
-  if (unitCircleItem != 0)
+  if (unitCircleItem != nullptr)
   {
     removeItem(unitCircleItem.get());
     unitCircleItem.reset(nullptr);
@@ -411,7 +411,7 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
 {
   size_t xadded = 0;
   size_t yadded = 0;
-  std::list<std::unique_ptr<PlotItem>>::iterator start = --Graph.end();
+  auto start = --Graph.end();
   size_t startnumber = 0;
   if (!Graph.empty()) startnumber = (*Graph.rbegin())->number;
   QColor plcolor, stabcolor(Qt::black);
@@ -685,9 +685,9 @@ bool PlotData::addPlot(const KNDataFile* data, PlotXVariable x, PlotYVariable y,
     {
       std::vector<std::string> parNames;
       data->getParNames(parNames);
-      if (x >= XParameter0) XCoordText.push_back(parNames.at(x-XParameter0).c_str());
+      if (x >= XParameter0) XCoordText.emplace_back(parNames.at(x-XParameter0).c_str());
       else XCoordText.push_back(XCoordMap[x]);
-      if (y >= YParameter0) YCoordText.push_back(parNames.at(y-YParameter0).c_str());
+      if (y >= YParameter0) YCoordText.emplace_back(parNames.at(y-YParameter0).c_str());
       else if (y == YProfile) YCoordText.push_back(QString("X_%1(t)").arg(dim));
       else YCoordText.push_back(YCoordMap[y]);
 
@@ -736,7 +736,7 @@ void PlotData::updatePlot(const KNDataFile* mat)
       if (number != (*i)->number)
       {
         number = (*i)->number;
-        lst.push_back(rcStruc(ct_it, (*i)->varX, (*i)->varY, (*i)->point, (*i)->dimension));
+        lst.emplace_back(ct_it, (*i)->varX, (*i)->varY, (*i)->point, (*i)->dimension);
       } else dirty = true;
       if (first == Graph.end()) first = i;
       last = i;
@@ -746,15 +746,15 @@ void PlotData::updatePlot(const KNDataFile* mat)
   if (dirty)
   {
     size_t it = 0;
-    for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+    for (auto & i : lst)
     {
-      clear(i->num - it);
+      clear(i.num - it);
       ++it;
     }
   } else clearAll();
-  for (std::list<rcStruc>::iterator i = lst.begin(); i != lst.end(); i++)
+  for (auto & i : lst)
   {
-    addPlot(mat, i->X, i->Y, i->pt, i->dim);
+    addPlot(mat, i.X, i.Y, i.pt, i.dim);
   }
 }
 
@@ -1188,11 +1188,11 @@ QGraphicsRectItem* PlotData::makeBox()
   }
 
   // add unit circle if necessary
-  if (unitCircleItem != 0)
+  if (unitCircleItem != nullptr)
   {
     removeItem(unitCircleItem.get());
     unitCircleItem.reset(nullptr);
-    unitCircleItem = 0;
+    unitCircleItem = nullptr;
   }
   if (unitCircleCount > 0)
   {
@@ -1211,22 +1211,22 @@ QGraphicsRectItem* PlotData::makeBox()
 void PlotData::labelColor()
 {
   size_t prenumber = 0, it = 0;
-  for (auto i = Graph.begin(); i != Graph.end(); i++)
+  for (auto & i : Graph)
   {
-    if ((*i)->principal && prenumber != (*i)->number)
+    if (i->principal && prenumber != i->number)
     {
       QColor textColor;
-      if ((*i)->type == PlotLineType)
+      if (i->type == PlotLineType)
       {
-        textColor = std::get<PlotLine>((*i)->data).pen.color();
+        textColor = std::get<PlotLine>(i->data).pen.color();
       }
-      if ((*i)->type == PlotCircleType)
+      if (i->type == PlotCircleType)
       {
-        textColor = std::get<PlotCircle>((*i)->data).pen.color();
+        textColor = std::get<PlotCircle>(i->data).pen.color();
       }
-      if ((*i)->type == PlotPolygonType)
+      if (i->type == PlotPolygonType)
       {
-        textColor = std::get<PlotPolygon>((*i)->data).pen.color();
+        textColor = std::get<PlotPolygon>(i->data).pen.color();
       }
       size_t num = it++;
       if (num < XCoordTextItems.size() && num < YCoordTextItems.size() &&
@@ -1236,7 +1236,7 @@ void PlotData::labelColor()
         YCoordTextItems[num]->setDefaultTextColor(textColor);
       }
     }
-    prenumber = (*i)->number;
+    prenumber = i->number;
   }
 }
 

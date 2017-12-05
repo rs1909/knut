@@ -27,9 +27,10 @@
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <utility>
 
-MainWindow::MainWindow(const QString& appDir) :
-    executableDir(appDir),
+MainWindow::MainWindow(QString  appDir) :
+    executableDir(std::move(appDir)),
     terminalTextSize(0),
     inputPlotWindow(nullptr), outputPlotWindow(nullptr),
     terminalDialog(nullptr), // compilerProcess(0),
@@ -40,19 +41,19 @@ MainWindow::MainWindow(const QString& appDir) :
 #endif
   // QTabWidget
   // a) files + equations b) numerics c) symmetry d) torus
-  QTabWidget* tabWidget = new QTabWidget(this);
+  auto* tabWidget = new QTabWidget(this);
 
   // the container widgets
-  QWidget* systemWidget = new QWidget();
-  QWidget* numericsWidget = new QWidget();
-  QWidget* symmetryWidget = new QWidget();
-  QWidget* torusWidget = new QWidget();
+  auto* systemWidget = new QWidget();
+  auto* numericsWidget = new QWidget();
+  auto* symmetryWidget = new QWidget();
+  auto* torusWidget = new QWidget();
 
   // the layout widgets
-  QGridLayout* systemGrid = new QGridLayout();
-  QGridLayout* numericsGrid = new QGridLayout();
-  QGridLayout* symmetryGrid = new QGridLayout();
-  QGridLayout* torusGrid = new QGridLayout();
+  auto* systemGrid = new QGridLayout();
+  auto* numericsGrid = new QGridLayout();
+  auto* symmetryGrid = new QGridLayout();
+  auto* torusGrid = new QGridLayout();
 
   tabWidget->addTab(systemWidget, QString("System"));
   tabWidget->addTab(numericsWidget, QString("Numerics"));
@@ -67,14 +68,14 @@ MainWindow::MainWindow(const QString& appDir) :
   setCentralWidget(tabWidget);
 
   // Lable for the input file
-  QHBoxLayout *getInputFileLayout = new QHBoxLayout;
+  auto *getInputFileLayout = new QHBoxLayout;
   QLabel* inputFileLabel = new QLabel("INPUT");
   inputFileLabel->setToolTip(QString("Input file which contains the starting point"));
   QAction* inputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"), this);
   inputFile = new QLineEdit();
   QAction* inputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
-  QToolButton* getInputFile = new QToolButton();
-  QToolButton* getInputFilePlot = new QToolButton();
+  auto* getInputFile = new QToolButton();
+  auto* getInputFilePlot = new QToolButton();
   getInputFile->setDefaultAction(inputFileAct);
   getInputFilePlot->setDefaultAction(inputFilePlotAct);
   getInputFileLayout->addWidget(getInputFile);
@@ -87,14 +88,14 @@ MainWindow::MainWindow(const QString& appDir) :
   connect(inputFilePlotAct, SIGNAL(triggered()), this, SLOT(inputPlot())); // plotting the input file
   parameters.registerCallback("std::string", "inputFile", inputFile, SIGNAL(textEdited(const QString &)), "setText");
 
-  QHBoxLayout *getOutputFileLayout = new QHBoxLayout;
+  auto *getOutputFileLayout = new QHBoxLayout;
   QLabel* outputFileLabel = new QLabel("OUTPUT");
   outputFileLabel->setToolTip(QString("Output file, which contains the result of computation"));
   outputFile = new QLineEdit();
   QAction* outputFileAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."));
   QAction* outputFilePlotAct = new QAction(QIcon(":/res/images/cr16-action-pencil.png"), tr("&Plot"));
-  QToolButton* getOutputFile = new QToolButton();
-  QToolButton* getOutputFilePlot = new QToolButton();
+  auto* getOutputFile = new QToolButton();
+  auto* getOutputFilePlot = new QToolButton();
   getOutputFile->setDefaultAction(outputFileAct);
   getOutputFilePlot->setDefaultAction(outputFilePlotAct);
   getOutputFileLayout->addWidget(getOutputFile);
@@ -108,14 +109,14 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("std::string", "outputFile", outputFile, SIGNAL(textEdited(const QString &)), "setText");
 
   // this only for setting SYSNAME
-  QHBoxLayout *sysnameLayout = new QHBoxLayout;
+  auto *sysnameLayout = new QHBoxLayout;
   QLabel* sysnameLabel = new QLabel("SYSNAME");
   sysnameLabel->setToolTip(QString("Vector field file, e.g., \"sys-problem.vf\""));
   sysname = new QLineEdit();
   QAction* sysdefAct = new QAction(QIcon(":/res/images/cr16-action-fileopen.png"), tr("&Browse..."), this);
 //   QAction* compileAct = new QAction(QIcon(":/res/images/cr22-action-compile.png"), tr("&Compile..."), this);
 //   QAction* generateAct = new QAction(QIcon(":/res/images/cr22-action-generate.png"), tr("&Generate..."), this);
-  QToolButton* getSysdef = new QToolButton();
+  auto* getSysdef = new QToolButton();
 //   QToolButton* compile = new QToolButton();
 //   QToolButton* generate = new QToolButton();
   getSysdef->setDefaultAction(sysdefAct);
@@ -144,7 +145,7 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("size_t", "label", label, SIGNAL(valueChanged(int)), "setValue");
 
   QLabel* fromTypeLabel = new QLabel("FROM");
-  QComboBox* fromType = new QComboBox();
+  auto* fromType = new QComboBox();
   for (size_t i = 0; i < parameters.BifTypeTable.size(); ++i)
   {
     fromType->insertItem(i, parameters.BifTypeTable.CIndexToTypeName(i).c_str());
@@ -205,7 +206,7 @@ MainWindow::MainWindow(const QString& appDir) :
   parameters.registerCallback("vector<Eqn>", "eqns", eqns, nullptr, "setValue");
   connect(pttype, SIGNAL(currentIndexChanged(int)), table, SLOT(dataUpdated(int)));
 
-  QDoubleValidator* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
+  auto* dbValid = new QDoubleValidator(-DBL_MAX, DBL_MAX, 16, this);
 
   // setting NINT, NDEG, NMUL, STAB
   QLabel* nintLabel = new QLabel("NINT");

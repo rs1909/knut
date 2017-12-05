@@ -65,7 +65,7 @@ class KNDdePeriodicSolution : public KNAbstractPeriodicSolution
     void Write(std::ofstream& file);
 
   private:
-
+    // These are shadowing the construct/destruct of base classes
     void    construct() override;
     void    destruct() override;
 

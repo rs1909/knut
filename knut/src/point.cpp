@@ -38,7 +38,8 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExpr
   basecolloc = colloc;
   persolcolloc = colloc;
 
-  construct();
+  // this calls the present construct as the virtual table is not set
+  KNDdePeriodicSolution::construct();
   FillSol(sys_);
   par(VarToIndex(VarAngle,NPAR)) = 0.0;
   par(VarToIndex(VarRot,NPAR)) = 0.0;
@@ -46,7 +47,7 @@ KNDdePeriodicSolution::KNDdePeriodicSolution(KNAbstractContinuation* cnt, KNExpr
 
 KNDdePeriodicSolution::~KNDdePeriodicSolution()
 {
-  destruct();
+  KNDdePeriodicSolution::destruct();
   delete jacStab;
   delete colloc;
 }
@@ -309,7 +310,7 @@ void KNDdePeriodicSolution::SwitchTFHB(double ds)
   size_t idx = eqn.size();
   for (size_t i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
   P_ERROR_X1(idx != eqn.size(), "No test functional was selected for Hopf bifurcation switch!" );
-  KNComplexTestFunctional *tf = static_cast<KNComplexTestFunctional*>(testFunct(idx));
+  auto *tf = static_cast<KNComplexTestFunctional*>(testFunct(idx));
   KNVector QRE(NDIM), QIM(NDIM);
 
   double newperiod = par(0);
@@ -398,7 +399,7 @@ void KNDdePeriodicSolution::SwitchTFLP(BranchSW type, double ds)
 void KNDdePeriodicSolution::SwitchTFPD(double ds)
 {
   KNVector tan(xxDot->getV1().size());
-  KNTestFunctional* tf = new KNTestFunctional(*colloc, -1.0);
+  auto* tf = new KNTestFunctional(*colloc, -1.0);
   tf->setKernelTolerance(KernEps, KernIter);
   tf->funct(*colloc, par, sol);
   tf->kernel(tan);
@@ -572,7 +573,7 @@ void KNDdePeriodicSolution::SwitchTFTRTan(KNVector& Re, KNVector& Im, double& al
   KNVector TRe(sol.size()), TIm(sol.size());
   size_t idx = 0;
   for (size_t i=0; i<eqn.size(); ++i) if (eqn(i) == EqnTFCPLX_RE) { idx = i; break; }
-  KNComplexTestFunctional* tf = static_cast< KNComplexTestFunctional* >(testFunct(idx));
+  auto* tf = static_cast< KNComplexTestFunctional* >(testFunct(idx));
   if (tf)
   {
     tf->kernel(TRe, TIm, alpha);

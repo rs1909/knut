@@ -157,6 +157,7 @@ void KNAbstractContinuation::run(KNExprSystem* sys, KNConstants* params,
     // start the continuation!
     if (eqn(0) != EqnTORSol)
     {
+      if (pt_ptr == nullptr) P_MESSAGE1("Internal error, cannot start the continuation.");
       KNAbstractPoint& pt = *pt_ptr;
       createData (params->getOutputFile(), pt_per_ptr != nullptr ? DataType::LC : DataType::ST, sys->ndim(), sys->npar(), params);
 

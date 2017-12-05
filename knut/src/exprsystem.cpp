@@ -328,10 +328,10 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     for (size_t l = 0; l < NT; l++)
     {
-      NodeAdd* ta = new NodeAdd (NX, 0);
+      auto* ta = new NodeAdd (NX, 0);
       for (size_t p = 0; p < NX; p++)
       {
-        NodeTimes* tm = new NodeTimes (2, 0);
+        auto* tm = new NodeTimes (2, 0);
         tm -> addArgument (0, varDot_x[p + l*NX + q*NX*NT].copy(), 1.0, false);
         tm -> addArgument (1, vvsub[p + l*NX] -> copy(), 1.0, false);
         ta -> addArgument (p, tm, 1.0);
@@ -352,9 +352,9 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   }
 //   std::cout << "END HESSIAN\n";
   // cleaning up
-  for (size_t p = 0; p < vvsub.size(); p++)
+  for (auto & p : vvsub)
   {
-    delete vvsub[p];
+    delete p;
   }
 
   // try to compile
@@ -362,7 +362,7 @@ void KNExprSystem::constructor (const std::string& vfexpr, const std::string& sy
   {
     // Hash the vfexpr and let that be the name
     uint64 hash = CityHash64(vfexpr.c_str(), vfexpr.size());
-    const unsigned char* hash_ptr = (const unsigned char*) &hash;
+    const auto* hash_ptr = (const unsigned char*) &hash;
     std::string hash_str = EncodeBase58(hash_ptr, hash_ptr + 8);
     std::string shobj(hash_str);
     shobj += ".so";
@@ -436,7 +436,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
   double* data = stack[sp].data;
   size_t skip = stack[sp].skip;
 
-  const NodePar* par_node = dynamic_cast<const NodePar*>(node);
+  const auto* par_node = dynamic_cast<const NodePar*>(node);
   if (par_node != nullptr)
   {
     for (size_t k = 0; k < len; k++)
@@ -446,7 +446,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
     return;
   }
 
-  const NodeVar* var_node = dynamic_cast<const NodeVar*>(node);
+  const auto* var_node = dynamic_cast<const NodeVar*>(node);
   if (var_node != nullptr)
   {
     const size_t idx = var_node->getIdx();
@@ -480,7 +480,7 @@ void KNExprSystem::knsys_fun_expr (size_t sp, const Node* node, const KNArray1D<
     }
   }
 
-  const NodeExpr* expr_node = dynamic_cast<const NodeExpr*>(node);
+  const auto* expr_node = dynamic_cast<const NodeExpr*>(node);
   if (expr_node != nullptr)
   {
     const size_t q = expr_node->getIdx ();
@@ -1437,15 +1437,15 @@ static inline void mkArgListCommandLine(std::list<std::string>& arglist, std::st
   includeArg += DIRSEP;
   includeArg += KNUT_INCLUDE_DIR;
   arglist.push_back(includeArg);
-  arglist.push_back("-pipe");
-  arglist.push_back("-x");
-  arglist.push_back("c++");
-  arglist.push_back("-o");
+  arglist.emplace_back("-pipe");
+  arglist.emplace_back("-x");
+  arglist.emplace_back("c++");
+  arglist.emplace_back("-o");
   arglist.push_back(shobj);
-  arglist.push_back("-");
+  arglist.emplace_back("-");
 
   cmdline.erase();
-  for(std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  for(auto it=arglist.begin(); it != arglist.end(); ++it)
   {
     if (it != arglist.begin()) cmdline += ' ';
 #ifdef _WIN32
@@ -1636,7 +1636,7 @@ static pid_t pipeOpen(std::list<std::string>& arglist, int* input, int* output, 
   if ( (input==nullptr)&&(output==nullptr)&&(error==nullptr) ) return -1;
   char *argv[arglist.size()+1];
   int i = 0;
-  for (std::list<std::string>::const_iterator it=arglist.begin(); it != arglist.end(); ++it)
+  for (auto it=arglist.begin(); it != arglist.end(); ++it)
   {
     argv[i] = new char[it->size()+1];
     strcpy(argv[i],it->c_str());
@@ -1739,7 +1739,7 @@ static void runCompiler(const std::string& cxxstring, const std::string& shobj, 
   // output and err
   pollfd fds[3] = {{input, POLLOUT|POLLHUP, 0},{output, POLLIN|POLLHUP, 0},{error, POLLIN|POLLHUP, 0}};
   const size_t bufsize = 2048;
-  char *out_buf = new char[bufsize];
+  auto *out_buf = new char[bufsize];
   std::string out_str, err_str;
   int rct = 0, ect = 0;
   size_t iin = 0, iout = 1, ierr = 2, nfds = 3;

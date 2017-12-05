@@ -23,55 +23,27 @@ int main(int argc, const char** argv)
   KNConstants* params = nullptr;
   KNExprSystem* sys = nullptr;
 
-  bool save = false;
+  int save {-1};
+  int run {-1};
   try
   {
     // argument parsing
     for (int acnt = 1; acnt < argc;  acnt++)
     {
-      if (argv[acnt][0] == '-')
+      if ( (argv[acnt][0] == '-') && (run != acnt - 1) )
       {
         switch (argv[acnt][1])
         {
           case 's':
-            save = true;
+            save = acnt;
+            P_ERROR_X1(argv[acnt][2] == '\0', "Unexpected command line argument.");
+            break;
           case 'c':
-            params = new KNConstants;
-            {
-              std::string constFile(argv[++acnt]);
-              std::string cfdir(constFile);
-              char* cwd_ptr = new char[512];
-              getcwd(cwd_ptr, 511);
-              P_ERROR_X1(cwd_ptr != nullptr, "Cannot obtain CWD.");
-              std::string  cwd(cwd_ptr);
-              delete[] cwd_ptr;
-              cwd += '/';
-
-              size_t found = cfdir.rfind('/');
-              if (found != std::string::npos) cfdir.erase(found);
-              else cfdir = cwd;
-              int err = chdir (cfdir.c_str());
-//              std::cout << "Changed directory " << cfdir.c_str() << "\n";
-//              std::cout << "Previous directory " << cwd.c_str() << "\n";
-              P_ERROR_X1(err == 0, "Error changing directory.");
-              if (constFile[0] != '/') constFile.insert(0, cwd);
-              params->loadXmlFileV5(constFile);
-              if (params->getSystem ().empty ())
-              {
-                sys = new KNSystem (params->getSysName ());
-//                 std::string tmp;
-//                 sys -> toString (tmp);
-//                 params->setSystemText (tmp);
-//                 params->setSysName ("");
-              } else
-              {
-          //      std::cout << params->getSystem () << "\n";
-                sys = new KNExprSystem (params->getSystem ());
-              }
-            }
-            if (save) { params->saveXmlFileV5(""); exit(0); }
+            run = acnt;
+            P_ERROR_X1(argv[acnt][2] == '\0', "Unexpected command line argument.");
             break;
           case 'v':
+            P_ERROR_X1(argv[acnt][2] == '\0', "Unexpected command line argument.");
 #ifdef HAVE_CONFIG_H
             std::cout << "This is " << PACKAGE_NAME << " version " << PACKAGE_VERSION << " (" << PACKAGE_REVISION << ")\n";
 #endif
@@ -84,9 +56,47 @@ int main(int argc, const char** argv)
       }
       else
       {
-        P_MESSAGE1("Unexpected command line argument.");
+        // the previous argument was "-c"
+        // so this must be a file name
+        if (run == acnt - 1)
+        {
+          params = new KNConstants;
+          {
+            std::string constFile(argv[acnt]);
+            std::string cfdir(constFile);
+            auto* cwd_ptr = new char[512];
+            getcwd(cwd_ptr, 511);
+            P_ERROR_X1(cwd_ptr != nullptr, "Cannot obtain CWD.");
+            std::string  cwd(cwd_ptr);
+            delete[] cwd_ptr;
+            cwd += '/';
+
+            size_t found = cfdir.rfind('/');
+            if (found != std::string::npos) cfdir.erase(found);
+            else cfdir = cwd;
+            int err = chdir (cfdir.c_str());
+//              std::cout << "Changed directory " << cfdir.c_str() << "\n";
+//              std::cout << "Previous directory " << cwd.c_str() << "\n";
+            P_ERROR_X1(err == 0, "Error changing directory.");
+            if (constFile[0] != '/') constFile.insert(0, cwd);
+            params->loadXmlFileV5(constFile);
+            if (params->getSystem ().empty ())
+            {
+              sys = new KNSystem (params->getSysName ());
+//                 std::string tmp;
+//                 sys -> toString (tmp);
+//                 params->setSystemText (tmp);
+//                 params->setSysName ("");
+            } else
+            {
+        //      std::cout << params->getSystem () << "\n";
+              sys = new KNExprSystem (params->getSystem ());
+            }
+          }
+          if (save > 0) { params->saveXmlFileV5(""); exit(0); }
+        }
       }
-    }
+    } // end for
 
     if (params == nullptr)
     {
@@ -121,3 +131,4 @@ int main(int argc, const char** argv)
   }
   return 0;
 }
+
