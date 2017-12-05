@@ -4,6 +4,7 @@
 
 # Tell CMake to run moc when necessary:
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 # As moc files are generated in the binary dir, tell CMake
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -22,6 +23,7 @@ set(GUI_SOURCE_FILES main.cpp
     compthread.h compthread.cpp
     screendialog.h
 #    datachart.cpp datachart.h 
+    mainwindow.qrc
 )
 
 INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
@@ -30,9 +32,6 @@ INCLUDE_DIRECTORIES( ${KNUT_SOURCE_DIR}/src
   ${KNUT_MXML_INC}
   ${UMF_INCLUDE} 
   ${AMD_INCLUDE})
-
-file (GLOB Resources *.qrc)
-QT5_ADD_RESOURCES (ResourceSources ${Resources})
 
 IF(APPLE)
   ADD_EXECUTABLE( ${GUI_NAME} MACOSX_BUNDLE 
