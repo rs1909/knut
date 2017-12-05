@@ -43,7 +43,7 @@ SET( UMFPACK_C umfpack_col_to_triplet.c umfpack_defaults.c umfpack_free_numeric.
 #	umfpack_load_symbolic.c umfpack_save_symbolic.c
 )
 
-SET( GENERIC_C ../../UFConfig/SuiteSparse_config.c umfpack_timer.c umfpack_tictoc.c umfpack_global.c cholmod_blas.h )
+SET( GENERIC_C ${KNUT_SOURCE_DIR}/UMFPACK/UFconfig/SuiteSparse_config.c umfpack_timer.c umfpack_tictoc.c umfpack_global.c cholmod_blas.h )
 
 SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 	umf_triplet_map.c umf_triplet_values.c umf_triplet_map_values.c

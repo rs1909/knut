@@ -191,7 +191,7 @@ BifType bifurcationType(const KNVector& mr0, const KNVector& mi0,
       const double mre0 = (*mulRe1)(closest[i]);
       const double mim0 = (*mulIm1)(closest[i]);
 //      std :: cerr << "DNUM " << dnum << " (" << mre0 << "," << mim0 << ") ==>> ";
-      for (std::__1::__list_iterator<unsigned long, void *>::value_type & it : duplicate[i])
+      for (auto & it : duplicate[i])
       {
         const double mre1 = (*mulRe0)(it);
         const double mim1 = (*mulIm0)(it);
