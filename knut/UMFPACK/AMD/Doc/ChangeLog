@@ -1,3 +1,52 @@
+May 4, 2016: version 2.4.6
+
+    * minor changes to Makefile
+
+Apr 1, 2016: version 2.4.5
+
+    * licensing simplified (no other change); refer to AMD/Doc/License.txt
+
+Feb 1, 2016: version 2.4.4
+
+    * update to Makefiles
+
+Jan 30, 2016: version 2.4.3
+
+    * modifications to Makefiles
+
+Jan 1, 2016: version 2.4.2
+
+    * modified Makefile to create shared libraries
+        No change to C code except version number
+
+Oct 10, 2014: version 2.4.1
+
+    modified MATLAB/amd_make.m.  No change to C code except version number.
+
+July 31, 2013: version 2.4.0
+
+    * changed malloc and printf pointers to use SuiteSparse_config
+
+Jun 20, 2012: verison 2.3.1
+
+    * minor update for Windows (removed filesep)
+
+Jun 1, 2012: version 2.3.0
+
+    * changed from UFconfig to SuiteSparse_config
+
+May 15, 2012: version 2.2.4
+
+    * minor fix to SIZE_T_MAX definition (finicky compiler workaround)
+
+Dec 7, 2011: version 2.2.3
+
+    * fixed the Makefile to better align with CFLAGS and other standards
+
+Jan 25, 2011: version 2.2.2
+
+    * minor fix to "make install"
+
 Nov 30, 2009: version 2.2.1
 
     * added "make install" and "make uninstall"
@@ -65,8 +114,6 @@ Aug. 30, 2005: AMD Version 1.2
 	longer includes the compile-time redefinition of malloc and free.
 
     * Makefile modified to use UFconfig.mk.  "Make" directory removed.
-
-    * License changed to GNU LGPL.
 
     * Easier inclusion in C++ programs.
 

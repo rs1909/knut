@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Copyright (c) Timothy A. Davis, CISE,                              */
-/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
-/* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
+/* Copyright (c) 2005-2012 by Timothy A. Davis, http://www.suitesparse.com.   */
+/* All Rights Reserved.  See ../Doc/License.txt for License.                  */
 /* -------------------------------------------------------------------------- */
 
 /*
@@ -27,8 +26,7 @@
 extern "C" {
 #endif
 
-/* define UF_long */
-#include "UFconfig.h"
+#include "SuiteSparse_config.h"
 
 /* -------------------------------------------------------------------------- */
 /* size of Info and Control arrays */
@@ -97,50 +95,21 @@ extern "C" {
 /* Version, copyright, and license */
 /* -------------------------------------------------------------------------- */
 
-#define UMFPACK_VERSION "UMFPACK V5.5.0 (Nov 30, 2009)"
+#define UMFPACK_VERSION "UMFPACK V5.7.6 (May 4, 2016)"
 
 #define UMFPACK_COPYRIGHT \
-"UMFPACK:  Copyright (c) 2005-2009 by Timothy A. Davis.  All Rights Reserved.\n"
+"UMFPACK:  Copyright (c) 2005-2013 by Timothy A. Davis.  All Rights Reserved.\n"
 
 #define UMFPACK_LICENSE_PART1 \
-"\nUMFPACK License:\n" \
-"\n" \
+"\nUMFPACK License:  refer to UMFPACK/Doc/License.txt for the license.\n" \
 "   UMFPACK is available under alternate licenses,\n" \
-"   contact T. Davis for details.\n" \
-"\n" \
-"   Your use or distribution of UMFPACK or any modified version of\n" \
-"   UMFPACK implies that you agree to this License.\n" \
-"\n" \
-"   This library is free software; you can redistribute it and/or\n" \
-"   modify it under the terms of the GNU General Public\n" \
-"   License as published by the Free Software Foundation; either\n" \
-"   version 2 of the License, or (at your option) any later version.\n" \
-"\n" \
-"   This library is distributed in the hope that it will be useful,\n" \
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n" \
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n" \
-"   General Public License for more details.\n" \
-"\n" \
-"   You should have received a copy of the GNU General Public\n" \
-"   License along with this library; if not, write to the Free Software\n" \
-"   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301\n" \
-"   USA\n" \
+"   contact T. Davis for details.\n" 
 
-#define UMFPACK_LICENSE_PART2 \
-"\n" \
-"   Permission is hereby granted to use or copy this program under the\n" \
-"   terms of the GNU GPL, provided that the Copyright, this License,\n" \
-"   and the Availability of the original version is retained on all copies.\n" \
-"   User documentation of any code that uses this code or any modified\n" \
-"   version of this code must cite the Copyright, this License, the\n" \
-"   Availability note, and \"Used by permission.\" Permission to modify\n" \
-"   the code and to distribute modified code is granted, provided the\n" \
-"   Copyright, this License, and the Availability note are retained,\n" \
-"   and a notice that the code was modified is included.\n"
+#define UMFPACK_LICENSE_PART2 "\n"
 
 #define UMFPACK_LICENSE_PART3 \
 "\n" \
-"Availability: http://www.cise.ufl.edu/research/sparse/umfpack\n" \
+"Availability: http://www.suitesparse.com" \
 "\n"
 
 /* UMFPACK Version 4.5 and later will include the following definitions.
@@ -163,11 +132,11 @@ extern "C" {
  * above.
  */
 
-#define UMFPACK_DATE "Nov 30, 2009"
+#define UMFPACK_DATE "May 4, 2016"
 #define UMFPACK_VER_CODE(main,sub) ((main) * 1000 + (sub))
 #define UMFPACK_MAIN_VERSION 5
-#define UMFPACK_SUB_VERSION 5
-#define UMFPACK_SUBSUB_VERSION 0
+#define UMFPACK_SUB_VERSION 7
+#define UMFPACK_SUBSUB_VERSION 6
 #define UMFPACK_VER UMFPACK_VER_CODE(UMFPACK_MAIN_VERSION,UMFPACK_SUB_VERSION)
 
 /* -------------------------------------------------------------------------- */
@@ -188,7 +157,7 @@ extern "C" {
 
 /* computed in UMFPACK_*symbolic: */
 #define UMFPACK_SIZE_OF_INT 4		/* sizeof (int) */
-#define UMFPACK_SIZE_OF_LONG 5		/* sizeof (UF_long) */
+#define UMFPACK_SIZE_OF_LONG 5		/* sizeof (SuiteSparse_long) */
 #define UMFPACK_SIZE_OF_POINTER 6	/* sizeof (void *) */
 #define UMFPACK_SIZE_OF_ENTRY 7		/* sizeof (Entry), real or complex */
 #define UMFPACK_NDENSE_ROW 8		/* number of dense rows */

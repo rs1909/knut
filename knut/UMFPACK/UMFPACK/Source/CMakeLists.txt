@@ -15,7 +15,7 @@ SET( UMF_C umf_assemble.c umf_blas3_update.c umf_build_tuples.c umf_create_eleme
 	umf_report_vector.c umf_row_search.c umf_scale_column.c
 	umf_set_stats.c umf_solve.c umf_symbolic_usage.c umf_transpose.c
 	umf_tuple_lengths.c umf_usolve.c umf_utsolve.c umf_valid_numeric.c
-	umf_valid_symbolic.c umf_grow_front.c umf_start_front.c umf_2by2.c
+	umf_valid_symbolic.c umf_grow_front.c umf_start_front.c # umf_2by2.c
 	umf_store_lu.c umf_scale.c )
 
 SET( UMF_H umf_assemble.h umf_blas3_update.h umf_build_tuples.h umf_create_element.h
@@ -27,7 +27,7 @@ SET( UMF_H umf_assemble.h umf_blas3_update.h umf_build_tuples.h umf_create_eleme
 	umf_report_vector.h umf_row_search.h umf_scale_column.h
 	umf_set_stats.h umf_solve.h umf_symbolic_usage.h umf_transpose.h
 	umf_tuple_lengths.h umf_usolve.h umf_utsolve.h umf_valid_numeric.h
-	umf_valid_symbolic.h umf_grow_front.h umf_start_front.h umf_2by2.h
+	umf_valid_symbolic.h umf_grow_front.h umf_start_front.h # umf_2by2.h
 	umf_store_lu.h umf_scale.h
 	umf_internal.h umf_config.h umf_version.h )
 
@@ -43,7 +43,7 @@ SET( UMFPACK_C umfpack_col_to_triplet.c umfpack_defaults.c umfpack_free_numeric.
 #	umfpack_load_symbolic.c umfpack_save_symbolic.c
 )
 
-SET( GENERIC_C umfpack_timer.c umfpack_tictoc.c umfpack_global.c cholmod_blas.h )
+SET( GENERIC_C ../../UFConfig/SuiteSparse_config.c umfpack_timer.c umfpack_tictoc.c umfpack_global.c cholmod_blas.h )
 
 SET( UMF_GENERATED_C umf_ltsolve_conj.c umf_utsolve_conj.c
 	umf_triplet_map.c umf_triplet_values.c umf_triplet_map_values.c

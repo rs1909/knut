@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Copyright (c) Timothy A. Davis, CISE,                              */
-/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
-/* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
+/* Copyright (c) 2005-2012 by Timothy A. Davis, http://www.suitesparse.com.   */
+/* All Rights Reserved.  See ../Doc/License.txt for License.                  */
 /* -------------------------------------------------------------------------- */
 
 /*
@@ -30,8 +29,7 @@ GLOBAL void *UMF_free
     if (p)
     {
 
-	/* see AMD/Source/amd_global.c for the memory allocator selection */
-	amd_free (p) ;
+	SuiteSparse_free (p) ;
 
 #if defined (UMF_MALLOC_COUNT) || !defined (NDEBUG)
 	/* One more object has been free'd.  Keep track of the count. */

@@ -3,9 +3,8 @@
 /* ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
-/* UMFPACK Copyright (c) Timothy A. Davis, CISE,                              */
-/* Univ. of Florida.  All Rights Reserved.  See ../Doc/License for License.   */
-/* web: http://www.cise.ufl.edu/research/sparse/umfpack                       */
+/* Copyright (c) 2005-2012 by Timothy A. Davis, http://www.suitesparse.com.   */
+/* All Rights Reserved.  See ../Doc/License.txt for License.                  */
 /* -------------------------------------------------------------------------- */
 
 /*
@@ -107,7 +106,7 @@
 #endif
 
 /* -------------------------------------------------------------------------- */
-/* Real/complex and int/UF_long definitions, double relops */
+/* Real/complex and int/SuiteSparse_long definitions, double relops */
 /* -------------------------------------------------------------------------- */
 
 #include "umf_version.h"
@@ -204,15 +203,7 @@
 /* Memory allocator */
 /* -------------------------------------------------------------------------- */
 
-/* See AMD/Source/amd_global.c and AMD/Source/amd.h for the
- * definition of the memory allocator used by UMFPACK.  Versions 4.4 and
- * earlier had their memory allocator definitions here.   Other global
- * function pointers for UMFPACK are located in umf_global.c.
- *
- * The MATLAB mexFunction uses MATLAB's memory manager and mexPrintf, while the
- * C-callable AMD library uses the ANSI C malloc, free, realloc, and printf
- * routines.
- */
+    /* see SuiteSparse_config */
 
 /* -------------------------------------------------------------------------- */
 /* Memory space definitions */
