@@ -174,7 +174,7 @@ void KNDdeBvpCollocation::init(const KNVector& sol, const KNVector& par)
         if (t(0) - p_tau(k,idx) >= 0) kkS(k + 1, idx) = low + NINT;
         else kkS(k + 1, idx) = low;
 
-        kkI(k + 1, idx) = low + NINT * static_cast<size_t>(ceil(t(0) - p_tau(k,idx)) - 1) + NMAT*NINT;
+        kkI(k + 1, idx) = static_cast<size_t>(low + NINT * (ceil(t(0) - p_tau(k,idx)) - 1) + NMAT*NINT);
 
 //        std::cout << "low " << low << " t(0) " << t(0) << " p_tau(k,idx) " << p_tau(k,idx);
         const double hk = mesh(low + 1) - mesh(low);

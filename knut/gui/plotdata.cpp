@@ -1066,66 +1066,68 @@ QGraphicsRectItem* PlotData::makeBox()
     removeItem(BottomTicks[i].get());
     removeItem(TopTicks[i].get());
     removeItem(HText[i].get());
-//     BottomTicks[i].reset(nullptr);
-//     TopTicks[i].reset(nullptr);
-//     HText[i].reset(nullptr);
   }
-  BottomTicks.resize(cvb.xticks + 1);
-  TopTicks.resize(cvb.xticks + 1);
-  HText.resize(cvb.xticks + 1);
+  // X axis
   qreal highest = 0;
-//  std::cout << "xmin " << cvb.xmin << ", xmax" << cvb.xmax << " ticks " << cvb.xticks << "\n";
-  for (size_t i = 0; i < cvb.xticks + 1; i++)
+  if ((cvb.xticks > 0) && (cvb.xmax >= cvb.xmin))
   {
-    BottomTicks[i] = std::make_unique<QGraphicsLineItem>();
-    BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
-    BottomTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    TopTicks[i] = std::make_unique<QGraphicsLineItem>();
-    TopTicks[i]->setLine(plotXSize * i / cvb.xticks, plotYSize, plotXSize * i / cvb.xticks, plotYSize - 5.0);
-    TopTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    HText[i] = std::make_unique<QGraphicsTextItem>();
-    HText[i]->setPlainText(QString::number(cvb.xmin + (cvb.xmax - cvb.xmin)*i / cvb.xticks));
-    HText[i]->setFont(QFont("Helvetica", FontSize));
-    QRectF b = HText[i]->boundingRect().normalized();
-    HText[i]->setPos(plotXSize * i / cvb.xticks - b.width() / 2.0, plotYSize /*- b.height()*/);
-    addItem(TopTicks[i].get());
-    addItem(BottomTicks[i].get());
-    addItem(HText[i].get());
-//     std::cout << "addItem " << i << " " << __LINE__ << "" << TopTicks[i].get() << " " << BottomTicks[i].get() << " " << HText[i].get() << "\n";
-    if (highest < b.height()) highest = b.height();
+    BottomTicks.resize(cvb.xticks + 1);
+    TopTicks.resize(cvb.xticks + 1);
+    HText.resize(cvb.xticks + 1);
+    //  std::cout << "xmin " << cvb.xmin << ", xmax" << cvb.xmax << " ticks " << cvb.xticks << "\n";
+    for (size_t i = 0; i < cvb.xticks + 1; i++)
+    {
+        BottomTicks[i] = std::make_unique<QGraphicsLineItem>();
+        BottomTicks[i]->setLine(plotXSize * i / cvb.xticks, 0.0, plotXSize * i / cvb.xticks, 5.0);
+        BottomTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
+        TopTicks[i] = std::make_unique<QGraphicsLineItem>();
+        TopTicks[i]->setLine(plotXSize * i / cvb.xticks, plotYSize, plotXSize * i / cvb.xticks, plotYSize - 5.0);
+        TopTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
+        HText[i] = std::make_unique<QGraphicsTextItem>();
+        HText[i]->setPlainText(QString::number(cvb.xmin + (cvb.xmax - cvb.xmin)*i / cvb.xticks));
+        HText[i]->setFont(QFont("Helvetica", FontSize));
+        QRectF b = HText[i]->boundingRect().normalized();
+        HText[i]->setPos(plotXSize * i / cvb.xticks - b.width() / 2.0, plotYSize /*- b.height()*/);
+        addItem(TopTicks[i].get());
+        addItem(BottomTicks[i].get());
+        addItem(HText[i].get());
+    //     std::cout << "addItem " << i << " " << __LINE__ << "" << TopTicks[i].get() << " " << BottomTicks[i].get() << " " << HText[i].get() << "\n";
+        if (highest < b.height()) highest = b.height();
+    }
   }
   for (size_t i = 0; i < VText.size(); i++)
   {
     removeItem(LeftTicks[i].get());
     removeItem(RightTicks[i].get());
     removeItem(VText[i].get());
-//     LeftTicks[i].reset(nullptr);
-//     RightTicks[i].reset(nullptr);
-//     VText[i].reset(nullptr);
   }
-  LeftTicks.resize(cvb.yticks + 1);
-  RightTicks.resize(cvb.yticks + 1);
-  VText.resize(cvb.yticks + 1);
+  // Y axis
   qreal widest = 0;
-//  std::cout << "ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
-  for (size_t i = 0; i < cvb.yticks + 1; i++)
+  if ((cvb.yticks > 0) && (cvb.ymax >= cvb.ymin))
   {
-    LeftTicks[i] = std::make_unique<QGraphicsLineItem>();
-    LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);
-    LeftTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    RightTicks[i] = std::make_unique<QGraphicsLineItem>();
-    RightTicks[i]->setLine(plotXSize, plotYSize * i / cvb.yticks, plotXSize - 5.0, plotYSize * i / cvb.yticks);
-    RightTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
-    VText[i] = std::make_unique<QGraphicsTextItem>();
-    VText[i]->setPlainText(QString::number(cvb.ymin + (cvb.ymax - cvb.ymin)*i / cvb.yticks));
-    VText[i]->setFont(QFont("Helvetica", FontSize));
-    QRectF b = VText[i]->boundingRect().normalized();
-    VText[i]->setPos(-b.width(), plotYSize - plotYSize*i / cvb.yticks - b.height() / 2.0);
-    addItem(LeftTicks[i].get());
-    addItem(RightTicks[i].get());
-    addItem(VText[i].get());
-//     std::cout << "addItem " << __LINE__ << "\n";
-    if (widest < b.width()) widest = b.width();
+    LeftTicks.resize(cvb.yticks + 1);
+    RightTicks.resize(cvb.yticks + 1);
+    VText.resize(cvb.yticks + 1);
+    //  std::cout << "ymin " << cvb.ymin << ", ymax" << cvb.ymax << " ticks " << cvb.yticks << "\n";
+    for (size_t i = 0; i < cvb.yticks + 1; i++)
+    {
+        LeftTicks[i] = std::make_unique<QGraphicsLineItem>();
+        LeftTicks[i]->setLine(0.0, plotYSize * i / cvb.yticks, 5.0, plotYSize * i / cvb.yticks);
+        LeftTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
+        RightTicks[i] = std::make_unique<QGraphicsLineItem>();
+        RightTicks[i]->setLine(plotXSize, plotYSize * i / cvb.yticks, plotXSize - 5.0, plotYSize * i / cvb.yticks);
+        RightTicks[i]->setPen(QPen(QBrush(Qt::SolidPattern), 1.0));
+        VText[i] = std::make_unique<QGraphicsTextItem>();
+        VText[i]->setPlainText(QString::number(cvb.ymin + (cvb.ymax - cvb.ymin)*i / cvb.yticks));
+        VText[i]->setFont(QFont("Helvetica", FontSize));
+        QRectF b = VText[i]->boundingRect().normalized();
+        VText[i]->setPos(-b.width(), plotYSize - plotYSize*i / cvb.yticks - b.height() / 2.0);
+        addItem(LeftTicks[i].get());
+        addItem(RightTicks[i].get());
+        addItem(VText[i].get());
+    //     std::cout << "addItem " << __LINE__ << "\n";
+        if (widest < b.width()) widest = b.width();
+    }
   }
   // remove previous texts
   clearAxes();

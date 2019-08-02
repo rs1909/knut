@@ -31,6 +31,7 @@ constexpr const char * KNRP (const char * path)
 class KNMessage
 {
   public:
+    KNMessage() = default;
     KNMessage(const char *str) : message(str)
     { }
     KNMessage(const std::string& str) : message(str)
@@ -68,7 +69,7 @@ class KNMessage
     }
     const std::string& str() const { return message; }
   private:
-    std::string message;
+    std::string message{""};
 };
 
 class KNException
@@ -90,7 +91,7 @@ class KNException
     const char*  file;
     const int    line;
     const size_t ipos;
-    KNMessage message;
+    KNMessage message{};
 };
 
 #ifdef DEBUG

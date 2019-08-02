@@ -260,6 +260,13 @@ if(${Qt5Core_FOUND})
   endif(WIN32)
 endif(${Qt5Core_FOUND})
 
+# FINDING BOOST
+
+set(BOOST_ROOT /usr/local/Cellar/boost/1.70.0)
+set(BOOST_INCLUDEDIR /usr/local/Cellar/boost/1.70.0/include/boost)
+set(BOOST_LIBRARYDIR /usr/local/Cellar/boost/1.70.0/lib)
+# set(Boost_NO_BOOST_CMAKE ON)
+# find_package(Boost 1.69 REQUIRED COMPONENTS interprocess)
 
 #------------------------------------------------------------------------------
 # Writing the generated files

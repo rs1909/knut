@@ -832,3 +832,53 @@ size_t KNAbstractData::findType(BifType type, size_t n) const
   }
   return getNCols();
 }
+
+void KNDataFile::printMatrix(size_t offset, std::ostream& out)
+{
+    auto hd = getHeader(offset);
+    auto rows = hd->getRows();
+    auto cols = std::min(hd->getCols(), getNPoints());
+    
+    const char* namePtr = hd -> name();
+    std::string name = std::string(namePtr);
+        
+    out << std::hexfloat << name << " " << cols << " " << rows << " ";
+    if (hd->imagf == 0)
+    {
+        out << 1 << " ->real\n" ;
+        for(size_t i = 0; i < cols; ++i)
+        {
+            for(size_t j = 0; j < rows; ++j)
+            {
+                out << " " << elem(offset, j, i);
+            }
+            if (i < cols-1) out << "\n";
+        }
+    } else
+    {
+        out << 2 << " ->complex\n" ;
+        for (size_t i = 0; i < cols; ++i)
+        {
+            for (size_t j = 0; j < rows; ++j)
+            {
+                out << " " << elem(offset, j, i) << " " << elem_im(offset, j, i);
+            }
+            if (i < cols-1) out << "\n";
+        }
+    }
+    out << "\n";
+}
+
+void KNDataFile::exportToJulia(std::ostream& ofs)
+{
+    printMatrix (npoints_offset, ofs);
+    printMatrix (par_offset, ofs);
+    printMatrix (parnames_offset, ofs);
+    printMatrix (mul_offset, ofs);
+    printMatrix (ntrivmul_offset, ofs);
+    printMatrix (magic_offset, ofs);
+    printMatrix (ndim_offset, ofs);
+    printMatrix (elem_offset, ofs);
+    printMatrix (mesh_offset, ofs);
+    printMatrix (prof_offset, ofs);
+}

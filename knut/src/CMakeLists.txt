@@ -28,7 +28,8 @@ INCLUDE_DIRECTORIES(
   ${KNUT_SOURCE_DIR}/laarpack
   ${KNUT_MXML_INC}
   ${UMF_INCLUDE}
-  ${AMD_INCLUDE})
+  ${AMD_INCLUDE}
+  ${Boost_INCLUDE_DIR})
 
 IF(NOT APPLE)
   INSTALL( FILES matrix.h knutsys.h pddesys.h DESTINATION include/ )

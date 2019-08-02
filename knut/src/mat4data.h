@@ -80,6 +80,8 @@ class KNDataFile : public KNAbstractData
     // unmaps the memory, truncates the file if necessary, closes the file
     virtual ~KNDataFile();
     
+    void exportToJulia(std::ostream& out);
+    
     void lockRead() const override;
     void lockWrite() const override;
     void unlock() const override;
@@ -226,9 +228,9 @@ class KNDataFile : public KNAbstractData
       uint32_t imagf;
       uint32_t namelen;
 
-      const char* name(const void* offset) const
+      const char* name() const
       {
-        return (char*)offset + namelen;
+        return (char*)this + sizeof(struct header);
       }
       size_t size() const
       {
@@ -307,6 +309,8 @@ class KNDataFile : public KNAbstractData
 
     void mmapFileWrite(const std::string& fileName, size_t size);
     void mmapFileRead(const std::string& fileName);
+    
+    void printMatrix(size_t offset, std::ostream& out);
 //#ifdef _WIN32
 //    HANDLE file;
 //    OVERLAPPED fileOverlapped;

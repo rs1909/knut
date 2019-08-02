@@ -57,7 +57,7 @@ KNSystem::KNSystem (const std::string& sysName, bool trycompile)
 {
   std::string contents;
   std::ifstream in (sysName, std::ios::in | std::ios::binary);
-  if (in)
+  if (in.is_open())
   {
     in.seekg (0, std::ios::end);
     contents.resize (in.tellg());

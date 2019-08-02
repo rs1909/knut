@@ -62,8 +62,8 @@ int main(int argc, const char** argv)
         {
           params = new KNConstants;
           {
-            std::string constFile(argv[acnt]);
-            std::string cfdir(constFile);
+            std::string constFile{argv[acnt]};
+            std::string cfdir{argv[acnt]};
             auto* cwd_ptr = new char[512];
             getcwd(cwd_ptr, 511);
             P_ERROR_X1(cwd_ptr != nullptr, "Cannot obtain CWD.");
@@ -79,7 +79,7 @@ int main(int argc, const char** argv)
 //              std::cout << "Previous directory " << cwd.c_str() << "\n";
             P_ERROR_X1(err == 0, "Error changing directory.");
             if (constFile[0] != '/') constFile.insert(0, cwd);
-            params->loadXmlFileV5(constFile);
+            if (!constFile.empty ()) params->loadXmlFileV5(constFile);
             if (params->getSystem ().empty ())
             {
               sys = new KNSystem (params->getSysName ());
