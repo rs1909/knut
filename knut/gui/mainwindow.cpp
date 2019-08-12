@@ -690,8 +690,9 @@ void MainWindow::plotDestroyed ()
 
 void MainWindow::terminalViewDestroyed()
 {
-//  std::cout<<"TERM DESTROYED\n";
-  delete terminalDialog;
+//   NOT NEEDED, BECAUS QT TAKES CARE OF IT
+//   std::cout<<"TERM DESTROYED\n";
+//   delete terminalDialog;
   terminalDialog = nullptr;
 }
 
@@ -710,6 +711,7 @@ void MainWindow::terminalView()
     terminalDialog->storeCursor();
   } else
   {
+//     std::cout<<"TERM DESTROYED (by button)\n";
     delete terminalDialog;
     terminalDialog = nullptr;
   }

@@ -1162,7 +1162,7 @@ Node* NodeTimes::optimize (const std::function<bool(const Node*)>& zero)
   double newsmul = smul;
   for (auto & arg : args)
   {
-    P_ASSERT_X1 (args[k] != nullptr, "Optimizing null pointer.");
+    P_ASSERT_X1 (arg != nullptr, "Optimizing null pointer.");
     arg = node_optimize (arg, zero);
   }
   for (size_t k = 0; k < args.size(); k++)
