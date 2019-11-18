@@ -30,7 +30,7 @@ void MThread::setConstants (const KNConstants& prms)
   // setting up new data
   params = new KNConstants(prms);
   try {
-    sys = new KNSystem (prms.getSysName ());
+    sys = new KNSystem (prms.getSysName (), prms.getCompile ());
   }
   catch (KNException& ex)
   {

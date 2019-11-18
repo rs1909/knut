@@ -33,7 +33,7 @@ public:
 
   // sysName : the name of the vector field file
   KNExprSystem (); // this is to facilitate inheritance
-  KNExprSystem (const std::string& vfexpr, bool trycompile = true);
+  KNExprSystem (const std::string& vfexpr, bool trycompile);
   ~KNExprSystem ();
 
   size_t  ndim() const ;
@@ -165,7 +165,7 @@ class KNSystem : public KNExprSystem
 {
 public:
   KNSystem ();
-  KNSystem (const std::string& sysName, bool trycompile = true);
+  KNSystem (const std::string& sysName, bool trycompile);
 };
 
 #endif

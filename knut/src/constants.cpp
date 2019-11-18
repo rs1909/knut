@@ -257,6 +257,7 @@ void KNConstantsBase::write(KNAbstractConstantsWriter& writer)
   writer.setTextField ("output", getOutputFile());
   if (!getSysName().empty()) writer.setTextField ("sysname", getSysName());
   if (!getSysType().empty()) writer.setTextField ("systype", getSysType());
+  writer.setIndexField ("compile", getCompile());
   writer.setTextField ("fromtype", BifTypeTable.TypeToCode(getFromType()));
   writer.setIndexField ("label", getLabel());
   writer.setTextField ("pointtype", PtTypeTable.TypeToCode(getPointType()));
@@ -315,6 +316,7 @@ void KNConstantsBase::read(KNAbstractConstantsReader& reader)
   if (reader.getTextField("output", buf)) setOutputFile(buf);
   if (reader.getTextField("sysname", buf)) if (!buf.empty()) setSysNameText(buf);
   if (reader.getTextField("systype", buf)) setSysType(buf);
+  if (reader.getIndexField("compile", idx)) setCompile(idx);
   if (reader.getTextField("fromtype", buf)) setFromType(BifTypeTable.CodeToType(buf.c_str()));
   if (reader.getIndexField("label", idx)) setLabel(idx);
   if (reader.getTextField("pointtype", buf)) setPointType(PtTypeTable.CodeToType(buf.c_str()));

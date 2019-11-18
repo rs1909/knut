@@ -166,6 +166,7 @@ class KNConstantsBase
     KN_CONSTANT(       std::string, outputFile, OutputFile, "")
     KN_CONSTANT(       std::string, sysname,    SysName,    "")
     KN_CONSTANT(       std::string, sysType,    SysType,    "")
+    KN_CONSTANT(       bool,        compile,    Compile,    "")
     KN_CONSTANT(       BifType,     fromType,   FromType,   BifType::BifNone)
     KN_CONSTANT(       size_t,      label,      Label,      0)
     KN_CONSTANT(       PtType,      pointType,  PointType,  PtType::SolUser)

@@ -80,9 +80,10 @@ int main(int argc, const char** argv)
             P_ERROR_X1(err == 0, "Error changing directory.");
             if (constFile[0] != '/') constFile.insert(0, cwd);
             if (!constFile.empty ()) params->loadXmlFileV5(constFile);
+            std::cout << "Need to compile " << params->getCompile () << "\n";
             if (params->getSystem ().empty ())
             {
-              sys = new KNSystem (params->getSysName ());
+              sys = new KNSystem (params->getSysName (), params->getCompile ());
 //                 std::string tmp;
 //                 sys -> toString (tmp);
 //                 params->setSystemText (tmp);
@@ -90,7 +91,7 @@ int main(int argc, const char** argv)
             } else
             {
         //      std::cout << params->getSystem () << "\n";
-              sys = new KNExprSystem (params->getSystem ());
+              sys = new KNExprSystem (params->getSystem (), params->getCompile ());
             }
           }
           if (save > 0) { params->saveXmlFileV5(""); exit(0); }

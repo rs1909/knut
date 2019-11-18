@@ -59,7 +59,7 @@ class KnutApplication : public QApplication
 int main(int argc, char *argv[])
 {
 #ifdef __linux__
-  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+//  feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
 #endif
 
   QString constFile;
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
     
     params.loadXmlFileV5(cfInfo.fileName().toStdString());
     KNCliContinuation comp;
-    auto *sys = new KNSystem (params.getSysName ());
+    auto *sys = new KNSystem (params.getSysName (), params.getCompile ());
 //    params.printXmlFileV5(std::cout);
     KNDataFile *inputData = nullptr;
     if (params.getLabel() != 0)
